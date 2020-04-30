@@ -28,7 +28,7 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
       errorCode
       errorMessage
       # orderId
-      orderAutoId
+      # orderAutoId
     }
   }
 `;
