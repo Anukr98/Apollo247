@@ -38,10 +38,10 @@ module.exports = async (req, res, next) => {
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
 
-        console.log(medicineOrderQuery(payload, false));
+        console.log(medicineOrderQuery(payload));
         // this needs to be altered later.
         const requestJSON = {
-            query: medicineOrderQuery(payload, false)
+            query: medicineOrderQuery(payload)
         };
 
         /// write medicineoirder
