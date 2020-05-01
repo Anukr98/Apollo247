@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking, _obTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1164,21 +1164,6 @@ export const MedicineCart: React.FC = (props) => {
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
-                    // GTM start
-                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: totalAmount })
-                    window._ob &&
-                      window._ob(
-                        currentPatient && currentPatient.mobileNumber
-                          ? currentPatient.mobileNumber
-                          : null,
-                        city,
-                        paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                        cartItems ? cartItems.length : 0,
-                        couponCode == '' ? null : couponCode,
-                        discountAmount,
-                        grossValue
-                      );
-                    // GTM end
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';

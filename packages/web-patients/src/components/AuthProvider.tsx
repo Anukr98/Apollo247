@@ -23,7 +23,7 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-import { gtmTracking } from '../gtmTracking'
+import { gtmTracking, _urTracking } from '../gtmTracking';
 // import { clientRoutes } from 'helpers/clientRoutes';
 // import moment from 'moment';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
@@ -351,7 +351,7 @@ export const AuthProvider: React.FC = (props) => {
 
         if (isNewUser) {
           gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Register'})
-          window._ur && window._ur(user.uid, false, 1);
+          _urTracking({ mobileNumber: user.uid, isApolloCustomer: false, profileFetchedCount: 1 });
         } else {
           gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Login'})
         }
