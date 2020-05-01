@@ -40,6 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
+import { gtmTracking } from '../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -584,13 +585,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  `Coupon Applied - ${couponCode}`,
-                  couponValue
-                );
+              gtmTracking({ category: 'Consultations', action: speciality, label: `Coupon Applied - ${couponCode}`, value: couponValue })
               /* Gtm code end */
               setCouponCode(couponCode);
             }}
@@ -604,13 +599,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /**Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  'Coupon Removed - ${couponCode}',
-                  couponValue
-                );
+              gtmTracking({category: 'Consultations' , action: speciality, label: `Coupon Removed - ${couponCode}`, value: couponValue})
               /**Gtm code  end  */
             }}
           />
