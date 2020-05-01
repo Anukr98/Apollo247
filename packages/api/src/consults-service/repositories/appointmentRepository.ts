@@ -97,7 +97,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
-        status4: STATUS.PAYMENT_PENDING_PG
+        status4: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.patientId', 'ASC')
       .getMany();
@@ -179,7 +179,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
-        status4: STATUS.PAYMENT_PENDING_PG
+        status4: STATUS.PAYMENT_PENDING_PG,
       })
       .getCount();
   }
@@ -203,7 +203,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
-        status4: STATUS.PAYMENT_PENDING_PG
+        status4: STATUS.PAYMENT_PENDING_PG,
       })
       .getCount();
   }
@@ -248,7 +248,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         {
           doctorId: In(doctorIds),
           appointmentDateTime: Between(fromDate, toDate),
-          status: Not('PAYMENT_PENDING'),
+          status: Not([STATUS.PAYMENT_PENDING, STATUS.PAYMENT_PENDING_PG, STATUS.PAYMENT_FAILED]),
         },
       ],
     });
@@ -281,7 +281,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   findAppointmentPayment(id: string) {
-    return AppointmentPayments.findOne({ where: { "appointment": id } }).catch((getErrors) => {
+    return AppointmentPayments.findOne({ where: { appointment: id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
         getErrors,
       });
@@ -289,7 +289,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   findAppointmentPaymentById(appointmentId: string) {
-    return Appointment.findOne({ where: { id: appointmentId }, relations: ['appointmentPayments'] }).catch((getErrors) => {
+    return Appointment.findOne({
+      where: { id: appointmentId },
+      relations: ['appointmentPayments'],
+    }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
         getErrors,
       });
@@ -391,7 +394,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -422,7 +425,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -459,7 +462,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .getMany();
   }
@@ -475,7 +478,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .offset(offset)
       .limit(limit)
@@ -494,7 +497,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       });
 
     if (utcAppointmentDateTimes && utcAppointmentDateTimes.length > 0) {
@@ -554,7 +557,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .getMany();
   }
@@ -572,7 +575,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -588,7 +591,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.appointmentDateTime', 'DESC')
       .getMany();
@@ -741,9 +744,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -804,7 +807,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.PAYMENT_FAILED,
-        status4: STATUS.PAYMENT_PENDING_PG
+        status4: STATUS.PAYMENT_PENDING_PG,
       })
       .andWhere('appointment."doctorId" = :doctorId', { doctorId })
       .getMany();
@@ -900,9 +903,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1126,7 +1129,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
@@ -1169,9 +1172,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1229,9 +1232,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1351,7 +1354,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status2: STATUS.PAYMENT_PENDING,
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
         status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG
+        status5: STATUS.PAYMENT_PENDING_PG,
       })
       .getMany();
   }
@@ -1644,14 +1647,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         apptDate: new Date(),
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
-      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.COMPLETED,
-        status5: STATUS.PAYMENT_FAILED,
-        status6: STATUS.PAYMENT_PENDING_PG
-      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.COMPLETED,
+          status5: STATUS.PAYMENT_FAILED,
+          status6: STATUS.PAYMENT_PENDING_PG,
+        }
+      )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getCount();
   }
