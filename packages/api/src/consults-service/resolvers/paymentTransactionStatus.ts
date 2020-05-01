@@ -72,7 +72,8 @@ const paymentTransactionStatus: Resolver<
 		throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 	}
 	const returnResponse: any = {
-		displayId: response.displayId
+		displayId: response.displayId,
+		paymentStatus: response.status
 	}
 
 	if (response.appointmentPayments && response.appointmentPayments[0]) {
@@ -81,8 +82,7 @@ const paymentTransactionStatus: Resolver<
 			returnResponse.paymentRefId = response.appointmentPayments[0].paymentRefId,
 			returnResponse.responseMessage = response.appointmentPayments[0].responseMessage,
 			returnResponse.responseCode = response.appointmentPayments[0].responseCode,
-			returnResponse.amountPaid = response.appointmentPayments[0].amountPaid,
-			returnResponse.paymentStatus = response.appointmentPayments[0].paymentStatus
+			returnResponse.amountPaid = response.appointmentPayments[0].amountPaid
 		switch (response.appointmentPayments[0].paymentStatus) {
 			case 'TXN_SUCCESS':
 				returnResponse.paymentStatus = 'PAYMENT_SUCCESS';
@@ -93,13 +93,8 @@ const paymentTransactionStatus: Resolver<
 			case 'TXN_FAILURE':
 				returnResponse.paymentStatus = 'PAYMENT_FAILED';
 				break;
-			default:
-				returnResponse.paymentStatus = response.status;
 		}
 	}
-
-
-
 
 	return { appointment: returnResponse };
 };

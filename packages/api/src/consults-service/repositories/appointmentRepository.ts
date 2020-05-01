@@ -274,8 +274,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  findAppointmentPayment(appointmentId: string) {
-    return AppointmentPayments.findOne({ where: { appointmentId } }).catch((getErrors) => {
+  findAppointmentPayment(id: string) {
+    return AppointmentPayments.findOne({ where: { "appointment": id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
         getErrors,
       });
