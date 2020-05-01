@@ -129,7 +129,7 @@ return colors.SUCCESS;
   };
 
   const renderStatusCard = () => {
-    const refNumberText = '     Ref.No : '+String(refNo)
+    const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--')
     const orderIdText = 'Order ID: '+String(displayId)
     const priceText = 'Rs. '+String(price)
     return (
@@ -216,12 +216,13 @@ return colors.SUCCESS;
 
   const renderNote = () => {
     let noteText = ''
-    if (status == failure) {
+    if (status === failure) {
       noteText = "Note : In case your account has been debited, you should get the refund in 1-7 working days."
-    } else if (status == pending) {
+    } else if (status === pending) {
       noteText ="Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment."
+ 
     }
-    return textComponent(noteText,undefined,theme.colors.SHADE_GREY,true)
+    return textComponent(noteText, undefined, theme.colors.SHADE_GREY, true)
   };
 
   const getButtonText = () => {
