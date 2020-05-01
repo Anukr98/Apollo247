@@ -124,26 +124,33 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     });
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
-      name: g(doctor, 'fullName')!,
-      specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
-      category: g(doctor, 'doctorType')!, // send doctorType
-      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
-      'clinic name': g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'clinic address':
-        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
+      name: g(doctor, 'fullName'),
+      specialisation: g(doctor, 'specialty', 'name'),
+      category: g(doctor, 'doctorType'), // send doctorType
+      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': id,
+      'Speciality ID': g(doctor, 'specialty', 'id'),
+      'Consult Date Time': localTimeSlot,
+      'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
+      'Hospital Name':
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : '',
+      'Hospital City':
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : '',
+      'Doctor ID': g(doctor, 'id')!,
+      'Doctor Name': g(doctor, 'fullName')!,
+      'Net Amount': price,
     };
     return eventAttributes;
   };
