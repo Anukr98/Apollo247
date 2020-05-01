@@ -7,7 +7,6 @@ export const gtmTracking = (gtmObj: any) => {
     }
 }
 
-//_ur('{{ mobile number }}',{{ Pre Apollo Customer : Boolean }},{{ Number of profiles fetched }})
 export const _urTracking = (params: any) => {
     const { mobileNumber,
         isApolloCustomer,

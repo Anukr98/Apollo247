@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
