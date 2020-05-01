@@ -276,7 +276,7 @@ export const DoctorsLanding: React.FC = (props) => {
       setShowSearchAndPastSearch(false);
 
       /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      gtmTracking({ category: 'Consultations', action: specialitySelected, label: 'Listing Page Viewed' })
       /**Gtm code start end */
     }
   }, [specialitySelected]);
