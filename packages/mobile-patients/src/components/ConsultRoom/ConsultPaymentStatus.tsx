@@ -21,12 +21,7 @@ import {
   makeAppointmentPayment,
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import {
-  BOOK_APPOINTMENT,
-  BOOK_FOLLOWUP_APPOINTMENT,
-  MAKE_APPOINTMENT_PAYMENT,
-  VALIDATE_CONSULT_COUPON,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import {GET_TRANSACTION_STATUS} from '@aph/mobile-patients/src/graphql/profiles';
 import {getTxnStatus} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {CommonBugFender} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {useUIElements} from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -43,6 +38,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [refNo, setrefNo] = useState<string>('123456');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
+  const [displayId, setdisplayId] = useState<String>('');
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
@@ -56,12 +52,21 @@ const renderErrorPopup = (desc : string) => showAphAlert !({
 });
 
 useEffect(() => {
-  getTxnStatus(orderId).then((res) => {
-    console.log(res.data);
-    setrefNo(res.data.TXNID);
-    setStatus(res.data.STATUS);
-    setLoading(false);
-  }).catch((error) => {
+  client
+    .query({
+      query: GET_TRANSACTION_STATUS,
+      variables: {
+        appointmentId: orderId,
+      },
+      fetchPolicy: 'no-cache',
+    })
+    .then((res) => {
+      console.log(res.data.paymentTransactionStatus.appointment);
+      setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
+      setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
+      setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
+      setLoading(false);
+    }).catch((error) => {
     CommonBugFender('fetchingTxnStutus', error);
     console.log(error);
     props
@@ -126,7 +131,7 @@ return colors.SUCCESS;
 
   const renderStatusCard = () => {
     const refNumberText = '     Ref.No : '+String(refNo)
-    const orderIdText = 'Order ID: '+String(orderId)
+    const orderIdText = 'Order ID: '+String(displayId)
     const priceText = 'Rs. '+String(price)
     return (
       <View style={[styles.statusCardStyle,{ backgroundColor: statusCardColour()},]}>
