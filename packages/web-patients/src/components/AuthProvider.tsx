@@ -23,13 +23,7 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-<<<<<<< HEAD
 import { gtmTracking, _urTracking } from '../gtmTracking';
-=======
-import { gtmTracking } from '../gtmTracking';
->>>>>>> 4554af1985fc216c069832ae564f9658b8702cd5
-// import { clientRoutes } from 'helpers/clientRoutes';
-// import moment from 'moment';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 

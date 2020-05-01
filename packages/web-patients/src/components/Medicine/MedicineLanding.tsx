@@ -348,7 +348,6 @@ export const MedicineLanding: React.FC = (props) => {
   // const { city } = useLocationDetails()
 
   if (params.orderStatus === 'success') {
-    debugger
     console.log(cartTotal)
     gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: cartTotal })
     // _obTracking(
