@@ -405,7 +405,7 @@ export async function sendNotification(
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' +
+      ? ' Click here ' +
         process.env.SMS_LINK_BOOK_APOINTMENT +
         ' ' +
         ApiConstants.PATIENT_CANCEL_APPT_BODY_END
@@ -478,7 +478,7 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
       : '';
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
