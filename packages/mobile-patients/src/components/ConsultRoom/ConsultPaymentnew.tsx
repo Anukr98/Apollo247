@@ -79,20 +79,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         bounces={false}
         source={{
           uri: url,
-          // method: 'POST',
-          // body:
-          //   'orderID=' +
-          //   [appointmentId] +
-          //   '&patientID=' +
-          //   [currentPatiendId] +
-          //   '&amount=' +
-          //   [price] +
-          //   '&paymentTypeID=' +
-          //   [paymentTypeID] +
-          //   '&paymentModeOnly=YES' +
-          //   '&mobileNumber=' +
-          //   [mobileNumber] +
-          //   ([bankCode] ? '&bankCode=' + [bankCode] : ''),
+        
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data)}
       />
@@ -105,7 +92,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          BackHandler.removeEventListener('hardwareBackPress', handleBack);
           props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
             orderId: appointmentId,
             price: price,

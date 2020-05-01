@@ -244,10 +244,10 @@
       }
     ]
   },
-  "Payment" : {
+  "Payment": {
     "success": "PAYMENT_SUCCESS",
-    "failure":"PAYMENT_FAILED",
-    "pending": "PAYMENT_PENDING" 
+    "failure": "PAYMENT_FAILED",
+    "pending": "PAYMENT_PENDING_PG"
   },
   "muiltdosages": [
     {
