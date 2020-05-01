@@ -154,6 +154,8 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Payment Failed';
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       return 'Ready At Store';
+    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
+      return 'Payment Pending';
     case 'TO_BE_DELIVERED' as any:
       return 'Expected Order Delivery';
   }
