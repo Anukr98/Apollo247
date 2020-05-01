@@ -591,7 +591,7 @@ export const MedicineCart: React.FC = (props) => {
             deliveryMode === 'HOME'
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+          bookingSource: BOOKINGSOURCE.WEB,
           estimatedAmount: parseFloat(totalAmount),
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
@@ -737,7 +737,7 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
-              bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+              bookingSource: BOOKING_SOURCE.WEB,
               ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
@@ -763,7 +763,7 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
-          bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+          bookingSource: BOOKING_SOURCE.WEB,
           ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
