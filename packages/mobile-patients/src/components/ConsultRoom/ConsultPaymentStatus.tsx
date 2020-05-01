@@ -5,28 +5,31 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  ActivityIndicator,
   StatusBar,
   Dimensions,
 } from 'react-native';
+import {colors} from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { getTxnStatus } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { GET_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import {Header} from '@aph/mobile-patients/src/components/ui/Header';
 import { useApolloClient } from 'react-apollo-hooks';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
+import {GET_TRANSACTION_STATUS} from '@aph/mobile-patients/src/graphql/profiles';
+import {CommonBugFender} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {useUIElements} from '@aph/mobile-patients/src/components/UIElementsProvider';
+import {Spinner} from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
+export interface ConsultPaymentStatusProps extends NavigationScreenProps { }
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,14 +41,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
-  const { showAphAlert } = useUIElements();
   const client = useApolloClient();
+  const { success, failure, pending } = Payment
+  const { showAphAlert } = useUIElements();
 
-  const renderErrorPopup = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `${desc || ''}`.trim(),
-    });
+const renderErrorPopup = (desc : string) => showAphAlert !({
+  title: 'Uh oh.. :(',
+  description: `${desc || ''}`.trim()
+});
 
   useEffect(() => {
     // getTxnStatus(orderId)
@@ -83,57 +86,56 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const statusIcon = () => {
-    if (status == string.Payment.success) {
-      return <Success style={{ height: 45, width: 45 }} />;
-    } else if (status == string.Payment.failure) {
-      return <Failure style={{ height: 45, width: 45 }} />;
+    if (status === success) {
+      return <Success style={styles.statusIconStyles} />;
+    } else if (status === failure) {
+      return <Failure style={styles.statusIconStyles} />;
     } else {
-      return <Pending style={{ height: 45, width: 45 }} />;
+      return <Pending style={styles.statusIconStyles} />;
     }
   };
 
+  const textComponent = (message: string, numOfLines:number | undefined,color:string,needStyle:boolean)=>{
+    return (
+      < Text style={{ ...theme.viewStyles.text('SB', 13, color, 1, 20), marginHorizontal: needStyle? 0.1 * windowWidth:undefined }}numberOfLines = {
+  numOfLines
+} >
+      {message}
+        </Text>
+        )
+  }
+
   const statusCardColour = () => {
-    if (status == string.Payment.success) {
-      return '#edf7ed';
-    } else if (status == string.Payment.failure) {
-      return '#edc6c2';
+    if (status == success) {
+return colors.SUCCESS;
+    } else if (status == failure) {
+      return colors.FAILURE;
     } else {
-      return '#eed9c6';
+      return colors.PENDING;
     }
   };
 
   const statusText = () => {
-    if (status == string.Payment.success) {
-      return (
-        <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.SUCCESS_TEXT, 1, 20) }}>
-          PAYMENT SUCCESSFUL
-        </Text>
-      );
-    } else if (status == string.Payment.failure) {
-      return (
-        <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.FAILURE_TEXT, 1, 20) }}>
-          PAYMENT FAILED
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.PENDING_TEXT, 1, 20) }}>
-          PAYMENT PENDING
-        </Text>
-      );
-    }
+    let message = 'PAYMENT PENDING'
+    let textColor = theme.colors.PENDING_TEXT
+    if (status === success) {
+      message =' PAYMENT SUCCESSFUL'
+      textColor = theme.colors.SUCCESS_TEXT
+    } else if (status === failure) {
+      message = ' PAYMENT FAILED'
+      textColor = theme.colors.FAILURE_TEXT
+    } 
+       return textComponent(message, undefined, textColor,false)
   };
 
   const renderStatusCard = () => {
+    const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--')
+    const orderIdText = 'Order ID: '+String(displayId)
+    const priceText = 'Rs. '+String(price)
     return (
-      <View
-        style={{
-          ...styles.statusCard,
-          backgroundColor: statusCardColour(),
-        }}
-      >
+      <View style={[styles.statusCardStyle,{ backgroundColor: statusCardColour()},]}>
         <View
-          style={{ flex: 0.24, marginVertical: 18, justifyContent: 'center', alignItems: 'center' }}
+          style={styles.statusCardSubContainerStyle}
         >
           {statusIcon()}
         </View>
@@ -144,7 +146,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             justifyContent: 'flex-start',
           }}
         >
-          {statusText()}
+           {statusText()}
         </View>
         <View
           style={{
@@ -153,7 +155,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             justifyContent: 'flex-start',
           }}
         >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, '#666666', 1, 20) }}>Rs. {price}</Text>
+            {textComponent(priceText, undefined, theme.colors.SHADE_GREY,false)}
         </View>
         <View
           style={{
@@ -162,14 +164,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             justifyContent: 'flex-start',
           }}
         >
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Ref. Number : {refNo != '' && refNo != null ? refNo : '--'}
-          </Text>
+            {textComponent(refNumberText,undefined,theme.colors.SHADE_GREY,false)}
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Order ID : {displayId}
-          </Text>
+          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY,false)}
         </View>
       </View>
     );
@@ -177,52 +175,38 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const appointmentHeader = () => {
     return (
-      <View style={styles.appointmentHeader}>
-        <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-          BOOKING DETAILS
-        </Text>
+      <View style={styles.appointmentHeaderStyle} >
+           {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE,false)} 
       </View>
     );
   };
 
   const appointmentCard = () => {
     return (
-      <View style={styles.appointmentCard}>
+      <View style={styles.appointmentCardStyle}>
         <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
-            <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-              Date & Time of Appointment
-            </Text>
+              {textComponent('Date & Time of Appointment', undefined, theme.colors.ASTRONAUT_BLUE,false)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-            <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-              {appointmentDateTime.toLocaleString()}
-            </Text>
+              {textComponent(appointmentDateTime.toLocaleString(), undefined, theme.colors.SHADE_CYAN_BLUE,false) }
           </View>
         </View>
         <View style={{ flex: 0.5, flexDirection: 'row' }}>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-                Doctor Name
-              </Text>
+            {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE,false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-                {doctorName}
-              </Text>
+              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
             </View>
           </View>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-                Mode of Consult
-              </Text>
+              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE,false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-                {appointmentType}
-              </Text>
+                {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
             </View>
           </View>
         </View>
@@ -231,39 +215,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderNote = () => {
-    if (status == string.Payment.failure) {
-      return (
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, '#666666', 1, 20),
-            marginHorizontal: 0.1 * windowWidth,
-          }}
-          numberOfLines={2}
-        >
-          Note : In case your account has been debited, you should get the refund in 1-7 working
-          days.
-        </Text>
-      );
-    } else if (status != string.Payment.success && status != string.Payment.failure) {
-      return (
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, '#666666', 1, 20),
-            marginHorizontal: 0.1 * windowWidth,
-          }}
-          numberOfLines={4}
-        >
-          Note : Your payment is in progress and this may take a couple of minutes to confirm your
-          booking. We’ll intimate you once your bank confirms the payment.
-        </Text>
-      );
+    let noteText = ''
+    if (status === failure) {
+      noteText = "Note : In case your account has been debited, you should get the refund in 1-7 working days."
+    } else if (status != success && status != failure) {
+      noteText ="Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment."
+ 
     }
+    return textComponent(noteText, undefined, theme.colors.SHADE_GREY, true)
   };
 
   const getButtonText = () => {
-    if (status == string.Payment.success) {
+    if (status == success) {
       return 'START CONSULTATION';
-    } else if (status == string.Payment.failure) {
+    } else if (status == failure) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -271,12 +236,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleButton = () => {
-    if (status == string.Payment.success) {
-      props.navigation.navigate('APPOINTMENTS');
-    } else if (status == string.Payment.failure) {
-      props.navigation.navigate(AppRoutes.DoctorSearch);
+    const {navigation}=props
+    const {navigate}=navigation
+    if (status == success) {
+      navigate('APPOINTMENTS');
+    } else if (status == failure) {
+      navigate(AppRoutes.DoctorSearch);
     } else {
-      props.navigation.navigate(AppRoutes.ConsultRoom);
+      navigate(AppRoutes.ConsultRoom);
     }
   };
 
@@ -295,6 +262,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+ 
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -309,8 +278,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           {renderButton()}
         </ScrollView>
       ) : (
-        <Spinner />
-      )}
+          <Spinner />
+        )}
     </View>
   );
 };
@@ -320,7 +289,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f1ec',
   },
-  statusCard: {
+  Payment: {
+    fontSize: 14,
+    color: theme.colors.ASTRONAUT_BLUE,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 1)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 0.1,
+  },
+  statusIconStyles:{
+    width:45,
+    height:45
+  },
+  statusCardStyle: {
     height: 0.27 * windowHeight,
     margin: 0.06 * windowWidth,
     flex: 1,
@@ -331,7 +312,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  appointmentCard: {
+  statusCardSubContainerStyle: { 
+    flex: 0.22, 
+    marginVertical: 18, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  appointmentCardStyle:{
     height: 0.23 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
@@ -345,6 +332,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  appointmentHeaderStyle: {
+    backgroundColor: '#eee',
+    height: 0.04 * windowHeight,
+    justifyContent: 'center',
+    marginHorizontal: 0.06 * windowWidth,
+    borderBottomWidth: 0.8,
+    borderBottomColor: '#ddd',
+  },
   buttonStyle: {
     height: 0.06 * windowHeight,
     backgroundColor: '#fcb716',
@@ -353,17 +348,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#808080',
+     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
-  },
-  appointmentHeader: {
-    height: 0.04 * windowHeight,
-    justifyContent: 'center',
-    marginHorizontal: 0.06 * windowWidth,
-    borderBottomWidth: 0.8,
-    borderBottomColor: '#ddd',
-  },
+  }
 });
