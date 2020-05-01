@@ -37,6 +37,8 @@ export default StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingHorizontal: 20,
     alignItems: 'center',
+    borderBottomWidth: 0,
+    height: 20,
   },
   doneButtonStyle: {
     justifyContent: 'center',

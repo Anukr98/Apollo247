@@ -175,9 +175,9 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
         {previousAppointments.length > 0 ? (
           <div className={classes.sectionGroup}>
             <div className={classes.sectionHeader}>
-              <span>{`Appointment History (${
-                (previousAppointments && previousAppointments.length) || 0
-              })`}</span>
+              <span>{`Appointment History (${(previousAppointments &&
+                previousAppointments.length) ||
+                0})`}</span>
             </div>
             <Grid className={classes.gridContainer} container spacing={2}>
               {previousAppointments.map((appointment) => {

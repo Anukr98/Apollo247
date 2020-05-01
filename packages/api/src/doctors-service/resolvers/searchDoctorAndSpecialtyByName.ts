@@ -133,7 +133,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         },
       },
     };
-    console.log("docsearchparams", docSearchParams);
     const responseDoctors = await client.search(docSearchParams);
     for (const doc of responseDoctors.body.hits.hits) {
       const doctor = doc._source;
@@ -149,6 +148,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         bufferTime = consultHour["consultBuffer"];
       }
       doctor['doctorHospital'] = [];
+      doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
       for (const facility of doctor.facility) {
         doctor['doctorHospital'].push({
           facility: {
@@ -230,6 +230,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         if (doctor.specialty) {
           doctor.specialty.id = doctor.specialty.specialtyId;
         }
+        doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
         for (const facility of doctor.facility) {
           doctor['doctorHospital'].push({
             facility: {

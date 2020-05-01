@@ -5,7 +5,7 @@ import { Header } from 'components/Header';
 import { Prescriptions } from 'components/Prescriptions/Prescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,7 +61,7 @@ const TabContainer: React.FC = (props) => {
 export const PrescriptionsLanding: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
-  const onePrimaryUser = hasOnePrimaryUser()
+  const onePrimaryUser = hasOnePrimaryUser();
   return (
     <div className={classes.root}>
       <Header />

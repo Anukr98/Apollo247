@@ -70,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       left: 0,
       top: -2,
+      zIndex: 2,
       '& img': {
         verticalAlign: 'middle',
       },

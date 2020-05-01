@@ -43,7 +43,7 @@ exports.noShowReminder = (req, res) => {
         ' - ' +
         response.data.data.noShowReminderNotification.apptsListCount;
       ('\n-------------------\n');
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -72,7 +72,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -101,7 +101,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -130,7 +130,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +160,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -182,23 +182,22 @@ exports.updateSdSummary = (req, res) => {
   axios
     .post(process.env.API_URL, seniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      let finalDate;
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.seniorDoctorCount;
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
+      console.log('totalSets===>', totalSets);
       let i;
       //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
+        console.log('running set', i);
         //loop for 10times
         const docOffset = i * docLimit;
         task(i);
@@ -219,10 +218,10 @@ exports.updateSdSummary = (req, res) => {
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateSdSummary Response\n' +
-                  response.data.data.updateSdSummary +
+                  JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -238,6 +237,9 @@ exports.updateSdSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
+        totalSets: totalSets,
+        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -255,15 +257,12 @@ exports.updateJdSummary = (req, res) => {
   axios
     .post(process.env.API_URL, juniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
-      let finalDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.juniorDoctorCount;
       const doctorLimit = req.query.docLimit;
@@ -292,10 +291,10 @@ exports.updateJdSummary = (req, res) => {
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateJdSummary Response\n' +
-                  response.data.data.updateJdSummary +
+                  JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -311,6 +310,9 @@ exports.updateJdSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
+        totalSets: totalSets,
+        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -329,24 +331,23 @@ exports.updateDoctorFeeSummary = (req, res) => {
   axios
     .post(process.env.API_URL, seniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
-      let finalDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.seniorDoctorCount;
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
+      console.log('totalSets', totalSets);
       let i;
       //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
+        console.log('running set==>', i);
         const docOffset = i * docLimit;
         task(i);
         function task(i) {
@@ -363,15 +364,18 @@ exports.updateDoctorFeeSummary = (req, res) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +
                   new Date().toDateString() +
-                  '-updateDoctorFeeSummary.txt';
+                  '-updateDoctorFeeSummary_test.txt';
                 let content =
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateDoctorFeeSummary Response\n' +
-                  response.data.data.updateDoctorFeeSummary +
+                  '\noffset=' +
+                  docOffset +
+                  '\n' +
+                  JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -452,7 +456,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });

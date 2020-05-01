@@ -269,8 +269,8 @@ const insertDataElastic: Resolver<
         type: 'posts',
         body: {
           query: {
-            match: {
-              mobileNumber: allDocsInfo[i].mobileNumber,
+            match_phrase: {
+              doctorId: allDocsInfo[i].id,
             },
           },
         },

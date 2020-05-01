@@ -625,7 +625,7 @@ export const MedicineCart: React.FC = (props) => {
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        orderId: orderId,
+        // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: parseFloat(totalAmount),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
@@ -792,7 +792,7 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
-      deliveryTime.length === 0) ||
+      deliveryTime.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -818,10 +818,10 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    window.gep && window.gep('Pharmacy', 'Order', 'View Cart', totalAmount)
+    window.gep && window.gep('Pharmacy', 'Order', 'View Cart', totalAmount);
     /**Gtm code  End */
-  }, [grossValue])
-  
+  }, [grossValue]);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1084,17 +1084,9 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={
-                disableSubmit ||
-                !isPaymentButtonEnable ||
-                uploadingFiles ||
-                deliveryTime.length === 0
-              }
+              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
               className={
-                disableSubmit ||
-                !isPaymentButtonEnable ||
-                mutationLoading ||
-                deliveryTime.length === 0
+                disableSubmit || !isPaymentButtonEnable || mutationLoading
                   ? classes.buttonDisable
                   : ''
               }
@@ -1166,14 +1158,31 @@ export const MedicineCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                window.gep && window.gep('Pharmacy','Order',`Payment-${paymentMethod==='COD'? 'COD': 'Prepaid'}`, totalAmount)
+                window.gep &&
+                  window.gep(
+                    'Pharmacy',
+                    'Order',
+                    `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+                    totalAmount
+                  );
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
-                  .then((res) => {  
+                  .then((res) => {
                     // GTM start
-                    window.gep && window.gep('Pharmacy', 'Order', 'Order Success', totalAmount)
-                    window._ob && window._ob(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null, city, paymentMethod === 'COD' ? 'COD' : 'Prepaid', cartItems ? cartItems.length : 0, couponCode == '' ? null : couponCode, discountAmount, grossValue)
+                    window.gep && window.gep('Pharmacy', 'Order', 'Order Success', totalAmount);
+                    window._ob &&
+                      window._ob(
+                        currentPatient && currentPatient.mobileNumber
+                          ? currentPatient.mobileNumber
+                          : null,
+                        city,
+                        paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                        cartItems ? cartItems.length : 0,
+                        couponCode == '' ? null : couponCode,
+                        discountAmount,
+                        grossValue
+                      );
                     // GTM end
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
@@ -1188,7 +1197,7 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy','Order','Failed / Cancelled')
+                    window.gep && window.gep('Pharmacy', 'Order', 'Failed / Cancelled');
                     /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');

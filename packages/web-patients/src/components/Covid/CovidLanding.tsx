@@ -15,6 +15,7 @@ import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -26,11 +27,13 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#f7f8f5',
-      paddingBottom: 20,
+      marginTop: -72,
       [theme.breakpoints.up('sm')]: {
         borderRadius: '0 0 10px 10px',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
+        paddingBottom: 20,
+        marginTop: 0,
       },
     },
     progressLoader: {
@@ -75,6 +78,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       alignItems: 'flex-start',
+      [theme.breakpoints.up('sm')]: {
+        padding: 20,
+      },
     },
     summaryContent: {
       margin: 0,
@@ -112,6 +118,10 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 16px',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       display: 'inherit',
+      [theme.breakpoints.up('sm')]: {
+        padding: '20px 0',
+        margin: '0 20px',
+      },
     },
     bottomActions: {
       textAlign: 'center',
@@ -214,25 +224,26 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidLanding: React.FC = (props) => {
+export const CovidLanding: React.FC = (props: any) => {
   const classes = useStyles();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
       heading: 'How can I stay safe?',
-      subheading: 'Articles and videos about basic protective measures against the coronavirus',
+      subheading:
+        'Articles and videos on precautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
       defaultExpanded: true,
     },
     {
       heading: 'What to do if I have symptoms?',
-      subheading: 'Know more about the symptoms and preventions through articles and videos.',
+      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
       category: 'covid-symptoms',
       defaultExpanded: false,
     },
     {
       heading: 'How are we getting ahead?',
-      subheading: 'Learn how Apollo is making a difference to help the world against coronavirus.',
+      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
       category: 'going-ahead',
       defaultExpanded: false,
     },
@@ -244,7 +255,7 @@ export const CovidLanding: React.FC = (props) => {
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
   const [fullScreenOn, setFullScreenOn] = useState<boolean>(false);
-
+  const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
@@ -255,7 +266,16 @@ export const CovidLanding: React.FC = (props) => {
     process.env.NODE_ENV !== 'production'
       ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
       : process.env.COVID_ARTICLE_LIST_URL;
-
+  useEffect(() => {
+    typeof window !== 'undefined' && window.scrollTo(0, 0);
+    if (props && props.location && props.location.search && props.location.search.length) {
+      const qParamsArr = props.location.search.split('=');
+      if (qParamsArr && qParamsArr.length) {
+        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
+        setIsWebView(isWebView);
+      }
+    }
+  });
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
@@ -303,7 +323,7 @@ export const CovidLanding: React.FC = (props) => {
       {isDesktopOnly ? <Header /> : ''}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
-          <Banner />
+          <Banner isWebView={isWebView} />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
@@ -429,6 +449,7 @@ export const CovidLanding: React.FC = (props) => {
           </Modal>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };

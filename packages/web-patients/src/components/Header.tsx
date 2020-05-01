@@ -179,6 +179,13 @@ export const Header: React.FC = (props) => {
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
 
+  const checkIfDisabled = () => {
+    const x = locationRoutesBlackList.some((v) => {
+      return currentPath.indexOf(v) > -1;
+    });
+    return !x;
+  };
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
@@ -188,7 +195,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {!locationRoutesBlackList.includes(currentPath) && <LocationSearch />}
+          {checkIfDisabled() && currentPath !== '/' && <LocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div
@@ -226,7 +233,7 @@ export const Header: React.FC = (props) => {
                       </div> */}
                       <div
                         id="loginPopup"
-                        className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                        className={`${classes.userCircle} ${classes.userActive}`}
                         onClick={() =>
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
                         }

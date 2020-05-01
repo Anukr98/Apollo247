@@ -14,8 +14,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
-
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +117,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
+      zIndex: 2,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -390,15 +390,19 @@ export const MedicineDetails: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
         /**Gtm code start  */
-        data && data.productdp && data.productdp.length && window.gep &&  window.gep('Pharmacy', 'Product Views', data.productdp[0].name)
+        data &&
+          data.productdp &&
+          data.productdp.length &&
+          window.gep &&
+          window.gep('Pharmacy', 'Product Views', data.productdp[0].name);
         /**Gtm code End  */
       })
       .catch((e) => {
         alert(e);
       });
   };
-  
-  const onePrimaryUser = hasOnePrimaryUser()
+
+  const onePrimaryUser = hasOnePrimaryUser();
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);

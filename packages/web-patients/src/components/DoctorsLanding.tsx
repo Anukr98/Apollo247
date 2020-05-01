@@ -28,7 +28,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../helpers/onePrimaryUser'
+import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,6 +174,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       [theme.breakpoints.up('sm')]: {
         display: 'none',
+      },
+    },
+    hideMascot: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
       },
     },
   };
@@ -372,7 +377,7 @@ export const DoctorsLanding: React.FC = (props) => {
     data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
-  const onePrimaryUser = hasOnePrimaryUser()
+  const onePrimaryUser = hasOnePrimaryUser();
   // console.log('speciality id selected', specialtyId);
 
   if (
@@ -383,7 +388,7 @@ export const DoctorsLanding: React.FC = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
-  
+
   return (
     <div className={classes.root}>
       <LocationContext.Consumer>
@@ -476,7 +481,9 @@ export const DoctorsLanding: React.FC = (props) => {
                           }
                         >
                           <div className={classes.customScroll}>
-                            {filterOptions.searchKeyword.length <= 0 &&
+                            {currentPatient &&
+                            currentPatient.id &&
+                            filterOptions.searchKeyword.length <= 0 &&
                             specialitySelected.length === 0 &&
                             showSearchAndPastSearch ? (
                               <PastSearches
@@ -753,7 +760,11 @@ export const DoctorsLanding: React.FC = (props) => {
                 }}
               />
             </Popover>
-            {!onePrimaryUser && <ManageProfile />}
+            {!onePrimaryUser && (
+              <div className={classes.hideMascot}>
+                <ManageProfile />
+              </div>
+            )}
           </>
         )}
       </LocationContext.Consumer>
