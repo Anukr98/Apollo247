@@ -26,6 +26,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -392,7 +393,7 @@ export const MedicineLanding: React.FC = (props) => {
       .then((res: any) => {
         setData(res.data);
         /**Gtm code start  */
-        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' })
         /**Gtm code End  */
         setLoading(false);
       })

@@ -17,6 +17,7 @@ import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
+import { gtmTracking } from '../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -288,7 +289,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 e.preventDefault();
 
                 /**Gtm code start start */
-                window.gep && window.gep('Profile', 'Signup / Login', 'OTP Entered');
+                gtmTracking({category: 'Profile', action: 'Signup / Login', label: 'OTP Entered'})
                 /**Gtm code start end */
 
                 verifyOtp(otp, customLoginId).then((authToken) => {
@@ -335,7 +336,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           /**Gtm code start start */
-          window.gep && window.gep('Profile', 'Signup / Login', 'Mobile Entered');
+          gtmTracking({category: 'Profile', action: 'Signup / Login', label: 'Mobile Entered'})
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

@@ -44,6 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -818,7 +819,7 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    window.gep && window.gep('Pharmacy', 'Order', 'View Cart', totalAmount);
+    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount })
     /**Gtm code  End */
   }, [grossValue]);
 
@@ -1158,19 +1159,13 @@ export const MedicineCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                window.gep &&
-                  window.gep(
-                    'Pharmacy',
-                    'Order',
-                    `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-                    totalAmount
-                  );
+                gtmTracking({ category: 'Pharmacy', action: 'Order', label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`, value: totalAmount })
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
                     // GTM start
-                    window.gep && window.gep('Pharmacy', 'Order', 'Order Success', totalAmount);
+                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: totalAmount })
                     window._ob &&
                       window._ob(
                         currentPatient && currentPatient.mobileNumber
@@ -1197,7 +1192,7 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy', 'Order', 'Failed / Cancelled');
+                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Failed / Cancelled' })
                     /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');
