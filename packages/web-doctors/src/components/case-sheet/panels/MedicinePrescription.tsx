@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   Theme,
   makeStyles,
@@ -678,6 +678,8 @@ let cancel: any;
 type Params = { id: string; patientId: string; tabValue: string };
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles({});
+  const customInputRef = useRef(null);
+  const defaultInputRef = useRef(null);
   const params = useParams<Params>();
 
   const {
@@ -1081,6 +1083,17 @@ export const MedicinePrescription: React.FC = () => {
   const [frequency, setFrequency] = useState(dosageFrequency[0].id);
   const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
+
+  useEffect(() => {
+    if (isCustomform) {
+      const node = (customInputRef as any).current;
+      if (node) node.focus();
+    } else {
+      const node = (defaultInputRef as any).current;
+      if (node) node.focus();
+    }
+  }, [isCustomform]);
+
   function getSuggestions(value: string) {
     return suggestions;
   }
@@ -2167,6 +2180,7 @@ export const MedicinePrescription: React.FC = () => {
                               <Grid item lg={2} md={2} xs={2}>
                                 <AphTextField
                                   autoFocus
+                                  inputRef={customInputRef}
                                   inputProps={{ maxLength: 6 }}
                                   value={customDosageMorning}
                                   onChange={(event: any) => {
@@ -2307,6 +2321,7 @@ export const MedicinePrescription: React.FC = () => {
                               <Grid item lg={3} md={3} xs={3}>
                                 <AphTextField
                                   autoFocus
+                                  inputRef={defaultInputRef}
                                   inputProps={{ maxLength: 6 }}
                                   value={tabletsCount}
                                   onChange={(event: any) => {
@@ -2699,6 +2714,7 @@ export const MedicinePrescription: React.FC = () => {
                                 <Grid item lg={2} md={2} xs={2}>
                                   <AphTextField
                                     autoFocus
+                                    inputRef={customInputRef}
                                     inputProps={{ maxLength: 6 }}
                                     value={customDosageMorning}
                                     onChange={(event: any) => {
@@ -2839,6 +2855,7 @@ export const MedicinePrescription: React.FC = () => {
                                 <Grid item lg={3} md={3} xs={3}>
                                   <AphTextField
                                     autoFocus
+                                    inputRef={defaultInputRef}
                                     inputProps={{ maxLength: 6 }}
                                     value={tabletsCount}
                                     onChange={(event: any) => {

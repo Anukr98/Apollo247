@@ -19,6 +19,7 @@ import {
   AphDialogTitle,
   AphSelect,
   AphRadio,
+  AphTooltip,
 } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
@@ -940,6 +941,16 @@ export const FavouriteMedicines: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
 
+  useEffect(() => {
+    if (isCustomform) {
+      const node = (customInputRef as any).current;
+      if (node) node.focus();
+    } else {
+      const node = (defaultInputRef as any).current;
+      if (node) node.focus();
+    }
+  }, [isCustomform]);
+
   const getMedicineDetails = (suggestion: OptionType) => {
     const CancelToken = axios.CancelToken;
     setLoading(true);
@@ -1013,29 +1024,33 @@ export const FavouriteMedicines: React.FC = () => {
     return suggestions;
   }
 
-  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
     const matches = match(suggestion.label, query);
     const parts = parse(suggestion.label, matches);
 
     return (
       medicine.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-              title={suggestion.label}
-            >
-              {part.text.length > 46
-                ? part.text.substring(0, 45).toLowerCase() + '...'
-                : part.text.toLowerCase()}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.label}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text.length > 46
+                  ? part.text.substring(0, 45).toLowerCase() + '...'
+                  : part.text.toLowerCase()}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }
@@ -2120,6 +2135,7 @@ export const FavouriteMedicines: React.FC = () => {
                                     <AphTextField
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
+                                      inputRef={customInputRef}
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
@@ -2260,6 +2276,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={tabletsCount}
+                                      inputRef={defaultInputRef}
                                       onChange={(event: any) => {
                                         setTabletsCount(event.target.value);
                                       }}
