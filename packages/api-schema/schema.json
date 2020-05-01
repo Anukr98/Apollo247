@@ -12733,6 +12733,18 @@
             "deprecationReason": null
           },
           {
+            "name": "PAYMENT_FAILED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PAYMENT_PENDING_PG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "NO_SHOW",
             "description": null,
             "isDeprecated": false,
