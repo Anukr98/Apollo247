@@ -660,10 +660,10 @@ export const MedicinePrescription: React.FC = () => {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
   } = useContext(CaseSheetContextJrd);
-  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('0');
-  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('0');
-  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('0');
-  const [customDosageNight, setCustomDosageNight] = React.useState<string>('0');
+  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('');
+  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('');
+  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('');
+  const [customDosageNight, setCustomDosageNight] = React.useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
@@ -1020,10 +1020,10 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         if (
           result &&
           result.data &&
@@ -1204,10 +1204,10 @@ export const MedicinePrescription: React.FC = () => {
         setTabletsCount('');
       } else {
         setTabletsCount(selectedMedicinesArr[idx].medicineDosage!);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         setIsCustomForm(false);
       }
       setFrequency(

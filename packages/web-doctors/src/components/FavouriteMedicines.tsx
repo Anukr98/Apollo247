@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Theme,
   makeStyles,
@@ -601,16 +601,18 @@ export interface MedicineProductsResponse {
 let cancel: any;
 export const FavouriteMedicines: React.FC = () => {
   const classes = useStyles();
+  const customInputRef = useRef(null);
+  const defaultInputRef = useRef(null);
   const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<
     GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[] | null
   >([]);
   const [dosageList, setDosageList] = useState<any>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('0');
-  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('0');
-  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('0');
-  const [customDosageNight, setCustomDosageNight] = React.useState<string>('0');
+  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('');
+  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('');
+  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('');
+  const [customDosageNight, setCustomDosageNight] = React.useState<string>('');
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
@@ -958,10 +960,10 @@ export const FavouriteMedicines: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         if (
           result &&
           result.data &&
@@ -1231,10 +1233,10 @@ export const FavouriteMedicines: React.FC = () => {
         setTabletsCount('');
       } else {
         setTabletsCount(selectedMedicinesArr[idx].medicineDosage!);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         setIsCustomForm(false);
       }
       setFrequency(
@@ -2142,7 +2144,6 @@ export const FavouriteMedicines: React.FC = () => {
 
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageNoon}
                                       onChange={(event: any) => {
@@ -2168,7 +2169,6 @@ export const FavouriteMedicines: React.FC = () => {
 
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageEvening}
                                       onChange={(event: any) => {
@@ -2193,7 +2193,6 @@ export const FavouriteMedicines: React.FC = () => {
                                   </Grid>
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageNight}
                                       onChange={(event: any) => {
