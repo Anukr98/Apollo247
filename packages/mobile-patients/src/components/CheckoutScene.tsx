@@ -349,7 +349,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        orderId: orderId,
+        // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: grandTotal,
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,

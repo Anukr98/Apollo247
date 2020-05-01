@@ -72,7 +72,9 @@ import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
 import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan'
-
+import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
+import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
+import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
@@ -143,6 +145,9 @@ export enum AppRoutes {
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
   CovidScan = 'CovidScan',
+  ConsultCheckout = 'ConsultCheckout',
+  ConsultPaymentnew = 'ConsultPaymentnew',
+  ConsultPaymentStatus = 'ConsultPaymentStatus',
   // ConsultDetailsById = 'ConsultDetailsById',
   NotificationScreen = 'NotificationScreen',
 }
@@ -369,12 +374,22 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.CovidScan]: {
     screen: CovidScan,
   },
+  [AppRoutes.ConsultCheckout]: {
+    screen: ConsultCheckout,
+  },
+  [AppRoutes.ConsultPaymentnew]: {
+    screen: ConsultPaymentnew,
+  },
+  [AppRoutes.ConsultPaymentStatus]: {
+    screen: ConsultPaymentStatus,
+  },
   // [AppRoutes.ConsultDetailsById]: {
   //   screen: ConsultDetailsById,
   // },
   [AppRoutes.NotificationScreen]: {
     screen: NotificationScreen,
   },
+  
 };
 
 const logTabEvents = (routing: any) => {

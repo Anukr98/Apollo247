@@ -170,6 +170,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Ready At Store';
       break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
+      statusString = 'Payment Pending';
+      break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;

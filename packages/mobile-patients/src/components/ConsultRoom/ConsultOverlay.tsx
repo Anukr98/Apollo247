@@ -362,61 +362,69 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     //     ? VirtualConsultationFee
     //     : props.doctor!.onlineConsultationFees;
 
-    client
-      .mutate<bookAppointment>({
-        mutation: BOOK_APPOINTMENT,
-        variables: {
-          bookAppointment: appointmentInput,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-        if (price == 0) {
+    if (price == 0) {
+      client
+        .mutate<bookAppointment>({
+          mutation: BOOK_APPOINTMENT,
+          variables: {
+            bookAppointment: appointmentInput,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
+
           // If amount is zero don't redirect to PG
           makePayment(g(apptmt, 'id')!, Number(price), g(apptmt, 'appointmentDateTime'));
-        } else {
+
+          // props.navigation.navigate(AppRoutes.ConsultPayment, {
+          //   doctorName: `${g(props.doctor, 'fullName')}`,
+          //   appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+          //   price: coupon ? doctorDiscountedFees : Number(doctorFees),
+          //   webEngageEventAttributes: getConsultationBookedEventAttributes(
+          //     g(apptmt, 'appointmentDateTime'),
+          //     g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+          //   ),
+          //   //   tabs[0].title === selectedTab
+          //   //     ? price //1 //props.doctor!.onlineConsultationFees
+          //   //     : props.doctor!.physicalConsultationFees,
+          // });
+        })
+        .catch((error) => {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
           setshowSpinner(false);
-          props.navigation.navigate(AppRoutes.ConsultPayment, {
-            doctorName: `${g(props.doctor, 'fullName')}`,
-            appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
-            price: coupon ? doctorDiscountedFees : Number(doctorFees),
-            webEngageEventAttributes: getConsultationBookedEventAttributes(
-              g(apptmt, 'appointmentDateTime'),
-              g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-            ),
-            fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(),
-            //   tabs[0].title === selectedTab
-            //     ? price //1 //props.doctor!.onlineConsultationFees
-            //     : props.doctor!.physicalConsultationFees,
-          });
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-        setshowSpinner(false);
-        let message = '';
-        try {
-          message = error.message.split(':')[1].trim();
-        } catch (error) {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-        }
-        if (
-          message == 'APPOINTMENT_EXIST_ERROR' ||
-          message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
-          message === 'DOCTOR_SLOT_BLOCKED'
-        ) {
-          renderErrorPopup(
-            `Oops ! The selected slot is unavailable. Please choose a different one`
-          );
-        } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-          renderErrorPopup(
-            `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-          );
-        } else {
-          renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-        }
+          let message = '';
+          try {
+            message = error.message.split(':')[1].trim();
+          } catch (error) {
+            CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+          }
+          if (
+            message == 'APPOINTMENT_EXIST_ERROR' ||
+            message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
+            message === 'DOCTOR_SLOT_BLOCKED'
+          ) {
+            renderErrorPopup(
+              `Oops ! The selected slot is unavailable. Please choose a different one`
+            );
+          } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+            renderErrorPopup(
+              `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+            );
+          } else {
+            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+          }
+        });
+    } else {
+      props.navigation.navigate(AppRoutes.ConsultCheckout, {
+        doctor: props.doctor,
+        tabs: tabs,
+        selectedTab: selectedTab,
+        doctorName: `${g(props.doctor, 'fullName')}`,
+        price: coupon ? doctorDiscountedFees : Number(doctorFees),
+        appointmentInput: appointmentInput,
       });
+    }
   };
 
   const postWebEngagePayButtonClickedEvent = () => {
