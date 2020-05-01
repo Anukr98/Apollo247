@@ -234,6 +234,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                   if (data && data.data && data.data.data && data.data.data) {
                                     const details = data.data.data;
                                     if (details && details.length > 0) {
+                                      const price = hotSeller.diagnostics
+                                        ? hotSeller.diagnostics.rate
+                                        : 0;
                                       addCartItem &&
                                         addCartItem({
                                           itemId: hotSeller.diagnostics
@@ -245,14 +248,21 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                               ? details && details.length
                                               : 0,
                                           name: hotSeller.packageName || '',
-                                          price: hotSeller.diagnostics
-                                            ? hotSeller.diagnostics.rate
-                                            : 0,
+                                          price,
                                           thumbnail: hotSeller.packageImage,
                                           collectionMethod: hotSeller.diagnostics
                                             ? hotSeller.diagnostics.collectionType
                                             : null,
                                         });
+                                      /**Gtm code start  */
+                                      window.gep &&
+                                        window.gep(
+                                          'Pharmacy',
+                                          'Add to Cart',
+                                          hotSeller.packageName,
+                                          price
+                                        );
+                                      /**Gtm code End  */
                                     }
                                     setLoading(false);
                                   }
@@ -267,6 +277,15 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         ) : (
                           <AphButton
                             onClick={() => {
+                              /**Gtm code start  */
+                              window.gep &&
+                                window.gep(
+                                  'Pharmacy',
+                                  'Remove From Cart',
+                                  hotSeller.packageName,
+                                  hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0
+                                );
+                              /**Gtm code End  */
                               removeCartItem &&
                                 removeCartItem(
                                   hotSeller.diagnostics ? hotSeller.diagnostics.id : '',

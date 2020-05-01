@@ -484,6 +484,19 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       });
   };
   const disableCoupon = disableSubmit || mutationLoading || isDialogOpen || !timeSelected;
+  const getSpeciality = () => {
+    let speciality = '';
+    if (
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty &&
+      doctorDetails.getDoctorDetailsById.specialty.name
+    ) {
+      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    }
+    return speciality;
+  };
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -567,13 +580,39 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </Grid>
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={setCouponCode}
+            setCouponCode={() => {
+              /* Gtm code start */
+              const speciality = getSpeciality();
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
+              window.gep &&
+                window.gep(
+                  'Consultations',
+                  speciality,
+                  `Coupon Applied - ${couponCode}`,
+                  couponValue
+                );
+              /* Gtm code end */
+              setCouponCode(couponCode);
+            }}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}
             revisedAmount={revisedAmount}
             setRevisedAmount={setRevisedAmount}
             appointmentDateTime={appointmentDateTime}
             appointmentType={AppointmentType.PHYSICAL}
+            removeCouponCode={() => {
+              /**Gtm code start */
+              const speciality = getSpeciality();
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
+              window.gep &&
+                window.gep(
+                  'Consultations',
+                  speciality,
+                  'Coupon Removed - ${couponCode}',
+                  couponValue
+                );
+              /**Gtm code  end  */
+            }}
           />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to

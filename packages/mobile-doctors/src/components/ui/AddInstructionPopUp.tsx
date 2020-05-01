@@ -56,7 +56,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={strings.smartPrescr.add_advice}
+          title={props.data ? strings.smartPrescr.update_advice : strings.smartPrescr.add_advice}
           onPress={() => {
             if (value) {
               props.onDone && props.onDone(value);

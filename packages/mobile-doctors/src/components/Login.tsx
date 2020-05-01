@@ -15,21 +15,13 @@ import {
 } from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  AsyncStorage,
-  Keyboard,
-  Platform,
-  SafeAreaView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Keyboard, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import HyperLink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = LoginStyles;
 

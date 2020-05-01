@@ -27,6 +27,8 @@ import { LocationContext } from './LocationProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,6 +176,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    hideMascot: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
+      },
+    },
   };
 });
 
@@ -225,6 +232,12 @@ export const DoctorsLanding: React.FC = (props) => {
   let showError = false;
 
   useEffect(() => {
+    /**Gtm code start start */
+    window.gep && window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
+    /**Gtm code start end */
+  }, []);
+
+  useEffect(() => {
     if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
       setLoading(true);
       apolloClient
@@ -260,6 +273,10 @@ export const DoctorsLanding: React.FC = (props) => {
         prakticeSpecialties: '',
       });
       setShowSearchAndPastSearch(false);
+
+      /**Gtm code start start */
+      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      /**Gtm code start end */
     }
   }, [specialitySelected]);
 
@@ -360,7 +377,7 @@ export const DoctorsLanding: React.FC = (props) => {
     data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
-
+  const onePrimaryUser = hasOnePrimaryUser();
   // console.log('speciality id selected', specialtyId);
 
   if (
@@ -464,7 +481,9 @@ export const DoctorsLanding: React.FC = (props) => {
                           }
                         >
                           <div className={classes.customScroll}>
-                            {filterOptions.searchKeyword.length <= 0 &&
+                            {currentPatient &&
+                            currentPatient.id &&
+                            filterOptions.searchKeyword.length <= 0 &&
                             specialitySelected.length === 0 &&
                             showSearchAndPastSearch ? (
                               <PastSearches
@@ -741,6 +760,11 @@ export const DoctorsLanding: React.FC = (props) => {
                 }}
               />
             </Popover>
+            {!onePrimaryUser && (
+              <div className={classes.hideMascot}>
+                <ManageProfile />
+              </div>
+            )}
           </>
         )}
       </LocationContext.Consumer>

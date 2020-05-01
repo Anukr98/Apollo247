@@ -202,7 +202,6 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.33,
       textTransform: 'uppercase',
       paddingTop: 7,
-      paddingBottom: 6,
       paddingLeft: 4,
       '&:focus': {
         backgroundColor: 'transparent',
@@ -212,6 +211,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 500,
       color: '#02475b',
+      minWidth: 30,
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -557,6 +557,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     mou: data.mou,
                     quantity: medicineQty,
                   };
+                  /**Gtm code start  */
+                  itemIndexInCart(data) == -1 &&
+                    window.gep &&
+                    window.gep('Pharmacy', 'Add to Cart', data.name, data.price);
+                  /**Gtm code End  */
                   applyCartOperations(cartItem);
                   setAddMutationLoading(false);
                   setShowPopup(true);

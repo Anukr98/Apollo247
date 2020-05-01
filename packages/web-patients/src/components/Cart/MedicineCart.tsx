@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -31,7 +31,7 @@ import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHoo
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
-import { LocationContext } from 'components/LocationProvider';
+import { LocationContext, useLocationDetails } from 'components/LocationProvider';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -40,6 +40,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -624,7 +625,7 @@ export const MedicineCart: React.FC = (props) => {
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        orderId: orderId,
+        // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: parseFloat(totalAmount),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
@@ -791,10 +792,19 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
-      deliveryTime) ||
+      deliveryTime.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
+
+  const patient = useCurrentPatient();
+
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   const isChennaiZipCode = (zipCodeInt: Number) => {
     return (
@@ -804,6 +814,14 @@ export const MedicineCart: React.FC = (props) => {
       zipCodeInt === 603211
     );
   };
+  const { city } = useLocationDetails();
+
+  useEffect(() => {
+    /**Gtm code start  */
+    window.gep && window.gep('Pharmacy', 'Order', 'View Cart', totalAmount);
+    /**Gtm code  End */
+  }, [grossValue]);
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -872,7 +890,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.uploadMore}>
                           <AphButton
                             disabled={uploadingFiles || mutationLoading}
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                           >
                             Upload More
                           </AphButton>
@@ -886,7 +904,7 @@ export const MedicineCart: React.FC = (props) => {
                             purchase. Please upload the necessary prescriptions
                           </span>
                           <AphButton
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             className={classes.presUploadBtn}
                           >
                             Upload Prescription
@@ -919,62 +937,66 @@ export const MedicineCart: React.FC = (props) => {
           }
         >
           <div className={classes.medicineSection}>
-            <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-              <span>Where Should We Deliver?</span>
-            </div>
-            <div className={classes.sectionGroup}>
-              <div className={classes.deliveryAddress}>
-                <Tabs
-                  value={tabValue}
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Home Delivery"
-                    title={'Choose home delivery'}
-                  />
-                  <Tab
-                    disabled
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Store Pick Up"
-                    title={'Choose store pick up'}
-                  />
-                </Tabs>
-                {tabValue === 0 && (
-                  <TabContainer>
-                    <HomeDelivery
-                      selectedZipCode={setSelectedZip}
-                      setDeliveryTime={setDeliveryTime}
-                      deliveryTime={deliveryTime}
-                    />
-                  </TabContainer>
-                )}
-                {tabValue === 1 && (
-                  <TabContainer>
-                    <StorePickUp
-                      pincode={
-                        storePickupPincode && storePickupPincode.length === 6
-                          ? storePickupPincode
-                          : currentPincode
-                      }
-                    />
-                  </TabContainer>
-                )}
-              </div>
-            </div>
-            {cartItems && cartItems.length > 0 && (
+            {currentPatient && currentPatient.id && (
+              <>
+                <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                  <span>Where Should We Deliver?</span>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <div className={classes.deliveryAddress}>
+                    <Tabs
+                      value={tabValue}
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Home Delivery"
+                        title={'Choose home delivery'}
+                      />
+                      <Tab
+                        disabled
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Store Pick Up"
+                        title={'Choose store pick up'}
+                      />
+                    </Tabs>
+                    {tabValue === 0 && (
+                      <TabContainer>
+                        <HomeDelivery
+                          selectedZipCode={setSelectedZip}
+                          setDeliveryTime={setDeliveryTime}
+                          deliveryTime={deliveryTime}
+                        />
+                      </TabContainer>
+                    )}
+                    {tabValue === 1 && (
+                      <TabContainer>
+                        <StorePickUp
+                          pincode={
+                            storePickupPincode && storePickupPincode.length === 6
+                              ? storePickupPincode
+                              : currentPincode
+                          }
+                        />
+                      </TabContainer>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+            {cartItems && cartItems.length > 0 && !nonCartFlow && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
@@ -1036,47 +1058,61 @@ export const MedicineCart: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
-          <AphButton
-            onClick={() => {
-              const zipCodeInt = parseInt(selectedZip);
-              if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                if (isChennaiZipCode(zipCodeInt)) {
-                  // redirect to chennai orders form
-                  setIsChennaiCheckoutDialogOpen(true);
-                  return;
+          {currentPatient && currentPatient.id ? (
+            <AphButton
+              onClick={() => {
+                const zipCodeInt = parseInt(selectedZip);
+                if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                  if (isChennaiZipCode(zipCodeInt)) {
+                    // redirect to chennai orders form
+                    setIsChennaiCheckoutDialogOpen(true);
+                    return;
+                  }
+                  setCheckoutDialogOpen(true);
+                } else if (
+                  nonCartFlow &&
+                  ((prescriptions && prescriptions.length > 0) ||
+                    (ePrescriptionData && ePrescriptionData.length > 0))
+                ) {
+                  if (isChennaiZipCode(zipCodeInt)) {
+                    // redirect to chennai orders form
+                    setIsChennaiCheckoutDialogOpen(true);
+                    return;
+                  }
+                  onPressSubmit();
                 }
-                setCheckoutDialogOpen(true);
-              } else if (
-                nonCartFlow &&
-                ((prescriptions && prescriptions.length > 0) ||
-                  (ePrescriptionData && ePrescriptionData.length > 0))
-              ) {
-                if (isChennaiZipCode(zipCodeInt)) {
-                  // redirect to chennai orders form
-                  setIsChennaiCheckoutDialogOpen(true);
-                  return;
-                }
-                onPressSubmit();
+              }}
+              color="primary"
+              fullWidth
+              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+              className={
+                disableSubmit || !isPaymentButtonEnable || mutationLoading
+                  ? classes.buttonDisable
+                  : ''
               }
-            }}
-            color="primary"
-            fullWidth
-            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
-            className={
-              disableSubmit || !isPaymentButtonEnable || mutationLoading
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Proceed to pay bill'}
-          >
-            {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-              `Proceed to pay — RS. ${totalAmount}`
-            ) : uploadingFiles ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              'Submit Prescription'
-            )}
-          </AphButton>
+              title={'Proceed to pay bill'}
+            >
+              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                `Proceed to pay — RS. ${totalAmount}`
+              ) : uploadingFiles ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                'Submit Prescription'
+              )}
+            </AphButton>
+          ) : (
+            <AphButton
+              color="primary"
+              fullWidth
+              title={'Login to continue'}
+              onClick={() => {
+                const signInPopup = document.getElementById('loginPopup');
+                signInPopup && document.getElementById('loginPopup')!.click();
+              }}
+            >
+              Login to continue
+            </AphButton>
+          )}
         </div>
       </div>
 
@@ -1121,9 +1157,33 @@ export const MedicineCart: React.FC = (props) => {
           <div className={classes.dialogActions}>
             <AphButton
               onClick={(e) => {
+                /**Gtm code start  */
+                window.gep &&
+                  window.gep(
+                    'Pharmacy',
+                    'Order',
+                    `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+                    totalAmount
+                  );
+                /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
+                    // GTM start
+                    window.gep && window.gep('Pharmacy', 'Order', 'Order Success', totalAmount);
+                    window._ob &&
+                      window._ob(
+                        currentPatient && currentPatient.mobileNumber
+                          ? currentPatient.mobileNumber
+                          : null,
+                        city,
+                        paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                        cartItems ? cartItems.length : 0,
+                        couponCode == '' ? null : couponCode,
+                        discountAmount,
+                        grossValue
+                      );
+                    // GTM end
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
@@ -1136,6 +1196,9 @@ export const MedicineCart: React.FC = (props) => {
                     }
                   })
                   .catch((e) => {
+                    /**Gtm code start  */
+                    window.gep && window.gep('Pharmacy', 'Order', 'Failed / Cancelled');
+                    /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');
                     console.log(e);

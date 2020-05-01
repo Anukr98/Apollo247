@@ -14,6 +14,12 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+export enum ES_DOCTOR_SLOT_STATUS {
+  BOOKED = 'BOOKED',
+  OPEN = 'OPEN',
+  BLOCKED = 'BLOCKED',
+}
+
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
   NUMBER_OF_CONSULTS = 'NUMBER_OF_CONSULTS',
@@ -36,6 +42,8 @@ export enum APPOINTMENT_TYPE {
 export enum STATUS {
   PENDING = 'PENDING',
   PAYMENT_PENDING = 'PAYMENT_PENDING',
+  PAYMENT_PENDING_PG = 'PAYMENT_PENDING_PG',
+  PAYMENT_FAILED = 'PAYMENT_FAILED',
   IN_PROGRESS = 'IN_PROGRESS',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
@@ -1177,6 +1185,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   totalCompletedChats: number;
+
+  @Column({ default: 0 })
+  totalCompletedAppointments: number;
 
   @Column()
   createdDate: Date;

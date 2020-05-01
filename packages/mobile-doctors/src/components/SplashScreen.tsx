@@ -4,10 +4,11 @@ import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, AsyncStorage, Linking, Platform, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = SplashScreenStyles;
 
@@ -70,16 +71,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!doctorDetails) {
-      getDoctorDetailsApi &&
-        getDoctorDetailsApi()
-          .then((res) => {
-            console.log(res, 'res');
-          })
-          .catch((error) => {
-            console.log(error, 'error');
-          });
-    }
+    const asyncCall = async () => {
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      if (!doctorDetails && isLoggedIn === 'true') {
+        getDoctorDetailsApi &&
+          getDoctorDetailsApi()
+            .then((res) => {
+              console.log(res, 'fjlbvnfljknbvkjdfb');
+            })
+            .catch((error) => {
+              console.log(error, 'febufbeniudnxw');
+            });
+      }
+    };
+    asyncCall();
   }, [doctorDetails]);
 
   const getRegistrationToken = async () => {

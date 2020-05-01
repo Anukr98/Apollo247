@@ -3,31 +3,53 @@ import { Theme, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useAuth } from 'hooks/authHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
       marginLeft: 'auto',
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 0,
       },
       '& a': {
         fontSize: 13,
         fontWeight: 600,
-        color: theme.palette.secondary.dark,
-        textTransform: 'uppercase',
-        padding: '36px 10px 35px 10px',
-        display: 'inline-block',
-        [theme.breakpoints.down('sm')]: {
-          paddingLeft: 10,
-          paddingRight: 10,
-        },
+        color: '#02475b',
+        padding: '15px 16px 14px 16px',
         [theme.breakpoints.down(900)]: {
           display: 'none',
         },
       },
+    },
+    postLoginNavigation: {
+      '& a': {
+        textTransform: 'uppercase',
+        padding: '36px 16px 34px 16px',
+      },
+    },
+    homePageNav: {
+      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
+    },
+    menuTitle: {
+      textTransform: 'uppercase',
+      borderBottom: '1px solid #01475b',
+      paddingBottom: 3,
+      display: 'inline-block',
+    },
+    menuInfo: {
+      paddingTop: 3,
+      fontSize: 12,
+      opacity: 0.6,
+      display: 'block',
     },
     menuItemActive: {
       backgroundColor: '#f7f8f5',
@@ -43,16 +65,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     notificationBtn: {
-      // display: 'none',
       display: 'inline-block',
-      padding: '33px 10px 31px 10px',
+      padding: '33px 16px 31px 16px',
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
       cursor: 'pointer',
       [theme.breakpoints.down('xs')]: {
-        padding: '26px 20px 24px 20px',
+        padding: '25px 16px 23px 16px',
       },
       '& img': {
         verticalAlign: 'middle',
@@ -133,52 +154,155 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       opacity: 0.6,
     },
+    appDownloadBtn: {
+      paddingLeft: 16,
+      paddingRight: 16,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
+      [theme.breakpoints.down(460)]: {
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
+      [theme.breakpoints.down(360)]: {
+        display: 'none',
+      },
+      '& a': {
+        backgroundColor: '#fcb716',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        borderRadius: 10,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 'bold',
+        padding: '11px 15px',
+        display: 'block',
+        textTransform: 'uppercase',
+        [theme.breakpoints.down(460)]: {
+          padding: '10px 10px',
+        },
+      },
+    },
   };
 });
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
+  const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
 
   return (
-    <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link
-        className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
-        to={clientRoutes.appointments()}
-        title={'View appointments'}
-      >
-        Appointments
-      </Link>
-      <Link
-        to={clientRoutes.healthRecords()}
-        className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
-        title={'View health records'}
-      >
-        Health Records
-      </Link>
-      <Link
-        to={clientRoutes.medicines()}
-        className={
-          currentPath === clientRoutes.medicines() ||
-          currentPath === clientRoutes.prescriptionsLanding()
-            ? classes.menuItemActive
-            : ''
-        }
-        title={'Medicines'}
-      >
-        Medicines
-      </Link>
-      {/* <Link
-        to={clientRoutes.tests()}
-        className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
-        title={'Tests'}
-      >
-        Tests
-      </Link> */}
+    <div
+      className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
+        currentPath === clientRoutes.welcome() ||
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
+          ? classes.homePageNav
+          : ''
+      }`}
+      data-cypress="Navigation"
+    >
+      {isSignedIn ? (
+        <>
+          <Link
+            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+            to={clientRoutes.appointments()}
+            title={'Appointments'}
+          >
+            Appointments
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              currentPath === clientRoutes.medicines() ||
+              currentPath === clientRoutes.prescriptionsLanding()
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Medicines'}
+          >
+            Medicines
+          </Link>
+          {/* <Link
+          to={clientRoutes.tests()}
+          className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
+          title={'Tests'}
+        >
+          Tests
+        </Link> */}
+          <Link
+            to={clientRoutes.healthRecords()}
+            className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+            title={'Health Records'}
+          >
+            Health Records
+          </Link>
+        </>
+      ) : (
+        <>
+          <Link
+            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.doctorsLanding()}
+            title={'Doctors'}
+          >
+            <span className={classes.menuTitle}>Doctors</span>
+            <span className={classes.menuInfo}>
+              Consult
+              <br /> Online
+            </span>
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              currentPath === clientRoutes.medicines() ||
+              currentPath === clientRoutes.prescriptionsLanding()
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Pharmacy'}
+          >
+            <span className={classes.menuTitle}>Pharmacy</span>
+            <span className={classes.menuInfo}>
+              Medicines &<br /> other products
+            </span>
+          </Link>
+          {/* <Link
+            to={clientRoutes.tests()}
+            className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
+            title={'Tests'}
+          >
+            <span className={classes.menuTitle}>Tests</span>
+            <span className={classes.menuInfo}>Health<br/> checks</span>
+          </Link> */}
+          <Link
+            to={clientRoutes.covidLanding()}
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            title={'Covid-19'}
+          >
+            <span className={classes.menuTitle}>Covid-19</span>
+            <span className={classes.menuInfo}>
+              Latest
+              <br /> updates
+            </span>
+          </Link>
+        </>
+      )}
+      {currentPath === clientRoutes.welcome() ||
+      currentPath === clientRoutes.termsConditions() ||
+      currentPath === clientRoutes.aboutUs() ? (
+        <div className={`${classes.appDownloadBtn}`}>
+          <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
+            Download App
+          </a>
+        </div>
+      ) : (
+        ''
+      )}
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}

@@ -4,6 +4,8 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { differenceInDays, addDays, format } from 'date-fns';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 
 export const doctorDataElasticTypeDefs = gql`
   extend type Mutation {
@@ -17,6 +19,7 @@ export const doctorDataElasticTypeDefs = gql`
       fromSlotDate: String
       toSlotDate: String
     ): String
+    updateApptDoctorSlotStatus(id: String, slotDate: Date): String
   }
 `;
 
@@ -33,6 +36,50 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
   const delResp = await client.delete(deleteParams);
   console.log(delResp, 'delete resp');
   return 'Document deleted';
+};
+
+const updateApptDoctorSlotStatus: Resolver<
+  null,
+  { id: string; slotDate: Date },
+  DoctorsServiceContext,
+  string
+> = async (parent, args, { doctorsDb, consultsDb }) => {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptSlots = await appts.getAllDoctorAppointments(args.id, args.slotDate);
+  let slotsUpdated = '';
+  if (apptSlots && apptSlots.length > 0) {
+    apptSlots.map(async (appt) => {
+      const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+      const sl = `${apptDt}T${appt.appointmentDateTime
+        .getUTCHours()
+        .toString()
+        .padStart(2, '0')}:${appt.appointmentDateTime
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
+      const doc1: RequestParams.Update = {
+        index: 'doctors',
+        type: 'posts',
+        id: appt.doctorId,
+        body: {
+          script: {
+            source:
+              'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
+            params: {
+              slotDate: apptDt,
+              slot: sl,
+              status: ES_DOCTOR_SLOT_STATUS.BOOKED,
+            },
+          },
+        },
+      };
+      slotsUpdated += '{' + appt.doctorId + ' - ' + sl + '},';
+      const updateResp = await client.update(doc1);
+      console.log(updateResp, 'updateResp');
+    });
+  }
+  return 'slot status updated ' + slotsUpdated;
 };
 
 const updateDoctorSlotStatus: Resolver<
@@ -68,7 +115,7 @@ const addAllDoctorSlotsElastic: Resolver<
   { limit: number; offset: number; fromSlotDate: string; toSlotDate: string },
   DoctorsServiceContext,
   string
-> = async (parent, args, { doctorsDb }) => {
+> = async (parent, args, { doctorsDb, consultsDb }) => {
   let stDate = new Date(args.fromSlotDate);
   const daysDiff = Math.abs(differenceInDays(new Date(args.toSlotDate), stDate));
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
@@ -83,7 +130,6 @@ const addAllDoctorSlotsElastic: Resolver<
         //str += format(stDate, 'yyyy-MM-dd') + ',';
         const searchParams: RequestParams.Search = {
           index: 'doctors',
-          type: 'posts',
           body: {
             query: {
               bool: {
@@ -94,7 +140,7 @@ const addAllDoctorSlotsElastic: Resolver<
                     },
                   },
                   {
-                    match: {
+                    match_phrase: {
                       doctorId: allDocsInfo[k].id,
                     },
                   },
@@ -110,12 +156,13 @@ const addAllDoctorSlotsElastic: Resolver<
         if (getDetails.body.hits.hits.length == 0) {
           const doctorSlots = await docRepo.getDoctorSlots(
             new Date(format(stDate, 'yyyy-MM-dd')),
-            allDocsInfo[k].id
+            allDocsInfo[k].id,
+            consultsDb,
+            doctorsDb
           );
           //console.log(doctorSlots, 'doctor slots');
           const doc1: RequestParams.Update = {
             index: 'doctors',
-            type: 'posts',
             id: allDocsInfo[k].id,
             body: {
               script: {
@@ -146,11 +193,10 @@ const addDoctorSlotsElastic: Resolver<
   { id: string; slotDate: string },
   DoctorsServiceContext,
   string
-> = async (parent, args, { doctorsDb }) => {
+> = async (parent, args, { doctorsDb, consultsDb }) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const searchParams: RequestParams.Search = {
     index: 'doctors',
-    type: 'posts',
     body: {
       query: {
         bool: {
@@ -161,7 +207,7 @@ const addDoctorSlotsElastic: Resolver<
               },
             },
             {
-              match: {
+              match_phrase: {
                 doctorId: args.id,
               },
             },
@@ -176,11 +222,15 @@ const addDoctorSlotsElastic: Resolver<
 
   if (getDetails.body.hits.hits.length == 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctorSlots = await docRepo.getDoctorSlots(new Date(args.slotDate), args.id);
-    //console.log(doctorSlots, 'doctor slots');
+    const doctorSlots = await docRepo.getDoctorSlots(
+      new Date(args.slotDate),
+      args.id,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(doctorSlots, 'doctor slots');
     const doc1: RequestParams.Update = {
       index: 'doctors',
-      type: 'posts',
       id: args.id,
       body: {
         script: {
@@ -219,8 +269,8 @@ const insertDataElastic: Resolver<
         type: 'posts',
         body: {
           query: {
-            match: {
-              mobileNumber: allDocsInfo[i].mobileNumber,
+            match_phrase: {
+              doctorId: allDocsInfo[i].id,
             },
           },
         },
@@ -354,5 +404,6 @@ export const doctorDataElasticResolvers = {
     addDoctorSlotsElastic,
     updateDoctorSlotStatus,
     addAllDoctorSlotsElastic,
+    updateApptDoctorSlotStatus,
   },
 };

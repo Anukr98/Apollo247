@@ -1,6 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, REQUEST_ROLES, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  REQUEST_ROLES,
+  APPOINTMENT_STATE,
+  ES_DOCTOR_SLOT_STATUS,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -11,7 +16,7 @@ import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEm
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import { addMilliseconds, format } from 'date-fns';
+import { addMilliseconds, format, addDays } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
@@ -104,6 +109,30 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
+  );
+
+  //update slot status in ES as open
+  const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+  const actualApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
+  let apptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
+  if (appointment.appointmentDateTime >= new Date(slotApptDt)) {
+    apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
+  }
+
+  const sl = `${actualApptDt}T${appointment.appointmentDateTime
+    .getUTCHours()
+    .toString()
+    .padStart(2, '0')}:${appointment.appointmentDateTime
+    .getUTCMinutes()
+    .toString()
+    .padStart(2, '0')}:00.000Z`;
+  console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
+  appointmentRepo.updateDoctorSlotStatusES(
+    appointment.doctorId,
+    apptDt,
+    sl,
+    appointment.appointmentType,
+    ES_DOCTOR_SLOT_STATUS.BOOKED
   );
 
   //remove from consult queue

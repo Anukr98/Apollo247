@@ -8,7 +8,7 @@ const { width } = Dimensions.get('window');
 export default StyleSheet.create({
   chipContainerStyle: {
     maxWidth: (width - 150) / 2,
-    marginRight: 16,
+    marginRight: 10,
     marginTop: 8,
   },
   chiptextStyle: {
@@ -60,15 +60,31 @@ export default StyleSheet.create({
     borderBottomStartRadius: 10,
   },
   medTypeViewText: { ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT), paddingBottom: 8 },
-  medTypeView: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-end' },
+  medTypeView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    flexWrap: 'wrap',
+  },
   textInputStyles: {
     ...theme.fonts.IBMPlexSansMedium(18),
-    width: (width - 100) / 2,
+    width: (width - 110) / 2,
     color: '#01475b',
     paddingBottom: 4,
     borderBottomWidth: 2,
     borderColor: theme.colors.APP_GREEN,
     paddingTop: 0,
+    marginTop: 10,
+  },
+  textInputStyles2: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    width: (width - 120) / 4,
+    color: '#01475b',
+    paddingBottom: 4,
+    borderBottomWidth: 2,
+    borderColor: theme.colors.APP_GREEN,
+    paddingTop: 0,
+    marginTop: 10,
   },
   materialContainer: {
     alignItems: 'flex-end',
@@ -102,7 +118,7 @@ export default StyleSheet.create({
   menuContainerStyle: {
     alignItems: 'flex-end',
     marginLeft: 10,
-    marginTop: 20,
+    marginTop: 10,
     width: width - 100,
   },
   seleTextStyle: {
@@ -118,8 +134,7 @@ export default StyleSheet.create({
   },
   dropDownValueView: {
     flexDirection: 'row',
-    marginBottom: 10,
-    marginTop: 16,
+    marginTop: 10,
   },
   dropdownView: {
     flexDirection: 'row',
@@ -134,10 +149,14 @@ export default StyleSheet.create({
   dropdownGreenView: { flex: 1, alignItems: 'flex-end', marginRight: 10 },
   forLable: {
     ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-    paddingBottom: 8,
+    paddingBottom: 0,
     marginTop: 12,
   },
-  forInputView: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-end' },
+  forInputView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
   MMContainer: { alignItems: 'flex-end', marginLeft: (width - 110) / 2 - 130 },
   MMseleStyle: {
     ...theme.viewStyles.text('M', 16, '#00b38e'),
@@ -147,7 +166,7 @@ export default StyleSheet.create({
   MMitemContainer: { height: 44.8, marginHorizontal: 12, width: (width - 110) / 2 - 60 },
   forDropView: {
     flexDirection: 'row',
-    marginLeft: 15,
+    marginTop: 10,
   },
   forDropTextView: {
     flexDirection: 'row',
@@ -224,5 +243,22 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     borderRadius: 10,
     maxHeight: '85%',
+  },
+  customTextContainer: {
+    marginTop: 10,
+    flexWrap: 'wrap',
+  },
+  customTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW),
+    textTransform: 'uppercase',
+  },
+  listSpinner: {
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  routeOfAdminText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
+    padding: 0,
+    marginTop: 12,
   },
 });

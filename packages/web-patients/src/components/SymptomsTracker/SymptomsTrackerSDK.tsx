@@ -11,12 +11,15 @@ import { NavigatorSDK, $Generator } from '@praktice/navigator-react-web-sdk';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { SymptomsTrackerLoggedOutForm } from 'components/SymptomsTracker/SymptomsTrackerLoggedOutUserForm';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphCustomDropdown } from '@aph/web-ui-components';
 import { AphButton } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 20,
+      zIndex: 2,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -374,19 +378,58 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const isMediumScreen = useMediaQuery('(max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [showPopup, setShowPopup] = useState(true);
+  const [loggedOutPatientAge, setLoggedOutPatientAge] = useState('');
+  const [loggedOutPatientGender, setLoggedOutPatientGender] = useState('');
+  const [patientAge, setPatientAge] = useState('');
+  const [patientGender, setPatientGender] = useState('');
   const [doctorPopover, setDoctorPopOver] = useState(false);
+  const [loggedOutUserDetailPopover, setLoggedOutUserDetailPopover] = useState<boolean>(false);
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isRedirect, setIsRedirect] = useState(false);
-  const patientAge =
-    currentPatient && currentPatient.dateOfBirth
-      ? moment()
-          .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
-          .toString()
-      : '15';
-  const patientGender =
-    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : 'male';
+
+  const getAge = (dob: string) =>
+    moment()
+      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
+      .toString();
+  const setUserAge = (dob: string) => {
+    setPatientAge(getAge(dob));
+  };
+  const setUserGender = (gender: string) => gender.toLowerCase();
+
+  useEffect(()=>{
+    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+      setUserAge(currentPatient.dateOfBirth);
+      setPatientGender(setUserGender(currentPatient.gender));
+    }
+  }, [isSignedIn, currentPatient])
+
+  useEffect(() => {
+    if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
+      // setPatientAge(currentPatient.dateOfBirth)
+      setUserAge(currentPatient.dateOfBirth);
+    } else if (loggedOutPatientAge && loggedOutPatientAge.length) {
+      setUserAge(loggedOutPatientAge);
+    }
+  }, [loggedOutPatientAge]);
+
+  useEffect(() => {
+    if (isSignedIn && currentPatient && currentPatient.gender) {
+      setPatientGender(setUserGender(currentPatient.gender));
+    } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
+      setPatientGender(setUserGender(loggedOutPatientGender));
+    }
+  }, [loggedOutPatientGender]);
+
+  const setLoggedOutPatientData = (dataObj: any) => {
+    if (Object.values(dataObj).every((element) => element !== null)) {
+      // save the values and hide the pop over
+      setLoggedOutPatientAge(dataObj.dob);
+      setLoggedOutPatientGender(dataObj.gender);
+      setLoggedOutUserDetailPopover(false);
+    }
+  };
+
   const customListner = (resultData: any) => {
     let specialities = [];
     specialities = resultData.specialists.map((item: { speciality: string }) =>
@@ -400,6 +443,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
       // window.location.href = clientRoutes.doctorsLanding();
     }
   };
+
+  const onePrimaryUser = hasOnePrimaryUser();
+
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
@@ -409,10 +455,15 @@ export const SymptomsTrackerSDK: React.FC = () => {
       window.location.reload();
     }
   }, [stopRedirect, isRedirect]);
+  useEffect(() => {
+    if (!isSignedIn) {
+      setLoggedOutUserDetailPopover(true);
+    }
+  }, []);
   return (
     <div className={classes.root}>
       <Header />
-      {currentPatient && currentPatient.id.length > 0 && (
+      {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
@@ -422,35 +473,36 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              Consult a doctor
-              <div className={classes.profileDropdownMobile}>
-                <div className={classes.labelFor}>For</div>
+              UNDERSTAND YOUR SYMPTOMS
+              {isSignedIn && (
+                <div className={classes.profileDropdownMobile}>
+                  <div className={classes.labelFor}>For</div>
 
-                <AphCustomDropdown
-                  classes={{ selectMenu: classes.selectMenuItem }}
-                  value={currentPatient && currentPatient.id}
-                  onChange={(e) => {
-                    setCurrentPatientId(e.target.value as Patient['id']);
-                  }}
-                >
-                  {allCurrentPatients &&
-                    allCurrentPatients.length > 0 &&
-                    currentPatient &&
-                    allCurrentPatients.map((patient) => {
-                      const isSelected = patient && patient.id === currentPatient.id;
-                      const name = (patient.firstName || '').toLocaleLowerCase();
-                      return (
-                        <MenuItem
-                          selected={isSelected}
-                          value={patient.id}
-                          classes={{ selected: classes.menuSelected }}
-                          key={patient.id}
-                        >
-                          {name}
-                        </MenuItem>
-                      );
-                    })}
-                  {/* <MenuItem classes={{ selected: classes.menuSelected }}>
+                  <AphCustomDropdown
+                    classes={{ selectMenu: classes.selectMenuItem }}
+                    value={currentPatient && currentPatient.id}
+                    onChange={(e) => {
+                      setCurrentPatientId(e.target.value as Patient['id']);
+                    }}
+                  >
+                    {allCurrentPatients &&
+                      allCurrentPatients.length > 0 &&
+                      currentPatient &&
+                      allCurrentPatients.map((patient) => {
+                        const isSelected = patient && patient.id === currentPatient.id;
+                        const name = (patient.firstName || '').toLocaleLowerCase();
+                        return (
+                          <MenuItem
+                            selected={isSelected}
+                            value={patient.id}
+                            classes={{ selected: classes.menuSelected }}
+                            key={patient.id}
+                          >
+                            {name}
+                          </MenuItem>
+                        );
+                      })}
+                    {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                     <AphButton
                       color="primary"
                       classes={{ root: classes.addMemberBtn }}
@@ -461,8 +513,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
                       Add Member
                     </AphButton>
                   </MenuItem> */}
-                </AphCustomDropdown>
-              </div>
+                  </AphCustomDropdown>
+                </div>
+              )}
             </div>
             <Scrollbars
               autoHide={true}
@@ -478,33 +531,34 @@ export const SymptomsTrackerSDK: React.FC = () => {
               <div className={classes.subHeader}>
                 <div className={classes.leftCol}></div>
                 <div className={classes.rightCol}>
-                  <div className={classes.profileDropdown}>
-                    <div className={classes.labelFor}>For</div>
-                    <AphCustomDropdown
-                      classes={{ selectMenu: classes.selectMenuItem }}
-                      value={currentPatient && currentPatient.id}
-                      onChange={(e) => {
-                        setCurrentPatientId(e.target.value as Patient['id']);
-                      }}
-                    >
-                      {allCurrentPatients &&
-                        allCurrentPatients.length > 0 &&
-                        currentPatient &&
-                        allCurrentPatients.map((patient) => {
-                          const isSelected = patient && patient.id === currentPatient.id;
-                          const name = (patient.firstName || '').toLocaleLowerCase();
-                          return (
-                            <MenuItem
-                              selected={isSelected}
-                              value={patient.id}
-                              classes={{ selected: classes.menuSelected }}
-                              key={patient.id}
-                            >
-                              {name}
-                            </MenuItem>
-                          );
-                        })}
-                      {/* <MenuItem classes={{ selected: classes.menuSelected }}>
+                  {isSignedIn && (
+                    <div className={classes.profileDropdown}>
+                      <div className={classes.labelFor}>For</div>
+                      <AphCustomDropdown
+                        classes={{ selectMenu: classes.selectMenuItem }}
+                        value={currentPatient && currentPatient.id}
+                        onChange={(e) => {
+                          setCurrentPatientId(e.target.value as Patient['id']);
+                        }}
+                      >
+                        {allCurrentPatients &&
+                          allCurrentPatients.length > 0 &&
+                          currentPatient &&
+                          allCurrentPatients.map((patient) => {
+                            const isSelected = patient && patient.id === currentPatient.id;
+                            const name = (patient.firstName || '').toLocaleLowerCase();
+                            return (
+                              <MenuItem
+                                selected={isSelected}
+                                value={patient.id}
+                                classes={{ selected: classes.menuSelected }}
+                                key={patient.id}
+                              >
+                                {name}
+                              </MenuItem>
+                            );
+                          })}
+                        {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
@@ -515,28 +569,30 @@ export const SymptomsTrackerSDK: React.FC = () => {
                           Add Member
                         </AphButton>
                       </MenuItem> */}
-                    </AphCustomDropdown>
-                  </div>
+                      </AphCustomDropdown>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              <div className={classes.symptomsTracker}>
-                <NavigatorSDK
-                  clientId={process.env.PRAKTICE_SDK_KEY}
-                  key={currentPatient && currentPatient.id}
-                  patientAge={patientAge}
-                  patientGender={patientGender}
-                  sdkContainerStyle={customContainerStyle}
-                  searchDoctorlistner={customListner}
-                  showDocBtn={() => (
-                    <CustomComponent
-                      setDoctorPopOver={setDoctorPopOver}
-                      doctorPopover={doctorPopover}
-                      stopRedirect={stopRedirect}
-                    />
-                  )}
-                />
-              </div>
+              {patientAge && patientGender && (
+                <div className={classes.symptomsTracker}>
+                  <NavigatorSDK
+                    clientId={process.env.PRAKTICE_SDK_KEY}
+                    key={(currentPatient && currentPatient.id) || 'guest'}
+                    patientAge={patientAge}
+                    patientGender={patientGender}
+                    sdkContainerStyle={customContainerStyle}
+                    searchDoctorlistner={customListner}
+                    showDocBtn={() => (
+                      <CustomComponent
+                        setDoctorPopOver={setDoctorPopOver}
+                        doctorPopover={doctorPopover}
+                        stopRedirect={stopRedirect}
+                      />
+                    )}
+                  />
+                </div>
+              )}
             </Scrollbars>
           </div>
 
@@ -617,7 +673,41 @@ export const SymptomsTrackerSDK: React.FC = () => {
             </div>
           </Popover>
         </div>
+      }
+      {!isSignedIn && (
+        <Popover
+          open={loggedOutUserDetailPopover}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.contentGroup}>
+                <Typography variant="h3">Hi! :)</Typography>
+                <p>Tell us a little bit about the patient please</p>
+                <div className={classes.bottomActions}>
+                  <SymptomsTrackerLoggedOutForm
+                    setData={(val: object) => setLoggedOutPatientData(val)}
+                    onClose={() => setLoggedOutUserDetailPopover(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Popover>
       )}
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

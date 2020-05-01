@@ -179,17 +179,20 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
           props.data.products.map((hotSeller) => (
             <div key={hotSeller.sku} className={classes.card}>
               <div className={classes.cardWrap}>
-                {(!!Number(hotSeller.special_price!) && (Number(hotSeller.price) !== Number(hotSeller.special_price!))) && <div className={classes.offerPrice}>
-                  <span>
-                    -
-                    {Math.floor(
-                      ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
-                        hotSeller.price) *
-                        100
-                    )}
-                    %
-                  </span>
-                </div>}
+                {!!Number(hotSeller.special_price!) &&
+                  Number(hotSeller.price) !== Number(hotSeller.special_price!) && (
+                    <div className={classes.offerPrice}>
+                      <span>
+                        -
+                        {Math.floor(
+                          ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
+                            hotSeller.price) *
+                            100
+                        )}
+                        %
+                      </span>
+                    </div>
+                  )}
                 <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
                   <div className={classes.productIcon}>
                     <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
@@ -224,6 +227,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             mou: hotSeller.mou,
                             quantity: 1,
                           };
+                          /**Gtm code start  */
+                          window.gep &&
+                            window.gep('Pharmacy', 'Add to Cart', hotSeller.name, hotSeller.price);
+                          /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
                           if (index >= 0) {
                             updateCartItem && updateCartItem(cartItem);
@@ -237,6 +244,15 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     ) : (
                       <AphButton
                         onClick={() => {
+                          /**Gtm code start  */
+                          window.gep &&
+                            window.gep(
+                              'Pharmacy',
+                              'Remove From Cart',
+                              hotSeller.name,
+                              hotSeller.price
+                            );
+                          /**Gtm code End  */
                           removeCartItem && removeCartItem(hotSeller.id);
                         }}
                       >

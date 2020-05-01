@@ -3,3 +3,12 @@ node_modules
 .npm-cache
 .Trash*
 .awcache
+
+.DS_Store
+node_modules
+npm-debug.log
+/nbproject/
+package-lock.json
+.idea
+.history
+.vscode

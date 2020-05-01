@@ -7,6 +7,7 @@ import {
   CityPincodeMapper,
   ConsultHours,
 } from 'doctors-service/entities';
+import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -35,7 +36,12 @@ type DoctorSlot = {
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
-  async getDoctorSlots(availableDate: Date, doctorId: string) {
+  async getDoctorSlots(
+    availableDate: Date,
+    doctorId: string,
+    consultsDb: Connection,
+    doctorsDb: Connection
+  ) {
     let previousDate: Date = availableDate;
     let prevDaySlots = 0;
     previousDate = addDays(availableDate, -1);
@@ -56,9 +62,10 @@ export class DoctorRepository extends Repository<Doctor> {
       prevDaySlots = 1;
     }
     timeSlots = timeSlots.concat(timeSlotsNext);
-    const availableSlots: string[] = [];
+    let availableSlots: string[] = [];
     const doctorSlots: DoctorSlot[] = [];
     let rowCount = 0;
+    let slotCount = 0;
     if (timeSlots && timeSlots.length > 0) {
       timeSlots.map((timeSlot) => {
         let st = `${availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -95,7 +102,7 @@ export class DoctorRepository extends Repository<Doctor> {
             startTime = new Date(previousDate.toDateString() + ' ' + stTime);
           }
         }
-        let slotCount = 0;
+
         Array(slotsCount)
           .fill(0)
           .map(() => {
@@ -123,8 +130,8 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
-                    status: 'OPEN',
-                    slotType: ConsultMode.ONLINE,
+                    status: ES_DOCTOR_SLOT_STATUS.OPEN,
+                    slotType: timeSlot.consultMode,
                   };
                   doctorSlots.push(slotInfo);
                   availableSlots.push(generatedSlot);
@@ -140,6 +147,38 @@ export class DoctorRepository extends Repository<Doctor> {
           doctorSlots.pop();
         }
         rowCount++;
+      });
+    }
+    const appts = consultsDb.getCustomRepository(AppointmentRepository);
+    const apptSlots = await appts.findByDateDoctorId(doctorId, availableDate);
+    if (apptSlots && apptSlots.length > 0) {
+      apptSlots.map((appt) => {
+        const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+        const sl = `${apptDt}T${appt.appointmentDateTime
+          .getUTCHours()
+          .toString()
+          .padStart(2, '0')}:${appt.appointmentDateTime
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
+        if (availableSlots.indexOf(sl) >= 0) {
+          doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
+          //availableSlots.splice(availableSlots.indexOf(sl), 1);
+        }
+      });
+    }
+    const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
+      doctorId,
+      availableDate,
+      doctorsDb,
+      availableSlots
+    );
+    if (doctorBblockedSlots.length > 0) {
+      availableSlots = availableSlots.filter((val) => {
+        !doctorBblockedSlots.includes(val);
+        if (doctorBblockedSlots.includes(val)) {
+          doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+        }
       });
     }
     return doctorSlots;

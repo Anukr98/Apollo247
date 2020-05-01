@@ -92,7 +92,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup, isProtected }) => (
-        <Grid item lg={3} sm={6} xs={12}>
+        <Grid item lg={3} sm={6} xs={3}>
           <Paper className={classes.serviceItem}>
             <div className={classes.serviceInfo}>
               <Typography variant="h5">{title}</Typography>

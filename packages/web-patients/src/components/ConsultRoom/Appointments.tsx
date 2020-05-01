@@ -363,6 +363,14 @@ export const Appointments: React.FC = (props) => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
+  useEffect(() => {
+    if (isFailurePayment) {
+      /**Gtm code start start */
+      window.gep && window.gep('Consultations', specialtyName, 'Failed / Cancelled');
+      /**Gtm code start end */
+    }
+  }, [isFailurePayment]);
+
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables

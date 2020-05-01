@@ -20,11 +20,20 @@ const useStyles = makeStyles((theme: Theme) => {
     actions: {
       padding: '10px 20px 20px 20px',
       display: 'flex',
+      [theme.breakpoints.down(420)]: {
+        display: 'block',
+      },
       '& button': {
         borderRadius: 10,
         minWidth: 156,
+        [theme.breakpoints.down(420)]: {
+          minWidth: '100%',
+        },
         '&:first-child': {
           color: '#fc9916',
+          [theme.breakpoints.down(420)]: {
+            marginBottom: 10,
+          },
         },
         '&:last-child': {
           marginLeft: 'auto',
@@ -53,7 +62,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        <Typography variant="h2">Hi! :)</Typography>
+        <Typography variant="h2">Hi!</Typography>
         <p>
           We need to know your location to function better. Please allow us to auto detect your
           location or enter location manually.
@@ -68,7 +77,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
           }}
           title={'Enter Manualy'}
         >
-          Enter Manualy
+          Enter Manually
         </AphButton>
         <AphButton
           color="primary"

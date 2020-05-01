@@ -28,6 +28,9 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from 'graphql/types/getDiagnosticsData';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -483,6 +486,7 @@ export const TestDetails: React.FC = (props) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
   const mou = testDetailsPackage && testDetailsPackage.length;
+  const onePrimaryUser = hasOnePrimaryUser();
 
   return (
     <div className={classes.root}>
@@ -650,6 +654,16 @@ export const TestDetails: React.FC = (props) => {
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,
                             });
+                          /**Gtm code start  */
+                          itemIndexInCart(testDetails) === -1 &&
+                            window.gep &&
+                            window.gep(
+                              'Pharmacy',
+                              'Add to Cart',
+                              testDetails.itemName,
+                              testDetails.rate
+                            );
+                          /**Gtm code End  */
                           setAddMutationLoading(false);
                         }}
                       >
@@ -675,6 +689,7 @@ export const TestDetails: React.FC = (props) => {
           )}
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

@@ -39,7 +39,10 @@
     "select_date": "Select a date",
     "reach_an_expert": " to reach an expert from our team who will resolve your issue.",
     "uh_oh": "Uh oh.. :(",
-    "oops_msg": "Oops! seems like we are having an issue. Please try again."
+    "oops_msg": "Oops! seems like we are having an issue. Please try again.",
+    "oops_msg_saving": "Oops! seems like we are having an issue while saving case sheet. Please try again.",
+    "custom": "custom",
+    "default": "default"
   },
   "login": {
     "hello": "hello!",
@@ -163,7 +166,9 @@
     "smart_prescr_header": "SMART PRESCRIPTION",
     "add_doct": "ADD DOCTOR",
     "add_medicine": "ADD MEDICINE",
+    "update_medicine": "UPDATE MEDICINE",
     "add_advice": "ADD ADVICE",
+    "update_advice": "UPDATE ADVICE",
     "add_test": "ADD TEST",
     "fav_test": "Favorite Tests",
     "fav_advice": "Favorite Advice",
@@ -179,15 +184,45 @@
     "for": "For",
     "after_food": "After food",
     "before_food": "Before Food",
-    "in_the": "In the",
+    "in_the": "In The",
     "morning": "Morning",
     "noon": "Noon",
     "evening": "Evening",
     "night": "Night",
     "as_needed": "As Needed",
-    "additional_instru": "Additional Instructions (if any)",
+    "additional_instru": "Instructions/Notes",
     "type_here": "Type here…",
-    "search_test": "Search Tests"
+    "search_test": "Search Tests",
+    "route_of_administration": "Route of Administration",
+    "dosagesAllowed": [
+      "ML",
+      "MG",
+      "GM",
+      "TABLET",
+      "PUFF",
+      "UNIT",
+      "SPRAY",
+      "PATCH",
+      "AS_PRESCRIBED"
+    ],
+    "muiltdosages": [
+      {
+        "single": "tablet",
+        "multiple": "tablet(s)"
+      },
+      {
+        "single": "puff",
+        "multiple": "puff(s)"
+      },
+      {
+        "single": "unit",
+        "multiple": "unit(s)"
+      },
+      {
+        "single": "spray",
+        "multiple": "spray(s)"
+      }
+    ]
   },
   "appointments": {
     "notifications_title": "NOTIFICATIONS",
@@ -268,7 +303,7 @@
   "case_sheet": {
     "chief_complaints": "Chief Complaints",
     "vitals": "Vitals",
-    "patient_history_lifestyle": "Patient History & Lifestyle",
+    "patient_history_lifestyle": "Patient’s Medical & Family History",
     "online": "Online ",
     "jr_doctor_notes": "Junior Doctor’s Notes",
     "test_prescription": "Test Prescription",
@@ -296,12 +331,12 @@
     "medication_history": "Medication History*",
     "drug_allergies": "Drug Allergies",
     "diet_allergies": "Diet Allergies/Restrictions",
-    "lifestyle_habits": "Lifestyle and Habits",
+    "lifestyle_habits": "Personal History, Lifestyle & Habits",
     "menstrual_history": "Menstrual History",
     "family_medical_history": "Family Medical History",
     "tests": "Tests",
     "no_medicine_Added": "No Medicine Added",
-    "diagonsed_medical_condi": "Diagnosed Medical Condition",
+    "diagonsed_medical_condi": "Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)",
     "photos_uploaded_by_patient": "Photos uploaded by the Patient",
     "reports": "Reports",
     "past_consultations": "Past Consultations",
@@ -314,7 +349,6 @@
     "search": "Search",
     "family_history": "Family History",
     "allergies": "Allergies",
-    "lyfestyle_habits": "Lifestyle & Habits",
     "hello_dr": "hello",
     "here_are_all_patients": "here are all your patients",
     "sort_by": "SORT BY",

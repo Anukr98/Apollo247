@@ -15,6 +15,8 @@ import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
+      zIndex: 2,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -228,6 +231,8 @@ export const SearchByMedicine: React.FC = (props) => {
         ? parseInt(special_price)
         : special_price
       : null;
+
+  const onePrimaryUser = hasOnePrimaryUser();
 
   useEffect(() => {
     let priceFilterArray: MedicineProduct[] | null = null;
@@ -403,6 +408,7 @@ export const SearchByMedicine: React.FC = (props) => {
         </div>
       </div>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

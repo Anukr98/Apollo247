@@ -26,6 +26,7 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
+import { addRecordClickTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,6 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     backArrow: {
+      zIndex: 2,
       cursor: 'pointer',
       marginRight: 50,
       [theme.breakpoints.up(1220)]: {
@@ -547,6 +549,9 @@ export const AddRecords: React.FC = (props) => {
                     setshowSpinner(false);
                     setUploadedDocuments([]);
                     refFileInput.current.value = null;
+                    /**Gtm code start start */
+                    window.gep && window.gep('Profile', 'Record Added', `${typeOfRecord} - Self`);
+                    /**Gtm code start start */
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
@@ -601,6 +606,9 @@ export const AddRecords: React.FC = (props) => {
             setshowSpinner(false);
             setUploadedDocuments([]);
             refFileInput.current.value = null;
+            /**Gtm code start start */
+            window.gep && window.gep('Profile', 'Record Added', `${typeOfRecord} - Self`);
+            /**Gtm code start start */
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {
@@ -613,6 +621,10 @@ export const AddRecords: React.FC = (props) => {
       setIsAlertOpen(true);
       setAlertMessage(valid.message);
     }
+  };
+  const handleSaveRecord = () => {
+    addRecordClickTracking('Medical Record');
+    saveRecord();
   };
 
   const formatNumber = (value: string) => {
@@ -655,7 +667,6 @@ export const AddRecords: React.FC = (props) => {
       };
       reader.onerror = (error) => reject(error);
     });
-
   return (
     <div className={classes.root}>
       <Header />
@@ -1069,7 +1080,7 @@ export const AddRecords: React.FC = (props) => {
               </div>
             </Scrollbars>
             <div className={classes.pageBottomActions}>
-              <AphButton color="primary" onClick={() => saveRecord()}>
+              <AphButton color="primary" onClick={handleSaveRecord}>
                 {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
               </AphButton>
             </div>

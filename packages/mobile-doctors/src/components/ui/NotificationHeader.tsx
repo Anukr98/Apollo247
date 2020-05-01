@@ -6,6 +6,7 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import NotificationHeaderStyles from '@aph/mobile-doctors/src/components/ui/NotificationHeader.styles';
 
@@ -25,8 +26,9 @@ export interface HeaderProps {
   middleText?: string;
   timerText?: string;
   leftIcons?: HeaderRightIconProps[];
-  textStyles?: StyleProp<ViewStyle>;
+  textStyles?: StyleProp<TextStyle>;
   timerremaintext?: string;
+  headingContainer?: StyleProp<ViewStyle>;
 }
 
 export const NotificationHeader: React.FC<HeaderProps> = (props) => {
@@ -59,11 +61,11 @@ export const NotificationHeader: React.FC<HeaderProps> = (props) => {
             ))}
         </View>
       )}
-      <View style={{ flexDirection: 'column', marginTop: 0 }}>
+      <View style={[styles.headingContainer, props.headingContainer]}>
         <Text style={[styles.doctorNameStyles, props.textStyles]}>{props.middleText}</Text>
         <View style={{ flexDirection: 'row' }}>
-          <Text style={styles.timerTextStyle}>{props.timerText}</Text>
-          <Text style={styles.timeStyles}>{props.timerremaintext}</Text>
+          {props.timerText && <Text style={styles.timerTextStyle}>{props.timerText}</Text>}
+          {props.timerremaintext && <Text style={styles.timeStyles}>{props.timerremaintext}</Text>}
         </View>
       </View>
 

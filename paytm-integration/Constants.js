@@ -8,7 +8,8 @@ module.exports = Object.freeze({
   PHYSICAL_APPT_REMINDER: `query { sendPhysicalApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   UPDATE_SD_SUMMARY: `mutation{ updateSdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,
   UPDATE_JD_SUMMARY: `mutation{ updateJdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,
-  UPDATE_DOCTOR_FEE_SUMMARY: `mutation{ updateDoctorFeeSummary(summaryDate:"{0}",doctorId:"0",docLimit:{1},docOffset:{2}){ status } }`,
-  DOCTOR_COUNT_SENIOR:`query {seniorDoctorCount}`,
-  DOCTOR_COUNT_JUNIOR:`query {juniorDoctorCount}`,
+  UPDATE_DOCTOR_FEE_SUMMARY: `mutation{ updateDoctorFeeSummary(summaryDate:"{0}",doctorId:"0",docLimit:{1},docOffset:{2}){ status,totalDoctors } }`,
+  DOCTOR_COUNT_SENIOR: `query {seniorDoctorCount}`,
+  DOCTOR_COUNT_JUNIOR: `query {juniorDoctorCount}`,
+  UPDATE_DOC_SLOTS_ES: `mutation{ addAllDoctorSlotsElastic(fromSlotDate:"{0}",toSlotDate:"{1}",limit: {2} ,offset: {3} ) }`,
 });

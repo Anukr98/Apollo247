@@ -173,6 +173,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Manage Profiles'
             : currentPath === clientRoutes.addressBook()
             ? 'Address Book'
+            : currentPath === clientRoutes.healthRecords()
+            ? 'Health Records'
             : 'Manage Profiles'}
         </div>
       </div>
@@ -193,6 +195,23 @@ export const MyProfile: React.FC = (props) => {
                 <span className={classes.linkText} title={'Manage Profiles'}>
                   Manage Profiles
                 </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.healthRecords()}
+                title={'View health records'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                </span>
+                <span className={classes.linkText}>Health Records</span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
@@ -279,6 +298,23 @@ export const MyProfile: React.FC = (props) => {
                     <span className={classes.linkText} title={'Manage Profiles'}>
                       Manage Profiles
                     </span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.healthRecords()}
+                    title={'View health records'}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText}>Health Records</span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />
                     </span>

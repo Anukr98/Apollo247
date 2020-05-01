@@ -19,8 +19,13 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -76,7 +81,6 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         padding: '20px 20px 0 20px',
         backgroundColor: '#f7f8f5',
-        marginTop: 20,
       },
     },
     userName: {
@@ -235,7 +239,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 22,
       [theme.breakpoints.down('xs')]: {
         '&:last-child': {
-          paddingBottom: 10,
+          paddingBottom: 70,
         },
       },
     },
@@ -325,7 +329,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
     clearCartInfo,
     cartItems,
@@ -387,6 +391,9 @@ export const MedicineLanding: React.FC = (props) => {
       )
       .then((res: any) => {
         setData(res.data);
+        /**Gtm code start  */
+        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        /**Gtm code End  */
         setLoading(false);
       })
       .catch((e: ApolloError) => {
@@ -419,6 +426,16 @@ export const MedicineLanding: React.FC = (props) => {
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
 
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
+
   return (
     <div className={classes.root}>
       <Header />
@@ -436,20 +453,11 @@ export const MedicineLanding: React.FC = (props) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                {data &&
-                  data.mainbanners_desktop &&
-                  data.mainbanners_desktop.length &&
-                  data.mainbanners_desktop[0] &&
-                  data.mainbanners_desktop[0].image &&
-                  data.mainbanners_desktop[0].image !== '' && (
-                    <div className={classes.productsBanner}>
-                      <img
-                        src={`${apiDetails.imageUrl}${data.mainbanners_desktop[0].image}`}
-                        alt=""
-                      />
-                    </div>
-                  )}
+                {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
+                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                )}
               </div>
+
               <div className={classes.rightSection}>
                 <div className={classes.medicineSection}>
                   <div className={`${classes.sectionGroup}`}>
@@ -459,7 +467,8 @@ export const MedicineLanding: React.FC = (props) => {
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
                           <AphButton
                             color="primary"
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            // onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
                             Upload Prescription
@@ -572,6 +581,7 @@ export const MedicineLanding: React.FC = (props) => {
                   className={classes.trackBtn}
                   onClick={() => {
                     setShowPrescriptionPopup(false);
+                    window.location.href = clientRoutes.medicines();
                   }}
                 >
                   Okay
@@ -597,6 +607,7 @@ export const MedicineLanding: React.FC = (props) => {
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

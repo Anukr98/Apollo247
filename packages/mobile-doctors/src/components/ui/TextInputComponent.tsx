@@ -38,6 +38,7 @@ export interface TextInputComponentProps {
   keyboardType?: TextInputProps['keyboardType'];
   icon?: ReactNode;
   onTouchStart?: TouchableOpacityProps['onPress'];
+  autoFocus?: boolean;
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -50,6 +51,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
       )}
       {props.noInput ? null : (
         <TextInput
+          autoFocus={props.autoFocus}
           value={props.value}
           placeholder={props.placeholder ? props.placeholder : ''}
           style={[styles.textInputStyle, props.inputStyle]}

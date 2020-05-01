@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 8,
       paddingRight: 8,
       paddingBottom: 8,
-      [theme.breakpoints.down(560)]: {
+      [theme.breakpoints.down(400)]: {
         width: '100%',
       },
     },
@@ -74,18 +75,19 @@ interface ServiceItemProps {
 }
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { title, imgUrl, content, action } = props.item;
   return (
     <ProtectedWithLoginPopup>
-      {({ protectWithLoginPopup, isProtected }) => (
+      {({ protectWithLoginPopup }) => (
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
               to={action.link}
               onClick={(e) => {
-                protectWithLoginPopup();
-                if (isProtected) e.preventDefault();
+                if (action.link === '') {
+                  protectWithLoginPopup();
+                }
               }}
               title={title}
             >
@@ -104,10 +106,12 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
 };
 
 export const OurServices: React.FC = (props) => {
-  const classes = useStyles();
+  const { isSignedIn } = useAuth();
+
+  const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Find A Doctor',
+      title: 'Book Doctor Appointment',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
@@ -131,16 +135,22 @@ export const OurServices: React.FC = (props) => {
     //   action: { link: '', content: 'Who are star doctors' },
     // },
     {
-      title: 'Track Symptoms',
+      title: 'Understand Symptoms',
       content: 'Learn about our Star Doctors Program.',
       imgUrl: `${require('images/ic-symptomtracker.svg')}`,
-      action: { link: clientRoutes.symptomsTrackerFor(), content: 'Who are star doctors' },
+      action: {
+        link: isSignedIn ? clientRoutes.symptomsTrackerFor() : clientRoutes.symptomsTracker(),
+        content: 'Who are star doctors',
+      },
     },
     {
       title: 'View Health Records',
       content: 'Learn about our Start Doctors Program.',
       imgUrl: `${require('images/ic-prescription.svg')}`,
-      action: { link: clientRoutes.healthRecords(), content: 'Who are star doctors' },
+      action: {
+        link: isSignedIn ? clientRoutes.healthRecords() : '',
+        content: 'Who are star doctors',
+      },
     },
   ];
 

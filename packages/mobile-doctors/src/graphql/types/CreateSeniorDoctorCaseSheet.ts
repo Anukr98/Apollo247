@@ -21,6 +21,7 @@ export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_appoint
   parentId: string | null;
   status: STATUS;
   rescheduleCount: number;
+  sdConsultationDate: any | null;
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosis {

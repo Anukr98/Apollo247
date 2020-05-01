@@ -841,6 +841,9 @@ export const TestsCart: React.FC = (props) => {
           <div className={classes.dialogActions}>
             <AphButton
               onClick={(e) => {
+                /**Gtm code start  */
+                window.gep && window.gep('Pharmacy', 'Order', 'Payment-COD', cartTotal.toFixed(2));
+                /**Gtm code End  */
                 setMutationLoading(true);
                 paymentOrderTest();
               }}
