@@ -770,10 +770,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                           ? medTimingAnswers[existing].selected
                           : true,
                         value: isFromSearch
-                          ? '0'
+                          ? ''
                           : existing > -1
                           ? medTimingAnswers[existing].value
-                          : '0',
+                          : '',
                       };
                     } else {
                       return {
@@ -816,7 +816,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                           .filter((i) => i.key !== item.key)
                           .map((i) => {
                             if (i.key !== MEDICINE_TIMINGS.AS_NEEDED) {
-                              return { key: i.key, selected: false, value: i.value };
+                              return { key: i.key, selected: false, value: '' };
                             } else {
                               return { key: i.key, selected: i.selected, value: i.value };
                             }
