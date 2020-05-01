@@ -60,6 +60,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { AppConfig } from '../../strings/AppConfig';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const { width } = Dimensions.get('window');
 
@@ -442,7 +443,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         <ListCard
           title={'My Orders'}
           leftIcon={<Invoice />}
-          onPress={() =>
+          onPress={() => {
+            postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.YourOrdersScene, {
               orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
                 (item) =>
@@ -455,8 +457,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               refetch: ordersRefetch,
               error: ordersError,
               loading: ordersLoading,
-            })
-          }
+            });
+          }}
         />
         {/* <ListCard
           // container={{ marginBottom: 32 }}

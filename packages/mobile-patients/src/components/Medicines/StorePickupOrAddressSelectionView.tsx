@@ -12,6 +12,8 @@ import { useUIElements } from '../UIElementsProvider';
 import { aphConsole, handleGraphQlError, formatAddress } from '../../helpers/helperFunctions';
 import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -251,7 +253,12 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
         <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+            onPress={() => {
+              postPharmacyAddNewAddressClick('Upload Prescription');
+              props.navigation.navigate(AppRoutes.AddAddress, {
+                source: 'Upload Prescription' as AddressSource,
+              });
+            }}
           >
             ADD NEW ADDRESS
           </Text>

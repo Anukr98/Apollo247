@@ -82,6 +82,8 @@ import {
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -687,7 +689,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <Text
             style={styles.yellowTextStyle}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true });
+              postPharmacyAddNewAddressClick('Diagnostics Cart');
+              props.navigation.navigate(AppRoutes.AddAddress, {
+                addOnly: true,
+                source: 'Diagnostics Cart' as AddressSource,
+              });
               setDiagnosticSlot && setDiagnosticSlot(null);
               setselectedTimeSlot(undefined);
             }}

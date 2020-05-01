@@ -59,6 +59,8 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -669,7 +671,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             style={styles.yellowTextStyle}
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'Add new address');
-              props.navigation.navigate(AppRoutes.AddAddress);
+              postPharmacyAddNewAddressClick('Cart');
+              props.navigation.navigate(AppRoutes.AddAddress, {
+                source: 'Cart' as AddressSource,
+              });
             }}
           >
             ADD NEW ADDRESS

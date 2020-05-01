@@ -44,16 +44,15 @@ import {
   g,
   handleGraphQlError,
   doRequestAndAccessLocationModified,
+  formatAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -64,7 +63,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
+import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -86,11 +85,14 @@ const styles = StyleSheet.create({
   },
 });
 
+export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+
 export interface AddAddressProps
   extends NavigationScreenProps<{
     KeyName?: any;
     DataAddress?: any;
     addOnly?: boolean;
+    source: AddressSource;
   }> {}
 
 type addressOptions = {
@@ -110,6 +112,7 @@ const AddressOptions: addressOptions[] = [
 ];
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
+  const source = props.navigation.getParam('source');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
@@ -277,7 +280,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress!(address);
         addDiagnosticAddress!(address);
 
+        const formattedAddress = formatAddress(address);
         if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
+          if (source != 'Diagnostics Cart') {
+            postPharmacyAddNewAddressCompleted(
+              source,
+              address.zipcode!,
+              formattedAddress,
+              source == 'My Account' ? undefined : 'Yes'
+            );
+          }
           setDeliveryAddressId!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
@@ -285,6 +297,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           setDeliveryAddressId!('');
           setDiagnosticAddressId!(address.id || '');
 
+          postPharmacyAddNewAddressCompleted('Cart', address.zipcode!, formattedAddress, 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
