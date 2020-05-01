@@ -247,7 +247,7 @@
   "Payment" : {
     "success": "PAYMENT_SUCCESS",
     "failure": "PAYMENT_FAILED",
-    "pending": "PAYMENT_PENDING" 
+    "pending": "PAYMENT_PENDING_PG" 
   },
   "muiltdosages": [
     {
