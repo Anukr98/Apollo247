@@ -8,28 +8,40 @@ import {
   StatusBar,
   Dimensions,
 } from 'react-native';
-import {colors} from '@aph/mobile-patients/src/theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import {Header} from '@aph/mobile-patients/src/components/ui/Header';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   makeAppointmentPayment,
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import {GET_TRANSACTION_STATUS} from '@aph/mobile-patients/src/graphql/profiles';
-import {CommonBugFender} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {useUIElements} from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {Spinner} from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GET_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  getParameterByName,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface ConsultPaymentStatusProps extends NavigationScreenProps { }
+export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -41,14 +53,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
+  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const client = useApolloClient();
-  const { success, failure, pending } = Payment
+  const { success, failure, pending } = Payment;
   const { showAphAlert } = useUIElements();
 
-const renderErrorPopup = (desc : string) => showAphAlert !({
-  title: 'Uh oh.. :(',
-  description: `${desc || ''}`.trim()
-});
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
 
   useEffect(() => {
     // getTxnStatus(orderId)
@@ -62,6 +77,13 @@ const renderErrorPopup = (desc : string) => showAphAlert !({
       })
       .then((res) => {
         console.log(res.data.paymentTransactionStatus.appointment);
+        if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          try {
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+            postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
+          } catch (error) {}
+        }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
@@ -94,19 +116,28 @@ const renderErrorPopup = (desc : string) => showAphAlert !({
     }
   };
 
-  const textComponent = (message: string, numOfLines:number | undefined,color:string,needStyle:boolean)=>{
+  const textComponent = (
+    message: string,
+    numOfLines: number | undefined,
+    color: string,
+    needStyle: boolean
+  ) => {
     return (
-      < Text style={{ ...theme.viewStyles.text('SB', 13, color, 1, 20), marginHorizontal: needStyle? 0.1 * windowWidth:undefined }}numberOfLines = {
-  numOfLines
-} >
-      {message}
-        </Text>
-        )
-  }
+      <Text
+        style={{
+          ...theme.viewStyles.text('SB', 13, color, 1, 20),
+          marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
+        }}
+        numberOfLines={numOfLines}
+      >
+        {message}
+      </Text>
+    );
+  };
 
   const statusCardColour = () => {
     if (status == success) {
-return colors.SUCCESS;
+      return colors.SUCCESS;
     } else if (status == failure) {
       return colors.FAILURE;
     } else {
@@ -115,29 +146,25 @@ return colors.SUCCESS;
   };
 
   const statusText = () => {
-    let message = 'PAYMENT PENDING'
-    let textColor = theme.colors.PENDING_TEXT
+    let message = 'PAYMENT PENDING';
+    let textColor = theme.colors.PENDING_TEXT;
     if (status === success) {
-      message =' PAYMENT SUCCESSFUL'
-      textColor = theme.colors.SUCCESS_TEXT
+      message = ' PAYMENT SUCCESSFUL';
+      textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
-      message = ' PAYMENT FAILED'
-      textColor = theme.colors.FAILURE_TEXT
-    } 
-       return textComponent(message, undefined, textColor,false)
+      message = ' PAYMENT FAILED';
+      textColor = theme.colors.FAILURE_TEXT;
+    }
+    return textComponent(message, undefined, textColor, false);
   };
 
   const renderStatusCard = () => {
-    const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--')
-    const orderIdText = 'Order ID: '+String(displayId)
-    const priceText = 'Rs. '+String(price)
+    const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
+    const orderIdText = 'Order ID: ' + String(displayId);
+    const priceText = 'Rs. ' + String(price);
     return (
-      <View style={[styles.statusCardStyle,{ backgroundColor: statusCardColour()},]}>
-        <View
-          style={styles.statusCardSubContainerStyle}
-        >
-          {statusIcon()}
-        </View>
+      <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
+        <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
         <View
           style={{
             flex: 0.15,
@@ -145,7 +172,7 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-           {statusText()}
+          {statusText()}
         </View>
         <View
           style={{
@@ -154,7 +181,7 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-            {textComponent(priceText, undefined, theme.colors.SHADE_GREY,false)}
+          {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
         <View
           style={{
@@ -163,10 +190,10 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-            {textComponent(refNumberText,undefined,theme.colors.SHADE_GREY,false)}
+          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
-          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY,false)}
+          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
       </View>
     );
@@ -174,8 +201,8 @@ return colors.SUCCESS;
 
   const appointmentHeader = () => {
     return (
-      <View style={styles.appointmentHeaderStyle} >
-           {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE,false)} 
+      <View style={styles.appointmentHeaderStyle}>
+        {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE, false)}
       </View>
     );
   };
@@ -185,27 +212,37 @@ return colors.SUCCESS;
       <View style={styles.appointmentCardStyle}>
         <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Date & Time of Appointment', undefined, theme.colors.ASTRONAUT_BLUE,false)}
+            {textComponent(
+              'Date & Time of Appointment',
+              undefined,
+              theme.colors.ASTRONAUT_BLUE,
+              false
+            )}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(appointmentDateTime.toLocaleString(), undefined, theme.colors.SHADE_CYAN_BLUE,false) }
+            {textComponent(
+              appointmentDateTime.toLocaleString(),
+              undefined,
+              theme.colors.SHADE_CYAN_BLUE,
+              false
+            )}
           </View>
         </View>
         <View style={{ flex: 0.5, flexDirection: 'row' }}>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-            {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE,false)}
+              {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
+              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE,false)}
+              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-                {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
+              {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
         </View>
@@ -214,14 +251,15 @@ return colors.SUCCESS;
   };
 
   const renderNote = () => {
-    let noteText = ''
+    let noteText = '';
     if (status === failure) {
-      noteText = "Note : In case your account has been debited, you should get the refund in 1-7 working days."
+      noteText =
+        'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
     } else if (status != success && status != failure) {
-      noteText ="Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment."
- 
+      noteText =
+        'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
-    return textComponent(noteText, undefined, theme.colors.SHADE_GREY, true)
+    return textComponent(noteText, undefined, theme.colors.SHADE_GREY, true);
   };
 
   const getButtonText = () => {
@@ -235,8 +273,8 @@ return colors.SUCCESS;
   };
 
   const handleButton = () => {
-    const {navigation}=props
-    const {navigate}=navigation
+    const { navigation } = props;
+    const { navigate } = navigation;
     if (status == success) {
       navigate('APPOINTMENTS');
     } else if (status == failure) {
@@ -261,8 +299,6 @@ return colors.SUCCESS;
     );
   };
 
- 
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
@@ -277,8 +313,8 @@ return colors.SUCCESS;
           {renderButton()}
         </ScrollView>
       ) : (
-          <Spinner />
-        )}
+        <Spinner />
+      )}
     </View>
   );
 };
@@ -296,9 +332,9 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 0.1,
   },
-  statusIconStyles:{
-    width:45,
-    height:45
+  statusIconStyles: {
+    width: 45,
+    height: 45,
   },
   statusCardStyle: {
     height: 0.27 * windowHeight,
@@ -311,13 +347,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  statusCardSubContainerStyle: { 
-    flex: 0.22, 
-    marginVertical: 18, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  statusCardSubContainerStyle: {
+    flex: 0.22,
+    marginVertical: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  appointmentCardStyle:{
+  appointmentCardStyle: {
     height: 0.23 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
@@ -347,10 +383,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-     shadowColor: '#808080',
+    shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
-  }
+  },
 });

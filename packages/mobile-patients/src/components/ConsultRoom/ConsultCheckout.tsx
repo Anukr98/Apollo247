@@ -223,6 +223,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
             });
       })
       .catch((error) => {

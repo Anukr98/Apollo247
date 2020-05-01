@@ -28,6 +28,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     ? props.navigation.getParam('bankCode')
     : null;
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const mobileNumber = currentPatient && currentPatient.mobileNumber;
@@ -50,6 +51,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       appointmentType: appointmentInput.appointmentType,
       displayID: displayID,
       status: status,
+      webEngageEventAttributes: webEngageEventAttributes,
+      fireBaseEventAttributes: fireBaseEventAttributes,
     });
   };
 
@@ -61,7 +64,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     if (redirectedUrl) {
       if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_REDIRECT_PATH) > -1) {
         navigatetoStatusscreen('PAYMENT_PENDING_PG');
-      } 
+      }
     }
   };
 
@@ -69,7 +72,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     console.log(JSON.stringify(paymentTypeID));
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
-      bankCode  ? '&bankCode=' + bankCode : ''
+      bankCode ? '&bankCode=' + bankCode : ''
     }`;
     console.log(url);
     return (
@@ -79,7 +82,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         bounces={false}
         source={{
           uri: url,
-        
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data)}
       />
