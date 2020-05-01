@@ -46,26 +46,36 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bannerDiv: {
       minHeight: 186,
-      minWidth: 170,
+      minWidth: 150,
       marginLeft: 'auto',
       position: 'relative',
     },
     bannerDivImg: {
       position: 'absolute',
-      right: 0,
-      bottom: -5,
+      right: -46,
+      bottom: 72,
     },
     partnerText: {
       fontWeight: 600,
       color: '#02475b',
       fontSize: 20,
-      marginTop: 17,
-      marginBottom: 24,
+      marginTop: 15,
+      marginBottom: 8,
+    },
+    partnerSubText: {
+      fontSize: 12,
+      color: '#000000',
+      opacity: 0.65,
+      '& span': {
+        fontWeight: 'bold',
+        opacity: 1,
+      },
     },
     getStartedBtn: {
       padding: '9px 13px',
       minWidth: 140,
       borderRadius: 10,
+      margin: '24px 0',
       backgroundColor: '#fcb716',
       color: '#fff',
       textTransform: 'uppercase',
@@ -124,6 +134,17 @@ const useStyles = makeStyles((theme: Theme) => {
     blackCardContent: {
       padding: '20px 0',
     },
+    cardsHeaderMain: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      color: '#fcb716',
+      marginBottom: 8,
+    },
+    cardsBodyMain: {
+      fontSize: 12,
+      color: '#000000',
+      lineHeight: '16px',
+    },
     code: {
       fontWeight: 'bold',
     },
@@ -140,12 +161,14 @@ const useStyles = makeStyles((theme: Theme) => {
     cardsHeader: {
       fontSize: 16,
       fontWeight: 500,
-      color: '#02475b',
-      marginBottom: 12,
+      color: '#fcb716',
+      marginBottom: 8,
     },
     cardsBody: {
       fontSize: 12,
       color: '#000000',
+      opacity: 0.65,
+      lineHeight: '16px',
     },
   };
 });
@@ -171,7 +194,12 @@ export const SbiLandingPage: React.FC = (props) => {
         </div>
         <div className={classes.partnerContent}>
           <div>
-            <div className={classes.partnerText}>An entire hospital now on your phone</div>
+            <div className={classes.partnerText}>
+              India, let’s take care of your biggest asset: Your Health
+            </div>
+            <div className={classes.partnerSubText}>
+              Watch this space to get special offer starting from <span>05 May</span>
+            </div>
             <Link
               to={currentPatient && currentPatient.id ? homePageUrl : `${homePageUrl}${urlParams}`}
               className={classes.getStartedBtn}
@@ -182,7 +210,7 @@ export const SbiLandingPage: React.FC = (props) => {
           </div>
           <div className={classes.bannerDiv}>
             <div className={classes.bannerDivImg}>
-              <img src={require('images/holding-phone-mockup.png')} />
+              <img src={require('images/img_india_get_healthy.svg')} />
             </div>
           </div>
         </div>
@@ -190,10 +218,10 @@ export const SbiLandingPage: React.FC = (props) => {
       <div className={classes.landingContent}>
         <div className={classes.blackCard}>
           <div className={classes.blackCardContent}>
-            <div className={classes.cardsHeader}>Bank on us with your health.</div>
-            <div className={classes.cardsBody}>
+            <div className={classes.cardsHeaderMain}>Bank on us with your health.</div>
+            <div className={classes.cardsBodyMain}>
               Use coupon code <span className={classes.code}>‘SBI247’</span> for{' '}
-              <span className={classes.discountPrice}>Rs.247</span> off on your doctor consultation
+              <span className={classes.discountPrice}>Rs.500</span> off on your doctor consultation
             </div>
           </div>
           <div className={classes.healthImage}>
@@ -215,17 +243,19 @@ export const SbiLandingPage: React.FC = (props) => {
           <img src={require('images/ic_bike.svg')} />
           <div>
             <div className={classes.cardsHeader}>Pharmacy at your doorstep</div>
-            <div className={classes.cardsBody}>Order medicines from the comfort of your home</div>
+            <div className={classes.cardsBody}>
+              Order medicines, tests and health checkups from the comfort of your home
+            </div>
           </div>
         </div>
         <div className={classes.cards}>
           <div className={classes.healthCardImage}>
-            <img src={require('images/ic_health_records.svg')} />
+            <img src={require('images/img_onboarding_test.svg')} />
           </div>
           <div>
-            <div className={classes.cardsHeader}>Medical records vault</div>
+            <div className={classes.cardsHeader}>Tests and Health Check</div>
             <div className={classes.cardsBody}>
-              Keep all your medical records safe and accessible in our digital vault
+              Most trusted diagnostics from the comfort of your home
             </div>
           </div>
         </div>
