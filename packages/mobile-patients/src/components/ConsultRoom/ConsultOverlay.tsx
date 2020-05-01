@@ -247,12 +247,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return eventAttributes;
   };
 
-  const getConsultationBookedFirebaseEventAttributes = () => {
-    const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-      type: 'Consultation',
-    };
-    return eventAttributes;
-  };
+  // const getConsultationBookedFirebaseEventAttributes = () => {
+  //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+  //     type: 'Consultation',
+  //   };
+  //   return eventAttributes;
+  // };
 
   const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
     client
@@ -289,10 +289,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           )
         );
         try {
-          postFirebaseEvent(
-            FirebaseEventName.IN_APP_PURCHASE,
-            getConsultationBookedFirebaseEventAttributes()
-          );
+          // postFirebaseEvent(
+          //   FirebaseEventName.IN_APP_PURCHASE,
+          //   getConsultationBookedFirebaseEventAttributes()
+          // );
         } catch (error) {}
 
         handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);

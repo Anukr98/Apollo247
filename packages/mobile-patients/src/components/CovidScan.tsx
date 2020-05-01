@@ -6,7 +6,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
-export interface CovidScanProps extends NavigationScreenProps { }
+export interface CovidScanProps extends NavigationScreenProps {}
 
 export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,10 +34,7 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const handleBack = async () => {
-    Alert.alert('Alert', 'Do you want to go back?', [
-      { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
-    ]);
+    props.navigation.goBack();
   };
 
   const renderSpinner = () => {
@@ -68,7 +65,7 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header leftIcon="backArrow" onPressLeftIcon={() => handleBack()} />
+        <Header leftIcon="logo" onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
       {loading && renderSpinner()}

@@ -12,6 +12,7 @@ import {
   TextStyle,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { ApolloLogo } from '../ApolloLogo';
 
 const textStyle = {
   color: theme.colors.SHERPA_BLUE,
@@ -61,7 +62,7 @@ export interface HeaderProps {
   title?: string;
   titleStyle?: StyleProp<TextStyle>;
   titleComponent?: React.ReactNode;
-  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite';
+  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
   container?: StyleProp<ViewStyle>;
@@ -104,6 +105,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
             {leftIcon === 'backArrow' && <BackArrow />}
             {leftIcon === 'close' && <Remove />}
             {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+            {leftIcon === 'logo' && (
+              <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+            )}
           </TouchableOpacity>
         )}
       </View>

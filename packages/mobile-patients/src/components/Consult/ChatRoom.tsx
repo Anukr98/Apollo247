@@ -522,6 +522,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       console.log(callhandelBack, 'is back called');
       if (callhandelBack) {
+        handleCallTheEdSessionAPI();
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
@@ -529,7 +530,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
           })
         );
-        handleCallTheEdSessionAPI();
         return true;
       } else {
         return true;
@@ -5750,6 +5750,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
             if (callhandelBack) {
+              handleCallTheEdSessionAPI();
               props.navigation.dispatch(
                 StackActions.reset({
                   index: 0,
@@ -5757,7 +5758,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
                 })
               );
-              handleCallTheEdSessionAPI();
             }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}

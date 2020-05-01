@@ -143,10 +143,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
 
     try {
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-        type: 'Pharmacy_Submit_Prescription',
-      };
-      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
+      // const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+      //   type: 'Pharmacy_Submit_Prescription',
+      // };
+      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
     } catch (error) {}
   };
 

@@ -49,7 +49,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   appointmentId: string;
   price: number;
   webEngageEventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED];
-  fireBaseEventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE];
+  // fireBaseEventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE];
 }
 {
 }
@@ -59,7 +59,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     try {
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
+      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
     } catch (error) {}
 
     setLoading!(false);

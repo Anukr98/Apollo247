@@ -64,7 +64,7 @@ export enum FirebaseEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
 
   //In App Purchase Events
-  IN_APP_PURCHASE = 'in_app_purchase',
+  IN_APP_PURCHASE = 'In_app_purchase',
 }
 
 export interface PatientInfo {

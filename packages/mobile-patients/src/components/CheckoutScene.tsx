@@ -326,10 +326,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
     try {
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-        type: 'Pharmacy',
-      };
-      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
+      // const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+      //   type: 'Pharmacy',
+      // };
+      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
     } catch (error) {}
   };
 

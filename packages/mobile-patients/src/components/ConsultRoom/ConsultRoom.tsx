@@ -1125,7 +1125,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 ...theme.viewStyles.text('SB', 24, theme.colors.WHITE, 1, 32),
               }}
             >
-              {'Covid-19'}
+              {'CORONAVIRUS (COVID-19)'}
             </Text>
             <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.WHITE, 1, 19) }}>
               {

@@ -261,10 +261,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
 
     try {
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-        type: 'Diagnostics',
-      };
-      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
+      // const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+      //   type: 'Diagnostics',
+      // };
+      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
     } catch (error) {}
   };
 

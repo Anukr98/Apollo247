@@ -489,7 +489,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
-          BackHandler.removeEventListener('hardwareBackPress', handleBack);
           props.navigation.navigate(AppRoutes.DoctorSearch);
         },
       },
