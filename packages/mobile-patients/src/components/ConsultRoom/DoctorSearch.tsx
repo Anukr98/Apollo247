@@ -955,6 +955,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   doctorId: rowData.id,
                 });
               }}
+              onPressConsultNowOrBookAppointment={(type) => {
+                postDoctorClickWEGEvent(rowData, 'Search', type);
+              }}
             >
               {/* {data ? console.log(data, 'savesearch doctor data ') : null}
               {error ? console.log(error, 'savesearch doctor error') : null} */}

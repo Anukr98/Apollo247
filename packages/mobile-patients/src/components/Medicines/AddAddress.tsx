@@ -285,7 +285,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           if (source != 'Diagnostics Cart') {
             postPharmacyAddNewAddressCompleted(
               source,
-              address.zipcode!,
+              g(address, 'zipcode')!,
               formattedAddress,
               source == 'My Account' ? undefined : 'Yes'
             );
@@ -297,7 +297,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           setDeliveryAddressId!('');
           setDiagnosticAddressId!(address.id || '');
 
-          postPharmacyAddNewAddressCompleted('Cart', address.zipcode!, formattedAddress, 'No');
+          postPharmacyAddNewAddressCompleted(
+            'Cart',
+            g(address, 'zipcode')!,
+            formattedAddress,
+            'No'
+          );
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
