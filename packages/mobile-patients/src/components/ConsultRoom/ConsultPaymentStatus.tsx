@@ -20,6 +20,8 @@ import { getTxnStatus } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GET_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -29,13 +31,15 @@ export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
-  const [refNo, setrefNo] = useState<string>('123456');
+  const [refNo, setrefNo] = useState<string>('');
+  const [displayId, setdisplayId] = useState<String>('');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
   const { showAphAlert } = useUIElements();
+  const client = useApolloClient();
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -44,11 +48,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    getTxnStatus(orderId)
+    // getTxnStatus(orderId)
+    client
+      .query({
+        query: GET_TRANSACTION_STATUS,
+        variables: {
+          appointmentId: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
       .then((res) => {
-        console.log(res.data);
-        setrefNo(res.data.TXNID);
-        setStatus(res.data.STATUS);
+        console.log(res.data.paymentTransactionStatus.appointment);
+        setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
+        setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
+        setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setLoading(false);
       })
       .catch((error) => {
@@ -115,16 +128,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     return (
       <View
         style={{
-          height: 0.27 * windowHeight,
-          margin: 0.06 * windowWidth,
+          ...styles.statusCard,
           backgroundColor: statusCardColour(),
-          flex: 1,
-          borderRadius: 10,
-          elevation: 10,
         }}
       >
         <View
-          style={{ flex: 0.22, marginVertical: 18, justifyContent: 'center', alignItems: 'center' }}
+          style={{ flex: 0.24, marginVertical: 18, justifyContent: 'center', alignItems: 'center' }}
         >
           {statusIcon()}
         </View>
@@ -154,12 +163,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Ref. No : {refNo}
+            Ref. Number : {refNo != '' && refNo != null ? refNo : '--'}
           </Text>
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
           <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Order ID : {orderId}
+            Order ID : {displayId}
           </Text>
         </View>
       </View>
@@ -168,16 +177,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const appointmentHeader = () => {
     return (
-      <View
-        style={{
-          backgroundColor: '#eee',
-          height: 0.04 * windowHeight,
-          justifyContent: 'center',
-          marginHorizontal: 0.06 * windowWidth,
-          borderBottomWidth: 0.8,
-          borderBottomColor: '#ddd',
-        }}
-      >
+      <View style={styles.appointmentHeader}>
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
           BOOKING DETAILS
         </Text>
@@ -187,18 +187,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const appointmentCard = () => {
     return (
-      <View
-        style={{
-          height: 0.23 * windowHeight,
-          marginVertical: 0.03 * windowWidth,
-          paddingLeft: 0.06 * windowWidth,
-          marginHorizontal: 0.06 * windowWidth,
-          backgroundColor: '#fff',
-          flex: 1,
-          borderRadius: 10,
-          elevation: 8,
-        }}
-      >
+      <View style={styles.appointmentCard}>
         <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
             <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
@@ -255,7 +244,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           days.
         </Text>
       );
-    } else if (status == string.Payment.pending) {
+    } else if (status != string.Payment.success && status != string.Payment.failure) {
       return (
         <Text
           style={{
@@ -294,16 +283,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderButton = () => {
     return (
       <TouchableOpacity
-        style={{
-          height: 0.06 * windowHeight,
-          backgroundColor: '#fcb716',
-          marginVertical: 0.06 * windowWidth,
-          marginHorizontal: 0.2 * windowWidth,
-          borderRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-          elevation: 5,
-        }}
+        style={styles.buttonStyle}
         onPress={() => {
           handleButton();
         }}
@@ -339,5 +319,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f1ec',
+  },
+  statusCard: {
+    height: 0.27 * windowHeight,
+    margin: 0.06 * windowWidth,
+    flex: 1,
+    borderRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  appointmentCard: {
+    height: 0.23 * windowHeight,
+    marginVertical: 0.03 * windowWidth,
+    paddingLeft: 0.06 * windowWidth,
+    marginHorizontal: 0.06 * windowWidth,
+    backgroundColor: '#fff',
+    flex: 1,
+    borderRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  buttonStyle: {
+    height: 0.06 * windowHeight,
+    backgroundColor: '#fcb716',
+    marginVertical: 0.06 * windowWidth,
+    marginHorizontal: 0.2 * windowWidth,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  appointmentHeader: {
+    height: 0.04 * windowHeight,
+    justifyContent: 'center',
+    marginHorizontal: 0.06 * windowWidth,
+    borderBottomWidth: 0.8,
+    borderBottomColor: '#ddd',
   },
 });

@@ -48,7 +48,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       doctorName: doctorName,
       appointmentDateTime: appointmentInput.appointmentDateTime,
       appointmentType: appointmentInput.appointmentType,
-      displayID:displayID,
+      displayID: displayID,
       status: status,
     });
   };
@@ -59,21 +59,19 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     console.log(`RedirectedUrl: ${redirectedUrl}`);
 
     if (redirectedUrl) {
-      if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) {
-        navigatetoStatusscreen('SUCCESS');
-      } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1) {
-        navigatetoStatusscreen('FAILURE');
-      } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_PENDING_PATH) > -1) {
-        navigatetoStatusscreen('PENDING');
-      }
+      if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_REDIRECT_PATH) > -1) {
+        navigatetoStatusscreen('PAYMENT_PENDING_PG');
+      } 
     }
   };
 
   const renderwebView = () => {
     console.log(JSON.stringify(paymentTypeID));
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    const url = `${baseUrl}/make-payment`;
-
+    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+      bankCode  ? '&bankCode=' + bankCode : ''
+    }`;
+    console.log(url);
     return (
       <WebView
         onLoadStart={() => setLoading!(true)}
@@ -81,22 +79,20 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
         bounces={false}
         source={{
           uri: url,
-          method: 'POST',
-          body:
-            'orderID=' +
-            [appointmentId] +
-            '&patientID=' +
-            [currentPatiendId] +
-            '&amount=' +
-            [price] +
-            '&paymentTypeID=' +
-            [paymentTypeID] +
-            '&paymentModeOnly=YES' +
-            '&mobileNumber=' +
-            [mobileNumber] +
-            // '&returnURL=' +
-            // 'https://aph.dev.pmt.popcornapps.com/consulttransaction' +
-            ([bankCode] ? '&bankCode=' + [bankCode] : ''),
+          // method: 'POST',
+          // body:
+          //   'orderID=' +
+          //   [appointmentId] +
+          //   '&patientID=' +
+          //   [currentPatiendId] +
+          //   '&amount=' +
+          //   [price] +
+          //   '&paymentTypeID=' +
+          //   [paymentTypeID] +
+          //   '&paymentModeOnly=YES' +
+          //   '&mobileNumber=' +
+          //   [mobileNumber] +
+          //   ([bankCode] ? '&bankCode=' + [bankCode] : ''),
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data)}
       />

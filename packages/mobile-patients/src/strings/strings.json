@@ -261,9 +261,9 @@
     ]
   },
   "Payment" : {
-    "success": "TXN_SUCCESS",
-    "failure":"TXN_FAILURE",
-    "pending": "PENDING"
+    "success": "PAYMENT_SUCCESS",
+    "failure":"PAYMENT_PENDING_PG",
+    "pending": "PAYMENT_FAILED" 
   },
   "muiltdosages": [
     {

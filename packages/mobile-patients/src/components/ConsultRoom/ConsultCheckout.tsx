@@ -371,7 +371,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         >
           <View style={{ flex: 0.65, flexDirection: 'row' }}>
             <FlatList
-              data={bankOptions}
+              data={bankOptions.slice(0, 4)}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
@@ -411,7 +411,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               keyExtractor={(item) => item.name}
             />
           </View>
-          <View style={{ flex: 0.35, flexDirection: 'row' }}>
+          {/* <View style={{ flex: 0.35, flexDirection: 'row' }}>
             <TouchableOpacity
               style={{
                 flex: 0.25,
@@ -427,7 +427,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 See All
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
     );
