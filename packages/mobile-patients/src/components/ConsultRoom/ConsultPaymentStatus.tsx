@@ -22,7 +22,6 @@ import {
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
 import {GET_TRANSACTION_STATUS} from '@aph/mobile-patients/src/graphql/profiles';
-import {getTxnStatus} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {CommonBugFender} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {useUIElements} from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {Spinner} from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -35,10 +34,10 @@ export interface ConsultPaymentStatusProps extends NavigationScreenProps { }
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
-  const [refNo, setrefNo] = useState<string>('123456');
+  const [refNo, setrefNo] = useState<string>('');
+  const [displayId, setdisplayId] = useState<String>('');
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
-  const [displayId, setdisplayId] = useState<String>('');
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
@@ -51,34 +50,34 @@ const renderErrorPopup = (desc : string) => showAphAlert !({
   description: `${desc || ''}`.trim()
 });
 
-useEffect(() => {
-  client
-    .query({
-      query: GET_TRANSACTION_STATUS,
-      variables: {
-        appointmentId: orderId,
-      },
-      fetchPolicy: 'no-cache',
-    })
-    .then((res) => {
-      console.log(res.data.paymentTransactionStatus.appointment);
-      setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
-      setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
-      setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
-      setLoading(false);
-    }).catch((error) => {
-    CommonBugFender('fetchingTxnStutus', error);
-    console.log(error);
-    props
-      .navigation
-      .navigate(AppRoutes.DoctorSearch);
-    renderErrorPopup(`Something went wrong, plaease try again after sometime`);
-  });
-  BackHandler.addEventListener('hardwareBackPress', handleBack);
-  return () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
-  };
-}, []);
+  useEffect(() => {
+    // getTxnStatus(orderId)
+    client
+      .query({
+        query: GET_TRANSACTION_STATUS,
+        variables: {
+          appointmentId: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        console.log(res.data.paymentTransactionStatus.appointment);
+        setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
+        setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
+        setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
+        setLoading(false);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingTxnStutus', error);
+        console.log(error);
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+      });
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const handleBack = () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);

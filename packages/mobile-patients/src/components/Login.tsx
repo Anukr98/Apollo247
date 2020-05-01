@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends NavigationScreenProps { }
+export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
@@ -301,15 +301,15 @@ export const Login: React.FC<LoginProps> = (props) => {
                   console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
-                  const eventAttributes: FirebaseEvents[FirebaseEventName.MOBILE_NUMBER_ENTERED] = {
+                  const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
                     mobilenumber: phoneNumber,
                   };
-                  postFirebaseEvent(FirebaseEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
+                  postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
                   console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
-                  } catch (error) { }
+                  } catch (error) {}
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -333,11 +333,11 @@ export const Login: React.FC<LoginProps> = (props) => {
           setShowSpinner(false);
         }
       });
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const openWebView = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
+    CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     return (
       <View style={styles.viewWebStyles}>
@@ -397,8 +397,8 @@ export const Login: React.FC<LoginProps> = (props) => {
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow size="md_l" />
             ) : (
-                <ArrowDisabled size="md_l" />
-              )
+              <ArrowDisabled size="md_l" />
+            )
           }
           onClickButton={onClickOkay}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
@@ -445,7 +445,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 color: '#02475b',
                 ...fonts.IBMPlexSansBold(10),
                 lineHeight: 16,
-                letterSpacing: 0.4
+                letterSpacing: 0.4,
               }}
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url

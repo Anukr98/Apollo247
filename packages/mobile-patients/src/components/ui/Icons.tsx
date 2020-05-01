@@ -44,6 +44,22 @@ export const DoctorIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_doctor.png')} />
 );
 
+export const CovidRiskLevel: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/covid_white.png')} />
+);
+
+export const CovidHealthScan: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/covid_ic_psychologist.png')} />
+);
+
+export const CovidExpert: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/covid_ic_family_doctor.png')} />
+);
+
+export const LatestArticle: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_feed.png')} />
+);
+
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );

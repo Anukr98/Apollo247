@@ -33,6 +33,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -147,6 +148,40 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     return eventAttributes;
   };
 
+  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
+
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName')!,
+      specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
+      category: g(doctor, 'doctorType')!, // send doctorType
+      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
+      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      clinic_name: g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      clinic_address:
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Patient_UHID: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      Mobile_Number: g(currentPatient, 'mobileNumber'),
+      Customer_ID: g(currentPatient, 'id'),
+      Consult_ID: id,
+    };
+    return eventAttributes;
+  };
+
   const initiatePayment = (item) => {
     setLoading(true);
     client
@@ -169,6 +204,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               paymentTypeID: item.paymentMode,
               appointmentInput: appointmentInput,
               webEngageEventAttributes: getConsultationBookedEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
@@ -371,7 +410,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         >
           <View style={{ flex: 0.65, flexDirection: 'row' }}>
             <FlatList
-              data={bankOptions}
+              data={bankOptions.slice(0, 4)}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
@@ -411,7 +450,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               keyExtractor={(item) => item.name}
             />
           </View>
-          <View style={{ flex: 0.35, flexDirection: 'row' }}>
+          {/* <View style={{ flex: 0.35, flexDirection: 'row' }}>
             <TouchableOpacity
               style={{
                 flex: 0.25,
@@ -427,7 +466,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 See All
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
     );

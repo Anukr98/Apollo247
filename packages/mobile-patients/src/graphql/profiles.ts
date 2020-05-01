@@ -2142,3 +2142,17 @@ export const GET_DEVICE_TOKEN_COUNT = gql`
     }
   }
 `;
+
+export const GET_TRANSACTION_STATUS = gql`
+  query paymentTransactionStatus($appointmentId: String!) {
+    paymentTransactionStatus(appointmentId: $appointmentId) {
+      appointment{
+        displayId
+        bankTxnId
+        paymentStatus
+        amountPaid
+       
+      }
+  }
+}
+`;
