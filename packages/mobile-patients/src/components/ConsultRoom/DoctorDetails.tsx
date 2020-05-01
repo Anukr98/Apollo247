@@ -186,12 +186,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    if (doctorDetails && availableInMin) {
-      _postWebEngageEvent(doctorDetails, availableInMin);
-    }
-  }, [doctorDetails, availableInMin]);
-
-  useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -292,38 +286,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   //     }
   //   } catch {}
   // }
-
-  const _postWebEngageEvent = (
-    doctorDetails: getDoctorDetailsById_getDoctorDetailsById,
-    availableInMin?: number
-  ) => {
-    const doctorClinics = (doctorDetails.doctorHospital || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_PROFILE_VIEWED] = {
-      name: g(doctorDetails, 'fullName')!,
-      specialisation: g(doctorDetails, 'specialty', 'name')!,
-      experience: Number(doctorDetails.experience!),
-      'language known': g(doctorDetails, 'languages') || 'NA',
-      Hospital:
-        doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
-      'Doctor Category': g(doctorDetails, 'doctorType')!,
-      'Doctor ID': g(doctorDetails, 'id')!,
-      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
-    };
-
-    if (availableInMin) {
-      eventAttributes['Available in Minutes'] = availableInMin;
-    }
-
-    postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
-  };
 
   const todayDate = new Date().toISOString().slice(0, 10);
 
@@ -870,6 +832,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
       'Doctor Specialty': g(doctorDetails, 'specialty', 'name')!,
+      Source: 'Profile',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),

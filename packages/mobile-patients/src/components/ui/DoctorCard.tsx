@@ -118,6 +118,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   // | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
   // | null;
   onPress?: (doctorId: string) => void;
+  onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
   // doctorAvailalbeSlots?:
@@ -403,6 +404,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   activeOpacity={1}
                   style={styles.buttonView}
                   onPress={() => {
+                    props.onPressConsultNowOrBookAppointment &&
+                      props.onPressConsultNowOrBookAppointment(
+                        availableInMin && availableInMin < 60 && availableInMin > 0
+                          ? 'consult-now'
+                          : 'book-appointment'
+                      );
+
                     CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
                     availableInMin && availableInMin < 60 && availableInMin > 0
                       ? navigateToDetails(rowData.id ? rowData.id : '', {

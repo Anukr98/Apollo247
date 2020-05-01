@@ -1313,6 +1313,8 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        orderType
+        currentStatus
         patientAddressId
         medicineOrdersStatus {
           id

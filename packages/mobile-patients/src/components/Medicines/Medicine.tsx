@@ -81,6 +81,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -515,6 +516,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       // (ordersFetched.length > 0 && (
       <ListCard
         onPress={() => {
+          postMyOrdersClicked('Pharmacy Home', currentPatient);
           globalLoading!(true);
           props.navigation.navigate(AppRoutes.YourOrdersScene, {
             orders: ordersFetched,

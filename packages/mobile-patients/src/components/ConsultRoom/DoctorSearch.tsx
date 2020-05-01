@@ -38,6 +38,7 @@ import {
   postWebEngageEvent,
   g,
   postWEGNeedHelpEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -56,6 +57,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -76,6 +78,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { width } = Dimensions.get('window');
 
@@ -769,7 +772,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     _doctorDetails:
       | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors
       | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
-    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source']
+    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
+    type?: 'consult-now' | 'book-appointment'
   ) => {
     const doctorDetails = _doctorDetails;
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
@@ -782,7 +786,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
-    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+    if (type == 'consult-now') {
+      postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+    } else if (type == 'book-appointment') {
+      postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+    }
   };
 
   const renderSpecialistRow = (
@@ -942,6 +955,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   doctorId: rowData.id,
                 });
               }}
+              onPressConsultNowOrBookAppointment={(type) => {
+                postDoctorClickWEGEvent(rowData, 'Search', type);
+              }}
             >
               {/* {data ? console.log(data, 'savesearch doctor data ') : null}
               {error ? console.log(error, 'savesearch doctor error') : null} */}
@@ -987,6 +1003,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 props.navigation.navigate(AppRoutes.DoctorDetails, {
                   doctorId: rowData.id,
                 });
+              }}
+              onPressConsultNowOrBookAppointment={(type) => {
+                postDoctorClickWEGEvent(rowData, 'Search', type);
               }}
             >
               {data ? console.log(data, 'savesearch doctor data ') : null}
