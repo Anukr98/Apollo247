@@ -940,6 +940,16 @@ export const FavouriteMedicines: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
 
+  useEffect(() => {
+    if (isCustomform) {
+      const node = (customInputRef as any).current;
+      if (node) node.focus();
+    } else {
+      const node = (defaultInputRef as any).current;
+      if (node) node.focus();
+    }
+  }, [isCustomform]);
+
   const getMedicineDetails = (suggestion: OptionType) => {
     const CancelToken = axios.CancelToken;
     setLoading(true);
@@ -2120,6 +2130,7 @@ export const FavouriteMedicines: React.FC = () => {
                                     <AphTextField
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
+                                      inputRef={customInputRef}
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
@@ -2260,6 +2271,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={tabletsCount}
+                                      inputRef={defaultInputRef}
                                       onChange={(event: any) => {
                                         setTabletsCount(event.target.value);
                                       }}
