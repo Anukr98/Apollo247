@@ -127,11 +127,20 @@ const addAllDoctorSlotsElastic: Resolver<
     for (let k = 0; k < allDocsInfo.length; k++) {
       stDate = new Date(args.fromSlotDate);
       slotsAdded += '{';
-      console.log('came here');
       const updateParam: RequestParams.Update = {
         id: allDocsInfo[k].id,
         index: 'doctors',
-        body: { doc: { doctorSlots: [] } },
+        body: {
+          doc: {
+            doctorSlots: [],
+            onlineConsultationFees: allDocsInfo[k].onlineConsultationFees,
+            physicalConsultationFees: allDocsInfo[k].physicalConsultationFees,
+            photoUrl: allDocsInfo[k].photoUrl,
+            firstName: allDocsInfo[k].firstName,
+            lastName: allDocsInfo[k].lastName,
+            fullName: allDocsInfo[k].fullName,
+          },
+        },
       };
       const updateClearResp = await client.update(updateParam);
       console.log(updateClearResp, 'updateClearResp ');
