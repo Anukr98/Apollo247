@@ -332,6 +332,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  appointmentHeaderStyle: {
+    backgroundColor: '#eee',
+    height: 0.04 * windowHeight,
+    justifyContent: 'center',
+    marginHorizontal: 0.06 * windowWidth,
+    borderBottomWidth: 0.8,
+    borderBottomColor: '#ddd',
+  },
   buttonStyle: {
     height: 0.06 * windowHeight,
     backgroundColor: '#fcb716',
@@ -340,17 +348,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#808080',
+     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
-  },
-  appointmentHeader: {
-    height: 0.04 * windowHeight,
-    justifyContent: 'center',
-    marginHorizontal: 0.06 * windowWidth,
-    borderBottomWidth: 0.8,
-    borderBottomColor: '#ddd',
   }
 });
