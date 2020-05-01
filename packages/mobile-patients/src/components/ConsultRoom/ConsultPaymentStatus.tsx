@@ -80,7 +80,6 @@ const renderErrorPopup = (desc : string) => showAphAlert !({
   }, []);
 
   const handleBack = () => {
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     props.navigation.navigate(AppRoutes.ConsultRoom);
     return true;
   };
