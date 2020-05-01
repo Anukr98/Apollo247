@@ -586,10 +586,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
-        /* Gtm code start */
-        const Specialty = getSpeciality();
-        gtmTracking({category: 'Consultations' , action: Specialty, label: 'Failed / Cancelled'})
-        /* Gtm code End */
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         disableSubmit = false;
