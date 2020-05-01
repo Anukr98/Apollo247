@@ -449,7 +449,7 @@ export const CovidLanding: React.FC = (props: any) => {
           </Modal>
         </div>
       </div>
-      <NavigationBottom />
+      {!isWebView && <NavigationBottom />}
     </div>
   );
 };
