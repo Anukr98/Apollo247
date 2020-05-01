@@ -152,6 +152,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { ApolloLogo } from '../ApolloLogo';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -206,25 +207,48 @@ const styles = StyleSheet.create({
   },
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 20,
+    paddingTop: 12,
     paddingHorizontal: 20,
     ...theme.viewStyles.shadowStyle,
   },
+  // displayId: {
+  //   ...theme.fonts.IBMPlexSansMedium(12),
+  //   color: theme.colors.SEARCH_EDUCATION_COLOR,
+  //   paddingBottom: 4,
+  //   marginTop: 10,
+  // },
+  // separatorStyle: {
+  //   borderBottomWidth: 0.5,
+  //   borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  // },
   displayId: {
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(13),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
     paddingBottom: 4,
+    // marginTop: 10,
+    letterSpacing: 0.33,
   },
   separatorStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    // borderBottomWidth: 0.5,
+    // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    backgroundColor: '#02475b',
+    opacity: 0.2,
+    height: 0.5,
+    // marginBottom: 6,
   },
   doctorNameStyle: {
     paddingTop: 8,
-    paddingBottom: 2,
+    paddingBottom: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansSemiBold(23),
     color: theme.colors.LIGHT_BLUE,
+  },
+  doctorSpecialityStyle: {
+    paddingTop: 0,
+    paddingBottom: 12,
+    ...theme.fonts.IBMPlexSansRegular(11),
+    color: theme.colors.LIGHT_BLUE,
+    lineHeight: 15,
   },
   timeStyle: {
     paddingBottom: 20,
@@ -1405,6 +1429,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
+  const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
     if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
@@ -1473,7 +1498,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (isCallAbandment) {
               setIsDoctorNoShow(true);
             } else {
-              NextAvailableSlot(appointmentData, 'Transfer', true);
+              setShowDoctorNoShowAlert(true);
             }
             callAbandonmentStoppedTimer = 620;
             callAbandonmentTimer && clearInterval(callAbandonmentTimer);
@@ -3708,13 +3733,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       leftComponent++;
       rightComponent = 0;
       return (
-        <View style={{ marginHorizontal: 20 }}>
+        <View style={{ marginHorizontal: 20, paddingTop: 8 }}>
           {leftComponent === 1 && (
             <View
               style={{
                 backgroundColor: 'transparent',
                 width: width,
-                marginVertical: 8,
+                // marginVertical: 8,
               }}
             />
           )}
@@ -4214,15 +4239,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     return (
       <View style={styles.mainView}>
+        <View style={{ maxWidth: '14%' }}>
+          <Text style={styles.displayId} numberOfLines={1}>
+            #{appointmentData.displayId}
+          </Text>
+          <View style={styles.separatorStyle} />
+        </View>
         <View
           style={{
             flexDirection: 'row',
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
-            <View style={styles.separatorStyle} />
             <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+            <Text style={styles.doctorSpecialityStyle}>{`${g(
+              appointmentData,
+              'doctorInfo',
+              'specialty',
+              'userFriendlyNomenclature'
+            )} | MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
             <Text style={styles.timeStyle}>{time}</Text>
           </View>
           <View style={styles.imageView}>
@@ -4246,6 +4281,80 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  // const renderChatHeader = () => {
+  //   let time = '';
+  //   const diffMin = Math.ceil(
+  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true)
+  //   );
+  //   const diffHours = Math.ceil(
+  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'hours', true)
+  //   );
+  //   const diffDays = Math.ceil(
+  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
+  //   );
+  //   const diffMonths = Math.ceil(
+  //     moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
+  //   );
+  //   // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+
+  //   if (textChange && !jrDoctorJoined) {
+  //     time = 'Consult is In-progress';
+  //   } else {
+  //     if (status === STATUS.COMPLETED) {
+  //       time = `Consult is completed`;
+  //     } else if (diffMin <= 0) {
+  //       time = `Will be joining soon`;
+  //     } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
+  //       time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+  //     } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
+  //       time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+  //     } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
+  //       time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+  //     } else {
+  //       time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
+  //     }
+  //   }
+  //   return (
+  //     <View style={styles.mainView}>
+  //       <View
+  //         style={{
+  //           flexDirection: 'row',
+  //         }}
+  //       >
+  //         <View style={{ flex: 1 }}>
+  //           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
+  //           <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
+  //           <View style={styles.separatorStyle} />
+  //           <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+  //           <Text style={styles.doctorSpecialityStyle}>{`${g(
+  //             appointmentData,
+  //             'doctorInfo',
+  //             'specialty',
+  //             'userFriendlyNomenclature'
+  //           )}  |  MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
+  //           <Text style={styles.timeStyle}>{time}</Text>
+  //         </View>
+  //         <View style={styles.imageView}>
+  //           <View style={styles.imageContainer}>
+  //             {appointmentData.doctorInfo.thumbnailUrl &&
+  //             appointmentData.doctorInfo.thumbnailUrl.match(
+  //               /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
+  //             ) ? (
+  //               <Image
+  //                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+  //                 resizeMode={'contain'}
+  //                 style={styles.doctorImage}
+  //               />
+  //             ) : (
+  //               <DoctorPlaceholderImage style={styles.doctorImage} />
+  //             )}
+  //           </View>
+  //         </View>
+  //       </View>
+  //     </View>
+  //   );
+  // };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -4253,10 +4362,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           style={{
             flex: 1,
           }}
-          ListHeaderComponent={renderChatHeader()}
+          // ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
-          stickyHeaderIndices={[0]}
+          // stickyHeaderIndices={[0]}
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
@@ -5685,6 +5794,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </Text>
           </View>
         ) : null}
+        {renderChatHeader()}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <View
@@ -6011,6 +6121,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
                 setIsDoctorNoShow(false);
+              }}
+            >
+              <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {showDoctorNoShowAlert && (
+        <BottomPopUp
+          title={`Hi ${userName},`}
+          description={`Due to an emergency, ${appointmentData.doctorInfo.displayName} had to reschedule your appointment to the next available slot. Confirm Slot`}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.claimStyles}
+              onPress={() => {
+                setShowDoctorNoShowAlert(false);
+              }}
+            >
+              <Text style={styles.rescheduleTextStyles}>{'CLAIM REFUND'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.rescheduletyles}
+              onPress={() => {
+                NextAvailableSlot(appointmentData, 'Transfer', true);
+                setShowDoctorNoShowAlert(false);
               }}
             >
               <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>

@@ -140,10 +140,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       // console.log(data, 'data');
 
-      let linkId = data[1].split('&');
+      let linkId = '';
+
       try {
-        if (linkId.length > 0) {
-          linkId = linkId[0];
+        if (data.length >= 2) {
+          linkId = data[1].split('&');
+          if (linkId.length > 0) {
+            linkId = linkId[0];
+          }
         }
       } catch (error) {}
       console.log(linkId, 'linkId');

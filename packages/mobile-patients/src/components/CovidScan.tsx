@@ -6,7 +6,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
-export interface CovidScanProps extends NavigationScreenProps {}
+export interface CovidScanProps extends NavigationScreenProps { }
 
 export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,7 +27,7 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
       <WebView
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: 'https://covid.apollo247.com?utm_source=mobile_app' }}
+        source={{ uri: props.navigation.getParam('covidUrl') }}
         onNavigationStateChange={(data) => handleResponse(data)}
       />
     );
