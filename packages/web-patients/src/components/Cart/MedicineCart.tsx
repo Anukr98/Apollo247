@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -819,7 +819,7 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount })
+    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount });
     /**Gtm code  End */
   }, [grossValue]);
 
@@ -1159,25 +1159,35 @@ export const MedicineCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                gtmTracking({ category: 'Pharmacy', action: 'Order', label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`, value: totalAmount })
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'Order',
+                  label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+                  value: totalAmount,
+                });
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
                     // GTM start
-                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: totalAmount })
-                    window._ob &&
-                      window._ob(
-                        currentPatient && currentPatient.mobileNumber
-                          ? currentPatient.mobileNumber
-                          : null,
-                        city,
-                        paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                        cartItems ? cartItems.length : 0,
-                        couponCode == '' ? null : couponCode,
-                        discountAmount,
-                        grossValue
-                      );
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Order',
+                      label: 'Order Success',
+                      value: totalAmount,
+                    });
+                    // window._ob &&
+                    //   window._ob(
+                    //     currentPatient && currentPatient.mobileNumber
+                    //       ? currentPatient.mobileNumber
+                    //       : null,
+                    //     city,
+                    //     paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                    //     cartItems ? cartItems.length : 0,
+                    //     couponCode == '' ? null : couponCode,
+                    //     discountAmount,
+                    //     grossValue
+                    //   );
                     // GTM end
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
@@ -1192,7 +1202,11 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     /**Gtm code start  */
-                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Failed / Cancelled' })
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Order',
+                      label: 'Failed / Cancelled',
+                    });
                     /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');
