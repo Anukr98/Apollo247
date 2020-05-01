@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -819,7 +819,7 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount })
+    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount });
     /**Gtm code  End */
   }, [grossValue]);
 
@@ -1159,7 +1159,12 @@ export const MedicineCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                gtmTracking({ category: 'Pharmacy', action: 'Order', label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`, value: totalAmount })
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'Order',
+                  label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+                  value: totalAmount,
+                });
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
@@ -1177,7 +1182,11 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     /**Gtm code start  */
-                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Failed / Cancelled' })
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Order',
+                      label: 'Failed / Cancelled',
+                    });
                     /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');
