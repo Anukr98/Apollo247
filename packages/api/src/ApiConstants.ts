@@ -283,4 +283,6 @@ export enum ApiConstants {
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
+  AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
+  AUTO_SUBMIT_CASESHEET_TIME = 10,
 }
