@@ -16,6 +16,7 @@ export const jdDashboardSummaryTypeDefs = gql`
     doctorName: String
     appointmentDateTime: Date
     totalConsultation: Int
+    doctorCount: Int
   }
 
   type UpdateCasesheetResult {
@@ -40,6 +41,7 @@ type JdDashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
+  doctorCount: number;
 };
 
 type UpdateCasesheetResult = {
@@ -188,7 +190,13 @@ const updateJdSummary: Resolver<
     });
   }
 
-  return { doctorId: '', doctorName: '', appointmentDateTime: new Date(), totalConsultation: 0 };
+  return {
+    doctorId: '',
+    doctorName: '',
+    appointmentDateTime: new Date(),
+    totalConsultation: 0,
+    doctorCount: docsList.length,
+  };
 };
 
 export const jdDashboardSummaryResolvers = {

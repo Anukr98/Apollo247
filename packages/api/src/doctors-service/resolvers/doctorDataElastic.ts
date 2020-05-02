@@ -14,6 +14,7 @@ export const doctorDataElasticTypeDefs = gql`
     addDoctorSlotsElastic(id: String, slotDate: String): String
     updateDoctorSlotStatus(id: String, slotDate: String, slot: String, status: String): String
     addAllDoctorSlotsElastic(
+      id: String
       limit: Int
       offset: Int
       fromSlotDate: String
@@ -112,78 +113,86 @@ const updateDoctorSlotStatus: Resolver<
 
 const addAllDoctorSlotsElastic: Resolver<
   null,
-  { limit: number; offset: number; fromSlotDate: string; toSlotDate: string },
+  { id: string; limit: number; offset: number; fromSlotDate: string; toSlotDate: string },
   DoctorsServiceContext,
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   let stDate = new Date(args.fromSlotDate);
   const daysDiff = Math.abs(differenceInDays(new Date(args.toSlotDate), stDate));
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const allDocsInfo = await docRepo.getAllDoctorsInfo('0', args.limit, args.offset);
+  const allDocsInfo = await docRepo.getAllDoctorsInfo(args.id, args.limit, args.offset);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   let slotsAdded = '';
   if (allDocsInfo.length > 0) {
     for (let k = 0; k < allDocsInfo.length; k++) {
       stDate = new Date(args.fromSlotDate);
       slotsAdded += '{';
+      console.log('came here');
+      const updateParam: RequestParams.Update = {
+        id: allDocsInfo[k].id,
+        index: 'doctors',
+        body: { doc: { doctorSlots: [] } },
+      };
+      const updateClearResp = await client.update(updateParam);
+      console.log(updateClearResp, 'updateClearResp ');
       for (let i = 0; i <= daysDiff; i++) {
         //str += format(stDate, 'yyyy-MM-dd') + ',';
-        const searchParams: RequestParams.Search = {
+        // const searchParams: RequestParams.Search = {
+        //   index: 'doctors',
+        //   body: {
+        //     query: {
+        //       bool: {
+        //         must: [
+        //           {
+        //             match: {
+        //               'doctorSlots.slotDate': format(stDate, 'yyyy-MM-dd'),
+        //             },
+        //           },
+        //           {
+        //             match_phrase: {
+        //               doctorId: allDocsInfo[k].id,
+        //             },
+        //           },
+        //         ],
+        //       },
+        //     },
+        //   },
+        // };
+        // const getDetails = await client.search(searchParams);
+
+        // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
+
+        //if (getDetails.body.hits.hits.length == 0) {
+
+        const doctorSlots = await docRepo.getDoctorSlots(
+          new Date(format(stDate, 'yyyy-MM-dd')),
+          allDocsInfo[k].id,
+          consultsDb,
+          doctorsDb
+        );
+        //console.log(doctorSlots, 'doctor slots');
+        const doc1: RequestParams.Update = {
           index: 'doctors',
+          id: allDocsInfo[k].id,
           body: {
-            query: {
-              bool: {
-                must: [
-                  {
-                    match: {
-                      'doctorSlots.slotDate': format(stDate, 'yyyy-MM-dd'),
-                    },
-                  },
-                  {
-                    match_phrase: {
-                      doctorId: allDocsInfo[k].id,
-                    },
-                  },
-                ],
+            script: {
+              source: 'ctx._source.doctorSlots.add(params.slot)',
+              params: {
+                slot: {
+                  slotDate: format(stDate, 'yyyy-MM-dd'),
+                  slots: doctorSlots,
+                },
               },
             },
           },
         };
-        const getDetails = await client.search(searchParams);
-
-        console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
-
-        if (getDetails.body.hits.hits.length == 0) {
-          const doctorSlots = await docRepo.getDoctorSlots(
-            new Date(format(stDate, 'yyyy-MM-dd')),
-            allDocsInfo[k].id,
-            consultsDb,
-            doctorsDb
-          );
-          //console.log(doctorSlots, 'doctor slots');
-          const doc1: RequestParams.Update = {
-            index: 'doctors',
-            id: allDocsInfo[k].id,
-            body: {
-              script: {
-                source: 'ctx._source.doctorSlots.add(params.slot)',
-                params: {
-                  slot: {
-                    slotDate: format(stDate, 'yyyy-MM-dd'),
-                    slots: doctorSlots,
-                  },
-                },
-              },
-            },
-          };
-          slotsAdded += allDocsInfo[k].id + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-          const updateResp = await client.update(doc1);
-          console.log(updateResp, 'updateResp');
-        }
+        slotsAdded += allDocsInfo[k].id + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
+        const updateResp = await client.update(doc1);
+        console.log(updateResp, 'updateResp');
         stDate = addDays(stDate, 1);
       }
-      slotsAdded += '},';
     }
+    slotsAdded += '},';
   }
   return 'done ' + slotsAdded;
 };
@@ -279,7 +288,7 @@ const insertDataElastic: Resolver<
 
       console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
-        newDocData += allDocsInfo[i].mobileNumber + ',';
+        newDocData += allDocsInfo[i].id + ',';
         const consultHours = [];
         for (let k = 0; k < allDocsInfo[i].consultHours.length; k++) {
           const hourData = {

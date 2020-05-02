@@ -37,9 +37,9 @@ module.exports = async (req, res) => {
         /*save response in apollo24x7*/
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload, false)}`)
+        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`)
         const requestJSON = {
-            query: consultsOrderQuery(payload, false)
+            query: consultsOrderQuery(payload)
         };
 
         const response = await axios.post(process.env.API_URL, requestJSON);

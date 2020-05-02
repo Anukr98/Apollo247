@@ -10,43 +10,13 @@ import React from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
-const notifications = [
-  {
-    id: 'Today, 10.05 AM',
-    messagename: 'Dr. Neha has assigned 1 of her cases to you',
-  },
-  {
-    id: 'Yesterday, 09.30 PM',
-    messagename: 'You have been added to Dr. Vinay’s star doctor’s team',
-  },
-  {
-    id: 'Yesterday, 04.10 PM',
-    messagename: 'New message from your follow up patient,Ms. Shreya Khannas',
-  },
-  {
-    id: 'Wednesday, 16th July, 09.30 AM',
-    messagename: 'Dr. Neha has assigned 1 of her cases to you',
-  },
-  {
-    id: 'Yesterday, 04.10 PM',
-    messagename: 'New message from your follow up patient,Ms. Shreya Khanna',
-  },
-  {
-    id: 'Wednesday, 16th July, 09.30 AM',
-    messagename: 'New message from your follow up patient,Ms. Shreya Khanna',
-  },
-
-  {
-    id: 'Wednesday, 16th July, 06.30 AM',
-    messagename: 'New message from your follow up patient,Ms. Shreya Khannas',
-  },
-];
+const notifications = [];
 const styles = NotificationScreenStyles;
 
 const renderNotificationsListView = () => {
   return (
     <View>
-      {notifications.map((i, index, array) => {
+      {/* {notifications.map((i, index, array) => {
         return (
           <View>
             <View style={styles.dataView}>
@@ -59,7 +29,7 @@ const renderNotificationsListView = () => {
             <View style={styles.underline}></View>
           </View>
         );
-      })}
+      })} */}
     </View>
   );
 };

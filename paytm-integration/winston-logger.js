@@ -2,6 +2,7 @@ const winston = require('winston');
 const winston_rotate = require('winston-daily-rotate-file');
 const { format } = winston;
 const { combine, timestamp, label, printf } = format;
+require('dotenv').config();
 
 
 /**
@@ -21,19 +22,19 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 const getTransports = (filename) => {
     const transports = [
         new winston_rotate({
-            filename: `./logs/info/${filename}-%DATE%.log`,
+            filename: `${process.env.PAYMENT_LOGS}/info/${filename}-%DATE%.log`,
             datePattern: 'DD-MM-YYYY',
             level: "info"
         }),
 
         new winston_rotate({
-            filename: `./logs/error/${filename}-%DATE%.log`,
+            filename: `${process.env.PAYMENT_LOGS}/error/${filename}-%DATE%.log`,
             datePattern: 'DD-MM-YYYY',
             level: "error"
         }),
 
         new winston_rotate({
-            filename: `./logs/debug/${filename}-%DATE%.log`,
+            filename: `${process.env.PAYMENT_LOGS}/debug/${filename}-%DATE%.log`,
             datePattern: 'DD-MM-YYYY',
             level: "debug"
         })

@@ -66,4 +66,6 @@ target 'ApolloDoctor' do
 
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
+  pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
+
 end

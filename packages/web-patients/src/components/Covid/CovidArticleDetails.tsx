@@ -9,7 +9,7 @@ import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
-import { NavigationBottom } from 'components/NavigationBottom';
+// import { NavigationBottom } from 'components/NavigationBottom';
 // import { CommentsForm } from 'components/Covid/CommentsForm';
 // import { CommentsList } from 'components/Covid/CommentsList';
 // import { AphButton } from '@aph/web-ui-components';
@@ -121,6 +121,10 @@ const useStyles = makeStyles((theme: Theme) => {
     htmlContent: {
       marginBottom: 30,
     },
+    sourceUrl: {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+    },
   };
 });
 
@@ -192,10 +196,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a>SOURCE</a>
-                      <div>
-                        <a href={sourceUrl}>{sourceUrl}</a>
-                      </div>
+                      <a href={sourceUrl} target="_blank">
+                        <div>SOURCE</div>
+                        <div className={classes.sourceUrl}>{sourceUrl}</div>
+                      </a>
                     </>
                   )}
                 </div>
@@ -213,7 +217,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
-      <NavigationBottom />
+      {/* <NavigationBottom /> */}
     </div>
   );
 };

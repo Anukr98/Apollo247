@@ -29,6 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
+import { gtmTracking } from '../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -176,6 +177,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    hideMascot: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
+      },
+    },
   };
 });
 
@@ -228,7 +234,7 @@ export const DoctorsLanding: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start start */
-    window.gep && window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
+    gtmTracking({ category: 'Consultations', action: 'Landing Page', label: 'Listing Page Viewed' })
     /**Gtm code start end */
   }, []);
 
@@ -270,7 +276,7 @@ export const DoctorsLanding: React.FC = (props) => {
       setShowSearchAndPastSearch(false);
 
       /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      gtmTracking({ category: 'Consultations', action: specialitySelected, label: 'Listing Page Viewed' })
       /**Gtm code start end */
     }
   }, [specialitySelected]);
@@ -755,7 +761,11 @@ export const DoctorsLanding: React.FC = (props) => {
                 }}
               />
             </Popover>
-            {!onePrimaryUser && <ManageProfile />}
+            {!onePrimaryUser && (
+              <div className={classes.hideMascot}>
+                <ManageProfile />
+              </div>
+            )}
           </>
         )}
       </LocationContext.Consumer>

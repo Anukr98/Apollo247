@@ -69,13 +69,14 @@ import {
   UpdateDoctorFavouriteTestVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDoctorFavouriteTest';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = SmartPrescriptionStyles;
 
@@ -114,7 +115,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const [EditTestId, setEditTestId] = useState<string>('');
   const [showNeedHelp, setshowNeedHelp] = useState(false);
-
+  const [allowedDosages, setAllowedDosages] = useState<string[]>([]);
   useEffect(() => {
     GetFavouriteMedicineList();
     GetFavouriteTestList();
@@ -135,9 +136,16 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           _data.data.getDoctorFavouriteMedicineList.medicineList
         ) {
           const tempmedicineList = _data.data.getDoctorFavouriteMedicineList!.medicineList;
-
+          setAllowedDosages(
+            (g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages') || [])
+              .map((item) => item || '')
+              .filter((i) => i !== '')
+          );
           console.log('MedicineList', tempmedicineList);
-
+          AsyncStorage.setItem(
+            'allowedDosages',
+            JSON.stringify(g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages'))
+          );
           setmedicineList(tempmedicineList);
         }
         setLoading(false);
@@ -195,7 +203,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const GetAdviceList = _data.data.getDoctorFavouriteAdviceList!.adviceList;
           console.log('Advice List : ', _data.data);
           console.log('GetAdviceList  :', GetAdviceList);
-          setadviceList && setadviceList(GetAdviceList);
+          setadviceList(GetAdviceList);
         }
 
         setLoading(false);
@@ -209,47 +217,41 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const updateFavouriteTest = (
     updateTestId: string,
-    updateTestName: string,
     tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
-    console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
-
-    // tempTestArray.push(tempTestArray);
-    // const AddingTest = tempTestArray
-    //   .map((ele) => ele.itemname)
-    //   .filter((i) => i !== '')
-    //   .join(',');
-    const AddingTest = tempTestArray!
-      .map((ele) => ele.itemname)
-      .filter((i) => i != '')
-      .join(',');
-    console.log('AddingTest---', AddingTest);
-
-    setLoading(true);
-    client
-      .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
-        mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
-        variables: {
-          id: updateTestId,
-          itemname: AddingTest
-            ? AddingTest.replace(/\s+/g, ' ')
-            : updateTestName.replace(/\s+/g, ' '),
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        setLoading(false);
-        console.log('Updated Tests:', _data);
-        GetFavouriteTestList();
-        setEditTestId('');
-      })
-      .catch((error) => {
-        CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', error);
-        console.log(error);
-        setLoading(false);
-        setEditTestId('');
-        Alert.alert(strings.common.error, strings.smartPrescr.update_test_error);
-      });
+    if (tempTestArray.length > 0 && tempTestArray[0].itemname) {
+      setLoading(true);
+      client
+        .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
+          mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
+          variables: {
+            id: updateTestId,
+            itemname: tempTestArray[0].itemname,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          setLoading(false);
+          settestsList(g(_data, 'data', 'updateDoctorFavouriteTest', 'testList') as (
+            | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
+            | null));
+          setEditTestId('');
+        })
+        .catch((error) => {
+          CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', error);
+          setLoading(false);
+          setEditTestId('');
+          const errorMsg = error.graphQLErrors[0].message;
+          if (errorMsg === 'TEST_ALREADY_EXIST') {
+            Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
+          } else {
+            Alert.alert(strings.common.error, strings.smartPrescr.update_test_error);
+          }
+        });
+    }
+    if (tempTestArray.length > 1) {
+      AddFavouriteTest(tempTestArray.slice(1).filter((item) => item && item.itemname));
+    }
   };
 
   const showHeaderView = () => {
@@ -314,24 +316,26 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       <View>
         <Text style={styles.subheading}>{strings.smartPrescr.fav_test}</Text>
         <View style={styles.containerListStyle}>
-          {testsList!.map((item, i) => (
-            <View key={i}>
-              <SmartPrescriptionCard
-                title={item!.itemname}
-                onPressTitle={() => {
-                  setIsTest(true);
-                  setsearchTestVal(item!.itemname || '');
-                  setEditTestId(item!.id || '');
-                }}
-                onPressrightIcon={() => {
-                  setIsTest(true);
-                  setsearchTestVal(item!.itemname || '');
-                  setEditTestId(item!.id || '');
-                }}
-                rightIcon={<ArrowRight />}
-              />
-            </View>
-          ))}
+          {testsList && testsList.length > 0
+            ? testsList.map((item, i) => (
+                <View key={i}>
+                  <SmartPrescriptionCard
+                    title={item!.itemname}
+                    onPressTitle={() => {
+                      setIsTest(true);
+                      setsearchTestVal(item!.itemname || '');
+                      setEditTestId(item!.id || '');
+                    }}
+                    onPressrightIcon={() => {
+                      setIsTest(true);
+                      setsearchTestVal(item!.itemname || '');
+                      setEditTestId(item!.id || '');
+                    }}
+                    rightIcon={<ArrowRight />}
+                  />
+                </View>
+              ))
+            : null}
 
           <AddIconLabel
             label={strings.smartPrescr.add_test}
@@ -399,12 +403,12 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
-          const result = _data.data!.addDoctorFavouriteAdvice;
           setLoading(false);
-          console.log('Add advice result : ' + result);
           setfavAdvice('');
           setIsAdvice(false);
-          GetFavouriteAdviceList();
+          setadviceList(g(_data, 'data', 'addDoctorFavouriteAdvice', 'adviceList') as (
+            | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
+            | null));
         })
         .catch((e) => {
           setLoading(false);
@@ -431,13 +435,12 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
-          const res = _data.data!.updateDoctorFavouriteAdvice;
           setLoading(false);
-          console.log('Updated advice result : ', res);
           setfavAdvice('');
-          //   setFavUpdateAdvice('');
           setIsAdvice(false);
-          GetFavouriteAdviceList();
+          setadviceList(g(_data, 'data', 'updateDoctorFavouriteAdvice', 'adviceList') as (
+            | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
+            | null));
         })
         .catch((e) => {
           setLoading(false);
@@ -472,8 +475,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         const resp = _data.data;
         console.log('Updated...:', resp);
 
-        GetFavouriteMedicineList();
-
+        setmedicineList(g(
+          resp,
+          'saveDoctorsFavouriteMedicine',
+          'medicineList'
+        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
         setIsAddMedicine(false);
       })
       .catch((error) => {
@@ -502,7 +508,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
         const resp = _data.data;
         console.log('Updated...:', resp);
-        GetFavouriteMedicineList();
+        setmedicineList(g(
+          resp,
+          'updateDoctorFavouriteMedicine',
+          'medicineList'
+        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
       })
       .catch((error) => {
         setLoading(false);
@@ -512,48 +522,40 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       });
   };
 
-  const AddFavouriteTest = (
-    searchTestVal: string,
-    tempTestArray: searchDiagnostic_searchDiagnostic[]
-  ) => {
-    // const AddingTest = tempTestArray
-    //   .map((ele) => ele.itemname)
-    //   .filter((i) => i !== '')
-    //   .join(',');
-    const AddingTest = tempTestArray!
-      .map((ele) => ele.itemname)
-      .filter((i) => i != '')
-      .join(',');
-    console.log('AddingTest---', AddingTest);
-
-    setLoading(true);
-    client
-      .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
-        mutation: ADD_DOCTOR_FAVOURITE_TEST,
-        variables: {
-          itemname: AddingTest
-            ? AddingTest.replace(/\s+/g, ' ')
-            : searchTestVal.replace(/\s+/g, ' '),
-        },
-      })
-      .then((_data) => {
-        setLoading(false);
-        console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
-        GetFavouriteTestList();
-        setisSearchTestListVisible(!isSearchTestListVisible);
-        setIsTest(!isTest);
-      })
-      .catch((e) => {
-        setLoading(false);
-        CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
-        console.log('error', JSON.stringify(e.message));
-        const errorMsg = JSON.stringify(e.message);
-        if (errorMsg === 'Network error: Network request failed') {
-          Alert.alert(strings.common.error, strings.smartPrescr.add_test_error);
-        } else {
-          Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
-        }
-      });
+  const AddFavouriteTest = (tempTestArray: searchDiagnostic_searchDiagnostic[]) => {
+    tempTestArray.forEach((item, index) => {
+      if (item && item.itemname) {
+        setLoading(true);
+        client
+          .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
+            mutation: ADD_DOCTOR_FAVOURITE_TEST,
+            variables: {
+              itemname: item.itemname,
+            },
+          })
+          .then((_data) => {
+            setLoading(false);
+            settestsList(g(_data, 'data', 'addDoctorFavouriteTest', 'testList') as (
+              | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
+              | null));
+            setisSearchTestListVisible(!isSearchTestListVisible);
+            setIsTest(!isTest);
+          })
+          .catch((e) => {
+            setLoading(false);
+            CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
+            const errorMsg = e.graphQLErrors[0].message;
+            if (errorMsg === 'TEST_ALREADY_EXIST') {
+              Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
+            } else {
+              Alert.alert(
+                strings.common.error,
+                strings.smartPrescr.add_test_error + `(${item.itemname})`
+              );
+            }
+          });
+      }
+    });
   };
   const showTestPopup = () => {
     return (
@@ -565,9 +567,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         }}
         onPressDone={(searchTestVal, tempTestArray) => {
           if (EditTestId != '') {
-            updateFavouriteTest(EditTestId, searchTestVal, tempTestArray);
+            updateFavouriteTest(EditTestId, tempTestArray.filter((item) => item && item.itemname));
           } else {
-            AddFavouriteTest(searchTestVal, tempTestArray);
+            AddFavouriteTest(tempTestArray.filter((item) => item && item.itemname));
           }
           setsearchTestVal('');
           setIsTest(!isTest);
@@ -632,6 +634,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       {isAdvice && showAdvice()}
       {isAddMedicine && (
         <AddMedicinePopUp
+          allowedDosages={allowedDosages}
           data={dataMed}
           onClose={() => {
             setIsAddMedicine(false);
@@ -642,32 +645,18 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
               console.log('update_Doctor_FavouriteMedicine');
 
               update_Doctor_FavouriteMedicine({
-                ...(data as UpdateDoctorsFavouriteMedicineInput),
+                ...data,
+                externalId: data.externalId === data.medicineName ? '' : data.externalId,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
-                medicineFormTypes:
-                  medUsageType(data.medicineUnit!) === 'Apply'
-                    ? MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
-                    : MEDICINE_FORM_TYPES.OTHERS,
-              });
+              } as UpdateDoctorsFavouriteMedicineInput);
             } else {
-              console.log('Save_Doctor_FavouriteMedicine');
+              delete data.id;
+              console.log('Save_Doctor_FavouriteMedicine', data);
               Save_Doctor_FavouriteMedicine({
-                externalId: data.externalId,
-                medicineConsumptionDuration: data.medicineConsumptionDuration,
+                ...data,
+                externalId: data.externalId === data.medicineName ? '' : data.externalId,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
-                medicineConsumptionDurationUnit: data.medicineConsumptionDurationUnit,
-                medicineDosage: data.medicineDosage!,
-                medicineFormTypes:
-                  medUsageType(data.medicineUnit!) === 'Apply'
-                    ? MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
-                    : MEDICINE_FORM_TYPES.OTHERS,
-                medicineFrequency: data.medicineFrequency,
-                medicineInstructions: data.medicineInstructions,
-                medicineName: data.medicineName!,
-                medicineTimings: data.medicineTimings!,
-                medicineToBeTaken: data.medicineToBeTaken,
-                medicineUnit: data.medicineUnit!,
-              });
+              } as SaveDoctorsFavouriteMedicineInput);
             }
           }}
         />

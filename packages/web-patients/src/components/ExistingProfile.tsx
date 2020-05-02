@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '65vh',
       overflow: 'auto',
       [theme.breakpoints.down('xs')]: {
-        height: '75vh',
+        height: '66vh',
       },
     },
     signinGroup: {

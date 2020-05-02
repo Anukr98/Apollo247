@@ -7,6 +7,7 @@ import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
+import { gtmTracking } from '../../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,8 +229,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             quantity: 1,
                           };
                           /**Gtm code start  */
-                          window.gep &&
-                            window.gep('Pharmacy', 'Add to Cart', hotSeller.name, hotSeller.price);
+                          gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: hotSeller.name, value: hotSeller.price })
                           /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
                           if (index >= 0) {
@@ -245,13 +245,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       <AphButton
                         onClick={() => {
                           /**Gtm code start  */
-                          window.gep &&
-                            window.gep(
-                              'Pharmacy',
-                              'Remove From Cart',
-                              hotSeller.name,
-                              hotSeller.price
-                            );
+                          gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: hotSeller.name, value: hotSeller.price })
                           /**Gtm code End  */
                           removeCartItem && removeCartItem(hotSeller.id);
                         }}

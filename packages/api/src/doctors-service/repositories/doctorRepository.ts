@@ -262,6 +262,12 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  findDoctorByIdWithoutRelations(id: string) {
+    return this.findOne({
+      where: [{ id, isActive: true }],
+    });
+  }
+
   getAllDoctorsInfo(id: string, limit: number, offset: number) {
     if (id == '0') {
       return this.find({
@@ -962,6 +968,16 @@ export class DoctorRepository extends Repository<Doctor> {
         order: { createdDate: 'ASC' },
       });
     }
+  }
+
+  getAllSeniorDoctors() {
+    return this.find({
+      select: ['id', 'mobileNumber', 'displayName'],
+      where: {
+        doctorType: Not('JUNIOR'),
+        isActive: true,
+      },
+    });
   }
   getSeniorDoctorCount() {
     return this.count({

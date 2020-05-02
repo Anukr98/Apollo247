@@ -299,6 +299,8 @@ PODS:
     - React
   - react-native-image-picker (2.2.1):
     - React
+  - react-native-keep-awake (4.0.0):
+    - React
   - react-native-netinfo (5.3.3):
     - React
   - react-native-pdf (6.0.1):
@@ -409,6 +411,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-keep-awake (from `../node_modules/react-native-keep-awake`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
@@ -438,7 +441,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - boost-for-react-native
     - Crashlytics
     - Fabric
@@ -511,6 +514,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/geolocation"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-keep-awake:
+    :path: "../node_modules/react-native-keep-awake"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pdf:
@@ -610,6 +615,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
   react-native-image-picker: 7e19aefccd42aad840a758181e16ce05d4e95578
+  react-native-keep-awake: eba3137546b10003361b37c761f6c429b59814ae
   react-native-netinfo: 75711548b53a527515d9226e6370249f75083e63
   react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
@@ -638,6 +644,6 @@ SPEC CHECKSUMS:
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 6601bbea14be1e5a0226824be91fb13bdce575e4
+PODFILE CHECKSUM: 48904223f99102d5c51c73c0444aa7fc0184731a
 
 COCOAPODS: 1.8.4

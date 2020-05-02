@@ -5,6 +5,7 @@ import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -247,8 +248,7 @@ export const MedicineListingCard: React.FC = (props) => {
                     <AphButton
                       onClick={() => {
                         /**Gtm code start  */
-                        window.gep &&
-                          window.gep('Pharmacy', 'Remove From Cart', item.name, item.price);
+                        gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: item.name, value: item.price })
                         /**Gtm code End  */
                         removeCartItem && removeCartItem(item.id);
                       }}

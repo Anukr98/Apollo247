@@ -1,13 +1,13 @@
-const { genchecksum } = require('../../paytm/lib/checksum')
+const { genchecksum } = require('../../paytm/lib/checksum');
+const logger = require('../../winston-logger')('Consults-logs');
 
 /**
- * Method for returning the 
- * @param {*} orderAutoId 
- * @param {*} amount 
- * @param {*} bookingSource 
+ * Method for returning the
+ * @param {*} orderAutoId
+ * @param {*} amount
+ * @param {*} bookingSource
  */
 const initPayment = function (patientId, orderAutoId, amount, bookingSource, addParams) {
-
     return new Promise((resolve, reject) => {
         let paymentObj = {
             ORDER_ID: orderAutoId,
@@ -18,13 +18,11 @@ const initPayment = function (patientId, orderAutoId, amount, bookingSource, add
             MID: process.env.MID_CONSULTS,
             WEBSITE: process.env.WEBSITE_CONSULTS,
             CALLBACK_URL: process.env.CALLBACK_URL_CONSULTS,
-            MERC_UNQ_REF: bookingSource
+            MERC_UNQ_REF: bookingSource,
         };
         Object.assign(paymentObj, addParams);
 
-
         genchecksum(paymentObj, process.env.PAYTM_MERCHANT_KEY_CONSULTS, (err, result) => {
-
             if (err) {
                 reject('Error while generating checksum');
             } else {
@@ -32,30 +30,32 @@ const initPayment = function (patientId, orderAutoId, amount, bookingSource, add
                 console.log(paymentObj);
                 resolve(paymentObj);
             }
-        })
+        });
     });
 };
 
 const generatePaymentOrderId = () => {
-
     const dateObj = new Date();
-    let minutes = dateObj.getMinutes() < 10 ? "0" + dateObj.getMinutes() : dateObj.getMinutes().toString();
-    let hours = dateObj.getHours() < 10 ? "0" + dateObj.getHours() : dateObj.getHours().toString();
-    let month = dateObj.getMonth() < 10 ? "0" + dateObj.getMonth() : dateObj.getMonth().toString();
-    let seconds = dateObj.getSeconds() < 10 ? "0" + dateObj.getSeconds() : dateObj.getSeconds().toString();
-    let date = dateObj.getDate() < 10 ? "0" + dateObj.getDate() : dateObj.getDate().toString();
+    let minutes =
+        dateObj.getMinutes() < 10 ? '0' + dateObj.getMinutes() : dateObj.getMinutes().toString();
+    let hours = dateObj.getHours() < 10 ? '0' + dateObj.getHours() : dateObj.getHours().toString();
+    let month = dateObj.getMonth() < 10 ? '0' + dateObj.getMonth() : dateObj.getMonth().toString();
+    let seconds =
+        dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds().toString();
+    let date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate().toString();
     let random4Digits = Math.random().toString().slice(-4);
 
-    return dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits;
-}
+    return (
+        dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits
+    );
+};
 
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
-
     const paymentTypeParams = {};
     const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
-
+    logger.info(`${paymentTypeID} -${bankCode} - payment type id`);
     if (!possiblePaymentTypes.includes(paymentTypeID)) {
-        throw new Error("Invalid payment type! Please contact IT department.")
+        throw new Error('Invalid payment type! Please contact IT department.');
     }
     paymentTypeParams['PAYMENT_TYPE_ID'] = paymentTypeID;
     if (paymentTypeID === 'NB' && bankCode) {
@@ -72,9 +72,10 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
         case 'NB':
             paymentTypeParams['AUTH_MODE'] = 'USRPWD';
             break;
-
     }
+    logger.info(`Params returned for paytm request - ${paymentTypeParams}`);
     return paymentTypeParams;
-}
 
-module.exports = { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams }
+};
+
+module.exports = { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams };

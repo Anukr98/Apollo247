@@ -10,10 +10,11 @@ export interface RadioButtonsProps {
   horizontal?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  itemStyle?: StyleProp<ViewStyle>;
 }
 
 export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
-  const { setselectedItem, selectedItem, data, horizontal } = props;
+  const { setselectedItem, selectedItem, data, horizontal, itemStyle } = props;
 
   return (
     <View pointerEvents={props.disabled ? 'none' : 'auto'}>
@@ -24,7 +25,7 @@ export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
         ]}
       >
         {data.map((item) => (
-          <View style={horizontal ? { flex: 1 } : null}>
+          <View style={[horizontal ? { flex: 1 } : null, itemStyle]}>
             <TouchableOpacity
               style={[
                 {
