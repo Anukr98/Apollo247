@@ -21,6 +21,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
+import { gtmTracking } from '../../gtmTracking'
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -398,7 +399,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         .then((res: AxiosResponse) => {
                           if (res && res.data && res.data.Availability) {
                             /**Gtm code start  */
-                            window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
+                            gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' })
                             /**Gtm code End  */
                             setDeliveryAddressId && setDeliveryAddressId(address.id);
                             setStoreAddressId && setStoreAddressId('');

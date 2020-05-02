@@ -121,6 +121,10 @@ const useStyles = makeStyles((theme: Theme) => {
     htmlContent: {
       marginBottom: 30,
     },
+    sourceUrl: {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+    },
   };
 });
 
@@ -192,12 +196,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a>SOURCE</a>
-                      <div>
-                        <a href={sourceUrl} target="_blank">
-                          {sourceUrl}
-                        </a>
-                      </div>
+                      <a href={sourceUrl} target="_blank">
+                        <div>SOURCE</div>
+                        <div className={classes.sourceUrl}>{sourceUrl}</div>
+                      </a>
                     </>
                   )}
                 </div>

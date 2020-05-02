@@ -140,7 +140,6 @@ const makeAppointmentPayment: Resolver<
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
-
   if (paymentInfo) {
     log(
       'consultServiceLogger',

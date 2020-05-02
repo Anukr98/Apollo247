@@ -185,7 +185,7 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
+  CC_MAIL = 'raj@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
@@ -282,6 +282,9 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  FREE_CHAT_DAYS = 7,
+  DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
+  DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
   AUTO_SUBMIT_CASESHEET_TIME = 10,

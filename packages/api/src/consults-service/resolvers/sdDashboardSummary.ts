@@ -496,25 +496,20 @@ const updateDoctorFeeSummary: Resolver<
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
-  console.log('docsList=====>', docsList.length);
   docsList.forEach(async (doctor) => {
-    console.log('doctorIdss=>', doctor.id);
     const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
       doctor.id,
       args.summaryDate,
       ConsultMode.BOTH
     );
-    console.log('totalConsultations==>', totalConsultations);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
       totalConsults = totalConsultations.length;
       totalConsultations.forEach(async (consultation, index, array) => {
-        console.log('inside loop');
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
         );
-        console.log('payment details==', paymentDetails);
         if (!_isEmpty(paymentDetails) && paymentDetails) {
           totalFee += parseFloat(paymentDetails.amountPaid.toString());
         }
@@ -533,7 +528,7 @@ const updateDoctorFeeSummary: Resolver<
         amountPaid: totalFee,
         specialtiyId: doctor.specialty.id,
         specialityName: doctor.specialty.name,
-        areaName: doctor.doctorHospital[0].facility.city,
+        areaName: doctor.doctorHospital.length > 0 ? doctor.doctorHospital[0].facility.city : '',
         appointmentsCount: totalConsults,
         isActive: <boolean>doctor.isActive,
         updatedDate: new Date(),

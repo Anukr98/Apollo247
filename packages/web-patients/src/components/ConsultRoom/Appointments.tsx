@@ -40,6 +40,7 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -366,7 +367,7 @@ export const Appointments: React.FC = (props) => {
   useEffect(() => {
     if (isFailurePayment) {
       /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialtyName, 'Failed / Cancelled');
+      gtmTracking({ category: 'Consultations', action: specialtyName, label: 'Failed / Cancelled' })
       /**Gtm code start end */
     }
   }, [isFailurePayment]);

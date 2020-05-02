@@ -193,11 +193,8 @@ exports.updateSdSummary = (req, res) => {
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
-      console.log('totalSets===>', totalSets);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
-        console.log('running set', i);
         //loop for 10times
         const docOffset = i * docLimit;
         task(i);
@@ -225,10 +222,6 @@ exports.updateSdSummary = (req, res) => {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -238,8 +231,6 @@ exports.updateSdSummary = (req, res) => {
       }
       res.send({
         apiRunningForDate: finalDate,
-        totalSets: totalSets,
-        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -269,7 +260,6 @@ exports.updateJdSummary = (req, res) => {
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
         const docOffset = i * docLimit;
@@ -298,10 +288,6 @@ exports.updateJdSummary = (req, res) => {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -311,8 +297,6 @@ exports.updateJdSummary = (req, res) => {
       }
       res.send({
         apiRunningForDate: finalDate,
-        totalSets: totalSets,
-        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -342,12 +326,9 @@ exports.updateDoctorFeeSummary = (req, res) => {
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
-      console.log('totalSets', totalSets);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
-        console.log('running set==>', i);
         const docOffset = i * docLimit;
         task(i);
         function task(i) {
@@ -364,7 +345,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +
                   new Date().toDateString() +
-                  '-updateDoctorFeeSummary_test.txt';
+                  '-updateDoctorFeeSummary.txt';
                 let content =
                   new Date().toString() +
                   '\n---------------------------\n' +
@@ -379,10 +360,6 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -391,6 +368,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
         status: 'success',
         message: response.data,
       });
