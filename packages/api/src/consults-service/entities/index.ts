@@ -1415,12 +1415,15 @@ export class NotificationBin extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('NotificationBin_fromId')
   @Column()
   fromId: string;
 
+  @Index('NotificationBin_toId')
   @Column()
   toId: string;
 
+  @Index('NotificationBin_eventId')
   @Column()
   eventId: string;
 
@@ -1433,6 +1436,7 @@ export class NotificationBin extends BaseEntity {
   @Column()
   message: string;
 
+  @Index('NotificationBin_status')
   @Column()
   status: notificationStatus;
 
@@ -1453,12 +1457,15 @@ export class NotificationBinArchive extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('NotificationBinArchive_fromId')
   @Column()
   fromId: string;
 
+  @Index('NotificationBinArchive_toId')
   @Column()
   toId: string;
 
+  @Index('NotificationBinArchive_eventId')
   @Column()
   eventId: string;
 
@@ -1471,6 +1478,7 @@ export class NotificationBinArchive extends BaseEntity {
   @Column()
   message: string;
 
+  @Index('NotificationBinArchive_status')
   @Column()
   status: notificationStatus;
 

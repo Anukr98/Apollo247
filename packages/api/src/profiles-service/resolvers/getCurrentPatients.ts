@@ -42,6 +42,30 @@ export const getCurrentPatientsTypeDefs = gql`
     OTHER
   }
 
+  type PatientFullDetails @key(fields: "id") {
+    allergies: String
+    dateOfBirth: Date
+    emailAddress: String
+    firstName: String
+    familyHistory: [FamilyHistory]
+    gender: Gender
+    healthVault: [HealthVault]
+    id: ID!
+    lastName: String
+    lifeStyle: [LifeStyle]
+    mobileNumber: String
+    patientAddress: [PatientAddress]
+    patientMedicalHistory: MedicalHistory
+    photoUrl: String
+    uhid: String
+    relation: Relation
+  }
+
+  type HealthVault {
+    imageUrls: String
+    reportUrls: String
+  }
+
   type Patient @key(fields: "id") {
     addressList: [PatientAddress!]
     allergies: String
@@ -505,7 +529,28 @@ export const getCurrentPatientsResolvers = {
     async __resolveReference(object: Patient) {
       const connection = getConnection();
       const patientsRepo = connection.getRepository(Patient);
-      const patientDetails = await patientsRepo.findOne({ where: { id: object.id } });
+      const patientDetails = await patientsRepo.findOne({
+        where: { id: object.id },
+        relations: ['lifeStyle', 'familyHistory', 'patientAddress', 'patientMedicalHistory'],
+      });
+      return patientDetails;
+    },
+  },
+
+  PatientFullDetails: {
+    async __resolveReference(object: Patient) {
+      const connection = getConnection();
+      const patientsRepo = connection.getRepository(Patient);
+      const patientDetails = await patientsRepo.findOne({
+        where: { id: object.id },
+        relations: [
+          'lifeStyle',
+          'familyHistory',
+          'patientAddress',
+          'patientMedicalHistory',
+          'healthVault',
+        ],
+      });
       return patientDetails;
     },
   },

@@ -212,13 +212,17 @@ export const caseSheetTypeDefs = gql`
     allowedDosages: [String]
   }
 
+  extend type PatientFullDetails @key(fields: "id") {
+    id: ID! @external
+  }
+
   type CaseSheet {
     appointment: Appointment
     blobName: String
+    consultType: String
     createdDate: DateTime
     createdDoctorId: String
     createdDoctorProfile: Profile @provides(fields: "id")
-    consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
@@ -232,9 +236,10 @@ export const caseSheetTypeDefs = gql`
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
-    symptoms: [SymptomList]
-    status: String
+    patientDetails: PatientFullDetails @provides(fields: "id")
     sentToPatient: Boolean
+    status: String
+    symptoms: [SymptomList]
     updatedDate: DateTime
   }
 
@@ -1122,6 +1127,9 @@ export const caseSheetResolvers = {
   CaseSheet: {
     createdDoctorProfile(caseSheet: CaseSheet) {
       return { __typename: 'Profile', id: caseSheet.createdDoctorId };
+    },
+    patientDetails(caseSheet: CaseSheet) {
+      return { __typename: 'PatientFullDetails', id: caseSheet.patientId };
     },
   },
 
