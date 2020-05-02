@@ -6,15 +6,15 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
-export interface CovidScanProps extends NavigationScreenProps { }
+export interface CovidScanProps extends NavigationScreenProps {}
 
 export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleResponse = (data: NavState) => {
+  const handleResponse = (data: NavState, WebViewRef: any) => {
     const homeURL = 'http://www.apollo247.com/';
     const url = data.url;
-
+    console.log(data);
     if (url && url.indexOf('redirectTo=doctor') > -1 && url.indexOf('#details') < 0) {
       props.navigation.navigate(AppRoutes.DoctorSearch);
     } else if (homeURL === url) {
@@ -23,23 +23,31 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const renderWebView = () => {
+    let WebViewRef: any;
     return (
       <WebView
-        onLoadStart={() => setLoading!(true)}
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
+        // onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('covidUrl') }}
-        onNavigationStateChange={(data) => handleResponse(data)}
+        onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
+        renderError={() => renderError(WebViewRef)}
       />
     );
   };
 
   const handleBack = async () => {
-    Alert.alert('Alert', 'Do you want to go back?', [
-      { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
-    ]);
+    props.navigation.goBack();
   };
 
+  const renderError = (WebViewRef:any) => {
+    WebViewRef && WebViewRef.reload();
+    return(
+      <View style={{flex:1}}>
+
+      </View>
+    )
+  }
   const renderSpinner = () => {
     return (
       <View

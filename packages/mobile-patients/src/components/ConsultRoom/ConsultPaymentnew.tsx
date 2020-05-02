@@ -61,10 +61,12 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     console.log({ data, redirectedUrl });
     console.log(`RedirectedUrl: ${redirectedUrl}`);
 
-    if (redirectedUrl) {
-      if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_REDIRECT_PATH) > -1) {
-        navigatetoStatusscreen('PAYMENT_PENDING_PG');
-      }
+    if (
+      redirectedUrl &&
+      (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1 ||
+        redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1)
+    ) {
+      navigatetoStatusscreen('PAYMENT_PENDING_PG');
     }
   };
 
