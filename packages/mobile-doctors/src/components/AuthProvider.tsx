@@ -77,7 +77,8 @@ export const AuthProvider: React.FC = (props) => {
           console.log('-------unauthenticatedError-------', unauthenticatedError);
         }
       }
-      return forward(operation);
+      return;
+      // return forward(operation);
     });
     const authLink = setContext(async (_, { headers }) => ({
       headers: {

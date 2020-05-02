@@ -42,6 +42,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     doctorName: String
     appointmentDateTime: Date
     totalConsultation: Int
+    totalDoctors: Int
   }
 
   enum PATIENT_TYPE {
@@ -69,6 +70,7 @@ export const sdDashboardSummaryTypeDefs = gql`
 
   type DoctorFeeSummaryResult {
     status: Boolean
+    totalDoctors: Int
   }
 
   type GetopenTokFileUrlResult {
@@ -130,6 +132,7 @@ type DashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
+  totalDoctors: number;
 };
 
 type UpdateAwayAndOnlineCountResult = {
@@ -145,6 +148,7 @@ type UpdatePatientTypeResult = {
 };
 type DoctorFeeSummaryResult = {
   status: boolean;
+  totalDoctors: number;
 };
 
 type GetopenTokFileUrlResult = {
@@ -475,7 +479,13 @@ const updateSdSummary: Resolver<
     });
   }
 
-  return { doctorId: '', doctorName: '', appointmentDateTime: new Date(), totalConsultation: 0 };
+  return {
+    doctorId: '',
+    doctorName: '',
+    appointmentDateTime: new Date(),
+    totalConsultation: 0,
+    totalDoctors: docsList.length,
+  };
 };
 
 const updateDoctorFeeSummary: Resolver<
@@ -518,7 +528,7 @@ const updateDoctorFeeSummary: Resolver<
         amountPaid: totalFee,
         specialtiyId: doctor.specialty.id,
         specialityName: doctor.specialty.name,
-        areaName: doctor.doctorHospital[0].facility.city,
+        areaName: doctor.doctorHospital.length > 0 ? doctor.doctorHospital[0].facility.city : '',
         appointmentsCount: totalConsults,
         isActive: <boolean>doctor.isActive,
         updatedDate: new Date(),
@@ -527,7 +537,7 @@ const updateDoctorFeeSummary: Resolver<
     }
   });
 
-  return { status: true };
+  return { status: true, totalDoctors: docsList.length };
 };
 
 const getopenTokFileUrl: Resolver<

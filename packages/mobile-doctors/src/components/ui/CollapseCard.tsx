@@ -17,16 +17,12 @@ export interface CollapseCardProps {
 export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
   return (
     <View style={[styles.container, props.containerStyle]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View>
+      <TouchableOpacity activeOpacity={1} onPress={() => props.onPress(!props.collapse)}>
+        <View style={styles.subContainer}>
           <Text style={styles.headingText}>{props.heading}</Text>
+          <View style={styles.arrowview}>{props.collapse ? <Up /> : <Down />}</View>
         </View>
-        <View>
-          <TouchableOpacity style={styles.arrowview} onPress={() => props.onPress(!props.collapse)}>
-            {props.collapse ? <Up /> : <Down />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
       {props.collapse ? (
         <>
           <View style={{ width: '100%', flex: 1, marginRight: 16 }}>{props.children}</View>

@@ -6,6 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
 import { AxiosPromise, AxiosResponse } from 'axios';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -203,7 +204,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 .then((res: AxiosResponse) => {
                   if (res && res.data && res.data.Availability) {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
+                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' })
                     /**Gtm code End  */
                     props.setIsViewAllAddressDialogOpen(false);
                     props.setDeliveryTime && props.setDeliveryTime('');

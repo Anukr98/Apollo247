@@ -8,6 +8,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -270,13 +271,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                               title="Remove item from Cart"
                               onClick={() => {
                                 /**Gtm code start  */
-                                window.gep &&
-                                  window.gep(
-                                    'Pharmacy',
-                                    'Remove From Cart',
-                                    medicine.name,
-                                    medicine.price
-                                  );
+                                gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: medicine.name, value: medicine.price })
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
                               }}
@@ -308,13 +303,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 quantity: selectedPackedQty,
                               };
                               /**Gtm code start  */
-                              window.gep &&
-                                window.gep(
-                                  'Pharmacy',
-                                  'Add to Cart',
-                                  medicine.name,
-                                  medicine.price
-                                );
+                              gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: medicine.name, value: medicine.price })
                               /**Gtm code End  */
                               addCartItem && addCartItem(cartItem);
                             }}

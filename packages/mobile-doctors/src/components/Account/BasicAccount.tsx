@@ -29,6 +29,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -39,25 +40,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   const { doctorDetails, getDoctorDetailsApi } = useAuth();
-
-  const buildName = () => {
-    switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
-        return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
-        return 'QA';
-      case 'https://aph.uat.api.popcornapps.com//graphql':
-        return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
-      case 'https://api.apollo247.com//graphql':
-        return 'PROD';
-      case 'https://asapi.apollo247.com//graphql':
-        return 'PRF';
-      default:
-        return '';
-    }
-  };
 
   useEffect(() => {
     if (!doctorDetails) {
@@ -196,7 +178,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                         paddingTop: 20,
                       }}
                     >
-                      {`${buildName()} - v ${
+                      {`${getBuildEnvironment()} - v ${
                         Platform.OS === 'ios'
                           ? AppConfig.Configuration.iOS_Version
                           : AppConfig.Configuration.Android_Version

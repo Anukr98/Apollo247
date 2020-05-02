@@ -13,6 +13,7 @@ import {
   APPOINTMENT_TYPE,
   DoctorType,
   STATUS,
+  REQUEST_ROLES,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   UpdatePatientPrescriptionSentStatus,
@@ -20,7 +21,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { callPermissions, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { callPermissions, g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import moment from 'moment';
@@ -34,6 +35,7 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import Pubnub from 'pubnub';
 
 const styles = AppointmentsListStyles;
 
@@ -223,7 +225,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                       },
                                     })
                                     .then((_data) => {
-                                      setLoading && setLoading(false);
                                       if (
                                         g(
                                           _data,
@@ -232,6 +233,53 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                           'success'
                                         )
                                       ) {
+                                        const config: Pubnub.PubnubConfig = {
+                                          subscribeKey:
+                                            'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b', //'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+                                          publishKey: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e', //'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+                                          ssl: true,
+                                          uuid: REQUEST_ROLES.DOCTOR,
+                                        };
+
+                                        const pubnub = new Pubnub(config);
+
+                                        const followupObj = {
+                                          appointmentId: appId,
+                                          folloupDateTime: caseSheet!.followUp
+                                            ? moment()
+                                                .add(Number(caseSheet!.followUpAfterInDays), 'd')
+                                                .format('YYYY-MM-DD')
+                                            : '',
+                                          doctorId: caseSheet!.doctorId,
+                                          caseSheetId: caseSheetId,
+                                          doctorInfo: doctorDetails,
+                                          pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                                        };
+                                        console.log(followupObj, 'followupObj');
+                                        console.log(
+                                          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+                                            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`
+                                          ),
+                                          'prescriptionPdf'
+                                        );
+
+                                        pubnub.publish(
+                                          {
+                                            channel: appId,
+                                            storeInHistory: true,
+                                            message: {
+                                              id: followupObj.doctorId || '',
+                                              message: messageCodes.followupconsult,
+                                              transferInfo: followupObj,
+                                              messageDate: new Date(),
+                                              sentBy: REQUEST_ROLES.DOCTOR,
+                                            },
+                                          },
+                                          (status, response) => {
+                                            pubnub.stop();
+                                          }
+                                        );
+                                        setLoading && setLoading(false);
                                         showAphAlert &&
                                           showAphAlert({
                                             title: 'Hi',
@@ -246,6 +294,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                       }
                                     })
                                     .catch((e) => {
+                                      console.log(e, 'e');
                                       setLoading && setLoading(false);
                                       showAphAlert &&
                                         showAphAlert({
@@ -276,9 +325,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     } else {
                       showAphAlert &&
                         showAphAlert({
-                          title: 'Alert!',
+                          title: `Hi ${
+                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                          } :)`,
+                          // title: 'Hi, ' + doctorDetails!.displayName + ':)',
                           description:
-                            'You can start this consultation only after Junior Doctor has filled the case sheet.',
+                            'As the patient has not done the pre-assessment, you will not be able to start the consult.',
                         });
                     }
                   }}

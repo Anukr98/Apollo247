@@ -194,7 +194,6 @@ exports.updateSdSummary = (req, res) => {
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
         const docOffset = i * docLimit;
@@ -216,17 +215,13 @@ exports.updateSdSummary = (req, res) => {
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateSdSummary Response\n' +
-                  response.data.data.updateSdSummary +
+                  JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
                 fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -235,6 +230,7 @@ exports.updateSdSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
         status: 'success',
         message: response.data,
       });
@@ -264,7 +260,6 @@ exports.updateJdSummary = (req, res) => {
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
         const docOffset = i * docLimit;
@@ -286,17 +281,13 @@ exports.updateJdSummary = (req, res) => {
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateJdSummary Response\n' +
-                  response.data.data.updateJdSummary +
+                  JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
                 fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -305,6 +296,7 @@ exports.updateJdSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
         status: 'success',
         message: response.data,
       });
@@ -335,7 +327,6 @@ exports.updateDoctorFeeSummary = (req, res) => {
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
         const docOffset = i * docLimit;
@@ -359,17 +350,16 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   new Date().toString() +
                   '\n---------------------------\n' +
                   '\nupdateDoctorFeeSummary Response\n' +
-                  response.data.data.updateDoctorFeeSummary +
+                  '\noffset=' +
+                  docOffset +
+                  '\n' +
+                  JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
                 fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -378,6 +368,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
         status: 'success',
         message: response.data,
       });

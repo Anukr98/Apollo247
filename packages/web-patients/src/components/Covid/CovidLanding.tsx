@@ -267,6 +267,7 @@ export const CovidLanding: React.FC = (props: any) => {
       ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
       : process.env.COVID_ARTICLE_LIST_URL;
   useEffect(() => {
+    typeof window !== 'undefined' && window.scrollTo(0, 0);
     if (props && props.location && props.location.search && props.location.search.length) {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
@@ -448,7 +449,7 @@ export const CovidLanding: React.FC = (props: any) => {
           </Modal>
         </div>
       </div>
-      <NavigationBottom />
+      {!isWebView && <NavigationBottom />}
     </div>
   );
 };

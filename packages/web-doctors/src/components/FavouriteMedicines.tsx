@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Theme,
   makeStyles,
@@ -19,6 +19,7 @@ import {
   AphDialogTitle,
   AphSelect,
   AphRadio,
+  AphTooltip,
 } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
@@ -601,16 +602,18 @@ export interface MedicineProductsResponse {
 let cancel: any;
 export const FavouriteMedicines: React.FC = () => {
   const classes = useStyles();
+  const customInputRef = useRef(null);
+  const defaultInputRef = useRef(null);
   const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<
     GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[] | null
   >([]);
   const [dosageList, setDosageList] = useState<any>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('0');
-  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('0');
-  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('0');
-  const [customDosageNight, setCustomDosageNight] = React.useState<string>('0');
+  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('');
+  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('');
+  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('');
+  const [customDosageNight, setCustomDosageNight] = React.useState<string>('');
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
@@ -938,6 +941,16 @@ export const FavouriteMedicines: React.FC = () => {
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
 
+  useEffect(() => {
+    if (isCustomform) {
+      const node = (customInputRef as any).current;
+      if (node) node.focus();
+    } else {
+      const node = (defaultInputRef as any).current;
+      if (node) node.focus();
+    }
+  }, [isCustomform]);
+
   const getMedicineDetails = (suggestion: OptionType) => {
     const CancelToken = axios.CancelToken;
     setLoading(true);
@@ -958,10 +971,10 @@ export const FavouriteMedicines: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         if (
           result &&
           result.data &&
@@ -1011,29 +1024,33 @@ export const FavouriteMedicines: React.FC = () => {
     return suggestions;
   }
 
-  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
     const matches = match(suggestion.label, query);
     const parts = parse(suggestion.label, matches);
 
     return (
       medicine.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-              title={suggestion.label}
-            >
-              {part.text.length > 46
-                ? part.text.substring(0, 45).toLowerCase() + '...'
-                : part.text.toLowerCase()}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.label}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text.length > 46
+                  ? part.text.substring(0, 45).toLowerCase() + '...'
+                  : part.text.toLowerCase()}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }
@@ -1231,10 +1248,10 @@ export const FavouriteMedicines: React.FC = () => {
         setTabletsCount('');
       } else {
         setTabletsCount(selectedMedicinesArr[idx].medicineDosage!);
-        setCustomDosageMorning('0');
-        setCustomDosageNoon('0');
-        setCustomDosageEvening('0');
-        setCustomDosageNight('0');
+        setCustomDosageMorning('');
+        setCustomDosageNoon('');
+        setCustomDosageEvening('');
+        setCustomDosageNight('');
         setIsCustomForm(false);
       }
       setFrequency(
@@ -2118,6 +2135,7 @@ export const FavouriteMedicines: React.FC = () => {
                                     <AphTextField
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
+                                      inputRef={customInputRef}
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
@@ -2142,7 +2160,6 @@ export const FavouriteMedicines: React.FC = () => {
 
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageNoon}
                                       onChange={(event: any) => {
@@ -2168,7 +2185,6 @@ export const FavouriteMedicines: React.FC = () => {
 
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageEvening}
                                       onChange={(event: any) => {
@@ -2193,7 +2209,6 @@ export const FavouriteMedicines: React.FC = () => {
                                   </Grid>
                                   <Grid item lg={2} md={2} xs={2}>
                                     <AphTextField
-                                      autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={customDosageNight}
                                       onChange={(event: any) => {
@@ -2261,6 +2276,7 @@ export const FavouriteMedicines: React.FC = () => {
                                       autoFocus
                                       inputProps={{ maxLength: 6 }}
                                       value={tabletsCount}
+                                      inputRef={defaultInputRef}
                                       onChange={(event: any) => {
                                         setTabletsCount(event.target.value);
                                       }}

@@ -14,6 +14,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -454,7 +455,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 })
                   .then(() => {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
+                    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' })
                     /**Gtm code End  */
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
@@ -489,8 +490,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                           .then((res: AxiosResponse) => {
                             if (res && res.data && res.data.Availability) {
                               /**Gtm code start  */
-                              window.gep && window.gep('Profile', 'Update', 'Address Added');
-                              window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
+                              gtmTracking({ category: 'Profile', action: 'Update', label: 'Address Added' })
+                              gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' })
                               /**Gtm code End  */
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
