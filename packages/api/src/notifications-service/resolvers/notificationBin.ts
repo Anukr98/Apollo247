@@ -54,6 +54,7 @@ export const notificationBinTypeDefs = gql`
     message: String!
     status: notificationStatus!
     type: notificationType!
+    id: String
   }
 
   type NotificationData {
