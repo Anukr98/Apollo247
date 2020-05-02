@@ -91,6 +91,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             options.push(item);
           } else if (item && item.enabled && item.paymentMode == 'NB') {
             let bankList: bankOptions[] = item.banksList;
+            bankList.forEach((item) => {
+              item.paymentMode = 'NB';
+            });
             bankList.sort((a, b) => {
               return a.seq - b.seq;
             });
@@ -341,16 +344,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               onPress={() => {
                 initiatePayment(item);
               }}
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                width: 0.9 * windowWidth,
-                height: 0.08 * windowHeight,
-                borderRadius: 9,
-                backgroundColor: theme.colors.WHITE,
-                margin: 0.05 * windowWidth,
-                marginTop: 0,
-              }}
+              style={styles.paymentModeCard}
             >
               <View
                 style={{
@@ -408,17 +402,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             marginBottom: 0.03 * windowWidth,
           }}
         ></View>
-        <View
-          style={{
-            flex: 1,
-            width: 0.9 * windowWidth,
-            height: 0.23 * windowHeight,
-            borderRadius: 9,
-            backgroundColor: theme.colors.WHITE,
-            margin: 0.05 * windowWidth,
-            marginTop: 0,
-          }}
-        >
+        <View style={styles.netBankingCard}>
           <View style={{ flex: 0.65, flexDirection: 'row' }}>
             <FlatList
               data={bankOptions.slice(0, 4)}
@@ -433,8 +417,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 >
                   <View
                     style={{
-                      flex: 0.8,
-                      justifyContent: 'center',
+                      flex: 0.65,
+                      justifyContent: 'flex-end',
                       alignItems: 'center',
                     }}
                   >
@@ -442,7 +426,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                   </View>
                   <View
                     style={{
-                      flex: 0.2,
+                      flex: 0.35,
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}
@@ -461,12 +445,15 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
               keyExtractor={(item) => item.name}
             />
           </View>
-          {/* <View style={{ flex: 0.35, flexDirection: 'row' }}>
+          <View style={{ flex: 0.35, flexDirection: 'row' }}>
             <TouchableOpacity
               style={{
-                flex: 0.25,
+                flex: 0.3,
                 justifyContent: 'center',
                 alignItems: 'center',
+              }}
+              onPress={() => {
+                initiatePayment({ paymentMode: 'NB' });
               }}
             >
               <Text
@@ -477,7 +464,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 See All
               </Text>
             </TouchableOpacity>
-          </View> */}
+          </View>
         </View>
       </View>
     );
@@ -522,5 +509,34 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+  },
+  paymentModeCard: {
+    flex: 1,
+    flexDirection: 'row',
+    width: 0.9 * windowWidth,
+    height: 0.08 * windowHeight,
+    borderRadius: 9,
+    backgroundColor: theme.colors.WHITE,
+    margin: 0.05 * windowWidth,
+    marginTop: 0,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  netBankingCard: {
+    flex: 1,
+    width: 0.9 * windowWidth,
+    height: 0.22 * windowHeight,
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    margin: 0.05 * windowWidth,
+    marginTop: 0,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
   },
 });
