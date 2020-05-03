@@ -89,12 +89,13 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '70%',
       padding: '0 0 0 10px',
       '& h6': {
-        fontSize: 16,
-        margin: '0 0 15px',
+        fontSize: 15,
+        margin: '0 0 8px',
         color: '#fcb716',
       },
       '& p': {
-        fontSize: 14,
+        fontSize: 12,
+        margin: 0,
         color: 'rgba(0,0,0,0.5)',
       },
     },
@@ -130,7 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 20,
         height: 20,
         borderRadius: '50%',
-        background: '#f0f1ec',
+        background: '#e7e9df',
         left: -16,
         right: 'auto',
       },
@@ -141,13 +142,13 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 20,
         height: 20,
         borderRadius: '50%',
-        background: '#f0f1ec',
+        background: '#e7e9df',
         right: -16,
         left: 'auto',
       },
     },
     dedicated: {
-      padding: 20,
+      padding: '16px 16px 0 16px',
     },
     cardHeader: {
       padding: '0 0 20px',
@@ -155,13 +156,13 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       borderBottom: '1px solid #02475b',
       '& h2': {
-        fontSize: 20,
+        fontSize: 18,
         color: '#02475b',
         margin: '0 0 0 20px',
       },
     },
     cardBody: {
-      padding: '10px 0',
+      padding: '4px 0',
     },
     serviceDetails: {
       padding: '10px 0',
@@ -172,7 +173,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& p': {
         fontSize: 12,
+        margin: '4px 0',
+        color: '#000',
       },
+    },
+    dedicatedImg: {
+      width: 48,
     },
   };
 });
@@ -193,7 +199,7 @@ export const SbiLandingPage: React.FC = (props) => {
       <div className={classes.mainContent}>
         <div className={classes.banner}>
           <div>
-            <Link to={homePageUrl}>
+            <Link to={`${homePageUrl}${urlParams}`}>
               <img src={require('images/apollo.svg')} alt="logo" />
             </Link>
             <a href="javascript:void(0)" className={classes.sbi}>
@@ -206,7 +212,7 @@ export const SbiLandingPage: React.FC = (props) => {
               <p>
                 Avail these offers from <span>05 May – 14 May</span>
               </p>
-              <Link to={homePageUrl}>
+              <Link to={`${homePageUrl}${urlParams}`}>
                 <button className={classes.primaryButton}>Get Started</button>
               </Link>
             </div>
@@ -271,35 +277,44 @@ export const SbiLandingPage: React.FC = (props) => {
             </div>
             <div className={classes.cardExt}>
               <p>
-                Special diag. practice at <span className={classes.strikeText}>Rs.800</span>{' '}
+                Special immunity-check package at <span className={classes.strikeText}>Rs.800</span>{' '}
                 <span>Rs.499</span> covering: CBC, CRP (Quantitative), Glucose (Random)
               </p>
+
               <p>
                 Special Comprehensive health-check package at
                 <span className={classes.strikeText}> Rs.2400</span> <span>Rs.899 </span>covering:
                 Lipid Profile, Liver Function Test, Urea (serum), Creatinine (serum), TSH,
                 Haemoglobin
               </p>
-              <p>*Offer valid in select cities and for orders on Apollo 24|7 app only</p>
+              <p>
+                *Offer is available in selected cities- Hyderabad, Chennai, Bengaluru, Kolkata &
+                Pune & can be booked on Apollo 24|7 App only
+              </p>
             </div>
           </div>
 
           <div className={`${classes.card} ${classes.dedicated}`}>
             <div className={classes.cardHeader}>
-              <img src={require('images/mascot.png')} />
+              <img className={classes.dedicatedImg} src={require('images/mascot.png')} />
               <h2>Dedicated Service for YOU</h2>
             </div>
             <div className={classes.cardBody}>
-              <a href="mailto:corporate@apollo247.com">
+              <a href="mailto:corporate@apollo247.org">
                 <div className={classes.serviceDetails}>
                   <h6>2-hour redressal for all your queries</h6>
-                  <p>Email us at corporate@apollo247.com between 8am – 8pm</p>
+                  <p>
+                    Email us at <b>corporate@apollo247.com</b>&nbsp; between
+                    <br /> 8am – 8pm
+                  </p>
                 </div>
               </a>
               <a href="tel:08047192606">
                 <div className={classes.serviceDetails}>
                   <h6>Talk to experts about COVID-19</h6>
-                  <p>Dedicated helpline to resolve all queries on Apollo247 app</p>
+                  <p>
+                    Dedicated helpline made available to resolve all queries on <b>Apollo24|7</b>
+                  </p>
                 </div>
               </a>
               <div className={classes.serviceDetails}>
