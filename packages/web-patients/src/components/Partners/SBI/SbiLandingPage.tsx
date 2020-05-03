@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         position: 'absolute',
-        right: -24,
+        right: -22,
         top: -16,
         width: 136,
       },
