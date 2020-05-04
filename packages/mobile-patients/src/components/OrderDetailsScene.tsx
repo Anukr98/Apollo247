@@ -27,7 +27,10 @@ import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_STATUS,
+  MEDICINE_ORDER_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -68,6 +71,7 @@ import {
   cancelMedicineOrder,
   cancelMedicineOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelMedicineOrder';
+import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -159,6 +163,27 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
   );
+
+  const [isEventFired, setEventFired] = useState(false);
+
+  useEffect(() => {
+    if (isEventFired) {
+      return;
+    }
+    const statusList = g(order, 'medicineOrdersStatus') || [];
+    const orderDate = g(statusList.slice(-1)[0], 'statusDate');
+    if (order) {
+      postPharmacyMyOrderTrackingClicked(
+        g(order, 'id')!,
+        g(order, 'currentStatus')!,
+        moment(orderDate).toDate(),
+        g(order, 'orderTat') ? moment(g(order, 'orderTat')!).toDate() : undefined,
+        g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
+        currentPatient
+      );
+      setEventFired(true);
+    }
+  }, [order]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);

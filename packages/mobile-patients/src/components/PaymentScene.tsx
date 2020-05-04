@@ -19,9 +19,19 @@ import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/com
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getParameterByName,
+  g,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import { WebView } from 'react-native-webview';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -35,14 +45,15 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface PaymentSceneProps extends NavigationScreenProps {
-  orderId: string;
-  orderAutoId: number;
-  token: string;
-  amount: number;
-}
-{
-}
+export interface PaymentSceneProps
+  extends NavigationScreenProps<{
+    orderId: string;
+    orderAutoId: number;
+    token: string;
+    amount: number;
+    deliveryTime: string;
+    checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
+  }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { clearCartInfo } = useShoppingCart();
@@ -51,6 +62,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
   const deliveryTime = props.navigation.getParam('deliveryTime');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
@@ -98,6 +110,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    try {
+      if (checkoutEventAttributes) {
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+      }
+    } catch (error) {}
+
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({

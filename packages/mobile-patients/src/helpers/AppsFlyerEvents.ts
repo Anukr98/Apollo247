@@ -26,7 +26,6 @@ export enum AppsFlyerEventName {
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
-  DOCTOR_PROFILE_VIEWED = 'Doctor Profile Viewed',
   BOOK_APPOINTMENT = 'Book Appointment',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
@@ -304,14 +303,6 @@ export interface AppsFlyerEvents {
     'Customer ID': string;
   };
   [AppsFlyerEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
-  [AppsFlyerEventName.DOCTOR_PROFILE_VIEWED]: {
-    name: string;
-    specialisation: string;
-    experience: number;
-    'language known': string; //Comma separated values
-    Hospital: string;
-    'Available in': string;
-  };
   [AppsFlyerEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;

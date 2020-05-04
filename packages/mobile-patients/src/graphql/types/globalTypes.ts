@@ -179,6 +179,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
   PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
@@ -613,11 +614,12 @@ export interface MedicineOrderCancelInput {
 }
 
 export interface MedicinePaymentMqInput {
-  orderId: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
   paymentRefId?: string | null;
+  refundAmount?: number | null;
+  bankName?: string | null;
   paymentStatus?: string | null;
   paymentDateTime?: any | null;
   responseCode?: string | null;

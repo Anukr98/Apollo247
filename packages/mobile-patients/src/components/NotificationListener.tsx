@@ -84,7 +84,8 @@ type CustomNotificationType =
   | 'Patient_Cancel_Appointment'
   | 'Patient_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled'
-  | 'PRESCRIPTION_READY';
+  | 'PRESCRIPTION_READY'
+  | 'doctor_Noshow_Reschedule_Appointment';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -283,7 +284,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
       notificationType === 'Appointment_Canceled' ||
-      notificationType === 'Patient_Noshow_Reschedule_Appointment'
+      notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
@@ -386,16 +387,45 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             description: data.content,
             CTAs: [
               {
-                text: 'GO BACK',
+                text: currentScreenName === AppRoutes.ChatRoom ? 'GO BACK' : 'CLAIM REFUND',
                 onPress: () => {
                   hideAphAlert && hideAphAlert();
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                    })
+                  if (currentScreenName === AppRoutes.ChatRoom) {
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
+                  }
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'RESCHEDULE',
+                onPress: () => {
+                  console.log(
+                    `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
                   );
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
+      case 'doctor_Noshow_Reschedule_Appointment':
+        {
+          showAphAlert!({
+            title: ' ',
+            description: data.content,
+            CTAs: [
+              {
+                text: 'CLAIM REFUND',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
                 },
                 type: 'white-button',
               },
@@ -864,7 +894,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           if (appointmentData) {
             if (
               notificationType == 'Reschedule_Appointment' ||
-              notificationType == 'Patient_Noshow_Reschedule_Appointment'
+              notificationType == 'Patient_Noshow_Reschedule_Appointment' ||
+              notificationType == 'doctor_Noshow_Reschedule_Appointment'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
