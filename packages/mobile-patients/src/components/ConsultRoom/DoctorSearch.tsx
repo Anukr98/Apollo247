@@ -535,22 +535,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       const MoveDoctor = props.navigation.getParam('movedFrom') || '';
 
       console.log('MoveDoctor', MoveDoctor);
-      if (MoveDoctor === 'registration') {
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      } else {
-        CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
-        props.navigation.goBack();
-      }
+      CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+          ],
+        })
+      );
     } catch (error) {}
 
     return false;

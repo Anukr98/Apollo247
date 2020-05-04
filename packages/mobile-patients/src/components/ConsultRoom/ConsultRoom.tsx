@@ -1114,20 +1114,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View style={styles.covidCardContainer}>
         <ImageBackground
-          style={{ overflow: 'hidden', width: '100%', height: 130 }}
+          style={{ overflow: 'hidden', width: '100%', height: 135 }}
           resizeMode={'stretch'}
           source={require('@aph/mobile-patients/src/images/home/corona_image.png')}
         >
           <View style={{ paddingVertical: 24, paddingHorizontal: 16 }}>
             <Text
               style={{
-                marginBottom: 10,
-                ...theme.viewStyles.text('SB', 24, theme.colors.WHITE, 1, 32),
+                marginBottom: 8,
+                ...theme.viewStyles.text('SB', 22, theme.colors.WHITE, 1, 29),
               }}
             >
               {'CORONAVIRUS (COVID-19)'}
             </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.WHITE, 1, 19) }}>
+            <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.WHITE, 1, 18) }}>
               {
                 'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
               }
