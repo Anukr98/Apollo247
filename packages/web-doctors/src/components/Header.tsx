@@ -1,12 +1,13 @@
 import React, { useRef, useEffect } from "react";
 import { makeStyles } from "@material-ui/styles";
-import { Theme, CircularProgress } from "@material-ui/core";
+import { Theme, CircularProgress, Typography } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import Popover from "@material-ui/core/Popover";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import { SignIn } from "components/SignIn";
 import { HelpPopup } from "components/Help";
+import { Notifications } from "components/Notifications";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -195,13 +196,13 @@ export const Header: React.FC = props => {
   } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
+  const [isHelpPopupOpen1, setIsHelpPopupOpen1] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [showIdleTimer, setShowIdleTimer] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(true);
   const [showLoader, setShowLoader] = React.useState(false);
-  //const [notificationsList, setNotificationsList] = React.useState<any>([]);
   let content: [React.ReactNode] = [null];
 
   // TODO remove currentPatient and name it as currentDoctor
@@ -313,22 +314,7 @@ export const Header: React.FC = props => {
           {data.getNotifications.notificationData.map(
             (notificationObject: any, index: any) => {
               return (
-                <div>{console.log(notificationObject)}text11111111111</div>
-                // <Link
-                //   key={id}
-                //   to={clientRoutes.JDConsultRoom({
-                //     appointmentId: appointment.id,
-                //     patientId: patient.id,
-                //     queueId: String(id),
-                //     isActive: isActive ? 'active' : 'done',
-                //   })}
-                // >
-                //   <ActiveConsultCard
-                //     id={id}
-                //     patient={{ ...patient, queueNumber: index + 1 }}
-                //     appointment={appointment}
-                //   />
-                // </Link>
+                <div>You have new message from {notificationObject.patientFirstName}</div>
               );
             }
           )}
@@ -469,7 +455,11 @@ export const Header: React.FC = props => {
                       {!isJuniorDoctor && !isAdminDoctor ? (
                         <span title="Notification">
                           <img
-                            onClick={() => setSelectedTab(4)}
+                            onClick={() => {
+                              //alert(111111111);
+                              setSelectedTab(4);
+                              setIsHelpPopupOpen1(true);
+                            }}
                             src={require("images/ic_notifications.svg")}
                           />
                         </span>
@@ -602,6 +592,39 @@ export const Header: React.FC = props => {
               </Button>
             </DialogActions>
           </Dialog>
+          <Popover
+              open={isHelpPopupOpen1}
+              anchorEl={avatarRef.current}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right"
+              }}
+              classes={{ paper: classes.signedTopPopover }}
+            >
+                <Paper className={classes.loginForm}>
+                  <Button
+                    onClick={() => setIsHelpPopupOpen1(false)}
+                    className={classes.cross}
+                  >
+                    <img src={require("images/ic_cross.svg")} alt="" />
+                  </Button>
+                  
+                    {content && content.length > 0 && content[0] ?  (<div>
+                      <Typography variant="h2">
+                      Notifications
+                    </Typography>
+                      <div>
+                      {content[0]}
+                    </div>
+  </div>) : null}
+                    
+                  
+                </Paper>
+            </Popover>
           {isSignedIn || isAdminDoctor || isSecretary ? (
             <Popover
               open={isHelpPopupOpen}
