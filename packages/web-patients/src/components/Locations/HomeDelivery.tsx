@@ -1,6 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
 import React, { useEffect, useRef } from 'react';
+import moment from 'moment';
+import _find from 'lodash';
 import {
   AphRadio,
   AphButton,
@@ -21,7 +23,8 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
+import isNull from 'lodash/isNull';
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -157,6 +160,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       textTransform: 'uppercase',
     },
+    noBoxShadow: {
+      boxShadow: 'none',
+    },
     actions: {
       padding: '10px 20px 20px 20px',
       display: 'flex',
@@ -219,6 +225,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddresses,
     cartItems,
     setStoreAddressId,
+    medicineCartType,
+    removeCartItem,
+    updateItemShippingStatus,
+    updateCartItemQty,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -229,12 +239,26 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   );
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [zipCode, setZipCode] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
+  const [selectingAddress, setSelectingAddress] = React.useState<boolean>(false);
+
   const [selectedAddressDataIndex, setSelectedAddressDataIndex] = React.useState<number>(0);
   const [errorDeliveryTimeMsg, setErrorDeliveryTimeMsg] = React.useState('');
+  const [nonServicableSKU, setNonServicableSKU] = React.useState([]);
   const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = React.useState(false);
+  const [showNonDeliverablePopup, setShowNonDeliverablePopup] = React.useState(false);
   const addToCartRef = useRef(null);
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    if (isMounted.current && deliveryAddressId && !selectingAddress) {
+      fetchDeliveryTime(zipCode);
+    } else {
+      isMounted.current = true;
+    }
+  }, [cartItems]);
 
   const getAddressDetails = () => {
     setIsLoading(true);
@@ -257,6 +281,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             if (deliveryAddressId) {
               const index = addresses.findIndex((address) => address.id === deliveryAddressId);
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
+              setZipCode(zipCode);
               if (cartItems.length > 0) {
                 fetchDeliveryTime(zipCode);
               }
@@ -306,6 +331,41 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     );
   };
 
+  const removeNonDeliverableItemsFromCart = () => {
+    if (nonServicableSKU.length) {
+      console.log('nonD saved', nonServicableSKU);
+      nonServicableSKU.map((nonDeliverableSKU: string) => {
+        let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
+        if (obj && !isNull(obj)) {
+          removeCartItem && removeCartItem(obj.id);
+        }
+      });
+      setShowNonDeliverablePopup(false);
+      setNonServicableSKU([]);
+    }
+  };
+
+  const handleChangeAddressClick = () => {
+    setShowNonDeliverablePopup(false);
+    if (nonServicableSKU.length) {
+      console.log('I am here');
+      nonServicableSKU.map((nonDeliverableSKU: string) => {
+        let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
+        console.log(54, obj);
+        if (obj && !isNull(obj)) {
+          updateItemShippingStatus &&
+            updateItemShippingStatus({
+              id: obj.id,
+              is_in_stock: false,
+              sku: obj.sku,
+              quantity: 0,
+            });
+        }
+      });
+    }
+    setDeliveryAddressId && setDeliveryAddressId('');
+  };
+
   const fetchDeliveryTime = async (zipCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
@@ -318,7 +378,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         apiDetails.deliveryUrl || '',
         {
           postalcode: zipCode || '',
-          ordertype: 'pharma',
+          ordertype: medicineCartType,
           lookup: lookUp,
         },
         {
@@ -335,11 +395,55 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         try {
           if (res && res.data) {
             setDeliveryLoading(false);
+            setSelectingAddress(true);
             if (
               typeof res.data === 'object' &&
               Array.isArray(res.data.tat) &&
               res.data.tat.length
             ) {
+              const tatResult = res.data.tat;
+              const nonDeliverySKUArr = tatResult
+                .filter((item: any) => getDiffInDays(item.deliverydate) > 10)
+                .map((filteredSku: any) => filteredSku.artCode);
+              console.log('non-deliverableSKU', nonDeliverySKUArr);
+              const deliverableSku = tatResult
+                .filter((item: any) => getDiffInDays(item.deliverydate) <= 10)
+                .map((filteredSku: any) => filteredSku.artCode);
+              console.log('deliverableSKU', deliverableSku);
+
+              deliverableSku.map((deliverableSKU: string) => {
+                let obj = cartItems.find((o) => o.sku === deliverableSKU);
+                if (obj && !isNull(obj)) {
+                  console.log('I am deeper inside deliverable');
+                  updateItemShippingStatus &&
+                    updateItemShippingStatus({
+                      id: obj.id,
+                      is_in_stock: true,
+                      sku: obj.sku,
+                      quantity: obj.quantity,
+                      isShippable: true,
+                    });
+                }
+              });
+
+              // if nonDeliverySKUArr.length then open we are sorry modal
+              if (nonDeliverySKUArr && nonDeliverySKUArr.length) {
+                setShowNonDeliverablePopup(true);
+                setNonServicableSKU(nonDeliverySKUArr);
+              }
+
+              // remove the items from cart
+              // if (nonDeliverySKUArr.length) {
+              //   nonDeliverySKUArr.map((nonDeliverableSKU: any) => {
+              //     let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
+              //     console.log(4343, obj);
+              //     if (obj && !isNull(obj)) {
+              //       removeCartItem && removeCartItem(obj.id);
+              //     }
+              //   });
+              // }
+              // console.log(444, cartItems);
+
               setErrorDeliveryTimeMsg('');
               setDeliveryTime(res.data.tat[0].deliverydate);
             } else if (typeof res.data.errorMSG === 'string') {
@@ -347,12 +451,23 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               setDeliveryTime('');
             }
           }
+          setSelectingAddress(false);
         } catch (error) {
           setDeliveryLoading(false);
           console.log(error);
         }
       })
       .catch((error: any) => console.log(error));
+  };
+  const getDiffInDays = (nextAvailability: string) => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+      const currentTime = moment(new Date());
+      const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
+      return Math.round(differenceInDays) + 1;
+    } else {
+      return 0;
+    }
   };
 
   if (isError) {
@@ -399,7 +514,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         .then((res: AxiosResponse) => {
                           if (res && res.data && res.data.Availability) {
                             /**Gtm code start  */
-                            gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' })
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Order',
+                              label: 'Address Selected',
+                            });
                             /**Gtm code End  */
                             setDeliveryAddressId && setDeliveryAddressId(address.id);
                             setStoreAddressId && setStoreAddressId('');
@@ -501,6 +620,48 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                   }}
                 >
                   OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={showNonDeliverablePopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.noServiceRoot}>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">We’re Sorry!</Typography>
+                <p>Some items in your order are not deliverable to the selected address.</p>
+                <p>You may either change the address or delete the items from your cart.</p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  className={`${classes.viewCartBtn} ${classes.noBoxShadow}`}
+                  onClick={() => handleChangeAddressClick()}
+                >
+                  CHANGE THE ADDRESS
+                </AphButton>
+                <AphButton
+                  className={`${classes.viewCartBtn} ${classes.noBoxShadow}`}
+                  onClick={() => removeNonDeliverableItemsFromCart()}
+                >
+                  REMOVE ITEMS
                 </AphButton>
               </div>
             </div>

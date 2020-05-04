@@ -13,7 +13,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -557,9 +557,16 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     type_id: data.type_id,
                     mou: data.mou,
                     quantity: medicineQty,
+                    isShippable: true,
                   };
                   /**Gtm code start  */
-                  itemIndexInCart(data) == -1 && gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: data.name, value: data.price })
+                  itemIndexInCart(data) == -1 &&
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Add to Cart',
+                      label: data.name,
+                      value: data.price,
+                    });
                   /**Gtm code End  */
                   applyCartOperations(cartItem);
                   setAddMutationLoading(false);
@@ -597,6 +604,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     type_id: data.type_id,
                     mou: data.mou,
                     quantity: medicineQty,
+                    isShippable: true,
                   };
                   applyCartOperations(cartItem);
                   setTimeout(() => {
