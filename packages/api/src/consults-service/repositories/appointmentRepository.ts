@@ -987,6 +987,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     sortBy: patientLogSort,
     type: patientLogType,
+    patientName: string,
     offset?: number,
     limit?: number
   ) {
@@ -1011,14 +1012,20 @@ export class AppointmentRepository extends Repository<Appointment> {
       results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
     }
 
+    if (patientName && patientName.length > 0) {
+      results.andWhere('appointment.patientName ilike :patientName', {
+        patientName: '%' + patientName + '%',
+      });
+    }
+
     results.groupBy('appointment.patientId');
     results.offset(offset);
     results.limit(limit);
 
     if (sortBy == patientLogSort.PATIENT_NAME_A_TO_Z) {
-      results.orderBy('min("Lower(patientName)")', 'ASC');
+      results.orderBy('min(Lower("patientName"))', 'ASC');
     } else if (sortBy == patientLogSort.PATIENT_NAME_Z_TO_A) {
-      results.orderBy('min("Lower(patientName)")', 'DESC');
+      results.orderBy('min(Lower("patientName"))', 'DESC');
     } else if (sortBy == patientLogSort.NUMBER_OF_CONSULTS) {
       results.orderBy('count(*)', 'DESC');
     } else {

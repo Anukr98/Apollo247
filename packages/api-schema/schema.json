@@ -1558,6 +1558,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "patientName",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -9208,6 +9218,42 @@
           },
           {
             "name": "STAR_APOLLO",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "DOCTOR_CONNECT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CRADLE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CLINIC",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SPECTRA",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FERTILITY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SUGAR",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

@@ -98,6 +98,7 @@ export const getAppointmentHistoryTypeDefs = gql`
       sortBy: patientLogSort
       type: patientLogType
       doctorId: ID
+      patientName: String
     ): PatientLogData
   }
 `;
@@ -240,6 +241,7 @@ const getPatientLog: Resolver<
     sortBy: patientLogSort;
     type: patientLogType;
     doctorId: string;
+    patientName: string;
   },
   ConsultServiceContext,
   PatientLogData
@@ -255,11 +257,17 @@ const getPatientLog: Resolver<
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const totalResultCount = await appointmentRepo.patientLog(doctordata.id, args.sortBy, args.type);
+  const totalResultCount = await appointmentRepo.patientLog(
+    doctordata.id,
+    args.sortBy,
+    args.type,
+    args.patientName
+  );
   const appointmentsHistory = await appointmentRepo.patientLog(
     doctordata.id,
     args.sortBy,
     args.type,
+    args.patientName,
     args.offset,
     args.limit
   );

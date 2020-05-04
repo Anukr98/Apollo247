@@ -823,6 +823,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     followUpAfterInDays,
     followUp,
     patientDetails,
+    height,
+    weight,
+    setVitalError,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -1906,12 +1909,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      stopInterval();
-                      if (showVideo) {
-                        stopAudioVideoCall();
+                      if (height === '' && weight === '') {
+                        setVitalError({
+                          height: 'This field is required',
+                          weight: 'This field is required',
+                        });
+                      } else if (height === '' && weight !== '') {
+                        setVitalError({
+                          height: 'This field is required',
+                          weight: '',
+                        });
+                      } else if (height !== '' && weight === '') {
+                        setVitalError({
+                          height: '',
+                          weight: 'This field is required',
+                        });
+                      } else {
+                        setVitalError({
+                          height: '',
+                          weight: '',
+                        });
+                        stopInterval();
+                        if (showVideo) {
+                          stopAudioVideoCall();
+                        }
+                        props.endConsultAction();
+                        isConsultStarted = false;
                       }
-                      props.endConsultAction();
-                      isConsultStarted = false;
                     }}
                   >
                     <svg
