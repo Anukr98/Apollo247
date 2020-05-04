@@ -585,6 +585,7 @@ export async function sendNotification(
     console.log('mobileNumber===============', patientDetails.mobileNumber);
     console.log('message==========================', notificationBody);
     //send sms
+    console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
     //send sms to doctor
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
