@@ -183,7 +183,7 @@ import { winstonLogger } from 'customWinstonLogger';
       },
       {
         typeDefs: paymentTransactionStatusTypeDefs,
-        resolvers: paymentTransactionStatusResolvers
+        resolvers: paymentTransactionStatusResolvers,
       },
       {
         typeDefs: caseSheetTypeDefs,
