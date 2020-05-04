@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         position: 'static',
         textAlign: 'center',
+        paddingBottom: 20,
       },
     },
     bottomPopover: {
