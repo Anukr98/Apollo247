@@ -6,6 +6,7 @@ import {
   APPOINTMENT_STATE,
   BOOKINGSOURCE,
   DEVICETYPE,
+  PATIENT_TYPE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -259,6 +260,19 @@ const bookAppointment: Resolver<
   );
   if (cancelledCount >= 3) {
     throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
+  }
+
+  const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
+  let prevPatientId = '0';
+  if (appointmentDetails.length) {
+    appointmentDetails.forEach(async (appointmentData) => {
+      if (appointmentData.patientId != prevPatientId) {
+        prevPatientId = appointmentData.patientId;
+        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+      } else {
+        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+      }
+    });
   }
 
   //calculate coupon discount value

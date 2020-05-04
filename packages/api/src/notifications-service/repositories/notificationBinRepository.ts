@@ -64,7 +64,16 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
 
   async getNotificationInTimePeriod(toId: string, startDate: Date, endDate: Date) {
     try {
-      return this.find({ where: { toId, createdDate: Between(startDate, endDate) } });
+      return this.find({
+        where: {
+          toId,
+          createdDate: Between(startDate, endDate),
+          status: notificationStatus.UNREAD,
+        },
+        order: {
+          createdDate: 'ASC',
+        },
+      });
     } catch (getNotificationErrors) {
       throw new AphError(AphErrorMessages.GET_NOTIFICATION_ERROR, undefined, {
         getNotificationErrors,
