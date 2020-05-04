@@ -62,7 +62,18 @@ export const notificationBinTypeDefs = gql`
   }
 
   type NotificationDataSet {
-    notificationData: [NotificationBinData]
+    notificationData: [GetNotificationsResponse]
+  }
+
+  type GetNotificationsResponse {
+    appointmentId: String
+    doctorId: String
+    lastUnreadMessageDate: DateTime
+    patientId: String
+    patientFirstName: String
+    patientLastName: String
+    patientPhotoUrl: String
+    unreadNotificationsCount: Int
   }
 
   extend type Query {
@@ -274,12 +285,23 @@ const sendUnreadMessagesNotification: Resolver<
   return 'success';
 };
 
+type GetNotificationsResponse = {
+  appointmentId: string;
+  doctorId: string;
+  lastUnreadMessageDate: Date;
+  patientId: string;
+  patientFirstName: string;
+  patientLastName: string;
+  patientPhotoUrl: string;
+  unreadNotificationsCount: number;
+};
+
 const getNotifications: Resolver<
   null,
   { toId: string; startDate: Date; endDate: Date },
   NotificationsServiceContext,
-  { notificationData: Partial<NotificationBin>[] }
-> = async (parent, args, { consultsDb }) => {
+  { notificationData: GetNotificationsResponse[] }
+> = async (parent, args, { consultsDb, patientsDb }) => {
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
@@ -292,7 +314,62 @@ const getNotifications: Resolver<
     endDate
   );
 
-  return { notificationData: notificationData };
+  //Mapping the appoint id with respect to response object
+  const appointmentIds: string[] = [];
+  const patientIds: string[] = [];
+  const appointmentPatientIdMapper: { [key: string]: string } = {};
+  const appointmentLastUnreadMessageDateMapper: { [key: string]: Date } = {};
+  const appointmentUnreadMessageCountMapper: { [key: string]: number } = {};
+  notificationData.forEach((notification) => {
+    if (!appointmentIds.includes(notification.eventId)) {
+      appointmentIds.push(notification.eventId);
+      appointmentUnreadMessageCountMapper[notification.eventId] = 1;
+    } else {
+      appointmentUnreadMessageCountMapper[notification.eventId]++;
+    }
+
+    appointmentPatientIdMapper[notification.eventId] = notification.fromId;
+    appointmentLastUnreadMessageDateMapper[notification.eventId] = notification.createdDate;
+
+    if (!patientIds.includes(notification.fromId)) {
+      patientIds.push(notification.fromId);
+    }
+  });
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientsData = await patientRepo.findPatientDetailsByIdsAndFields(patientIds, [
+    'patient.id',
+    'patient.photoUrl',
+    'patient.firstName',
+    'patient.lastName',
+  ]);
+
+  //Mapping patient id with patient details
+  const patientFirstNameMapper: { [key: string]: string } = {};
+  const patientLastNameMapper: { [key: string]: string } = {};
+  const patientPhotoMapper: { [key: string]: string } = {};
+
+  patientsData.forEach((patient) => {
+    patientFirstNameMapper[patient.id] = patient.firstName;
+    patientLastNameMapper[patient.id] = patient.lastName;
+    patientPhotoMapper[patient.id] = patient.photoUrl;
+  });
+
+  //Generating the response object
+  const response = appointmentIds.map((appointmentId) => {
+    return {
+      appointmentId,
+      doctorId: args.toId,
+      lastUnreadMessageDate: appointmentLastUnreadMessageDateMapper[appointmentId],
+      patientId: appointmentPatientIdMapper[appointmentId],
+      patientFirstName: patientFirstNameMapper[appointmentPatientIdMapper[appointmentId]],
+      patientLastName: patientLastNameMapper[appointmentPatientIdMapper[appointmentId]],
+      patientPhotoUrl: patientPhotoMapper[appointmentPatientIdMapper[appointmentId]],
+      unreadNotificationsCount: appointmentUnreadMessageCountMapper[appointmentId],
+    };
+  });
+
+  return { notificationData: response };
 };
 
 export const notificationBinResolvers = {
