@@ -21,6 +21,7 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -125,11 +126,15 @@ const insertMessage: Resolver<
     if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
     mobileNumber = doctorDetails.mobileNumber;
 
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-
     //get patient details
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
     const patientDetails = await patientRepo.findById(fromId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+    //get appointment details
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentData = await appointmentRepo.findById(messageInput.eventId);
+    if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
     //create message body
     messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace('{0}', doctorDetails.firstName).replace(
