@@ -124,12 +124,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               {
                 match_phrase_prefix: {
                   fullName: {
-                    query: searchTextLowerCase
-                  }
-                }
-              },]
-          }
-
+                    query: searchTextLowerCase,
+                  },
+                },
+              },
+            ],
+          },
         },
       },
     };
@@ -145,7 +145,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       let bufferTime = 5;
       for (const consultHour of doctor.consultHours) {
         consultHour['id'] = consultHour['consultHoursId'];
-        bufferTime = consultHour["consultBuffer"];
+        bufferTime = consultHour['consultBuffer'];
       }
       doctor['doctorHospital'] = [];
       doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
@@ -170,11 +170,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
       for (const slots of doctor.doctorSlots) {
         for (const slot of slots['slots']) {
-          if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
+          if (
+            slot.status == 'OPEN' &&
+            differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          ) {
             if (doctor['activeSlotCount'] === 0) {
               console.log(slot.slotType);
 
-              doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
+              doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
+                new Date(slot.slot),
+                new Date()
+              );
               matchedDoctorsNextAvailability.push({
                 availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
                 physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
@@ -183,13 +189,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
                 referenceSlot: slot.slot,
               });
-
             }
             doctor['activeSlotCount'] += 1;
           }
         }
       }
-      if (doctor['activeSlotCount'] > 0) { matchedDoctors.push(doctor); }
+      if (doctor['activeSlotCount'] > 0) {
+        matchedDoctors.push(doctor);
+      }
     }
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
@@ -208,7 +215,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   match: {
                     'doctorSlots.slots.status': 'OPEN',
                   },
-                }
+                },
               ],
             },
           },
@@ -225,7 +232,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         let bufferTime = 5;
         for (const consultHour of doctor.consultHours) {
           consultHour['id'] = consultHour['consultHoursId'];
-          bufferTime = consultHour["consultBuffer"];
+          bufferTime = consultHour['consultBuffer'];
         }
         if (doctor.specialty) {
           doctor.specialty.id = doctor.specialty.specialtyId;
@@ -252,9 +259,15 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
         for (const slots of doctor.doctorSlots) {
           for (const slot of slots['slots']) {
-            if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
+            if (
+              slot.status == 'OPEN' &&
+              differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+            ) {
               if (doctor['activeSlotCount'] === 0) {
-                doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
+                doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
+                  new Date(slot.slot),
+                  new Date()
+                );
                 possibleDoctorsNextAvailability.push({
                   availableInMinutes: Math.abs(
                     differenceInMinutes(new Date(), new Date(slot.slot))
@@ -270,9 +283,10 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             }
           }
         }
-        if (doctor['activeSlotCount'] > 0) { possibleDoctors.push(doctor); }
+        if (doctor['activeSlotCount'] > 0) {
+          possibleDoctors.push(doctor);
+        }
       }
-
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
@@ -280,13 +294,18 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   searchLogger(`API_CALL___END`);
 
   return {
-    doctors: matchedDoctors
-      .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
+    doctors: matchedDoctors.sort(
+      (a, b) =>
+        parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
+    ),
     doctorsNextAvailability: matchedDoctorsNextAvailability,
     specialties: matchedSpecialties,
     possibleMatches: {
-      doctors: possibleDoctors
-        .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
+      doctors: possibleDoctors.sort(
+        (a, b) =>
+          parseFloat(a.earliestSlotavailableInMinutes) -
+          parseFloat(b.earliestSlotavailableInMinutes)
+      ),
       doctorsNextAvailability: possibleDoctorsNextAvailability,
       specialties: possibleSpecialties,
     },

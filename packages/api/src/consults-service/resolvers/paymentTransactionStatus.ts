@@ -7,30 +7,27 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 
 export const paymentTransactionStatusTypeDefs = gql`
-
-
   type AppointmentPaymentResponse {
-		appointment:AppointmentPaymentDetails
+    appointment: AppointmentPaymentDetails
   }
-	type AppointmentPaymentDetails {
-		paymentRefId: String
-   		bankTxnId: String
-		amountPaid: Float
-		paymentStatus: String
-		responseCode: Int
-		responseMessage: String
-		paymentDateTime: DateTime
-		displayId: Int
-	}
+  type AppointmentPaymentDetails {
+    paymentRefId: String
+    bankTxnId: String
+    amountPaid: Float
+    paymentStatus: String
+    responseCode: Int
+    responseMessage: String
+    paymentDateTime: DateTime
+    displayId: Int
+  }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse
   }
-  
 `;
 
 type AppointmentPaymentResponse = {
-  appointment: AppointmentPaymentDetails
-}
+  appointment: AppointmentPaymentDetails;
+};
 
 type AppointmentPaymentDetails = {
   paymentRefId: string;
@@ -41,11 +38,11 @@ type AppointmentPaymentDetails = {
   responseMessage: string;
   paymentDateTime: Date | null;
   displayId: number;
-}
+};
 
 const paymentTransactionStatus: Resolver<
   null,
-  { appointmentId: string; },
+  { appointmentId: string },
   ConsultServiceContext,
   AppointmentPaymentResponse
 > = async (parent, args, { consultsDb }) => {
@@ -63,7 +60,10 @@ const paymentTransactionStatus: Resolver<
   if (!response) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  const appointmentPaymentsResponse = response.appointmentPayments && response.appointmentPayments[0] ? response.appointmentPayments[0] : null;
+  const appointmentPaymentsResponse =
+    response.appointmentPayments && response.appointmentPayments[0]
+      ? response.appointmentPayments[0]
+      : null;
   const returnResponse: AppointmentPaymentDetails = {
     displayId: response.displayId,
     paymentStatus: response.status,
@@ -72,8 +72,10 @@ const paymentTransactionStatus: Resolver<
     responseMessage: appointmentPaymentsResponse ? appointmentPaymentsResponse.responseMessage : '',
     amountPaid: appointmentPaymentsResponse ? appointmentPaymentsResponse.amountPaid : 0,
     responseCode: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
-    paymentDateTime: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentDateTime : null,
-  }
+    paymentDateTime: appointmentPaymentsResponse
+      ? appointmentPaymentsResponse.paymentDateTime
+      : null,
+  };
 
   if (appointmentPaymentsResponse) {
     switch (appointmentPaymentsResponse.paymentStatus) {
@@ -94,6 +96,6 @@ const paymentTransactionStatus: Resolver<
 
 export const paymentTransactionStatusResolvers = {
   Query: {
-    paymentTransactionStatus
-  }
+    paymentTransactionStatus,
+  },
 };
