@@ -252,14 +252,15 @@ export const SbiLandingPage: React.FC = (props) => {
               </div>
               <div className={classes.cardExt}>
                 <p>
-                  2 sets of 3-ply mask and a hand sanitiser <span>FREE</span> with every medicine
-                  order worth <span>Rs.600 and above</span>
+                  2 sets of 3-ply mask and a hand sanitiser <span>FREE</span> with every prescribed
+                  medicine order worth <span>Rs.600</span> or more
                 </p>
                 <p>
                   Get <span>10% off</span> on all chronic medicines
                 </p>
                 <p>
-                  *Offer valid from <span>7th-14th May</span> and in select cities
+                  *Pharmacy offer is available between 7th- 14th May in selected cities- Hyderabad,
+                  Chennai, Bengaluru, Kolkata, Delhi, Gurugram, Noida, Jaipur & Vizag
                 </p>
               </div>
             </div>
@@ -304,7 +305,7 @@ export const SbiLandingPage: React.FC = (props) => {
                 <div className={classes.serviceDetails}>
                   <h6>2-hour redressal for all your queries</h6>
                   <p>
-                    Email us at <b>corporate@apollo247.com</b>&nbsp; between
+                    Email us at <b>corporate@apollo247.org</b>&nbsp; between
                     <br /> 8am – 8pm
                   </p>
                 </div>
