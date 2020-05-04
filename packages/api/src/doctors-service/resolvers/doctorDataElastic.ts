@@ -6,6 +6,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { differenceInDays, addDays, format } from 'date-fns';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
+import { Doctor } from 'doctors-service/entities';
 
 export const doctorDataElasticTypeDefs = gql`
   extend type Mutation {
@@ -128,13 +129,47 @@ const addAllDoctorSlotsElastic: Resolver<
       stDate = new Date(args.fromSlotDate);
       slotsAdded += '{';
       console.log('came here');
-      const updateParam: RequestParams.Update = {
-        id: allDocsInfo[k].id,
+      const searchParams: RequestParams.Search = {
         index: 'doctors',
-        body: { doc: { doctorSlots: [] } },
+        type: 'posts',
+        body: {
+          query: {
+            match_phrase: {
+              doctorId: allDocsInfo[k].id,
+            },
+          },
+        },
       };
-      const updateClearResp = await client.update(updateParam);
-      console.log(updateClearResp, 'updateClearResp ');
+      const getDetails = await client.search(searchParams);
+
+      console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
+      if (getDetails.body.hits.hits.length == 0) {
+        await addDoctorElastic(allDocsInfo[k]);
+      } else {
+        const updateParam: RequestParams.Update = {
+          id: allDocsInfo[k].id,
+          index: 'doctors',
+          body: {
+            doc: {
+              doctorSlots: [],
+              firstName: allDocsInfo[k].firstName,
+              lastName: allDocsInfo[k].lastName,
+              onlineConsultationFees: allDocsInfo[k].onlineConsultationFees,
+              physicalConsultationFees: allDocsInfo[k].physicalConsultationFees,
+              photoUrl: allDocsInfo[k].photoUrl,
+              fullName: allDocsInfo[k].fullName,
+              specialization: allDocsInfo[k].specialization,
+              awards: allDocsInfo[k].awards,
+              emailAddress: allDocsInfo[k].emailAddress,
+              dateOfBirth: allDocsInfo[k].dateOfBirth,
+              experience: allDocsInfo[k].experience,
+              languages: allDocsInfo[k].languages,
+            },
+          },
+        };
+        const updateClearResp = await client.update(updateParam);
+        console.log(updateClearResp, 'updateClearResp ');
+      }
       for (let i = 0; i <= daysDiff; i++) {
         //str += format(stDate, 'yyyy-MM-dd') + ',';
         // const searchParams: RequestParams.Search = {
@@ -289,112 +324,7 @@ const insertDataElastic: Resolver<
       console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
         newDocData += allDocsInfo[i].id + ',';
-        const consultHours = [];
-        for (let k = 0; k < allDocsInfo[i].consultHours.length; k++) {
-          const hourData = {
-            consultHoursId: allDocsInfo[i].consultHours[k].id,
-            weekDay: allDocsInfo[i].consultHours[k].weekDay,
-            startTime: allDocsInfo[i].consultHours[k].startTime,
-            endTime: allDocsInfo[i].consultHours[k].endTime,
-            consultMode: allDocsInfo[i].consultHours[k].consultMode,
-            consultDuration: allDocsInfo[i].consultHours[k].consultDuration,
-            consultBuffer: allDocsInfo[i].consultHours[k].consultBuffer,
-            actualDay: allDocsInfo[i].consultHours[k].actualDay,
-            slotsPerHour: allDocsInfo[i].consultHours[k].slotsPerHour,
-            isActive: allDocsInfo[i].consultHours[k].isActive,
-            consultType: allDocsInfo[i].consultHours[k].consultType,
-          };
-          consultHours.push(hourData);
-        }
-        let doctorSecratry = {};
-        let facility = {};
-        let specialty = {};
-        if (allDocsInfo[i].doctorSecretary) {
-          doctorSecratry = {
-            docSecretaryId: allDocsInfo[i].doctorSecretary.id,
-            name: allDocsInfo[i].doctorSecretary.secretary.name,
-            mobileNumber: allDocsInfo[i].doctorSecretary.secretary.mobileNumber,
-            isActive: allDocsInfo[i].doctorSecretary.secretary.isActive,
-            secretaryId: allDocsInfo[i].doctorSecretary.secretary.id,
-          };
-        }
-        if (allDocsInfo[i].doctorHospital.length > 0) {
-          facility = {
-            docFacilityId: allDocsInfo[i].doctorHospital[0].id,
-            name: allDocsInfo[i].doctorHospital[0].facility.name,
-            facilityType: allDocsInfo[i].doctorHospital[0].facility.facilityType,
-            streetLine1: allDocsInfo[i].doctorHospital[0].facility.streetLine1,
-            streetLine2: allDocsInfo[i].doctorHospital[0].facility.streetLine2,
-            streetLine3: allDocsInfo[i].doctorHospital[0].facility.streetLine3,
-            city: allDocsInfo[i].doctorHospital[0].facility.city,
-            state: allDocsInfo[i].doctorHospital[0].facility.state,
-            zipcode: allDocsInfo[i].doctorHospital[0].facility.zipcode,
-            imageUrl: allDocsInfo[i].doctorHospital[0].facility.imageUrl,
-            latitude: allDocsInfo[i].doctorHospital[0].facility.latitude,
-            longitude: allDocsInfo[i].doctorHospital[0].facility.longitude,
-            country: allDocsInfo[i].doctorHospital[0].facility.country,
-            facilityId: allDocsInfo[i].doctorHospital[0].facility.id,
-          };
-        }
-        if (allDocsInfo[i].specialty) {
-          specialty = {
-            specialtyId: allDocsInfo[i].specialty.id,
-            name: allDocsInfo[i].specialty.name,
-            image: allDocsInfo[i].specialty.image,
-            specialistSingularTerm: allDocsInfo[i].specialty.specialistSingularTerm,
-            specialistPluralTerm: allDocsInfo[i].specialty.specialistPluralTerm,
-            userFriendlyNomenclature: allDocsInfo[i].specialty.userFriendlyNomenclature,
-          };
-        }
-        //console.log(allDocsInfo[i].doctorSecretary.id, 'specialty dets');
-        const doctorData = {
-          doctorId: allDocsInfo[i].id,
-          firstName: allDocsInfo[i].firstName,
-          lastName: allDocsInfo[i].lastName,
-          mobileNumber: allDocsInfo[i].mobileNumber,
-          awards: allDocsInfo[i].awards,
-          city: allDocsInfo[i].city,
-          country: allDocsInfo[i].country,
-          dateOfBirth: allDocsInfo[i].dateOfBirth,
-          displayName: allDocsInfo[i].displayName,
-          doctorType: allDocsInfo[i].doctorType,
-          delegateName: allDocsInfo[i].delegateName,
-          delegateNumber: allDocsInfo[i].delegateNumber,
-          emailAddress: allDocsInfo[i].emailAddress,
-          externalId: allDocsInfo[i].externalId,
-          fullName: allDocsInfo[i].fullName,
-          experience: allDocsInfo[i].experience,
-          gender: allDocsInfo[i].gender,
-          isActive: allDocsInfo[i].isActive,
-          languages: allDocsInfo[i].languages,
-          middleName: allDocsInfo[i].middleName,
-          onlineConsultationFees: allDocsInfo[i].onlineConsultationFees,
-          photoUrl: allDocsInfo[i].photoUrl,
-          physicalConsultationFees: allDocsInfo[i].physicalConsultationFees,
-          qualification: allDocsInfo[i].qualification,
-          registrationNumber: allDocsInfo[i].registrationNumber,
-          salutation: allDocsInfo[i].salutation,
-          signature: allDocsInfo[i].signature,
-          specialization: allDocsInfo[i].specialization,
-          state: allDocsInfo[i].state,
-          streetLine1: allDocsInfo[i].streetLine1,
-          streetLine2: allDocsInfo[i].streetLine2,
-          streetLine3: allDocsInfo[i].streetLine3,
-          thumbnailUrl: allDocsInfo[i].thumbnailUrl,
-          zip: allDocsInfo[i].zip,
-          specialty,
-          facility,
-          consultHours,
-          doctorSecratry,
-          doctorSlots: [],
-        };
-        console.log(doctorData, 'doc data');
-        const resp: ApiResponse = await client.index({
-          index: 'doctors',
-          id: allDocsInfo[i].id,
-          body: doctorData,
-        });
-        console.log(resp, 'index resp');
+        await addDoctorElastic(allDocsInfo[i]);
       } else {
         extDocData += allDocsInfo[i].id + ',';
       }
@@ -405,6 +335,116 @@ const insertDataElastic: Resolver<
 
   return 'Elastic search query. NewdocData: ' + newDocData + ' ExtDocdata: ' + extDocData;
 };
+
+async function addDoctorElastic(allDocsInfo: Doctor) {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const consultHours = [];
+  for (let k = 0; k < allDocsInfo.consultHours.length; k++) {
+    const hourData = {
+      consultHoursId: allDocsInfo.consultHours[k].id,
+      weekDay: allDocsInfo.consultHours[k].weekDay,
+      startTime: allDocsInfo.consultHours[k].startTime,
+      endTime: allDocsInfo.consultHours[k].endTime,
+      consultMode: allDocsInfo.consultHours[k].consultMode,
+      consultDuration: allDocsInfo.consultHours[k].consultDuration,
+      consultBuffer: allDocsInfo.consultHours[k].consultBuffer,
+      actualDay: allDocsInfo.consultHours[k].actualDay,
+      slotsPerHour: allDocsInfo.consultHours[k].slotsPerHour,
+      isActive: allDocsInfo.consultHours[k].isActive,
+      consultType: allDocsInfo.consultHours[k].consultType,
+    };
+    consultHours.push(hourData);
+  }
+  let doctorSecratry = {};
+  let facility = {};
+  let specialty = {};
+  if (allDocsInfo.doctorSecretary) {
+    doctorSecratry = {
+      docSecretaryId: allDocsInfo.doctorSecretary.id,
+      name: allDocsInfo.doctorSecretary.secretary.name,
+      mobileNumber: allDocsInfo.doctorSecretary.secretary.mobileNumber,
+      isActive: allDocsInfo.doctorSecretary.secretary.isActive,
+      secretaryId: allDocsInfo.doctorSecretary.secretary.id,
+    };
+  }
+  if (allDocsInfo.doctorHospital.length > 0) {
+    facility = {
+      docFacilityId: allDocsInfo.doctorHospital[0].id,
+      name: allDocsInfo.doctorHospital[0].facility.name,
+      facilityType: allDocsInfo.doctorHospital[0].facility.facilityType,
+      streetLine1: allDocsInfo.doctorHospital[0].facility.streetLine1,
+      streetLine2: allDocsInfo.doctorHospital[0].facility.streetLine2,
+      streetLine3: allDocsInfo.doctorHospital[0].facility.streetLine3,
+      city: allDocsInfo.doctorHospital[0].facility.city,
+      state: allDocsInfo.doctorHospital[0].facility.state,
+      zipcode: allDocsInfo.doctorHospital[0].facility.zipcode,
+      imageUrl: allDocsInfo.doctorHospital[0].facility.imageUrl,
+      latitude: allDocsInfo.doctorHospital[0].facility.latitude,
+      longitude: allDocsInfo.doctorHospital[0].facility.longitude,
+      country: allDocsInfo.doctorHospital[0].facility.country,
+      facilityId: allDocsInfo.doctorHospital[0].facility.id,
+    };
+  }
+  if (allDocsInfo.specialty) {
+    specialty = {
+      specialtyId: allDocsInfo.specialty.id,
+      name: allDocsInfo.specialty.name,
+      image: allDocsInfo.specialty.image,
+      specialistSingularTerm: allDocsInfo.specialty.specialistSingularTerm,
+      specialistPluralTerm: allDocsInfo.specialty.specialistPluralTerm,
+      userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
+    };
+  }
+  //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
+  const doctorData = {
+    doctorId: allDocsInfo.id,
+    firstName: allDocsInfo.firstName,
+    lastName: allDocsInfo.lastName,
+    mobileNumber: allDocsInfo.mobileNumber,
+    awards: allDocsInfo.awards,
+    city: allDocsInfo.city,
+    country: allDocsInfo.country,
+    dateOfBirth: allDocsInfo.dateOfBirth,
+    displayName: allDocsInfo.displayName,
+    doctorType: allDocsInfo.doctorType,
+    delegateName: allDocsInfo.delegateName,
+    delegateNumber: allDocsInfo.delegateNumber,
+    emailAddress: allDocsInfo.emailAddress,
+    externalId: allDocsInfo.externalId,
+    fullName: allDocsInfo.fullName,
+    experience: allDocsInfo.experience,
+    gender: allDocsInfo.gender,
+    isActive: allDocsInfo.isActive,
+    languages: allDocsInfo.languages,
+    middleName: allDocsInfo.middleName,
+    onlineConsultationFees: allDocsInfo.onlineConsultationFees,
+    photoUrl: allDocsInfo.photoUrl,
+    physicalConsultationFees: allDocsInfo.physicalConsultationFees,
+    qualification: allDocsInfo.qualification,
+    registrationNumber: allDocsInfo.registrationNumber,
+    salutation: allDocsInfo.salutation,
+    signature: allDocsInfo.signature,
+    specialization: allDocsInfo.specialization,
+    state: allDocsInfo.state,
+    streetLine1: allDocsInfo.streetLine1,
+    streetLine2: allDocsInfo.streetLine2,
+    streetLine3: allDocsInfo.streetLine3,
+    thumbnailUrl: allDocsInfo.thumbnailUrl,
+    zip: allDocsInfo.zip,
+    specialty,
+    facility,
+    consultHours,
+    doctorSecratry,
+    doctorSlots: [],
+  };
+  //console.log(doctorData, 'doc data');
+  const resp: ApiResponse = await client.index({
+    index: 'doctors',
+    id: allDocsInfo.id,
+    body: doctorData,
+  });
+  console.log(resp, 'index resp');
+}
 
 export const doctorDataElasticResolvers = {
   Mutation: {
