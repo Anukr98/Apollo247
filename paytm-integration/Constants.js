@@ -1,5 +1,7 @@
 module.exports = Object.freeze({
   AUTH_TOKEN: `Bearer 3d1833da7020e0602165529446587434`,
+  ES_ADD_DAYS: 7,
+  ES_DOC_LIMIT: 50,
   AUTO_SUBMIT_JD_CASESHEET: `query { autoSubmitJDCasesheet }`,
   NO_SHOW_REMINDER: `query {noShowReminderNotification {status apptsListCount noCaseSheetCount}}`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
