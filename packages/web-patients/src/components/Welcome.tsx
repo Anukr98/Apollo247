@@ -10,6 +10,7 @@ import { PatientsOverview } from 'components/PatientsOverview';
 import { Relation } from 'graphql/types/globalTypes';
 import { Help } from 'components/Help/Help';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,8 +56,9 @@ export const Welcome: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <NavigationBottom />
       {onePrimaryUser ? <Help /> : <ManageProfile />}
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };
