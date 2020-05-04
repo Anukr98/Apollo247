@@ -23,9 +23,7 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-import { gtmTracking } from '../gtmTracking'
-// import { clientRoutes } from 'helpers/clientRoutes';
-// import moment from 'moment';
+import { gtmTracking, _urTracking } from '../gtmTracking';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -157,7 +155,7 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         /**Gtm code start start */
-        gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Signout'})
+        gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Signout' });
         /**Gtm code start end */
         localStorage.removeItem('currentUser');
         window.location.reload();
@@ -351,9 +349,9 @@ export const AuthProvider: React.FC = (props) => {
 
         if (isNewUser) {
           gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Register'})
-          window._ur && window._ur(user.uid, false, 1);
+          _urTracking({ mobileNumber: user.uid, isApolloCustomer: false, profileFetchedCount: 1 });
         } else {
-          gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Login'})
+          gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Login' });
         }
         /**Gtm code start end */
 

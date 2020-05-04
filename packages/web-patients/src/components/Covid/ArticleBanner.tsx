@@ -103,15 +103,22 @@ interface ArticleBannerProps {
   title: string;
   type: string;
   source: string;
+  isWebView: boolean;
 }
 
 export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const classes = useStyles();
-  const { title, type, source } = props;
+  const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>
       <div className={classes.bannerTop}>
-        <Link to={clientRoutes.covidLanding()}>
+        <Link
+          to={
+            !isWebView
+              ? clientRoutes.covidLanding()
+              : `${clientRoutes.covidLanding()}?utm_source=mobile_app`
+          }
+        >
           <div className={classes.backArrow}>
             <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

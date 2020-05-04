@@ -121,6 +121,10 @@ const useStyles = makeStyles((theme: Theme) => {
     htmlContent: {
       marginBottom: 30,
     },
+    sourceUrl: {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+    },
   };
 });
 
@@ -135,10 +139,18 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
+  const [isWebView, setIsWebView] = useState<boolean>(false);
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
+    if (props && props.location && props.location.search && props.location.search.length) {
+      const qParamsArr = props.location.search.split('=');
+      if (qParamsArr && qParamsArr.length) {
+        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
+        setIsWebView(isWebView);
+      }
+    }
     if (articleSlug) {
       fetchUtil(`${covidArticleDetailUrl}/${articleSlug}`, 'GET', {}, '', true).then((res: any) => {
         let postData: any = {};
@@ -178,7 +190,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             </div>
           ) : (
             <>
-              <ArticleBanner title={title} source={source} type={type} />
+              <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
               <div className={classes.imageBanner}>
                 <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
                 <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
@@ -192,12 +204,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a>SOURCE</a>
-                      <div>
-                        <a href={sourceUrl} target="_blank">
-                          {sourceUrl}
-                        </a>
-                      </div>
+                      <a href={sourceUrl} target="_blank">
+                        <div>SOURCE</div>
+                        <div className={classes.sourceUrl}>{sourceUrl}</div>
+                      </a>
                     </>
                   )}
                 </div>

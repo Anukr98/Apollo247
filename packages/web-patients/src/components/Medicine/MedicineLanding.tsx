@@ -26,6 +26,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
+import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -337,13 +338,31 @@ export const MedicineLanding: React.FC = (props) => {
     setCartItems,
     ePrescriptionData,
     prescriptions,
+    cartTotal
   } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
 
+  // const { city } = useLocationDetails()
+
   if (params.orderStatus === 'success') {
+    console.log(cartTotal)
+    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: cartTotal })
+    // _obTracking(
+    //   {
+    //     mobileNumber: currentPatient && currentPatient.mobileNumber
+    //       ? currentPatient.mobileNumber
+    //       : null,
+    //     userLocation: city,
+    //     paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+    //     itemCount: cartItems ? cartItems.length : 0,
+    //     couponCode: couponCode == '' ? null : couponCode,
+    //     couponValue: discountAmount,
+    //     finalBookingValue: grossValue
+    //   }
+    // );
     if (cartItems.length > 0 && params.orderAutoId !== 'prescription') {
       // the length condition check is mandatory else it will execute it infinity times
       localStorage.removeItem(`${currentPatient && currentPatient.id}`);
