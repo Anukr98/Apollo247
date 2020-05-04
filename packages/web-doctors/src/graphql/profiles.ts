@@ -1322,14 +1322,14 @@ export const GET_NOTIFICATION = gql`
   query GetNotifications($toId: String!, $startDate: Date, $endDate: Date) {
     getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
       notificationData {
-        fromId
-        toId
-        eventName
-        eventId
-        message
-        status
-        type
-        id
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
       }
     }
   }
