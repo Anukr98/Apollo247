@@ -21,7 +21,6 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
