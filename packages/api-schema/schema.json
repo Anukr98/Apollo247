@@ -22785,7 +22785,7 @@
             ],
             "type": {
               "kind": "OBJECT",
-              "name": "NotificationDataSet",
+              "name": "NotificationBinDataSet",
               "ofType": null
             },
             "isDeprecated": false,
@@ -32536,6 +32536,33 @@
               "kind": "SCALAR",
               "name": "String",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "NotificationBinDataSet",
+        "description": null,
+        "fields": [
+          {
+            "name": "notificationData",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "NotificationBinData",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
