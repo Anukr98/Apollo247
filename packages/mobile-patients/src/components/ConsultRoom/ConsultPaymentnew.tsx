@@ -95,21 +95,21 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   };
 
   const handleBack = () => {
-    Alert.alert('Alert', 'Are you sure you want to cancel the transaction?', [
+    Alert.alert('Alert', 'Are you sure you want to choose a different payment mode?', [
       { text: 'No' },
       {
         text: 'Yes',
         onPress: () => {
           WebViewRef && WebViewRef.stopLoading();
-          // props.navigation.goBack();
-          props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-            orderId: appointmentId,
-            price: price,
-            doctorName: doctorName,
-            appointmentDateTime: appointmentInput.appointmentDateTime,
-            appointmentType: appointmentInput.appointmentType,
-            status: 'PENDING',
-          });
+          props.navigation.goBack();
+          // props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+          //   orderId: appointmentId,
+          //   price: price,
+          //   doctorName: doctorName,
+          //   appointmentDateTime: appointmentInput.appointmentDateTime,
+          //   appointmentType: appointmentInput.appointmentType,
+          //   status: 'PENDING',
+          // });
         },
       },
     ]);
