@@ -72,7 +72,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(messageId: String): NotificationData
+    markMessageToUnread(eventId: String): NotificationDataSet
   }
 `;
 
@@ -146,19 +146,23 @@ const insertMessage: Resolver<
 
 const markMessageToUnread: Resolver<
   null,
-  { messageId: string },
+  { eventId: string },
   NotificationsServiceContext,
-  { notificationData: Partial<NotificationBinArchive> }
+  { notificationData: Partial<NotificationBinArchive>[] }
 > = async (parent, args, { consultsDb }) => {
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
-  const notificationData = await notificationBinRepo.getNotificationById(args.messageId);
-  if (notificationData == null) throw new AphError(AphErrorMessages.INVALID_MESSAGE_ID);
+  const notificationData = await notificationBinRepo.getNotificationByEventId(args.eventId);
+  if (notificationData == null || notificationData.length == 0)
+    throw new AphError(AphErrorMessages.INVALID_EVENT_ID);
 
-  const dataToArchieve = { ...notificationData };
-  dataToArchieve.status = notificationStatus.READ;
-  delete dataToArchieve.id;
-  delete dataToArchieve.createdDate;
-  delete dataToArchieve.updatedDate;
+  const dataToArchieve: Partial<NotificationBinArchive>[] = notificationData.map((notification) => {
+    const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+    notificationBinData.status = notificationStatus.READ;
+    delete notificationBinData.id;
+    delete notificationBinData.createdDate;
+    delete notificationBinData.updatedDate;
+    return notificationBinData;
+  });
 
   const notificationArchieveBinRepo = consultsDb.getCustomRepository(
     NotificationBinArchiveRepository
@@ -166,7 +170,7 @@ const markMessageToUnread: Resolver<
   const archievedNotificationData = await notificationArchieveBinRepo.saveNotification(
     dataToArchieve
   );
-  await notificationBinRepo.removeNotification(args.messageId);
+  await notificationBinRepo.removeNotificationByEventId(args.eventId);
 
   return { notificationData: archievedNotificationData };
 };

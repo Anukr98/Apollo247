@@ -22868,7 +22868,7 @@
             "description": null,
             "args": [
               {
-                "name": "messageId",
+                "name": "eventId",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
@@ -22880,7 +22880,7 @@
             ],
             "type": {
               "kind": "OBJECT",
-              "name": "NotificationData",
+              "name": "NotificationDataSet",
               "ofType": null
             },
             "isDeprecated": false,
