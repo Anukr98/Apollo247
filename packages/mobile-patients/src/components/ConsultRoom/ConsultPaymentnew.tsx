@@ -2,8 +2,10 @@ import {
   Alert,
   BackHandler,
   NavState,
+  Platform,
   StyleSheet,
   View,
+  KeyboardAvoidingView,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
@@ -118,8 +120,12 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-
-      <View style={styles.container}>{renderwebView()}</View>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+      >
+        {renderwebView()}
+      </KeyboardAvoidingView>
       {loading && <Spinner />}
     </View>
   );
