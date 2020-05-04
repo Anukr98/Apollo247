@@ -556,7 +556,7 @@ export interface WebEngageEvents {
     Pincode: string;
   };
   [WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed': Date;
+    'TAT Displayed'?: Date;
     'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;

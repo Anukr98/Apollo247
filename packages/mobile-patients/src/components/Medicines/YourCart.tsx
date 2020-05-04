@@ -59,7 +59,10 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  postPharmacyAddNewAddressClick,
+  postPhamracyCartAddressSelectedSuccess,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 const styles = StyleSheet.create({
@@ -247,6 +250,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             if (Availability) {
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
+              postPhamracyCartAddressSelectedSuccess(
+                addresses[selectedAddressIndex].zipcode!,
+                formatAddress(addresses[selectedAddressIndex]),
+                'No'
+              );
               setDeliveryAddressId && setDeliveryAddressId('');
               showAphAlert!({
                 title: 'Uh oh.. :(',
@@ -363,6 +371,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                       serviceableItems[0]
                     );
                     setdeliveryTime(moment(tatDate, 'D-MMM-YYYY HH:mm a').toString());
+                    postPhamracyCartAddressSelectedSuccess(
+                      selectedAddress.zipcode!,
+                      formatAddress(selectedAddress),
+                      'Yes',
+                      moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+                    );
                   } else {
                     setdeliveryTime('No items are serviceable.');
                   }
@@ -617,6 +631,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
+          postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
