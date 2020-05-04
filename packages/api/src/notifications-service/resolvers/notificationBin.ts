@@ -66,6 +66,10 @@ export const notificationBinTypeDefs = gql`
     notificationData: [GetNotificationsResponse]
   }
 
+  type NotificationBinDataSet {
+    notificationData: [NotificationBinData]
+  }
+
   type GetNotificationsResponse {
     appointmentId: String
     doctorId: String
@@ -84,7 +88,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(eventId: String): NotificationDataSet
+    markMessageToUnread(eventId: String): NotificationBinDataSet
   }
 `;
 
