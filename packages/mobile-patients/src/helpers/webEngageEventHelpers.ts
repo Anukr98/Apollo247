@@ -67,7 +67,7 @@ export const postPharmacyAddNewAddressCompleted = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };
 
-type PhamracyCartAddressSelectedSuccess = WebEngageEvents[WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS];
+type PhamracyCartAddressSelectedSuccess = WebEngageEvents[WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS];
 
 export const postPhamracyCartAddressSelectedSuccess = (
   pincode: PhamracyCartAddressSelectedSuccess['Pincode'],
@@ -81,5 +81,5 @@ export const postPhamracyCartAddressSelectedSuccess = (
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
   };
-  postWebEngageEvent(WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 };

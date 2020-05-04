@@ -53,7 +53,7 @@ export enum WebEngageEventName {
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
   PHARMACY_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Add New Address Click', // (Once user clicks on Save)
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
-  PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS = 'Phamracy Cart Address Selected Success',
+  PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -555,7 +555,7 @@ export interface WebEngageEvents {
     'Delivery address': string;
     Pincode: string;
   };
-  [WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS]: {
+  [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
     'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
