@@ -221,7 +221,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
             {textComponent(
-              appointmentDateTime.toLocaleString(),
+              appointmentDateTime.toDateString() + '  ' + appointmentDateTime.toLocaleTimeString(),
               undefined,
               theme.colors.SHADE_CYAN_BLUE,
               false
