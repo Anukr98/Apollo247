@@ -13,6 +13,11 @@ import {
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
+export interface VitalErrorProps {
+  height: String;
+  weight: String;
+}
+
 export interface CaseSheetContextProps {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -88,6 +93,7 @@ export interface CaseSheetContextProps {
   lifeStyle: string;
   familyHistory: string;
   menstrualHistory: string;
+  vitalError: VitalErrorProps;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -100,6 +106,7 @@ export interface CaseSheetContextProps {
   setLifeStyle: (lifeStyle: string) => void;
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
+  setVitalError: (vitalError: VitalErrorProps) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -162,6 +169,10 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   lifeStyle: '',
   familyHistory: '',
   menstrualHistory: '',
+  vitalError: {
+    height: '',
+    weight: '',
+  },
 
   setBp: () => {},
   setHeight: () => {},
@@ -174,6 +185,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setLifeStyle: () => {},
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
+  setVitalError: () => {},
 
   gender: '',
   setGender: () => {},
