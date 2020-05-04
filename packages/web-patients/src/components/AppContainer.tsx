@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 72,
       },
       [theme.breakpoints.down(900)]: {
-        paddingBottom: 60,
+        paddingBottom: 55,
       },
     },
     helpIcon: {
