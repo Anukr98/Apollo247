@@ -2,11 +2,11 @@ type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum FirebaseEventName {
   MOBILE_ENTRY = 'Mobile Entry',
-  MOBILE_NUMBER_ENTERED = 'Mobile_Number_Entered',
+  LOGIN = 'login',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
-  REGISTRATION_DONE = 'REGISTRATION_DONE',
+  SIGN_UP = 'sign_up',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
@@ -29,7 +29,6 @@ export enum FirebaseEventName {
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
-  DOCTOR_PROFILE_VIEWED = 'Doctor Profile Viewed',
   BOOK_APPOINTMENT = 'Book Appointment',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
@@ -63,6 +62,9 @@ export enum FirebaseEventName {
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
   REORDER_MEDICINES = 'Reorder Medicines',
+
+  //In App Purchase Events
+  IN_APP_PURCHASE = 'In_app_purchase',
 }
 
 export interface PatientInfo {
@@ -91,13 +93,13 @@ export interface FirebaseEvents {
   // ********** AppEvents ********** \\
 
   [FirebaseEventName.MOBILE_ENTRY]: {};
-  [FirebaseEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
+  [FirebaseEventName.LOGIN]: { mobilenumber: string };
   [FirebaseEventName.OTP_ENTERED]: YesOrNo;
   [FirebaseEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
   [FirebaseEventName.OTP_VERIFICATION_SUCCESS]: {
     Mobile_Number: string;
   };
-  [FirebaseEventName.REGISTRATION_DONE]: {
+  [FirebaseEventName.SIGN_UP]: {
     Customer_ID: string;
     Customer_First_Name: string;
     Customer_Last_Name: string;
@@ -321,14 +323,6 @@ export interface FirebaseEvents {
     'Customer ID': string;
   };
   [FirebaseEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
-  [FirebaseEventName.DOCTOR_PROFILE_VIEWED]: {
-    name: string;
-    specialisation: string;
-    experience: number;
-    'language known': string; //Comma separated values
-    Hospital: string;
-    'Available in': string;
-  };
   [FirebaseEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
@@ -518,5 +512,9 @@ export interface FirebaseEvents {
     Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
+  };
+
+  [FirebaseEventName.IN_APP_PURCHASE]: {
+    type: string;
   };
 }

@@ -20,6 +20,8 @@ import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -78,7 +80,13 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         <Button
           title="ADD NEW ADDRESS"
           style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
+          onPress={() => {
+            postPharmacyAddNewAddressClick('My Account');
+            props.navigation.navigate(AppRoutes.AddAddress, {
+              addOnly: true,
+              source: 'My Account' as AddressSource,
+            });
+          }}
         />
       </StickyBottomComponent>
     );

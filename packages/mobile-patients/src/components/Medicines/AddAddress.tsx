@@ -43,16 +43,16 @@ import {
   aphConsole,
   g,
   handleGraphQlError,
+  doRequestAndAccessLocationModified,
+  formatAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -63,7 +63,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
+import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -85,11 +85,14 @@ const styles = StyleSheet.create({
   },
 });
 
+export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+
 export interface AddAddressProps
   extends NavigationScreenProps<{
     KeyName?: any;
     DataAddress?: any;
     addOnly?: boolean;
+    source: AddressSource;
   }> {}
 
 type addressOptions = {
@@ -109,6 +112,7 @@ const AddressOptions: addressOptions[] = [
 ];
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
+  const source = props.navigation.getParam('source');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
@@ -146,7 +150,15 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update') {
       console.log('DataAddress', addressData);
-      setcity(addressData.city);
+      // to avoid duplicate state name & backward compatability of address issue
+      const cityState = [addressData.city, addressData.state]
+        .toString()
+        .split(',')
+        .map((item) => (item || '').trim())
+        .filter((v, i, a) => a.findIndex((t) => t === v) === i)
+        .toString()
+        .replace(',', ', ');
+      setcity(cityState);
       setstate(addressData.state);
       setpincode(addressData.zipcode);
       setaddressLine1(addressData.addressLine1);
@@ -154,74 +166,21 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setOptionalAddress(addressData.otherAddressType);
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
-        Geolocation.getCurrentPosition(
-          (position) => {
-            console.log(position, 'position');
-            // const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-            //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-            Axios.get(url)
-              .then((obj) => {
-                console.log(obj, 'geocode obj');
-                try {
-                  if (
-                    obj.data.results.length > 0 &&
-                    obj.data.results[0].address_components.length > 0
-                  ) {
-                    const address = obj.data.results[0].address_components[0].short_name;
-                    console.log(address, 'address obj');
-                    const addrComponents = obj.data.results[0].address_components || [];
-                    const city = (
-                      addrComponents.find(
-                        (item: any) =>
-                          item.types.indexOf('locality') > -1 ||
-                          item.types.indexOf('administrative_area_level_2') > -1
-                      ) || {}
-                    ).long_name;
-                    const state = (
-                      addrComponents.find(
-                        (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-                      ) || {}
-                    ).long_name;
-                    setstate(state || '');
-                    const pincode = (
-                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
-                      {}
-                    ).long_name;
-
-                    setpincode(pincode || '');
-
-                    const val = city.concat(', ').concat(state);
-
-                    setpincode(pincode || '');
-                    //setcity(obj.data.results[0].formatted_address || '');
-                    setcity(val);
-                    console.log(obj.data.results[0].formatted_address, 'val obj');
-                    //setcurrentLocation(address.toUpperCase());
-                    // AsyncStorage.setItem(
-                    //   'location',
-                    //   JSON.stringify({
-                    //     latlong: obj.data.results[0].geometry.location,
-                    //     name: address.toUpperCase(),
-                    //   })
-                    // );
-                  }
-                } catch (e) {
-                  CommonBugFender('AddAddress_getCurrentPosition_try', e);
-                }
-              })
-              .catch((error) => {
-                CommonBugFender('AddAddress_getCurrentPosition', error);
-                console.log(error, 'geocode error');
-              });
-          },
-          (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
-          },
-          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-        );
+        doRequestAndAccessLocationModified()
+          .then((response) => {
+            if (response) {
+              setstate(response.state || '');
+              setcity(`${response.city}, ${response.state}` || '');
+              setpincode(response.pincode || '');
+            }
+          })
+          .catch((e) => {
+            CommonBugFender('AddAddress_doRequestAndAccessLocationModified', e);
+          });
       } else {
-        validateAndSetPincode(locationDetails.pincode);
+        setstate(locationDetails.state || '');
+        setcity(`${locationDetails.city}, ${locationDetails.state}` || '');
+        setpincode(locationDetails.pincode || '');
       }
     }
   }, []);
@@ -321,7 +280,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress!(address);
         addDiagnosticAddress!(address);
 
+        const formattedAddress = formatAddress(address);
         if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
+          if (source != 'Diagnostics Cart') {
+            postPharmacyAddNewAddressCompleted(
+              source,
+              g(address, 'zipcode')!,
+              formattedAddress,
+              source == 'My Account' ? undefined : 'Yes'
+            );
+          }
           setDeliveryAddressId!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
@@ -329,6 +297,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           setDeliveryAddressId!('');
           setDiagnosticAddressId!(address.id || '');
 
+          postPharmacyAddNewAddressCompleted(
+            'Cart',
+            g(address, 'zipcode')!,
+            formattedAddress,
+            'No'
+          );
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
@@ -392,87 +366,34 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
 
   const updateCityStateByPincode = (pincode: string) => {
-    aphConsole.log('updateCityStateByPincode');
+    aphConsole.log('updateCityStateByPincode entry');
     getPlaceInfoByPincode(pincode)
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         try {
-          aphConsole.log({ data });
-
-          const results = g(data, 'results') || [];
-          console.log(results, 'results');
-          if (results.length == 0) return;
-          console.log(results[0].geometry.location.lat);
-          console.log(results[0].geometry.location.lng);
-          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${results[0].geometry.location.lat},${results[0].geometry.location.lng}&key=${key}`;
-          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-          Axios.get(url)
-            .then((obj) => {
-              console.log(obj, 'geocode obj');
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const city = (
-                    addrComponents.find(
-                      (item: any) =>
-                        item.types.indexOf('locality') > -1 ||
-                        item.types.indexOf('administrative_area_level_2') > -1
-                    ) || {}
-                  ).long_name;
-                  const state = (
-                    addrComponents.find(
-                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-                    ) || {}
-                  ).long_name;
-                  let val = city.concat(', ').concat(state);
-                  // setcity(obj.data.results[0].formatted_address || '');
-                  setcity(val);
-                  setstate(state || '');
-                  console.log(obj.data.results[0].formatted_address, 'val obj');
-                  //setcurrentLocation(address.toUpperCase());
-                  // AsyncStorage.setItem(
-                  //   'location',
-                  //   JSON.stringify({
-                  //     latlong: obj.data.results[0].geometry.location,
-                  //     name: address.toUpperCase(),
-                  //   })
-                  // );
-                }
-              } catch (e) {
-                CommonBugFender('AddAddress_updateCityStateByPincode_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('AddAddress_updateCityStateByPincode', error);
-              console.log(error, 'geocode error');
-            });
-          //if (results.length == 0) return;
-          // const addrComponents = results[0].address_components || [];
-          // const city = (
-          //   addrComponents.find(
-          //     (item) =>
-          //       item.types.indexOf('locality') > -1 ||
-          //       item.types.indexOf('administrative_area_level_2') > -1
-          //   ) || {}
-          // ).long_name;
-          // const state = (
-          //   addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
-          //   {}
-          // ).long_name;
-          // let val = city.concat(', ').concat(state);
-          // setcity(val || '');
-          // setstate(state || '');
-        } catch (error) {
-          CommonBugFender('AddAddress_getPlaceInfoByPincode_try', error);
+          const addrComponents = data.results[0].address_components || [];
+          const city = (
+            addrComponents.find(
+              (item) =>
+                item.types.indexOf('locality') > -1 ||
+                item.types.indexOf('administrative_area_level_2') > -1
+            ) || {}
+          ).long_name;
+          const state = (
+            addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
+            {}
+          ).long_name;
+          setcity(`${city}, ${state}` || '');
+          setstate(state || '');
+        } catch (e) {
+          setcity('');
+          setstate('');
+          CommonBugFender('AddAddress_updateCityStateByPincode', e);
         }
       })
       .catch((e) => {
+        setcity('');
+        setstate('');
         CommonBugFender('AddAddress_getPlaceInfoByPincode', e);
-        aphConsole.error({ e });
       });
   };
   const renderAddressOption = () => {

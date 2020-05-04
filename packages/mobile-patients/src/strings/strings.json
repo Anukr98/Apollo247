@@ -3,6 +3,7 @@
     "add": "Add",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
+    "uhOh": "Uh oh.. :(",
     "best_doctor_text": "Here are our best ",
     "all_consults": "All Consults",
     "distance": "Distance",
@@ -16,8 +17,11 @@
     "emergencyBannerText": "Coronavirus? Talk to expert",
     "covidContactText": "Contact our Coronavirus Helpline",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
-    "covidHeading": "Worried about CORONAVIRUS?",
-    "emergencyBannerPhoneNumber": "08047192606"
+    "covidHeading": "Worried about Coronavirus?",
+    "emergencyBannerPhoneNumber": "08047192606",
+    "covidHelpText": "We are here to help you.",
+    "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
+    "covidYouCanText": "You can also"
   },
   "login": {
     "hello": "hello!",
@@ -175,51 +179,27 @@
     "filter_data": [
       {
         "label": "City",
-        "options": [
-          "Hyderabad",
-          "Chennai"
-        ]
+        "options": ["Hyderabad", "Chennai"]
       },
       {
         "label": "Experience In Years",
-        "options": [
-          "0 - 5",
-          "6 - 10",
-          "11 - 15",
-          "15+"
-        ]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": [
-          "Now",
-          "Today",
-          "Tomorrow",
-          "Next 3 Days"
-        ]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": [
-          "100 - 500",
-          "501 - 1000",
-          "1000+"
-        ]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",
-        "options": [
-          "Male",
-          "Female"
-        ]
+        "options": ["Male", "Female"]
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu"
-        ]
+        "options": ["Hindi", "English", "Telugu"]
       }
     ]
   },
@@ -232,7 +212,11 @@
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
-    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode."
+    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
+    "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.\n",
+    "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
+    "removeThisTestCTA": "Remove this test from cart",
+    "removeTheseTestsCTA": "Remove these tests from cart"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -259,6 +243,11 @@
         "count": "0"
       }
     ]
+  },
+  "Payment": {
+    "success": "PAYMENT_SUCCESS",
+    "failure": "PAYMENT_FAILED",
+    "pending": "PAYMENT_PENDING_PG"
   },
   "muiltdosages": [
     {

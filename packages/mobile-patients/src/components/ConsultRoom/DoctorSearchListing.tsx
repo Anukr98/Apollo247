@@ -903,7 +903,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const postDoctorClickWEGEvent = (
     doctorDetails: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source']
+    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
+    type?: 'consult-now' | 'book-appointment'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
       'Doctor Name': doctorDetails.fullName!,
@@ -915,8 +916,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
-    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+    if (type == 'consult-now') {
+      postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+    } else if (type == 'book-appointment') {
+      postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    } else {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+    }
   };
 
   const renderSearchDoctorResultsRow = (
@@ -941,6 +950,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
             });
+          }}
+          onPressConsultNowOrBookAppointment={(type) => {
+            postDoctorClickWEGEvent(rowData, 'List', type);
           }}
         />
       );

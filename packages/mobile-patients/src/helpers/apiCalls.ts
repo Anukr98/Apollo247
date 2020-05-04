@@ -704,3 +704,15 @@ export const notifcationsApi = (params: {
     params: params,
   });
 };
+
+export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+  const url = `${baseUrl}/list-of-payment-methods`;
+  return Axios.get(url);
+};
+
+export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+  const url = `${baseUrl}/transaction-status`;
+  return Axios.post(url, { orderID: orderID });
+};

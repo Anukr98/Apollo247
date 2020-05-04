@@ -6,6 +6,7 @@ import {
   STATUS,
   APPOINTMENT_PAYMENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  CASESHEET_STATUS,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -18,12 +19,14 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays } from 'date-fns';
+import { addMilliseconds, format, addDays, differenceInMinutes } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -39,7 +42,6 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseMessage: String!
     bankTxnId: String
     orderId: String
-    
   }
 
   type AppointmentPayment {
@@ -149,7 +151,7 @@ const makeAppointmentPayment: Resolver<
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
     paymentInputUpdates.responseCode = paymentInput.responseCode;
     paymentInputUpdates.responseMessage = paymentInput.responseMessage;
-    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus
+    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
@@ -190,9 +192,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -214,6 +216,49 @@ const makeAppointmentPayment: Resolver<
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
     await apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PENDING, false);
+
+    //autosubmit case sheet code starts
+    const currentTime = new Date();
+    const timeDifference = differenceInMinutes(
+      currentTime,
+      processingAppointment.appointmentDateTime
+    );
+
+    if (
+      timeDifference <= parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+    ) {
+      const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+      const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+
+      const virtualJDId = process.env.VIRTUAL_JD_ID;
+
+      //Insert consult queue item record
+      const consultQueueAttrs = {
+        appointmentId: processingAppointment.id,
+        createdDate: currentTime,
+        doctorId: virtualJDId,
+        isActive: false,
+      };
+      consultQueueRepo.save(consultQueueRepo.create(consultQueueAttrs));
+
+      //Insert case sheet record
+      const casesheetAttrs = {
+        createdDate: currentTime,
+        consultType: processingAppointment.appointmentType,
+        createdDoctorId: process.env.VIRTUAL_JD_ID,
+        doctorType: DoctorType.JUNIOR,
+        doctorId: processingAppointment.doctorId,
+        patientId: processingAppointment.patientId,
+        appointment: processingAppointment,
+        status: CASESHEET_STATUS.COMPLETED,
+        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+          '{0}',
+          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+        ),
+      };
+      caseSheetRepo.savecaseSheet(casesheetAttrs);
+      apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+    }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
     await apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PAYMENT_FAILED, false);
   } else if (paymentInput.paymentStatus == 'PENDING') {
@@ -326,8 +371,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

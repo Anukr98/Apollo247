@@ -60,6 +60,7 @@ const AddFile = {
   mb: 'File should not be of more than 5mb.',
 };
 
+
 export const LocalStrings = {
   ...common,
   ...login,

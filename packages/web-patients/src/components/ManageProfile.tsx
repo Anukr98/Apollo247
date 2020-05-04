@@ -12,6 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
       paddingTop: 20,
+      paddingBottom: 20,
       [theme.breakpoints.up(901)]: {
         display: 'flex',
       },
@@ -20,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.up(1134)]: {
         paddingTop: 0,
+        paddingBottom: 0,
       },
     },
     mascotCircle: {

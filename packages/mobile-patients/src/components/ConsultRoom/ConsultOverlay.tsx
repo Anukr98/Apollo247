@@ -247,39 +247,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return eventAttributes;
   };
 
-  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
-    const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
-
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
-      name: g(props.doctor, 'fullName')!,
-      specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
-      category: g(props.doctor, 'doctorType')!, // send doctorType
-      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
-      clinic_name: g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      clinic_address:
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
-      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      Patient_UHID: g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
-      Mobile_Number: g(currentPatient, 'mobileNumber'),
-      Customer_ID: g(currentPatient, 'id'),
-      Consult_ID: id,
-    };
-    return eventAttributes;
-  };
+  // const getConsultationBookedFirebaseEventAttributes = () => {
+  //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+  //     type: 'Consultation',
+  //   };
+  //   return eventAttributes;
+  // };
 
   const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
     client
@@ -316,13 +289,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           )
         );
         try {
-          postFirebaseEvent(
-            FirebaseEventName.CONSULTATION_BOOKED,
-            getConsultationBookedFirebaseEventAttributes(
-              paymentDateTime,
-              g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-            )
-          );
+          // postFirebaseEvent(
+          //   FirebaseEventName.IN_APP_PURCHASE,
+          //   getConsultationBookedFirebaseEventAttributes()
+          // );
         } catch (error) {}
 
         handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
@@ -392,64 +362,69 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     //     ? VirtualConsultationFee
     //     : props.doctor!.onlineConsultationFees;
 
-    client
-      .mutate<bookAppointment>({
-        mutation: BOOK_APPOINTMENT,
-        variables: {
-          bookAppointment: appointmentInput,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-        if (price == 0) {
+    if (price == 0) {
+      client
+        .mutate<bookAppointment>({
+          mutation: BOOK_APPOINTMENT,
+          variables: {
+            bookAppointment: appointmentInput,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
+
           // If amount is zero don't redirect to PG
           makePayment(g(apptmt, 'id')!, Number(price), g(apptmt, 'appointmentDateTime'));
-        } else {
+
+          // props.navigation.navigate(AppRoutes.ConsultPayment, {
+          //   doctorName: `${g(props.doctor, 'fullName')}`,
+          //   appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+          //   price: coupon ? doctorDiscountedFees : Number(doctorFees),
+          //   webEngageEventAttributes: getConsultationBookedEventAttributes(
+          //     g(apptmt, 'appointmentDateTime'),
+          //     g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+          //   ),
+          //   //   tabs[0].title === selectedTab
+          //   //     ? price //1 //props.doctor!.onlineConsultationFees
+          //   //     : props.doctor!.physicalConsultationFees,
+          // });
+        })
+        .catch((error) => {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
           setshowSpinner(false);
-          props.navigation.navigate(AppRoutes.ConsultPayment, {
-            doctorName: `${g(props.doctor, 'fullName')}`,
-            appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
-            price: coupon ? doctorDiscountedFees : Number(doctorFees),
-            webEngageEventAttributes: getConsultationBookedEventAttributes(
-              g(apptmt, 'appointmentDateTime'),
-              g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-            ),
-            fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
-              g(apptmt, 'appointmentDateTime'),
-              g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-            ),
-            //   tabs[0].title === selectedTab
-            //     ? price //1 //props.doctor!.onlineConsultationFees
-            //     : props.doctor!.physicalConsultationFees,
-          });
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-        setshowSpinner(false);
-        let message = '';
-        try {
-          message = error.message.split(':')[1].trim();
-        } catch (error) {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-        }
-        if (
-          message == 'APPOINTMENT_EXIST_ERROR' ||
-          message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
-          message === 'DOCTOR_SLOT_BLOCKED'
-        ) {
-          renderErrorPopup(
-            `Oops ! The selected slot is unavailable. Please choose a different one`
-          );
-        } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-          renderErrorPopup(
-            `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-          );
-        } else {
-          renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-        }
+          let message = '';
+          try {
+            message = error.message.split(':')[1].trim();
+          } catch (error) {
+            CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+          }
+          if (
+            message == 'APPOINTMENT_EXIST_ERROR' ||
+            message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
+            message === 'DOCTOR_SLOT_BLOCKED'
+          ) {
+            renderErrorPopup(
+              `Oops ! The selected slot is unavailable. Please choose a different one`
+            );
+          } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+            renderErrorPopup(
+              `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+            );
+          } else {
+            renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+          }
+        });
+    } else {
+      props.navigation.navigate(AppRoutes.ConsultCheckout, {
+        doctor: props.doctor,
+        tabs: tabs,
+        selectedTab: selectedTab,
+        doctorName: `${g(props.doctor, 'fullName')}`,
+        price: coupon ? doctorDiscountedFees : Number(doctorFees),
+        appointmentInput: appointmentInput,
       });
+    }
   };
 
   const postWebEngagePayButtonClickedEvent = () => {
