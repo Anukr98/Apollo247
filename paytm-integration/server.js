@@ -73,6 +73,20 @@ app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
+  const updateSpecialtyCountRequestJSON = {
+    query: `mutation{
+      updateSpecialtyCount(specialityId:"0"){
+        updated
+      }
+    }`,
+  };
+  const updateUtilizationCapacityRequestJSON = {
+    query: `mutation{
+      updateUtilizationCapacity(specialityId:"0"){
+        updated
+      }
+    }`,
+  };
   const updatePhrDocSummaryRequestJSON = {
     query: `mutation{
         updatePhrDocSummary(summaryDate:"${currentDate}"){
@@ -102,6 +116,48 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     }`,
   };
   axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  //updateUtilizationCapacity api call
+  axios
+    .post(process.env.API_URL, updateUtilizationCapacityRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateUtilizationCapacity, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateUtilizationCapacity Response\n' +
+        JSON.stringify(response.data.data.updateUtilizationCapacity) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function (err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  //updateSpecilaityCount api call
+  axios
+    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateSpecialtyCount Response\n' +
+        JSON.stringify(response.data.data.updateSpecialtyCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function (err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
   //updatePhrDocSummary api call
   axios
     .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)
@@ -172,22 +228,60 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     message: res.data,
   });
 });
+app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const updateDoctorsAwayAndOnlineCountRequestJSON = {
+    query: `mutation{
+      updateDoctorsAwayAndOnlineCount(doctorId:"0",summaryDate:"${currentDate}"){
+        onlineCount
+        awayCount
+      }
+    }`,
+  };
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  axios
+    .post(process.env.API_URL, updateDoctorsAwayAndOnlineCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateDoctorsAwayAndOnlineCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH +
+        new Date().toDateString() +
+        '-updateDoctorsAwayAndOnlineCount.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateDoctorsAwayAndOnlineCount Response\n' +
+        JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function (err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  res.send({
+    status: 'success',
+    message: res.data,
+  });
+});
 app.get('/getCmToken', (req, res) => {
   axios.defaults.headers.common['authorization'] =
     'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
   axios
     .get(
       process.env.CM_API_URL +
-      '?appId=apollo_24_7&appUserId=' +
-      req.query.appUserId +
-      '&name=' +
-      req.query.userName +
-      '&gender=' +
-      req.query.gender +
-      '&emailId=' +
-      req.query.emailId +
-      '&phoneNumber=' +
-      req.query.phoneNumber
+        '?appId=apollo_24_7&appUserId=' +
+        req.query.appUserId +
+        '&name=' +
+        req.query.userName +
+        '&gender=' +
+        req.query.gender +
+        '&emailId=' +
+        req.query.emailId +
+        '&phoneNumber=' +
+        req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -943,7 +1037,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -993,9 +1087,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          '' &&
+            '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          null
+            null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1025,9 +1119,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+              null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
