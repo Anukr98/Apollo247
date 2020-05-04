@@ -251,7 +251,10 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString(),
+        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+          '{0}',
+          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+        ),
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
