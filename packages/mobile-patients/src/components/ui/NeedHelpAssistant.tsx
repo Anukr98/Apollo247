@@ -52,7 +52,7 @@ export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
       <Mascot style={styles.mascotImageStyle} />
       <Button
         onPress={() => showNeed()}
-        title="Need Help?"
+        title="Customer Care"
         style={styles.needhelpbuttonStyles}
         titleTextStyle={styles.titleBtnStyles}
         displayThorn={true}

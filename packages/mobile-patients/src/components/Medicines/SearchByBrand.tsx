@@ -147,6 +147,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         console.log(data, 'getProductsByCategoryApi');
         const products = data.products || [];
         setProductsList(products);
+        if (products.length < 10) {
+          setEndReached(true);
+        }
         setPageCount(pageCount + 1);
         setPrevData(products);
       })

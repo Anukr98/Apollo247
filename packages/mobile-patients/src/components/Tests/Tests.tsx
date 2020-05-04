@@ -105,6 +105,7 @@ import {
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -843,6 +844,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // (!ordersLoading && ordersFetched.length > 0 && (
       <ListCard
         onPress={() => {
+          postMyOrdersClicked('Diagnostics', currentPatient);
           setLoadingContext!(true);
           props.navigation.navigate(AppRoutes.YourOrdersTest, {
             orders: ordersFetched,

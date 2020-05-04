@@ -31,6 +31,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   CommonLogEvent,
   CommonBugFender,
+  // setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -316,25 +317,25 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     );
   };
 
-  const submit = (
-    category: string,
-    reason: string,
-    comments: string,
-    patientId: string,
-    email: string
-  ) =>
-    client.query<SendHelpEmail, SendHelpEmailVariables>({
-      query: SEND_HELP_EMAIL,
-      variables: {
-        helpEmailInput: {
-          category,
-          reason,
-          comments,
-          patientId,
-          email,
-        },
-      },
-    });
+  // const submit = (
+  //   category: string,
+  //   reason: string,
+  //   comments: string,
+  //   patientId: string,
+  //   email: string
+  // ) =>
+  //   client.query<SendHelpEmail, SendHelpEmailVariables>({
+  //     query: SEND_HELP_EMAIL,
+  //     variables: {
+  //       helpEmailInput: {
+  //         category,
+  //         reason,
+  //         comments,
+  //         patientId,
+  //         email,
+  //       },
+  //     },
+  //   });
 
   const showAlert = () => {
     showAphAlert!({
@@ -358,7 +359,23 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       return;
     }
     setShowSpinner(true);
-    submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email)
+    // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
+
+    const helpEmail = {
+      category: helpCategory,
+      reason: selectedQuery,
+      comments: comment,
+      patientId: g(currentPatient, 'id'),
+      email: email,
+    };
+    // setBugFenderLog('SEND_HELP_EMAIL', helpEmail);
+    client
+      .query<SendHelpEmail, SendHelpEmailVariables>({
+        query: SEND_HELP_EMAIL,
+        variables: {
+          helpEmailInput: helpEmail,
+        },
+      })
       .then(() => {
         setShowSpinner(false);
         setMobileFollowup(true);

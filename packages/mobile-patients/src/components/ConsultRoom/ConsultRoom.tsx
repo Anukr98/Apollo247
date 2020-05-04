@@ -19,6 +19,10 @@ import {
   TestsIcon,
   MedicineIcon,
   NotificationIcon,
+  CovidRiskLevel,
+  CovidExpert,
+  CovidHealthScan,
+  LatestArticle,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -55,6 +59,7 @@ import {
   ImageBackground,
   Linking,
   Platform,
+  Image,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -63,6 +68,7 @@ import {
   View,
   ViewStyle,
   NativeModules,
+  TouchableOpacityProps,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -101,7 +107,46 @@ const styles = StyleSheet.create({
   viewName: {
     backgroundColor: theme.colors.WHITE,
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 0,
+  },
+  covidCardContainer: {
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    marginTop: 16,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  covidToucahble: {
+    height: 0.06 * height,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
+    marginTop: 8,
+    borderRadius: 10,
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#00485d',
+  },
+  covidIconView: {
+    flex: 0.17,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  covidTitleView: {
+    flex: 0.83,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   gotItStyles: {
     height: 60,
@@ -479,6 +524,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     AsyncStorage.removeItem('deeplink');
+    AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
   }, []);
@@ -913,7 +959,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 14 }}
+          container={{
+            marginTop: 32,
+            marginBottom: 32,
+            shadowColor: '#4c808080',
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+          }}
           title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => {
@@ -963,6 +1017,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginLeft: 20,
           marginRight: 8,
           marginTop: 16,
+          marginBottom: 8,
         }}
       >
         {listValues.map((item) => {
@@ -1014,12 +1069,205 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCovidHeader = () => {
     return (
-      <View style={{ marginHorizontal: 20, marginTop: 24 }}>
-        <Text style={{ ...theme.viewStyles.text('SB', 17, '#0087ba', 1, 20) }}>
+      <View>
+        <Text style={{ ...theme.viewStyles.text('M', 17, '#0087ba', 1, 20) }}>
           {AppConfig.Configuration.HOME_SCREEN_COVID_HEADER_TEXT}
         </Text>
       </View>
     );
+  };
+
+  const renderCovidMainView = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#f0f1ec',
+          padding: 20,
+          paddingBottom: 0,
+          paddingTop: 0,
+        }}
+      >
+        {renderCovidHeader()}
+        {renderCovidCardView()}
+      </View>
+    );
+  };
+
+  const renderCovidBlueButtons = (
+    onButtonClick: TouchableOpacityProps['onPress'],
+    buttonIcon: React.ReactNode,
+    title: string
+  ) => {
+    return (
+      <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
+        <View style={styles.covidIconView}>{buttonIcon}</View>
+        <View style={styles.covidTitleView}>
+          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 18) }}>
+            {title}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCovidCardView = () => {
+    return (
+      <View style={styles.covidCardContainer}>
+        <ImageBackground
+          style={{ overflow: 'hidden', width: '100%', height: 135 }}
+          resizeMode={'stretch'}
+          source={require('@aph/mobile-patients/src/images/home/corona_image.png')}
+        >
+          <View style={{ paddingVertical: 24, paddingHorizontal: 16 }}>
+            <Text
+              style={{
+                marginBottom: 8,
+                ...theme.viewStyles.text('SB', 22, theme.colors.WHITE, 1, 29),
+              }}
+            >
+              {'CORONAVIRUS (COVID-19)'}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.WHITE, 1, 18) }}>
+              {
+                'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
+              }
+            </Text>
+          </View>
+        </ImageBackground>
+        {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
+        <View style={{ padding: 16, paddingTop: 24 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <Image
+              style={{ width: 40, height: 40 }}
+              source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
+            />
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, '#01475b', 1, 18),
+                alignSelf: 'center',
+                marginLeft: 10,
+              }}
+            >
+              {string.common.covidHelpText}
+            </Text>
+          </View>
+          <View
+            style={{
+              height: 1,
+              width: '100%',
+              backgroundColor: '#e3e3e3',
+              marginBottom: 11,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18) }}>
+            {string.common.covidMessageText}
+          </Text>
+          {renderArticleButton()}
+          {renderCovidHelpButtons()}
+        </View>
+      </View>
+    );
+  };
+
+  const renderCovidHelpButtons = () => {
+    return (
+      <View style={{ marginHorizontal: 0 }}>
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE, 1, 18),
+            marginBottom: 4,
+          }}
+        >
+          {string.common.covidYouCanText}
+        </Text>
+        {renderCovidBlueButtons(
+          onPressRiskLevel,
+          <CovidRiskLevel style={{ width: 24, height: 24 }} />,
+          'Check your risk level'
+        )}
+        {/* {renderCovidBlueButtons(
+          onPressMentalHealth,
+          <CovidHealthScan style={{ width: 24, height: 24 }} />,
+          'Take a mental health scan'
+        )} */}
+        {renderCovidBlueButtons(
+          onPressCallExperts,
+          <CovidExpert style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT}`
+        )}
+      </View>
+    );
+  };
+
+  const renderArticleButton = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        style={{
+          shadowColor: '#4c808080',
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.4,
+          shadowRadius: 5,
+          elevation: 5,
+          backgroundColor: '#fff',
+          flexDirection: 'row',
+          height: 0.06 * height,
+          marginTop: 16,
+          borderRadius: 10,
+          marginBottom: 24,
+          flex: 1,
+        }}
+        onPress={onPressReadArticle}
+      >
+        <View
+          style={{
+            flex: 0.17,
+            borderTopLeftRadius: 10,
+            borderBottomLeftRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <LatestArticle style={{ width: 24, height: 24 }} />
+        </View>
+        <View
+          style={{
+            flex: 0.83,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
+            {'Learn more about Coronavirus'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const onPressReadArticle = () => {
+    props.navigation.navigate(AppRoutes.CovidScan, {
+      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+    });
+  };
+
+  const onPressRiskLevel = () => {
+    props.navigation.navigate(AppRoutes.CovidScan, {
+      covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
+    });
+  };
+
+  // const onPressMentalHealth = () => {
+  //   console.log('onPressMentalHealth');
+  // }
+
+  const onPressCallExperts = () => {
+    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
+    postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
+    Linking.openURL(`tel:${phoneNumber}`);
+    console.log('onPressCallExperts');
   };
 
   const renderCovidScanBanner = () => {
@@ -1226,19 +1474,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
-              {renderCovidHeader()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
+              {renderCovidMainView()}
+              {/* {renderCovidHeader()}
+              {renderCovidCardView()} 
               {renderCovidScanBanner()}
-              {renderEmergencyCallBanner()}
+              {renderEmergencyCallBanner()}*/}
             </View>
           </View>
-          {renderListView()}
-          <NeedHelpAssistant
-            containerStyle={{ marginTop: 30, marginBottom: 48 }}
-            navigation={props.navigation}
-            onNeedHelpPress={() => {
-              postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
-            }}
-          />
+          <View style={{ backgroundColor: '#f0f1ec' }}>
+            <NeedHelpAssistant
+              containerStyle={{ marginTop: 16, marginBottom: 32 }}
+              navigation={props.navigation}
+              onNeedHelpPress={() => {
+                postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
+              }}
+            />
+          </View>
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}
