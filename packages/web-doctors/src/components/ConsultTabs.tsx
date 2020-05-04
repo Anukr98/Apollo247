@@ -78,7 +78,7 @@ import {
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContext, VitalErrorProps } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
 import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
@@ -384,6 +384,7 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -1504,6 +1505,8 @@ export const ConsultTabs: React.FC = () => {
             caseSheetId: appointmentId,
             documentArray,
             setDocumentArray,
+            vitalError,
+            setVitalError,
             patientDetails: isSecretary
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
               : casesheetInfo!.getCaseSheet!.patientDetails,

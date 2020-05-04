@@ -34,6 +34,12 @@ export enum DoctorType {
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
   JUNIOR = 'JUNIOR',
+  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
+  CRADLE = 'CRADLE',
+  CLINIC = 'CLINIC',
+  SPECTRA = 'SPECTRA',
+  FERTILITY = 'FERTILITY',
+  SUGAR = 'SUGAR',
 }
 
 export enum FacilityType {
