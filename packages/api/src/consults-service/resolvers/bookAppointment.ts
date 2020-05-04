@@ -222,7 +222,6 @@ const bookAppointment: Resolver<
     appointmentInput.appointmentDateTime
   );
 
-
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
