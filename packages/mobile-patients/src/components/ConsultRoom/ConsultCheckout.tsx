@@ -123,7 +123,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      setLoading(false);
     };
   }, []);
 
@@ -248,6 +247,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
             });
+        setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
