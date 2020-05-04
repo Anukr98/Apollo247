@@ -34,6 +34,14 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
     });
   }
 
+  async removeNotificationByEventId(eventId: string) {
+    return this.delete({ eventId }).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.DELETE_NOTIFICATION_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   async getNotificationById(id: string) {
     try {
       return this.findOne({ where: { id } });
@@ -44,9 +52,28 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
     }
   }
 
+  async getNotificationByEventId(eventId: string) {
+    try {
+      return this.find({ where: { eventId } });
+    } catch (getNotificationErrors) {
+      throw new AphError(AphErrorMessages.GET_NOTIFICATION_ERROR, undefined, {
+        getNotificationErrors,
+      });
+    }
+  }
+
   async getNotificationInTimePeriod(toId: string, startDate: Date, endDate: Date) {
     try {
-      return this.find({ where: { toId, createdDate: Between(startDate, endDate) } });
+      return this.find({
+        where: {
+          toId,
+          createdDate: Between(startDate, endDate),
+          status: notificationStatus.UNREAD,
+        },
+        order: {
+          createdDate: 'ASC',
+        },
+      });
     } catch (getNotificationErrors) {
       throw new AphError(AphErrorMessages.GET_NOTIFICATION_ERROR, undefined, {
         getNotificationErrors,
@@ -66,9 +93,9 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
 
 @EntityRepository(NotificationBinArchive)
 export class NotificationBinArchiveRepository extends Repository<NotificationBinArchive> {
-  async saveNotification(notifyAttrs: Partial<NotificationBinArchive>) {
+  async saveNotification(notifyAttrs: Partial<NotificationBinArchive>[]) {
     try {
-      return this.create(notifyAttrs).save();
+      return this.save(notifyAttrs);
     } catch (createErrors) {
       throw new AphError(AphErrorMessages.CREATE_NOTIFICATION_ARCHIVE_ERROR, undefined, {
         createErrors,

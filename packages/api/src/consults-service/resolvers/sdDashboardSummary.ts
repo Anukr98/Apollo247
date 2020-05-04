@@ -523,9 +523,14 @@ const updateDoctorFeeSummary: Resolver<
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         amountPaid: totalFee,
-        specialtiyId: doctor.specialty.id,
-        specialityName: doctor.specialty.name,
-        areaName: doctor.doctorHospital.length > 0 ? doctor.doctorHospital[0].facility.city : '',
+        specialtiyId: doctor.specialty != null ? doctor.specialty.id : '',
+        specialityName: doctor.specialty != null ? doctor.specialty.name : '',
+        areaName:
+          doctor.doctorHospital.length > 0
+            ? doctor.doctorHospital[0].facility != null
+              ? doctor.doctorHospital[0].facility.city
+              : ''
+            : '',
         appointmentsCount: totalConsults,
         isActive: <boolean>doctor.isActive,
         updatedDate: new Date(),

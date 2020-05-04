@@ -21,6 +21,7 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -62,7 +63,18 @@ export const notificationBinTypeDefs = gql`
   }
 
   type NotificationDataSet {
-    notificationData: [NotificationBinData]
+    notificationData: [GetNotificationsResponse]
+  }
+
+  type GetNotificationsResponse {
+    appointmentId: String
+    doctorId: String
+    lastUnreadMessageDate: DateTime
+    patientId: String
+    patientFirstName: String
+    patientLastName: String
+    patientPhotoUrl: String
+    unreadNotificationsCount: Int
   }
 
   extend type Query {
@@ -72,7 +84,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(messageId: String): NotificationData
+    markMessageToUnread(eventId: String): NotificationDataSet
   }
 `;
 
@@ -114,11 +126,15 @@ const insertMessage: Resolver<
     if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
     mobileNumber = doctorDetails.mobileNumber;
 
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-
     //get patient details
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
     const patientDetails = await patientRepo.findById(fromId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+    //get appointment details
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentData = await appointmentRepo.findById(messageInput.eventId);
+    if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
     //create message body
     messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace('{0}', doctorDetails.firstName).replace(
@@ -146,19 +162,23 @@ const insertMessage: Resolver<
 
 const markMessageToUnread: Resolver<
   null,
-  { messageId: string },
+  { eventId: string },
   NotificationsServiceContext,
-  { notificationData: Partial<NotificationBinArchive> }
+  { notificationData: Partial<NotificationBinArchive>[] }
 > = async (parent, args, { consultsDb }) => {
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
-  const notificationData = await notificationBinRepo.getNotificationById(args.messageId);
-  if (notificationData == null) throw new AphError(AphErrorMessages.INVALID_MESSAGE_ID);
+  const notificationData = await notificationBinRepo.getNotificationByEventId(args.eventId);
+  if (notificationData == null || notificationData.length == 0)
+    throw new AphError(AphErrorMessages.INVALID_EVENT_ID);
 
-  const dataToArchieve = { ...notificationData };
-  dataToArchieve.status = notificationStatus.READ;
-  delete dataToArchieve.id;
-  delete dataToArchieve.createdDate;
-  delete dataToArchieve.updatedDate;
+  const dataToArchieve: Partial<NotificationBinArchive>[] = notificationData.map((notification) => {
+    const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+    notificationBinData.status = notificationStatus.READ;
+    delete notificationBinData.id;
+    delete notificationBinData.createdDate;
+    delete notificationBinData.updatedDate;
+    return notificationBinData;
+  });
 
   const notificationArchieveBinRepo = consultsDb.getCustomRepository(
     NotificationBinArchiveRepository
@@ -166,7 +186,7 @@ const markMessageToUnread: Resolver<
   const archievedNotificationData = await notificationArchieveBinRepo.saveNotification(
     dataToArchieve
   );
-  await notificationBinRepo.removeNotification(args.messageId);
+  await notificationBinRepo.removeNotificationByEventId(args.eventId);
 
   return { notificationData: archievedNotificationData };
 };
@@ -274,12 +294,23 @@ const sendUnreadMessagesNotification: Resolver<
   return 'success';
 };
 
+type GetNotificationsResponse = {
+  appointmentId: string;
+  doctorId: string;
+  lastUnreadMessageDate: Date;
+  patientId: string;
+  patientFirstName: string;
+  patientLastName: string;
+  patientPhotoUrl: string;
+  unreadNotificationsCount: number;
+};
+
 const getNotifications: Resolver<
   null,
   { toId: string; startDate: Date; endDate: Date },
   NotificationsServiceContext,
-  { notificationData: Partial<NotificationBin>[] }
-> = async (parent, args, { consultsDb }) => {
+  { notificationData: GetNotificationsResponse[] }
+> = async (parent, args, { consultsDb, patientsDb }) => {
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
@@ -292,7 +323,62 @@ const getNotifications: Resolver<
     endDate
   );
 
-  return { notificationData: notificationData };
+  //Mapping the appoint id with respect to response object
+  const appointmentIds: string[] = [];
+  const patientIds: string[] = [];
+  const appointmentPatientIdMapper: { [key: string]: string } = {};
+  const appointmentLastUnreadMessageDateMapper: { [key: string]: Date } = {};
+  const appointmentUnreadMessageCountMapper: { [key: string]: number } = {};
+  notificationData.forEach((notification) => {
+    if (!appointmentIds.includes(notification.eventId)) {
+      appointmentIds.push(notification.eventId);
+      appointmentUnreadMessageCountMapper[notification.eventId] = 1;
+    } else {
+      appointmentUnreadMessageCountMapper[notification.eventId]++;
+    }
+
+    appointmentPatientIdMapper[notification.eventId] = notification.fromId;
+    appointmentLastUnreadMessageDateMapper[notification.eventId] = notification.createdDate;
+
+    if (!patientIds.includes(notification.fromId)) {
+      patientIds.push(notification.fromId);
+    }
+  });
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientsData = await patientRepo.findPatientDetailsByIdsAndFields(patientIds, [
+    'patient.id',
+    'patient.photoUrl',
+    'patient.firstName',
+    'patient.lastName',
+  ]);
+
+  //Mapping patient id with patient details
+  const patientFirstNameMapper: { [key: string]: string } = {};
+  const patientLastNameMapper: { [key: string]: string } = {};
+  const patientPhotoMapper: { [key: string]: string } = {};
+
+  patientsData.forEach((patient) => {
+    patientFirstNameMapper[patient.id] = patient.firstName;
+    patientLastNameMapper[patient.id] = patient.lastName;
+    patientPhotoMapper[patient.id] = patient.photoUrl;
+  });
+
+  //Generating the response object
+  const response = appointmentIds.map((appointmentId) => {
+    return {
+      appointmentId,
+      doctorId: args.toId,
+      lastUnreadMessageDate: appointmentLastUnreadMessageDateMapper[appointmentId],
+      patientId: appointmentPatientIdMapper[appointmentId],
+      patientFirstName: patientFirstNameMapper[appointmentPatientIdMapper[appointmentId]],
+      patientLastName: patientLastNameMapper[appointmentPatientIdMapper[appointmentId]],
+      patientPhotoUrl: patientPhotoMapper[appointmentPatientIdMapper[appointmentId]],
+      unreadNotificationsCount: appointmentUnreadMessageCountMapper[appointmentId],
+    };
+  });
+
+  return { notificationData: response };
 };
 
 export const notificationBinResolvers = {
