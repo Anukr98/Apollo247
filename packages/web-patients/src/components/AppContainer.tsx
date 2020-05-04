@@ -51,7 +51,6 @@ import { TermsAndConditions } from 'components/TermsAndConditions';
 import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
-import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
@@ -177,11 +176,6 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
           <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {pageName !== '/terms' &&
-          pageName !== '/privacy' &&
-          pageName !== '/faq' &&
-          pageName !== '/contact' &&
-          pageName !== '/partners/sbi' && <BottomLinks />}
         {isSignedIn &&
           pageName !== '/terms' &&
           pageName !== '/privacy' &&
