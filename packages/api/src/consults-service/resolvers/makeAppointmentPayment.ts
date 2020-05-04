@@ -217,20 +217,22 @@ const makeAppointmentPayment: Resolver<
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
     await apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PENDING, false);
 
-    //autosubmit code
+    //autosubmit case sheet code starts
     const currentTime = new Date();
     const timeDifference = differenceInMinutes(
       currentTime,
       processingAppointment.appointmentDateTime
     );
-    console.log(currentTime, processingAppointment.appointmentDateTime, timeDifference);
+
     if (
       timeDifference <= parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
     ) {
-      console.log('%%%%%%%%%%%%%%%%%');
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+
       const virtualJDId = process.env.VIRTUAL_JD_ID;
+
+      //Insert consult queue item record
       const consultQueueAttrs = {
         appointmentId: processingAppointment.id,
         createdDate: currentTime,
@@ -239,6 +241,7 @@ const makeAppointmentPayment: Resolver<
       };
       consultQueueRepo.save(consultQueueRepo.create(consultQueueAttrs));
 
+      //Insert case sheet record
       const casesheetAttrs = {
         createdDate: currentTime,
         consultType: processingAppointment.appointmentType,
@@ -248,7 +251,7 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.NO_JD_AVAILABLE_TEXT.toString(),
+        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString(),
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
