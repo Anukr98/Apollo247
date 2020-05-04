@@ -34,6 +34,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
+  let WebViewRef: any;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -79,6 +80,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     console.log(url);
     return (
       <WebView
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
@@ -96,6 +98,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
+          WebViewRef && WebViewRef.stopLoading();
+          // props.navigation.goBack();
           props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
             orderId: appointmentId,
             price: price,
