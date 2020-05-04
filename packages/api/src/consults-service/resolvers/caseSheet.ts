@@ -89,6 +89,12 @@ export const caseSheetTypeDefs = gql`
     JUNIOR
     PAYROLL
     STAR_APOLLO
+    DOCTOR_CONNECT
+    CRADLE
+    CLINIC
+    SPECTRA
+    FERTILITY
+    SUGAR
   }
 
   enum Gender {

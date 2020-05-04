@@ -36,6 +36,12 @@ export const getDoctorDetailsTypeDefs = gql`
     PAYROLL
     STAR_APOLLO
     JUNIOR
+    DOCTOR_CONNECT
+    CRADLE
+    CLINIC
+    SPECTRA
+    FERTILITY
+    SUGAR
   }
 
   enum LoggedInUserType {
