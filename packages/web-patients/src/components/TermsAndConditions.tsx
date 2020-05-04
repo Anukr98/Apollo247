@@ -2,6 +2,8 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
+import { BottomLinks } from 'components/BottomLinks';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -11,9 +13,12 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
+    },
+    pageContainer: {
+      [theme.breakpoints.up('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
+      },
     },
     aboutUs: {
       padding: '24px 40px',
@@ -89,6 +94,7 @@ export const TermsAndConditions: React.FC = () => {
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
+        <div className={classes.pageContainer}>
         <div className={classes.aboutUs}>
           <div className={classes.headerText}>terms & conditions</div>
           <div className={classes.headerSubText}>
@@ -176,7 +182,10 @@ export const TermsAndConditions: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

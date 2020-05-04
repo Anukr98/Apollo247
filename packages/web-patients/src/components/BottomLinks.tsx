@@ -64,17 +64,17 @@ export const BottomLinks: React.FC = (props) => {
               <Link to={clientRoutes.FAQ()}>Frequently Asked Questions</Link>
             </li>
             <li>
-              <Link to={clientRoutes.termsConditions()} target="_blank">
+              <Link to={clientRoutes.termsConditions()}>
                 Terms & Conditions
               </Link>
             </li>
             <li>
-              <Link to={clientRoutes.privacy()} target="_blank">
+              <Link to={clientRoutes.privacy()}>
                 Privacy Policy
               </Link>
             </li>
             <li>
-              <Link to={clientRoutes.contactUs()} target="_blank">
+              <Link to={clientRoutes.contactUs()}>
                 Contact Us
               </Link>
             </li>

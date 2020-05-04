@@ -1,59 +1,30 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
+import { BottomLinks } from 'components/BottomLinks';
+import { Header } from 'components/Header';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: '#fff',
-      marginTop: -88,
       fontSize: 18,
-      [theme.breakpoints.down(900)]: {
-        marginBottom: -80,
-      },
-      '& section': {
-        paddingTop: 100,
-        paddingBottom: 100,
-        [theme.breakpoints.down(900)]: {
-          paddingTop: 50,
-          paddingBottom: 50,
-        },
-      },
       '& p': {
         marginBottom: 20,
         lineHeight: 1.5,
       },
-      '& footer': {
-        padding: '25px 0',
-        textAlign: 'center',
-        color: 'rgba(255,255,255,.3)',
-        backgroundColor: '#222',
-        fontSize: 12,
-        '& p': {
-          marginBottom: 10,
-        },
-        '& ul': {
-          padding: 0,
-          margin: 0,
-          '& li': {
-            listStyleType: 'none',
-            display: 'inline-block',
-            margin: '0 5px',
-            '& a': {
-              fontSize: 12,
-              color: 'rgba(255,255,255,.3)',
-            },
-          },
-        },
-      },
     },
     container: {
-      maxWidth: 1140,
-      paddingLeft: 15,
-      paddingRight: 15,
+      maxWidth: 1064,
       margin: 'auto',
+    },
+    pageContainer: {
+      padding: 20,
+      [theme.breakpoints.up('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
+        padding: 40,
+      },
     },
     textCenter: {
       textAlign: 'center',
@@ -66,8 +37,9 @@ export const Faq: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <section>
-        <div className={classes.container}>
+      <Header />
+      <div className={classes.container}>
+        <div className={classes.pageContainer}>
           <h1 className={classes.textCenter}>Frequently Asked Questions</h1>
           <h1 className={classes.textCenter}>Online Consultation FAQs</h1>
           <div>
@@ -212,36 +184,9 @@ export const Faq: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </section>
-      <footer>
-        <div className={classes.container}>
-          <p>&copy; Apollo247 2020. All Rights Reserved.</p>
-          <ul>
-            <li>
-              <Link
-                to={clientRoutes.welcome()}
-                onClick={(e) => {
-                  window.location.href = clientRoutes.welcome();
-                }}
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to={clientRoutes.privacy()}>Privacy</Link>
-            </li>
-            <li>
-              <Link to={clientRoutes.termsConditions()}>Terms</Link>
-            </li>
-            <li>
-              <Link to={clientRoutes.FAQ()}>FAQ</Link>
-            </li>
-            <li>
-              <Link to={clientRoutes.contactUs()}>Contact Us</Link>
-            </li>
-          </ul>
-        </div>
-      </footer>
+      </div>
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };
