@@ -90,14 +90,23 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           if (item && item.enabled && item.paymentMode != 'NB') {
             options.push(item);
           } else if (item && item.enabled && item.paymentMode == 'NB') {
-            let bankList: bankOptions[] = item.banksList;
-            bankList.forEach((item) => {
-              item.paymentMode = 'NB';
+            let bankList: bankOptions[] = [];
+            let bankOptions: bankOptions[] = item.banksList;
+            bankOptions.forEach((item) => {
+              if (item.enabled) {
+                item.paymentMode = 'NB';
+                bankList.push(item);
+              }
             });
-            bankList.sort((a, b) => {
-              return a.seq - b.seq;
-            });
-            setbankOptions(item.banksList);
+            if (bankList.length > 0) {
+              bankList.sort((a, b) => {
+                return a.seq - b.seq;
+              });
+              setbankOptions(bankList);
+            } else {
+              delete item.banksList;
+              options.push(item);
+            }
           }
         });
         options.sort((a, b) => {
@@ -114,6 +123,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      setLoading(false);
     };
   }, []);
 
@@ -322,7 +332,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            PAY NOW
+            PAY VIA
           </Text>
         </View>
         <View
@@ -492,7 +502,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           <ScrollView style={{ flex: 0.9 }}>
             {rendertotalAmount()}
             {renderPaymentOptions()}
-            {renderNetBanking()}
+            {bankOptions.length > 0 && renderNetBanking()}
           </ScrollView>
         ) : (
           <Spinner />
