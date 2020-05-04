@@ -113,7 +113,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           return a.seq - b.seq;
         });
         setpaymentOptions(options);
-        setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
@@ -202,7 +202,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   };
 
   const initiatePayment = (item) => {
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -247,11 +247,11 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
             });
-        setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-        setLoading(false);
+        setLoading && setLoading(false);
         let message = '';
         try {
           message = error.message.split(':')[1].trim();
