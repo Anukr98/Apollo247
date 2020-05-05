@@ -283,6 +283,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.id
         : '';
 
+    const starTeam = doctorDetails && doctorDetails.getDoctorDetailsById
+      ? doctorDetails.getDoctorDetailsById.starTeam
+      : null;
+
     return (
       <div className={classes.root}>
         <Header />
@@ -331,7 +335,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         {!isPayrollDoctor && (
                           <>
                             <DoctorClinics doctorDetails={doctorDetails} />
-                            <StarDoctorTeam doctorDetails={doctorDetails} />
+                            {starTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
                           </>
                         )}
                         <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
