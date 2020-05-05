@@ -20,6 +20,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -31,12 +32,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      borderRadius: '0 0 10px 10px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: 0,
-      },
     },
     pageHeader: {
       marginLeft: 20,
@@ -272,6 +269,11 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'center',
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },    
   };
 });
 
@@ -312,7 +314,7 @@ const customContainerStyle = {
       fontWeight: 500,
       fontFamily: 'IBM Plex Sans,sans-serif',
     },
-  },
+  },  
 };
 
 // type Patient = GetCurrentPatients_getCurrentPatients_patients;
@@ -707,7 +709,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </div>
         </Popover>
       )}
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        {!onePrimaryUser && <ManageProfile />}
+        <BottomLinks />
+      </div>
     </div>
   );
 };
