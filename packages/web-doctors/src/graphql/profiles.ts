@@ -1340,14 +1340,14 @@ export const MARK_MESSAGE_TO_UNREAD = gql`
       eventId: $eventId
     ) {
       notificationData {
-        appointmentId
-        doctorId
-        lastUnreadMessageDate
-        patientId
-        patientFirstName
-        patientLastName
-        patientPhotoUrl
-        unreadNotificationsCount
+        fromId
+ toId
+ eventName
+ eventId
+ message
+ status
+ type
+ id
       }
     }
   }

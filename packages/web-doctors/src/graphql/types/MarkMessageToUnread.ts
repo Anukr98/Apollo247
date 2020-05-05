@@ -2,24 +2,26 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { notificationEventName, notificationStatus, notificationType } from "./globalTypes";
+
 // ====================================================
 // GraphQL mutation operation: MarkMessageToUnread
 // ====================================================
 
 export interface MarkMessageToUnread_markMessageToUnread_notificationData {
-  __typename: "GetNotificationsResponse";
-  appointmentId: string | null;
-  doctorId: string | null;
-  lastUnreadMessageDate: any | null;
-  patientId: string | null;
-  patientFirstName: string | null;
-  patientLastName: string | null;
-  patientPhotoUrl: string | null;
-  unreadNotificationsCount: number | null;
+  __typename: "NotificationBinData";
+  fromId: string;
+  toId: string;
+  eventName: notificationEventName;
+  eventId: string;
+  message: string;
+  status: notificationStatus;
+  type: notificationType;
+  id: string | null;
 }
 
 export interface MarkMessageToUnread_markMessageToUnread {
-  __typename: "NotificationDataSet";
+  __typename: "NotificationBinDataSet";
   notificationData: (MarkMessageToUnread_markMessageToUnread_notificationData | null)[] | null;
 }
 

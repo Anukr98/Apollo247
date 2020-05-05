@@ -235,6 +235,19 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export enum notificationEventName {
+  APPOINTMENT = "APPOINTMENT",
+}
+
+export enum notificationStatus {
+  READ = "READ",
+  UNREAD = "UNREAD",
+}
+
+export enum notificationType {
+  CHAT = "CHAT",
+}
+
 export enum patientLogSort {
   MOST_RECENT = "MOST_RECENT",
   NUMBER_OF_CONSULTS = "NUMBER_OF_CONSULTS",
