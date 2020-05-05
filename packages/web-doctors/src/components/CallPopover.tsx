@@ -24,6 +24,7 @@ import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
+import { TestCall } from './TestCall';
 
 import {
   EndAppointmentSession,
@@ -743,6 +744,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 15,
       fontWeight: 500,
       color: '#01475b',
+    },
+    testCallWrappper: {
+      borderTop: '1px solid rgba(2, 71, 91, 0.15)',
+      marginTop: 20,
+      textAlign: 'center',
+      paddingTop: 15,
     },
   };
 });
@@ -2168,6 +2175,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <img src={require('images/video_popup.svg')} alt="" />
                     VIDEO CALL
                   </Button>
+                  <div className={classes.testCallWrappper}>
+                    <TestCall />
+                  </div>
                 </div>
               </Paper>
             </Popover>
