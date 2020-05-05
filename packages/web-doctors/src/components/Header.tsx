@@ -245,7 +245,7 @@ export const Header: React.FC = (props) => {
   const [isOnline, setIsOnline] = React.useState(true);
   const [showLoader, setShowLoader] = React.useState(false);
   let content: [React.ReactNode] = [null];
-  let notificationCount : number = 0;
+  let notificationCount: number = 0;
 
   // TODO remove currentPatient and name it as currentDoctor
   const currentUserType = useAuth().currentUserType;
@@ -303,20 +303,15 @@ export const Header: React.FC = (props) => {
     MarkMessageToUnreadVariables
   >(MARK_MESSAGE_TO_UNREAD);
 
-  const callMessageReadAction = (appointmentId: string, doctorId: string,
-    patientId: string) => {
-      setIsHelpPopupOpen1(false)
-   mutationMarkMessageToUnread({
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    setIsHelpPopupOpen1(false);
+    mutationMarkMessageToUnread({
       variables: {
         eventId: appointmentId,
       },
     })
       .then((response) => {
-        window.location.href = clientRoutes.ConsultTabs(
-          appointmentId,
-          patientId,
-          '0'
-        );
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
       })
       .catch((e: ApolloError) => {
         console.log(e, 'erroe');
@@ -376,7 +371,11 @@ export const Header: React.FC = (props) => {
                 <div
                   className={classes.notificationRow}
                   onClick={() => {
-                    callMessageReadAction(notificationObject.appointmentId, notificationObject.doctorId, notificationObject.patientId );
+                    callMessageReadAction(
+                      notificationObject.appointmentId,
+                      notificationObject.doctorId,
+                      notificationObject.patientId
+                    );
                   }}
                 >
                   <Grid container>
@@ -527,17 +526,20 @@ export const Header: React.FC = (props) => {
                         </span>
                       ) : null}
                       {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Notification"  className={classes.notificationIcon} onClick={() => {
-                          if(notificationCount > 0){
-                            setSelectedTab(4);
-                            setIsHelpPopupOpen1(true);
-                          }
-                        }}>
-                          <img
-                            
-                            src={require('images/ic_notifications.svg')}
-                          />
-                          {notificationCount > 0 && <span className={classes.notificationCount}>{notificationCount}</span>}
+                        <span
+                          title="Notification"
+                          className={classes.notificationIcon}
+                          onClick={() => {
+                            if (notificationCount > 0) {
+                              setSelectedTab(4);
+                              setIsHelpPopupOpen1(true);
+                            }
+                          }}
+                        >
+                          <img src={require('images/ic_notifications.svg')} />
+                          {notificationCount > 0 && (
+                            <span className={classes.notificationCount}>{notificationCount}</span>
+                          )}
                         </span>
                       ) : null}
                       {!isAdminDoctor && (
