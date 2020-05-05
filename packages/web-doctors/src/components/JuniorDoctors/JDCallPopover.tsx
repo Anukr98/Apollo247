@@ -22,6 +22,7 @@ import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
+import { TestCall } from '../TestCall';
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -576,6 +577,12 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'left',
         lineHeight: '15px',
       },
+    },
+    testCallWrappper: {
+      borderTop: '1px solid rgba(2, 71, 91, 0.15)',
+      marginTop: 20,
+      textAlign: 'center',
+      paddingTop: 15,
     },
   };
 });
@@ -1450,6 +1457,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <img src={require('images/video_popup.svg')} alt="" />
               VIDEO CALL
             </Button>
+            <div className={classes.testCallWrappper}>
+              <TestCall />
+            </div>
           </div>
         </Paper>
       </Popover>
