@@ -152,6 +152,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       console.log('DataAddress', addressData);
       // to avoid duplicate state name & backward compatability of address issue
       const cityState = [addressData.city, addressData.state]
+        .filter((item) => item)
         .toString()
         .split(',')
         .map((item) => (item || '').trim())
