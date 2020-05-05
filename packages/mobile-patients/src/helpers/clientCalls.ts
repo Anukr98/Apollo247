@@ -1,53 +1,50 @@
-import ApolloClient from 'apollo-client';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  NEXT_AVAILABLE_SLOT,
   ADD_TO_CONSULT_QUEUE,
-  CHECK_IF_RESCHDULE,
   AUTOMATED_QUESTIONS,
+  CHECK_IF_RESCHDULE,
+  DOWNLOAD_DOCUMENT,
   END_APPOINTMENT_SESSION,
   GET_APPOINTMENT_DATA,
-  DOWNLOAD_DOCUMENT,
-  GET_PATIENT_APPOINTMENTS,
-  LOGIN,
-  VERIFY_LOGIN_OTP,
-  SEND_CHAT_MESSAGE_TO_DOCTOR,
   GET_CALL_DETAILS,
   GET_DEVICE_TOKEN_COUNT,
+  GET_PATIENT_APPOINTMENTS,
+  INSERT_MESSAGE,
+  NEXT_AVAILABLE_SLOT,
+  SEND_CHAT_MESSAGE_TO_DOCTOR,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import ApolloClient from 'apollo-client';
+import moment from 'moment';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
-import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
 import { addToConsultQueueWithAutomatedQuestionsVariables } from '../graphql/types/addToConsultQueueWithAutomatedQuestions';
+import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
+import { downloadDocuments } from '../graphql/types/downloadDocuments';
 import {
-  ConsultQueueInput,
-  REQUEST_ROLES,
-  STATUS,
-  EndAppointmentSessionInput,
-  LOGIN_TYPE,
-} from '../graphql/types/globalTypes';
-import {
-  EndAppointmentSessionVariables,
   EndAppointmentSession,
+  EndAppointmentSessionVariables,
 } from '../graphql/types/EndAppointmentSession';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
-import { downloadDocuments } from '../graphql/types/downloadDocuments';
-import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
-import moment from 'moment';
-import { LoginVariables, Login } from '../graphql/types/Login';
-import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  sendChatMessageToDoctor,
-  sendChatMessageToDoctorVariables,
-} from '../graphql/types/sendChatMessageToDoctor';
 import { getCallDetails, getCallDetailsVariables } from '../graphql/types/getCallDetails';
 import {
   getDeviceCodeCount,
   getDeviceCodeCountVariables,
 } from '../graphql/types/getDeviceCodeCount';
+import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments';
+import {
+  ConsultQueueInput,
+  MessageInput,
+  REQUEST_ROLES,
+  STATUS,
+} from '../graphql/types/globalTypes';
+import { insertMessageVariables } from '../graphql/types/insertMessage';
+import {
+  sendChatMessageToDoctor,
+  sendChatMessageToDoctorVariables,
+} from '../graphql/types/sendChatMessageToDoctor';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -323,6 +320,24 @@ export const getDeviceTokenCount = (client: ApolloClient<object>, uniqueDeviceId
       })
       .catch((e: any) => {
         CommonBugFender('clientCalls_getDeviceTokenCount', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const insertMessage = (client: ApolloClient<object>, messageInput: MessageInput) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<insertMessageVariables>({
+        mutation: INSERT_MESSAGE,
+        variables: { messageInput: messageInput },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueue', e);
         rej({ error: e });
       });
   });
