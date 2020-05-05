@@ -682,10 +682,10 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
   }
 
-  if (inputArguments.referralSpecialtyName && inputArguments.referralSpecialtyName.length) {
+  if (inputArguments.referralSpecialtyName) {
     getCaseSheetData.referralSpecialtyName = inputArguments.referralSpecialtyName;
 
-    if (inputArguments.referralDescription && inputArguments.referralDescription.length) {
+    if (inputArguments.referralDescription) {
       getCaseSheetData.referralDescription = inputArguments.referralDescription;
     } else {
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_DESCRIPTION);
@@ -778,8 +778,7 @@ const modifyCaseSheet: Resolver<
       patient: patientData,
     };
     if (inputArguments.lifeStyle) {
-      lifeStyleInputs.description =
-        inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined;
+      lifeStyleInputs.description = inputArguments.lifeStyle;
     }
     if (inputArguments.occupationHistory) {
       lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
@@ -802,7 +801,7 @@ const modifyCaseSheet: Resolver<
     patient: patientData,
   };
 
-  if (inputArguments.medicationHistory && inputArguments.medicationHistory.length) {
+  if (inputArguments.medicationHistory) {
     medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
   }
 
