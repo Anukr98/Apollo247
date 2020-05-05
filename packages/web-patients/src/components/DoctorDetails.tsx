@@ -216,7 +216,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
-    },    
+    },
   };
 });
 
