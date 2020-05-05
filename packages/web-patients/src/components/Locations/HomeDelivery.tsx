@@ -2,7 +2,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
 import React, { useEffect, useRef } from 'react';
 import moment from 'moment';
-import _find from 'lodash';
+import isNull from 'lodash/isNull';
+
 import {
   AphRadio,
   AphButton,
@@ -24,7 +25,6 @@ import {
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import isNull from 'lodash/isNull';
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -199,6 +199,9 @@ const useStyles = makeStyles((theme: Theme) => {
     alignCenter: {
       textAlign: 'center',
     },
+    weAreSorry: {
+      color: '#890000',
+    },
   };
 });
 
@@ -235,7 +238,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     medicineCartType,
     removeCartItem,
     updateItemShippingStatus,
-    updateCartItemQty,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -344,7 +346,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     if (nonServicableSKU.length) {
       nonServicableSKU.map((nonDeliverableSKU: string) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
-        if (obj && !isNull(obj)) {
+        if (obj) {
           removeCartItem && removeCartItem(obj.id);
         }
       });
@@ -408,9 +410,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               res.data.tat.length
             ) {
               const tatResult = res.data.tat;
+
               const nonDeliverySKUArr = tatResult
                 .filter((item: TatInterface) => getDiffInDays(item.deliverydate) > 10)
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
+
               const deliverableSku = tatResult
                 .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
@@ -435,7 +439,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 }
               });
 
-              // if nonDeliverySKUArr.length then open we are sorry modal
+              // if nonDeliverySKUArr.length then open change address / delete item modal
               if (nonDeliverySKUArr && nonDeliverySKUArr.length) {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
@@ -543,11 +547,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         </>
       ) : (
         <>
-          {isLoading ? (
+          {isLoading && (
             <div className={classes.alignCenter}>
               <CircularProgress />
             </div>
-          ) : null}
+          )}
         </>
       )}
 
@@ -658,7 +662,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             </div>
             <div className={classes.noServiceRoot}>
               <div className={classes.windowBody}>
-                <Typography variant="h2">We’re Sorry!</Typography>
+                <Typography variant="h2">
+                  <div className={classes.weAreSorry}>We’re Sorry!</div>
+                </Typography>
                 <p>Some items in your order are not deliverable to the selected address.</p>
                 <p>You may either change the address or delete the items from your cart.</p>
               </div>
