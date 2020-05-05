@@ -551,17 +551,17 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
               <div id="messages">
                 {selectedTabIndex === 0 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {selectedTabIndex === 1 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {selectedTabIndex === 2 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {offset <= patientList.length && (
