@@ -2043,8 +2043,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
 
-    SendNotificationToDoctorAPI();
-
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
       setIsDoctorNoShow(false);
