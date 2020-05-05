@@ -3,10 +3,12 @@ import { makeStyles } from "@material-ui/styles";
 import { Theme, CircularProgress, Typography } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import Popover from "@material-ui/core/Popover";
+import Grid from '@material-ui/core/Grid';
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import { SignIn } from "components/SignIn";
 import { HelpPopup } from "components/Help";
+import Scrollbars from 'react-custom-scrollbars';
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -111,6 +113,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.3)",
       backgroundColor: theme.palette.common.white
     },
+    notificationPopup: {
+      padding: 0,
+    },
     afterloginForm: {
       width: 320,
       minHeight: 230,
@@ -164,6 +169,14 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: "18px",
       color: "#02475b"
     },
+    notificationcross: {
+      position: "absolute",
+      right: 0,
+      paddingTop: 13,
+      top: -5,
+      fontSize: 18,
+      color: "#02475b"
+    },
     accountIc: {
       marginTop: "9px !important",
       marginRight: "0 !important"
@@ -179,7 +192,26 @@ const useStyles = makeStyles((theme: Theme) => {
       position: "absolute",
       right: 12,
       top: 12
-    }
+    },
+    notification: {
+      paddingTop: 20,
+    },
+    notificationRow: {
+      borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
+      padding: '12px 5px 12px 15px',
+    },
+    noticationImg: {
+      borderRadius: '50%',
+      height: 40,
+    },
+    noticationContent: {
+      paddingLeft: 12,
+      fontSize: 15,
+      color: '#01475b',
+    },
+    bold: {
+      fontWeight: 'bold',
+    },
   };
 });
 
@@ -282,21 +314,21 @@ export const Header: React.FC = props => {
   const pageRefreshTimeInSeconds = 30;
   const { data, loading } =
     isSignedIn &&
-    !isJuniorDoctor &&
-    !isAdminDoctor &&
-    !isSecretary &&
-    currentPatient &&
-    currentPatient.id
+      !isJuniorDoctor &&
+      !isAdminDoctor &&
+      !isSecretary &&
+      currentPatient &&
+      currentPatient.id
       ? useQuery(GET_NOTIFICATION, {
-          variables: {
-            toId: "222e55b1-48b4-4b87-99ad-98a4c3619602",
-            startDate: "2020-04-30",
-            endDate: "2020-05-07"
-          },
-          fetchPolicy: "no-cache",
-          pollInterval: pageRefreshTimeInSeconds * 1000,
-          notifyOnNetworkStatusChange: true
-        })
+        variables: {
+          toId: "74c93b2e-8aab-4b6c-8391-5407f4afb833",
+          startDate: "2020-04-30",
+          endDate: "2020-05-07"
+        },
+        fetchPolicy: "no-cache",
+        pollInterval: pageRefreshTimeInSeconds * 1000,
+        notifyOnNetworkStatusChange: true
+      })
       : { data: {}, loading: false };
   //console.log(loading, data);
 
@@ -313,7 +345,18 @@ export const Header: React.FC = props => {
           {data.getNotifications.notificationData.map(
             (notificationObject: any, index: any) => {
               return (
-                <div>You have new message from {notificationObject.patientFirstName}</div>
+                <div className={classes.notification}>
+                  <div className={classes.notificationRow}>
+                    <Grid container >
+                      <Grid item lg={2} sm={2} xs={2}>
+                        <img className={classes.noticationImg} src={require("images/doctor_02.png")} />
+                      </Grid>
+                      <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
+                        You have new message from <span className={classes.bold}>{notificationObject.patientFirstName}</span>
+                      </Grid>
+                    </Grid>
+                  </div>
+                </div>
               );
             }
           )}
@@ -341,7 +384,7 @@ export const Header: React.FC = props => {
           } else {
             // request permission from user
             Notification.requestPermission()
-              .then(function(p) {
+              .then(function (p) {
                 if (p === "granted") {
                   // show notification here
                   sendNotification(message.message.message);
@@ -360,7 +403,7 @@ export const Header: React.FC = props => {
                   console.log("User blocked notifications.");
                 }
               })
-              .catch(function(err) {
+              .catch(function (err) {
                 const logObject = {
                   api: "NotificationRequestPermission",
                   doctorId: currentPatient!.id,
@@ -426,7 +469,7 @@ export const Header: React.FC = props => {
               <div
                 className={`${
                   !isSignedIn && !isSecretary ? classes.userCircle : ""
-                }`}
+                  }`}
                 ref={avatarRef}
               >
                 {isSigningIn ? (
@@ -442,75 +485,75 @@ export const Header: React.FC = props => {
                       />
                     </div>
                   ) : (
-                    <div>
-                      {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Inbox">
-                          <img
-                            onClick={() => setSelectedTab(3)}
-                            src={require("images/ic_inbox.svg")}
-                          />
-                        </span>
-                      ) : null}
-                      {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Notification">
-                          <img
-                            onClick={() => {
-                              //alert(111111111);
-                              setSelectedTab(4);
-                              setIsHelpPopupOpen1(true);
-                            }}
-                            src={require("images/ic_notifications.svg")}
-                          />
-                        </span>
-                      ) : null}
-                      {!isAdminDoctor && (
-                        <span
-                          title="Help"
-                          className={`${selectedTab === 5 &&
-                            classes.menuItemActiveHelp}`}
-                        >
-                          <img
-                            onClick={() => {
-                              isProtected
-                                ? protectWithLoginPopup()
-                                : setIsHelpPopupOpen(true);
-                              setSelectedTab(5);
-                            }}
-                            src={require("images/ic_help.svg")}
-                          />
-                        </span>
-                      )}
-                      {isJuniorDoctor || isAdminDoctor ? (
-                        <span
-                          title="My Profile"
-                          className={`${window.location.href.includes(
-                            "/jd-profile"
-                          ) && classes.menuItemActive}`}
-                        >
-                          <Link to={clientRoutes.juniorDoctorProfile()}>
+                      <div>
+                        {!isJuniorDoctor && !isAdminDoctor ? (
+                          <span title="Inbox">
                             <img
-                              onClick={() => setSelectedTab(6)}
-                              src={require("images/ic_profile.svg")}
+                              onClick={() => setSelectedTab(3)}
+                              src={require("images/ic_inbox.svg")}
                             />
-                          </Link>
-                        </span>
-                      ) : (
-                        <span
-                          title="My Account"
-                          className={`${window.location.href.includes(
-                            "/myaccount"
-                          ) && classes.menuItemActive}`}
-                        >
-                          <Link to="/myaccount">
+                          </span>
+                        ) : null}
+                        {!isJuniorDoctor && !isAdminDoctor ? (
+                          <span title="Notification">
                             <img
-                              onClick={() => setSelectedTab(6)}
-                              src={require("images/ic_profile.svg")}
+                              onClick={() => {
+                                //alert(111111111);
+                                setSelectedTab(4);
+                                setIsHelpPopupOpen1(true);
+                              }}
+                              src={require("images/ic_notifications.svg")}
                             />
-                          </Link>
-                        </span>
-                      )}
-                    </div>
-                  )
+                          </span>
+                        ) : null}
+                        {!isAdminDoctor && (
+                          <span
+                            title="Help"
+                            className={`${selectedTab === 5 &&
+                              classes.menuItemActiveHelp}`}
+                          >
+                            <img
+                              onClick={() => {
+                                isProtected
+                                  ? protectWithLoginPopup()
+                                  : setIsHelpPopupOpen(true);
+                                setSelectedTab(5);
+                              }}
+                              src={require("images/ic_help.svg")}
+                            />
+                          </span>
+                        )}
+                        {isJuniorDoctor || isAdminDoctor ? (
+                          <span
+                            title="My Profile"
+                            className={`${window.location.href.includes(
+                              "/jd-profile"
+                            ) && classes.menuItemActive}`}
+                          >
+                            <Link to={clientRoutes.juniorDoctorProfile()}>
+                              <img
+                                onClick={() => setSelectedTab(6)}
+                                src={require("images/ic_profile.svg")}
+                              />
+                            </Link>
+                          </span>
+                        ) : (
+                            <span
+                              title="My Account"
+                              className={`${window.location.href.includes(
+                                "/myaccount"
+                              ) && classes.menuItemActive}`}
+                            >
+                              <Link to="/myaccount">
+                                <img
+                                  onClick={() => setSelectedTab(6)}
+                                  src={require("images/ic_profile.svg")}
+                                />
+                              </Link>
+                            </span>
+                          )}
+                      </div>
+                    )
                 ) : !isSecretary ? (
                   <div
                     className={classes.accontDiv}
@@ -538,36 +581,36 @@ export const Header: React.FC = props => {
                     />
                   </div>
                 ) : (
-                  <div>
-                    <span
-                      title="Help"
-                      className={`${selectedTab === 5 &&
-                        classes.menuItemActiveHelp}`}
-                    >
-                      <img
-                        onClick={() => {
-                          setIsHelpPopupOpen(true);
-                          setSelectedTab(5);
-                        }}
-                        src={require("images/ic_help.svg")}
-                      />
-                    </span>
-                    {!window.location.href.includes("/secretary") && (
-                      <span
-                        title="My Profile"
-                        className={`${selectedTab === 6 &&
-                          classes.menuItemActive}`}
-                      >
-                        <Link to="/myaccount">
-                          <img
-                            onClick={() => setSelectedTab(6)}
-                            src={require("images/ic_profile.svg")}
-                          />
-                        </Link>
-                      </span>
-                    )}
-                  </div>
-                )}
+                        <div>
+                          <span
+                            title="Help"
+                            className={`${selectedTab === 5 &&
+                              classes.menuItemActiveHelp}`}
+                          >
+                            <img
+                              onClick={() => {
+                                setIsHelpPopupOpen(true);
+                                setSelectedTab(5);
+                              }}
+                              src={require("images/ic_help.svg")}
+                            />
+                          </span>
+                          {!window.location.href.includes("/secretary") && (
+                            <span
+                              title="My Profile"
+                              className={`${selectedTab === 6 &&
+                                classes.menuItemActive}`}
+                            >
+                              <Link to="/myaccount">
+                                <img
+                                  onClick={() => setSelectedTab(6)}
+                                  src={require("images/ic_profile.svg")}
+                                />
+                              </Link>
+                            </span>
+                          )}
+                        </div>
+                      )}
               </div>
             )}
           </ProtectedWithLoginPopup>
@@ -591,39 +634,41 @@ export const Header: React.FC = props => {
               </Button>
             </DialogActions>
           </Dialog>
+
           <Popover
-              open={isHelpPopupOpen1}
-              anchorEl={avatarRef.current}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right"
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right"
-              }}
-              classes={{ paper: classes.signedTopPopover }}
-            >
-                <Paper className={classes.loginForm}>
-                  <Button
-                    onClick={() => setIsHelpPopupOpen1(false)}
-                    className={classes.cross}
-                  >
-                    <img src={require("images/ic_cross.svg")} alt="" />
-                  </Button>
-                  
-                    {content && content.length > 0 && content[0] ?  (<div>
-                      <Typography variant="h2">
-                      Notifications
-                    </Typography>
-                      <div>
-                      {content[0]}
-                    </div>
-  </div>) : null}
-                    
-                  
-                </Paper>
-            </Popover>
+            open={isHelpPopupOpen1}
+            anchorEl={avatarRef.current}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right"
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right"
+            }}
+            classes={{ paper: classes.signedTopPopover }}
+          >
+
+            <Paper className={`${classes.loginForm} ${classes.notificationPopup}`}>
+              <Scrollbars autoHide={true} style={{ minHeight: 'calc(40vh)' }}>
+                <Button
+                  onClick={() => setIsHelpPopupOpen1(false)}
+                  className={classes.notificationcross}
+                >
+                  <img src={require("images/ic_cross.svg")} alt="" />
+                </Button>
+
+                {content && content.length > 0 && content[0] ? (<div>
+
+                  <div>
+                    {content[0]}
+                  </div>
+                </div>) : null}
+              </Scrollbars>
+            </Paper>
+
+          </Popover>
+
           {isSignedIn || isAdminDoctor || isSecretary ? (
             <Popover
               open={isHelpPopupOpen}
@@ -652,46 +697,46 @@ export const Header: React.FC = props => {
                   <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
                 </Paper>
               ) : (
-                <Paper className={classes.loginForm}>
-                  <Button
-                    onClick={() => setIsHelpPopupOpen(false)}
-                    className={classes.cross}
-                  >
-                    <img src={require("images/ic_cross.svg")} alt="" />
-                  </Button>
-                  <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
-                </Paper>
-              )}
+                  <Paper className={classes.loginForm}>
+                    <Button
+                      onClick={() => setIsHelpPopupOpen(false)}
+                      className={classes.cross}
+                    >
+                      <img src={require("images/ic_cross.svg")} alt="" />
+                    </Button>
+                    <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
+                  </Paper>
+                )}
             </Popover>
           ) : (
-            <Popover
-              open={isLoginPopupVisible}
-              anchorEl={avatarRef.current}
-              onClose={() => {
-                stickyPopup && setIsLoginPopupVisible(false);
-              }}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right"
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right"
-              }}
-              classes={{ paper: classes.topPopover }}
-            >
-              <Paper className={classes.loginForm}>
-                <SignIn
-                  popup={() => {
-                    setIsLoginPopupVisible(false);
-                  }}
-                  setStickyPopupValue={() => {
-                    setStickyPopup(!stickyPopup);
-                  }}
-                />
-              </Paper>
-            </Popover>
-          )}
+              <Popover
+                open={isLoginPopupVisible}
+                anchorEl={avatarRef.current}
+                onClose={() => {
+                  stickyPopup && setIsLoginPopupVisible(false);
+                }}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right"
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right"
+                }}
+                classes={{ paper: classes.topPopover }}
+              >
+                <Paper className={classes.loginForm}>
+                  <SignIn
+                    popup={() => {
+                      setIsLoginPopupVisible(false);
+                    }}
+                    setStickyPopupValue={() => {
+                      setStickyPopup(!stickyPopup);
+                    }}
+                  />
+                </Paper>
+              </Popover>
+            )}
         </div>
         <Dialog
           open={showIdleTimer}
@@ -738,6 +783,6 @@ export const Header: React.FC = props => {
           </DialogActions>
         </Dialog>
       </div>
-    </header>
+    </header >
   );
 };
