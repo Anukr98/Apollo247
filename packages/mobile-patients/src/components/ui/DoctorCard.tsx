@@ -380,7 +380,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
                 {rowData.experience} YR
-                {Number(rowData.experience) != 1 ? 'S' : ''}
+                {Number(rowData.experience) != 1 ? 'S' : ''} EXP
               </Text>
               {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
                 <Text style={styles.doctorSpecializationStyles}>
