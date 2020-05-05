@@ -42,7 +42,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     bankTxnId: String
     email: String
     CODCity: CODCity
-  }
+    orderId: String
+}
 
   type SaveMedicineOrderPaymentMqResult {
     errorCode: Int
@@ -223,8 +224,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
       new Date(),
       currentStatus
     );
-
-    if (medicinePaymentMqInput.paymentStatus === 'TXN_SUCCESS') {
+    if (
+      medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
+      medicinePaymentMqInput.paymentStatus != 'PENDING'
+    ) {
       const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
       const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
       const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME
@@ -315,15 +318,15 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+        process.env.NODE_ENV == 'development' ||
+        process.env.NODE_ENV == 'local'
         ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
