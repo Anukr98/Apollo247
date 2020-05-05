@@ -31,6 +31,7 @@ import {
   phrConsultTabClickTracking,
   phrMedicalRecordsTabClickTracking,
 } from '../../webEngageTracking';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,7 +43,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     healthRecordsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -79,7 +79,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
     },
     myAccountPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -106,6 +105,11 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         paddingTop: 56,
         paddingRight: 0,
+      },
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
   };
@@ -424,6 +428,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           isAlertOpen={isAlertOpen}
           setIsAlertOpen={setIsAlertOpen}
         />
+      </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
       </div>
       <NavigationBottom />
     </div>
