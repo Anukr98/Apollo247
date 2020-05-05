@@ -220,8 +220,8 @@ const makeAppointmentPayment: Resolver<
     //autosubmit case sheet code starts
     const currentTime = new Date();
     const timeDifference = differenceInMinutes(
-      currentTime,
-      processingAppointment.appointmentDateTime
+      processingAppointment.appointmentDateTime,
+      currentTime
     );
 
     if (
