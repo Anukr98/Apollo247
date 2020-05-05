@@ -17,6 +17,8 @@ import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { Help } from 'components/Help/Help';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,8 +30,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     searchByBrandPage: {
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
+      [theme.breakpoints.up('sm')]: {
+        backgroundColor: '#f7f8f5',
+      }
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -125,6 +128,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         height: 'calc(100vh - 185px) !important',
+      },
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
   };
@@ -407,8 +415,11 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <div className={classes.footerLinks}>
+        {onePrimaryUser ? <Help /> : <ManageProfile />}
+        <BottomLinks />
+      </div>
       <NavigationBottom />
-      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

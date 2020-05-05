@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'static',
         textAlign: 'center',
         paddingBottom: 20,
+        paddingTop: 20,
       },
     },
     bottomPopover: {
