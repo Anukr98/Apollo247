@@ -1334,6 +1334,24 @@ export const GET_NOTIFICATION = gql`
     }
   }
 `;
+export const MARK_MESSAGE_TO_UNREAD = gql`
+  mutation MarkMessageToUnread($eventId: String) {
+    markMessageToUnread(
+      eventId: $eventId
+    ) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
+    }
+  }
+`;
 export const GET_SECRETARY_LIST = gql`
   query GetSecretaryList {
     getSecretaryList {

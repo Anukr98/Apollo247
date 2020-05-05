@@ -7,7 +7,6 @@ import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import { SignIn } from "components/SignIn";
 import { HelpPopup } from "components/Help";
-import { Notifications } from "components/Notifications";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -290,7 +289,7 @@ export const Header: React.FC = props => {
     currentPatient.id
       ? useQuery(GET_NOTIFICATION, {
           variables: {
-            toId: "74c93b2e-8aab-4b6c-8391-5407f4afb833",
+            toId: "222e55b1-48b4-4b87-99ad-98a4c3619602",
             startDate: "2020-04-30",
             endDate: "2020-05-07"
           },
