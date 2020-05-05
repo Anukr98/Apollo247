@@ -30,6 +30,7 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 import { gtmTracking } from '../gtmTracking'
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -54,7 +55,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -180,6 +180,11 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMascot: {
       [theme.breakpoints.down('xs')]: {
         visibility: 'hidden',
+      },
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
   };
@@ -769,6 +774,9 @@ export const DoctorsLanding: React.FC = (props) => {
           </>
         )}
       </LocationContext.Consumer>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
     </div>
   );
 };

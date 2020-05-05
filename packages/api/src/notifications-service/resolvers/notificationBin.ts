@@ -21,7 +21,6 @@ import { sendNotificationSMS } from 'notifications-service/resolvers/notificatio
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -66,6 +65,10 @@ export const notificationBinTypeDefs = gql`
     notificationData: [GetNotificationsResponse]
   }
 
+  type NotificationBinDataSet {
+    notificationData: [NotificationBinData]
+  }
+
   type GetNotificationsResponse {
     appointmentId: String
     doctorId: String
@@ -84,7 +87,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(eventId: String): NotificationDataSet
+    markMessageToUnread(eventId: String): NotificationBinDataSet
   }
 `;
 
@@ -310,7 +313,11 @@ const getNotifications: Resolver<
   { toId: string; startDate: Date; endDate: Date },
   NotificationsServiceContext,
   { notificationData: GetNotificationsResponse[] }
-> = async (parent, args, { consultsDb, patientsDb }) => {
+> = async (parent, args, { consultsDb, patientsDb, doctorsDb }) => {
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(args.toId);
+  if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
@@ -322,6 +329,7 @@ const getNotifications: Resolver<
     startDate,
     endDate
   );
+  if (!notificationData.length) return { notificationData: [] };
 
   //Mapping the appoint id with respect to response object
   const appointmentIds: string[] = [];
