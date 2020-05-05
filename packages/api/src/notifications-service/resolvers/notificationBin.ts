@@ -313,7 +313,11 @@ const getNotifications: Resolver<
   { toId: string; startDate: Date; endDate: Date },
   NotificationsServiceContext,
   { notificationData: GetNotificationsResponse[] }
-> = async (parent, args, { consultsDb, patientsDb }) => {
+> = async (parent, args, { consultsDb, patientsDb, doctorsDb }) => {
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(args.toId);
+  if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
@@ -325,6 +329,7 @@ const getNotifications: Resolver<
     startDate,
     endDate
   );
+  if (!notificationData.length) return { notificationData: [] };
 
   //Mapping the appoint id with respect to response object
   const appointmentIds: string[] = [];
