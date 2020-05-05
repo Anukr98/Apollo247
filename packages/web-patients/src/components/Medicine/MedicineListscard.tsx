@@ -8,7 +8,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -243,6 +243,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                   quantity: parseInt(e.target.value),
                                   special_price: medicine.special_price,
                                   mou: medicine.mou,
+                                  isShippable: true,
                                 });
                             }}
                           >
@@ -271,7 +272,12 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                               title="Remove item from Cart"
                               onClick={() => {
                                 /**Gtm code start  */
-                                gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: medicine.name, value: medicine.price })
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Remove From Cart',
+                                  label: medicine.name,
+                                  value: medicine.price,
+                                });
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
                               }}
@@ -301,9 +307,15 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 type_id: medicine.type_id,
                                 mou: medicine.mou,
                                 quantity: selectedPackedQty,
+                                isShippable: true,
                               };
                               /**Gtm code start  */
-                              gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: medicine.name, value: medicine.price })
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: 'Add to Cart',
+                                label: medicine.name,
+                                value: medicine.price,
+                              });
                               /**Gtm code End  */
                               addCartItem && addCartItem(cartItem);
                             }}

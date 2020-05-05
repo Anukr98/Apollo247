@@ -7,7 +7,7 @@ import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking'
+import { gtmTracking } from '../../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -227,9 +227,15 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             type_id: hotSeller.type_id,
                             mou: hotSeller.mou,
                             quantity: 1,
+                            isShippable: true,
                           };
                           /**Gtm code start  */
-                          gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: hotSeller.name, value: hotSeller.price })
+                          gtmTracking({
+                            category: 'Pharmacy',
+                            action: 'Add to Cart',
+                            label: hotSeller.name,
+                            value: hotSeller.price,
+                          });
                           /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
                           if (index >= 0) {
@@ -245,7 +251,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       <AphButton
                         onClick={() => {
                           /**Gtm code start  */
-                          gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: hotSeller.name, value: hotSeller.price })
+                          gtmTracking({
+                            category: 'Pharmacy',
+                            action: 'Remove From Cart',
+                            label: hotSeller.name,
+                            value: hotSeller.price,
+                          });
                           /**Gtm code End  */
                           removeCartItem && removeCartItem(hotSeller.id);
                         }}
