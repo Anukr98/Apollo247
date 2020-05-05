@@ -243,12 +243,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateItemShippingStatus = (itemUpdates: any) => {
-    debugger;
-
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
-        console.log(4343, itemUpdates);
         cartItems[foundIndex].isShippable = itemUpdates.isShippable;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
@@ -260,7 +257,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
-        debugger;
         cartItems[foundIndex].quantity = itemUpdates.quantity;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
