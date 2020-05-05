@@ -1702,8 +1702,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
-    '4. Avail 1 free follow-up (Within 7 days after your first consultation.)\n',
-    '5. Chat with your doctor\n\n',
+    '4. Chat with your doctor for 7 days\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
