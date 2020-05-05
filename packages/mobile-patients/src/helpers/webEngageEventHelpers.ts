@@ -66,3 +66,20 @@ export const postPharmacyAddNewAddressCompleted = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };
+
+type PhamracyCartAddressSelectedSuccess = WebEngageEvents[WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS];
+
+export const postPhamracyCartAddressSelectedSuccess = (
+  pincode: PhamracyCartAddressSelectedSuccess['Pincode'],
+  deliveryAddress: PhamracyCartAddressSelectedSuccess['Delivery Address'],
+  success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
+  tatDisplayed?: PhamracyCartAddressSelectedSuccess['TAT Displayed']
+) => {
+  const eventAttributes: PhamracyCartAddressSelectedSuccess = {
+    'TAT Displayed': tatDisplayed,
+    'Delivery Successful': success,
+    'Delivery Address': deliveryAddress,
+    Pincode: pincode,
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
+};
