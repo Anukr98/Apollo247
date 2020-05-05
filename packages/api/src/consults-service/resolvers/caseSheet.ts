@@ -764,13 +764,10 @@ const modifyCaseSheet: Resolver<
 
     if (familyHistoryRecord == null) {
       //create
-      await familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
+      familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
-      await familyHistoryRepo.updatePatientFamilyHistory(
-        familyHistoryRecord.id,
-        familyHistoryInputs
-      );
+      familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
   //familyHistory upsert ends
@@ -785,17 +782,17 @@ const modifyCaseSheet: Resolver<
         inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined;
     }
     if (inputArguments.occupationHistory) {
-      lifeStyleInputs.occupationHistory = lifeStyleInputs.occupationHistory;
+      lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
     }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
     const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
 
     if (lifeStyleRecord == null) {
       //create
-      await lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
+      lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
     } else {
       //update
-      await lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+      lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
     }
   }
   //lifestyle upsert ends
@@ -851,13 +848,10 @@ const modifyCaseSheet: Resolver<
   );
   if (medicalHistoryRecord == null) {
     //create
-    await medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
   } else {
     //update
-    await medicalHistoryRepo.updatePatientMedicalHistory(
-      medicalHistoryRecord.id,
-      medicalHistoryInputs
-    );
+    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
   }
 
   getCaseSheetData.updatedDate = new Date();
