@@ -31,6 +31,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
+import { BottomLinks } from 'components/BottomLinks';
 
 type Params = { id: string };
 
@@ -48,7 +49,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     doctorDetailsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -212,6 +212,11 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -88,
       zIndex: 999,
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -337,6 +342,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </div>
             </Scrollbars>
           </div>
+        </div>
+        <div className={classes.footerLinks}>
+          <BottomLinks />
         </div>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (

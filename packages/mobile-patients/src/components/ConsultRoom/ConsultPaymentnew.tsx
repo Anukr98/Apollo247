@@ -2,8 +2,10 @@ import {
   Alert,
   BackHandler,
   NavState,
+  Platform,
   StyleSheet,
   View,
+  KeyboardAvoidingView,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
@@ -34,6 +36,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
+  let WebViewRef: any;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -79,6 +82,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     console.log(url);
     return (
       <WebView
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
@@ -91,19 +95,21 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   };
 
   const handleBack = () => {
-    Alert.alert('Alert', 'Are you sure you want to cancel the transaction?', [
+    Alert.alert('Alert', 'Are you sure you want to choose a different payment mode?', [
       { text: 'No' },
       {
         text: 'Yes',
         onPress: () => {
-          props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-            orderId: appointmentId,
-            price: price,
-            doctorName: doctorName,
-            appointmentDateTime: appointmentInput.appointmentDateTime,
-            appointmentType: appointmentInput.appointmentType,
-            status: 'PENDING',
-          });
+          WebViewRef && WebViewRef.stopLoading();
+          props.navigation.goBack();
+          // props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+          //   orderId: appointmentId,
+          //   price: price,
+          //   doctorName: doctorName,
+          //   appointmentDateTime: appointmentInput.appointmentDateTime,
+          //   appointmentType: appointmentInput.appointmentType,
+          //   status: 'PENDING',
+          // });
         },
       },
     ]);
@@ -114,8 +120,12 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-
-      <View style={styles.container}>{renderwebView()}</View>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+      >
+        {renderwebView()}
+      </KeyboardAvoidingView>
       {loading && <Spinner />}
     </View>
   );
