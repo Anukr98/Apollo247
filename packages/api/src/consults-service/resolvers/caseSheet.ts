@@ -247,6 +247,8 @@ export const caseSheetTypeDefs = gql`
     status: String
     symptoms: [SymptomList]
     updatedDate: DateTime
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type Diagnosis {
@@ -400,6 +402,7 @@ export const caseSheetTypeDefs = gql`
 
   type PatientLifeStyle {
     description: String
+    occupationHistory: String
   }
 
   type PatientMedicalHistory {
@@ -412,6 +415,7 @@ export const caseSheetTypeDefs = gql`
     pastSurgicalHistory: String
     temperature: String
     weight: String
+    medicationHistory: String
   }
 
   type PatientHealthVault {
@@ -464,6 +468,10 @@ export const caseSheetTypeDefs = gql`
     temperature: String
     weight: String
     bp: String
+    medicationHistory: String
+    occupationHistory: String
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type PatientPrescriptionSentResponse {
@@ -643,6 +651,10 @@ type ModifyCaseSheetInput = {
   temperature: string;
   weight: string;
   bp: string;
+  medicationHistory?: string;
+  occupationHistory?: string;
+  referralSpecialtyName?: string;
+  referralDescription?: string;
 };
 
 type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
@@ -668,6 +680,16 @@ const modifyCaseSheet: Resolver<
     if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
       throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
     getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  }
+
+  if (inputArguments.referralSpecialtyName && inputArguments.referralSpecialtyName.length) {
+    getCaseSheetData.referralSpecialtyName = inputArguments.referralSpecialtyName;
+
+    if (inputArguments.referralDescription && inputArguments.referralDescription.length) {
+      getCaseSheetData.referralDescription = inputArguments.referralDescription;
+    } else {
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_DESCRIPTION);
+    }
   }
 
   if (!(inputArguments.notes === undefined)) {
@@ -754,11 +776,17 @@ const modifyCaseSheet: Resolver<
   //familyHistory upsert ends
 
   //lifestyle upsert starts
-  if (!(inputArguments.lifeStyle === undefined)) {
+  if (inputArguments.lifeStyle || inputArguments.occupationHistory) {
     const lifeStyleInputs: Partial<PatientLifeStyle> = {
       patient: patientData,
-      description: inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined,
     };
+    if (inputArguments.lifeStyle) {
+      lifeStyleInputs.description =
+        inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined;
+    }
+    if (inputArguments.occupationHistory) {
+      lifeStyleInputs.occupationHistory = lifeStyleInputs.occupationHistory;
+    }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
     const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
 
@@ -776,6 +804,10 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+
+  if (inputArguments.medicationHistory && inputArguments.medicationHistory.length) {
+    medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
+  }
 
   if (!(inputArguments.bp === undefined))
     medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
