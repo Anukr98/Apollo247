@@ -1142,9 +1142,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
     };
 
-    const getItemQuantity = (id: string)=>{
-      return cartItems.find(item=> item.id == id)!.quantity
-    }
+    const getItemQuantity = (id: string) => {
+      const foundItem = cartItems.find((item) =>item.id == id); 
+      return foundItem ? foundItem.quantity: 1;
+    };
 
     const onNotifyMeClick = () => {
       showAphAlert!({
@@ -1168,7 +1169,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
          </TouchableOpacity>
          <Text style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal:12 }}>{getItemQuantity(data.sku)}</Text>
-         <TouchableOpacity activeOpacity={1} onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku)+1)} >
+         <TouchableOpacity style={{ marginRight:20}} activeOpacity={1} onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku)+1)} >
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
          </TouchableOpacity>
         </View>
