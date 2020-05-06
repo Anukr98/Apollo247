@@ -34,7 +34,8 @@ const plugins = [
       env: process.env.NODE_ENV,
     },
     inject: true,
-  }),
+    favicon: "./favicon.svg"
+  })
 ];
 if (isLocal) {
   plugins.push(

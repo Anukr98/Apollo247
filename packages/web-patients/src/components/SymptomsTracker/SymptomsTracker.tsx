@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -24,10 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      borderRadius: '0 0 10px 10px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
-      marginBottom: 20,
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
       },
@@ -220,6 +219,11 @@ const useStyles = makeStyles((theme: Theme) => {
     signUpBar: {
       marginBottom: 20,
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -354,10 +358,11 @@ export const SymptomsTracker: React.FC = () => {
           </div>
         </div>
       </div>
-      {isSignedIn && <NavigationBottom />}
-      <div className={classes.signUpBar}>
+      <div className={classes.footerLinks}>
         <ManageProfile />
+        <BottomLinks />
       </div>
+      {isSignedIn && <NavigationBottom />}
     </div>
   );
 };

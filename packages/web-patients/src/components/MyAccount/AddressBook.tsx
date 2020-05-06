@@ -7,6 +7,7 @@ import { useCurrentPatient } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageAddressBook } from 'components/MyAccount/ManageAddressBook';
 import { LinearProgress } from '@material-ui/core';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,7 +19,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     myAccountPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -52,6 +52,11 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
       width: '100%',
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -79,6 +84,9 @@ export const AddressBook: React.FC = (props) => {
             </div>
           </div>
         </div>
+      </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
       </div>
       <NavigationBottom />
     </div>

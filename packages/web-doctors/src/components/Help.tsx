@@ -2,6 +2,7 @@ import { Theme, Typography } from '@material-ui/core';
 import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { TestCall } from './TestCall';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,6 +79,9 @@ const useStyles = makeStyles((theme: Theme) => {
     needHelp: {
       marginBottom: 20,
     },
+    testCallWrappper: {
+      borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+    },
   };
 });
 
@@ -118,6 +122,10 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       <Typography variant="h2" className={classes.needHelp}>
         need help?
       </Typography>
+      <div className={classes.testCallWrappper}>
+        <TestCall />
+      </div>
+
       {helpData &&
         helpData.length > 0 &&
         helpData.map((helpObj) => (
