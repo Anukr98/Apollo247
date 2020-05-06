@@ -29,6 +29,7 @@ type rightText = {
 export type HeaderIconProps = {
   icon: Element;
   onPress?: TouchableOpacityProps['onPress'];
+  count?: string | number;
 };
 
 export interface HeaderProps {
@@ -147,6 +148,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
                 }}
               >
                 {icon.icon}
+                {icon.count ? (
+                  <View style={styles.counterContainer}>
+                    <View style={styles.counterTextContainer}>
+                      <Text style={styles.counterText}>{icon.count}</Text>
+                    </View>
+                  </View>
+                ) : null}
               </TouchableOpacity>
             ))}
           </View>

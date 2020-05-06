@@ -1,19 +1,20 @@
 import { BottomPopUp } from '@aph/mobile-doctors/src/components/ui/BottomPopUp';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import UIElementsProviderStyles from '@aph/mobile-doctors/src/components/ui/UIElementsProvider.styles';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   BackHandler,
+  Keyboard,
   StyleProp,
   Text,
+  TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
-  Keyboard,
-  TextStyle,
 } from 'react-native';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import UIElementsProviderStyles from '@aph/mobile-doctors/src/components/ui/UIElementsProvider.styles';
 
 const styles = UIElementsProviderStyles;
 
@@ -22,6 +23,8 @@ export interface UIElementsContextProps {
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
+  showNeedHelp: boolean;
+  setShowNeedHelp: (show: boolean) => void;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -29,6 +32,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
+  showNeedHelp: false,
+  setShowNeedHelp: (show) => {},
 });
 
 type AphAlertCTAs = {
@@ -56,6 +61,7 @@ export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
   const [alertParams, setAlertParams] = useState<AphAlertParams>({});
+  const [showNeedHelp, setShowNeedHelp] = useState<boolean>(false);
 
   useEffect(() => {
     if (isAlertVisible || loading) {
@@ -161,7 +167,9 @@ export const UIElementsProvider: React.FC = (props) => {
     setAlertVisible(false);
     setAlertParams({});
   };
-
+  const renderNeedHelp = () => {
+    return showNeedHelp && <NeedHelpCard onPress={() => setShowNeedHelp(false)} />;
+  };
   return (
     <UIElementsContext.Provider
       value={{
@@ -169,11 +177,14 @@ export const UIElementsProvider: React.FC = (props) => {
         setLoading,
         showAphAlert,
         hideAphAlert,
+        showNeedHelp,
+        setShowNeedHelp,
       }}
     >
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1 }} pointerEvents={loading ? 'none' : 'auto'}>
           {props.children}
+          {renderNeedHelp()}
           {renderLoading()}
         </View>
         {renderAphAlert()}

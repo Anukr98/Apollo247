@@ -2,11 +2,77 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { ModifyCaseSheetInput, Gender, PATIENT_ADDRESS_TYPE, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: modifyCaseSheet
 // ====================================================
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails_familyHistory {
+  __typename: "FamilyHistory";
+  description: string | null;
+  relation: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails_healthVault {
+  __typename: "HealthVault";
+  imageUrls: string | null;
+  reportUrls: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails_lifeStyle {
+  __typename: "LifeStyle";
+  description: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientAddress {
+  __typename: "PatientAddress";
+  id: string;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  mobileNumber: string | null;
+  state: string | null;
+  zipcode: string | null;
+  landmark: string | null;
+  createdDate: any | null;
+  updatedDate: any | null;
+  addressType: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHistory {
+  __typename: "MedicalHistory";
+  bp: string | null;
+  dietAllergies: string | null;
+  drugAllergies: string | null;
+  height: string | null;
+  menstrualHistory: string | null;
+  pastMedicalHistory: string | null;
+  pastSurgicalHistory: string | null;
+  temperature: string | null;
+  weight: string | null;
+}
+
+export interface modifyCaseSheet_modifyCaseSheet_patientDetails {
+  __typename: "PatientFullDetails";
+  allergies: string | null;
+  dateOfBirth: any | null;
+  emailAddress: string | null;
+  firstName: string | null;
+  familyHistory: (modifyCaseSheet_modifyCaseSheet_patientDetails_familyHistory | null)[] | null;
+  gender: Gender | null;
+  healthVault: (modifyCaseSheet_modifyCaseSheet_patientDetails_healthVault | null)[] | null;
+  id: string;
+  lastName: string | null;
+  lifeStyle: (modifyCaseSheet_modifyCaseSheet_patientDetails_lifeStyle | null)[] | null;
+  mobileNumber: string | null;
+  patientAddress: (modifyCaseSheet_modifyCaseSheet_patientDetails_patientAddress | null)[] | null;
+  patientMedicalHistory: modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHistory | null;
+  photoUrl: string | null;
+  uhid: string | null;
+  relation: Relation | null;
+}
 
 export interface modifyCaseSheet_modifyCaseSheet_appointment_appointmentDocuments {
   __typename: "AppointmentDocuments";
@@ -136,6 +202,7 @@ export interface modifyCaseSheet_modifyCaseSheet_symptoms {
 
 export interface modifyCaseSheet_modifyCaseSheet {
   __typename: "CaseSheet";
+  patientDetails: modifyCaseSheet_modifyCaseSheet_patientDetails | null;
   appointment: modifyCaseSheet_modifyCaseSheet_appointment | null;
   blobName: string | null;
   createdDate: any | null;

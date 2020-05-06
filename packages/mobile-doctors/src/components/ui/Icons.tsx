@@ -773,3 +773,11 @@ export const FileBig: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/ic_file_big.png')}
   />
 );
+
+export const ChatWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/chat_white.png')}
+  />
+);

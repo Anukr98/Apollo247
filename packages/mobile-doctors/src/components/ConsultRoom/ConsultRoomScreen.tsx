@@ -58,13 +58,14 @@ import {
   GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_familyHistory,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
-  GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
-  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
-  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
-  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
   APPOINTMENT_TYPE,
@@ -86,12 +87,12 @@ import {
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
-import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { callPermissions, g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
 import Pubnub, { HereNowResponse } from 'pubnub';
@@ -111,10 +112,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import KeepAwake from 'react-native-keep-awake';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
-import KeepAwake from 'react-native-keep-awake';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -138,10 +138,10 @@ export interface ConsultRoomScreenProps
     DoctorId: string;
     PatientId: string;
     PatientConsultTime: string;
-    PatientInfoAll: PatientInfoData | GetCaseSheet_getCaseSheet_patientDetails | null;
     AppId: string;
     Appintmentdatetime: string; //Date;
     AppoinementData: any;
+    activeTabIndex?: number;
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   activeTabIndex?: number;
@@ -170,7 +170,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
-  const [PatientInfoAll, setPatientInfoAll] = useState(props.navigation.getParam('PatientInfoAll'));
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -185,8 +184,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [doctorId, setdoctorId] = useState(props.navigation.getParam('DoctorId'));
   const [patientId, setpatientId] = useState(props.navigation.getParam('PatientId'));
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
+  const preselectTabIndex = props.activeTabIndex || props.navigation.getParam('activeTabIndex');
   const [activeTabIndex, setActiveTabIndex] = useState(
-    props.activeTabIndex ? props.activeTabIndex.toString() : tabsData[0].title
+    preselectTabIndex ? tabsData[preselectTabIndex].title : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -323,19 +323,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
   >([]);
   const [lifeStyleData, setLifeStyleData] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle | null)[] | null
   >();
   const [
     medicalHistory,
     setMedicalHistory,
-  ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
+  ] = useState<GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory | null>();
   const [familyValues, setFamilyValues] = useState<string>('');
   const [
     patientDetails,
     setPatientDetails,
-  ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>();
+  ] = useState<GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null>();
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault | null)[] | null
   >([]);
   const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
   const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
@@ -355,7 +355,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
 
   const getFamilyHistoryText = (
-    familyValues: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+    familyValues:
+      | (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_familyHistory | null)[]
+      | null
   ) => {
     if (familyValues) {
       let familyHistory: string = '';
@@ -390,21 +392,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
     return famHist;
   };
-  const setData = (
-    caseSheet: GetCaseSheet_getCaseSheet | null | undefined,
-    isModified?: boolean
-  ) => {
-    if (!isModified) {
-      setPatientInfoAll(g(caseSheet, 'patientDetails') || null);
-      setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
-      setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
-      setFamilyValues(
-        getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null)
-      );
-      setPatientDetails(g(caseSheet, 'patientDetails') || null);
-      setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
-      setPastList(g(caseSheet, 'pastAppointments') || null);
-    }
+  const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    setLifeStyleData(g(caseSheet, 'caseSheetDetails', 'patientDetails', 'lifeStyle') || null);
+    setMedicalHistory(
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'patientMedicalHistory') || null
+    );
+    setFamilyValues(
+      getFamilyHistoryText(
+        g(caseSheet, 'caseSheetDetails', 'patientDetails', 'familyHistory') || null
+      )
+    );
+    setPatientDetails(g(caseSheet, 'caseSheetDetails', 'patientDetails') || null);
+    setHealthWalletArrayData(
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
+    );
+    setPastList(g(caseSheet, 'pastAppointments') || null);
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
     setappointmentData(g(caseSheet, 'caseSheetDetails', 'appointment'));
     setdoctorId(g(caseSheet, 'caseSheetDetails', 'doctorId') || '');
@@ -641,7 +643,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
           } as GetCaseSheet_getCaseSheet | null | undefined;
           setcaseSheet(modifiedData);
-          setData(modifiedData, true);
+          setData(modifiedData);
           setIsAutoSaved(autoSave);
           if (callBack) {
             setLoading && setLoading(true);
@@ -1651,6 +1653,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setUrl={setUrl}
                   isDropdownVisible={isDropdownVisible}
                   setDropdownVisible={setDropdownVisible}
+                  patientDetails={patientDetails}
                 />
               </View>
             )}
@@ -2266,7 +2269,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setAudioCallStyles={setAudioCallStyles}
             cameraPosition={cameraPosition}
             setCameraPosition={setCameraPosition}
-            firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
+            firstName={patientDetails ? patientDetails.firstName || '' : ''}
             profileImage={patientDetails ? patientDetails.photoUrl || '' : ''}
             chatReceived={chatReceived}
             callAccepted={callAccepted}
@@ -2333,7 +2336,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             callSeconds={callSeconds}
             minutes={minutes}
             seconds={seconds}
-            firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
+            firstName={patientDetails ? patientDetails.firstName || '' : ''}
             subscriberEventHandlers={subscriberEventHandlers}
             sessionEventHandlers={sessionEventHandlers}
             sessionId={sessionId}

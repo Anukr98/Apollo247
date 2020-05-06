@@ -33,4 +33,25 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  counterContainer: {
+    borderRadius: 100,
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    backgroundColor: theme.colors.WHITE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 1,
+  },
+  counterTextContainer: {
+    height: 11,
+    width: 11,
+    borderRadius: 100,
+    backgroundColor: theme.colors.NOTIFICATION_DOT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  counterText: {
+    ...theme.viewStyles.text('SB', 7, theme.colors.WHITE, 1, 0, 0),
+  },
 });

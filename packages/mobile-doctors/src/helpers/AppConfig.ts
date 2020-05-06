@@ -6,36 +6,37 @@ export enum AppEnv {
   VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+//Common keys
+const commonConfigs = {
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  PRO_TOKBOX_KEY: '46429002',
+  CHAT_ENCRYPTION_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
+};
 
 //Development;
 const ConfigurationDev = {
+  ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-  PRO_TOKBOX_KEY: '46429002',
   iOS_Version: '1.014',
   Android_Version: '1.014',
 };
+
 //QA
 const ConfigurationQA = {
+  ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-  PRO_TOKBOX_KEY: '46429002',
   iOS_Version: '1.014',
   Android_Version: '1.014',
 };
+
 //Prod
 const ConfigurationProd = {
+  ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/',
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   iOS_Version: '1.000',

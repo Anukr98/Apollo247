@@ -204,6 +204,55 @@ export const END_APPOINTMENT_SESSION = gql`
 export const MODIFY_CASESHEET = gql`
   mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
+      patientDetails {
+        allergies
+        dateOfBirth
+        emailAddress
+        firstName
+        familyHistory {
+          description
+          relation
+        }
+        gender
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+        id
+        lastName
+        lifeStyle {
+          description
+        }
+        mobileNumber
+        patientAddress {
+          id
+          addressLine1
+          addressLine2
+          city
+          mobileNumber
+          state
+          zipcode
+          landmark
+          createdDate
+          updatedDate
+          addressType
+          otherAddressType
+        }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
+        photoUrl
+        uhid
+        relation
+      }
       appointment {
         id
         appointmentDateTime
@@ -512,6 +561,55 @@ export const GET_CASESHEET = gql`
         patientId
         sentToPatient
         status
+        patientDetails {
+          allergies
+          dateOfBirth
+          emailAddress
+          firstName
+          familyHistory {
+            description
+            relation
+          }
+          gender
+          healthVault {
+            imageUrls
+            reportUrls
+          }
+          id
+          lastName
+          lifeStyle {
+            description
+          }
+          mobileNumber
+          patientAddress {
+            id
+            addressLine1
+            addressLine2
+            city
+            mobileNumber
+            state
+            zipcode
+            landmark
+            createdDate
+            updatedDate
+            addressType
+            otherAddressType
+          }
+          patientMedicalHistory {
+            bp
+            dietAllergies
+            drugAllergies
+            height
+            menstrualHistory
+            pastMedicalHistory
+            pastSurgicalHistory
+            temperature
+            weight
+          }
+          photoUrl
+          uhid
+          relation
+        }
         appointment {
           id
           appointmentDateTime
@@ -1250,6 +1348,57 @@ export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
       status
+    }
+  }
+`;
+
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const MARK_MESSAGE_UNREAD = gql`
+  mutation markMessageToUnread($eventId: String) {
+    markMessageToUnread(eventId: $eventId) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const GET_NOTIFICATIONS = gql`
+  query getNotifications($toId: String!, $startDate: Date, $endDate: Date) {
+    getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
     }
   }
 `;

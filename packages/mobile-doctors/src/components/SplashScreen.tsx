@@ -56,7 +56,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 DoctorId: '',
                 PatientId: '',
                 PatientConsultTime: null,
-                PatientInfoAll: '',
                 Appintmentdatetime: '',
                 AppoinementData: '',
               });
