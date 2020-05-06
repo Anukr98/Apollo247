@@ -51,13 +51,12 @@ import {
   GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
-  GetCaseSheet_getCaseSheet_patientDetails,
-  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
-  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
-  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
-  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
@@ -82,7 +81,6 @@ import {
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -152,27 +150,43 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setPastList: React.Dispatch<
     React.SetStateAction<(GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null>
   >;
-  lifeStyleData: (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null | undefined;
+  lifeStyleData:
+    | (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle | null)[]
+    | null
+    | undefined;
   setLifeStyleData: React.Dispatch<
     React.SetStateAction<
-      (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null | undefined
+      | (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle | null)[]
+      | null
+      | undefined
     >
   >;
-  medicalHistory: GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null | undefined;
+  medicalHistory:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory
+    | null
+    | undefined;
   setMedicalHistory: React.Dispatch<
     React.SetStateAction<
-      GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null | undefined
+      | GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory
+      | null
+      | undefined
     >
   >;
   familyValues: string;
   setFamilyValues: React.Dispatch<React.SetStateAction<string>>;
-  patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null | undefined;
+  patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
   setPatientDetails: React.Dispatch<
-    React.SetStateAction<GetCaseSheet_getCaseSheet_patientDetails | null | undefined>
+    React.SetStateAction<
+      GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined
+    >
   >;
-  healthWalletArrayData: (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null;
+  healthWalletArrayData:
+    | (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault | null)[]
+    | null;
   setHealthWalletArrayData: React.Dispatch<
-    React.SetStateAction<(GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null>
+    React.SetStateAction<
+      (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault | null)[] | null
+    >
   >;
   tests: {
     itemname: string;
@@ -834,7 +848,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   height: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               }
             )}
             {renderFields(
@@ -844,7 +858,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   weight: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               }
             )}
             {renderFields(
@@ -854,7 +868,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   bp: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               }
             )}
             {renderFields(
@@ -864,7 +878,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   temperature: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               }
             )}
           </View>
@@ -889,7 +903,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   pastMedicalHistory: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
             )}
@@ -900,7 +914,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   drugAllergies: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
             )}
@@ -911,7 +925,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   dietAllergies: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
             )}
@@ -927,7 +941,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   }
                 });
                 setLifeStyleData(
-                  _lifeStyleData as GetCaseSheet_getCaseSheet_patientDetails_lifeStyle[]
+                  _lifeStyleData as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]
                 );
               },
               true
@@ -939,7 +953,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   menstrualHistory: text,
-                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
             )}

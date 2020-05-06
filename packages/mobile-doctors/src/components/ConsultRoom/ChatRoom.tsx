@@ -36,6 +36,7 @@ import {
 import { Image as ImageNative, Image } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 
 const { height, width } = Dimensions.get('window');
 
@@ -81,12 +82,13 @@ export interface ChatRoomProps extends NavigationScreenProps {
   isDropdownVisible: boolean;
   setDropdownVisible: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
+  patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
   const client = useApolloClient();
   const { setLoading } = useUIElements();
-  const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
+  const { patientDetails } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
 
   const doctorId = props.navigation.getParam('DoctorId');
@@ -96,8 +98,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
 
-  const patientImage = PatientInfoAll && (
-    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+  const patientImage = patientDetails && (
+    <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
   );
   const { messages } = props;
 
@@ -481,7 +483,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 >
                   {leftComponent === 1 ? (
-                    PatientInfoAll.photoUrl ? (
+                    patientDetails && patientDetails.photoUrl ? (
                       patientImage
                     ) : (
                       <UserPlaceHolder style={styles.imageStyle} />
@@ -551,7 +553,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 >
                   {leftComponent === 1 ? (
-                    PatientInfoAll.photoUrl ? (
+                    patientDetails && patientDetails.photoUrl ? (
                       patientImage
                     ) : (
                       <UserPlaceHolder style={styles.imageStyle} />
@@ -609,7 +611,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {leftComponent === 1 ? (
-                PatientInfoAll.photoUrl ? (
+                patientDetails && patientDetails.photoUrl ? (
                   patientImage
                 ) : (
                   <UserPlaceHolder style={styles.imageStyle} />
@@ -795,9 +797,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 lineHeight: 16,
               }}
             >
-              {`${strings.consult_room.your_appnt_with} ${PatientInfoAll.firstName} ${
-                strings.consult_room.is_scheduled_to_start
-              } ${moment(Appintmentdatetime).format('hh.mm A')}`}
+              {`${strings.consult_room.your_appnt_with} ${patientDetails &&
+                patientDetails.firstName} ${strings.consult_room.is_scheduled_to_start} ${moment(
+                Appintmentdatetime
+              ).format('hh.mm A')}`}
             </Text>
           </View>
         )}

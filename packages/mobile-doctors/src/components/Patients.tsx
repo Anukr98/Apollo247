@@ -31,6 +31,7 @@ import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { styles } from '@aph/mobile-doctors/src/components/Patients.styles';
 import { callPermissions } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 
 export interface PatientsProps extends NavigationScreenProps {}
 
@@ -80,27 +81,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
   useEffect(() => {
     ShowAllTypeData(patientLogType.All, sortingList[0].key);
   }, []);
-  const renderMainHeader = () => {
-    return (
-      <Header
-        leftIcons={[
-          {
-            icon: <ApploLogo />,
-          },
-        ]}
-        rightIcons={[
-          {
-            icon: <RoundIcon />,
-            onPress: () => setshowNeedHelp(true),
-          },
-          // {
-          //   icon: <Notification />,
-          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          // },
-        ]}
-      />
-    );
-  };
+
   const _scrolled = () => {
     setflatListReady(true);
   };
@@ -249,7 +230,6 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                         DoctorId: (doctorDetails && doctorDetails.id) || '',
                         PatientId: item.patientid,
                         PatientConsultTime: null,
-                        PatientInfoAll: item.patientInfo,
                         AppId:
                           (item.appointmentids &&
                             item.appointmentids.length > 0 &&
@@ -302,7 +282,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           keyExtractor={(_, index) => index.toString()}
           ListHeaderComponent={
             <>
-              {renderMainHeader()}
+              <CommonNotificationHeader navigation={props.navigation} />
               <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
               {renderTabs()}
               {allData && allData.length == 0 && !showSpinner && (

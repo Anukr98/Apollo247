@@ -171,7 +171,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           DoctorId: g(caseSheet, 'doctorId'),
           PatientId: g(caseSheet, 'patientId'),
           PatientConsultTime: null,
-          PatientInfoAll: null,
           Appintmentdatetime: g(caseSheet, 'appointment', 'appointmentDateTime'),
           AppointmentStatus: g(caseSheet, 'appointment', 'status'),
           AppoinementData: g(caseSheet, 'appointment'),
@@ -202,7 +201,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           DoctorId: g(caseSheet, 'caseSheetDetails', 'doctorId'),
           PatientId: g(caseSheet, 'caseSheetDetails', 'patientId'),
           PatientConsultTime: null,
-          PatientInfoAll: g(caseSheet, 'patientDetails'),
           Appintmentdatetime: g(
             caseSheet,
             'caseSheetDetails',

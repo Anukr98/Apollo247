@@ -314,7 +314,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             DoctorId: doctorId,
                             PatientId: patientId,
                             PatientConsultTime: null,
-                            PatientInfoAll: PatientInfo,
                             AppId: appId,
                             Appintmentdatetime: i.appointmentDateTime,
                             AppointmentStatus: i.status,
