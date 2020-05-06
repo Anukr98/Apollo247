@@ -37,8 +37,7 @@ module.exports = async (req, res, next) => {
 
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-
-        console.log(medicineOrderQuery(payload));
+        logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
         // this needs to be altered later.
         const requestJSON = {
             query: medicineOrderQuery(payload)
@@ -46,7 +45,7 @@ module.exports = async (req, res, next) => {
 
         /// write medicineoirder
         const response = await axios.post(process.env.API_URL, requestJSON);
-        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq -  ${JSON.stringify(response.data)}`);
+        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
             logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`)
@@ -54,24 +53,32 @@ module.exports = async (req, res, next) => {
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            let redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            if (transactionStatus === 'failed') {
+                redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
+            }
             res.redirect(redirectUrl);
         } else {
-            res.redirect(`/mob?status=${transactionStatus}`);
+            if (transactionStatus === 'failed') {
+                res.redirect(`/mob-error?status=${transactionStatus}`);
+            }
+            else {
+                res.redirect(`/mob?status=${transactionStatus}`);
+            }
+
         }
     } catch (e) {
-
         if (e.response && e.response.data) {
             logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
         } else {
-            logger.error(`${orderId} - paymed-response -  ${e.stack}`);
+            logger.error(`${orderId} - paymed-response - ${e.stack}`);
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
-            res.redirect(`/mob?status=${transactionStatus}`);
+            res.redirect(`/mob-error?status=${transactionStatus}`);
         }
     }
 }
