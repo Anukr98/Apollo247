@@ -14,8 +14,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { SymptomsTrackerLoggedOutForm } from 'components/SymptomsTracker/SymptomsTrackerLoggedOutUserForm';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphCustomDropdown } from '@aph/web-ui-components';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import { AphButton } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
@@ -28,13 +27,6 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       padding: 0,
-    },
-    inputWrapper: {
-      '& input': {
-        fontSize: 16,
-        fontWeight: 'bold',
-        fontFamily: 'IBM Plex Sans,sans-serif',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -282,7 +274,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
-    },
+    },    
   };
 });
 
@@ -323,45 +315,7 @@ const customContainerStyle = {
       fontWeight: 500,
       fontFamily: 'IBM Plex Sans,sans-serif',
     },
-  },
-};
-
-export const CustomSearchComponent: React.FC = (props) => {
-  const classes = useStyles({});
-  const [searchInput, setSearchInput] = useState<string>('');
-  const [render, setRender] = useState<boolean>(false);
-  const AutoComplete = $Generator({ type: 'autoComplete' });
-  return (
-    <>
-      <AphTextField
-        className={classes.inputWrapper}
-        placeholder={'Search Symptoms'}
-        value={searchInput}
-        onChange={(e) => {
-          setRender(true);
-          setSearchInput(e.target.value);
-        }}
-        onKeyPress={async (e) => {
-          if (e.key === 'Enter') {
-            setRender(false);
-            await $Generator({ type: 'inputSearch', payload: searchInput });
-          }
-        }}
-      />
-      <AutoComplete
-        query={searchInput}
-        onSelect={() => {
-          setRender(true);
-          return;
-        }}
-      />
-      {searchInput.length > 0 && !render && (
-        <FormHelperText component="div" error={true}>
-          Sorry, we couldn't find the exact symptom :(
-        </FormHelperText>
-      )}
-    </>
-  );
+  },  
 };
 
 // type Patient = GetCurrentPatients_getCurrentPatients_patients;
@@ -435,7 +389,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [loggedOutUserDetailPopover, setLoggedOutUserDetailPopover] = useState<boolean>(false);
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isRedirect, setIsRedirect] = useState<boolean>(false);
+  const [isRedirect, setIsRedirect] = useState(false);
 
   const getAge = (dob: string) =>
     moment()
@@ -446,12 +400,12 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
 
-  useEffect(() => {
-    if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+  useEffect(()=>{
+    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(setUserGender(currentPatient.gender));
     }
-  }, [isSignedIn, currentPatient]);
+  }, [isSignedIn, currentPatient])
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
@@ -627,12 +581,11 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 <div className={classes.symptomsTracker}>
                   <NavigatorSDK
                     clientId={process.env.PRAKTICE_SDK_KEY}
-                    searchComponent={() => <CustomSearchComponent />}
                     key={(currentPatient && currentPatient.id) || 'guest'}
                     patientAge={patientAge}
                     patientGender={patientGender}
                     sdkContainerStyle={customContainerStyle}
-                    // searchDoctorlistner={customListner}
+                    searchDoctorlistner={customListner}
                     showDocBtn={() => (
                       <CustomComponent
                         setDoctorPopOver={setDoctorPopOver}
