@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fff',
       color: '#fc9916 !important',
       fontSize: 13,
+      width: 100,
     },
     mascotIcon: {
       position: 'absolute',
@@ -146,12 +147,11 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
         FormikProps<FormValues>) => {
           const showError = (fieldName: keyof FormValues) =>
             !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
-          const requiredFields: (keyof FormValues)[] = ['firstName', 'emailAddress'];
-          const formIsUntouched = !dirty;
+          const requiredFields: (keyof FormValues)[] = ['emailAddress'];
           const formHasErrors = !_isEmpty(errors);
+          const formIsUntouched = !dirty;
           const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
           const submitIsDisabled = formIsUntouched || formHasErrors || someRequiredFieldsMissing;
-
           return (
             <Form>
               <div className={classes.mascotIcon}>
@@ -163,14 +163,14 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
                     <Field
                       name="emailAddress"
                       validate={(email: string) =>
-                        _isEmpty(email) || isEmailValid(email) ? undefined : 'Invalid email address'
+                        isEmailValid(email) ? undefined : 'Invalid email address'
                       }
                       render={({ field }: FieldProps<{ emailAddress: string }>) => (
                         <FormControl className={classes.formControl} fullWidth>
                           <AphTextField
                             {...field}
-                            label="Email Address"
-                            placeholder="name@email.com"
+                            label="Email*"
+                            placeholder="Add your email"
                             error={showError('emailAddress')}
                           />
                           {showError('emailAddress') ? (
@@ -194,7 +194,9 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
 
                     <Field
                       name="firstName"
-                      validate={(name: string) => (isNameValid(name) ? undefined : 'Invalid name')}
+                      validate={(name: string) =>
+                        _isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name'
+                      }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
                         <FormControl
                           className={`${classes.formControl} ${classes.noMargin}`}
