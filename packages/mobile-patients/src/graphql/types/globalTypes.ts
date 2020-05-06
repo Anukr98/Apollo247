@@ -105,9 +105,15 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  CLINIC = "CLINIC",
+  CRADLE = "CRADLE",
+  DOCTOR_CONNECT = "DOCTOR_CONNECT",
+  FERTILITY = "FERTILITY",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
+  SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
+  SUGAR = "SUGAR",
 }
 
 export enum FEEDBACKTYPE {
@@ -332,7 +338,9 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
@@ -373,6 +381,19 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum notificationEventName {
+  APPOINTMENT = "APPOINTMENT",
+}
+
+export enum notificationStatus {
+  READ = "READ",
+  UNREAD = "UNREAD",
+}
+
+export enum notificationType {
+  CHAT = "CHAT",
 }
 
 export interface AddMedicalRecordInput {
@@ -627,6 +648,16 @@ export interface MedicinePaymentMqInput {
   bankTxnId?: string | null;
   email?: string | null;
   CODCity?: CODCity | null;
+}
+
+export interface MessageInput {
+  fromId: string;
+  toId: string;
+  eventName: notificationEventName;
+  eventId: string;
+  message: string;
+  status: notificationStatus;
+  type: notificationType;
 }
 
 export interface OtpVerificationInput {
