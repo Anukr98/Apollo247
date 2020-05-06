@@ -20,83 +20,6 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.dark,
       },
     },
-    refFormControl: {
-      marginBottom: 20,
-      marginTop: -5,
-      width: '100%',
-      position: 'relative',
-      '& label': {
-        fontSize: 12,
-        fontWeight: 500,
-        color: theme.palette.secondary.dark,
-      },
-    },
-    signUpPop: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-        borderRadius: 0,
-      },
-      '& p': {
-        fontSize: 17,
-        fontWeight: 500,
-        lineHeight: 1.41,
-        color: theme.palette.secondary.main,
-        marginTop: 20,
-      },
-    },
-    referralCodeWrapper: {
-      backgroundColor: '#0087ba',
-      padding: 20,
-      paddingBottom: 0,
-      color: '#fff',
-      margin: '0 -20px',
-      display: 'flex',
-      alignItems: 'flex-start',
-    },
-    enterCode: {
-      width: '100%',
-      paddingLeft: 20,
-    },
-    inputField: {
-      marginTop: 8,
-      '& input': {
-        color: '#fff',
-        paddingRight: 35,
-      },
-      '& > div': {
-        borderColor: '#fff !important',
-        '&:before': {
-          borderBottom: '2px solid #fff !important',
-        },
-        '&:not(:focus)': {
-          '&:before': {
-            borderColor: '#fff !important',
-          },
-          '&:after': {
-            borderColor: '#fff !important',
-          },
-        },
-        '&:hover': {
-          borderColor: '#fff !important',
-          '&:before': {
-            borderBottom: '2px solid #fff !important',
-          },
-          '&:after': {
-            borderBottom: '2px solid #fff !important',
-          },
-        },
-      },
-    },
-    tickIcon: {
-      position: 'absolute',
-      right: 0,
-      top: 14,
-    },
     actions: {
       padding: 20,
       position: 'sticky',
@@ -108,16 +31,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fc9916 !important',
       fontSize: 13,
     },
-    btnGroup: {
-      paddingTop: 7,
-      '& button': {
-        width: '100%',
-        color: '#00b38e',
-        backgroundColor: theme.palette.common.white,
-        fontSize: 16,
-        fontWeight: 500,
-      },
-    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -128,9 +41,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScrollBar: {
       overflow: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        // height: '66vh',
-      },
     },
     signinGroup: {
       padding: 20,
@@ -149,25 +59,14 @@ const useStyles = makeStyles((theme: Theme) => {
     errorMessage: {
       paddingTop: 5,
     },
-    btnActive: {
-      backgroundColor: '#00b38e !important',
-      color: '#fff !important',
-    },
+
     noMargin: {
       marginBottom: 5,
-    },
-    genderBtns: {
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      padding: '7px 13px 7px 13px',
-      textTransform: 'none',
-    },
-    labelText: {
-      fontSize: 13,
     },
     noBoxShadow: {
       boxShadow: 'none',
     },
-    viewCartBtn: {
+    subscriptionPrimaryBtn: {
       fontSize: 13,
       color: '#fc9916',
       fontWeight: 'bold',
@@ -336,7 +235,7 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
               {!subscriptionSuccessful ? (
                 <div className={classes.actions}>
                   <AphButton
-                    className={`${classes.viewCartBtn} ${classes.noBoxShadow}`}
+                    className={`${classes.subscriptionPrimaryBtn} ${classes.noBoxShadow}`}
                     onClick={() => props.onClose()}
                   >
                     CANCEL
@@ -351,7 +250,7 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
                     }
                     type="submit"
                   >
-                    {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Subscribe'}
+                    {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'SUBSCRIBE'}
                   </AphButton>
                 </div>
               ) : (
