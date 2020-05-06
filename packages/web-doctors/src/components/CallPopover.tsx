@@ -399,6 +399,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 88,
       backgroundColor: '#fff',
       position: 'relative',
+      outline: 0,
     },
     modalBoxCancel: {
       maxWidth: 480,
@@ -751,6 +752,16 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingTop: 15,
     },
+    okButtonWrapper: {
+      textAlign: 'right',
+    },
+    okButton: {
+      fontWeight: 700,
+      color: '#fc9916',
+    },
+    modalBoxVital: {
+      minHeight: 'auto',
+    },
   };
 });
 
@@ -862,6 +873,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
+  const [showVital, setShowVital] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
 
@@ -1917,21 +1929,25 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     disabled={props.saving}
                     onClick={() => {
                       if (height === '' && weight === '') {
+                        setShowVital(true);
                         setVitalError({
                           height: 'This field is required',
                           weight: 'This field is required',
                         });
                       } else if (height === '' && weight !== '') {
+                        setShowVital(true);
                         setVitalError({
                           height: 'This field is required',
                           weight: '',
                         });
                       } else if (height !== '' && weight === '') {
+                        setShowVital(true);
                         setVitalError({
                           height: '',
                           weight: 'This field is required',
                         });
                       } else {
+                        setShowVital(false);
                         setVitalError({
                           height: '',
                           weight: '',
@@ -2774,6 +2790,37 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* Call abandonment Confirmation modal end */}
+      {/* Vital field required popup start */}
+      <Modal
+        open={showVital}
+        onClose={() => setShowVital(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowVital(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems some of the vital info is empty. Please fill the vital section's field under
+              the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowVital(false)}>
+                Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* Vital field required popup start */}
     </div>
   );
 };
