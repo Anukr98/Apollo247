@@ -336,11 +336,11 @@ export const CustomSearchComponent: React.FC = (props) => {
         className={classes.inputWrapper}
         placeholder={'Search Symptoms'}
         value={searchInput}
-        onChange={(e: any) => {
+        onChange={(e) => {
           setRender(true);
           setSearchInput(e.target.value);
         }}
-        onKeyPress={async (e: any) => {
+        onKeyPress={async (e) => {
           if (e.key === 'Enter') {
             setRender(false);
             await $Generator({ type: 'inputSearch', payload: searchInput });
@@ -349,7 +349,7 @@ export const CustomSearchComponent: React.FC = (props) => {
       />
       <AutoComplete
         query={searchInput}
-        onSelect={(e: any) => {
+        onSelect={() => {
           setRender(true);
           return;
         }}
