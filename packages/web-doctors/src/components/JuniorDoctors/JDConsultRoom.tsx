@@ -388,7 +388,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JDConsultRoom: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);

@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => {
 });
 
 export const TestCall: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <a

@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MyAccountSettings: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.helpTxt}>Will be available soon...</div>

@@ -90,7 +90,7 @@ export interface ProfileSuccessProps {
 }
 
 export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { popupHandler } = props;
   return (
     <div className={classes.signUpBar}>

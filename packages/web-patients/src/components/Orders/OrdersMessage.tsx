@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const OrdersMessage: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (

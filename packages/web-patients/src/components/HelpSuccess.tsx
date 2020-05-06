@@ -101,7 +101,7 @@ export interface HelpSuccessProps {
 }
 
 export const HelpSuccess: React.FC<HelpSuccessProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>

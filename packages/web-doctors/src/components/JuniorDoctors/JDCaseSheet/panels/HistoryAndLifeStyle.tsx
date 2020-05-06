@@ -147,7 +147,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const HistoryAndLifeStyle: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     caseSheetEdit,
     pastMedicalHistory,

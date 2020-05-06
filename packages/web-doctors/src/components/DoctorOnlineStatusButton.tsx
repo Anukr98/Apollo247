@@ -70,7 +70,7 @@ const { AWAY, ONLINE } = DOCTOR_ONLINE_STATUS;
 export interface OnlineAwayButtonProps {}
 
 export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 10;
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);

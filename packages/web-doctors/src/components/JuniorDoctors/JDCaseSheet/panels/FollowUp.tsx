@@ -250,7 +250,7 @@ const defaultMaterialTheme = createMuiTheme({
   },
 });
 export const FollowUp: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     consultType: consultTypeData,
     setConsultType: setConsultTypeData,

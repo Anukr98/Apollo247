@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const ManageProfile: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const mascotRef = useRef(null);
   const { isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();

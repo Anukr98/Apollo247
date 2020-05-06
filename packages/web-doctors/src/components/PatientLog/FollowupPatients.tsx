@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface HelpProps {}
 export const FollowupPatients: React.FC<HelpProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.loginFormWrap}>
