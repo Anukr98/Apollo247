@@ -754,14 +754,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h3">Uh oh.. :)</Typography>
               <p> We're sorry but the payment failed</p>
               <div className={classes.bottomButtons}>
-                <AphButton
-                  color="primary"
-                  onClick={() => {
-                    setIsFailurePayment(false);
-                  }}
-                >
-                  OK, GOT IT
-                </AphButton>
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        setIsFailurePayment(false);
+                        history.push(clientRoutes.appointments());
+                      }}
+                    >
+                      OK, GOT IT
+                    </AphButton>)
+                  }
+                />
               </div>
             </div>
           </div>
