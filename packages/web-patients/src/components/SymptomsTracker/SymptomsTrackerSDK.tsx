@@ -21,6 +21,7 @@ import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -273,7 +274,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
-    },    
+    },
   };
 });
 
@@ -314,7 +315,7 @@ const customContainerStyle = {
       fontWeight: 500,
       fontFamily: 'IBM Plex Sans,sans-serif',
     },
-  },  
+  },
 };
 
 // type Patient = GetCurrentPatients_getCurrentPatients_patients;
@@ -399,12 +400,12 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
 
-  useEffect(()=>{
-    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+  useEffect(() => {
+    if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(setUserGender(currentPatient.gender));
     }
-  }, [isSignedIn, currentPatient])
+  }, [isSignedIn, currentPatient]);
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
@@ -710,7 +711,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
         </Popover>
       )}
       <div className={classes.footerLinks}>
-        {!onePrimaryUser && <ManageProfile />}
+        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
     </div>
