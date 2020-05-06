@@ -756,7 +756,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </div>
         </Popover>
       )}
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        {!onePrimaryUser && <ManageProfile />}
+        <BottomLinks />
+      </div>
     </div>
   );
 };
