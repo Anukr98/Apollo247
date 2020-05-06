@@ -1153,8 +1153,20 @@ export const END_APPOINTMENT_SESSION = gql`
 `;
 
 export const GET_PATIENT_LOG = gql`
-  query GetPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
-    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+  query GetPatientLog(
+    $limit: Int
+    $offset: Int
+    $sortBy: patientLogSort
+    $type: patientLogType
+    $patientName: String
+  ) {
+    getPatientLog(
+      limit: $limit
+      offset: $offset
+      sortBy: $sortBy
+      type: $type
+      patientName: $patientName
+    ) {
       patientLog {
         patientid
         consultscount
@@ -1256,6 +1268,38 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
       blobName
+    }
+  }
+`;
+export const GET_NOTIFICATION = gql`
+  query GetNotifications($toId: String!, $startDate: Date, $endDate: Date) {
+    getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
+    }
+  }
+`;
+export const MARK_MESSAGE_TO_UNREAD = gql`
+  mutation MarkMessageToUnread($eventId: String) {
+    markMessageToUnread(eventId: $eventId) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
     }
   }
 `;

@@ -28,6 +28,8 @@ import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking'
+import { BottomLinks } from 'components/BottomLinks';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,12 +39,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(900)]: {
-        marginBottom: 20,
-      },
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         marginTop: 82,
@@ -626,8 +624,9 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      <BottomLinks />
       <NavigationBottom />
-      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

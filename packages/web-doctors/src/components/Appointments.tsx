@@ -327,7 +327,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   loading: loadingData,
   selectedDate,
 }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);

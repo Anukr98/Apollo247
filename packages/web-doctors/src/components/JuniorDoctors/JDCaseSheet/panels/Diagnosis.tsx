@@ -209,7 +209,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const Diagnosis: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [idx, setIdx] = React.useState<any>();
   const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(

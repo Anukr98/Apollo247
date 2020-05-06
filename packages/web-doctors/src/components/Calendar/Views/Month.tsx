@@ -240,7 +240,7 @@ const Toolbar = (toolbar: ToolbarProps) => {
 };
 
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonthSelected }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState(date);

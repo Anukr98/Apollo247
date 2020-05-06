@@ -13,7 +13,6 @@ module.exports = async (req, res) => {
 
         logger.info(`${orderId} - Payload received - ${JSON.stringify(payload)}`);
         const checksum = payload.CHECKSUMHASH;
-        console.log("checksumreceived:", checksum);
         delete payload.CHECKSUMHASH;
 
         if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_CONSULTS, checksum)) {
@@ -36,6 +35,7 @@ module.exports = async (req, res) => {
 
         /*save response in apollo24x7*/
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+        logger.info(`consults query - ${consultsOrderQuery(payload)}`)
 
         logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`)
         const requestJSON = {
@@ -57,9 +57,16 @@ module.exports = async (req, res) => {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
-            res.redirect(
-                `/consultpg-redirect?tk=${appointmentId}&status=${transactionStatus}`
-            );
+            if (transactionStatus === 'failed') {
+                res.redirect(
+                    `/consultpg-error?tk=${appointmentId}&status=${transactionStatus}`
+                );
+            } else {
+                res.redirect(
+                    `/consultpg-success?tk=${appointmentId}&status=${transactionStatus}`
+                );
+            }
+
         }
 
     } catch (e) {
@@ -72,7 +79,7 @@ module.exports = async (req, res) => {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?status=${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
-            res.redirect(`/consultpg-redirect?tk=${orderId}&status=${transactionStatus}`);
+            res.redirect(`/consultpg-error?tk=${orderId}&status=${transactionStatus}`);
         }
     }
 }

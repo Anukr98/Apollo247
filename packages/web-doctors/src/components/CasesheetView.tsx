@@ -185,7 +185,7 @@ interface savingProps {
   saving: boolean;
 }
 export const CasesheetView: React.FC<savingProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     patientDetails,
     sdConsultationDate,
