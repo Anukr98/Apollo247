@@ -232,7 +232,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Header: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const avatarRef = useRef(null);
   const { currentPatient, signOut, isSigningIn, isSignedIn, sessionClient } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();

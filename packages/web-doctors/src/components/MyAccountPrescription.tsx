@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MyAccountPrescription: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.ProfileContainer}>
       <div>

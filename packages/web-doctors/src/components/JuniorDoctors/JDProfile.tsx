@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JDProfile: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [logoutFailed, setIsLogoutFailed] = React.useState(false);
   const [clearQueue, setClearQueue] = React.useState(false);

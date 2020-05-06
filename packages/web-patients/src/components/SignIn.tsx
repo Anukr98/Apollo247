@@ -96,7 +96,7 @@ const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
 const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Now type in the OTP sent to you for authentication';
@@ -322,7 +322,7 @@ interface signInProps {
 }
 
 export const SignIn: React.FC<signInProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);

@@ -310,7 +310,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export interface DoctorsProfileProps {}
 
 export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
   const [searchText, setSearchText] = React.useState<string>('');
   const [sortBy, setSortBy] = React.useState('MOST_RECENT');

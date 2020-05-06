@@ -107,7 +107,7 @@ interface ArticleBannerProps {
 }
 
 export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>

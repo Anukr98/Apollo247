@@ -117,7 +117,7 @@ interface PatientObject {
   lastConsultDate: string;
 }
 export const AllPatient: React.FC<AllPatientProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const patientsList = props.patientData;
   const patientsHtml =
     patientsList.length > 0 ? (

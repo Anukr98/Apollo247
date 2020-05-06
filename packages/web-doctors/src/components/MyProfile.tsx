@@ -517,7 +517,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
     setAnchorEl((null as unknown) as HTMLButtonElement);
     setCurrentDoctor('');
   }
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Card className={classes.card}>
       <div className={classes.details}>
@@ -700,7 +700,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const client = useApolloClient();
   const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
 
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Mutation<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>
       mutation={MAKE_TEAM_DOCTOR_ACTIVE}
@@ -792,7 +792,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType, doctorSecretary } = useAuthContext();
   const addDoctorSecretary = useAuthContext().addDoctorSecretary!;
-  const classes = useStyles();
+  const classes = useStyles({});
   const [secretary, setSecretary] = useState<string>('');
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);

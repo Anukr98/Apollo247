@@ -28,7 +28,7 @@ import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
 import { SecretaryDashboard } from 'components/SecretaryDashboard';
 
 const App: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
     if (signInError)

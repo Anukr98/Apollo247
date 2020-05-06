@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const PaymentInvoice: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary

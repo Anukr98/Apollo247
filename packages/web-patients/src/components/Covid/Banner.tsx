@@ -46,7 +46,6 @@ const useStyles = makeStyles((theme: Theme) => {
       verticalAlign: 'middle',
     },
     subcribeBtn: {
-      visibility: 'hidden',
       marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
@@ -95,7 +94,7 @@ interface BannerProps {
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div

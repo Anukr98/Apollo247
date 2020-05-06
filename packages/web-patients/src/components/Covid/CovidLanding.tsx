@@ -16,7 +16,6 @@ import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -30,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
+        borderRadius: '0 0 10px 10px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
         paddingBottom: 20,
@@ -225,7 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CovidLanding: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
@@ -354,6 +354,7 @@ export const CovidLanding: React.FC = (props: any) => {
                         covidContent[parentCat.category] &&
                         covidContent[parentCat.category].length && (
                           <ArticleCard
+                            isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
                           />
@@ -449,7 +450,6 @@ export const CovidLanding: React.FC = (props: any) => {
           </Modal>
         </div>
       </div>
-      <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>
   );

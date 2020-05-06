@@ -252,7 +252,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const FavouriteAdvice: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [selectedValues, setSelectedValues] = useState<
     (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
   >();

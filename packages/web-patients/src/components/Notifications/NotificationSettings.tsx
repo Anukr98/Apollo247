@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const NotificationSettings: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <Header />

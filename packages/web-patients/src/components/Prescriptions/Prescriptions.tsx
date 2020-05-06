@@ -215,7 +215,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Prescriptions: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isScheduleCallDialogOpen, setIsScheduleCallDialogOpen] = React.useState<boolean>(false);
