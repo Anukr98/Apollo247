@@ -28,7 +28,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{ height: 50 }}
+        containerStyle={styles.headerContainer}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -122,17 +122,23 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
       </View>
     );
   };
-
+  const renderSeperator = () => {
+    return <View style={styles.seperatorStyle} />;
+  };
   const renderNotificationsListView = () => {
     return (
       <FlatList
         data={notifications}
         renderItem={({ item }) => renderNotification(item)}
         // bounces={false}
+        contentContainerStyle={styles.flatListStyle}
         ListEmptyComponent={renderEmptyComponent}
+        ItemSeparatorComponent={renderSeperator}
         refreshControl={
           <RefreshControl
             tintColor={theme.colors.APP_GREEN}
+            colors={[theme.colors.APP_GREEN]}
+            progressBackgroundColor={theme.colors.WHITE}
             refreshing={refresh}
             onRefresh={() => {
               setRefresh(true);

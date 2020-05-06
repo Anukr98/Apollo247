@@ -1,7 +1,8 @@
 /* eslint-disable import/no-default-export */
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
+const { width, height } = Dimensions.get('screen');
 export default StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
@@ -52,10 +53,17 @@ export default StyleSheet.create({
   },
   notificationContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
+    paddingHorizontal: 16,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.SEPARATOR_LINE,
+    backgroundColor: theme.colors.WHITE,
+  },
+  seperatorStyle: {
+    height: 1,
+    backgroundColor: theme.colors.SEPARATOR_LINE,
+    marginLeft: 20,
+    width: width - 40,
+    marginTop: -1,
+    zIndex: 2,
   },
   textContainer: {
     flex: 1,
@@ -75,7 +83,8 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   emptyContainer: {
-    marginTop: '10%',
+    marginTop: 20,
+    marginLeft: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -84,5 +93,17 @@ export default StyleSheet.create({
   },
   emptySubStyle: {
     ...theme.viewStyles.text('S', 10, theme.colors.SHARP_BLUE, 0.6),
+  },
+  flatListStyle: {
+    marginTop: 4,
+    zIndex: 2,
+  },
+  headerContainer: {
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 16,
+    zIndex: 3,
   },
 });

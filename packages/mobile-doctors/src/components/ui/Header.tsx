@@ -151,7 +151,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
                 {icon.count ? (
                   <View style={styles.counterContainer}>
                     <View style={styles.counterTextContainer}>
-                      <Text style={styles.counterText}>{icon.count}</Text>
+                      <Text style={styles.counterText} numberOfLines={1}>
+                        {icon.count}
+                      </Text>
                     </View>
                   </View>
                 ) : null}
