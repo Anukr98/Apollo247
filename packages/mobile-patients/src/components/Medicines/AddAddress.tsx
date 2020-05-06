@@ -152,6 +152,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       console.log('DataAddress', addressData);
       // to avoid duplicate state name & backward compatability of address issue
       const cityState = [addressData.city, addressData.state]
+        .filter((item) => item)
         .toString()
         .split(',')
         .map((item) => (item || '').trim())
@@ -196,8 +197,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     pincode.length === 6 &&
     city &&
     city.length > 1 &&
-    state &&
-    state.length > 1 &&
     addressType !== undefined &&
     (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
       (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
@@ -219,7 +218,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           addressLine1: addressLine1,
           addressLine2: '',
           city: cityState[0] || '',
-          state: cityState[1] || state,
+          state: cityState[1] || '',
           zipcode: pincode,
           landmark: landMark,
           mobileNumber: phoneNumber,
@@ -243,11 +242,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               CommonBugFender('AddAddress_onSavePress_try', error);
             }
           })
-          .catch((e: any) => {
+          .catch((e) => {
             CommonBugFender('AddAddress_onSavePress', e);
             setshowSpinner(false);
-            const error = JSON.parse(JSON.stringify(e));
-            console.log('Error occured while updateapicalled', error);
+            handleGraphQlError(e);
           });
         //props.navigation.goBack();
       } else {
@@ -260,7 +258,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addressLine1: addressLine1,
         addressLine2: '',
         city: cityState[0] || '',
-        state: cityState[1] || state,
+        state: cityState[1] || '',
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,
@@ -382,7 +380,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
             {}
           ).long_name;
-          setcity(`${city}, ${state}` || '');
+          setcity((city && `${city}${state ? `, ${state}` : ''}`) || '');
           setstate(state || '');
         } catch (e) {
           setcity('');
@@ -570,9 +568,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <TextInputComponent
           value={city}
           onChangeText={(city) =>
-            city.startsWith(' ') || city.startsWith('.')
+            city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
               ? null
-              : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
+              : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
           }
           maxLength={100}
           placeholder={'Enter area / locality name'}
