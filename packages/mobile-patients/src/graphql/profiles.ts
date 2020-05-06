@@ -2148,13 +2148,29 @@ export const GET_DEVICE_TOKEN_COUNT = gql`
 export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
-      appointment{
+      appointment {
         displayId
         bankTxnId
         paymentStatus
         amountPaid
-       
       }
+    }
   }
-}
+`;
+
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
 `;
