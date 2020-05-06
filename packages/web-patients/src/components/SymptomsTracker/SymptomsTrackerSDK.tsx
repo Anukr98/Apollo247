@@ -22,6 +22,7 @@ import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -757,7 +758,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
         </Popover>
       )}
       <div className={classes.footerLinks}>
-        {!onePrimaryUser && <ManageProfile />}
+        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
     </div>

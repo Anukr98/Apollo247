@@ -17,6 +17,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { BottomLinks } from 'components/BottomLinks';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -239,6 +241,7 @@ export const SymptomsTracker: React.FC = () => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px)');
+  const onePrimaryUser = hasOnePrimaryUser();
 
   return (
     <div>
@@ -359,7 +362,7 @@ export const SymptomsTracker: React.FC = () => {
         </div>
       </div>
       <div className={classes.footerLinks}>
-        <ManageProfile />
+        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
       {isSignedIn && <NavigationBottom />}
