@@ -436,7 +436,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
-  const getAge = (dob: string) => moment().diff(moment(dob, 'YYYY-MM-DD'), 'years').toString();
+  const getAge = (dob: string) =>
+    moment()
+      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
+      .toString();
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
