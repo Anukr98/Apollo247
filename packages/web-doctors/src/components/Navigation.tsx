@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Navigation: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   // TODO remove currentPatient and name it as currentDoctor
   const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;

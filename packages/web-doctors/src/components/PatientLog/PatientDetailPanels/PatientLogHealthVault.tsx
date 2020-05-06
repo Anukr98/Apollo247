@@ -119,7 +119,7 @@ const theme = createMuiTheme({
 });
 
 export const PatientLogHealthVault: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = false;
   const { healthVault } = useContext(CaseSheetContext);
 

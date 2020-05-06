@@ -207,7 +207,7 @@ export interface DoctorsFilterProps {
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const {
     handleFilterOptions,

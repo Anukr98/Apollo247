@@ -203,7 +203,7 @@ export interface NewProfileProps {
 }
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patient } = props;
   const urlParams = new URLSearchParams(window.location.search);
   const tpRefCode = urlParams.get('tp_ref_code') ? String(urlParams.get('tp_ref_code')) : '';

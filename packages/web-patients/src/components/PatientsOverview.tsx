@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const PatientsOverview: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);

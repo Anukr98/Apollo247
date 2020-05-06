@@ -105,7 +105,7 @@ interface ArticleItemProps {
 }
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     thumbnailMobile,
     thumbnailWeb,
@@ -177,7 +177,7 @@ interface ArticleCardProps {
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>

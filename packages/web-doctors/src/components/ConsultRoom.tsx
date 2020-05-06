@@ -362,7 +362,7 @@ let timerIntervalId: any;
 let stoppedConsulTimer: number;
 
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);

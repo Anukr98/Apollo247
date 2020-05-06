@@ -129,7 +129,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CovidArticleDetails: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [htmlData, setHtmlData] = useState('');
   const [source, setSource] = useState('');

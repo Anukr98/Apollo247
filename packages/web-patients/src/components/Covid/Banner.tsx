@@ -94,7 +94,7 @@ interface BannerProps {
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div

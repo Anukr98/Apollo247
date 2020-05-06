@@ -219,7 +219,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 type Params = { appointmentId: string; consultscount: string };
 export const PatientLogDetailsPage: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
   const consultscount = params.consultscount;

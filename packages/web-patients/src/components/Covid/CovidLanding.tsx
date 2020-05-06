@@ -225,7 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CovidLanding: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
