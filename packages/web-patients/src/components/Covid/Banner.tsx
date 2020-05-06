@@ -96,13 +96,19 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         maxWidth: '100%',
         width: '100%',
-        left: 0,
+        left: '0 !important',
+        display: 'flex',
+        bottom: 0,
       },
     },
     successPopoverWindow: {
       display: 'flex',
       marginRight: 5,
       marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 0,
+        marginBottom: 0,
+      },
     },
     windowWrap: {
       width: '100%',
@@ -110,6 +116,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: '10px 10px 0 0',
+      },
     },
     mascotIcon: {
       position: 'absolute',

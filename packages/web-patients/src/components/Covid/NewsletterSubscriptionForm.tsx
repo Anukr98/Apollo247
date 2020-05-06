@@ -128,7 +128,7 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
               setApiMessage(res.msg);
               setTimeout(() => {
                 props.onClose();
-              }, 2000);
+              }, 1500);
             } else {
               setSubmitting(false);
               setApiMessage(res.msg);
