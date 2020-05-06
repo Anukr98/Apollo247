@@ -1259,6 +1259,38 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     }
   }
 `;
+export const GET_NOTIFICATION = gql`
+  query GetNotifications($toId: String!, $startDate: Date, $endDate: Date) {
+    getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
+    }
+  }
+`;
+export const MARK_MESSAGE_TO_UNREAD = gql`
+  mutation MarkMessageToUnread($eventId: String) {
+    markMessageToUnread(eventId: $eventId) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
 export const GET_SECRETARY_LIST = gql`
   query GetSecretaryList {
     getSecretaryList {

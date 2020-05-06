@@ -1,12 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
+import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { SignIn } from 'components/SignIn';
 import { HelpPopup } from 'components/Help';
+import Scrollbars from 'react-custom-scrollbars';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -17,9 +19,18 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { GetNotifications_getNotifications } from 'graphql/types/GetNotifications';
+import {
+  MarkMessageToUnread,
+  MarkMessageToUnreadVariables,
+} from 'graphql/types/MarkMessageToUnread';
 //import { Offline, Online } from 'react-detect-offline';
-import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
 import Pubnub from 'pubnub';
+import {
+  UPDATE_DOCTOR_ONLINE_STATUS,
+  GET_NOTIFICATION,
+  MARK_MESSAGE_TO_UNREAD,
+} from 'graphql/profiles';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
@@ -27,7 +38,7 @@ import {
 import { clientRoutes } from 'helpers/clientRoutes';
 import IdleTimer from 'react-idle-timer';
 import ReactCountdownClock from 'react-countdown-clock';
-import { useMutation } from 'react-apollo-hooks';
+import { useMutation, useQuery } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
 
@@ -103,6 +114,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    notificationPopup: {
+      padding: 0,
+    },
     afterloginForm: {
       width: 320,
       minHeight: 230,
@@ -156,6 +170,14 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: '18px',
       color: '#02475b',
     },
+    notificationcross: {
+      position: 'absolute',
+      right: 0,
+      paddingTop: 13,
+      top: -5,
+      fontSize: 18,
+      color: '#02475b',
+    },
     accountIc: {
       marginTop: '9px !important',
       marginRight: '0 !important',
@@ -172,6 +194,40 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
+    notification: {
+      paddingTop: 20,
+    },
+    notificationRow: {
+      borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
+      padding: '12px 5px 12px 15px',
+    },
+    noticationImg: {
+      borderRadius: '50%',
+      height: 40,
+    },
+    noticationContent: {
+      paddingLeft: 12,
+      fontSize: 15,
+      color: '#01475b',
+    },
+    bold: {
+      fontWeight: 'bold',
+    },
+    notificationIcon: {
+      position: 'relative',
+    },
+    notificationCount: {
+      position: 'absolute',
+      right: 15,
+      top: 22,
+      backgroundColor: '#ff748e',
+      width: '14px !important',
+      height: 14,
+      borderRadius: '50%',
+      fontSize: 7,
+      padding: '3px 0 !important',
+      color: '#fff',
+    },
   };
 });
 
@@ -181,12 +237,15 @@ export const Header: React.FC = (props) => {
   const { currentPatient, signOut, isSigningIn, isSignedIn, sessionClient } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
+  const [isHelpPopupOpen1, setIsHelpPopupOpen1] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [showIdleTimer, setShowIdleTimer] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(true);
   const [showLoader, setShowLoader] = React.useState(false);
+  let content: [React.ReactNode] = [null];
+  let notificationCount: number = 0;
 
   // TODO remove currentPatient and name it as currentDoctor
   const currentUserType = useAuth().currentUserType;
@@ -239,6 +298,25 @@ export const Header: React.FC = (props) => {
       onlineStatus: isOnline ? DOCTOR_ONLINE_STATUS.AWAY : DOCTOR_ONLINE_STATUS.ONLINE,
     },
   });
+  const mutationMarkMessageToUnread = useMutation<
+    MarkMessageToUnread,
+    MarkMessageToUnreadVariables
+  >(MARK_MESSAGE_TO_UNREAD);
+
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    setIsHelpPopupOpen1(false);
+    mutationMarkMessageToUnread({
+      variables: {
+        eventId: appointmentId,
+      },
+    })
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
+      })
+      .catch((e: ApolloError) => {
+        console.log(e, 'erroe');
+      });
+  };
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
@@ -254,7 +332,78 @@ export const Header: React.FC = (props) => {
       icon: 'https://bit.ly/2DYqRrh',
     });
   };
+  const pageRefreshTimeInSeconds = 30;
+  const { data, loading } =
+    isSignedIn &&
+    !isJuniorDoctor &&
+    !isAdminDoctor &&
+    !isSecretary &&
+    currentPatient &&
+    currentPatient.id
+      ? useQuery(GET_NOTIFICATION, {
+          variables: {
+            toId: currentPatient.id,
+            // toId: currentPatient.id
+            // startDate: "2020-04-30",
+            // endDate: "2020-05-07"
+          },
+          fetchPolicy: 'no-cache',
+          pollInterval: pageRefreshTimeInSeconds * 1000,
+          notifyOnNetworkStatusChange: true,
+        })
+      : { data: {}, loading: false };
+  //console.log(loading, data);
 
+  if (
+    //!loading &&
+    data &&
+    data.getNotifications &&
+    data.getNotifications.notificationData &&
+    data.getNotifications.notificationData.length > 0
+  ) {
+    notificationCount = data.getNotifications.notificationData.length;
+    content = [
+      <div onContextMenu={(e) => e.preventDefault()}>
+        <div>
+          {data.getNotifications.notificationData.map((notificationObject: any, index: any) => {
+            return (
+              <div className={classes.notification}>
+                <div
+                  className={classes.notificationRow}
+                  onClick={() => {
+                    callMessageReadAction(
+                      notificationObject.appointmentId,
+                      notificationObject.doctorId,
+                      notificationObject.patientId
+                    );
+                  }}
+                >
+                  <Grid container>
+                    <Grid item lg={2} sm={2} xs={2}>
+                      <img
+                        className={classes.noticationImg}
+                        src={require('images/message-notification.png')}
+                      />
+                    </Grid>
+                    <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
+                      You have{' '}
+                      {`${notificationObject.unreadNotificationsCount} ${
+                        notificationObject.unreadNotificationsCount > 1 ? 'messages' : 'message'
+                      }`}{' '}
+                      from{' '}
+                      <span className={classes.bold}>
+                        {notificationObject.patientFirstName} {notificationObject.patientLastName}
+                      </span>
+                    </Grid>
+                  </Grid>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>,
+    ];
+  }
   useEffect(() => {
     if (
       isSignedIn &&
@@ -377,11 +526,20 @@ export const Header: React.FC = (props) => {
                         </span>
                       ) : null}
                       {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Notification">
-                          <img
-                            onClick={() => setSelectedTab(4)}
-                            src={require('images/ic_notifications.svg')}
-                          />
+                        <span
+                          title="Notification"
+                          className={classes.notificationIcon}
+                          onClick={() => {
+                            if (notificationCount > 0) {
+                              setSelectedTab(4);
+                              setIsHelpPopupOpen1(true);
+                            }
+                          }}
+                        >
+                          <img src={require('images/ic_notifications.svg')} />
+                          {notificationCount > 0 && (
+                            <span className={classes.notificationCount}>{notificationCount}</span>
+                          )}
                         </span>
                       ) : null}
                       {!isAdminDoctor && (
@@ -497,6 +655,38 @@ export const Header: React.FC = (props) => {
               </Button>
             </DialogActions>
           </Dialog>
+
+          <Popover
+            open={isHelpPopupOpen1}
+            anchorEl={avatarRef.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            classes={{ paper: classes.signedTopPopover }}
+          >
+            <Paper className={`${classes.loginForm} ${classes.notificationPopup}`}>
+              <Scrollbars autoHide={true} style={{ minHeight: 'calc(40vh)' }}>
+                <Button
+                  onClick={() => setIsHelpPopupOpen1(false)}
+                  className={classes.notificationcross}
+                >
+                  <img src={require('images/ic_cross.svg')} alt="" />
+                </Button>
+
+                {content && content.length > 0 && content[0] ? (
+                  <div>
+                    <div>{content[0]}</div>
+                  </div>
+                ) : null}
+              </Scrollbars>
+            </Paper>
+          </Popover>
+
           {isSignedIn || isAdminDoctor || isSecretary ? (
             <Popover
               open={isHelpPopupOpen}
