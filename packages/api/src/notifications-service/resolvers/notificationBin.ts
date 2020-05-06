@@ -7,6 +7,7 @@ import {
   notificationType,
   NotificationBin,
   NotificationBinArchive,
+  STATUS,
 } from 'consults-service/entities';
 import {
   NotificationBinRepository,
@@ -138,6 +139,16 @@ const insertMessage: Resolver<
     const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const appointmentData = await appointmentRepo.findById(messageInput.eventId);
     if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+    if (appointmentData.status != STATUS.COMPLETED)
+      throw new AphError(AphErrorMessages.APPOINTMENT_NOT_COMPLETED);
+
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const consultDate = format(appointmentData.sdConsultationDate, 'yyyy-MM-dd');
+    const difference = differenceInDays(new Date(today), new Date(consultDate));
+
+    if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
+      throw new AphError(AphErrorMessages.FREE_CHAT_DAYS_COMPLETED);
 
     //create message body
     messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace('{0}', doctorDetails.firstName).replace(
