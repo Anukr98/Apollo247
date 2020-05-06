@@ -371,6 +371,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         }
       });
     }
+    setDeliveryTime('');
     setDeliveryAddressId && setDeliveryAddressId('');
   };
 
