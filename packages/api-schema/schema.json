@@ -20858,6 +20858,43 @@
             "deprecationReason": null
           },
           {
+            "name": "uploadDoctorSignature",
+            "description": null,
+            "args": [
+              {
+                "name": "fileType",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "base64FileInput",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "uploadDoctorSignatureResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "saveDoctorDeviceToken",
             "description": null,
             "args": [
@@ -27931,6 +27968,29 @@
             "type": {
               "kind": "OBJECT",
               "name": "Secretary",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "uploadDoctorSignatureResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "filePath",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
