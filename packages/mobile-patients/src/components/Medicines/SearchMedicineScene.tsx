@@ -147,6 +147,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
+  const [searchHeading, setSearchHeading] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [pinCode, setPinCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -255,6 +256,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       searchMedicineApi(_searchText)
         .then(async ({ data }) => {
           const products = data.products || [];
+          setSearchHeading(data.search_heading)
           setMedicineList(products);
           setIsLoading(false);
         })
@@ -650,7 +652,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const renderMatchingMedicines = () => {
     let filteredMedicineList = medicineList;
-
+    let search_heading_text = searchHeading && searchHeading.split('\'');
     // Category
     if (categoryIds.length) {
       filteredMedicineList = filteredMedicineList.filter((item) =>
@@ -746,12 +748,21 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               }
               ListHeaderComponent={
                 (filteredMedicineList.length > 0 && (
+                  isTest ?
                   <SectionHeaderComponent
-                    sectionTitle={
-                      isTest
-                        ? `Matching Tests — ${filteredMedicineList.length}`
-                        : `Matching Medicines — ${filteredMedicineList.length}`
-                    }
+                    sectionTitle={`Matching Tests — ${filteredMedicineList.length}`}
+                    style={{ marginBottom: 0 }}
+                  /> : search_heading_text ?
+                  <View style={{ marginHorizontal:20, marginTop:24, backgroundColor:'transparent' }} >
+                    <Text style={{...theme.viewStyles.text('R', 14, '#01475b', 1, 14)}} >{search_heading_text[0]}
+                    <Text style={{...theme.viewStyles.text('SB', 14, '#01475b', 1, 14)}} >{'\''+search_heading_text[1]+'\''}</Text>
+                    {search_heading_text[2] && search_heading_text[2]}
+                    <Text style={{...theme.viewStyles.text('SB', 14, '#01475b', 1, 14)}} >{search_heading_text[3] && '\''+search_heading_text[3]+'\''}</Text>
+                    {search_heading_text[4]}
+                    </Text>
+                  </View> :
+                  <SectionHeaderComponent
+                    sectionTitle={`Matching Medicines — ${filteredMedicineList.length}`}
                     style={{ marginBottom: 0 }}
                   />
                 )) ||

@@ -1226,17 +1226,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
           errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
+            ...theme.viewStyles.text('M', 14, '#02475b'),
             marginHorizontal: 10,
           }}
           errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
+            itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined
           }
         />
       </>
