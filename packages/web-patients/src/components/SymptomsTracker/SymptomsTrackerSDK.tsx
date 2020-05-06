@@ -274,7 +274,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         display: 'none',
       },
-    },    
+    },
   };
 });
 
@@ -315,7 +315,7 @@ const customContainerStyle = {
       fontWeight: 500,
       fontFamily: 'IBM Plex Sans,sans-serif',
     },
-  },  
+  },
 };
 
 // type Patient = GetCurrentPatients_getCurrentPatients_patients;
@@ -389,23 +389,20 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [loggedOutUserDetailPopover, setLoggedOutUserDetailPopover] = useState<boolean>(false);
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isRedirect, setIsRedirect] = useState(false);
+  const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
-  const getAge = (dob: string) =>
-    moment()
-      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
-      .toString();
+  const getAge = (dob: string) => moment().diff(moment(dob, 'YYYY-MM-DD'), 'years').toString();
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
 
-  useEffect(()=>{
-    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+  useEffect(() => {
+    if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(setUserGender(currentPatient.gender));
     }
-  }, [isSignedIn, currentPatient])
+  }, [isSignedIn, currentPatient]);
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
@@ -434,17 +431,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
 
   const customListner = (resultData: any) => {
-    let specialities = [];
-    specialities = resultData.specialists.map((item: { speciality: string }) =>
-      item.speciality.trim()
-    );
-    if (specialities.length > 0) {
-      const specialitiesEncoded = encodeURI(specialities.join(','));
-      localStorage.setItem('symptomTracker', specialitiesEncoded);
-      setDoctorPopOver(true);
-      setIsRedirect(true);
-      // window.location.href = clientRoutes.doctorsLanding();
-    }
+    return;
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
