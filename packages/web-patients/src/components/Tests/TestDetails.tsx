@@ -31,6 +31,7 @@ import {
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking } from '../../gtmTracking'
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -390,6 +391,11 @@ const useStyles = makeStyles((theme: Theme) => {
     hotsellerName: {
       textTransform: 'capitalize',
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -684,7 +690,10 @@ export const TestDetails: React.FC = (props) => {
           )}
         </div>
       </div>
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        {!onePrimaryUser && <ManageProfile />}
+        <BottomLinks />
+      </div>
     </div>
   );
 };
