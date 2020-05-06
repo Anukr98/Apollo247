@@ -110,6 +110,9 @@ const useStyles = makeStyles((theme: Theme) => {
         zIndex: 1,
       },
     },
+    emptyBlock: {
+      height: 20,
+    },
   };
 });
 
@@ -202,8 +205,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                 </Link>
                 <div className={classes.bottomSection}>
                   <div className={classes.priceGroup}>
-                    {!!hotSeller.special_price && (
+                    {hotSeller &&
+                    hotSeller.special_price &&
+                    hotSeller.price !== hotSeller.special_price ? (
                       <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                    ) : (
+                      <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
                     )}
                     <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                   </div>

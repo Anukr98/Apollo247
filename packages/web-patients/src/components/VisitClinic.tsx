@@ -40,7 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
-import { gtmTracking } from '../gtmTracking'
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -581,14 +581,20 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </Grid>
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={() => {
+            setCouponCodeFxn={() => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              gtmTracking({ category: 'Consultations', action: speciality, label: `Coupon Applied - ${couponCode}`, value: couponValue })
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Applied - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
               setCouponCode(couponCode);
             }}
+            setCouponCode={setCouponCode}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}
             revisedAmount={revisedAmount}
@@ -599,7 +605,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /**Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              gtmTracking({category: 'Consultations' , action: speciality, label: `Coupon Removed - ${couponCode}`, value: couponValue})
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Removed - ${couponCode}`,
+                value: couponValue,
+              });
               /**Gtm code  end  */
             }}
           />

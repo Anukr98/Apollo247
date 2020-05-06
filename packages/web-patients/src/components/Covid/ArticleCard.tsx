@@ -101,6 +101,7 @@ type ArticleItem = {
 interface ArticleItemProps {
   item: ArticleItem;
   handleInfographicClick: (obj: object) => void;
+  isWebView: boolean;
 }
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
@@ -124,7 +125,9 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
           to={
             type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
               ? '#'
-              : `/covid19/${type.toLowerCase()}${slug}`
+              : !props.isWebView
+              ? `/covid19/${type.toLowerCase()}${slug}`
+              : `/covid19/${type.toLowerCase()}${slug}?utm_source=mobile_app`
           }
           onClick={
             type.toLowerCase() === 'infographic'
@@ -170,6 +173,7 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
 interface ArticleCardProps {
   content: [];
   handleInfographicClick: (img: object) => void;
+  isWebView: boolean;
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
@@ -178,7 +182,12 @@ export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
     <div className={classes.root}>
       <Grid container spacing={2}>
         {props.content.map((item, i) => (
-          <ArticleItem handleInfographicClick={props.handleInfographicClick} item={item} key={i} />
+          <ArticleItem
+            isWebView={props.isWebView}
+            handleInfographicClick={props.handleInfographicClick}
+            item={item}
+            key={i}
+          />
         ))}
       </Grid>
     </div>

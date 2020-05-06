@@ -46,7 +46,6 @@ const useStyles = makeStyles((theme: Theme) => {
       verticalAlign: 'middle',
     },
     subcribeBtn: {
-      visibility: 'hidden',
       marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
