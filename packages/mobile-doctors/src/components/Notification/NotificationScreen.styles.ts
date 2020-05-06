@@ -75,8 +75,14 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   emptyContainer: {
-    marginTop: 100,
+    marginTop: '10%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyTextStyle: {
+    ...theme.viewStyles.text('S', 15, theme.colors.SHARP_BLUE),
+  },
+  emptySubStyle: {
+    ...theme.viewStyles.text('S', 10, theme.colors.SHARP_BLUE, 0.6),
   },
 });

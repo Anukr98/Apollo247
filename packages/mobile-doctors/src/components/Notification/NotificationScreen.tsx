@@ -66,7 +66,9 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
         <TouchableOpacity
           onPress={() => {
             if (item.appointmentId) {
-              markAsRead(item.appointmentId);
+              markAsRead(item.appointmentId, (success) => {
+                fetchNotifications();
+              });
             }
             props.navigation.push(AppRoutes.ConsultRoomScreen, {
               DoctorId: item.doctorId,
@@ -113,7 +115,10 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const renderEmptyComponent = () => {
     return (
       <View style={styles.emptyContainer}>
-        <Text>{dataRefetched ? 'No new notifications' : 'Pull to Refresh'}</Text>
+        <Text style={styles.emptyTextStyle}>
+          {dataRefetched ? 'No new notifications' : 'All caught up'}
+        </Text>
+        <Text style={styles.emptySubStyle}>{dataRefetched ? '' : 'pull to refresh'}</Text>
       </View>
     );
   };
