@@ -382,7 +382,7 @@ export const Header: React.FC = (props) => {
                     <Grid item lg={2} sm={2} xs={2}>
                       <img
                         className={classes.noticationImg}
-                        src={require('images/doctor_02.png')}
+                        src={require('images/message-notification.png')}
                       />
                     </Grid>
                     <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
