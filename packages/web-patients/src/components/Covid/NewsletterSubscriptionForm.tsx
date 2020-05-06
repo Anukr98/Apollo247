@@ -1,13 +1,11 @@
-import { Theme, FormControl, CircularProgress } from '@material-ui/core';
+import { CircularProgress, FormControl, Theme } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import React, { useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { isNameValid, isEmailValid } from '@aph/universal/dist/aphValidators';
+import { isEmailValid, isNameValid } from '@aph/universal/dist/aphValidators';
 import _isEmpty from 'lodash/isEmpty';
-import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
-import _toLower from 'lodash/toLower';
-import _upperFirst from 'lodash/upperFirst';
+import { Field, FieldProps, Form, Formik, FormikProps } from 'formik';
 import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
