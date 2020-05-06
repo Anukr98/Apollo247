@@ -107,6 +107,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface AllPatientProps {
   patientData: any;
+  searchText: string;
 }
 interface PatientObject {
   id: string;
@@ -224,7 +225,15 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
       })
     ) : (
       <Typography variant="h4">
-        <span>No data found</span>
+        {props.searchText.trim().length !== 0 ? (
+          <span>
+            <span>No patient records could be found for </span>
+            <span style={{ color: '#fc9916' }}>{props.searchText}</span>
+            <span>. Please try checking your spelling or use another term.</span>
+          </span>
+        ) : (
+          <span>No data found</span>
+        )}
       </Typography>
     );
   return <div>{patientsHtml}</div>;

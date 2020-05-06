@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import _ from 'lodash';
-import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
+import { Theme, MenuItem, CircularProgress, InputBase, InputAdornment } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
@@ -20,6 +20,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { GetPatientLog_getPatientLog as patientLog } from 'graphql/types/GetPatientLog';
 import { createContext } from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import SearchIcon from '@material-ui/icons/Search';
 
 const tabsArray: any = [
   {
@@ -148,6 +149,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px 20px 40px',
       backgroundColor: theme.palette.secondary.contrastText,
       boxShadow: '0px 1px 5px 0 rgba(128, 128, 128, 0.3)',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '30px 20px 20px 20px',
       },
@@ -287,6 +291,19 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none !important',
       },
     },
+    patientSearch: {
+      borderRadius: 28,
+      boxShadow: '0 0 6px 0 rgba(80, 80, 80, 0.19)',
+      backgroundColor: theme.palette.common.white,
+      padding: '8px 20px',
+      minWidth: 275,
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#166b84',
+      '& svg': {
+        fill: 'rgba(2, 71, 91, 0.4)',
+      },
+    },
   };
 });
 
@@ -295,6 +312,7 @@ export interface DoctorsProfileProps {}
 export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
+  const [searchText, setSearchText] = React.useState<string>('');
   const [sortBy, setSortBy] = React.useState('MOST_RECENT');
   const [patientList, setPatientList] = React.useState([]);
   const [offset, setOffset] = React.useState<number>(0);
@@ -325,6 +343,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
           offset: offset,
           sortBy: sortBy,
           type: selectedTab.key,
+          patientName: searchText,
         },
       })
       .then((_data: any) => {
@@ -369,44 +388,50 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
   // useEffect(() => {
   //   dataLoading()
   // },[sortBy])
+
+  const initialLoad = (searchValue?: string) => {
+    setLoading(true);
+    const selectedTab = tabsArray[selectedTabIndex];
+    client
+      .query<GetPatientLog>({
+        query: GET_PATIENT_LOG,
+        fetchPolicy: 'no-cache',
+        variables: {
+          limit: limit,
+          offset: offset,
+          sortBy: sortBy,
+          type: selectedTab.key,
+          patientName: searchText || searchValue,
+        },
+      })
+      .then((_data: any) => {
+        setPatientList(
+          _data!.data!.getPatientLog &&
+            _data!.data!.getPatientLog !== null &&
+            _data!.data!.getPatientLog!.patientLog &&
+            _data!.data!.getPatientLog!.patientLog !== null
+            ? _data!.data!.getPatientLog!.patientLog
+            : []
+        );
+        if (_data && _data.data && _data.data.getPatientLog) {
+          setTotalCount(_data.data.getPatientLog.totalResultCount);
+        }
+        setLoading(false);
+        setOffset(10);
+      })
+      .catch((e: any) => {
+        //setError('Error occured in getcasesheet api');
+        console.log('Error occured creating session', e);
+        setLoading(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
     if (offset === 0) {
-      setLoading(true);
-      const selectedTab = tabsArray[selectedTabIndex];
-      client
-        .query<GetPatientLog>({
-          query: GET_PATIENT_LOG,
-          fetchPolicy: 'no-cache',
-          variables: {
-            limit: limit,
-            offset: offset,
-            sortBy: sortBy,
-            type: selectedTab.key,
-          },
-        })
-        .then((_data: any) => {
-          setPatientList(
-            _data!.data!.getPatientLog &&
-              _data!.data!.getPatientLog !== null &&
-              _data!.data!.getPatientLog!.patientLog &&
-              _data!.data!.getPatientLog!.patientLog !== null
-              ? _data!.data!.getPatientLog!.patientLog
-              : []
-          );
-          if (_data && _data.data && _data.data.getPatientLog) {
-            setTotalCount(_data.data.getPatientLog.totalResultCount);
-          }
-          setLoading(false);
-          setOffset(10);
-        })
-        .catch((e: any) => {
-          //setError('Error occured in getcasesheet api');
-          console.log('Error occured creating session', e);
-          setLoading(false);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      initialLoad();
     }
   }, [selectedTabIndex, sortBy]);
 
@@ -423,6 +448,12 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       />
     );
   });
+
+  const delayedQuery = React.useRef(_.debounce(
+    (searchValue: string) => initialLoad(searchValue),
+    500
+  ) as any).current;
+
   return (
     <div className={classes.profile}>
       <div className={classes.headerSticky}>
@@ -432,15 +463,34 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         <div className={classes.container}>
           <div>
             <div className={classes.tabHeading}>
-              <Typography variant="h1">
-                <span>
-                  {`hello  ${currentPatient &&
-                    currentPatient!.displayName &&
-                    currentPatient!.displayName} :)`}
-                </span>
-              </Typography>
-              <p>here are all your patients</p>
+              <div>
+                <Typography variant="h1">
+                  <span>
+                    {`hello  ${currentPatient &&
+                      currentPatient!.displayName &&
+                      currentPatient!.displayName} :)`}
+                  </span>
+                </Typography>
+                <p>here are all your patients</p>
+              </div>
+              <div>
+                <InputBase
+                  className={classes.patientSearch}
+                  placeholder="Search by Patient Name"
+                  value={searchText}
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    delayedQuery(e.target.value);
+                  }}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  }
+                />
+              </div>
             </div>
+
             {selectedTabIndex < 3 && (
               <AppBar position="static" color="default" className={classes.tabBarHeading}>
                 <AntTabs
@@ -501,17 +551,17 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
               <div id="messages">
                 {selectedTabIndex === 0 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {selectedTabIndex === 1 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {selectedTabIndex === 2 && (
                   <TabContainer>
-                    <AllPatient patientData={patientList} />
+                    <AllPatient patientData={patientList} searchText={searchText} />
                   </TabContainer>
                 )}
                 {offset <= patientList.length && (
