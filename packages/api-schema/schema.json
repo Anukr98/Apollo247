@@ -2716,6 +2716,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "archiveMessages",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -25252,6 +25264,16 @@
             "type": {
               "kind": "ENUM",
               "name": "CODCity",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "orderId",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null

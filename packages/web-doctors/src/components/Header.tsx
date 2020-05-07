@@ -19,7 +19,6 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
-import { GetNotifications_getNotifications } from 'graphql/types/GetNotifications';
 import {
   MarkMessageToUnread,
   MarkMessageToUnreadVariables,
@@ -41,6 +40,7 @@ import ReactCountdownClock from 'react-countdown-clock';
 import { useMutation, useQuery } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
+import {GetNotifications_getNotifications_notificationData as NotificationDataType} from 'graphql/types/GetNotifications'; 
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,6 +117,10 @@ const useStyles = makeStyles((theme: Theme) => {
     notificationPopup: {
       padding: 0,
     },
+    notificationPopupEmpty: {
+      padding: 0,
+      minHeight: 'auto',
+    },
     afterloginForm: {
       width: 320,
       minHeight: 230,
@@ -174,9 +178,10 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 0,
       paddingTop: 13,
-      top: -5,
+      top: 0,
       fontSize: 18,
       color: '#02475b',
+      zIndex: 99,
     },
     accountIc: {
       marginTop: '9px !important',
@@ -194,16 +199,24 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
+    notificationGroup: {
+      paddingTop: 30,
+    },
     notification: {
-      paddingTop: 20,
+      cursor: 'pointer',
     },
     notificationRow: {
       borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
-      padding: '12px 5px 12px 15px',
+      padding: '12px 15px 12px 15px',
     },
     noticationImg: {
       borderRadius: '50%',
       height: 40,
+    },
+    timeStamp: {
+      fontSize: 10,
+      color: 'rgba(1, 71, 91, 0.6)',
+      paddingTop: 3,
     },
     noticationContent: {
       paddingLeft: 12,
@@ -228,12 +241,18 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '3px 0 !important',
       color: '#fff',
     },
+    emptyNotification: {
+      fontSize: 16,
+      padding: '50px 20px 20px',
+      textAlign: 'center',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
+  const scrollbarRef = useRef(null);
   const { currentPatient, signOut, isSigningIn, isSignedIn, sessionClient } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
@@ -354,6 +373,25 @@ export const Header: React.FC = (props) => {
       : { data: {}, loading: false };
   //console.log(loading, data);
 
+  const getFormattedDate = (date: string) => {
+    const dateFormat = moment(date).format('DD MMM YYYY');
+    const timeStamp = moment(date).format('hh.mm A');
+    if(moment().format('DD MMM YYYY') === dateFormat) {
+      return  `Today, ${timeStamp}`;
+    } else if(moment().add(-1, "days").format('DD MMM YYYY') === dateFormat) {
+      return `Yesterday, ${timeStamp}`;
+    }
+    return `${dateFormat}, ${timeStamp} `;
+  }
+
+  const sortByDate = ( notificationData: NotificationDataType[]) => {
+    return notificationData.sort((data1: NotificationDataType , data2: NotificationDataType ) => {
+      let date1 = new Date(data1.lastUnreadMessageDate);
+      let date2 = new Date(data2.lastUnreadMessageDate);
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
+  };
+
   if (
     //!loading &&
     data &&
@@ -361,11 +399,13 @@ export const Header: React.FC = (props) => {
     data.getNotifications.notificationData &&
     data.getNotifications.notificationData.length > 0
   ) {
-    notificationCount = data.getNotifications.notificationData.length;
+    
+    const notificationData = sortByDate(data.getNotifications.notificationData);
+    notificationCount = notificationData.length;
     content = [
       <div onContextMenu={(e) => e.preventDefault()}>
-        <div>
-          {data.getNotifications.notificationData.map((notificationObject: any, index: any) => {
+        <div className={classes.notificationGroup}>
+          {notificationData.map((notificationObject: any, index: any) => {
             return (
               <div className={classes.notification}>
                 <div
@@ -386,14 +426,17 @@ export const Header: React.FC = (props) => {
                       />
                     </Grid>
                     <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
-                      You have{' '}
+                    {`${
+                        notificationObject.unreadNotificationsCount > 1 ? 'There are' : 'There is'
+                      }`} {' '}
                       {`${notificationObject.unreadNotificationsCount} ${
-                        notificationObject.unreadNotificationsCount > 1 ? 'messages' : 'message'
+                        notificationObject.unreadNotificationsCount > 1 ? 'new messages' : 'new message'
                       }`}{' '}
-                      from{' '}
+                      from your patient,{' '}
                       <span className={classes.bold}>
                         {notificationObject.patientFirstName} {notificationObject.patientLastName}
                       </span>
+                      <div className={classes.timeStamp}>{getFormattedDate(notificationObject.lastUnreadMessageDate)}</div>
                     </Grid>
                   </Grid>
                 </div>
@@ -460,6 +503,7 @@ export const Header: React.FC = (props) => {
       };
     }
   }, []);
+
   return (
     <header className={classes.header}>
       {/* <Offline>
@@ -518,7 +562,7 @@ export const Header: React.FC = (props) => {
                   ) : (
                     <div>
                       {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Inbox">
+                        <span title="Inbox" style={{ display: 'none' }}>
                           <img
                             onClick={() => setSelectedTab(3)}
                             src={require('images/ic_inbox.svg')}
@@ -530,10 +574,12 @@ export const Header: React.FC = (props) => {
                           title="Notification"
                           className={classes.notificationIcon}
                           onClick={() => {
-                            if (notificationCount > 0) {
-                              setSelectedTab(4);
-                              setIsHelpPopupOpen1(true);
-                            }
+                            setSelectedTab(4);
+                            setIsHelpPopupOpen1(true);
+                            // setTimeout(() => {
+                            //   const node = (scrollbarRef as any).current;
+                            //   if (node) node.scrollToBottom();
+                            // }, 100);
                           }}
                         >
                           <img src={require('images/ic_notifications.svg')} />
@@ -659,6 +705,7 @@ export const Header: React.FC = (props) => {
           <Popover
             open={isHelpPopupOpen1}
             anchorEl={avatarRef.current}
+            onClose={() => setIsHelpPopupOpen1(false)}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',
@@ -669,21 +716,28 @@ export const Header: React.FC = (props) => {
             }}
             classes={{ paper: classes.signedTopPopover }}
           >
-            <Paper className={`${classes.loginForm} ${classes.notificationPopup}`}>
-              <Scrollbars autoHide={true} style={{ minHeight: 'calc(40vh)' }}>
-                <Button
-                  onClick={() => setIsHelpPopupOpen1(false)}
-                  className={classes.notificationcross}
-                >
-                  <img src={require('images/ic_cross.svg')} alt="" />
-                </Button>
-
-                {content && content.length > 0 && content[0] ? (
+            <Paper
+              className={`${classes.loginForm} ${
+                content && content.length > 0 && content[0]
+                  ? classes.notificationPopup
+                  : classes.notificationPopupEmpty
+              }`}
+            >
+              <Button
+                onClick={() => setIsHelpPopupOpen1(false)}
+                className={classes.notificationcross}
+              >
+                <img src={require('images/ic_cross.svg')} alt="" />
+              </Button>
+              {content && content.length > 0 && content[0] ? (
+                <Scrollbars autoHide={true} autoHeight ref={scrollbarRef} autoHeightMin={280}>
                   <div>
                     <div>{content[0]}</div>
                   </div>
-                ) : null}
-              </Scrollbars>
+                </Scrollbars>
+              ) : (
+                <div className={classes.emptyNotification}>There are no notifications</div>
+              )}
             </Paper>
           </Popover>
 

@@ -18,7 +18,7 @@ const {
   paymedResponse,
   mob,
   mobError,
-  pharmaWebhook
+  pharmaWebhook,
 } = require('./pharma-integrations/controllers');
 
 const {
@@ -26,7 +26,7 @@ const {
   consultPayResponse,
   consultsPgSuccess,
   consultsPgError,
-  consultWebhook
+  consultWebhook,
 } = require('./consult-integrations/controllers');
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
@@ -62,6 +62,8 @@ app.get(
   })
 );
 
+app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
+app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeNoShowReminder', cronTabs.noShowReminder);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
@@ -131,7 +133,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -152,7 +154,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -173,7 +175,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -195,7 +197,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -217,7 +219,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -255,7 +257,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -274,16 +276,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-      '?appId=apollo_24_7&appUserId=' +
-      req.query.appUserId +
-      '&name=' +
-      req.query.userName +
-      '&gender=' +
-      req.query.gender +
-      '&emailId=' +
-      req.query.emailId +
-      '&phoneNumber=' +
-      req.query.phoneNumber
+        '?appId=apollo_24_7&appUserId=' +
+        req.query.appUserId +
+        '&name=' +
+        req.query.userName +
+        '&gender=' +
+        req.query.gender +
+        '&emailId=' +
+        req.query.emailId +
+        '&phoneNumber=' +
+        req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -304,12 +306,14 @@ app.get('/getCmToken', (req, res) => {
 
 app.get('/consultpayment', consultPayRequest);
 app.post('/consulttransaction', consultPayResponse);
-app.get('/consultpg-redirect', consultsPgRedirect);
+app.get('/consultpg-success', consultsPgSuccess);
+app.get('/consultpg-error', consultsPgError);
 app.post('/consult-payment-webhook', consultWebhook);
 
 app.get('/paymed', paymedRequest);
 app.post('/paymed-response', paymedResponse);
-app.get('/mob', mobRedirect);
+app.get('/mob', mob);
+app.get('/mob-error', mobError);
 app.post('/pharma-payment-webhook', pharmaWebhook);
 
 //diagnostic payment apis
@@ -385,7 +389,10 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto.createHash('sha512').update(code).digest('hex');
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -825,7 +832,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -845,7 +852,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function (err) {
+                    fs.appendFile(fileName, content, function(err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1039,7 +1046,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1089,9 +1096,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          '' &&
+            '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          null
+            null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1121,9 +1128,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+              null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
@@ -1232,7 +1239,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function (err) {
+          fs.appendFile(fileName, content, function(err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1247,7 +1254,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function (err) {
+              fs.appendFile(fileName, content, function(err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

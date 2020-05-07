@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, _obTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1169,6 +1169,16 @@ export const MedicineCart: React.FC = (props) => {
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
+                    /**Gtm code start  */
+                    _obTracking({
+                      userLocation: city,
+                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                      itemCount: cartItems ? cartItems.length : 0,
+                      couponCode: couponCode == '' ? null : couponCode,
+                      couponValue: discountAmount,
+                      finalBookingValue: grossValue,
+                    });
+                    /**Gtm code end  */
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';

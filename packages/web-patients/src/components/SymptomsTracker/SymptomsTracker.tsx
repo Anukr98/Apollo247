@@ -16,7 +16,6 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { BottomLinks } from 'components/BottomLinks';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { Help } from 'components/Help/Help';
 
@@ -29,6 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
+      borderRadius: '0 0 10px 10px',
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
       },
@@ -361,10 +361,7 @@ export const SymptomsTracker: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className={classes.footerLinks}>
-        {onePrimaryUser ? <Help /> : <ManageProfile />}
-        <BottomLinks />
-      </div>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
       {isSignedIn && <NavigationBottom />}
     </div>
   );

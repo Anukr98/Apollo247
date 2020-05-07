@@ -32,6 +32,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
+import { gtmTracking } from 'gtmTracking';
 
 type Params = { id: string };
 
@@ -263,6 +264,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
+  const gtmTrackingFunc = () => {
+    /* Gtm code start */
+    const speciality =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty &&
+      doctorDetails.getDoctorDetailsById.specialty.name
+        ? doctorDetails.getDoctorDetailsById.specialty.name
+        : null;
+    const onlineConsultationFees =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        : null;
+    gtmTracking({
+      category: 'Consultations',
+      action: speciality,
+      label: 'Order Initiatedd',
+      value: onlineConsultationFees,
+    });
+    /* Gtm code end */
+  };
+
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
@@ -283,9 +308,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.id
         : '';
 
-    const hasStarTeam = doctorDetails && doctorDetails.getDoctorDetailsById
-      && doctorDetails.getDoctorDetailsById.starTeam ? true
-      : false;
+    const hasStarTeam =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.starTeam
+        ? true
+        : false;
 
     return (
       <div className={classes.root}>
@@ -323,7 +351,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <div className={classes.searchSection}>
                       <AphButton
                         onClick={(e) => {
-                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                          if (!isSignedIn) {
+                            protectWithLoginPopup();
+                          } else {
+                            setIsPopoverOpen(true);
+                            gtmTrackingFunc();
+                          }
                         }}
                         color="primary"
                         className={classes.bookAppointment}
@@ -335,8 +368,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         {!isPayrollDoctor && (
                           <>
                             <DoctorClinics doctorDetails={doctorDetails} />
-                            {hasStarTeam &&
-                              <StarDoctorTeam doctorDetails={doctorDetails} />}
+                            {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
                           </>
                         )}
                         <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
@@ -356,7 +388,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <div className={classes.flotingBtn}>
               <AphButton
                 onClick={(e) => {
-                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                  if (!isSignedIn) {
+                    protectWithLoginPopup();
+                  } else {
+                    setIsPopoverOpen(true);
+                    gtmTrackingFunc();
+                  }
                 }}
                 color="primary"
                 title={' Book Appointment'}
