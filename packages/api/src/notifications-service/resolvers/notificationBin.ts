@@ -16,7 +16,7 @@ import {
 import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subDays, format, differenceInDays } from 'date-fns';
+import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -84,6 +84,7 @@ export const notificationBinTypeDefs = gql`
   extend type Query {
     getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
     sendUnreadMessagesNotification: String
+    archiveMessages: String
   }
 
   extend type Mutation {
@@ -308,6 +309,54 @@ const sendUnreadMessagesNotification: Resolver<
   return 'success';
 };
 
+const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> = async (
+  parent,
+  args,
+  { consultsDb }
+) => {
+  //Getting all the appointments past 1 day of free chat days
+  const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
+  const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
+    appointmentDateToBeArchived
+  );
+  const appointmentIdsToBeArchived = appointments.map((appointment) => appointment.id);
+
+  if (appointmentIdsToBeArchived.length) {
+    //Getting the Notifications which needs to be archived
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notificationsToBeArchived = await notificationBinRepo.getAllNotificationsByAppointmentIds(
+      appointmentIdsToBeArchived
+    );
+    const idsToBeDeleted: string[] = [];
+    const dataToArchieve: Partial<NotificationBinArchive>[] = notificationsToBeArchived.map(
+      (notification) => {
+        const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+        notificationBinData.status = notificationStatus.READ;
+        if (notificationBinData.id) idsToBeDeleted.push(notificationBinData.id);
+        delete notificationBinData.id;
+        delete notificationBinData.createdDate;
+        delete notificationBinData.updatedDate;
+        return notificationBinData;
+      }
+    );
+
+    if (dataToArchieve.length) {
+      //Copying the notifications to notification bin archive Table
+      const notificationArchieveBinRepo = consultsDb.getCustomRepository(
+        NotificationBinArchiveRepository
+      );
+      await notificationArchieveBinRepo.saveNotification(dataToArchieve);
+
+      //Deleting the moved notifications
+      await notificationBinRepo.removeNotificationByIds(idsToBeDeleted);
+    }
+  }
+
+  return 'success';
+};
+
 type GetNotificationsResponse = {
   appointmentId: string;
   doctorId: string;
@@ -408,5 +457,6 @@ export const notificationBinResolvers = {
   Query: {
     getNotifications,
     sendUnreadMessagesNotification,
+    archiveMessages,
   },
 };
