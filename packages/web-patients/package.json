@@ -24,7 +24,7 @@
     "@babel/core": "7.4.5",
     "@cypress/webpack-preprocessor": "^4.1.0",
     "@hot-loader/react-dom": "16.8.6",
-    "@material-ui/pickers": "^3.1.2",
+    "@material-ui/pickers": "3.2.0",
     "@types/graphql": "^14.2.1",
     "@types/lodash": "^4.14.134",
     "@types/node": "^12.6.8",
