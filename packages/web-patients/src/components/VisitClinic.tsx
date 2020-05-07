@@ -395,8 +395,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
-  appointmentDateTime =
-    timeSelected && new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString();
+  appointmentDateTime = timeSelected && moment(`${apiDateFormat}T${timeSelected}`).toISOString();
   const checkCouponValidity = () => {
     couponMutation({
       variables: {
@@ -431,9 +430,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
-          appointmentDateTime: new Date(
-            `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
-          ).toISOString(),
+          appointmentDateTime: moment(`${apiDateFormat}T${timeSelected}`).toISOString(),
           appointmentType: AppointmentType.PHYSICAL,
           hospitalId: defaultClinicId,
           couponCode: couponCode ? couponCode : null,
