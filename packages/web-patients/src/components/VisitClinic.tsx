@@ -396,7 +396,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
   appointmentDateTime = timeSelected && moment(`${apiDateFormat}T${timeSelected}`).toISOString();
-  console.log('appointmentDateTime', appointmentDateTime);
   const checkCouponValidity = () => {
     couponMutation({
       variables: {
