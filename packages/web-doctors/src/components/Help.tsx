@@ -127,7 +127,8 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
         <TestCall />
       </div>
       <div className={classes.helpSection}>
-        <h4>For any help, please call 04048217273</h4>
+        <h4>For any help,</h4>
+        <h5>Please call | 04048217273</h5>
       </div>
       {/* {helpData &&
         helpData.length > 0 &&
