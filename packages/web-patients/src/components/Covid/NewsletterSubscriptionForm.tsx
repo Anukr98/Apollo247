@@ -194,8 +194,13 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
 
                     <Field
                       name="firstName"
-                      validate={(name: string) =>
-                        _isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name'
+                      // validate={(name: string) =>
+                      //   _isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name'
+                      // }
+                      validate={(name: string) => {
+                        if (name === '') return undefined;
+                        return (_isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name')
+                      }
                       }
                       render={({ field }: FieldProps<{ firstName: string }>) => (
                         <FormControl
