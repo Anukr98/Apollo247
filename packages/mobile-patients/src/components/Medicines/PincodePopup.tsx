@@ -62,7 +62,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [pincode, setPincode] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const { setLoading: globalLoading } = useUIElements();
-  const { setLocationDetails } = useAppCommonData();
+  const { setPharmacyLocation } = useAppCommonData();
 
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
     CommonBugFender('AddAddress_updateCityStateByPincode', e);
@@ -77,7 +77,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           const addrComponents = data.results[0].address_components || [];
           const latLang = data.results[0].geometry.location || {};
           const response = getFormattedLocation(addrComponents, latLang);
-          setLocationDetails!(response);
+          setPharmacyLocation!(response);
           props.onComplete(response);
         } catch (e) {
           handleUpdatePlaceInfoByPincodeError(e);

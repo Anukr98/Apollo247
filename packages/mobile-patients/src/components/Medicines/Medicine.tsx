@@ -126,7 +126,7 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -195,12 +195,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
   };
 
+  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+
   useEffect(() => {
-    const pincode = g(locationDetails, 'pincode');
-    if (pincode) {
-      updateServiceability(pincode);
+    if (pharmacyPincode) {
+      updateServiceability(pharmacyPincode);
     }
-  }, [locationDetails]);
+  }, [pharmacyPincode]);
 
   useEffect(() => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
@@ -348,7 +349,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         globalLoading!(false);
-        response && setLocationDetails!(response);
+        response && setPharmacyLocation!(response);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
@@ -444,33 +445,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     };
 
-    const renderDeliverToLocationCTA = () => (
-      <View style={{ paddingLeft: 10 }}>
-        <View style={{ flexDirection: 'row' }}>
-          <View>
-            <Text style={localStyles.deliverToText}>
-              Deliver to {g(currentPatient, 'firstName') || ''}
-            </Text>
+    const renderDeliverToLocationCTA = () => {
+      const location = pharmacyLocation
+        ? `${g(pharmacyLocation, 'city')} ${g(pharmacyLocation, 'pincode')}`
+        : `${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`;
+      return (
+        <View style={{ paddingLeft: 10 }}>
+          <View style={{ flexDirection: 'row' }}>
             <View>
-              <Text style={localStyles.locationText}>
-                {`${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`}
+              <Text style={localStyles.deliverToText}>
+                Deliver to {g(currentPatient, 'firstName') || ''}
               </Text>
-              {!serviceabilityMsg ? (
-                <Spearator style={localStyles.locationTextUnderline} />
-              ) : (
-                <View style={{ height: 2 }} />
-              )}
+              <View>
+                <Text style={localStyles.locationText}>{location}</Text>
+                {!serviceabilityMsg ? (
+                  <Spearator style={localStyles.locationTextUnderline} />
+                ) : (
+                  <View style={{ height: 2 }} />
+                )}
+              </View>
+            </View>
+            <View style={localStyles.dropdownGreenContainer}>
+              <DropdownGreen />
             </View>
           </View>
-          <View style={localStyles.dropdownGreenContainer}>
-            <DropdownGreen />
-          </View>
+          {!!serviceabilityMsg && (
+            <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+          )}
         </View>
-        {!!serviceabilityMsg && (
-          <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
-        )}
-      </View>
-    );
+      );
+    };
 
     const renderCartIcon = () => (
       <View style={{ flex: 1 }}>
@@ -1302,6 +1306,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSearchBar = () => {
     const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
+    // const isFocusedStyle = isSearchFocused;
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
@@ -1560,7 +1565,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           bounces={false}
-          stickyHeaderIndices={[1]}
+          stickyHeaderIndices={[0]}
           onScroll={handleScroll}
           scrollEventThrottle={20}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
@@ -1568,7 +1573,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={[isSearchFocused ? { flex: 1 } : { flex: 1 }]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
           </View>
