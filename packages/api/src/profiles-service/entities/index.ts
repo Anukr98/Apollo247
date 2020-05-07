@@ -218,6 +218,9 @@ export class MedicineOrders extends BaseEntity {
   appointmentId: string;
 
   @Column({ nullable: true })
+  code: string;
+
+  @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

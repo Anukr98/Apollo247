@@ -37,6 +37,23 @@ export class CouponRepository extends Repository<Coupon> {
       });
     });
   }
+
+  async findPharmaCouponByCode(code: string) {
+    return this.findOne({
+      where: {
+        isActive: 'true',
+        code: Raw((alias) => `${alias} ILIKE '${code}'`),
+      },
+      order: {
+        createdDate: 'DESC',
+      },
+      relations: ['couponPharmaRule', 'couponGenericRule'],
+    }).catch((getCouponsError) => {
+      throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
+        getCouponsError,
+      });
+    });
+  }
 }
 
 @EntityRepository(ReferralCodesMaster)

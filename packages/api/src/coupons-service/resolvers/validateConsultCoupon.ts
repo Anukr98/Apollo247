@@ -85,7 +85,7 @@ export const validateConsultCouponTypeDefs = gql`
   }
 `;
 
-enum customerTypeInCoupons {
+export enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
 }
