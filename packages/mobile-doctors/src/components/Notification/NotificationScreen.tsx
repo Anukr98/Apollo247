@@ -94,12 +94,12 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
               </Text>
               <Text style={styles.subText}>
                 {moment(item.lastUnreadMessageDate).calendar('', {
-                  sameDay: '[Today], hh:mm A',
+                  sameDay: '[Today], hh.mm A',
                   nextDay: '[Tomorrow]',
-                  nextWeek: 'DD MMM YYYY, hh:mm A',
-                  lastDay: '[Yesterday], hh:mm A',
-                  lastWeek: 'DD MMM YYYY, hh:mm A',
-                  sameElse: 'DD MMM YYYY, hh:mm A',
+                  nextWeek: 'DD/MM/YYYY, hh.mm A',
+                  lastDay: '[Yesterday], hh.mm A',
+                  lastWeek: 'DD/MM/YYYY, hh.mm A',
+                  sameElse: 'DD/MM/YYYY',
                 })}
               </Text>
             </View>
