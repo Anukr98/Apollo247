@@ -199,9 +199,8 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
                       // }
                       validate={(name: string) => {
                         if (name === '') return undefined;
-                        return (_isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name')
-                      }
-                      }
+                        return _isEmpty(name) || isNameValid(name) ? undefined : 'Invalid name';
+                      }}
                       render={({ field }: FieldProps<{ firstName: string }>) => (
                         <FormControl
                           className={`${classes.formControl} ${classes.noMargin}`}

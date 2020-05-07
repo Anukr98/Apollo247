@@ -20,7 +20,7 @@ export const phrConsultTabClickTracking = (userData: any) => {
         Age: age,
       });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -37,9 +37,9 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
         'Mobile Number': mobileNumber,
         'Customer ID': id,
         Age: age,
-      })
+      });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -51,7 +51,7 @@ export const addRecordClickTracking = (source: string) => {
       Source: source,
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Upload Prescription
@@ -68,7 +68,7 @@ export const uploadPrescriptionTracking = (data: any) => {
       'Customer ID': id || '',
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Upload Photo
@@ -78,7 +78,7 @@ export const uploadPhotoTracking = (source: string) => {
       Source: source, //Take Photo/Gallery
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Items Clicked
@@ -88,9 +88,9 @@ export const itemsClickedTracking = (data: any) => {
     window.webengage.track('Items Clicked', {
       Source: source, //Consult/Medical
       Type: type, //Prescription/Test Result
-    })
+    });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //PHR Consult Card click
@@ -107,9 +107,9 @@ export const phrConsultCardClickTracking = (data: any) => {
         'Mobile Number': mobileNumber,
         'Customer ID': id,
         'Consult ID': consultId,
-      })
+      });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };

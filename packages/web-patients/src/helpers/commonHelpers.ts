@@ -9,7 +9,7 @@ const locationRoutesBlackList: string[] = [
   '/address-book',
   '/aboutUs',
   '/appointments',
-  '/faq'
+  '/faq',
 ];
 
 const sortByProperty = (arr: any[], property: string) =>
