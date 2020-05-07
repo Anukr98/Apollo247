@@ -549,8 +549,8 @@ export const MedicineCart: React.FC = (props) => {
     deliveryMode === 'HOME'
       ? deliveryAddressId === ''
       : deliveryMode === 'PICKUP'
-        ? storeAddressId === ''
-        : false;
+      ? storeAddressId === ''
+      : false;
 
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
@@ -559,23 +559,23 @@ export const MedicineCart: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-        return {
-          medicineSKU: cartItemDetails.sku,
-          medicineName: cartItemDetails.name,
-          price: cartItemDetails.price,
-          quantity: cartItemDetails.quantity,
-          mrp: cartItemDetails.price,
-          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-          prescriptionImageUrl: '',
-          mou: parseInt(cartItemDetails.mou),
-          isMedicine:
-            cartItemDetails.type_id === 'Pharma'
-              ? '1'
-              : cartItemDetails.type_id === 'Fmcg'
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price: cartItemDetails.price,
+            quantity: cartItemDetails.quantity,
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            prescriptionImageUrl: '',
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine:
+              cartItemDetails.type_id === 'Pharma'
+                ? '1'
+                : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-        };
-      })
+          };
+        })
       : [];
 
   const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
@@ -692,10 +692,10 @@ export const MedicineCart: React.FC = (props) => {
                 item.fileType == 'jpg'
                   ? UPLOAD_FILE_TYPES.JPEG
                   : item.fileType == 'png'
-                    ? UPLOAD_FILE_TYPES.PNG
-                    : item.fileType == 'pdf'
-                      ? UPLOAD_FILE_TYPES.PDF
-                      : UPLOAD_FILE_TYPES.JPEG,
+                  ? UPLOAD_FILE_TYPES.PNG
+                  : item.fileType == 'pdf'
+                  ? UPLOAD_FILE_TYPES.PDF
+                  : UPLOAD_FILE_TYPES.JPEG,
               patientId: currentPatient && currentPatient.id,
             },
           },
@@ -724,7 +724,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -852,80 +852,80 @@ export const MedicineCart: React.FC = (props) => {
               </div>
             )}
             {cartItems.length > 0 ||
-              (prescriptions && prescriptions.length > 0) ||
-              (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                <>
-                  {!nonCartFlow && <MedicineListingCard />}
-                  {uploadPrescriptionRequired >= 0 ||
-                    (prescriptions && prescriptions.length > 0) ||
+            (prescriptions && prescriptions.length > 0) ||
+            (ePrescriptionData && ePrescriptionData.length > 0) ? (
+              <>
+                {!nonCartFlow && <MedicineListingCard />}
+                {uploadPrescriptionRequired >= 0 ||
+                (prescriptions && prescriptions.length > 0) ||
+                (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                  <>
+                    <div className={classes.sectionHeader}>Upload Prescription</div>
+                    {(prescriptions && prescriptions.length > 0) ||
                     (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                      <>
-                        <div className={classes.sectionHeader}>Upload Prescription</div>
-                        {(prescriptions && prescriptions.length > 0) ||
-                          (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                            <div className={classes.uploadedPreList}>
-                              {prescriptions &&
-                                prescriptions.length > 0 &&
-                                prescriptions.map((prescriptionDetails, index) => {
-                                  const fileName = prescriptionDetails.name;
-                                  const imageUrl = prescriptionDetails.imageUrl;
-                                  return (
-                                    <PrescriptionCard
-                                      fileName={fileName || ''}
-                                      imageUrl={imageUrl || ''}
-                                      removePrescription={(fileName: string) =>
-                                        removeImagePrescription(fileName)
-                                      }
-                                      key={index}
-                                    />
-                                  );
-                                })}
-                              {ePrescriptionData &&
-                                ePrescriptionData.length > 0 &&
-                                ePrescriptionData.map((prescription: EPrescription) => (
-                                  <EPrescriptionCard
-                                    prescription={prescription}
-                                    removePrescription={removePrescription}
-                                  />
-                                ))}
-                              <div className={classes.uploadMore}>
-                                <AphButton
-                                  disabled={uploadingFiles || mutationLoading}
-                                  onClick={() => handleUploadPrescription()}
-                                >
-                                  Upload More
+                      <div className={classes.uploadedPreList}>
+                        {prescriptions &&
+                          prescriptions.length > 0 &&
+                          prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removeImagePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        {ePrescriptionData &&
+                          ePrescriptionData.length > 0 &&
+                          ePrescriptionData.map((prescription: EPrescription) => (
+                            <EPrescriptionCard
+                              prescription={prescription}
+                              removePrescription={removePrescription}
+                            />
+                          ))}
+                        <div className={classes.uploadMore}>
+                          <AphButton
+                            disabled={uploadingFiles || mutationLoading}
+                            onClick={() => handleUploadPrescription()}
+                          >
+                            Upload More
                           </AphButton>
-                              </div>
-                            </div>
-                          ) : uploadPrescriptionRequired >= 0 ? (
-                            <div className={classes.uploadPrescription}>
-                              <div className={classes.prescriptionRow}>
-                                <span>
-                                  Items in your cart marked with ‘Rx’ need prescriptions to complete your
-                                  purchase. Please upload the necessary prescriptions
+                        </div>
+                      </div>
+                    ) : uploadPrescriptionRequired >= 0 ? (
+                      <div className={classes.uploadPrescription}>
+                        <div className={classes.prescriptionRow}>
+                          <span>
+                            Items in your cart marked with ‘Rx’ need prescriptions to complete your
+                            purchase. Please upload the necessary prescriptions
                           </span>
-                                <AphButton
-                                  onClick={() => handleUploadPrescription()}
-                                  className={classes.presUploadBtn}
-                                >
-                                  Upload Prescription
+                          <AphButton
+                            onClick={() => handleUploadPrescription()}
+                            className={classes.presUploadBtn}
+                          >
+                            Upload Prescription
                           </AphButton>
-                              </div>
-                              <div className={classes.consultDoctor}>
-                                <span>Don’t have a prescription? Don’t worry!</span>
-                                <Link
-                                  to={clientRoutes.doctorsLanding()}
-                                  className={classes.consultDoctoLink}
-                                >
-                                  Consult A Doctor
+                        </div>
+                        <div className={classes.consultDoctor}>
+                          <span>Don’t have a prescription? Don’t worry!</span>
+                          <Link
+                            to={clientRoutes.doctorsLanding()}
+                            className={classes.consultDoctoLink}
+                          >
+                            Consult A Doctor
                           </Link>
-                              </div>
-                            </div>
-                          ) : null}
-                      </>
+                        </div>
+                      </div>
                     ) : null}
-                </>
-              ) : null}
+                  </>
+                ) : null}
+              </>
+            ) : null}
           </div>
         </Scrollbars>
       </div>
@@ -1098,22 +1098,22 @@ export const MedicineCart: React.FC = (props) => {
               ) : uploadingFiles ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                    'Submit Prescription'
-                  )}
+                'Submit Prescription'
+              )}
             </AphButton>
           ) : (
-              <AphButton
-                color="primary"
-                fullWidth
-                title={'Login to continue'}
-                onClick={() => {
-                  const signInPopup = document.getElementById('loginPopup');
-                  signInPopup && document.getElementById('loginPopup')!.click();
-                }}
-              >
-                Login to continue
-              </AphButton>
-            )}
+            <AphButton
+              color="primary"
+              fullWidth
+              title={'Login to continue'}
+              onClick={() => {
+                const signInPopup = document.getElementById('loginPopup');
+                signInPopup && document.getElementById('loginPopup')!.click();
+              }}
+            >
+              Login to continue
+            </AphButton>
+          )}
         </div>
       </div>
 
@@ -1170,16 +1170,14 @@ export const MedicineCart: React.FC = (props) => {
                 paymentMutation()
                   .then((res) => {
                     /**Gtm code start  */
-                    _obTracking(
-                      {
-                        userLocation: city,
-                        paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                        itemCount: cartItems ? cartItems.length : 0,
-                        couponCode: couponCode == '' ? null : couponCode,
-                        couponValue: discountAmount,
-                        finalBookingValue: grossValue
-                      }
-                    );
+                    _obTracking({
+                      userLocation: city,
+                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                      itemCount: cartItems ? cartItems.length : 0,
+                      couponCode: couponCode == '' ? null : couponCode,
+                      couponValue: discountAmount,
+                      finalBookingValue: grossValue,
+                    });
                     /**Gtm code end  */
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
@@ -1214,8 +1212,8 @@ export const MedicineCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  `Pay - RS. ${totalAmount}`
-                )}
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>

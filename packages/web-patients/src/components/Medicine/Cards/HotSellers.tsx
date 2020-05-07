@@ -189,10 +189,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       <span>
                         -
                         {Math.floor(
-                        ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
-                          hotSeller.price) *
-                        100
-                      )}
+                          ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
+                            hotSeller.price) *
+                            100
+                        )}
                         %
                       </span>
                     </div>
@@ -206,12 +206,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                 <div className={classes.bottomSection}>
                   <div className={classes.priceGroup}>
                     {hotSeller &&
-                      hotSeller.special_price &&
-                      hotSeller.price !== hotSeller.special_price ? (
-                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                      ) : (
-                        <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
-                      )}
+                    hotSeller.special_price &&
+                    hotSeller.price !== hotSeller.special_price ? (
+                      <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                    ) : (
+                      <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
+                    )}
                     <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                   </div>
                   <div className={classes.addToCart}>
@@ -255,22 +255,22 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         Add To Cart
                       </AphButton>
                     ) : (
-                        <AphButton
-                          onClick={() => {
-                            /**Gtm code start  */
-                            gtmTracking({
-                              category: 'Pharmacy',
-                              action: 'Remove From Cart',
-                              label: hotSeller.name,
-                              value: hotSeller.special_price || hotSeller.price,
-                            });
-                            /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
-                          }}
-                        >
-                          Remove
-                        </AphButton>
-                      )}
+                      <AphButton
+                        onClick={() => {
+                          /**Gtm code start  */
+                          gtmTracking({
+                            category: 'Pharmacy',
+                            action: 'Remove From Cart',
+                            label: hotSeller.name,
+                            value: hotSeller.special_price || hotSeller.price,
+                          });
+                          /**Gtm code End  */
+                          removeCartItem && removeCartItem(hotSeller.id);
+                        }}
+                      >
+                        Remove
+                      </AphButton>
+                    )}
                   </div>
                 </div>
               </div>

@@ -268,26 +268,38 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     /* Gtm code start */
     const speciality =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.specialty &&
-        doctorDetails.getDoctorDetailsById.specialty.name ? doctorDetails.getDoctorDetailsById.specialty.name : null
-    const onlineConsultationFees = doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.onlineConsultationFees ? doctorDetails.getDoctorDetailsById.onlineConsultationFees : null
-    gtmTracking({ category: 'Consultations', action: speciality, label: 'Order Initiatedd', value: onlineConsultationFees })
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty &&
+      doctorDetails.getDoctorDetailsById.specialty.name
+        ? doctorDetails.getDoctorDetailsById.specialty.name
+        : null;
+    const onlineConsultationFees =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        : null;
+    gtmTracking({
+      category: 'Consultations',
+      action: speciality,
+      label: 'Order Initiatedd',
+      value: onlineConsultationFees,
+    });
     /* Gtm code end */
-  }
+  };
 
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -324,8 +336,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                    ? 'auto'
-                    : 'calc(100vh - 154px)'
+                  ? 'auto'
+                  : 'calc(100vh - 154px)'
               }
             >
               <div className={classes.doctorProfileSection}>
@@ -340,10 +352,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <AphButton
                         onClick={(e) => {
                           if (!isSignedIn) {
-                            protectWithLoginPopup()
+                            protectWithLoginPopup();
                           } else {
-                            setIsPopoverOpen(true)
-                            gtmTrackingFunc()
+                            setIsPopoverOpen(true);
+                            gtmTrackingFunc();
                           }
                         }}
                         color="primary"
@@ -377,10 +389,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <AphButton
                 onClick={(e) => {
                   if (!isSignedIn) {
-                    protectWithLoginPopup()
+                    protectWithLoginPopup();
                   } else {
-                    setIsPopoverOpen(true)
-                    gtmTrackingFunc()
+                    setIsPopoverOpen(true);
+                    gtmTrackingFunc();
                   }
                 }}
                 color="primary"

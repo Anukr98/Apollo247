@@ -361,17 +361,20 @@ export const AuthProvider: React.FC = (props) => {
         await apolloClient
           .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
           .then((res) => {
-            const userId = res.data && res.data.getCurrentPatients && res.data.getCurrentPatients.patients
-              && res.data.getCurrentPatients.patients[0].id
+            const userId =
+              res.data &&
+              res.data.getCurrentPatients &&
+              res.data.getCurrentPatients.patients &&
+              res.data.getCurrentPatients.patients[0].id;
             /**Gtm code start */
             if (isNewUser) {
-              gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Register' })
-              _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 })
+              gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Register' });
+              _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
             } else {
               gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Login' });
             }
             /**Gtm code start end */
-            setSignInError(false)
+            setSignInError(false);
           })
           .catch(() => setSignInError(true));
       }

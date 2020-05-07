@@ -8,21 +8,17 @@ export const gtmTracking = (gtmObj: any) => {
 };
 
 export const _urTracking = (params: any) => {
-  const { userId,
-    isApolloCustomer,
-    profileFetchedCount } = params;
+  const { userId, isApolloCustomer, profileFetchedCount } = params;
   try {
-    window && window._ur && window._ur(
-      userId,
-      isApolloCustomer,
-      profileFetchedCount)
+    window && window._ur && window._ur(userId, isApolloCustomer, profileFetchedCount);
   } catch (err) {
-    console.log('GTM ERROR: ', err)
+    console.log('GTM ERROR: ', err);
   }
-}
+};
 
 export const _cbTracking = (params: any) => {
-  const { specialty,
+  const {
+    specialty,
     bookingType,
     scheduledDate,
     couponCode,
@@ -30,16 +26,13 @@ export const _cbTracking = (params: any) => {
     finalBookingValue,
   } = params;
   try {
-    window && window._cb && window._cb(specialty,
-      bookingType,
-      scheduledDate,
-      couponCode,
-      couponValue,
-      finalBookingValue)
+    window &&
+      window._cb &&
+      window._cb(specialty, bookingType, scheduledDate, couponCode, couponValue, finalBookingValue);
   } catch (err) {
-    console.log('GTM ERROR: ', err)
+    console.log('GTM ERROR: ', err);
   }
-}
+};
 
 export const _obTracking = (params: any) => {
   const {
@@ -48,17 +41,13 @@ export const _obTracking = (params: any) => {
     itemCount,
     couponCode,
     couponValue,
-    finalBookingValue
+    finalBookingValue,
   } = params;
   try {
-    window && window._ob && window._ob(
-      userLocation,
-      paymentType,
-      itemCount,
-      couponCode,
-      couponValue,
-      finalBookingValue)
+    window &&
+      window._ob &&
+      window._ob(userLocation, paymentType, itemCount, couponCode, couponValue, finalBookingValue);
   } catch (err) {
-    console.log('GTM ERROR: ', err)
+    console.log('GTM ERROR: ', err);
   }
-}
+};
