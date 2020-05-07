@@ -1107,3 +1107,10 @@ export const getFormattedLocation = (
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
+
+export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
+  return (
+    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
+    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+  );
+};
