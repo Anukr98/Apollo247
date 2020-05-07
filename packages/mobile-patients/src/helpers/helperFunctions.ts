@@ -5,6 +5,7 @@ import {
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
+  PlacesApiResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -398,11 +399,7 @@ export const isEmptyObject = (object: Object) => {
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
-  addrComponents: {
-    long_name: string;
-    short_name: string;
-    types: GooglePlacesType[];
-  }[]
+  addrComponents: PlacesApiResponse['results'][0]['address_components']
 ) => {
   return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
     .long_name;
@@ -1079,3 +1076,34 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
     value: formatedValue,
   };
 });
+
+export const getFormattedLocation = (
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  latLang: PlacesApiResponse['results'][0]['geometry']['location']
+) => {
+  const { lat, lng } = latLang || {};
+
+  const area = [
+    findAddrComponents('route', addrComponents),
+    findAddrComponents('sublocality_level_2', addrComponents),
+    findAddrComponents('sublocality_level_1', addrComponents),
+  ].filter((i) => i);
+
+  return {
+    displayName:
+      (area || []).pop() ||
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    latitude: lat,
+    longitude: lng,
+    lng,
+    area: area.join(', '),
+    city:
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    state: findAddrComponents('administrative_area_level_1', addrComponents),
+    country: findAddrComponents('country', addrComponents),
+    pincode: findAddrComponents('postal_code', addrComponents),
+    lastUpdated: new Date().getTime(),
+  } as LocationData;
+};

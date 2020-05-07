@@ -1,25 +1,32 @@
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  Badge,
+  SectionHeader,
+  Spearator,
+} from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
+  CartIcon,
   DropdownGreen,
   InjectionIcon,
   MedicineIcon,
   MedicineRxIcon,
+  OfferIcon,
   PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
-  OfferIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
@@ -40,25 +47,35 @@ import {
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
+  pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postWEGNeedHelpEvent,
   postAppsFlyerAddToCartEvent,
+  postwebEngageAddToCartEvent,
+  postWebEngageEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
+  Image as ImageNative,
   Keyboard,
   ListRenderItemInfo,
   NativeScrollEvent,
@@ -70,18 +87,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Image as ImageNative,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -118,8 +126,9 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
@@ -133,7 +142,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
-  const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
+  const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
@@ -174,6 +183,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
+
+  const updateServiceability = (pincode: string) => {
+    pinCodeServiceabilityApi(pincode)
+      .then(({ data: { Availability } }) => {
+        setServiceabilityMsg(Availability ? '' : 'Sorry, not serviceable here.');
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
+        setServiceabilityMsg('Sorry, unable to check serviceability.');
+      });
+  };
+
+  useEffect(() => {
+    const pincode = g(locationDetails, 'pincode');
+    if (pincode) {
+      updateServiceability(pincode);
+    }
+  }, [locationDetails]);
 
   useEffect(() => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
@@ -238,7 +265,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setError(e);
         setLoading(false);
         showAphAlert!({
-          title: 'Uh oh! :(',
+          title: string.common.uhOh,
           description: "We're unable to fetch products, try later.",
         });
       });
@@ -316,15 +343,156 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
+  const autoDetectLocation = () => {
+    globalLoading!(true);
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        globalLoading!(false);
+        response && setLocationDetails!(response);
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
+        globalLoading!(false);
+        e &&
+          typeof e == 'string' &&
+          !e.includes('denied') &&
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: e,
+          });
+      });
+  };
+
   const renderTopView = () => {
-    return (
-      <TabHeader
-        navigation={props.navigation}
-        locationVisible={true}
-        onLocationPress={() => {
-          setLocationSearchVisible(true);
+    const localStyles = StyleSheet.create({
+      headerContainer: {
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        paddingTop: 16,
+        paddingBottom: serviceabilityMsg ? 0 : 10,
+        backgroundColor: '#fff',
+      },
+      apolloLogo: { width: 57, height: 37 },
+      menuItemContainer: {
+        marginHorizontal: 0,
+        padding: 0,
+        margin: 0,
+      },
+      menuMenuContainerStyle: {
+        marginLeft: winWidth * 0.25,
+        marginTop: 50,
+      },
+      menuScrollViewContainerStyle: { paddingVertical: 0 },
+      menuItemTextStyle: {
+        ...theme.viewStyles.text('M', 14, '#01475b'),
+        padding: 0,
+        margin: 0,
+      },
+      menuBottomPadding: { paddingBottom: 0 },
+      deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 18) },
+      locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+      locationTextUnderline: {
+        height: 2,
+        backgroundColor: '#00b38e',
+        opacity: 1,
+      },
+      dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+      serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
+    });
+
+    const renderApolloLogo = () => (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            })
+          );
         }}
-      />
+      >
+        <ApolloLogo style={localStyles.apolloLogo} resizeMode="contain" />
+      </TouchableOpacity>
+    );
+
+    const renderDeliverToLocationMenuAndCTA = () => {
+      const options = ['Auto Select Location', 'Enter Delivery Pincode'].map((item) => ({
+        key: item,
+        value: item,
+      }));
+
+      return (
+        <MaterialMenu
+          options={options}
+          itemContainer={localStyles.menuItemContainer}
+          menuContainerStyle={localStyles.menuMenuContainerStyle}
+          scrollViewContainerStyle={localStyles.menuScrollViewContainerStyle}
+          itemTextStyle={localStyles.menuItemTextStyle}
+          bottomPadding={localStyles.menuBottomPadding}
+          onPress={(item) => {
+            if (item.value == options[0].value) {
+              autoDetectLocation();
+            } else {
+              setPincodePopupVisible(true);
+            }
+          }}
+        >
+          {renderDeliverToLocationCTA()}
+        </MaterialMenu>
+      );
+    };
+
+    const renderDeliverToLocationCTA = () => (
+      <View style={{ paddingLeft: 10 }}>
+        <View style={{ flexDirection: 'row' }}>
+          <View>
+            <Text style={localStyles.deliverToText}>
+              Deliver to {g(currentPatient, 'firstName') || ''}
+            </Text>
+            <View>
+              <Text style={localStyles.locationText}>
+                {`${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`}
+              </Text>
+              {!serviceabilityMsg ? (
+                <Spearator style={localStyles.locationTextUnderline} />
+              ) : (
+                <View style={{ height: 2 }} />
+              )}
+            </View>
+          </View>
+          <View style={localStyles.dropdownGreenContainer}>
+            <DropdownGreen />
+          </View>
+        </View>
+        {!!serviceabilityMsg && (
+          <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+        )}
+      </View>
+    );
+
+    const renderCartIcon = () => (
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          style={{ alignItems: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+          }
+        >
+          <CartIcon />
+          {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
+        </TouchableOpacity>
+      </View>
+    );
+
+    return (
+      <View style={localStyles.headerContainer}>
+        {renderApolloLogo()}
+        {renderDeliverToLocationMenuAndCTA()}
+        {renderCartIcon()}
+      </View>
     );
   };
 
@@ -1378,6 +1546,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderPincodePopup = () => {
+    const onClose = () => setPincodePopupVisible(false);
+    return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -1395,37 +1568,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View style={{ backgroundColor: theme.colors.WHITE }}>
-            <ProfileList
-              unsetloaderDisplay={true}
-              navigation={props.navigation}
-              saveUserChange={true}
-              childView={
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    paddingRight: 8,
-                    borderRightWidth: 0,
-                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    backgroundColor: theme.colors.WHITE,
-                  }}
-                >
-                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View style={styles.nameTextContainerStyle}>
-                    <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    <View style={styles.seperatorStyle} />
-                  </View>
-                  <View style={{ paddingTop: 15 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-              }
-              // selectedProfile={profile}
-              setDisplayAddProfile={() => {}}
-            ></ProfileList>
-          </View>
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
@@ -1437,17 +1579,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
-      {isLocationSearchVisible && (
-        <LocationSearchPopup
-          onPressLocationSearchItem={() => {
-            setLocationSearchVisible(false);
-          }}
-          location={g(locationDetails, 'displayName')}
-          onClose={() => {
-            setLocationSearchVisible(false);
-          }}
-        />
-      )}
+      {renderPincodePopup()}
     </View>
   );
 };
