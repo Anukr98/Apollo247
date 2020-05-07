@@ -3,6 +3,7 @@ module.exports = Object.freeze({
   ES_ADD_DAYS: 7,
   ES_DOC_LIMIT: 50,
   AUTO_SUBMIT_JD_CASESHEET: `query { autoSubmitJDCasesheet }`,
+  SEND_UNREAD_MESSAGES_NOTIFICATION: `query { sendUnreadMessagesNotification }`,
   NO_SHOW_REMINDER: `query {noShowReminderNotification {status apptsListCount noCaseSheetCount}}`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
