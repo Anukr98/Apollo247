@@ -138,7 +138,7 @@ export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
         variables: {
-          patientId: currentPatient && currentPatient.id,
+          patientId: currentPatient ? currentPatient.id : '',
         },
         fetchPolicy: 'no-cache',
       })
