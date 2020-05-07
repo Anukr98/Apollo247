@@ -195,12 +195,15 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
+    notificationGroup : {
+      paddingTop: 30,
+    },
     notification: {
-      paddingTop: 20,
+      cursor: 'pointer',
     },
     notificationRow: {
       borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
-      padding: '12px 5px 12px 15px',
+      padding: '12px 15px 12px 15px',
     },
     noticationImg: {
       borderRadius: '50%',
@@ -372,7 +375,7 @@ export const Header: React.FC = (props) => {
     notificationCount = data.getNotifications.notificationData.length;
     content = [
       <div onContextMenu={(e) => e.preventDefault()}>
-        <div>
+        <div className={classes.notificationGroup}>
           {data.getNotifications.notificationData.map((notificationObject: any, index: any) => {
             return (
               <div className={classes.notification}>
