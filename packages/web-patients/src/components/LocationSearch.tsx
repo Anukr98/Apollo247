@@ -132,6 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     popPaperRoot: {
       marginTop: -16,
+      overflow: 'initial'
     },
     dateLoader: {
       fontSize: 14,
