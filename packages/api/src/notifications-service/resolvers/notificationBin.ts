@@ -84,6 +84,7 @@ export const notificationBinTypeDefs = gql`
   extend type Query {
     getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
     sendUnreadMessagesNotification: String
+    archiveMessages: String
   }
 
   extend type Mutation {
@@ -308,6 +309,64 @@ const sendUnreadMessagesNotification: Resolver<
   return 'success';
 };
 
+const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> = async (
+  parent,
+  args,
+  { consultsDb }
+) => {
+  //Getting All Notifications
+  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+  const notifications = await notificationBinRepo.getAllNotifications();
+
+  //Getting the details of All Appointments
+  const appointmentIds = notifications.map((notification) => notification.eventId);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
+    appointmentIds,
+    ['appointment.id', 'appointment.sdConsultationDate']
+  );
+
+  //Filtering the Appointments to be archived
+  const appointmentsToBeArchived = appointmentsData.filter((appointment) => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+    const difference = differenceInDays(new Date(today), new Date(consultDate));
+
+    return difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
+  });
+  const appointmentIdsToBeArchived = appointmentsToBeArchived.map((appointment) => appointment.id);
+
+  //Filtering the notifications to be archived
+  const notificationsToBeArchived = notifications.filter((notification) =>
+    appointmentIdsToBeArchived.includes(notification.eventId)
+  );
+  const idsToBeDeleted: string[] = [];
+  const dataToArchieve: Partial<NotificationBinArchive>[] = notificationsToBeArchived.map(
+    (notification) => {
+      const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+      notificationBinData.status = notificationStatus.READ;
+      if (notificationBinData.id) idsToBeDeleted.push(notificationBinData.id);
+      delete notificationBinData.id;
+      delete notificationBinData.createdDate;
+      delete notificationBinData.updatedDate;
+      return notificationBinData;
+    }
+  );
+
+  if (dataToArchieve.length) {
+    //Copying the notifications to notification bin archive Table
+    const notificationArchieveBinRepo = consultsDb.getCustomRepository(
+      NotificationBinArchiveRepository
+    );
+    await notificationArchieveBinRepo.saveNotification(dataToArchieve);
+
+    //Deleting the moved notifications
+    await notificationBinRepo.removeNotificationByIds(idsToBeDeleted);
+  }
+
+  return 'success';
+};
+
 type GetNotificationsResponse = {
   appointmentId: string;
   doctorId: string;
@@ -408,5 +467,6 @@ export const notificationBinResolvers = {
   Query: {
     getNotifications,
     sendUnreadMessagesNotification,
+    archiveMessages,
   },
 };

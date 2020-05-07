@@ -42,6 +42,14 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
     });
   }
 
+  async removeNotificationByIds(ids: string[]) {
+    return this.delete([...ids]).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.DELETE_NOTIFICATION_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   async getNotificationById(id: string) {
     try {
       return this.findOne({ where: { id } });
@@ -88,6 +96,12 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
       .andWhere('notificationBin.eventName = :name', { name: notificationEventName.APPOINTMENT })
       .andWhere('notificationBin.status = :status', { status: notificationStatus.UNREAD })
       .getMany();
+  }
+
+  async getAllNotifications() {
+    return this.find({
+      where: { eventName: notificationEventName.APPOINTMENT },
+    });
   }
 }
 
