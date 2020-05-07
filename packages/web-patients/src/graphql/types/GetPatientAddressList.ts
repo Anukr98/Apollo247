@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { PATIENT_ADDRESS_TYPE } from "./globalTypes";
@@ -15,7 +14,6 @@ export interface GetPatientAddressList_getPatientAddressList_addressList {
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
-  mobileNumber: string | null;
   state: string | null;
   zipcode: string | null;
   landmark: string | null;
@@ -35,5 +33,5 @@ export interface GetPatientAddressList {
 }
 
 export interface GetPatientAddressListVariables {
-  patientId: string;
+  patientId?: string | null;
 }
