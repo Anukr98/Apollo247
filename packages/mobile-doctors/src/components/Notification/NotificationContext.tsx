@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import CryptoJS from 'react-native-crypto-js';
+import CryptoJS from 'crypto-js';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import {
   getNotifications,
