@@ -5,7 +5,6 @@ declare global {
   }
 }
 interface UserDetail {
-  id: string;
   emailAddress: string | null;
   dateOfBirth: string;
   mobileNumber: string;
@@ -16,12 +15,10 @@ interface UserDetail {
 
 window.webengage = window.webengage || {};
 
-export const webengageUserTracking = (userDetailData: UserDetail) => {
-  // id, mobileNumber, firstName, relation, age, gender,
-  const { id, emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData
+export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
+  const {  emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData
   if (window && window.webengage) {
     try {
-      window.webengage.user.login(mobileNumber);
       window.webengage.user.setAttribute('we_email', emailAddress);
       window.webengage.user.setAttribute('we_birth_date', dateOfBirth);
       window.webengage.user.setAttribute('we_phone', mobileNumber);
@@ -30,6 +27,15 @@ export const webengageUserTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_last_name', lastName);
     } catch (err) {
       console.log('Webengage user tracking err: ', err)
+    }
+  }
+}
+export const webengageUserLoginTracking = (id:string) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.login(id);
+    } catch (err) {
+      console.log('Webengage user login tracking err: ', err)
     }
   }
 }
