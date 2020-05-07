@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -471,9 +471,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+             {!!medicineList.length && (
+              <TouchableOpacity 
+                style={{ marginRight: medicineList.length ? 24 : 0 }}
+                activeOpacity={1} onPress={() => setFilterVisible(true)}>
+                <Filter />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: medicineList.length ? 24 : 0 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
@@ -482,11 +488,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {!!medicineList.length && (
-              <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
-                <Filter />
-              </TouchableOpacity>
-            )}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -604,8 +605,20 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         : medicine.special_price
       : undefined;
 
+    const onNotifyMeClick = () => {
+      showAphAlert!({
+        title: 'Okay! :)',
+        description: `You will be notified when ${medicine.name} is back in stock.`,
+      });
+    }
+    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
+    const getItemQuantity = (id: string) => {
+      const foundItem = cartItems.find((item) =>item.id == id); 
+      return foundItem ? foundItem.quantity: 1;
+    };
+
     return (
-      <MedicineCard
+      <SearchMedicineCard
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
@@ -626,6 +639,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price={price}
         specialPrice={specialPrice}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
+        quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
@@ -634,10 +648,22 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Remove item from cart');
           onRemoveCartItem(medicine);
         }}
+        onNotifyMeClicked={()=>{
+          onNotifyMeClick();
+        }}
+        onPressAddQuantity={() => 
+          getItemQuantity(medicine.sku) == 20 ? null :
+          onUpdateCartItem(medicine, getItemQuantity(medicine.sku)+1)
+        }
+        onPressSubtractQuantity={() => 
+          getItemQuantity(medicine.sku) == 1 ? onRemoveCartItem(medicine) :
+          onUpdateCartItem(medicine, getItemQuantity(medicine.sku)-1)
+        }
         onChangeUnit={(unit) => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Change unit in cart');
           onUpdateCartItem(medicine, unit);
         }}
+        isMedicineAddedToCart={isMedicineAddedToCart}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={medicine.is_in_stock}
         packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}

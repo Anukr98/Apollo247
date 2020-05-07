@@ -1257,6 +1257,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+            keyword: searchText,
+            Source: 'Pharmacy Home',
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
@@ -1275,6 +1280,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
