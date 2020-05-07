@@ -56,7 +56,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         fontSize: 16,
         lineHeight: '24px',
-        color: '#0087ba',
+        // color: '#0087ba',
+        color: '#02475b',
         fontWeight: 600,
         margin: '10px 0',
       },
@@ -125,8 +126,10 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       <div className={classes.testCallWrappper}>
         <TestCall />
       </div>
-
-      {helpData &&
+      <div className={classes.helpSection}>
+        <h4>For any help, please call 04048217273</h4>
+      </div>
+      {/* {helpData &&
         helpData.length > 0 &&
         helpData.map((helpObj) => (
           <div className={classes.helpSection}>
@@ -136,7 +139,7 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
             </h5>
             <h6>{helpObj.email}</h6>
           </div>
-        ))}
+        ))} */}
     </div>
   );
 };
