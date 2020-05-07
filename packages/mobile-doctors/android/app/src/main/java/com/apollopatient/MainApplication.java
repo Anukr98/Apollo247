@@ -6,9 +6,6 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.corbt.keepawake.KCKeepAwakePackage;
-import me.furtado.smsretriever.RNSmsRetrieverPackage;
-import com.reactnativecommunity.rnpermissions.RNPermissionsPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
@@ -22,6 +19,7 @@ import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage;
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
+import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -38,6 +36,7 @@ public class MainApplication extends Application implements ReactApplication {
             packages.add(new RNFirebaseAuthPackage());
             packages.add(new RNFirebaseMessagingPackage());
             packages.add(new RNFirebaseNotificationsPackage());
+            packages.add(new RNAppSignatureHelperPackage());
             return packages;
         }
 

@@ -58,11 +58,12 @@ const tokenFailed = () => {
   console.log('Failed');
 };
 
-export const loginAPI = (mobileNumber: string) => {
+export const loginAPI = (mobileNumber: string, appSign?: string) => {
   return new Promise<Login_login>((res, rej) => {
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,
+      // :appSign
     };
     apolloClient
       .query<Login, LoginVariables>({
