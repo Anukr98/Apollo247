@@ -521,10 +521,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.leftGroup}>
-                <div className={classes.medicineNoStock}>Out Of Stock</div>
-              </div>
-            )}
+                <div className={classes.leftGroup}>
+                  <div className={classes.medicineNoStock}>Out Of Stock</div>
+                </div>
+              )}
             <div className={classes.medicinePrice}>
               {data.special_price && (
                 <span className={classes.regularPrice}>(Rs. {data.price})</span>
@@ -565,7 +565,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       category: 'Pharmacy',
                       action: 'Add to Cart',
                       label: data.name,
-                      value: data.price,
+                      value: data.special_price || data.price,
                     });
                   /**Gtm code End  */
                   applyCartOperations(cartItem);
@@ -579,8 +579,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 ) : itemIndexInCart(data) !== -1 ? (
                   'Added To Cart'
                 ) : (
-                  'Add To Cart'
-                )}
+                      'Add To Cart'
+                    )}
               </AphButton>
 
               <AphButton
@@ -615,20 +615,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 {updateMutationLoading ? (
                   <CircularProgress size={22} color="secondary" />
                 ) : (
-                  'Buy Now'
-                )}
+                    'Buy Now'
+                  )}
               </AphButton>
             </>
           ) : null
-          // (
-          //   <AphButton
-          //     fullWidth
-          //     className={classes.notifyBtn}
-          //     onClick={() => setIsPopoverOpen(true)}
-          //   >
-          //     Notify when in stock
-          //   </AphButton>
-          // )
+            // (
+            //   <AphButton
+            //     fullWidth
+            //     className={classes.notifyBtn}
+            //     onClick={() => setIsPopoverOpen(true)}
+            //   >
+            //     Notify when in stock
+            //   </AphButton>
+            // )
           }
         </div>
       </div>

@@ -180,7 +180,7 @@ export const MedicineListingCard: React.FC = (props) => {
             key={item.id}
             className={`${classes.medicineStrip} ${
               item.is_in_stock ? '' : classes.medicineStripDisabled
-            }`}
+              }`}
           >
             <div className={classes.medicineStripWrap}>
               <Link to={clientRoutes.medicineDetails(item.sku)}>
@@ -203,8 +203,8 @@ export const MedicineListingCard: React.FC = (props) => {
                       ) : !item.is_in_stock ? (
                         'Out Of Stock'
                       ) : (
-                        <span className={classes.noService}>Not serviceable in your area.</span>
-                      )}
+                            <span className={classes.noService}>Not serviceable in your area.</span>
+                          )}
                     </div>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export const MedicineListingCard: React.FC = (props) => {
                       category: 'Pharmacy',
                       action: 'Remove From Cart',
                       label: item.name,
-                      value: item.price,
+                      value: item.special_price || item.price,
                     });
                     /**Gtm code End  */
                     removeCartItem && removeCartItem(item.id);

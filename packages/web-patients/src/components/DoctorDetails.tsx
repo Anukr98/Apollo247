@@ -32,6 +32,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
+import { gtmTracking } from 'gtmTracking';
 
 type Params = { id: string };
 
@@ -263,18 +264,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
+  const gtmTrackingFunc = () => {
+    /* Gtm code start */
+    const speciality =
+      doctorDetails &&
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.specialty &&
+        doctorDetails.getDoctorDetailsById.specialty.name ? doctorDetails.getDoctorDetailsById.specialty.name : null
+    const onlineConsultationFees = doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.onlineConsultationFees ? doctorDetails.getDoctorDetailsById.onlineConsultationFees : null
+    gtmTracking({ category: 'Consultations', action: speciality, label: 'Order Initiatedd', value: onlineConsultationFees })
+    /* Gtm code end */
+  }
+
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -308,8 +321,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                  ? 'auto'
-                  : 'calc(100vh - 154px)'
+                    ? 'auto'
+                    : 'calc(100vh - 154px)'
               }
             >
               <div className={classes.doctorProfileSection}>
@@ -323,7 +336,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <div className={classes.searchSection}>
                       <AphButton
                         onClick={(e) => {
-                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                          if (!isSignedIn) {
+                            protectWithLoginPopup()
+                          } else {
+                            setIsPopoverOpen(true)
+                            gtmTrackingFunc()
+                          }
                         }}
                         color="primary"
                         className={classes.bookAppointment}
@@ -356,7 +374,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <div className={classes.flotingBtn}>
               <AphButton
                 onClick={(e) => {
-                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                  if (!isSignedIn) {
+                    protectWithLoginPopup()
+                  } else {
+                    setIsPopoverOpen(true)
+                    gtmTrackingFunc()
+                  }
                 }}
                 color="primary"
                 title={' Book Appointment'}

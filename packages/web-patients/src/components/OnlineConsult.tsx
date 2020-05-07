@@ -40,7 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
 import { useLocationDetails } from 'components/LocationProvider';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -263,8 +263,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const doctorName =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.firstName
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.firstName
       ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
@@ -275,9 +275,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [revisedAmount, setRevisedAmount] = useState(onlineConsultationFees);
   const hospitalId =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
       ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
       : '';
 
@@ -515,7 +515,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     appointmentDateTime = consultNowSlotTime;
   }
   const consultType: AppointmentType = AppointmentType.ONLINE;
-
+  const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
   const bookAppointment = () => {
     paymentMutation({
       variables: {
@@ -532,21 +532,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     })
       .then((res: any) => {
         /* Gtm code start */
-        // const specialty = getSpeciality();
-        // const { getDoctorDetailsById } = doctorDetails;
-        // const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-        // gtmTracking({category: 'Consultations', action: specialty, label: 'Order Success', value: revisedAmount})
-        // window._cb(
-        //   currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
-        //   specialty,
-        //   city,
-        //   getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null,
-        //   AppointmentType.ONLINE,
-        //   `${appointmentDateTime}`,
-        //   couponCode ? couponCode : null,
-        //   couponValue ? couponValue : null,
-        //   revisedAmount
-        // );
+        const specialty = getSpeciality();
+        const { getDoctorDetailsById } = doctorDetails;
+        const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
+        gtmTracking({ category: 'Consultations', action: specialty, label: 'Order Success', value: revisedAmount })
+        _cbTracking({ specialty: specialty, bookingType: AppointmentType.ONLINE, scheduledDate: `${appointmentDateTime}`, couponCode: couponCode ? couponCode : null, couponValue: couponValue ? couponValue : null, finalBookingValue: revisedAmount })
         /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -576,9 +566,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
-            }&patientId=${
+              }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB`;
+              }&price=${revisedAmount}&source=WEB`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -635,7 +625,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                         ? classes.buttonActive
                         : ''
                       : classes.disabledButton
-                  }`}
+                    }`}
                   disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
                   title={' Consult Now'}
                 >
@@ -651,7 +641,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     showCalendar || scheduleLater || !consultNowAvailable
                       ? classes.buttonActive
                       : ''
-                  }`}
+                    }`}
                   title={' Schedule For Later'}
                 >
                   Schedule For Later
@@ -660,11 +650,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               {showCalendar || scheduleLater || !consultNowAvailable ? (
                 ''
               ) : (
-                <p className={classes.consultNowInfo}>
-                  Please note that after booking, you will need to download the Apollo 247 app to
-                  continue with your consultation.
-                </p>
-              )}
+                  <p className={classes.consultNowInfo}>
+                    Please note that after booking, you will need to download the Apollo 247 app to
+                    continue with your consultation.
+                  </p>
+                )}
             </div>
           )}
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
@@ -681,7 +671,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       showCalendar || scheduleLater || !consultNowAvailable
                         ? classes.showCalendar
                         : ''
-                    }`}
+                      }`}
                     ref={calendarRef}
                   >
                     <AphCalendar
@@ -692,32 +682,32 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 </Grid>
                 <Grid item sm={6} xs={12}>
                   {morningSlots.length > 0 ||
-                  afternoonSlots.length > 0 ||
-                  eveningSlots.length > 0 ||
-                  lateNightSlots.length > 0 ? (
-                    <div
-                      className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                        showCalendar || scheduleLater || !consultNowAvailable
-                          ? classes.showTimeSlot
-                          : ''
-                      }`}
-                    >
-                      <DayTimeSlots
-                        morningSlots={morningSlots}
-                        afternoonSlots={afternoonSlots}
-                        eveningSlots={eveningSlots}
-                        latenightSlots={lateNightSlots}
-                        doctorName={doctorName}
-                        timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                      />
-                    </div>
-                  ) : (
-                    <div className={classes.consultGroup}>
-                      <div className={classes.noSlotsAvailable}>
-                        Oops! No slots available with Dr. {doctorName} :(
+                    afternoonSlots.length > 0 ||
+                    eveningSlots.length > 0 ||
+                    lateNightSlots.length > 0 ? (
+                      <div
+                        className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                          showCalendar || scheduleLater || !consultNowAvailable
+                            ? classes.showTimeSlot
+                            : ''
+                          }`}
+                      >
+                        <DayTimeSlots
+                          morningSlots={morningSlots}
+                          afternoonSlots={afternoonSlots}
+                          eveningSlots={eveningSlots}
+                          latenightSlots={lateNightSlots}
+                          doctorName={doctorName}
+                          timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                        />
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className={classes.consultGroup}>
+                        <div className={classes.noSlotsAvailable}>
+                          Oops! No slots available with Dr. {doctorName} :(
+                      </div>
+                      </div>
+                    )}
                 </Grid>
               </Grid>
             </>
@@ -778,9 +768,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 doctorId: doctorId,
                 newDateTimeslot: new Date(
                   `${apiDateFormat} ${
-                    timeSelected !== ''
-                      ? timeSelected.padStart(5, '0')
-                      : slotAvailableNext.padStart(5, '0')
+                  timeSelected !== ''
+                    ? timeSelected.padStart(5, '0')
+                    : slotAvailableNext.padStart(5, '0')
                   }:00`
                 ).toISOString(),
                 initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
@@ -796,58 +786,58 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </AphButton>
         </div>
       ) : (
-        <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            disabled={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-            }
-            onClick={() => {
-              // let appointmentDateTime = '';
-              if (scheduleLater || !consultNowAvailable) {
-                const dateForScheduleLater =
-                  dateSelected.length > 0
-                    ? dateSelected.replace(/\//g, '-')
-                    : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
-                appointmentDateTime = moment(
-                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
-                  'DD-MM-YYYY HH:mm:ss'
-                )
-                  .utc()
-                  .format();
-              } else {
-                appointmentDateTime = consultNowSlotTime;
+          <div className={classes.bottomActions}>
+            <AphButton
+              color="primary"
+              disabled={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
               }
-              setMutationLoading(true);
-              if (couponCode) {
-                checkCouponValidity();
-              } else {
-                bookAppointment();
+              onClick={() => {
+                // let appointmentDateTime = '';
+                if (scheduleLater || !consultNowAvailable) {
+                  const dateForScheduleLater =
+                    dateSelected.length > 0
+                      ? dateSelected.replace(/\//g, '-')
+                      : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
+                  appointmentDateTime = moment(
+                    `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
+                    'DD-MM-YYYY HH:mm:ss'
+                  )
+                    .utc()
+                    .format();
+                } else {
+                  appointmentDateTime = consultNowSlotTime;
+                }
+                setMutationLoading(true);
+                if (couponCode) {
+                  checkCouponValidity();
+                } else {
+                  bookAppointment();
+                }
+              }}
+              className={
+                disableSubmit ||
+                  mutationLoading ||
+                  isDialogOpen ||
+                  (!consultNowAvailable && timeSelected === '') ||
+                  (scheduleLater && timeSelected === '')
+                  ? classes.buttonDisable
+                  : ''
               }
-            }}
-            className={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Pay'}
-          >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${revisedAmount}`
-            )}
-          </AphButton>
-        </div>
-      )}
+              title={'Pay'}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                  `PAY Rs. ${revisedAmount}`
+                )}
+            </AphButton>
+          </div>
+        )}
       <AphDialog
         open={isDialogOpen}
         disableBackdropClick

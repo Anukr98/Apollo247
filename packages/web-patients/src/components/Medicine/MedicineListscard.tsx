@@ -198,7 +198,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
               key={medicine.id}
               className={`${classes.medicineStrip} ${
                 medicine.is_in_stock ? '' : classes.medicineStripDisabled
-              }`}
+                }`}
             >
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(medicine.sku)}>
@@ -211,8 +211,8 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                       {medicine.is_in_stock ? (
                         <div className={classes.tabInfo}>Pack of {medicine.mou}</div>
                       ) : (
-                        <div className={classes.noStock}>Out Of Stock</div>
-                      )}
+                          <div className={classes.noStock}>Out Of Stock</div>
+                        )}
                     </div>
                   </div>
                 </Link>
@@ -276,7 +276,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                   category: 'Pharmacy',
                                   action: 'Remove From Cart',
                                   label: medicine.name,
-                                  value: medicine.price,
+                                  value: medicine.special_price || medicine.price,
                                 });
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
@@ -286,45 +286,45 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                         </div>
                       </>
                     ) : (
-                      <div className={classes.addToCart}>
-                        <AphButton>
-                          <img
-                            src={require('images/ic_plus.svg')}
-                            onClick={() => {
-                              const cartItem: MedicineCartItem = {
-                                description: medicine.description,
-                                id: medicine.id,
-                                image: medicine.image,
-                                is_in_stock: medicine.is_in_stock,
-                                is_prescription_required: medicine.is_prescription_required,
-                                name: medicine.name,
-                                price: medicine.price,
-                                sku: medicine.sku,
-                                special_price: medicine.special_price,
-                                small_image: medicine.small_image,
-                                status: medicine.status,
-                                thumbnail: medicine.thumbnail,
-                                type_id: medicine.type_id,
-                                mou: medicine.mou,
-                                quantity: selectedPackedQty,
-                                isShippable: true,
-                              };
-                              /**Gtm code start  */
-                              gtmTracking({
-                                category: 'Pharmacy',
-                                action: 'Add to Cart',
-                                label: medicine.name,
-                                value: medicine.price,
-                              });
-                              /**Gtm code End  */
-                              addCartItem && addCartItem(cartItem);
-                            }}
-                            alt="Add Item"
-                            title="Add item to Cart"
-                          />
-                        </AphButton>
-                      </div>
-                    )}
+                        <div className={classes.addToCart}>
+                          <AphButton>
+                            <img
+                              src={require('images/ic_plus.svg')}
+                              onClick={() => {
+                                const cartItem: MedicineCartItem = {
+                                  description: medicine.description,
+                                  id: medicine.id,
+                                  image: medicine.image,
+                                  is_in_stock: medicine.is_in_stock,
+                                  is_prescription_required: medicine.is_prescription_required,
+                                  name: medicine.name,
+                                  price: medicine.price,
+                                  sku: medicine.sku,
+                                  special_price: medicine.special_price,
+                                  small_image: medicine.small_image,
+                                  status: medicine.status,
+                                  thumbnail: medicine.thumbnail,
+                                  type_id: medicine.type_id,
+                                  mou: medicine.mou,
+                                  quantity: selectedPackedQty,
+                                  isShippable: true,
+                                };
+                                /**Gtm code start  */
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Add to Cart',
+                                  label: medicine.name,
+                                  value: medicine.special_price || medicine.price,
+                                });
+                                /**Gtm code End  */
+                                addCartItem && addCartItem(cartItem);
+                              }}
+                              alt="Add Item"
+                              title="Add item to Cart"
+                            />
+                          </AphButton>
+                        </div>
+                      )}
                   </div>
                 ) : null}
               </div>
@@ -333,8 +333,8 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
         ) : props.isLoading ? (
           <CircularProgress />
         ) : (
-          <div className={classes.noData}>No Data Found</div>
-        )}
+              <div className={classes.noData}>No Data Found</div>
+            )}
       </div>
     </div>
   );

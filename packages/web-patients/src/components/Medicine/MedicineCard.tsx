@@ -147,7 +147,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         category: 'Pharmacy',
                         action: 'Add to Cart',
                         label: product.name,
-                        value: product.price,
+                        value: product.special_price || product.price,
                       });
                       /**Gtm code End  */
                       const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -161,34 +161,34 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     Add To Cart
                   </AphButton>
                 ) : (
-                  <AphButton
-                    className={classes.addToCartBtn}
-                    onClick={() => {
-                      /**Gtm code start  */
-                      gtmTracking({
-                        category: 'Pharmacy',
-                        action: 'Remove From Cart',
-                        label: product.name,
-                        value: product.price,
-                      });
-                      /**Gtm code End  */
-                      removeCartItem && removeCartItem(product.id);
-                    }}
-                  >
-                    Remove
-                  </AphButton>
-                )
+                    <AphButton
+                      className={classes.addToCartBtn}
+                      onClick={() => {
+                        /**Gtm code start  */
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: 'Remove From Cart',
+                          label: product.name,
+                          value: product.special_price || product.price,
+                        });
+                        /**Gtm code End  */
+                        removeCartItem && removeCartItem(product.id);
+                      }}
+                    >
+                      Remove
+                    </AphButton>
+                  )
               ) : (
-                <span>Out of stock</span>
-              )}
+                  <span>Out of stock</span>
+                )}
             </div>
           </Grid>
         ))
       ) : props.isLoading ? (
         <CircularProgress />
       ) : (
-        <div className={classes.noData}>No Data Found</div>
-      )}
+            <div className={classes.noData}>No Data Found</div>
+          )}
     </Grid>
   );
 };
