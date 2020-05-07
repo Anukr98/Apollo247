@@ -404,7 +404,11 @@ export const SymptomsTrackerSDK: React.FC = () => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(setUserGender(currentPatient.gender));
-    } else if (isSignedIn && currentPatient && !currentPatient.dateOfBirth) {
+    } else if (
+      isSignedIn &&
+      currentPatient &&
+      (!currentPatient.dateOfBirth || !currentPatient.gender)
+    ) {
       setUserAge('2000-12-20');
       setPatientGender(setUserGender('MALE'));
     }
