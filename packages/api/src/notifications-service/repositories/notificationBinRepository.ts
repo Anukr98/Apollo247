@@ -98,10 +98,11 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
       .getMany();
   }
 
-  async getAllNotifications() {
-    return this.find({
-      where: { eventName: notificationEventName.APPOINTMENT },
-    });
+  async getAllNotificationsByAppointmentIds(ids: string[]) {
+    return this.createQueryBuilder('notificationBin')
+      .where('notificationBin.eventId IN (:...ids)', { ids })
+      .andWhere('notificationBin.eventName = :name', { name: notificationEventName.APPOINTMENT })
+      .getMany();
   }
 }
 

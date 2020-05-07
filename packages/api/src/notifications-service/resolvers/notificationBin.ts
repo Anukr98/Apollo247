@@ -16,7 +16,7 @@ import {
 import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subDays, format, differenceInDays } from 'date-fns';
+import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -314,54 +314,44 @@ const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> =
   args,
   { consultsDb }
 ) => {
-  //Getting All Notifications
-  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
-  const notifications = await notificationBinRepo.getAllNotifications();
-
-  //Getting the details of All Appointments
-  const appointmentIds = notifications.map((notification) => notification.eventId);
+  //Getting all the appointments past 1 day of free chat days
+  const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
+  const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
-    appointmentIds,
-    ['appointment.id', 'appointment.sdConsultationDate']
+  const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
+    appointmentDateToBeArchived
   );
+  const appointmentIdsToBeArchived = appointments.map((appointment) => appointment.id);
 
-  //Filtering the Appointments to be archived
-  const appointmentsToBeArchived = appointmentsData.filter((appointment) => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
-    const difference = differenceInDays(new Date(today), new Date(consultDate));
-
-    return difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
-  });
-  const appointmentIdsToBeArchived = appointmentsToBeArchived.map((appointment) => appointment.id);
-
-  //Filtering the notifications to be archived
-  const notificationsToBeArchived = notifications.filter((notification) =>
-    appointmentIdsToBeArchived.includes(notification.eventId)
-  );
-  const idsToBeDeleted: string[] = [];
-  const dataToArchieve: Partial<NotificationBinArchive>[] = notificationsToBeArchived.map(
-    (notification) => {
-      const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
-      notificationBinData.status = notificationStatus.READ;
-      if (notificationBinData.id) idsToBeDeleted.push(notificationBinData.id);
-      delete notificationBinData.id;
-      delete notificationBinData.createdDate;
-      delete notificationBinData.updatedDate;
-      return notificationBinData;
-    }
-  );
-
-  if (dataToArchieve.length) {
-    //Copying the notifications to notification bin archive Table
-    const notificationArchieveBinRepo = consultsDb.getCustomRepository(
-      NotificationBinArchiveRepository
+  if (appointmentIdsToBeArchived.length) {
+    //Getting the Notifications which needs to be archived
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notificationsToBeArchived = await notificationBinRepo.getAllNotificationsByAppointmentIds(
+      appointmentIdsToBeArchived
     );
-    await notificationArchieveBinRepo.saveNotification(dataToArchieve);
+    const idsToBeDeleted: string[] = [];
+    const dataToArchieve: Partial<NotificationBinArchive>[] = notificationsToBeArchived.map(
+      (notification) => {
+        const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+        notificationBinData.status = notificationStatus.READ;
+        if (notificationBinData.id) idsToBeDeleted.push(notificationBinData.id);
+        delete notificationBinData.id;
+        delete notificationBinData.createdDate;
+        delete notificationBinData.updatedDate;
+        return notificationBinData;
+      }
+    );
 
-    //Deleting the moved notifications
-    await notificationBinRepo.removeNotificationByIds(idsToBeDeleted);
+    if (dataToArchieve.length) {
+      //Copying the notifications to notification bin archive Table
+      const notificationArchieveBinRepo = consultsDb.getCustomRepository(
+        NotificationBinArchiveRepository
+      );
+      await notificationArchieveBinRepo.saveNotification(dataToArchieve);
+
+      //Deleting the moved notifications
+      await notificationBinRepo.removeNotificationByIds(idsToBeDeleted);
+    }
   }
 
   return 'success';
