@@ -253,7 +253,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [selectedTab, setselectedTab] = useState<string>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [deliveryError, setdeliveryError] = useState<string>('');
-  const [selectedQuantity, setselectedQuantity] = useState<string | number>(1);
   const [pincode, setpincode] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [Substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
@@ -347,6 +346,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const getItemQuantity = (id: string) => {
+    const foundItem = cartItems.find((item) =>item.id == id); 
+    return foundItem ? foundItem.quantity: 1;
+  };
+  const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
