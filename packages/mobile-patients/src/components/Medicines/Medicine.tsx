@@ -1169,7 +1169,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
          </TouchableOpacity>
          <Text style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal:12 }}>{getItemQuantity(data.sku)}</Text>
-         <TouchableOpacity style={{ marginRight:20}} activeOpacity={1} onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku)+1)} >
+         <TouchableOpacity style={{ marginRight:20}} activeOpacity={1} onPress={() => getItemQuantity(data.sku) == 20 ? null : onUpdateCartItem(data.sku, getItemQuantity(data.sku)+1)} >
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
          </TouchableOpacity>
         </View>
