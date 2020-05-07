@@ -404,6 +404,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(setUserGender(currentPatient.gender));
+    } else if (isSignedIn && currentPatient && !currentPatient.dateOfBirth) {
+      setUserAge('2000-12-20');
+      setPatientGender(setUserGender('MALE'));
     }
   }, [isSignedIn, currentPatient]);
 
@@ -582,8 +585,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <NavigatorSDK
                     clientId={process.env.PRAKTICE_SDK_KEY}
                     key={(currentPatient && currentPatient.id) || 'guest'}
-                    patientAge={patientAge}
-                    patientGender={patientGender}
+                    patientAge={patientAge || 20}
+                    patientGender={patientGender || 'male'}
                     sdkContainerStyle={customContainerStyle}
                     searchDoctorlistner={customListner}
                     showDocBtn={() => (
