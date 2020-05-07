@@ -36,6 +36,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
           },
         ]}
         headerText={strings.appointments.notifications_title}
+        titleTextViewStyle={{ marginLeft: -26 }}
       />
     );
   };

@@ -84,7 +84,6 @@ export default StyleSheet.create({
   },
   emptyContainer: {
     marginTop: 20,
-    marginLeft: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
