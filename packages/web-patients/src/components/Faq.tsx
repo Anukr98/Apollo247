@@ -1,15 +1,9 @@
 import React from 'react';
-import {
-  Theme,
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-} from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -25,161 +19,15 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
+      padding: 20,
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
+        padding: 40,
       },
     },
-    sectionTop: {
-      backgroundColor: '#fff',
-      padding: '20px 16px',
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      [theme.breakpoints.up('sm')]: {
-        padding: '20px 40px',
-      },
-      '& h1': {
-        fontSize: 28,
-        lineHeight: '36px',
-        fontWeight: 600,
-        color: '#02475b',
-        margin: 0,
-        [theme.breakpoints.up('sm')]: {
-          fontSize: 50,
-          lineHeight: '65px',
-        },
-      },
-      '& p': {
-        fontSize: 14,
-        margin: 0,
-        paddingTop: 8,
-        [theme.breakpoints.up('sm')]: {
-          fontSize: 16,
-        },
-      },
-    },
-    contentGroup: {
-      padding: 20,
-    },
-    faqGroup: {
-      backgroundColor: '#fff',
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      borderRadius: 10,
-      overflow: 'hidden',
-      maxWidth: 720,
-      margin: 'auto',
-    },
-    panelRoot: {
-      backgroundColor: theme.palette.common.white,
-      borderRadius: '0 !important',
-      marginBottom: '0px !important',
-      marginTop: '0 !important',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      width: '100%',
-      '&:before': {
-        display: 'none',
-      },
-      '&:last-child': {
-        borderBottom: 'none',
-      },
-    },
-    panelsGroup: {
-      '& >div:last-child': {
-        marginBottom: '0 !important',
-      },
-      [theme.breakpoints.up('sm')]: {
-        '& >div:nth-child(even)': {
-          backgroundColor: 'transparent',
-        },
-      },
-    },
-    panelHeader: {
-      padding: 16,
-      fontSize: 16,
-      fontWeight: 500,
-      color: '#02475b',
-      alignItems: 'flex-start',
-      [theme.breakpoints.up('sm')]: {
-        padding: 20,
-      },
-    },
-    summaryContent: {
-      margin: 0,
-      display: 'block',
-      '& h3': {
-        fontSize: 18,
-        margin: 0,
-        color: '#0087ba',
-        fontWeight: 500,
-      },
-    },
-    expandIcon: {
-      padding: 0,
-      margin: 0,
-    },
-    panelExpanded: {
-      minHeight: 'auto !important',
-      margin: '0 !important',
-    },
-    panelDetails: {
-      fontSize: 14,
-      lineHeight: 22,
-      padding: '0 16px',
-      display: 'inherit',
-      [theme.breakpoints.up('sm')]: {
-        padding: '0 20px',
-        fontSize: 16,
-        lineHeight: '26px',
-      },
-      '& p': {
-        marginTop: 0,
-        marginBottom: 16,
-      },
-    },
-    faqSearchForm: {
-      backgroundColor: '#f7f8f5',
-      padding: '8px 12px 10px 12px',
-      marginTop: 20,
-      display: 'flex',
-      alignItems: 'center',
-      borderRadius: 5,
-      [theme.breakpoints.down('xs')]: {
-        padding: 0,
-      },
-    },
-    searchInput: {
-      '& input': {
-        [theme.breakpoints.down('xs')]: {
-          backgroundColor: '#f7f8f5',
-          padding: '15px 33px 15px 12px',
-          borderBottom: '2px solid transparent',
-          '&:focus': {
-            backgroundColor: '#fff',
-            borderBottom: '2px solid #00b38e',
-            paddingLeft: 0,
-          },
-        },
-      },
-      '& >div': {
-        '&:after': {
-          display: 'none',
-        },
-        '&:before': {
-          display: 'none',
-        },
-      },
-    },
-    searchBtn: {
-      marginLeft: 'auto',
-      padding: 0,
-      boxShadow: 'none',
-      backgroundColor: 'transparent !important',
-      minWidth: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: -30,
-      },
-    },
-    searchBtnDisabled: {
-      opacity: 0.5,
+    textCenter: {
+      textAlign: 'center',
     },
   };
 });
@@ -192,121 +40,147 @@ export const Faq: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
-          <div className={classes.sectionTop}>
-            <h1>how can we help you?</h1>
-            <p>We are here to answer all your Frequently Asked Questions</p>
-            <div className={classes.faqSearchForm}>
-              <AphTextField
-                placeholder="Search for your queries here"
-                className={classes.searchInput}
-              />
-              <AphButton
-                className={classes.searchBtn}
-                classes={{
-                  disabled: classes.searchBtnDisabled,
-                }}
-              >
-                <img src={require('images/ic_send.svg')} alt="" />
-              </AphButton>
+          <h1 className={classes.textCenter}>Frequently Asked Questions</h1>
+          <h1 className={classes.textCenter}>Online Consultation FAQs</h1>
+          <div>
+            <p>
+              <strong> Online Consultation Related Queries </strong>
+            </p>
+            <ul>
+              <li>
+                <b>How do I book a online consultation?</b>
+                <br />
+                You can book an online consultation in two ways:
+                <br />
+                <br />
+                1) If you're you looking for a specialist, you may start by going to the Homepage.
+                Click Find a Doctor, select a specialty and click Online Consults. Select an
+                appointment card and click Consult Now.
+                <br />
+                <br />
+                2) If you're looking for a doctor based on your symptoms, you may start by going to
+                the Homepage. Click Track Symptoms, search for your symptoms or select a few of them
+                based on your current situation. Click Show Doctors and select an appointment card
+                and click Consult Now.
+                <br />
+                <br />
+                You can also book an appointment by going to Appointments and clicking Book an
+                Appointment.
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>How much time will I get to speak to a doctor?</b>
+                <br />
+                You can consult with your assigned doctor for about 15 minutes, depending on your
+                health status. The timings may increase if you have further queries.
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Can I get a free consultation with the same doctor?</b>
+                <br />
+                Once you have successfully consulted with the doctor,{' '}
+                <b>you can avail one free follow-up consultation.</b> (Applicable within the seven
+                days after the date of your first consultation)
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Can I get a free consultation with the same doctor?</b>
+                <br />
+                Once you have successfully consulted with the doctor,{' '}
+                <b>you can avail one free follow-up consultation.</b> (Applicable within the seven
+                days after the date of your first consultation)
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>How do I book my follow-up session in the app with the doctor?</b>
+                <br />
+                After you've successfully consulted with the assigned doctor, you can avail a free
+                follow-up* session by following the given steps:-
+                <br />
+                Go to Appointments -> Select Active Select an Appointment Card -> Click Schedule a
+                Follow-up
+                <br />
+                or
+                <br />
+                Go to Health Records -> Select Consults & Rx Select an Appointment Card -> Click
+                Book Follow-Up (You can avail one free follow-up session with the doctor within
+                seven days after the date of consultation)*
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Can I get a free consultation with the same doctor?</b>
+                <br />
+                Once you have successfully consulted with the doctor,{' '}
+                <b>you can avail one free follow-up consultation.</b> (Applicable within the seven
+                days after the date of your first consultation)
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Can I get a free consultation with the same doctor?</b>
+                <br />
+                Once you have successfully consulted with the doctor,{' '}
+                <b>you can avail one free follow-up consultation.</b> (Applicable within the seven
+                days after the date of your first consultation)
+                <br />
+                <br />
+              </li>
+              <li>
+                <b>Can I get a free consultation with the same doctor?</b>
+                <br />
+                Once you have successfully consulted with the doctor,{' '}
+                <b>you can avail one free follow-up consultation.</b> (Applicable within the seven
+                days after the date of your first consultation)
+                <br />
+                <br />
+              </li>
+            </ul>
+            <p>
+              <strong> Payment Related Queries </strong>
+            </p>
+            <p>
+              <strong> Online Consultation Issues Related Queries </strong>
+            </p>
+            <p>
+              <strong> E- Prescription Related Queries </strong>
+            </p>
+          </div>
+          <div>
+            <h1 className={classes.textCenter}>Medicine Order FAQs</h1>
+
+            <div>
+              <p>
+                <strong> Ordering Medicines (With Prescription) </strong>
+              </p>
+              <p>
+                <strong> E-Prescription Related Queries </strong>
+              </p>
+              <p>
+                <strong> Order Related Queries </strong>
+              </p>
             </div>
           </div>
-          <div className={classes.contentGroup}>
-            <div className={classes.faqGroup}>
-              <ExpansionPanel className={classes.panelRoot}>
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <h3>What is the first question here?</h3>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <p>
-                    Here, we will answer the questions you’ve raised over the time. And we will be
-                    very happy to help you. These questions are based on your queries.
-                  </p>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel className={classes.panelRoot}>
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <h3>What is the second question?</h3>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <p>
-                    Here, we will answer the questions you’ve raised over the time. And we will be
-                    very happy to help you. These questions are based on your queries.
-                  </p>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel className={classes.panelRoot}>
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <h3>What is the third question?</h3>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <p>
-                    Here, we will answer the questions you’ve raised over the time. And we will be
-                    very happy to help you. These questions are based on your queries.
-                  </p>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel className={classes.panelRoot}>
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <h3>What is the fourth question?</h3>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <p>
-                    Here, we will answer the questions you’ve raised over the time. And we will be
-                    very happy to help you. These questions are based on your queries.
-                  </p>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel className={classes.panelRoot}>
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <h3>What is the fifth question?</h3>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <p>
-                    Here, we will answer the questions you’ve raised over the time. And we will be
-                    very happy to help you. These questions are based on your queries.
-                  </p>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
+          <div>
+            <h1 className={classes.textCenter}>Diagnostic Test Booking FAQs</h1>
+
+            <div>
+              <p>
+                <strong> Booking Tests Related Queries </strong>
+              </p>
+              <p>
+                <strong> About Diagnostic Tests Related Queries </strong>
+              </p>
+              <p>
+                <strong> Diagnostic Tests Issues </strong>
+              </p>
+              <p>
+                <strong> Payment Related Queries </strong>
+              </p>
             </div>
           </div>
         </div>
