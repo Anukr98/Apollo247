@@ -97,8 +97,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
         width: '100%',
         left: '0 !important',
-        display: 'flex',
-        bottom: 0,
       },
     },
     successPopoverWindow: {
@@ -116,9 +114,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: '10px 10px 0 0',
-      },
     },
     mascotIcon: {
       position: 'absolute',
