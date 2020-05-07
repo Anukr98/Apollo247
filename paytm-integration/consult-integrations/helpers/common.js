@@ -43,7 +43,9 @@ const generatePaymentOrderId = () => {
     let seconds =
         dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds().toString();
     let date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate().toString();
-    let random4Digits = Math.random().toString().slice(-4);
+    let random4Digits = Math.random()
+        .toString()
+        .slice(-4);
 
     return (
         dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits
@@ -73,6 +75,7 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
             paymentTypeParams['AUTH_MODE'] = 'USRPWD';
             break;
     }
+
     return paymentTypeParams;
 };
 

@@ -15,6 +15,7 @@ const consultsPgSuccess = (req, res) => {
         });
     }
 }
+
 const consultsPgError = (req, res) => {
     res.send({ status: "failed" });
 }

@@ -1,7 +1,7 @@
 const axios = require('axios');
 const logger = require('../../winston-logger')('Pharmacy-logs');
 const initPayment = require('../helpers/getPaymentObject');
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
 
     // variable to log order id in catch
     let orderId;
