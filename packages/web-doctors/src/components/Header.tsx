@@ -400,11 +400,13 @@ export const Header: React.FC = (props) => {
                       />
                     </Grid>
                     <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
-                      You have{' '}
+                    {`${
+                        notificationObject.unreadNotificationsCount > 1 ? 'There are' : 'There is'
+                      }`} {' '}
                       {`${notificationObject.unreadNotificationsCount} ${
-                        notificationObject.unreadNotificationsCount > 1 ? 'messages' : 'message'
+                        notificationObject.unreadNotificationsCount > 1 ? 'new messages' : 'new message'
                       }`}{' '}
-                      from{' '}
+                      from your patient,{' '}
                       <span className={classes.bold}>
                         {notificationObject.patientFirstName} {notificationObject.patientLastName}
                       </span>
