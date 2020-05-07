@@ -85,7 +85,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             <View style={styles.iconContainer}>{chatIcon()}</View>
             <View style={styles.textContainer}>
               <Text style={styles.mainTextStyle}>
-                <Text style={styles.highText}>New message</Text> from your follow up patient,{' '}
+                {`There are ${item.unreadNotificationsCount} new message(s) from your patient, `}
                 <Text
                   style={styles.highText}
                 >{`${item.patientFirstName} ${item.patientLastName}`}</Text>
