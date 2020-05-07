@@ -4,8 +4,46 @@ declare global {
     webengage: any;
   }
 }
+interface UserDetail {
+  id: string;
+  emailAddress: string | null;
+  dateOfBirth: string;
+  mobileNumber: string;
+  gender: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}
 
 window.webengage = window.webengage || {};
+
+export const webengageUserTracking = (userDetailData: UserDetail) => {
+  // id, mobileNumber, firstName, relation, age, gender,
+  const { id, emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.login(mobileNumber);
+      window.webengage.user.setAttribute('we_email', emailAddress);
+      window.webengage.user.setAttribute('we_birth_date', dateOfBirth);
+      window.webengage.user.setAttribute('we_phone', mobileNumber);
+      window.webengage.user.setAttribute('we_gender', gender);
+      window.webengage.user.setAttribute('we_first_name', firstName);
+      window.webengage.user.setAttribute('we_last_name', lastName);
+    } catch (err) {
+      console.log('Webengage user tracking err: ', err)
+    }
+  }
+}
+
+export const webengageUserLogoutTracking = () => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.logout();
+    } catch (err) {
+      console.log('Webengage user logout tracking err: ', err)
+    }
+  }
+}
+
 export const phrConsultTabClickTracking = (userData: any) => {
   if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;

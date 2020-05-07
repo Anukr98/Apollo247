@@ -295,6 +295,10 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   if (!authToken) {
                     setOtpSubmitCount(otpSubmitCount + 1);
                   }
+                  if(authToken){
+                    debugger
+                    console.log(mobileNumber, 'Hope')
+                  }
                 });
               }}
               title={'Login'}

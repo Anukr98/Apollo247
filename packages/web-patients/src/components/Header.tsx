@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -10,11 +10,13 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { locationRoutesBlackList } from 'helpers/commonHelpers';
 
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
+import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { LocationSearch } from './LocationSearch';
 import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+
+import { webengageUserTracking } from '../webEngageTracking'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -185,7 +187,14 @@ export const Header: React.FC = (props) => {
     });
     return !x;
   };
+  const { currentPatient } = useAllCurrentPatients()
 
+  useEffect(()=>{
+    if(isSignedIn && currentPatient) {
+      const { id, mobileNumber, firstName, lastName, gender, dateOfBirth, emailAddress } = currentPatient;
+      webengageUserTracking({ id, mobileNumber, firstName, lastName, gender, dateOfBirth, emailAddress })
+    }
+  }, [isSignedIn])
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
