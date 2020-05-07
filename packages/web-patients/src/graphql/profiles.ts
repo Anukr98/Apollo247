@@ -62,6 +62,26 @@ export const CANCEL_APPOINTMENT = gql`
   }
 `;
 
+export const GET_PATIENT_ADDRESS_LIST = gql`
+  query GetPatientAddressList($patientId: String) {
+    getPatientAddressList(patientId: $patientId) {
+      addressList {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+        addressType
+        otherAddressType
+      }
+    }
+  }
+`;
+
 export const BOOK_APPOINTMENT_RESCHEDULE = gql`
   mutation bookRescheduleAppointment(
     $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!

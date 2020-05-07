@@ -8,8 +8,7 @@
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"],
     "esModuleInterop": true,
-    "downlevelIteration": true,
-    "noImplicitAny": false
+    "downlevelIteration": true
   },
   "exclude": ["node_modules", "dist", "src/cypress"]
 }

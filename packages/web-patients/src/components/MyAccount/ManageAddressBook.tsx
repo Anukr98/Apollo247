@@ -10,7 +10,7 @@ import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
 } from 'graphql/types/GetPatientAddressList';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { MascotWithMessage } from '../MascotWithMessage';
 import { Close } from '@material-ui/icons';
@@ -101,7 +101,7 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
   const { data, error, loading, refetch } = useQueryWithSkip<
     GetPatientAddressList,
     GetPatientAddressListVariables
-  >(GET_PATIENT_ADDRESSES_LIST, {
+  >(GET_PATIENT_ADDRESS_LIST, {
     variables: {
       patientId: props.patientId,
     },

@@ -68,6 +68,22 @@ export const GET_APPOINTMENT_DATA = gql`
     }
   }
 `;
+export const GET_COUPONS = gql`
+  query getCoupons {
+    getCoupons {
+      coupons {
+        id
+        code
+        description
+        discountType
+        discount
+        minimumOrderAmount
+        expirationDate
+        isActive
+      }
+    }
+  }
+`;
 
 export const VALIDATE_CONSULT_COUPON = gql`
   query ValidateConsultCoupon(
