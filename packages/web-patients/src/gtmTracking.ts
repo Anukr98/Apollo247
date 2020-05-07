@@ -1,25 +1,20 @@
 export const gtmTracking = (gtmObj: any) => {
-    const { category, action, label, value } = gtmObj
-    try {
-        window && window.gep && window.gep(category, action, label, value);
-    } catch (err) {
-        console.log('GTM ERROR: ', err)
-    }
-}
+  const { category, action, label, value } = gtmObj;
+  try {
+    window && window.gep && window.gep(category, action, label, value);
+  } catch (err) {
+    console.log('GTM ERROR: ', err);
+  }
+};
 
 export const _urTracking = (params: any) => {
-    const { mobileNumber,
-        isApolloCustomer,
-        profileFetchedCount } = params;
-    try {
-        window && window._ur && window._ur(
-            mobileNumber,
-            isApolloCustomer,
-            profileFetchedCount)
-    } catch (err) {
-        console.log('GTM ERROR: ', err)
-    }
-}
+  const { mobileNumber, isApolloCustomer, profileFetchedCount } = params;
+  try {
+    window && window._ur && window._ur(mobileNumber, isApolloCustomer, profileFetchedCount);
+  } catch (err) {
+    console.log('GTM ERROR: ', err);
+  }
+};
 
 // export const _cbTracking = (params: any) => {
 //     const { mobileNumber,
@@ -46,23 +41,28 @@ export const _urTracking = (params: any) => {
 //     }
 // }
 export const _obTracking = (params: any) => {
-    const { mobileNumber,
+  const {
+    mobileNumber,
+    userLocation,
+    paymentType,
+    itemCount,
+    couponCode,
+    couponValue,
+    finalBookingValue,
+  } = params;
+  try {
+    window &&
+      window._ob &&
+      window._ob(
+        mobileNumber,
         userLocation,
         paymentType,
         itemCount,
         couponCode,
         couponValue,
         finalBookingValue
-    } = params;
-    try {
-        window && window._ob && window._ob(mobileNumber,
-            userLocation,
-            paymentType,
-            itemCount,
-            couponCode,
-            couponValue,
-            finalBookingValue)
-    } catch (err) {
-        console.log('GTM ERROR: ', err)
-    }
-}
+      );
+  } catch (err) {
+    console.log('GTM ERROR: ', err);
+  }
+};

@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
     searchByBrandPage: {
       [theme.breakpoints.up('sm')]: {
         backgroundColor: '#f7f8f5',
-      }
+      },
     },
     breadcrumbs: {
       marginLeft: 20,

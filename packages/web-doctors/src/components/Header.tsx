@@ -117,6 +117,10 @@ const useStyles = makeStyles((theme: Theme) => {
     notificationPopup: {
       padding: 0,
     },
+    notificationPopupEmpty: {
+      padding: 0,
+      minHeight: 'auto',
+    },
     afterloginForm: {
       width: 320,
       minHeight: 230,
@@ -195,7 +199,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 12,
       top: 12,
     },
-    notificationGroup : {
+    notificationGroup: {
       paddingTop: 30,
     },
     notification: {
@@ -234,8 +238,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     emptyNotification: {
       fontSize: 16,
-      padding: 20,
-      marginTop: 20,
+      padding: '50px 20px 20px',
       textAlign: 'center',
     },
   };
@@ -683,22 +686,28 @@ export const Header: React.FC = (props) => {
             }}
             classes={{ paper: classes.signedTopPopover }}
           >
-            <Paper className={`${classes.loginForm} ${classes.notificationPopup}`}>
+            <Paper
+              className={`${classes.loginForm} ${
+                content && content.length > 0 && content[0]
+                  ? classes.notificationPopup
+                  : classes.notificationPopupEmpty
+              }`}
+            >
               <Button
                 onClick={() => setIsHelpPopupOpen1(false)}
                 className={classes.notificationcross}
               >
                 <img src={require('images/ic_cross.svg')} alt="" />
               </Button>
-              <Scrollbars autoHide={true} autoHeight ref={scrollbarRef} autoHeightMin={280}>
-                {content && content.length > 0 && content[0] ? (
+              {content && content.length > 0 && content[0] ? (
+                <Scrollbars autoHide={true} autoHeight ref={scrollbarRef} autoHeightMin={280}>
                   <div>
                     <div>{content[0]}</div>
                   </div>
-                ) : (
-                  <div className={classes.emptyNotification}>No Notification</div>
-                )}
-              </Scrollbars>
+                </Scrollbars>
+              ) : (
+                <div className={classes.emptyNotification}>There are no notifications</div>
+              )}
             </Paper>
           </Popover>
 

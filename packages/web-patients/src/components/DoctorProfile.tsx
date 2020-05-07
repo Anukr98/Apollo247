@@ -15,7 +15,7 @@ import { DoctorType } from 'graphql/types/globalTypes';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
-import { gtmTracking } from '../gtmTracking'
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -246,7 +246,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     } else {
       city = null;
     }
-    gtmTracking({category:'Consultations' , action: speciality, label: `${city} Doctor Profile Viewed`})
+    gtmTracking({
+      category: 'Consultations',
+      action: speciality,
+      label: `${city} Doctor Profile Viewed`,
+    });
     /**Gtm code start end */
     apolloClient
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
