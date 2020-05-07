@@ -6,6 +6,9 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.corbt.keepawake.KCKeepAwakePackage;	
+import me.furtado.smsretriever.RNSmsRetrieverPackage;	
+import com.reactnativecommunity.rnpermissions.RNPermissionsPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
