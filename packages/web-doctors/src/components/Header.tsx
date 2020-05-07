@@ -40,6 +40,7 @@ import ReactCountdownClock from 'react-countdown-clock';
 import { useMutation, useQuery } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
+import {GetNotifications_getNotifications_notificationData as NotificationDataType} from 'graphql/types/GetNotifications'; 
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -383,6 +384,14 @@ export const Header: React.FC = (props) => {
     return `${dateFormat}, ${timeStamp} `;
   }
 
+  const sortByDate = ( notificationData: NotificationDataType[]) => {
+    return notificationData.sort((data1: NotificationDataType , data2: NotificationDataType ) => {
+      let date1 = new Date(data1.lastUnreadMessageDate);
+      let date2 = new Date(data2.lastUnreadMessageDate);
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
+  };
+
   if (
     //!loading &&
     data &&
@@ -390,11 +399,13 @@ export const Header: React.FC = (props) => {
     data.getNotifications.notificationData &&
     data.getNotifications.notificationData.length > 0
   ) {
-    notificationCount = data.getNotifications.notificationData.length;
+    
+    const notificationData = sortByDate(data.getNotifications.notificationData);
+    notificationCount = notificationData.length;
     content = [
       <div onContextMenu={(e) => e.preventDefault()}>
         <div className={classes.notificationGroup}>
-          {data.getNotifications.notificationData.map((notificationObject: any, index: any) => {
+          {notificationData.map((notificationObject: any, index: any) => {
             return (
               <div className={classes.notification}>
                 <div
@@ -565,10 +576,10 @@ export const Header: React.FC = (props) => {
                           onClick={() => {
                             setSelectedTab(4);
                             setIsHelpPopupOpen1(true);
-                            setTimeout(() => {
-                              const node = (scrollbarRef as any).current;
-                              if (node) node.scrollToBottom();
-                            }, 100);
+                            // setTimeout(() => {
+                            //   const node = (scrollbarRef as any).current;
+                            //   if (node) node.scrollToBottom();
+                            // }, 100);
                           }}
                         >
                           <img src={require('images/ic_notifications.svg')} />
@@ -694,6 +705,7 @@ export const Header: React.FC = (props) => {
           <Popover
             open={isHelpPopupOpen1}
             anchorEl={avatarRef.current}
+            onClose={() => setIsHelpPopupOpen1(false)}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',
