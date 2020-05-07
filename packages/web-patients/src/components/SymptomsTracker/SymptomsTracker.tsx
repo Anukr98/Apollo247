@@ -361,8 +361,8 @@ export const SymptomsTracker: React.FC = () => {
           </div>
         </div>
       </div>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
       <div className={classes.footerLinks}>
-        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
       {isSignedIn && <NavigationBottom />}
