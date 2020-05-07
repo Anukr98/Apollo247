@@ -6,7 +6,6 @@ import { useAuth } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Header } from 'components/Header';
-import { NavigationBottom } from 'components/NavigationBottom';
 import { NavigatorSDK, $Generator } from '@praktice/navigator-react-web-sdk';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
@@ -398,12 +397,19 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
-  const setUserGender = (gender: string) => gender.toLowerCase();
+  const convertUserGenderToLowercase = (gender: string) => gender.toLowerCase();
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
+    } else if (
+      isSignedIn &&
+      currentPatient &&
+      (!currentPatient.dateOfBirth || !currentPatient.gender)
+    ) {
+      setUserAge('2000-12-20');
+      setPatientGender(convertUserGenderToLowercase('MALE'));
     }
   }, [isSignedIn, currentPatient]);
 
@@ -418,9 +424,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
     } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
-      setPatientGender(setUserGender(loggedOutPatientGender));
+      setPatientGender(convertUserGenderToLowercase(loggedOutPatientGender));
     }
   }, [loggedOutPatientGender]);
 
