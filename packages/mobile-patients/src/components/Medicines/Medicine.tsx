@@ -1,5 +1,8 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
@@ -144,7 +147,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   >([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
-  const { showAphAlert, setLoading: globalLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
   const max_time_to_use_local_medicine_data = 60; // in minutes
   type LocalMedicineData = {
@@ -185,9 +188,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const updateServiceability = (pincode: string) => {
+    const onPresChangeAddress = () => {
+      hideAphAlert!();
+      setPincodePopupVisible(true);
+    };
+
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Sorry, not serviceable here.');
+        !Availability &&
+          showAphAlert!({
+            title: 'We’re sorry!',
+            description: 'We are not serviceable in your area. Please change your location.',
+            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'CHANGE THE ADDRESS',
+                type: 'orange-link',
+                onPress: onPresChangeAddress,
+              },
+            ],
+          });
       })
       .catch((e) => {
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
@@ -1201,11 +1223,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     onPress: () => void;
     showSeparator?: boolean;
     style?: ViewStyle;
-    medicineProduct: MedicineProduct 
+    medicineProduct: MedicineProduct;
   }
 
   const renderSearchSuggestionItem = (data: SuggestionType) => {
-  const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == data.sku) != -1;
+    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == data.sku) != -1;
     const localStyles = StyleSheet.create({
       containerStyle: {
         ...data.style,
@@ -1213,7 +1235,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       iconAndDetailsContainerStyle: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 9.5
+        marginVertical: 9.5,
       },
       iconOrImageContainerStyle: {
         width: 40,
@@ -1315,8 +1337,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
 
     const getItemQuantity = (id: string) => {
-      const foundItem = cartItems.find((item) =>item.id == id); 
-      return foundItem ? foundItem.quantity: 1;
+      const foundItem = cartItems.find((item) => item.id == id);
+      return foundItem ? foundItem.quantity : 1;
     };
 
     const onNotifyMeClick = () => {
@@ -1324,35 +1346,57 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         title: 'Okay! :)',
         description: `You will be notified when ${data.name} is back in stock.`,
       });
-    }
+    };
 
     const renderAddToCartView = () => {
-      return(
-        <TouchableOpacity activeOpacity={1} onPress={() => data.isOutOfStock ? onNotifyMeClick() : onAddCartItem(data.medicineProduct)} >
-          <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>{ data.isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}</Text>
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() =>
+            data.isOutOfStock ? onNotifyMeClick() : onAddCartItem(data.medicineProduct)
+          }
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
+            {data.isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
+          </Text>
         </TouchableOpacity>
       );
     };
 
     const renderQuantityView = () => {
-      return(
-        <View style={{ flexDirection:'row'}}>
-          <TouchableOpacity activeOpacity={1} onPress={() => getItemQuantity(data.sku) == 1 ? onRemoveCartItem(data.sku) : onUpdateCartItem(data.sku, getItemQuantity(data.sku)-1)} >
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              getItemQuantity(data.sku) == 1
+                ? onRemoveCartItem(data.sku)
+                : onUpdateCartItem(data.sku, getItemQuantity(data.sku) - 1)
+            }
+          >
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
-         </TouchableOpacity>
-         <Text style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal:12 }}>{getItemQuantity(data.sku)}</Text>
-         <TouchableOpacity style={{ marginRight:20}} activeOpacity={1} onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku)+1)} >
+          </TouchableOpacity>
+          <Text
+            style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal: 12 }}
+          >
+            {getItemQuantity(data.sku)}
+          </Text>
+          <TouchableOpacity
+            style={{ marginRight: 20 }}
+            activeOpacity={1}
+            onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)}
+          >
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
-         </TouchableOpacity>
+          </TouchableOpacity>
         </View>
       );
     };
 
-    const onUpdateCartItem = (id : string, quantity: number) => {
-        updateCartItem && updateCartItem({ id, quantity: quantity });
+    const onUpdateCartItem = (id: string, quantity: number) => {
+      updateCartItem && updateCartItem({ id, quantity: quantity });
     };
 
-    const onRemoveCartItem = ( id : string) => {
+    const onRemoveCartItem = (id: string) => {
       removeCartItem && removeCartItem(id);
     };
 
@@ -1534,7 +1578,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
       prescriptionRequired: item.is_prescription_required == '1',
-      medicineProduct: item
+      medicineProduct: item,
     });
   };
 
@@ -1628,7 +1672,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderPincodePopup = () => {
-    const onClose = () => setPincodePopupVisible(false);
+    const onClose = (serviceable?: boolean, response?: LocationData) => {
+      setPincodePopupVisible(false);
+      if (serviceable) setServiceabilityMsg('');
+    };
     return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
   };
 

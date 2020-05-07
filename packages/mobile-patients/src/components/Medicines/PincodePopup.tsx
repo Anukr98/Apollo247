@@ -7,7 +7,10 @@ import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  getPlaceInfoByPincode,
+  pinCodeServiceabilityApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
@@ -55,22 +58,39 @@ const styles = StyleSheet.create({
 
 export interface PincodePopupProps {
   onClickClose: () => void;
-  onComplete: (response: LocationData) => void;
+  onComplete: (serviceable: boolean, response: LocationData) => void;
 }
 
 export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [pincode, setPincode] = useState<string>('');
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const { setLoading: globalLoading } = useUIElements();
   const { setPharmacyLocation } = useAppCommonData();
 
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
     CommonBugFender('AddAddress_updateCityStateByPincode', e);
-    setError(true);
+    setError('Sorry, invalid pincode.');
+  };
+
+  const checkServiceabilityAndUpdatePlaceInfo = (pincode: string) => {
+    globalLoading!(true);
+    pinCodeServiceabilityApi(pincode)
+      .then(({ data: { Availability } }) => {
+        if (!Availability) {
+          globalLoading!(false);
+          setError('Sorry, not serviceable here.');
+        } else {
+          updatePlaceInfoByPincode(pincode);
+        }
+      })
+      .catch((e) => {
+        globalLoading!(false);
+        CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
+        setError('Sorry, unable to check serviceability.');
+      });
   };
 
   const updatePlaceInfoByPincode = (pincode: string) => {
-    globalLoading!(true);
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
@@ -78,7 +98,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           const latLang = data.results[0].geometry.location || {};
           const response = getFormattedLocation(addrComponents, latLang);
           setPharmacyLocation!(response);
-          props.onComplete(response);
+          props.onComplete(true, response);
         } catch (e) {
           handleUpdatePlaceInfoByPincodeError(e);
         }
@@ -89,7 +109,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
 
   const validateAndSetPincode = (pincode: string) => {
     if (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) {
-      if (error) setError(false);
+      if (error) setError('');
       setPincode(pincode);
     }
   };
@@ -119,12 +139,12 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
             placeholder="Enter pincode here"
             maxLength={6}
           />
-          {!!error && <Text style={styles.errorText}>Sorry, invalid pincode.</Text>}
+          {!!error && <Text style={styles.errorText}>{error}</Text>}
           <Button
             disabled={pincode.length !== 6}
             style={styles.submitButton}
             title="SUBMIT"
-            onPress={() => updatePlaceInfoByPincode(pincode)}
+            onPress={() => checkServiceabilityAndUpdatePlaceInfo(pincode)}
           />
         </View>
         {renderCloseIcon()}
