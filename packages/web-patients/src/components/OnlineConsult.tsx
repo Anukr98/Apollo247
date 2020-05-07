@@ -40,7 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
 import { useLocationDetails } from 'components/LocationProvider';
-import { gtmTracking } from '../gtmTracking'
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -724,14 +724,20 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           )}
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={() => {
+            setCouponCodeFxn={() => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              gtmTracking({ category: 'Consultations', action: speciality, label: `Coupon Applied - ${couponCode}`, value: couponValue})
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Applied - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
               setCouponCode(couponCode);
             }}
+            setCouponCode={setCouponCode}
             subtotal={onlineConsultationFees}
             revisedAmount={revisedAmount}
             setRevisedAmount={setRevisedAmount}
@@ -742,7 +748,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              gtmTracking({ category: 'Consultations', action: speciality, label: `Coupon Removed - ${couponCode}`, value: couponValue})
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Removed - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
             }}
           />

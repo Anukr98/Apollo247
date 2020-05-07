@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const AddressBook: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const patient = useCurrentPatient();
   if (!patient)
     return (

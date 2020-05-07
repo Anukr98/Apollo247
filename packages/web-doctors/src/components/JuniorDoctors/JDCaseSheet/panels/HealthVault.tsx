@@ -218,7 +218,7 @@ interface PastAppointmentProps {
 }
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data &&
@@ -245,7 +245,7 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.appointmentCardRoot}>
       <Link to={`/jd-consultroom/${data.id}/${data.patientId}/1/done`} target="_blank">
@@ -323,7 +323,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = false;
   const { appointmentDocuments, pastAppointments, patientDetails } = useContext(
     CaseSheetContextJrd

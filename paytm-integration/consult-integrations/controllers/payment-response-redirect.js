@@ -1,4 +1,4 @@
-const consultsPgRedirect = (req, res) => {
+const consultsPgSuccess = (req, res) => {
     const orderAppId = req.query.tk;
     if (orderAppId) {
         res.statusCode = 200;
@@ -15,7 +15,11 @@ const consultsPgRedirect = (req, res) => {
         });
     }
 }
+const consultsPgError = (req, res) => {
+    res.send({ status: "failed" });
+}
 
 module.exports = {
-    consultsPgRedirect
+    consultsPgSuccess,
+    consultsPgError
 }

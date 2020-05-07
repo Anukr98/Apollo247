@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const BankDetails: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.shadowHide}>

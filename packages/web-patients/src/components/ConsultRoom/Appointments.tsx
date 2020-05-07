@@ -41,6 +41,7 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking'
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -90,10 +91,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     consultPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       paddingTop: 30,
-      marginBottom: 20,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
         borderRadius: 0,
@@ -755,14 +754,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h3">Uh oh.. :)</Typography>
               <p> We're sorry but the payment failed</p>
               <div className={classes.bottomButtons}>
-                <AphButton
-                  color="primary"
-                  onClick={() => {
-                    setIsFailurePayment(false);
-                  }}
-                >
-                  OK, GOT IT
-                </AphButton>
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        setIsFailurePayment(false);
+                        history.push(clientRoutes.appointments());
+                      }}
+                    >
+                      OK, GOT IT
+                    </AphButton>)
+                  }
+                />
               </div>
             </div>
           </div>
@@ -791,7 +795,7 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </Popover> */}
-
+      <BottomLinks />
       <NavigationBottom />
     </div>
   );

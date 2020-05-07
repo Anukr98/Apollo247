@@ -16,15 +16,17 @@ const logger = require('./winston-logger')('Universal-Error-Logs');
 const {
   paymedRequest,
   paymedResponse,
-  mobRedirect,
-  pharmaWebhook,
+  mob,
+  mobError,
+  pharmaWebhook
 } = require('./pharma-integrations/controllers');
 
 const {
   consultPayRequest,
   consultPayResponse,
-  consultsPgRedirect,
-  consultWebhook,
+  consultsPgSuccess,
+  consultsPgError,
+  consultWebhook
 } = require('./consult-integrations/controllers');
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
@@ -272,16 +274,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-        '?appId=apollo_24_7&appUserId=' +
-        req.query.appUserId +
-        '&name=' +
-        req.query.userName +
-        '&gender=' +
-        req.query.gender +
-        '&emailId=' +
-        req.query.emailId +
-        '&phoneNumber=' +
-        req.query.phoneNumber
+      '?appId=apollo_24_7&appUserId=' +
+      req.query.appUserId +
+      '&name=' +
+      req.query.userName +
+      '&gender=' +
+      req.query.gender +
+      '&emailId=' +
+      req.query.emailId +
+      '&phoneNumber=' +
+      req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -1037,7 +1039,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1087,9 +1089,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+          '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+          null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1119,9 +1121,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              null
+            null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','

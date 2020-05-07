@@ -304,7 +304,7 @@ interface ConsultationHoursProps {
 }
 
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const data = values;
 
   // converts utc to ist time.

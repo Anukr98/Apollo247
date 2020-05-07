@@ -105,7 +105,7 @@ interface PastSearchProps {
 }
 
 export const PastSearches: React.FC<PastSearchProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const { speciality, disableFilter, specialityId } = props;
 

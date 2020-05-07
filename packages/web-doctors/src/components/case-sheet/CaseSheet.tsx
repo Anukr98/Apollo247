@@ -323,7 +323,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
-      } else if(storageItem) {
+      } else if (storageItem) {
         setSymptoms(storageItem.symptoms);
         setWeight(storageItem.weight);
         setHeight(storageItem.height);

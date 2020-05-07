@@ -90,7 +90,7 @@ interface HelpProps {
 }
 export const HelpPopup: React.FC<HelpProps> = (props) => {
   const { isSignedIn } = useAuth();
-  const classes = useStyles();
+  const classes = useStyles({});
   const helpData = [
     {
       name: 'SPOC for Apollo Hyderabad Doctors',

@@ -641,7 +641,7 @@ let timerIntervalId: any;
 let stoppedConsulTimer: number;
 let countdowntimer: any;
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<JDConsultRoomParams>();
 
   const { appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);

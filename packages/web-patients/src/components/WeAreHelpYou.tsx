@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const WeAreHelpYou: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 

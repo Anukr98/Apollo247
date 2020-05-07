@@ -68,7 +68,7 @@ interface CustomAPHCalendarProps {
 }
 
 export const AphCalendar: React.FC<CustomAPHCalendarProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { getDate, selectedDate } = props;
   const [value, handleDateChange] = useState<MaterialUiPickersDate>(
     selectedDate ? selectedDate : new Date()

@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const PrescriptionPreview: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <img src="https://via.placeholder.com/564x592" alt="" />

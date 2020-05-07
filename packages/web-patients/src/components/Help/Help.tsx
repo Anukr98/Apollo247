@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Help: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isHelpSuccessPopoverOpen, setIsHelpSuccessPopoverOpen] = React.useState<boolean>(false);
