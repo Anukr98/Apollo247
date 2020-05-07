@@ -518,7 +518,7 @@ export const Header: React.FC = (props) => {
                   ) : (
                     <div>
                       {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Inbox">
+                        <span title="Inbox" style={{ display: 'none' }}>
                           <img
                             onClick={() => setSelectedTab(3)}
                             src={require('images/ic_inbox.svg')}
