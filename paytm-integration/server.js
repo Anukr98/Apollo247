@@ -304,12 +304,14 @@ app.get('/getCmToken', (req, res) => {
 
 app.get('/consultpayment', consultPayRequest);
 app.post('/consulttransaction', consultPayResponse);
-app.get('/consultpg-redirect', consultsPgRedirect);
+app.get('/consultpg-success', consultsPgSuccess);
+app.get('/consultpg-error', consultsPgError);
 app.post('/consult-payment-webhook', consultWebhook);
 
 app.get('/paymed', paymedRequest);
 app.post('/paymed-response', paymedResponse);
-app.get('/mob', mobRedirect);
+app.get('/mob', mob);
+app.get('/mob-error', mobError);
 app.post('/pharma-payment-webhook', pharmaWebhook);
 
 //diagnostic payment apis
