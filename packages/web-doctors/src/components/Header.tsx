@@ -212,6 +212,11 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       height: 40,
     },
+    timeStamp: {
+      fontSize: 10,
+      color: 'rgba(1, 71, 91, 0.6)',
+      paddingTop: 3,
+    },
     noticationContent: {
       paddingLeft: 12,
       fontSize: 15,
@@ -420,7 +425,7 @@ export const Header: React.FC = (props) => {
                       <span className={classes.bold}>
                         {notificationObject.patientFirstName} {notificationObject.patientLastName}
                       </span>
-                      <p>{getFormattedDate(notificationObject.lastUnreadMessageDate)}</p>
+                      <div className={classes.timeStamp}>{getFormattedDate(notificationObject.lastUnreadMessageDate)}</div>
                     </Grid>
                   </Grid>
                 </div>
