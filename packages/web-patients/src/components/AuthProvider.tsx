@@ -348,7 +348,7 @@ export const AuthProvider: React.FC = (props) => {
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
 
         if (isNewUser) {
-          gtmTracking({category: 'Profile' , action: 'Signup / Login', label: 'Register'})
+          gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Register' });
           _urTracking({ mobileNumber: user.uid, isApolloCustomer: false, profileFetchedCount: 1 });
         } else {
           gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Login' });

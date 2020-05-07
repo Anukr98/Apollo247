@@ -1,5 +1,10 @@
 import React from 'react';
-import { Theme, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
+import {
+  Theme,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
@@ -40,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         [theme.breakpoints.up('sm')]: {
           fontSize: 50,
-          lineHeight: '65px',  
+          lineHeight: '65px',
         },
       },
       '& p': {
@@ -207,96 +212,101 @@ export const Faq: React.FC = (props) => {
           </div>
           <div className={classes.contentGroup}>
             <div className={classes.faqGroup}>
-            <ExpansionPanel
-              className={classes.panelRoot}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <h3>What is the first question here?</h3>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <p>Here, we will answer the questions you’ve raised over the time. And we will be very happy to help you. These questions are based on your queries.</p>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <h3>What is the second question?</h3>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <p>Here, we will answer the questions you’ve raised over the time. And we will be very happy to help you. These questions are based on your queries.</p>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <h3>What is the third question?</h3>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <p>Here, we will answer the questions you’ve raised over the time. And we will be very happy to help you. These questions are based on your queries.</p>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <h3>What is the fourth question?</h3>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <p>Here, we will answer the questions you’ve raised over the time. And we will be very happy to help you. These questions are based on your queries.</p>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
-            <ExpansionPanel
-              className={classes.panelRoot}
-            >
-              <ExpansionPanelSummary
-                expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                classes={{
-                  root: classes.panelHeader,
-                  content: classes.summaryContent,
-                  expandIcon: classes.expandIcon,
-                  expanded: classes.panelExpanded,
-                }}
-              >
-                <h3>What is the fifth question?</h3>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.panelDetails}>
-                <p>Here, we will answer the questions you’ve raised over the time. And we will be very happy to help you. These questions are based on your queries.</p>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
+              <ExpansionPanel className={classes.panelRoot}>
+                <ExpansionPanelSummary
+                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                  classes={{
+                    root: classes.panelHeader,
+                    content: classes.summaryContent,
+                    expandIcon: classes.expandIcon,
+                    expanded: classes.panelExpanded,
+                  }}
+                >
+                  <h3>What is the first question here?</h3>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.panelDetails}>
+                  <p>
+                    Here, we will answer the questions you’ve raised over the time. And we will be
+                    very happy to help you. These questions are based on your queries.
+                  </p>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <ExpansionPanel className={classes.panelRoot}>
+                <ExpansionPanelSummary
+                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                  classes={{
+                    root: classes.panelHeader,
+                    content: classes.summaryContent,
+                    expandIcon: classes.expandIcon,
+                    expanded: classes.panelExpanded,
+                  }}
+                >
+                  <h3>What is the second question?</h3>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.panelDetails}>
+                  <p>
+                    Here, we will answer the questions you’ve raised over the time. And we will be
+                    very happy to help you. These questions are based on your queries.
+                  </p>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <ExpansionPanel className={classes.panelRoot}>
+                <ExpansionPanelSummary
+                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                  classes={{
+                    root: classes.panelHeader,
+                    content: classes.summaryContent,
+                    expandIcon: classes.expandIcon,
+                    expanded: classes.panelExpanded,
+                  }}
+                >
+                  <h3>What is the third question?</h3>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.panelDetails}>
+                  <p>
+                    Here, we will answer the questions you’ve raised over the time. And we will be
+                    very happy to help you. These questions are based on your queries.
+                  </p>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <ExpansionPanel className={classes.panelRoot}>
+                <ExpansionPanelSummary
+                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                  classes={{
+                    root: classes.panelHeader,
+                    content: classes.summaryContent,
+                    expandIcon: classes.expandIcon,
+                    expanded: classes.panelExpanded,
+                  }}
+                >
+                  <h3>What is the fourth question?</h3>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.panelDetails}>
+                  <p>
+                    Here, we will answer the questions you’ve raised over the time. And we will be
+                    very happy to help you. These questions are based on your queries.
+                  </p>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+              <ExpansionPanel className={classes.panelRoot}>
+                <ExpansionPanelSummary
+                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                  classes={{
+                    root: classes.panelHeader,
+                    content: classes.summaryContent,
+                    expandIcon: classes.expandIcon,
+                    expanded: classes.panelExpanded,
+                  }}
+                >
+                  <h3>What is the fifth question?</h3>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.panelDetails}>
+                  <p>
+                    Here, we will answer the questions you’ve raised over the time. And we will be
+                    very happy to help you. These questions are based on your queries.
+                  </p>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
             </div>
           </div>
         </div>

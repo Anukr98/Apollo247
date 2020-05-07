@@ -15,7 +15,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -398,7 +398,12 @@ export const MedicineDetails: React.FC = (props) => {
         /**Gtm code start  */
         data &&
           data.productdp &&
-          data.productdp.length && gtmTracking({ category: 'Pharmacy', action: 'Product Views', label: data.productdp[0].name })
+          data.productdp.length &&
+          gtmTracking({
+            category: 'Pharmacy',
+            action: 'Product Views',
+            label: data.productdp[0].name,
+          });
         /**Gtm code End  */
       })
       .catch((e) => {
