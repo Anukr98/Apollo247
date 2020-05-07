@@ -6,6 +6,9 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const uploadDoctorSignatureTypeDefs = gql`
   type uploadDoctorSignatureResult {
@@ -13,7 +16,11 @@ export const uploadDoctorSignatureTypeDefs = gql`
   }
 
   extend type Mutation {
-    uploadDoctorSignature(fileType: String, base64FileInput: String): uploadDoctorSignatureResult!
+    uploadDoctorSignature(
+      doctorId: String!
+      fileType: String!
+      base64FileInput: String!
+    ): uploadDoctorSignatureResult!
   }
 `;
 type uploadDoctorSignatureResult = {
@@ -22,10 +29,14 @@ type uploadDoctorSignatureResult = {
 
 const uploadDoctorSignature: Resolver<
   null,
-  { fileType: string; base64FileInput: string },
+  { doctorId: string; fileType: string; base64FileInput: string },
   DoctorsServiceContext,
   uploadDoctorSignatureResult
 > = async (parent, args, { doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findDoctorByIdWithoutRelations(args.doctorId);
+  if (!doctordata) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
   let assetsDir = path.resolve(ApiConstants.ASSETS_DIR);
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
@@ -78,6 +89,9 @@ const uploadDoctorSignature: Resolver<
     });
   fs.unlinkSync(localFilePath);
   const filePath = client.getBlobUrl(readmeBlob.name);
+
+  doctorRepository.updateDoctorSignature(args.doctorId, filePath);
+
   return { filePath };
 };
 
