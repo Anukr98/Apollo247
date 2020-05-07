@@ -174,9 +174,10 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 0,
       paddingTop: 13,
-      top: -5,
+      top: 0,
       fontSize: 18,
       color: '#02475b',
+      zIndex: 99,
     },
     accountIc: {
       marginTop: '9px !important',
@@ -228,12 +229,19 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '3px 0 !important',
       color: '#fff',
     },
+    emptyNotification: {
+      fontSize: 16,
+      padding: 20,
+      marginTop: 20,
+      textAlign: 'center',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
+  const scrollbarRef = useRef(null);
   const { currentPatient, signOut, isSigningIn, isSignedIn, sessionClient } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
@@ -460,6 +468,7 @@ export const Header: React.FC = (props) => {
       };
     }
   }, []);
+
   return (
     <header className={classes.header}>
       {/* <Offline>
@@ -530,10 +539,12 @@ export const Header: React.FC = (props) => {
                           title="Notification"
                           className={classes.notificationIcon}
                           onClick={() => {
-                            if (notificationCount > 0) {
-                              setSelectedTab(4);
-                              setIsHelpPopupOpen1(true);
-                            }
+                            setSelectedTab(4);
+                            setIsHelpPopupOpen1(true);
+                            setTimeout(() => {
+                              const node = (scrollbarRef as any).current;
+                              if (node) node.scrollToBottom();
+                            }, 100);
                           }}
                         >
                           <img src={require('images/ic_notifications.svg')} />
@@ -670,19 +681,20 @@ export const Header: React.FC = (props) => {
             classes={{ paper: classes.signedTopPopover }}
           >
             <Paper className={`${classes.loginForm} ${classes.notificationPopup}`}>
-              <Scrollbars autoHide={true} style={{ minHeight: 'calc(40vh)' }}>
-                <Button
-                  onClick={() => setIsHelpPopupOpen1(false)}
-                  className={classes.notificationcross}
-                >
-                  <img src={require('images/ic_cross.svg')} alt="" />
-                </Button>
-
+              <Button
+                onClick={() => setIsHelpPopupOpen1(false)}
+                className={classes.notificationcross}
+              >
+                <img src={require('images/ic_cross.svg')} alt="" />
+              </Button>
+              <Scrollbars autoHide={true} autoHeight ref={scrollbarRef} autoHeightMin={280}>
                 {content && content.length > 0 && content[0] ? (
                   <div>
                     <div>{content[0]}</div>
                   </div>
-                ) : null}
+                ) : (
+                  <div className={classes.emptyNotification}>No Notification</div>
+                )}
               </Scrollbars>
             </Paper>
           </Popover>
