@@ -1,7 +1,8 @@
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import React, { useState } from 'react';
-import { usePickerState, Calendar, MaterialUiPickersDate } from '@material-ui/pickers';
+import { usePickerState, Calendar } from '@material-ui/pickers';
+import MaterialUiPickersDate from '@material-ui/pickers';
 import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
