@@ -40,7 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
 import { useLocationDetails } from 'components/LocationProvider';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -515,7 +515,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     appointmentDateTime = consultNowSlotTime;
   }
   const consultType: AppointmentType = AppointmentType.ONLINE;
-
   const bookAppointment = () => {
     paymentMutation({
       variables: {
@@ -532,21 +531,23 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     })
       .then((res: any) => {
         /* Gtm code start */
-        // const specialty = getSpeciality();
-        // const { getDoctorDetailsById } = doctorDetails;
-        // const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-        // gtmTracking({category: 'Consultations', action: specialty, label: 'Order Success', value: revisedAmount})
-        // window._cb(
-        //   currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
-        //   specialty,
-        //   city,
-        //   getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null,
-        //   AppointmentType.ONLINE,
-        //   `${appointmentDateTime}`,
-        //   couponCode ? couponCode : null,
-        //   couponValue ? couponValue : null,
-        //   revisedAmount
-        // );
+        const specialty = getSpeciality();
+        const { getDoctorDetailsById } = doctorDetails;
+        const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
+        gtmTracking({
+          category: 'Consultations',
+          action: specialty,
+          label: 'Order Success',
+          value: revisedAmount,
+        });
+        _cbTracking({
+          specialty: specialty,
+          bookingType: AppointmentType.ONLINE,
+          scheduledDate: `${appointmentDateTime}`,
+          couponCode: couponCode ? couponCode : null,
+          couponValue: couponValue ? couponValue : null,
+          finalBookingValue: revisedAmount,
+        });
         /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {

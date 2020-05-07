@@ -340,7 +340,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           /**Gtm code start start */
-          gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Mobile Entered' });
+          gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Mobile Entered' });
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
