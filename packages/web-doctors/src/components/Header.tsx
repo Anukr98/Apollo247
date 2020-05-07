@@ -19,7 +19,6 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
-import { GetNotifications_getNotifications } from 'graphql/types/GetNotifications';
 import {
   MarkMessageToUnread,
   MarkMessageToUnreadVariables,
@@ -368,6 +367,17 @@ export const Header: React.FC = (props) => {
       : { data: {}, loading: false };
   //console.log(loading, data);
 
+  const getFormattedDate = (date: string) => {
+    const dateFormat = moment(date).format('DD MMM YYYY');
+    const timeStamp = moment(date).format('hh.mm A');
+    if(moment().format('DD MMM YYYY') === dateFormat) {
+      return  `Today, ${timeStamp}`;
+    } else if(moment().add(-1, "days").format('DD MMM YYYY') === dateFormat) {
+      return `Yesterday, ${timeStamp}`;
+    }
+    return `${dateFormat}, ${timeStamp} `;
+  }
+
   if (
     //!loading &&
     data &&
@@ -410,6 +420,7 @@ export const Header: React.FC = (props) => {
                       <span className={classes.bold}>
                         {notificationObject.patientFirstName} {notificationObject.patientLastName}
                       </span>
+                      <p>{getFormattedDate(notificationObject.lastUnreadMessageDate)}</p>
                     </Grid>
                   </Grid>
                 </div>
