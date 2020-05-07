@@ -155,7 +155,7 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         /**Gtm code start start */
-        gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Signout' });
+        gtmTracking({ category: 'Profile', action: 'Logout', label: 'Logout' });
         /**Gtm code start end */
         localStorage.removeItem('currentUser');
         window.location.reload();
@@ -368,10 +368,10 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients.patients[0].id;
             /**Gtm code start */
             if (isNewUser) {
-              gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Register' });
+              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
               _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
             } else {
-              gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Login' });
+              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
             }
             /**Gtm code start end */
             setSignInError(false);

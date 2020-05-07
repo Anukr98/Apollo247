@@ -515,7 +515,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     appointmentDateTime = consultNowSlotTime;
   }
   const consultType: AppointmentType = AppointmentType.ONLINE;
-  const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
   const bookAppointment = () => {
     paymentMutation({
       variables: {

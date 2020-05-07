@@ -13,7 +13,7 @@ export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (
   const protectWithLoginPopup = () => {
     if (isProtected) {
       /**Gtm code start start */
-      gtmTracking({ category: 'Profile', action: 'Signup / Login', label: 'Intent' });
+      gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Intent' });
       /**Gtm code start end */
 
       setLoginPopupVisible(true);
