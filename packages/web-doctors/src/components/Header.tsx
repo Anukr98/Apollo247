@@ -40,6 +40,7 @@ import ReactCountdownClock from 'react-countdown-clock';
 import { useMutation, useQuery } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
+import {GetNotifications_getNotifications_notificationData as NotificationDataType} from 'graphql/types/GetNotifications'; 
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -383,9 +384,8 @@ export const Header: React.FC = (props) => {
     return `${dateFormat}, ${timeStamp} `;
   }
 
-  const sortByDate = ( notificationData: any) => {
-    console.log(notificationData);
-    return notificationData.sort((data1: any , data2: any ) => {
+  const sortByDate = ( notificationData: NotificationDataType[]) => {
+    return notificationData.sort((data1: NotificationDataType , data2: NotificationDataType ) => {
       let date1 = new Date(data1.lastUnreadMessageDate);
       let date2 = new Date(data2.lastUnreadMessageDate);
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
