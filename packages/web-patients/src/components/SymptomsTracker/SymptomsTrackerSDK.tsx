@@ -589,8 +589,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <NavigatorSDK
                     clientId={process.env.PRAKTICE_SDK_KEY}
                     key={(currentPatient && currentPatient.id) || 'guest'}
-                    patientAge={patientAge || 20}
-                    patientGender={patientGender || 'male'}
+                    patientAge={patientAge}
+                    patientGender={patientGender}
                     sdkContainerStyle={customContainerStyle}
                     searchDoctorlistner={customListner}
                     showDocBtn={() => (
