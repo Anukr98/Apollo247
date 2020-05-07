@@ -275,7 +275,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
         variables: {
-          patientId: currentPatient && currentPatient.id,
+          patientId: currentPatient ? currentPatient.id : '',
         },
         fetchPolicy: 'no-cache',
       })

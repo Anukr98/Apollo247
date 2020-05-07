@@ -30,7 +30,7 @@ import {
 } from 'graphql/types/getDiagnosticsData';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -663,7 +663,12 @@ export const TestDetails: React.FC = (props) => {
                             });
                           /**Gtm code start  */
                           itemIndexInCart(testDetails) === -1 &&
-                            gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: testDetails.itemName, value: testDetails.rate })
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Add to Cart',
+                              label: testDetails.itemName,
+                              value: testDetails.rate,
+                            });
                           /**Gtm code End  */
                           setAddMutationLoading(false);
                         }}

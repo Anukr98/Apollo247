@@ -434,7 +434,17 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
 
   const customListner = (resultData: any) => {
-    return;
+    let specialities = [];
+    specialities = resultData.specialists.map((item: { speciality: string }) =>
+      item.speciality.trim()
+    );
+    if (specialities.length > 0) {
+      const specialitiesEncoded = encodeURI(specialities.join(','));
+      localStorage.setItem('symptomTracker', specialitiesEncoded);
+      setDoctorPopOver(true);
+      setIsRedirect(true);
+      // window.location.href = clientRoutes.doctorsLanding();
+    }
   };
 
   const onePrimaryUser = hasOnePrimaryUser();

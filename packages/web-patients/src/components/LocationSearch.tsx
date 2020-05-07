@@ -132,6 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     popPaperRoot: {
       marginTop: -16,
+      overflow: 'initial',
     },
     dateLoader: {
       fontSize: 14,
@@ -366,6 +367,14 @@ export const LocationSearch: React.FC = (props) => {
           {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => {
             return (
               <div className={classes.locationPopWrap}>
+                <div
+                  className={classes.locationPopoverClose}
+                  onClick={() => {
+                    setIsLocationPopoverOpen(false);
+                  }}
+                >
+                  <img src={require('images/ic_cross_popup.svg')} alt="" />
+                </div>
                 <label className={classes.inputLabel} title={'Current Location'}>
                   Current Location
                 </label>

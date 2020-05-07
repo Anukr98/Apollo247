@@ -123,6 +123,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+// @ts-ignore
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
