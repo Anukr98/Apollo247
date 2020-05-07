@@ -112,9 +112,5 @@
     "unfetch": "^4.1.0",
     "uuid": "^3.3.3",
     "validator": "^11.1.0"
-  },
-  "resolutions": {
-    "@types/graphql": "14.2.1",
-    "graphql": "14.5.7"
   }
 }
