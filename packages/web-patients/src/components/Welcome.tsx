@@ -10,11 +10,12 @@ import { PatientsOverview } from 'components/PatientsOverview';
 import { Relation } from 'graphql/types/globalTypes';
 import { Help } from 'components/Help/Help';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     welcome: {
-      paddingBottom: 20,
+      paddingBottom: 0,
     },
     container: {
       maxWidth: 1064,
@@ -23,7 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       overflow: 'hidden',
       [theme.breakpoints.up('sm')]: {
-        borderRadius: '0 0 10px 10px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
       },
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Welcome: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser =
@@ -56,8 +56,9 @@ export const Welcome: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <NavigationBottom />
       {onePrimaryUser ? <Help /> : <ManageProfile />}
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

@@ -18,6 +18,10 @@ import {
 } from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
 import {
+  paymentTransactionStatusTypeDefs,
+  paymentTransactionStatusResolvers,
+} from 'consults-service/resolvers/paymentTransactionStatus';
+import {
   getAppointmentHistoryResolvers,
   getAppointmentHistoryTypeDefs,
 } from 'consults-service/resolvers/getAppointmentHistory';
@@ -176,6 +180,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: getPhysicalAvailableSlotsTypeDefs,
         resolvers: getPhysicalAvailableSlotsResolvers,
+      },
+      {
+        typeDefs: paymentTransactionStatusTypeDefs,
+        resolvers: paymentTransactionStatusResolvers,
       },
       {
         typeDefs: caseSheetTypeDefs,

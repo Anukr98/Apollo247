@@ -5,6 +5,7 @@ import React from 'react';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageSettings } from 'components/Notifications/ManageSettings';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -16,7 +17,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     mySettingsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -45,11 +45,16 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 0,
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
 export const NotificationSettings: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <Header />
@@ -64,6 +69,9 @@ export const NotificationSettings: React.FC = (props) => {
             </div>
           </div>
         </div>
+      </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
       </div>
       <NavigationBottom />
     </div>

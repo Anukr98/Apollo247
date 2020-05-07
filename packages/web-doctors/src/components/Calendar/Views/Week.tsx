@@ -40,7 +40,7 @@ export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection, loading:
     isLoading(loadingData);
   }, [loadingData]);
 
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div>

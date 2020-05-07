@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
@@ -120,6 +120,18 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
       doctorDetails && doctorDetails.getDoctorDetailsById
         ? doctorDetails.getDoctorDetailsById.id
         : '';
+    // useEffect(() => {
+    //   /* Gtm code start */
+    //   const speciality =
+    //     doctorDetails &&
+    //       doctorDetails.getDoctorDetailsById &&
+    //       doctorDetails.getDoctorDetailsById.specialty &&
+    //       doctorDetails.getDoctorDetailsById.specialty.name ? doctorDetails.getDoctorDetailsById.specialty.name : null
+    //   const onlineConsultationFees = doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.onlineConsultationFees ? doctorDetails.getDoctorDetailsById.onlineConsultationFees : null
+    //   window.gep && window.gep('Consultations', speciality, 'Order Initiated', onlineConsultationFees);
+    //   /* Gtm code end */
+    // }, [])
+
     return (
       <Paper className={classes.modalBox}>
         <div className={classes.modalBoxClose} onClick={() => setIsPopoverOpen(false)}>

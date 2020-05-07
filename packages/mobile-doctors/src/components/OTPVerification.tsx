@@ -20,7 +20,6 @@ import {
   Alert,
   AppState,
   AppStateStatus,
-  AsyncStorage,
   BackHandler,
   Keyboard,
   Platform,
@@ -34,6 +33,8 @@ import Hyperlink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
+import SmsRetriever from 'react-native-sms-retriever';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = OTPVerificationStyles;
 
@@ -83,6 +84,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return true;
   };
 
+  const smsListenerAndroid = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const registered = await SmsRetriever.startSmsRetriever();
+        if (registered) {
+          SmsRetriever.addSmsListener((event) => {
+            console.log(event.message, 'otp message');
+            if (event.message) {
+              const messageOTP = event.message.match(/[0-9]{6}/g);
+              if (messageOTP) {
+                setOtp(messageOTP.toString());
+              }
+            }
+            SmsRetriever.removeSmsListener();
+          });
+        }
+      } catch (error) {
+        console.log('Message listining error');
+      }
+    }
+  };
+
   useEffect(() => {
     AppState.addEventListener('change', _handleAppStateChange);
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -92,10 +115,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
-
+    // smsListenerAndroid();
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
+      // if (Platform.OS === 'android') {
+      //   SmsRetriever.removeSmsListener();
+      // }
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
@@ -109,7 +135,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       if (isOtpVerified) {
         setTimeout(() => {
           if (isProfileFlowDone === 'true') {
-            props.navigation.replace(AppRoutes.TabBar);
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+              })
+            );
           } else {
             if (doctorDetails && doctorDetails.id) {
               console.log(
@@ -407,6 +439,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               loginId: resendResult.loginId,
             });
             console.log('confirmResult login', resendResult);
+            smsListenerAndroid();
           })
           .catch((error: Error) => {
             console.log(error, 'error');

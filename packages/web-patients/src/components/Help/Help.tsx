@@ -14,6 +14,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         position: 'static',
         textAlign: 'center',
+        paddingBottom: 20,
+        paddingTop: 20,
       },
     },
     bottomPopover: {
@@ -82,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Help: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isHelpSuccessPopoverOpen, setIsHelpSuccessPopoverOpen] = React.useState<boolean>(false);

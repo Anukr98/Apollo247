@@ -6,6 +6,7 @@ import {
   APPOINTMENT_STATE,
   BOOKINGSOURCE,
   DEVICETYPE,
+  PATIENT_TYPE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -27,6 +28,8 @@ export const bookAppointmentTypeDefs = gql`
     COMPLETED
     PENDING
     PAYMENT_PENDING
+    PAYMENT_FAILED
+    PAYMENT_PENDING_PG
     NO_SHOW
     JUNIOR_DOCTOR_STARTED
     JUNIOR_DOCTOR_ENDED
@@ -219,6 +222,7 @@ const bookAppointment: Resolver<
     appointmentInput.doctorId,
     appointmentInput.appointmentDateTime
   );
+
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
@@ -256,6 +260,19 @@ const bookAppointment: Resolver<
   );
   if (cancelledCount >= 3) {
     throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
+  }
+
+  const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
+  let prevPatientId = '0';
+  if (appointmentDetails.length) {
+    appointmentDetails.forEach(async (appointmentData) => {
+      if (appointmentData.patientId != prevPatientId) {
+        prevPatientId = appointmentData.patientId;
+        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+      } else {
+        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+      }
+    });
   }
 
   //calculate coupon discount value

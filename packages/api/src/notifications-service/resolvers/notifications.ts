@@ -405,7 +405,7 @@ export async function sendNotification(
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' +
+      ? ' Click here ' +
         process.env.SMS_LINK_BOOK_APOINTMENT +
         ' ' +
         ApiConstants.PATIENT_CANCEL_APPT_BODY_END
@@ -478,7 +478,7 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
       : '';
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
@@ -585,6 +585,7 @@ export async function sendNotification(
     console.log('mobileNumber===============', patientDetails.mobileNumber);
     console.log('message==========================', notificationBody);
     //send sms
+    console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
     //send sms to doctor
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);

@@ -51,7 +51,6 @@ import { TermsAndConditions } from 'components/TermsAndConditions';
 import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
-import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
@@ -67,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 72,
       },
       [theme.breakpoints.down(900)]: {
-        paddingBottom: 60,
+        paddingBottom: 55,
       },
     },
     helpIcon: {
@@ -177,12 +176,7 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
           <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {pageName !== '/terms' &&
-          pageName !== '/privacy' &&
-          pageName !== '/faq' &&
-          pageName !== '/contact' &&
-          pageName !== '/partners/sbi' && <BottomLinks />}
-        {isSignedIn &&
+        {/* {isSignedIn &&
           pageName !== '/terms' &&
           pageName !== '/privacy' &&
           pageName !== '/faq' &&
@@ -191,7 +185,7 @@ const App: React.FC = () => {
             <div className={classes.helpIcon}>
               <Help />
             </div>
-          )}
+          )} */}
       </div>
     </Scrollbars>
   );

@@ -42,7 +42,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
       order: { startTime: 'ASC' },
     });
   }
-  async getTotalConsultHours(doctorIds: string[], weekDay: WeekDay) {
+  async getTotalConsultHours(doctorIds: string[], weekDay: string) {
     const consult_hours = await this.find({
       where: [
         {
@@ -57,7 +57,6 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
     });
     return count;
   }
-
   checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
     return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
   }

@@ -42,7 +42,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     bankTxnId: String
     email: String
     CODCity: CODCity
-  }
+    orderId: String
+}
 
   type SaveMedicineOrderPaymentMqResult {
     errorCode: Int
@@ -223,8 +224,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
       new Date(),
       currentStatus
     );
-
-    if (medicinePaymentMqInput.paymentStatus === 'TXN_SUCCESS') {
+    if (
+      medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
+      medicinePaymentMqInput.paymentStatus != 'PENDING'
+    ) {
       const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
       const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
       const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME

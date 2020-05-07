@@ -160,7 +160,7 @@ function getCookieValue() {
   return '';
 }
 export const JDConsult: React.FC<ConsultProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);

@@ -125,6 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     actions: {
       padding: 20,
+      position: 'sticky',
     },
     btnGroup: {
       paddingTop: 7,
@@ -148,7 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '70vh',
       overflow: 'auto',
       [theme.breakpoints.down('xs')]: {
-        height: '75vh',
+        height: '66vh',
       },
     },
     signinGroup: {
@@ -202,7 +203,7 @@ export interface NewProfileProps {
 }
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patient } = props;
   const urlParams = new URLSearchParams(window.location.search);
   const tpRefCode = urlParams.get('tp_ref_code') ? String(urlParams.get('tp_ref_code')) : '';

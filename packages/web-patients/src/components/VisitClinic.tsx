@@ -40,6 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -394,9 +395,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
-  appointmentDateTime = new Date(
-    `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
-  ).toISOString();
+  appointmentDateTime = timeSelected && moment(`${apiDateFormat}T${timeSelected}`).toISOString();
   const checkCouponValidity = () => {
     couponMutation({
       variables: {
@@ -431,9 +430,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
-          appointmentDateTime: new Date(
-            `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
-          ).toISOString(),
+          appointmentDateTime: moment(`${apiDateFormat}T${timeSelected}`).toISOString(),
           appointmentType: AppointmentType.PHYSICAL,
           hospitalId: defaultClinicId,
           couponCode: couponCode ? couponCode : null,
@@ -580,20 +577,20 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </Grid>
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={() => {
+            setCouponCodeFxn={() => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  `Coupon Applied - ${couponCode}`,
-                  couponValue
-                );
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Applied - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
               setCouponCode(couponCode);
             }}
+            setCouponCode={setCouponCode}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}
             revisedAmount={revisedAmount}
@@ -604,13 +601,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /**Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  'Coupon Removed - ${couponCode}',
-                  couponValue
-                );
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Removed - ${couponCode}`,
+                value: couponValue,
+              });
               /**Gtm code  end  */
             }}
           />

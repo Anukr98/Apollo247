@@ -122,6 +122,12 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         isFollowUp
         followUpParentId
         caseSheet {
+          appointment {
+            appointmentDateTime
+          }
+          followUp
+          followUpDate
+          followUpAfterInDays
           symptoms {
             symptom
           }
@@ -203,6 +209,7 @@ export const MODIFY_CASESHEET = gql`
         appointmentDateTime
         appointmentDocuments {
           documentPath
+          prismFileId
         }
         appointmentState
         appointmentType
@@ -213,10 +220,12 @@ export const MODIFY_CASESHEET = gql`
         parentId
         status
         rescheduleCount
+        rescheduleCountByDoctor
         isFollowUp
         followUpParentId
         isTransfer
         transferParentId
+        sdConsultationDate
       }
       blobName
       createdDate
@@ -241,6 +250,29 @@ export const MODIFY_CASESHEET = gql`
         streetLine2
         streetLine3
         zip
+        registrationNumber
+        signature
+        specialty {
+          createdDate
+          id
+          image
+          name
+          specialistSingularTerm
+          specialistPluralTerm
+          userFriendlyNomenclature
+          displayOrder
+        }
+        doctorHospital {
+          facility {
+            city
+            country
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            zipcode
+          }
+        }
       }
       consultType
       diagnosis {
@@ -257,16 +289,21 @@ export const MODIFY_CASESHEET = gql`
       followUpConsultType
       id
       medicinePrescription {
-        medicineConsumptionDurationInDays
+        id
+        externalId
         medicineName
         medicineDosage
+        medicineToBeTaken
+        medicineInstructions
         medicineTimings
         medicineUnit
-        medicineInstructions
+        medicineConsumptionDurationInDays
         medicineConsumptionDuration
         medicineFormTypes
         medicineFrequency
         medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
       notes
       otherInstructions {
@@ -282,6 +319,7 @@ export const MODIFY_CASESHEET = gql`
       }
       status
       sentToPatient
+      updatedDate
     }
   }
 `;
@@ -487,6 +525,7 @@ export const GET_CASESHEET = gql`
           rescheduleCount
           rescheduleCountByDoctor
           appointmentType
+          sdConsultationDate
         }
         createdDoctorProfile {
           doctorType
@@ -533,6 +572,8 @@ export const GET_CASESHEET = gql`
           medicineFormTypes
           medicineFrequency
           medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
         }
         otherInstructions {
           instruction
@@ -556,6 +597,7 @@ export const GET_CASESHEET = gql`
         followUpConsultType
         consultType
         notes
+        updatedDate
       }
       pastAppointments {
         id
@@ -602,6 +644,7 @@ export const GET_CASESHEET = gql`
           notes
         }
         appointmentType
+        sdConsultationDate
       }
       juniorDoctorNotes
       juniorDoctorCaseSheet {
@@ -614,6 +657,7 @@ export const GET_CASESHEET = gql`
         }
         updatedDate
       }
+      allowedDosages
     }
   }
 `;
@@ -633,6 +677,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         parentId
         status
         rescheduleCount
+        sdConsultationDate
       }
       blobName
       consultType
@@ -859,7 +904,21 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
       saveDoctorsFavouriteMedicineInput: $saveDoctorsFavouriteMedicineInput
     ) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFormTypes
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -873,7 +932,21 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
       updateDoctorsFavouriteMedicineInput: $updateDoctorsFavouriteMedicineInput
     ) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFormTypes
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -883,7 +956,21 @@ export const REMOVE_FAVOURITE_MEDICINE = gql`
   mutation RemoveFavouriteMedicine($id: String) {
     removeFavouriteMedicine(id: $id) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFormTypes
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -893,6 +980,7 @@ export const ADD_DOCTOR_FAVOURITE_TEST = gql`
   mutation AddDoctorFavouriteTest($itemname: String!) {
     addDoctorFavouriteTest(itemname: $itemname) {
       testList {
+        id
         itemname
       }
     }
@@ -904,6 +992,7 @@ export const UPDATE_DOCTOR_FAVOURITE_TEST = gql`
     updateDoctorFavouriteTest(id: $id, itemname: $itemname) {
       testList {
         id
+        itemname
       }
     }
   }
@@ -913,6 +1002,7 @@ export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
   mutation DeleteDoctorFavouriteTest($testId: ID!) {
     deleteDoctorFavouriteTest(testId: $testId) {
       testList {
+        id
         itemname
       }
     }
@@ -962,6 +1052,7 @@ export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
     }
   }
 `;
+
 export const UPLOAD_CHAT_FILE = gql`
   mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
     uploadChatDocument(
@@ -1023,13 +1114,17 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineConsumptionDurationInDays
         medicineConsumptionDurationUnit
         medicineDosage
+        medicineFormTypes
         medicineFrequency
         medicineInstructions
         medicineName
         medicineTimings
         medicineToBeTaken
         medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
+      allowedDosages
     }
   }
 `;

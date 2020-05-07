@@ -10,7 +10,7 @@ import {
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { medUsageType, nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { nameFormater, medicineDescription } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
@@ -18,6 +18,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ApploLogo2 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const styles = PreviewPrescriptionStyles;
 
@@ -42,6 +43,7 @@ export interface PreviewPrescriptionProps
     followUp: string | null;
     onEditPress: () => void;
     onSendPress: () => void;
+    onback?: () => void;
   }> {}
 
 export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) => {
@@ -54,7 +56,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   const followUp = props.navigation.getParam('followUp');
   const onEditPress = props.navigation.getParam('onEditPress');
   const onSendPress = props.navigation.getParam('onSendPress');
-
+  const onback = props.navigation.getParam('onback');
   const renderHeader = () => {
     return (
       <Header
@@ -64,7 +66,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         }}
         leftIcon={'backArrow'}
         headerText={'Prescription'}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => (onback ? onback() : props.navigation.goBack())}
       />
     );
   };
@@ -114,7 +116,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   const renderComplaints = () => {
     return (
       <View style={styles.mainContainer}>
-        {renderHeading('Chief Complaints')}
+        {renderHeading(string.case_sheet.chief_complaints)}
         <View style={styles.subContainer}>
           {complaints &&
             complaints.map((i) => {
@@ -143,7 +145,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   const renderDiagnosis = () => {
     return (
       <View style={styles.mainContainer}>
-        {renderHeading('Provisional Diagnosis')}
+        {renderHeading(string.case_sheet.diagnosis)}
         <View style={styles.subContainer}>
           {diagnosis &&
             diagnosis.map(
@@ -165,11 +167,6 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {medicine &&
             medicine.map((item, index) => {
               if (item) {
-                const type = medUsageType(item.medicineUnit);
-                const unit: string =
-                  item.medicineUnit === MEDICINE_UNIT.OTHERS
-                    ? 'other'
-                    : (item.medicineUnit || '').toLowerCase();
                 return (
                   <View
                     style={
@@ -179,58 +176,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                     }
                   >
                     {renderSubHeading(`${index + 1}. ${item.medicineName}`)}
-                    {renderDescription(
-                      `${type + ' '}${
-                        item.medicineDosage
-                          ? (type === 'Take' ? item.medicineDosage : '') + ' '
-                          : ''
-                      }${item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}${
-                        item.medicineFrequency
-                          ? nameFormater(item.medicineFrequency).toLowerCase() + ' '
-                          : ''
-                      }${
-                        item.medicineConsumptionDurationInDays
-                          ? `for ${item.medicineConsumptionDurationInDays} ${
-                              item.medicineConsumptionDurationUnit
-                                ? `${item.medicineConsumptionDurationUnit
-                                    .slice(0, -1)
-                                    .toLowerCase()}(s) `
-                                : ``
-                            }`
-                          : ''
-                      }${
-                        item.medicineToBeTaken && item.medicineToBeTaken.length
-                          ? item.medicineToBeTaken
-                              .map((i: MEDICINE_TO_BE_TAKEN | null) =>
-                                nameFormater(i || '').toLowerCase()
-                              )
-                              .join(', ') + ' '
-                          : ''
-                      }${
-                        item.medicineTimings && item.medicineTimings.length
-                          ? 'in the ' +
-                            (item.medicineTimings.length > 1
-                              ? item.medicineTimings
-                                  .slice(0, -1)
-                                  .map((i: MEDICINE_TIMINGS | null) =>
-                                    nameFormater(i || '').toLowerCase()
-                                  )
-                                  .join(', ') +
-                                ' and ' +
-                                nameFormater(
-                                  (item.medicineTimings &&
-                                    item.medicineTimings[item.medicineTimings.length - 1]) ||
-                                    ''
-                                ).toLowerCase() +
-                                ' '
-                              : item.medicineTimings
-                                  .map((i: MEDICINE_TIMINGS | null) =>
-                                    nameFormater(i || '').toLowerCase()
-                                  )
-                                  .join(', ') + ' ')
-                          : ''
-                      }${'\n' + item.medicineInstructions}`
-                    )}
+                    {renderDescription(medicineDescription(item))}
                   </View>
                 );
               }
@@ -332,7 +278,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {appointmentDetails && renderAppointmentData()}
         {complaints && renderComplaints()}
         {diagnosis && renderDiagnosis()}
-        {medicine && renderMedicine()}
+        {medicine && medicine.length > 0 && renderMedicine()}
         {tests && tests.length > 0 && renderTest()}
         {advice && advice.length > 0 && renderAdvice()}
         {followUp && renderFollowUp()}

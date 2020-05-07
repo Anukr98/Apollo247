@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const Constants = require('./Constants');
 const axios = require('axios');
 const cors = require('cors');
 const ejs = require('ejs');
@@ -15,16 +16,18 @@ const logger = require('./winston-logger')('Universal-Error-Logs');
 const {
   paymedRequest,
   paymedResponse,
-  mobRedirect,
-  pharmaWebhook
-}
-  = require('./pharma-integrations/controllers');
+  mob,
+  mobError,
+  pharmaWebhook,
+} = require('./pharma-integrations/controllers');
 
 const {
   consultPayRequest,
   consultPayResponse,
-  consultsPgRedirect,
-  consultWebhook } = require('./consult-integrations/controllers');
+  consultsPgSuccess,
+  consultsPgError,
+  consultWebhook,
+} = require('./consult-integrations/controllers');
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
@@ -59,6 +62,8 @@ app.get(
   })
 );
 
+app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
+app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeNoShowReminder', cronTabs.noShowReminder);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
@@ -72,6 +77,20 @@ app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
+  const updateSpecialtyCountRequestJSON = {
+    query: `mutation{
+      updateSpecialtyCount(specialityId:"0"){
+        updated
+      }
+    }`,
+  };
+  const updateUtilizationCapacityRequestJSON = {
+    query: `mutation{
+      updateUtilizationCapacity(specialityId:"0"){
+        updated
+      }
+    }`,
+  };
   const updatePhrDocSummaryRequestJSON = {
     query: `mutation{
         updatePhrDocSummary(summaryDate:"${currentDate}"){
@@ -100,12 +119,53 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       }
     }`,
   };
-  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  //updateUtilizationCapacity api call
+  axios
+    .post(process.env.API_URL, updateUtilizationCapacityRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateUtilizationCapacity, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateUtilizationCapacity Response\n' +
+        JSON.stringify(response.data.data.updateUtilizationCapacity) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  //updateSpecilaityCount api call
+  axios
+    .post(process.env.API_URL, updateSpecialtyCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateSpecialtyCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateSpecialtyCount Response\n' +
+        JSON.stringify(response.data.data.updateSpecialtyCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
   //updatePhrDocSummary api call
   axios
     .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)
     .then((response) => {
-      console.log(response);
       console.log(response.data.data.updatePhrDocSummary, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
@@ -113,15 +173,11 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         new Date().toString() +
         '\n---------------------------\n' +
         '\nupdatePhrDocSummary Response\n' +
-        response.data.data.updatePhrDocSummary +
+        JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
       });
     })
     .catch((error) => {
@@ -132,7 +188,6 @@ app.get('/invokeDashboardSummaries', (req, res) => {
   axios
     .post(process.env.API_URL, getAvailableDoctorsCountRequestJSON)
     .then((response) => {
-      console.log(response);
       console.log(response.data.data.getAvailableDoctorsCount, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
@@ -140,15 +195,11 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         new Date().toString() +
         '\n---------------------------\n' +
         '\ngetAvailableDoctorsCount Response\n' +
-        response.data.data.getAvailableDoctorsCount +
+        JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
       });
     })
     .catch((error) => {
@@ -159,7 +210,6 @@ app.get('/invokeDashboardSummaries', (req, res) => {
   axios
     .post(process.env.API_URL, updateConsultRatingRequestJSON)
     .then((response) => {
-      console.log(response);
       console.log(response.data.data.updateConsultRating, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
@@ -167,20 +217,58 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         new Date().toString() +
         '\n---------------------------\n' +
         '\nupdateConsultRating Response\n' +
-        response.data.data.updateConsultRating +
+        JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
       });
     })
     .catch((error) => {
       console.log('error', error);
     });
+  res.send({
+    status: 'success',
+    message: res.data,
+  });
+});
+app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const updateDoctorsAwayAndOnlineCountRequestJSON = {
+    query: `mutation{
+      updateDoctorsAwayAndOnlineCount(doctorId:"0",summaryDate:"${currentDate}"){
+        onlineCount
+        awayCount
+      }
+    }`,
+  };
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  axios
+    .post(process.env.API_URL, updateDoctorsAwayAndOnlineCountRequestJSON)
+    .then((response) => {
+      console.log(response.data.data.updateDoctorsAwayAndOnlineCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH +
+        new Date().toDateString() +
+        '-updateDoctorsAwayAndOnlineCount.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateDoctorsAwayAndOnlineCount Response\n' +
+        JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  res.send({
+    status: 'success',
+    message: res.data,
+  });
 });
 app.get('/getCmToken', (req, res) => {
   axios.defaults.headers.common['authorization'] =
@@ -188,16 +276,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-      '?appId=apollo_24_7&appUserId=' +
-      req.query.appUserId +
-      '&name=' +
-      req.query.userName +
-      '&gender=' +
-      req.query.gender +
-      '&emailId=' +
-      req.query.emailId +
-      '&phoneNumber=' +
-      req.query.phoneNumber
+        '?appId=apollo_24_7&appUserId=' +
+        req.query.appUserId +
+        '&name=' +
+        req.query.userName +
+        '&gender=' +
+        req.query.gender +
+        '&emailId=' +
+        req.query.emailId +
+        '&phoneNumber=' +
+        req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -218,12 +306,14 @@ app.get('/getCmToken', (req, res) => {
 
 app.get('/consultpayment', consultPayRequest);
 app.post('/consulttransaction', consultPayResponse);
-app.get('/consultpg-redirect', consultsPgRedirect);
+app.get('/consultpg-success', consultsPgSuccess);
+app.get('/consultpg-error', consultsPgError);
 app.post('/consult-payment-webhook', consultWebhook);
 
 app.get('/paymed', paymedRequest);
 app.post('/paymed-response', paymedResponse);
-app.get('/mob', mobRedirect);
+app.get('/mob', mob);
+app.get('/mob-error', mobError);
 app.post('/pharma-payment-webhook', pharmaWebhook);
 
 //diagnostic payment apis
@@ -490,7 +580,7 @@ app.get('/processOrders', (req, res) => {
           resolve(deliveryAddress);
         })
         .catch((error) => {
-          logger.error(`processOrders()-> ${error.stack}`)
+          logger.error(`processOrders()-> ${error.stack}`);
           console.log(error, 'address error');
         });
     });
@@ -511,7 +601,7 @@ app.get('/processOrders', (req, res) => {
           code: '10001',
         });
       } else {
-        logger.info(`message from topic - processOrders()-> ${JSON.stringify(result.body)}`)
+        logger.info(`message from topic - processOrders()-> ${JSON.stringify(result.body)}`);
         console.log('message from topic', result.body);
         queueMessage = result.body;
         const queueDetails = queueMessage.split(':');
@@ -575,7 +665,11 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails &&
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
-              logger.info(`message from topic -processOrders()->getMedicineOrderDetails()-> ${JSON.stringify(response.data.data)}`)
+              logger.info(
+                `message from topic -processOrders()->getMedicineOrderDetails()-> ${JSON.stringify(
+                  response.data.data
+                )}`
+              );
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.currentStatus !=
                 'CANCELLED'
@@ -725,7 +819,11 @@ app.get('/processOrders', (req, res) => {
                     PrescUrl: orderPrescriptionUrl,
                   },
                 };
-                logger.info(`processOrders()->${queueDetails[1]}-> pharamInput - ${JSON.stringify(pharmaInput)}`)
+                logger.info(
+                  `processOrders()->${queueDetails[1]}-> pharamInput - ${JSON.stringify(
+                    pharmaInput
+                  )}`
+                );
                 console.log('pharmaInput==========>', pharmaInput, '<===============pharmaInput');
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
@@ -734,7 +832,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -746,11 +844,15 @@ app.get('/processOrders', (req, res) => {
                     },
                   })
                   .then((resp) => {
-                    logger.info(`processOrders()->${queueDetails[1]}-> pharamResponse - ${JSON.stringify(resp.data)}`)
+                    logger.info(
+                      `processOrders()->${queueDetails[1]}-> pharamResponse - ${JSON.stringify(
+                        resp.data
+                      )}`
+                    );
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function (err) {
+                    fs.appendFile(fileName, content, function(err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -776,7 +878,9 @@ app.get('/processOrders', (req, res) => {
                           });
                         })
                         .catch((placedError) => {
-                          logger.error(`${queueDetails[1]} -> processOrders()->orderPlaced -> ${placedError.stack}`)
+                          logger.error(
+                            `${queueDetails[1]} -> processOrders()->orderPlaced -> ${placedError.stack}`
+                          );
                           console.log(placedError, 'placed error');
                           azureServiceBus.deleteMessage(result, (deleteError) => {
                             if (deleteError) {
@@ -793,7 +897,9 @@ app.get('/processOrders', (req, res) => {
                     });
                   })
                   .catch((pharmaerror) => {
-                    logger.error(`${queueDetails[1]} -> processOrders()->PharamaOrderPlaced -> ${pharmaerror.stack}`)
+                    logger.error(
+                      `${queueDetails[1]} -> processOrders()->PharamaOrderPlaced -> ${pharmaerror.stack}`
+                    );
                     console.log('pharma error', pharmaerror);
                     res.send({
                       status: 'Failed',
@@ -805,7 +911,9 @@ app.get('/processOrders', (req, res) => {
             }
           })
           .catch((error) => {
-            logger.error(`${queueDetails[1]} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`)
+            logger.error(
+              `${queueDetails[1]} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
+            );
 
             // no need to explicitly saying details about error for clients.
             console.log(error);
@@ -938,7 +1046,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -988,9 +1096,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          '' &&
+            '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-          null
+            null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1020,9 +1128,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+              '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+              null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
@@ -1131,7 +1239,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function (err) {
+          fs.appendFile(fileName, content, function(err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1146,7 +1254,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function (err) {
+              fs.appendFile(fileName, content, function(err) {
                 if (err) throw err;
                 console.log('Updated!');
               });
@@ -1283,7 +1391,7 @@ app.get('/getPrismData', (req, res) => {
 
 app.get('/list-of-payment-methods', (req, res) => {
   res.json(listOfPaymentMethods);
-})
+});
 
 app.use((req, res, next) => {
   res.status(404).send('invalid url!');
@@ -1291,12 +1399,12 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   if (err.response && err.response.data) {
-    logger.error(`Final error handler - ${JSON.stringify(err.response.data)}`)
+    logger.error(`Final error handler - ${JSON.stringify(err.response.data)}`);
   } else {
     logger.error(`Final error handler - ${JSON.stringify(err.stack)}`);
   }
-  res.status(500).send("something went wrong, please contact IT department!");
-})
+  res.status(500).send('something went wrong, please contact IT department!');
+});
 
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);

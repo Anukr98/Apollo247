@@ -140,7 +140,7 @@ interface DoctorCardProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { doctorDetails, nextAvailability } = props;
   const { currentPatient } = useAllCurrentPatients();

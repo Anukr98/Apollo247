@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const WeAreHelpYou: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 
@@ -164,7 +164,9 @@ export const WeAreHelpYou: React.FC = (props) => {
         >
           <div className={classes.contentGroup}>
             <div className={classes.title}>Coronavirus (Covid-19)</div>
-            <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
+            <p>
+              Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.
+            </p>
           </div>
           <div className={classes.rightGroup}>
             <img src={require('images/ic_covid-banner.svg')} alt="" />
@@ -180,9 +182,8 @@ export const WeAreHelpYou: React.FC = (props) => {
           <Grid container spacing={2}>
             <Grid item sm={8} xs={12}>
               <p>
-                We know there is too much information out there. We have compiled the most
-                science-based articles for you on how to stay safe, prevention and what to do in
-                case you are infected.
+                Apollo 247 has curated fact-based information from reputed sources on Coronavirus.
+                Now you can get reliable answers to common questions at one place.
               </p>
             </Grid>
             <Grid item sm={4} xs={12}>
@@ -190,7 +191,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 <span>
                   <img src={require('images/ic_feed.svg')} alt="" />
                 </span>
-                <span>Read the latest articles</span>
+                <span>Learn more about Coronavirus</span>
               </Link>
             </Grid>
           </Grid>

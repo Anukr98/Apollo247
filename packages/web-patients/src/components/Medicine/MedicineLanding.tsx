@@ -26,6 +26,10 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
+import { useLocationDetails } from 'components/LocationProvider';
+import { gtmTracking } from '../../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,12 +39,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(900)]: {
-        marginBottom: 20,
-      },
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         marginTop: 82,
@@ -336,13 +336,35 @@ export const MedicineLanding: React.FC = (props) => {
     setCartItems,
     ePrescriptionData,
     prescriptions,
+    cartTotal,
   } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
 
+  // const { city } = useLocationDetails()
+
   if (params.orderStatus === 'success') {
+    gtmTracking({
+      category: 'Pharmacy',
+      action: 'Order',
+      label: 'Order Success',
+      value: cartTotal,
+    });
+    // _obTracking(
+    //   {
+    //     mobileNumber: currentPatient && currentPatient.mobileNumber
+    //       ? currentPatient.mobileNumber
+    //       : null,
+    //     userLocation: city,
+    //     paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+    //     itemCount: cartItems ? cartItems.length : 0,
+    //     couponCode: couponCode == '' ? null : couponCode,
+    //     couponValue: discountAmount,
+    //     finalBookingValue: grossValue
+    //   }
+    // );
     if (cartItems.length > 0 && params.orderAutoId !== 'prescription') {
       // the length condition check is mandatory else it will execute it infinity times
       localStorage.removeItem(`${currentPatient && currentPatient.id}`);
@@ -392,7 +414,7 @@ export const MedicineLanding: React.FC = (props) => {
       .then((res: any) => {
         setData(res.data);
         /**Gtm code start  */
-        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
         /**Gtm code End  */
         setLoading(false);
       })
@@ -606,8 +628,9 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      <BottomLinks />
       <NavigationBottom />
-      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

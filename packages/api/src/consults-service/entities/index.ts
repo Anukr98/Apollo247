@@ -1394,8 +1394,102 @@ export class UtilizationCapacity extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 }
-
 //CurrentAvailabilityStatus end
+
+//notification related tables starts
+export enum notificationStatus {
+  READ = 'READ',
+  UNREAD = 'UNREAD',
+}
+
+export enum notificationEventName {
+  APPOINTMENT = 'APPOINTMENT',
+}
+
+export enum notificationType {
+  CHAT = 'CHAT',
+}
+
+@Entity()
+export class NotificationBin extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('NotificationBin_fromId')
+  @Column()
+  fromId: string;
+
+  @Index('NotificationBin_toId')
+  @Column()
+  toId: string;
+
+  @Index('NotificationBin_eventId')
+  @Column()
+  eventId: string;
+
+  @Column()
+  eventName: notificationEventName;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  message: string;
+
+  @Index('NotificationBin_status')
+  @Column()
+  status: notificationStatus;
+
+  @Column()
+  type: notificationType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class NotificationBinArchive extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('NotificationBinArchive_fromId')
+  @Column()
+  fromId: string;
+
+  @Index('NotificationBinArchive_toId')
+  @Column()
+  toId: string;
+
+  @Index('NotificationBinArchive_eventId')
+  @Column()
+  eventId: string;
+
+  @Column()
+  eventName: notificationEventName;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  message: string;
+
+  @Index('NotificationBinArchive_status')
+  @Column()
+  status: notificationStatus;
+
+  @Column()
+  type: notificationType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+//notification related tables end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

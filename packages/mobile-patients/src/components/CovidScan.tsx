@@ -11,10 +11,10 @@ export interface CovidScanProps extends NavigationScreenProps {}
 export const CovidScan: React.FC<CovidScanProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleResponse = (data: NavState) => {
+  const handleResponse = (data: NavState, WebViewRef: any) => {
     const homeURL = 'http://www.apollo247.com/';
     const url = data.url;
-
+    console.log(data);
     if (url && url.indexOf('redirectTo=doctor') > -1 && url.indexOf('#details') < 0) {
       props.navigation.navigate(AppRoutes.DoctorSearch);
     } else if (homeURL === url) {
@@ -23,23 +23,31 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   };
 
   const renderWebView = () => {
+    let WebViewRef: any;
     return (
       <WebView
-        onLoadStart={() => setLoading!(true)}
+        ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
+        // onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
-        source={{ uri: 'https://covid.apollo247.com?utm_source=mobile_app' }}
-        onNavigationStateChange={(data) => handleResponse(data)}
+        source={{ uri: props.navigation.getParam('covidUrl') }}
+        onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
+        renderError={() => renderError(WebViewRef)}
       />
     );
   };
 
   const handleBack = async () => {
-    Alert.alert('Alert', 'Do you want to go back?', [
-      { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
-    ]);
+    props.navigation.goBack();
   };
 
+  const renderError = (WebViewRef:any) => {
+    WebViewRef && WebViewRef.reload();
+    return(
+      <View style={{flex:1}}>
+
+      </View>
+    )
+  }
   const renderSpinner = () => {
     return (
       <View
@@ -68,7 +76,7 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header leftIcon="backArrow" onPressLeftIcon={() => handleBack()} />
+        <Header leftIcon="logo" onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
       {loading && renderSpinner()}

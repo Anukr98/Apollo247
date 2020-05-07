@@ -23,8 +23,7 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-// import { clientRoutes } from 'helpers/clientRoutes';
-// import moment from 'moment';
+import { gtmTracking, _urTracking } from '../gtmTracking';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -156,9 +155,8 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         /**Gtm code start start */
-        window.gep && window.gep('Profile', 'Signup / Login', 'Signout');
+        gtmTracking({ category: 'Profile', action: 'Logout', label: 'Logout' });
         /**Gtm code start end */
-
         localStorage.removeItem('currentUser');
         window.location.reload();
       });
@@ -348,13 +346,6 @@ export const AuthProvider: React.FC = (props) => {
       if (user) {
         /**Gtm code start */
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
-
-        if (isNewUser) {
-          window.gep && window.gep('Profile', 'Signup / Login', 'Register');
-          window._ur && window._ur(user.uid, false, 1);
-        } else {
-          window.gep && window.gep('Profile', 'Signup / Login', 'Login');
-        }
         /**Gtm code start end */
 
         const jwt = await user.getIdToken().catch((error) => {
@@ -369,7 +360,22 @@ export const AuthProvider: React.FC = (props) => {
 
         await apolloClient
           .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
-          .then(() => setSignInError(false))
+          .then((res) => {
+            const userId =
+              res.data &&
+              res.data.getCurrentPatients &&
+              res.data.getCurrentPatients.patients &&
+              res.data.getCurrentPatients.patients[0].id;
+            /**Gtm code start */
+            if (isNewUser) {
+              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
+              _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
+            } else {
+              gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
+            }
+            /**Gtm code start end */
+            setSignInError(false);
+          })
           .catch(() => setSignInError(true));
       }
       setIsSigningIn(false);

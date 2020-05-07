@@ -293,8 +293,8 @@ export const Navigation: React.FC = (props) => {
         </>
       )}
       {currentPath === clientRoutes.welcome() ||
-      clientRoutes.termsConditions() ||
-      clientRoutes.aboutUs() ? (
+      currentPath === clientRoutes.termsConditions() ||
+      currentPath === clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
           <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
             Download App

@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const AphDialog: React.FC<DialogProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <Dialog {...props} classes={classes}>

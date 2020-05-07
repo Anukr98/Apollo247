@@ -1313,6 +1313,8 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        orderType
+        currentStatus
         patientAddressId
         medicineOrdersStatus {
           id
@@ -1874,6 +1876,13 @@ export const ADD_TO_CONSULT_QUEUE = gql`
     addToConsultQueue(appointmentId: $appointmentId) {
       id
       doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        queueCount
+      }
+      totalJuniorDoctors
     }
   }
 `;
@@ -2134,4 +2143,18 @@ export const GET_DEVICE_TOKEN_COUNT = gql`
       deviceCount
     }
   }
+`;
+
+export const GET_TRANSACTION_STATUS = gql`
+  query paymentTransactionStatus($appointmentId: String!) {
+    paymentTransactionStatus(appointmentId: $appointmentId) {
+      appointment{
+        displayId
+        bankTxnId
+        paymentStatus
+        amountPaid
+       
+      }
+  }
+}
 `;

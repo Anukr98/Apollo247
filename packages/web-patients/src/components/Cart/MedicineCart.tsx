@@ -44,6 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
+import { gtmTracking, _obTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -590,7 +591,7 @@ export const MedicineCart: React.FC = (props) => {
             deliveryMode === 'HOME'
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+          bookingSource: BOOKINGSOURCE.WEB,
           estimatedAmount: parseFloat(totalAmount),
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
@@ -736,7 +737,7 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
-              bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+              bookingSource: BOOKING_SOURCE.WEB,
               ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
@@ -762,7 +763,7 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
-          bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+          bookingSource: BOOKING_SOURCE.WEB,
           ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
@@ -792,7 +793,7 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
-      deliveryTime.length === 0) ||
+      deliveryTime.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -818,7 +819,7 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    window.gep && window.gep('Pharmacy', 'Order', 'View Cart', totalAmount);
+    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount });
     /**Gtm code  End */
   }, [grossValue]);
 
@@ -1084,17 +1085,9 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={
-                disableSubmit ||
-                !isPaymentButtonEnable ||
-                uploadingFiles ||
-                deliveryTime.length === 0
-              }
+              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
               className={
-                disableSubmit ||
-                !isPaymentButtonEnable ||
-                mutationLoading ||
-                deliveryTime.length === 0
+                disableSubmit || !isPaymentButtonEnable || mutationLoading
                   ? classes.buttonDisable
                   : ''
               }
@@ -1166,32 +1159,26 @@ export const MedicineCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                window.gep &&
-                  window.gep(
-                    'Pharmacy',
-                    'Order',
-                    `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-                    totalAmount
-                  );
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'Order',
+                  label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+                  value: totalAmount,
+                });
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
-                    // GTM start
-                    window.gep && window.gep('Pharmacy', 'Order', 'Order Success', totalAmount);
-                    window._ob &&
-                      window._ob(
-                        currentPatient && currentPatient.mobileNumber
-                          ? currentPatient.mobileNumber
-                          : null,
-                        city,
-                        paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                        cartItems ? cartItems.length : 0,
-                        couponCode == '' ? null : couponCode,
-                        discountAmount,
-                        grossValue
-                      );
-                    // GTM end
+                    /**Gtm code start  */
+                    _obTracking({
+                      userLocation: city,
+                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                      itemCount: cartItems ? cartItems.length : 0,
+                      couponCode: couponCode == '' ? null : couponCode,
+                      couponValue: discountAmount,
+                      finalBookingValue: grossValue,
+                    });
+                    /**Gtm code end  */
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
@@ -1205,7 +1192,11 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy', 'Order', 'Failed / Cancelled');
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Order',
+                      label: 'Failed / Cancelled',
+                    });
                     /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');

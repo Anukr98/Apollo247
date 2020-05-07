@@ -31,6 +31,8 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
+import { BottomLinks } from 'components/BottomLinks';
+import { gtmTracking } from 'gtmTracking';
 
 type Params = { id: string };
 
@@ -48,7 +50,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     doctorDetailsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -212,6 +213,11 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -88,
       zIndex: 999,
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -258,6 +264,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
 
+  const gtmTrackingFunc = () => {
+    /* Gtm code start */
+    const speciality =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty &&
+      doctorDetails.getDoctorDetailsById.specialty.name
+        ? doctorDetails.getDoctorDetailsById.specialty.name
+        : null;
+    const onlineConsultationFees =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
+        : null;
+    gtmTracking({
+      category: 'Consultations',
+      action: speciality,
+      label: 'Order Initiatedd',
+      value: onlineConsultationFees,
+    });
+    /* Gtm code end */
+  };
+
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
@@ -277,6 +307,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorDetails && doctorDetails.getDoctorDetailsById
         ? doctorDetails.getDoctorDetailsById.id
         : '';
+
+    const hasStarTeam =
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.starTeam
+        ? true
+        : false;
 
     return (
       <div className={classes.root}>
@@ -314,7 +351,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <div className={classes.searchSection}>
                       <AphButton
                         onClick={(e) => {
-                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                          if (!isSignedIn) {
+                            protectWithLoginPopup();
+                          } else {
+                            setIsPopoverOpen(true);
+                            gtmTrackingFunc();
+                          }
                         }}
                         color="primary"
                         className={classes.bookAppointment}
@@ -326,7 +368,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         {!isPayrollDoctor && (
                           <>
                             <DoctorClinics doctorDetails={doctorDetails} />
-                            <StarDoctorTeam doctorDetails={doctorDetails} />
+                            {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
                           </>
                         )}
                         <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
@@ -338,12 +380,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Scrollbars>
           </div>
         </div>
+        <div className={classes.footerLinks}>
+          <BottomLinks />
+        </div>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (
             <div className={classes.flotingBtn}>
               <AphButton
                 onClick={(e) => {
-                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
+                  if (!isSignedIn) {
+                    protectWithLoginPopup();
+                  } else {
+                    setIsPopoverOpen(true);
+                    gtmTrackingFunc();
+                  }
                 }}
                 color="primary"
                 title={' Book Appointment'}

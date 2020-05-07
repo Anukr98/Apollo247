@@ -170,6 +170,9 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Ready At Store';
       break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
+      statusString = 'Payment Pending';
+      break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;
@@ -887,8 +890,12 @@ export const InitiateAppsFlyer = () => {
       // if (res.data.af_dp !== undefined) {
       try {
         AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+
         // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}

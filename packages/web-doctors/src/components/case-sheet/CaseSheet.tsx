@@ -298,7 +298,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   useEffect(() => {
     if (firstTimeLanding) {
       const storageItem = getLocalStorageItem(params.id);
-      if (!storageItem) {
+      if (!storageItem && caseSheetEdit) {
         const caseSheetObject = {
           symptoms: symptoms,
           weight: weight,
@@ -323,7 +323,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
-      } else {
+      } else if (storageItem) {
         setSymptoms(storageItem.symptoms);
         setWeight(storageItem.weight);
         setHeight(storageItem.height);
@@ -347,7 +347,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setFirstTimeLanding(false);
       }
     }
-  }, [firstTimeLanding]);
+  }, [firstTimeLanding, caseSheetEdit]);
 
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,

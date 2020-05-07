@@ -135,7 +135,7 @@ const defaultMaterialTheme = createMuiTheme({
 });
 
 export const MyProfile: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { signOut } = useAuth();
   const [state, setState] = React.useState({
@@ -173,6 +173,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Manage Profiles'
             : currentPath === clientRoutes.addressBook()
             ? 'Address Book'
+            : currentPath === clientRoutes.healthRecords()
+            ? 'Health Records'
             : 'Manage Profiles'}
         </div>
       </div>

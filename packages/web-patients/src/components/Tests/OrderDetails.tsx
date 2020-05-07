@@ -20,6 +20,7 @@ import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DIAGNOSTIC_ORDER_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -333,6 +334,11 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916',
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -458,6 +464,9 @@ export const OrderDetails: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
       </div>
     </div>
   );

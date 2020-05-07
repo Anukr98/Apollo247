@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
+import { gtmTracking } from '../../../gtmTracking';
 import _replace from 'lodash/replace';
 import axios from 'axios';
 
@@ -255,13 +256,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                             : null,
                                         });
                                       /**Gtm code start  */
-                                      window.gep &&
-                                        window.gep(
-                                          'Pharmacy',
-                                          'Add to Cart',
-                                          hotSeller.packageName,
-                                          price
-                                        );
+                                      gtmTracking({
+                                        category: 'Pharmacy',
+                                        action: 'Add to Cart',
+                                        label: hotSeller.packageName,
+                                        value: price,
+                                      });
                                       /**Gtm code End  */
                                     }
                                     setLoading(false);
@@ -278,13 +278,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           <AphButton
                             onClick={() => {
                               /**Gtm code start  */
-                              window.gep &&
-                                window.gep(
-                                  'Pharmacy',
-                                  'Remove From Cart',
-                                  hotSeller.packageName,
-                                  hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0
-                                );
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: 'Remove From Cart',
+                                label: hotSeller.packageName,
+                                value: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
+                              });
                               /**Gtm code End  */
                               removeCartItem &&
                                 removeCartItem(

@@ -49,7 +49,7 @@ interface PatientDetailsProps {
   consultscount: String;
 }
 export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { loading } = useContext(CaseSheetContext);
   const userCardStrip = [];
   const { patientDetails, consultscount } = props;

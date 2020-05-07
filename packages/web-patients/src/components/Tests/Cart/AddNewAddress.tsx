@@ -14,6 +14,7 @@ import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { gtmTracking } from '../../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -320,7 +321,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
             })
               .then(({ data }: any) => {
                 /**Gtm code start  */
-                window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
+                gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Address Selected' });
                 /**Gtm code End  */
                 if (data && data.savePatientAddress && data.savePatientAddress.patientAddress)
                   props.setIsAddAddressDialogOpen(false);

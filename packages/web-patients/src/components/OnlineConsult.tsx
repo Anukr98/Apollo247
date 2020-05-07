@@ -40,6 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
 import { useLocationDetails } from 'components/LocationProvider';
+import { gtmTracking, _cbTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -403,10 +404,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     nextAvailableSlot.getDoctorNextAvailableSlot &&
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots
   ) {
-    /* Gtm code start */
-    const speciality = getSpeciality();
-    window.gep && window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
-    /* Gtm code end */
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
         // console.log(availability && availability.availableSlot, 'availability.....');
@@ -518,7 +515,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     appointmentDateTime = consultNowSlotTime;
   }
   const consultType: AppointmentType = AppointmentType.ONLINE;
-
   const bookAppointment = () => {
     paymentMutation({
       variables: {
@@ -538,18 +534,20 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         const specialty = getSpeciality();
         const { getDoctorDetailsById } = doctorDetails;
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-        window.gep && window.gep('Consultations', specialty, 'Order Success', revisedAmount);
-        window._cb(
-          currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
-          specialty,
-          city,
-          getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null,
-          AppointmentType.ONLINE,
-          `${appointmentDateTime}`,
-          couponCode ? couponCode : null,
-          couponValue ? couponValue : null,
-          revisedAmount
-        );
+        gtmTracking({
+          category: 'Consultations',
+          action: specialty,
+          label: 'Order Success',
+          value: revisedAmount,
+        });
+        _cbTracking({
+          specialty: specialty,
+          bookingType: AppointmentType.ONLINE,
+          scheduledDate: `${appointmentDateTime}`,
+          couponCode: couponCode ? couponCode : null,
+          couponValue: couponValue ? couponValue : null,
+          finalBookingValue: revisedAmount,
+        });
         /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -589,10 +587,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
-        /* Gtm code start */
-        const Specialty = getSpeciality();
-        window.gep && window.gep('Consultations', Specialty, 'Failed / Cancelled');
-        /* Gtm code End */
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         disableSubmit = false;
@@ -731,20 +725,20 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           )}
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={() => {
+            setCouponCodeFxn={() => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  `Coupon Applied - ${couponCode}`,
-                  couponValue
-                );
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Applied - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
               setCouponCode(couponCode);
             }}
+            setCouponCode={setCouponCode}
             subtotal={onlineConsultationFees}
             revisedAmount={revisedAmount}
             setRevisedAmount={setRevisedAmount}
@@ -755,13 +749,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              window.gep &&
-                window.gep(
-                  'Consultations',
-                  speciality,
-                  'Coupon Removed - ${couponCode}',
-                  couponValue
-                );
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Removed - ${couponCode}`,
+                value: couponValue,
+              });
               /* Gtm code end */
             }}
           />

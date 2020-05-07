@@ -1,4 +1,7 @@
-import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DoctorType,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
@@ -37,7 +40,6 @@ export enum WebEngageEventName {
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
-  DOCTOR_PROFILE_VIEWED = 'Doctor Profile Viewed',
   BOOK_APPOINTMENT = 'Book Appointment',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
@@ -46,6 +48,12 @@ export enum WebEngageEventName {
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
+
+  MY_ORDERS_CLICKED = 'My Orders Clicked',
+  PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
+  PHARMACY_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Add New Address Click', // (Once user clicks on Save)
+  PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
+  PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS = 'Phamracy Cart Address Selected Success',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -368,22 +376,12 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
-  [WebEngageEventName.DOCTOR_PROFILE_VIEWED]: {
-    name: string;
-    specialisation: string;
-    experience: number;
-    'language known': string; //Comma separated values
-    Hospital: string;
-    'Doctor Category': DoctorType;
-    'Doctor ID': string;
-    'Speciality ID': string;
-    'Available in Minutes'?: number;
-  };
   [WebEngageEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
     'Type of Doctor': DoctorType;
     'Doctor Specialty': string;
+    Source: 'Profile' | 'Listing';
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -533,6 +531,35 @@ export interface WebEngageEvents {
     // Type: 'Consult' | 'Medicine' | 'Diagnostics';
     Rating: string;
     'Rating Reason': string;
+  };
+  [WebEngageEventName.MY_ORDERS_CLICKED]: {
+    Source: 'Pharmacy Home' | 'Diagnostics' | 'My Account';
+    'Customer ID': string;
+    'Mobile Number': string;
+  };
+  [WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]: {
+    'Customer ID': string;
+    'Mobile Number': string;
+    'Order ID': string;
+    'Order Type': 'Cart' | 'Non Cart';
+    'Order Status': MEDICINE_ORDER_STATUS; //Order Initiated / Payment Success / Orders Placed, etc.
+    'Order Date': Date;
+    'Delivery Date'?: Date; // TAT Promised
+  };
+  [WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK]: {
+    Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+  };
+  [WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED]: {
+    Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+    Success?: 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery address': string;
+    Pincode: string;
+  };
+  [WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS]: {
+    'TAT Displayed': Date;
+    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Address': string;
+    Pincode: string;
   };
 
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {

@@ -236,7 +236,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const PatientDetails: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
   const moreActionsopen = Boolean(moreActionsDialog);
 

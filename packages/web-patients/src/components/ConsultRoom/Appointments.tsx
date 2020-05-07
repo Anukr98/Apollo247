@@ -40,6 +40,7 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,9 +90,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     consultPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       paddingTop: 30,
+      borderRadius: '0 0 10px 10px',
       marginBottom: 20,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -366,7 +367,11 @@ export const Appointments: React.FC = (props) => {
   useEffect(() => {
     if (isFailurePayment) {
       /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialtyName, 'Failed / Cancelled');
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Failed / Cancelled',
+      });
       /**Gtm code start end */
     }
   }, [isFailurePayment]);
@@ -754,14 +759,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h3">Uh oh.. :)</Typography>
               <p> We're sorry but the payment failed</p>
               <div className={classes.bottomButtons}>
-                <AphButton
-                  color="primary"
-                  onClick={() => {
-                    setIsFailurePayment(false);
-                  }}
-                >
-                  OK, GOT IT
-                </AphButton>
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        setIsFailurePayment(false);
+                        history.push(clientRoutes.appointments());
+                      }}
+                    >
+                      OK, GOT IT
+                    </AphButton>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -790,7 +800,6 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </Popover> */}
-
       <NavigationBottom />
     </div>
   );
