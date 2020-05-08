@@ -2068,8 +2068,8 @@ export const AUTOMATED_QUESTIONS = gql`
 `;
 
 export const LOGIN = gql`
-  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
-    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, $hashCode: String) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType, hashCode: $hashCode) {
       status
       message
       loginId
