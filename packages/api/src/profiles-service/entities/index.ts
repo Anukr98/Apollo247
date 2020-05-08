@@ -218,9 +218,6 @@ export class MedicineOrders extends BaseEntity {
   appointmentId: string;
 
   @Column({ nullable: true })
-  code: string;
-
-  @Column({ nullable: true })
   coupon: string;
 
   @Column({ nullable: true })
