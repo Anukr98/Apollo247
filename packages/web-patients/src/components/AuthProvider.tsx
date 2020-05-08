@@ -24,6 +24,7 @@ import {
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { gtmTracking, _urTracking } from '../gtmTracking';
+import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking'
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -157,6 +158,10 @@ export const AuthProvider: React.FC = (props) => {
         /**Gtm code start start */
         gtmTracking({ category: 'Profile', action: 'Logout', label: 'Logout' });
         /**Gtm code start end */
+
+        /*webengage code start */
+        webengageUserLogoutTracking()
+        /*webengage code end */
         localStorage.removeItem('currentUser');
         window.location.reload();
       });
@@ -372,6 +377,9 @@ export const AuthProvider: React.FC = (props) => {
               _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
             } else {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
+              /* webengage code start */
+              webengageUserLoginTracking(user.uid)
+              /* webengage code end */
             }
             /**Gtm code start end */
             setSignInError(false);
