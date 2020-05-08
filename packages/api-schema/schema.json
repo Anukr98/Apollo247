@@ -11730,6 +11730,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "STAT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -11831,7 +11837,7 @@
             "deprecationReason": null
           },
           {
-            "name": "DROPS",
+            "name": "DROP",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -12047,6 +12053,12 @@
           },
           {
             "name": "EAR_DROPS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INTRAVAGINAL",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

@@ -251,7 +251,7 @@ const sendUnreadMessagesNotification: Resolver<
       const today = format(new Date(), 'yyyy-MM-dd');
       const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
-      return difference >= parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10);
+      return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
     });
 
     //Mapping the doctor ids with count of last day appointments
