@@ -22,4 +22,5 @@ export interface Login {
 export interface LoginVariables {
   mobileNumber: string;
   loginType: LOGIN_TYPE;
+  hashCode?: string | null;
 }

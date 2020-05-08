@@ -1171,8 +1171,8 @@ export const DOWNLOAD_DOCUMENT = gql`
 `;
 
 export const LOGIN = gql`
-  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, hashCode: String) {
-    login(mobileNumber: $mobileNumber, loginType: $loginType, $hashCode:hashCode) {
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, $hashCode: String) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType, hashCode: $hashCode) {
       status
       message
       loginId
