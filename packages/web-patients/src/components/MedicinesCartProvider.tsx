@@ -91,6 +91,8 @@ export interface MedicineCartContextProps {
   setUploadedEPrescription: ((uploadedEPrescription: boolean | null) => void) | null;
   medicineCartType: string | null;
   updateItemShippingStatus: ((item: any) => void) | null;
+  cartTat: boolean | null;
+  changeCartTatStatus: ((status: boolean) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -124,6 +126,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setUploadedEPrescription: null,
   medicineCartType: '',
   updateItemShippingStatus: null,
+  cartTat: false,
+  changeCartTatStatus: null
 });
 
 enum CartTypes {
@@ -144,6 +148,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [storePickupPincode, setStorePickupPincode] = useState<
     MedicineCartContextProps['storePickupPincode']
   >(null);
+
+  const [cartTat, setCartTat] = useState<boolean>(false)
 
   const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
   const [deliveryAddressId, setDeliveryAddressId] = useState<
@@ -318,6 +324,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
     // setCartItems([]);
   };
 
+
+  const changeCartTatStatus = (status: boolean) => {
+    setCartTat(status)
+  }
   return (
     <MedicinesCartContext.Provider
       value={{
@@ -351,6 +361,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         uploadedEPrescription,
         setUploadedEPrescription,
         updateItemShippingStatus,
+        cartTat,
+        changeCartTatStatus
       }}
     >
       {props.children}
@@ -390,4 +402,6 @@ export const useShoppingCart = () => ({
   setUploadedEPrescription: useShoppingCartContext().setUploadedEPrescription,
   medicineCartType: useShoppingCartContext().medicineCartType,
   updateItemShippingStatus: useShoppingCartContext().updateItemShippingStatus,
+  cartTat: useShoppingCartContext().cartTat,
+  changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
 });
