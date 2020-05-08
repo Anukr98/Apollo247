@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField } from '@aph/web-ui-components';
@@ -29,12 +29,18 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: 12,
     color: '#02475b',
     position: 'relative',
+    marginBottom: 15,
     '& textarea': {
       border: 'none',
       padding: 0,
       fontSize: 15,
       fontWeight: 500,
       borderRadius: 0,
+    },
+    '& p': {
+      position: 'absolute',
+      bottom: -20,
+      color: '#890000 !important',
     },
   },
   noDataFound: {
@@ -68,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   inputFieldEdit: {
     border: '1px solid #00b38e',
-    borderEadius: 10,
+    borderRadius: 10,
     backgroundColor: '#fff',
     padding: 0,
     '& textarea': {
@@ -83,6 +89,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const Vitals: React.FC = () => {
   const classes = useStyles({});
+  const heightElement = useRef(null);
+  const weightElement = useRef(null);
   const {
     height,
     setHeight,
@@ -93,7 +101,19 @@ export const Vitals: React.FC = () => {
     temperature,
     setTemperature,
     caseSheetEdit,
+    vitalError,
+    setVitalError,
   } = useContext(CaseSheetContextJrd);
+
+  useEffect(() => {
+    if (vitalError.height) {
+      const node = (heightElement as any).current;
+      if (node) node.focus();
+    } else if (vitalError.weight) {
+      const node = (weightElement as any).current;
+      if (node) node.focus();
+    }
+  }, [vitalError]);
 
   return (
     <div className={classes.root}>
@@ -106,9 +126,25 @@ export const Vitals: React.FC = () => {
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
+                required
+                inputRef={heightElement}
                 value={height}
+                error={height.trim() === '' || height === null || height === undefined}
+                helperText={vitalError.height}
                 onChange={(e) => {
                   setHeight(e.target.value);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      height: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      height: 'This field is required',
+                    });
                 }}
               />
             </div>
@@ -123,8 +159,24 @@ export const Vitals: React.FC = () => {
                 fullWidth
                 multiline
                 value={weight}
+                required
+                inputRef={weightElement}
+                error={weight.trim() === '' || weight === null || weight === undefined}
+                helperText={vitalError.weight}
                 onChange={(e) => {
                   setWeight(e.target.value);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      weight: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      weight: 'This field is required',
+                    });
                 }}
               />
             </div>
