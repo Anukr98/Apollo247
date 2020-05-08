@@ -167,7 +167,6 @@ interface BannerProps {
 export const Banner: React.FC<BannerProps> = (props) => {
   const classes = useStyles({});
   const subRef = React.useRef(null);
-
   const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
   return (
     <div
@@ -216,7 +215,10 @@ export const Banner: React.FC<BannerProps> = (props) => {
                 </Typography>
                 <p>Subscribe to receive the latest info on COVID 19 from Apollo247</p>
               </div>
-              <NewsletterSubscriptionForm onClose={() => setOpenSubscriptionForm(false)} />
+              <NewsletterSubscriptionForm
+                category={'covid19'}
+                onClose={() => setOpenSubscriptionForm(false)}
+              />
             </div>
           </div>
         </div>
