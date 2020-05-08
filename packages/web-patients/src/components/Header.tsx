@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -15,7 +15,6 @@ import { LocationSearch } from './LocationSearch';
 import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
-
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,7 +185,6 @@ export const Header: React.FC = (props) => {
     });
     return !x;
   };
-  
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
