@@ -241,7 +241,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             category: 'Pharmacy',
                             action: 'Add to Cart',
                             label: hotSeller.name,
-                            value: hotSeller.price,
+                            value: hotSeller.special_price || hotSeller.price,
                           });
                           /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -262,7 +262,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             category: 'Pharmacy',
                             action: 'Remove From Cart',
                             label: hotSeller.name,
-                            value: hotSeller.price,
+                            value: hotSeller.special_price || hotSeller.price,
                           });
                           /**Gtm code End  */
                           removeCartItem && removeCartItem(hotSeller.id);

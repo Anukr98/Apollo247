@@ -269,7 +269,7 @@ export const LocationSearch: React.FC = (props) => {
             setIsPopoverOpen(false);
             setIsLocationDenied(true);
             setIsUserDeniedLocationAccess(true);
-            setIsLocationPopoverOpen(true);
+            // setIsLocationPopoverOpen(true);
           } else if (
             PermissionStatus.state !== 'granted' &&
             !detectBy &&
@@ -286,7 +286,7 @@ export const LocationSearch: React.FC = (props) => {
       !localStorage.getItem('currentAddress') &&
       !isSigningIn
     ) {
-      setIsLocationPopoverOpen(true);
+      // setIsLocationPopoverOpen(true);
     } else {
       setIsPopoverOpen(false);
     }

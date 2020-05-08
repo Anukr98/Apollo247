@@ -62,6 +62,7 @@ app.get(
   })
 );
 
+app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeNoShowReminder', cronTabs.noShowReminder);

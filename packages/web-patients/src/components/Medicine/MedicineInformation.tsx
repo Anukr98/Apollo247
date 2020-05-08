@@ -565,7 +565,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       category: 'Pharmacy',
                       action: 'Add to Cart',
                       label: data.name,
-                      value: data.price,
+                      value: data.special_price || data.price,
                     });
                   /**Gtm code End  */
                   applyCartOperations(cartItem);

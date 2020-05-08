@@ -40,7 +40,7 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

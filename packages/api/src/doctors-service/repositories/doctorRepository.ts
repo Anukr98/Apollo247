@@ -243,6 +243,10 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { delegateNumber });
   }
 
+  updateDoctorSignature(id: string, signature: string) {
+    return this.update(id, { signature });
+  }
+
   findById(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],

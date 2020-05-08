@@ -38,6 +38,23 @@ exports.sendUnreadMessagesNotification = (req, res) => {
       console.log('error', error);
     });
 };
+exports.archiveMessages = (req, res) => {
+  const requestJSON = {
+    query: Constants.ARCHIVE_MESSAGES,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
 exports.noShowReminder = (req, res) => {
   const requestJSON = {
     query: Constants.NO_SHOW_REMINDER,

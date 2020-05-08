@@ -835,6 +835,9 @@ export class PatientLifeStyle extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  occupationHistory: string;
+
   @ManyToOne((type) => Patient, (patient) => patient.lifeStyle)
   patient: Patient;
 
@@ -1196,6 +1199,9 @@ export class PatientMedicalHistory extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medicationHistory: string;
 
   @Column({ nullable: true })
   temperature: string;
