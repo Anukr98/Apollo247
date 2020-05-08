@@ -213,7 +213,7 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic' | 'Pharmacy Partial Search' | 'Pharmacy Full Search';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;

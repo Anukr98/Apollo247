@@ -313,7 +313,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       isInStock: true,
     });
-    postwebEngageAddToCartEvent(item, 'Pharmacy List');
+    postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
     postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
   };
 

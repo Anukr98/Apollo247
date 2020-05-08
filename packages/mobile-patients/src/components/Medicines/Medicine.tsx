@@ -1140,6 +1140,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail: thumbnail,
         isInStock: true,
       });
+      postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
     };
 
     const getItemQuantity = (id: string) => {
