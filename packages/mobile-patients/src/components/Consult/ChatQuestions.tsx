@@ -165,7 +165,7 @@ type Slide = {
   validationMessage?: string;
 };
 
-const slides: Slide[] = [
+let slides: Slide[] = [
   {
     key: 'height',
     index: 0,
@@ -307,6 +307,35 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
+    const tmpSlide: Slide[] = [];
+    if (currentPatient.gender === '') {
+      tmpSlide.push({
+        key: 'gender',
+        index: 0,
+        title: 'Please specify your gender',
+        buttonText: ['Male', 'Female'],
+        inputData: ['value'],
+      });
+    }
+    if (currentPatient && currentPatient.dateOfBirth === '') {
+      tmpSlide.push({
+        key: 'age',
+        index: tmpSlide.length,
+        title: 'What is your age (in yrs)?',
+        inputPlacerholder: 'Enter age in years…',
+        inputData: ['value'],
+        keyboardType: 'number-pad',
+        validation: /^(0?[1-9]|[1-9][0-9]|[1][1-9][1-9]|200)$/,
+      });
+    }
+    if (tmpSlide.length > 0) {
+      slides.forEach((i) => {
+        tmpSlide.push({ ...i, index: tmpSlide.length });
+      });
+      slides = tmpSlide;
+    }
+  }, []);
+  useEffect(() => {
     const v = slides.map((item) => {
       return {
         k: item.key,
@@ -315,6 +344,17 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     });
 
     if (currentPatient && currentPatient.patientMedicalHistory) {
+      currentPatient.patientMedicalHistory.age &&
+        (v.find((i) => i.k === 'age')!.v = [
+          currentPatient.patientMedicalHistory.age !== 'No'
+            ? currentPatient.patientMedicalHistory.age
+            : '',
+        ]);
+      currentPatient.patientMedicalHistory.gender &&
+        (currentPatient.patientMedicalHistory.gender === 'No'
+          ? (v.find((i) => i.k === 'gender')!.v = ['Male'])
+          : (v.find((i) => i.k === 'gender')!.v = ['Female']) &&
+            (v.find((i) => i.k === 'gender')!.v = [currentPatient.patientMedicalHistory.gender]));
       currentPatient.patientMedicalHistory.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
           currentPatient.patientMedicalHistory.bp !== 'No Idea'

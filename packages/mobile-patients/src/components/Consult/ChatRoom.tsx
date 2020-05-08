@@ -65,6 +65,7 @@ import {
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -385,6 +386,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
     false,
     false,
+    false,
+    false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
@@ -484,6 +487,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  console.log('.........console.log(slides);');
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -618,6 +623,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     let data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
+        // case 'gender':
+        //   data.gender = item.v[0] || currentPatient.gender;
+        //   try {
+        //     const text = {
+        //       id: patientId,
+        //       message: 'Gender:\n' + data.gender,
+        //       messageDate: new Date(),
+        //     };
+        //     setMessageText('');
+        //     !isSendAnswers[9] && sendAnswerMessage(text);
+        //     setSendAnswers(9);
+        //     console.log('isSendAnswers[2]', isSendAnswers[2]);
+        //   } catch (error) {
+        //     CommonBugFender('ChatRoom_Answers11_try', error);
+        //   }
+        //   break;
+        // case 'age':
+        //   data.age = item.v[0] || currentPatient.age;
+        //   try {
+        //     const text = {
+        //       id: patientId,
+        //       message: 'Age:\n' + data.age,
+        //       messageDate: new Date(),
+        //     };
+        //     setMessageText('');
+        //     console.log('isSendAnswers[1]', isSendAnswers[1], sendAnswerMessage(text));
+        //     !isSendAnswers[10] && sendAnswerMessage(text);
+        //     setSendAnswers(10);
+        //   } catch (error) {
+        //     CommonBugFender('ChatRoom_Answers12_try', error);
+        //   }
+        //break;
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
           console.log('data.height:', 'data.height:' + data.height);
@@ -5839,7 +5876,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {displayChatQuestions && Platform.OS === 'ios' && (
               <ChatQuestions
                 onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and', value);
+                  console.log('and....', value);
                   setAnswerData([value]);
                 }}
                 onDonePress={(values: { k: string; v: string[] }[]) => {
