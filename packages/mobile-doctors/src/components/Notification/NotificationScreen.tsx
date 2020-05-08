@@ -85,9 +85,9 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             <View style={styles.iconContainer}>{chatIcon()}</View>
             <View style={styles.textContainer}>
               <Text style={styles.mainTextStyle}>
-                {`There are ${item.unreadNotificationsCount} new message${
-                  item.unreadNotificationsCount !== 1 ? 's' : ''
-                } from your patient, `}
+                {`There ${item.unreadNotificationsCount !== 1 ? 'are' : 'is'} ${
+                  item.unreadNotificationsCount
+                } new message${item.unreadNotificationsCount !== 1 ? 's' : ''} from your patient, `}
                 <Text
                   style={styles.highText}
                 >{`${item.patientFirstName} ${item.patientLastName}`}</Text>
@@ -96,10 +96,10 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
                 {moment(item.lastUnreadMessageDate).calendar('', {
                   sameDay: '[Today], hh.mm A',
                   nextDay: '[Tomorrow]',
-                  nextWeek: 'DD/MM/YYYY, hh.mm A',
+                  nextWeek: 'DD MMM YYYY, hh.mm A',
                   lastDay: '[Yesterday], hh.mm A',
-                  lastWeek: 'DD/MM/YYYY, hh.mm A',
-                  sameElse: 'DD/MM/YYYY',
+                  lastWeek: 'DD MMM YYYY, hh.mm A',
+                  sameElse: 'DD MMM YYYY,  hh.mm A',
                 })}
               </Text>
             </View>
