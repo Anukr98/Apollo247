@@ -63,7 +63,7 @@ export const loginAPI = (mobileNumber: string, appSign?: string) => {
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,
-      // :appSign
+      hashCode: appSign,
     };
     apolloClient
       .query<Login, LoginVariables>({
