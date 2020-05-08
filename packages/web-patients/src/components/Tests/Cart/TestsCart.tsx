@@ -11,6 +11,7 @@ import {
 import Scrollbars from 'react-custom-scrollbars';
 import { useDiagnosticsCart, Clinic } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getDeviceType } from 'helpers/commonHelpers'
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -618,6 +619,7 @@ export const TestsCart: React.FC = (props) => {
             quantity: 1,
           } as DiagnosticLineItem)
       ),
+      deviceType: getDeviceType()
     };
     saveDiagnosticOrder({
       variables: { diagnosticOrderInput: orderInfo },
