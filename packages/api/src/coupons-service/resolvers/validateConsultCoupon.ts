@@ -166,7 +166,13 @@ const validateConsultCoupon: Resolver<
 
   //call to check generic rule
   const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, doctorFees);
-  if (genericRuleCheckResult) return genericRuleCheckResult;
+  if (genericRuleCheckResult) {
+    return {
+      validityStatus: genericRuleCheckResult.validityStatus,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: genericRuleCheckResult.reasonForInvalidStatus,
+    };
+  }
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 

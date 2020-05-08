@@ -26,7 +26,6 @@ export function discountCalculation(
 
 type Result = {
   validityStatus: boolean;
-  revisedAmount: number;
   reasonForInvalidStatus: string;
 };
 
@@ -38,7 +37,6 @@ export function genericRuleCheck(
   if (couponGenericRulesData.minimumCartValue && amount < couponGenericRulesData.minimumCartValue)
     return {
       validityStatus: false,
-      revisedAmount: amount,
       reasonForInvalidStatus: ApiConstants.LOWER_CART_LIMIT.replace(
         '{0}',
         couponGenericRulesData.minimumCartValue.toString()
@@ -49,7 +47,6 @@ export function genericRuleCheck(
   if (couponGenericRulesData.maximumCartValue && amount > couponGenericRulesData.maximumCartValue)
     return {
       validityStatus: false,
-      revisedAmount: amount,
       reasonForInvalidStatus: ApiConstants.UPPER_CART_LIMIT.replace(
         '{0}',
         couponGenericRulesData.maximumCartValue.toString()
@@ -64,7 +61,6 @@ export function genericRuleCheck(
   ) {
     return {
       validityStatus: false,
-      revisedAmount: amount,
       reasonForInvalidStatus: ApiConstants.EARLY_COUPON.toString(),
     };
   }
@@ -73,7 +69,6 @@ export function genericRuleCheck(
   if (couponGenericRulesData.couponEndDate && todayDate > couponGenericRulesData.couponEndDate) {
     return {
       validityStatus: false,
-      revisedAmount: amount,
       reasonForInvalidStatus: ApiConstants.COUPON_EXPIRED.toString(),
     };
   }
