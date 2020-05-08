@@ -1347,19 +1347,19 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.submitBtn}
                 disabled={props.saving}
                 onClick={() => {
-                  if (height === '' && weight === '') {
+                  if (height.trim() === '' && weight.trim() === '') {
                     setShowVital(true);
                     setVitalError({
                       height: 'This field is required',
                       weight: 'This field is required',
                     });
-                  } else if (height === '' && weight !== '') {
+                  } else if (height.trim() === '' && weight.trim() !== '') {
                     setShowVital(true);
                     setVitalError({
                       height: 'This field is required',
                       weight: '',
                     });
-                  } else if (height !== '' && weight === '') {
+                  } else if (height.trim() !== '' && weight.trim() === '') {
                     setShowVital(true);
                     setVitalError({
                       height: '',
@@ -1403,19 +1403,19 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               }
               onClick={() => {
                 if (startAppointment) {
-                  if (height === '' && weight === '') {
+                  if (height.trim() === '' && weight.trim() === '') {
                     setShowVital(true);
                     setVitalError({
                       height: 'This field is required',
                       weight: 'This field is required',
                     });
-                  } else if (height === '' && weight !== '') {
+                  } else if (height.trim() === '' && weight.trim() !== '') {
                     setShowVital(true);
                     setVitalError({
                       height: 'This field is required',
                       weight: '',
                     });
-                  } else if (height !== '' && weight === '') {
+                  } else if (height.trim() !== '' && weight.trim() === '') {
                     setShowVital(true);
                     setVitalError({
                       height: '',

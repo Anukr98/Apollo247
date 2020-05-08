@@ -129,13 +129,13 @@ export const Vitals: React.FC = () => {
                 required
                 inputRef={heightElement}
                 value={height}
-                error={height === '' || height === null || height === undefined}
+                error={height.trim() === '' || height === null || height === undefined}
                 helperText={vitalError.height}
                 onChange={(e) => {
                   setHeight(e.target.value);
                 }}
                 onBlur={(e) => {
-                  if (e.target.value !== '')
+                  if (e.target.value.trim() !== '')
                     setVitalError({
                       ...vitalError,
                       height: '',
@@ -161,13 +161,13 @@ export const Vitals: React.FC = () => {
                 value={weight}
                 required
                 inputRef={weightElement}
-                error={weight === '' || weight === null || weight === undefined}
+                error={weight.trim() === '' || weight === null || weight === undefined}
                 helperText={vitalError.weight}
                 onChange={(e) => {
                   setWeight(e.target.value);
                 }}
                 onBlur={(e) => {
-                  if (e.target.value !== '')
+                  if (e.target.value.trim() !== '')
                     setVitalError({
                       ...vitalError,
                       weight: '',
