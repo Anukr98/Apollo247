@@ -17,9 +17,9 @@ type ApptResponse {
     id: String
     appointmentDateTime: DateTime
     actualAmount: Float
+    discountedAmount: Float
     appointmentType: String
     appointmentPayments: [appointmentPayment]
-    name: String
     status: String
   }
 type appointmentPayment {
@@ -41,9 +41,9 @@ type ApptResponse = {
   id: string;
   appointmentDateTime: Date;
   actualAmount: Number;
+  discountedAmount: Number;
   appointmentType: string
   appointmentPayments: appointmentPayment[];
-  name: string;
   status: String;
 };
 
@@ -70,7 +70,7 @@ const consultOrders: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
-  // console.log('orders Response', JSON.stringify(response, null, 2));
+  console.log('orders Response', JSON.stringify(response, null, 2));
   let result = [];
   for (let i = 0; i < response.length; i++) {
     result.push(response[i].doctorId);
@@ -79,7 +79,7 @@ const consultOrders: Resolver<
   // console.log('doc Response', JSON.stringify(doc, null, 2));
 
   if (response && response.length > 0) {
-    let output: any = [];
+    // let output: any = [];
     response.forEach(val => {
       let obj = val;
       let index = _.findIndex(doc, (key) => key.typeId === val.doctorId);
@@ -91,7 +91,7 @@ const consultOrders: Resolver<
       }
 
     })
-    return { appointments: output }
+    return { appointments: response }
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 

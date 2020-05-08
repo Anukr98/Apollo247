@@ -18767,6 +18767,18 @@
             "deprecationReason": null
           },
           {
+            "name": "discountedAmount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Float",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "appointmentType",
             "description": null,
             "args": [],
@@ -18790,18 +18802,6 @@
                 "name": "appointmentPayment",
                 "ofType": null
               }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "name",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
