@@ -121,7 +121,7 @@ export const caseSheetTypeDefs = gql`
     BOTTLE
     CAPSULE
     CREAM
-    DROPS
+    DROP
     GEL
     GM
     INJECTION
@@ -320,6 +320,7 @@ export const caseSheetTypeDefs = gql`
     TWICE_A_WEEK
     ONCE_IN_15_DAYS
     ONCE_A_MONTH
+    STAT
   }
 
   enum ROUTE_OF_ADMINISTRATION {
@@ -336,6 +337,7 @@ export const caseSheetTypeDefs = gql`
     NASAL_DROPS
     EYE_DROPS
     EAR_DROPS
+    INTRAVAGINAL
   }
 
   type MedicinePrescription {

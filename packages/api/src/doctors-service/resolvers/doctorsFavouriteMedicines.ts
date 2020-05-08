@@ -47,7 +47,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     BOTTLE
     CAPSULE
     CREAM
-    DROPS
+    DROP
     GEL
     GM
     INJECTION
@@ -87,6 +87,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     TWICE_A_WEEK
     ONCE_IN_15_DAYS
     ONCE_A_MONTH
+    STAT
   }
 
   enum ROUTE_OF_ADMINISTRATION {
@@ -103,6 +104,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     NASAL_DROPS
     EYE_DROPS
     EAR_DROPS
+    INTRAVAGINAL
   }
 
   input SaveDoctorsFavouriteMedicineInput {
