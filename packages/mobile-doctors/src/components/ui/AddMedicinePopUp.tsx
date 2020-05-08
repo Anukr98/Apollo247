@@ -164,6 +164,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
       key: MEDICINE_FREQUENCY.EVERY_FOUR_HOURS,
       value: nameFormater(MEDICINE_FREQUENCY.EVERY_FOUR_HOURS),
     },
+    { key: MEDICINE_FREQUENCY.STAT, value: nameFormater(MEDICINE_FREQUENCY.STAT) },
     { key: MEDICINE_FREQUENCY.AS_NEEDED, value: nameFormater(MEDICINE_FREQUENCY.AS_NEEDED) },
   ];
   const medicineDefaultOptions = [
