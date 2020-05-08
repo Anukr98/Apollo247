@@ -790,12 +790,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime &&
-      deliveryTime.length > 0) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1087,8 +1082,22 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={!cartTat}
-              className={!cartTat ? classes.buttonDisable : ''}
+              disabled={
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
+              }
+              className={
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
+                  ? classes.buttonDisable
+                  : ''
+              }
               title={'Proceed to pay bill'}
             >
               {cartItems && cartItems.length > 0 && !nonCartFlow ? (
