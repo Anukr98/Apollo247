@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Privacy: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>

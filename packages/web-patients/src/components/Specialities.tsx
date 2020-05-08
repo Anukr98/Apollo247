@@ -102,7 +102,7 @@ export interface SpecialitiesProps {
 }
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
 
   const { keyword, matched, speciality, disableFilter, specialityId, subHeading } = props;

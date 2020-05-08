@@ -45,4 +45,5 @@ export interface GetPatientLogVariables {
   offset?: number | null;
   sortBy?: patientLogSort | null;
   type?: patientLogType | null;
+  patientName?: string | null;
 }

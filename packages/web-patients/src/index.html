@@ -23,6 +23,7 @@
       type="text/css"
       href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
     />
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg/ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       a {
@@ -52,45 +53,44 @@
         f.parentNode.insertBefore(j, f);
       })(window, document, 'script', 'dataLayer', 'GTM-PNGHP4L');
     </script>
+
     <script id="_webengage_script_tag" type="text/javascript">
       var webengage;
-      !(function(e, t, n, i, o) {
-        function r(e, t) {
+      ! function(w, e, b, n, g) {
+        function o(e, t) {
           e[t[t.length - 1]] = function() {
-            a.__queue.push([t.join('.'), arguments]);
-          };
-        }
-        var s,
-          g,
-          a = e[n],
-          c = ' ',
-          l = 'init options track screen onReady'.split(c),
-          p = 'feedback survey notification'.split(c),
-          u = 'options render clear abort'.split(c),
-          f = 'Open Close Submit Complete View Click'.split(c),
-          w = 'identify login logout setAttribute'.split(c);
-        if (!a || !a.__v) {
-          for (e[n] = a = { __queue: [], __v: '6.0', user: {} }, s = 0; s < l.length; s++)
-            r(a, [l[s]]);
-          for (s = 0; s < p.length; s++) {
-            for (a[p[s]] = {}, g = 0; g < u.length; g++) r(a[p[s]], [p[s], u[g]]);
-            for (g = 0; g < f.length; g++) r(a[p[s]], [p[s], 'on' + f[g]]);
+            r.__queue.push([t.join("."), arguments])
           }
-          for (s = 0; s < w.length; s++) r(a.user, ['user', w[s]]);
-          setTimeout(function() {
-            var e = t.createElement('script'),
-              n = t.getElementById('_webengage_script_tag');
-            (e.type = 'text/javascript'),
-              (e.async = !0),
-              (e.src =
-                ('https:' == t.location.protocol
-                  ? 'https://widgets.in.webengage.com'
-                  : 'http://widgets.in.webengage.com') + '/js/webengage-min-v-6.0.js'),
-              n.parentNode.insertBefore(e, n);
-          });
         }
-      })(window, document, 'webengage'),
-        webengage.init('in~~c2ab3533');
+        var i, s, r = w[b],
+          z = " ",
+          l = "init options track screen onReady".split(z),
+          a = "feedback survey notification".split(z),
+          c = "options render clear abort".split(z),
+          p = "Open Close Submit Complete View Click".split(z),
+          u = "identify login logout setAttribute".split(z);
+        if (!r || !r.__v) {
+          for (w[b] = r = {
+              __queue: [],
+              __v: "6.0",
+              user: {}
+            }, i = 0; i < l.length; i++) o(r, [l[i]]);
+          for (i = 0; i < a.length; i++) {
+            for (r[a[i]] = {}, s = 0; s < c.length; s++) o(r[a[i]], [a[i], c[s]]);
+            for (s = 0; s < p.length; s++) o(r[a[i]], [a[i], "on" + p[s]])
+          }
+          for (i = 0; i < u.length; i++) o(r.user, ["user", u[i]]);
+          setTimeout(function() {
+            var f = e.createElement("script"),
+              d = e.getElementById("_webengage_script_tag");
+            f.type = "text/javascript",
+              f.async = !0,
+              f.src = ("https:" == e.location.protocol ? "https://widgets.in.webengage.com" : "http://widgets.in.webengage.com") + "/js/webengage-min-v-6.0.js",
+              d.parentNode.insertBefore(f, d);
+          })
+        }
+      }(window, document, "webengage");
+      webengage.init('in~~c2ab3533');
     </script>
   </head>
   <body>

@@ -19,7 +19,7 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays, differenceInMinutes } from 'date-fns';
+import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 
 import { DoctorType } from 'doctors-service/entities';
@@ -219,13 +219,14 @@ const makeAppointmentPayment: Resolver<
 
     //autosubmit case sheet code starts
     const currentTime = new Date();
-    const timeDifference = differenceInMinutes(
-      currentTime,
-      processingAppointment.appointmentDateTime
+    const timeDifference = differenceInSeconds(
+      processingAppointment.appointmentDateTime,
+      currentTime
     );
 
     if (
-      timeDifference <= parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+      timeDifference / 60 <=
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);

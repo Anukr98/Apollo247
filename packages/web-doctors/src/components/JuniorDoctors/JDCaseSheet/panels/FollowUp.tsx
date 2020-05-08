@@ -250,7 +250,7 @@ const defaultMaterialTheme = createMuiTheme({
   },
 });
 export const FollowUp: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     consultType: consultTypeData,
     setConsultType: setConsultTypeData,
@@ -327,7 +327,7 @@ export const FollowUp: React.FC = () => {
                 min={2}
                 max={9}
                 defaultValue={defaultValue}
-                onChange={debounce((e, value) => setFollowUpDays(value), 200)}
+                onChange={debounce((e, value: number) => setFollowUpDays(value), 200)}
               />
               {followUpDays === 9 && (
                 <div className={classes.recommendedType}>

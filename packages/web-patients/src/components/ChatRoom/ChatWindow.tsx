@@ -1003,7 +1003,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const getHistory = (timetoken: number) => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
-      const end: number = res.endTimeToken ? res.endTimeToken : 1;
+      const end: any = res.endTimeToken ? res.endTimeToken : 1;
       res.messages.forEach((element, index) => {
         newmessage[index] = element.entry;
       });

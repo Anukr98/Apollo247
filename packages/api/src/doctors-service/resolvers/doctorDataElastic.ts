@@ -146,59 +146,15 @@ const addAllDoctorSlotsElastic: Resolver<
       if (getDetails.body.hits.hits.length == 0) {
         await addDoctorElastic(allDocsInfo[k]);
       } else {
-        const updateParam: RequestParams.Update = {
+        const deleteParams: RequestParams.Delete = {
           id: allDocsInfo[k].id,
           index: 'doctors',
-          body: {
-            doc: {
-              doctorSlots: [],
-              firstName: allDocsInfo[k].firstName,
-              lastName: allDocsInfo[k].lastName,
-              onlineConsultationFees: allDocsInfo[k].onlineConsultationFees,
-              physicalConsultationFees: allDocsInfo[k].physicalConsultationFees,
-              photoUrl: allDocsInfo[k].photoUrl,
-              fullName: allDocsInfo[k].fullName,
-              specialization: allDocsInfo[k].specialization,
-              awards: allDocsInfo[k].awards,
-              emailAddress: allDocsInfo[k].emailAddress,
-              dateOfBirth: allDocsInfo[k].dateOfBirth,
-              experience: allDocsInfo[k].experience,
-              languages: allDocsInfo[k].languages,
-            },
-          },
         };
-        const updateClearResp = await client.update(updateParam);
-        console.log(updateClearResp, 'updateClearResp ');
+        const delResp = await client.delete(deleteParams);
+        console.log(delResp, 'delete resp');
+        await addDoctorElastic(allDocsInfo[k]);
       }
       for (let i = 0; i <= daysDiff; i++) {
-        //str += format(stDate, 'yyyy-MM-dd') + ',';
-        // const searchParams: RequestParams.Search = {
-        //   index: 'doctors',
-        //   body: {
-        //     query: {
-        //       bool: {
-        //         must: [
-        //           {
-        //             match: {
-        //               'doctorSlots.slotDate': format(stDate, 'yyyy-MM-dd'),
-        //             },
-        //           },
-        //           {
-        //             match_phrase: {
-        //               doctorId: allDocsInfo[k].id,
-        //             },
-        //           },
-        //         ],
-        //       },
-        //     },
-        //   },
-        // };
-        // const getDetails = await client.search(searchParams);
-
-        // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
-
-        //if (getDetails.body.hits.hits.length == 0) {
-
         const doctorSlots = await docRepo.getDoctorSlots(
           new Date(format(stDate, 'yyyy-MM-dd')),
           allDocsInfo[k].id,
@@ -356,8 +312,8 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     consultHours.push(hourData);
   }
   let doctorSecratry = {};
-  let facility = {};
   let specialty = {};
+  const facility = [];
   if (allDocsInfo.doctorSecretary) {
     doctorSecratry = {
       docSecretaryId: allDocsInfo.doctorSecretary.id,
@@ -368,22 +324,30 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
     };
   }
   if (allDocsInfo.doctorHospital.length > 0) {
-    facility = {
-      docFacilityId: allDocsInfo.doctorHospital[0].id,
-      name: allDocsInfo.doctorHospital[0].facility.name,
-      facilityType: allDocsInfo.doctorHospital[0].facility.facilityType,
-      streetLine1: allDocsInfo.doctorHospital[0].facility.streetLine1,
-      streetLine2: allDocsInfo.doctorHospital[0].facility.streetLine2,
-      streetLine3: allDocsInfo.doctorHospital[0].facility.streetLine3,
-      city: allDocsInfo.doctorHospital[0].facility.city,
-      state: allDocsInfo.doctorHospital[0].facility.state,
-      zipcode: allDocsInfo.doctorHospital[0].facility.zipcode,
-      imageUrl: allDocsInfo.doctorHospital[0].facility.imageUrl,
-      latitude: allDocsInfo.doctorHospital[0].facility.latitude,
-      longitude: allDocsInfo.doctorHospital[0].facility.longitude,
-      country: allDocsInfo.doctorHospital[0].facility.country,
-      facilityId: allDocsInfo.doctorHospital[0].facility.id,
-    };
+    for (let f = 0; f < allDocsInfo.doctorHospital.length; f++) {
+      const location = {
+        lat: allDocsInfo.doctorHospital[f].facility.latitude,
+        lon: allDocsInfo.doctorHospital[f].facility.longitude,
+      };
+      const facilityData = {
+        docFacilityId: allDocsInfo.doctorHospital[f].id,
+        name: allDocsInfo.doctorHospital[f].facility.name,
+        facilityType: allDocsInfo.doctorHospital[f].facility.facilityType,
+        streetLine1: allDocsInfo.doctorHospital[f].facility.streetLine1,
+        streetLine2: allDocsInfo.doctorHospital[f].facility.streetLine2,
+        streetLine3: allDocsInfo.doctorHospital[f].facility.streetLine3,
+        city: allDocsInfo.doctorHospital[f].facility.city,
+        state: allDocsInfo.doctorHospital[f].facility.state,
+        zipcode: allDocsInfo.doctorHospital[f].facility.zipcode,
+        imageUrl: allDocsInfo.doctorHospital[f].facility.imageUrl,
+        latitude: allDocsInfo.doctorHospital[f].facility.latitude,
+        longitude: allDocsInfo.doctorHospital[f].facility.longitude,
+        country: allDocsInfo.doctorHospital[f].facility.country,
+        facilityId: allDocsInfo.doctorHospital[f].facility.id,
+        location,
+      };
+      facility.push(facilityData);
+    }
   }
   if (allDocsInfo.specialty) {
     specialty = {

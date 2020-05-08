@@ -297,7 +297,7 @@ interface MessagesObjectProps {
 }
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<Params>();
   const paramId = params.id;
 

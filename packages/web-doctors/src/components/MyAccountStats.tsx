@@ -80,7 +80,7 @@ const GET_POWERBI_TOKEN = gql`
 `;
 
 export const MyAccountStats: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const apiDetails = {
     embedUrl: process.env.POWERBI_EMBED_URL,
     filterSchema: process.env.POWERBI_FILTER_SCHEMA,

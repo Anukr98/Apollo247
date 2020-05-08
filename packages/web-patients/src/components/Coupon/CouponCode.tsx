@@ -120,16 +120,17 @@ interface CouponProps {
   doctorId: string;
   appointmentDateTime: string;
   appointmentType: AppointmentType;
-  setRevisedAmount: any;
+  setRevisedAmount: (amount: string) => void;
   revisedAmount: string;
   subtotal: string;
-  setCouponCode: any;
+  setCouponCode: (coupon: string) => void;
+  setCouponCodeFxn: (coupon: string) => void;
   disableSubmit: boolean;
-  removeCouponCode: any;
+  removeCouponCode: () => void;
 }
 
 export const CouponCode: React.FC<CouponProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [openCouponField, setOpenCouponField] = useState(false);
   const [couponText, setCouponText] = useState('');
   const [couponCodeApplied, setCouponCodeApplied] = useState(false);
@@ -230,6 +231,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
                       setErrorMessage(res.data.validateConsultCoupon.reasonForInvalidStatus);
                       setIsError(!res.data.validateConsultCoupon.validityStatus);
                       if (res.data.validateConsultCoupon.validityStatus) {
+                        props.setCouponCodeFxn(couponText);
                         props.setCouponCode(couponText);
                         setOpenCouponField(false);
                       }

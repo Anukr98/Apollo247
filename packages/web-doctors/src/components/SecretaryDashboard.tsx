@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SecretaryDashboard: React.FC = (props) => {
   const today: Date = startOfToday();
-  const classes = useStyles();
+  const classes = useStyles({});
   const [selectedDate] = useState<Date>(today);
   const [viewSelection] = useState<string>('day');
   const [monthSelected] = useState<string>(moment(today).format('MMMM'));

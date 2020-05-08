@@ -7,6 +7,7 @@ import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { LocationProvider } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -18,11 +19,15 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     cartPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
         paddingBottom: 20,
+      },
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
   };
@@ -47,7 +52,10 @@ export const MedicineCartLanding: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+        {!onePrimaryUser && <ManageProfile />}
+      </div>
     </div>
   );
 };
