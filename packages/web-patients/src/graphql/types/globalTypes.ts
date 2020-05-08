@@ -66,6 +66,7 @@ export enum ConsultType {
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
+  DESKTOP = "DESKTOP"
 }
 
 export enum DEVICE_TYPE {
@@ -392,6 +393,8 @@ export interface AppointmentPaymentInput {
   responseMessage: string;
   bankTxnId?: string | null;
   orderId?: string | null;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
 }
 
 export interface BookAppointmentInput {
@@ -575,6 +578,8 @@ export interface MedicinePaymentMqInput {
   email?: string | null;
   CODCity?: CODCity | null;
   orderId?: string | null;
+  bookingSource?: string | null;
+  deviceType: DEVICETYPE
 }
 
 export interface OrderCancelInput {
