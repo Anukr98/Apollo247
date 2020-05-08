@@ -590,6 +590,10 @@ export const Invoice: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
 );
 
+export const CurrencyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/rupee.png')} />
+);
+
 export const AddFileIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
 );
