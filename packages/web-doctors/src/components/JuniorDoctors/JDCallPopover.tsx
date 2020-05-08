@@ -331,6 +331,17 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       outline: 'none',
     },
+    modalBoxVital: {
+      backgroundColor: '#fff',
+      minHeight: 'auto',
+    },
+    okButtonWrapper: {
+      textAlign: 'right',
+    },
+    okButton: {
+      fontWeight: 700,
+      color: '#fc9916',
+    },
     modalBoxClose: {
       position: 'absolute',
       right: -48,
@@ -584,6 +595,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingTop: 15,
     },
+    tabBodypadding: {
+      margin: '0 20px',
+      padding: '0 15px 15px 15px',
+    },
   };
 });
 
@@ -644,7 +659,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<JDConsultRoomParams>();
 
-  const { appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);
+  const { appointmentInfo, patientDetails, height, weight, setVitalError } = useContext(
+    CaseSheetContextJrd
+  );
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -668,6 +685,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [showVital, setShowVital] = React.useState<boolean>(false);
   // const startConsultDisableReason =
   //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
   //     ? 'This appointment is under reschedule and waiting for the patient to accept the new slot.'
@@ -1329,14 +1347,39 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.submitBtn}
                 disabled={props.saving}
                 onClick={() => {
-                  unSubscribeBrowserButtonsListener();
-                  stopInterval();
-                  onStopConsult();
-                  props.endConsultAction();
-                  if (showVideo) {
-                    stopAudioVideoCall();
+                  if (height === '' && weight === '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: 'This field is required',
+                      weight: 'This field is required',
+                    });
+                  } else if (height === '' && weight !== '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: 'This field is required',
+                      weight: '',
+                    });
+                  } else if (height !== '' && weight === '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: '',
+                      weight: 'This field is required',
+                    });
+                  } else {
+                    setShowVital(false);
+                    setVitalError({
+                      height: '',
+                      weight: '',
+                    });
+                    unSubscribeBrowserButtonsListener();
+                    stopInterval();
+                    onStopConsult();
+                    props.endConsultAction();
+                    if (showVideo) {
+                      stopAudioVideoCall();
+                    }
+                    setDisableOnCancel(true);
                   }
-                  setDisableOnCancel(true);
                 }}
               >
                 Submit Case Sheet
@@ -1360,8 +1403,33 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               }
               onClick={() => {
                 if (startAppointment) {
-                  onStopConsult();
-                  stopInterval();
+                  if (height === '' && weight === '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: 'This field is required',
+                      weight: 'This field is required',
+                    });
+                  } else if (height === '' && weight !== '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: 'This field is required',
+                      weight: '',
+                    });
+                  } else if (height !== '' && weight === '') {
+                    setShowVital(true);
+                    setVitalError({
+                      height: '',
+                      weight: 'This field is required',
+                    });
+                  } else {
+                    setShowVital(false);
+                    setVitalError({
+                      height: '',
+                      weight: '',
+                    });
+                    onStopConsult();
+                    stopInterval();
+                  }
                 } else {
                   props.createSessionAction();
                 }
@@ -1795,6 +1863,37 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Paper>
       </Modal>
+      {/* Vital field required popup start */}
+      <Modal
+        open={showVital}
+        onClose={() => setShowVital(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxCancel} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowVital(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems some of the vital info is empty. Please fill the vital section's field under
+              the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowVital(false)}>
+                Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* Vital field required popup start */}
       {/* audio/video start*/}
       <div className={classes.posRelative}>
         <div className={showVideo ? '' : classes.audioVideoContainer}>

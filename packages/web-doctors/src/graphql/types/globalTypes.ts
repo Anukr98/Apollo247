@@ -357,6 +357,10 @@ export interface ModifyCaseSheetInput {
   temperature?: string | null;
   weight?: string | null;
   bp?: string | null;
+  medicationHistory?: string | null;
+  occupationHistory?: string | null;
+  referralSpecialtyName?: string | null;
+  referralDescription?: string | null;
 }
 
 export interface OtherInstructionsInput {
