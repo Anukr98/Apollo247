@@ -116,6 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     notificationPopup: {
       padding: 0,
+      paddingTop: 40,
     },
     notificationPopupEmpty: {
       padding: 0,
@@ -200,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 12,
     },
     notificationGroup: {
-      paddingTop: 30,
+      paddingTop: 0,
     },
     notification: {
       cursor: 'pointer',
