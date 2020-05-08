@@ -24,7 +24,7 @@ import {
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { gtmTracking, _urTracking } from '../gtmTracking';
-import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking'
+import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -160,7 +160,7 @@ export const AuthProvider: React.FC = (props) => {
         /**Gtm code start end */
 
         /*webengage code start */
-        webengageUserLogoutTracking()
+        webengageUserLogoutTracking();
         /*webengage code end */
         localStorage.removeItem('currentUser');
         window.location.reload();
@@ -366,19 +366,20 @@ export const AuthProvider: React.FC = (props) => {
         await apolloClient
           .query<GetCurrentPatients>({ query: GET_CURRENT_PATIENTS })
           .then((res) => {
+            const currentPath = window.location.pathname;
             const userId =
               res.data &&
               res.data.getCurrentPatients &&
               res.data.getCurrentPatients.patients &&
               res.data.getCurrentPatients.patients[0].id;
             /**Gtm code start */
-            if (isNewUser) {
+            if (isNewUser && currentPath === '/') {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
               _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
-            } else {
+            } else if (currentPath === '/') {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
               /* webengage code start */
-              webengageUserLoginTracking(user.uid)
+              webengageUserLoginTracking(user.uid);
               /* webengage code end */
             }
             /**Gtm code start end */
