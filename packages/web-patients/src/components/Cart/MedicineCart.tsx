@@ -473,6 +473,7 @@ export const MedicineCart: React.FC = (props) => {
     ePrescriptionData,
     setEPrescriptionData,
     setUploadedEPrescription,
+    cartTat,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -1093,7 +1094,7 @@ export const MedicineCart: React.FC = (props) => {
               }
               title={'Proceed to pay bill'}
             >
-              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+              {cartItems && cartItems.length > 0 && !nonCartFlow && cartTat ? (
                 `Proceed to pay — RS. ${totalAmount}`
               ) : uploadingFiles ? (
                 <CircularProgress size={22} color="secondary" />
