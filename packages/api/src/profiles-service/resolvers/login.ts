@@ -34,7 +34,7 @@ export const loginTypeDefs = gql`
     send: Boolean
   }
   extend type Query {
-    login(mobileNumber: String!, loginType: LOGIN_TYPE!): LoginResult!
+    login(mobileNumber: String!, loginType: LOGIN_TYPE!, hashCode: String): LoginResult!
     resendOtp(mobileNumber: String!, id: String!, loginType: LOGIN_TYPE!): LoginResult!
     testSendSMS(mobileNumber: String!): testSMSResult!
   }
@@ -48,7 +48,7 @@ type LoginResult = {
 
 const login: Resolver<
   null,
-  { mobileNumber: string; loginType: LOGIN_TYPE },
+  { mobileNumber: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
 > = async (parent, args, { profilesDb }) => {
@@ -65,7 +65,7 @@ const login: Resolver<
   );
 
   loginLogger('API_CALL___START');
-  const { mobileNumber, loginType } = args;
+  const { mobileNumber, loginType, hashCode } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
   loginLogger('OTP_GENERATION_START');
@@ -127,7 +127,7 @@ const login: Resolver<
 
   //call sms gateway service to send the OTP here
   loginLogger('SEND_SMS___START');
-  const smsResult = await sendSMS(mobileNumber, otp);
+  const smsResult = await sendSMS(mobileNumber, otp, hashCode);
   loginLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
@@ -150,7 +150,7 @@ const login: Resolver<
 
 const resendOtp: Resolver<
   null,
-  { mobileNumber: string; id: string; loginType: LOGIN_TYPE },
+  { mobileNumber: string; id: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
 > = async (parent, args, { profilesDb }) => {
@@ -167,7 +167,7 @@ const resendOtp: Resolver<
 
   resendLogger('API_CALL___START');
 
-  const { mobileNumber, id, loginType } = args;
+  const { mobileNumber, id, loginType, hashCode } = args;
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
   //validate resend params
@@ -221,7 +221,7 @@ const resendOtp: Resolver<
 
   //call sms gateway service to send the OTP here
   resendLogger('SEND_SMS___START');
-  const smsResult = await sendSMS(mobileNumber, otp);
+  const smsResult = await sendSMS(mobileNumber, otp, hashCode);
   resendLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
@@ -298,13 +298,16 @@ export const generateOTP = () => {
 };
 
 //utility method to send SMS
-const sendSMS = async (mobileNumber: string, otp: string) => {
+const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
   let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
   message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
 
+  if (hashCode) {
+    message = message + ' ' + hashCode;
+  }
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
 
   const apiUrl = `${apiUrlWithKey}${queryParams}`;
