@@ -238,6 +238,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     medicineCartType,
     removeCartItem,
     updateItemShippingStatus,
+    changeCartTatStatus,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -376,6 +377,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   };
 
   const fetchDeliveryTime = async (zipCode: string) => {
+    changeCartTatStatus && changeCartTatStatus(false);
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
     const lookUp = cartItems.map((item: MedicineCartItem) => {
@@ -445,6 +447,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
               }
+              if (!nonDeliverySKUArr && !nonDeliverySKUArr.length) {
+                changeCartTatStatus && changeCartTatStatus(true);
+              }
               setErrorDeliveryTimeMsg('');
               setDeliveryTime(deliveryTime);
             } else if (typeof res.data.errorMSG === 'string') {
@@ -453,6 +458,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             }
           }
           setSelectingAddress(false);
+
           // setIsLoading(false);
         } catch (error) {
           setDeliveryLoading(false);
