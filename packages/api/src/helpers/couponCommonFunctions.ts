@@ -21,6 +21,7 @@ export function discountCalculation(
   if (discountType === DiscountType.FLATPRICE) {
     revisedAmount = discountValue;
   }
+
   return revisedAmount;
 }
 

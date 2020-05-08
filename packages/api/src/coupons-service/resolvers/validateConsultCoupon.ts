@@ -47,6 +47,7 @@ export const validateConsultCouponTypeDefs = gql`
     code: String
     couponConsultRule: CouponConsultRule
     couponGenericRule: CouponGenericRule
+    couponPharmaRule: CouponPharmaRule
     createdDate: DateTime
     description: String
     id: ID
@@ -68,6 +69,18 @@ export const validateConsultCouponTypeDefs = gql`
     maximumCartValue: Float
     minimumCartValue: Float
     numberOfCouponsNeeded: Int
+  }
+
+  enum PharmaDiscountApplicableOn {
+    MRP
+    SPECIAL_PRICE
+  }
+
+  type CouponPharmaRule {
+    couponCategoryApplicable: CouponCategoryApplicable
+    discountApplicableOn: PharmaDiscountApplicableOn
+    messageOnCouponScreen: String
+    successMessage: String
   }
 
   type CouponList {
