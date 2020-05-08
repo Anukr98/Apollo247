@@ -85,22 +85,22 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             <View style={styles.iconContainer}>{chatIcon()}</View>
             <View style={styles.textContainer}>
               <Text style={styles.mainTextStyle}>
-                <Text style={styles.highText}>New message</Text> from your follow up patient,{' '}
+                {`There ${item.unreadNotificationsCount !== 1 ? 'are' : 'is'} ${
+                  item.unreadNotificationsCount
+                } new message${item.unreadNotificationsCount !== 1 ? 's' : ''} from your patient, `}
                 <Text
                   style={styles.highText}
                 >{`${item.patientFirstName} ${item.patientLastName}`}</Text>
               </Text>
               <Text style={styles.subText}>
-                {moment(item.lastUnreadMessageDate)
-                  .add(0, 'd')
-                  .calendar('', {
-                    sameDay: '[Today], hh:mm A',
-                    nextDay: '[Tomorrow]',
-                    nextWeek: 'DD/MM/YYYY, hh:mm A',
-                    lastDay: '[Yesterday], hh:mm A',
-                    lastWeek: 'DD/MM/YYYY, hh:mm A',
-                    sameElse: 'DD/MM/YYYY',
-                  })}
+                {moment(item.lastUnreadMessageDate).calendar('', {
+                  sameDay: '[Today], hh.mm A',
+                  nextDay: '[Tomorrow]',
+                  nextWeek: 'DD MMM YYYY, hh.mm A',
+                  lastDay: '[Yesterday], hh.mm A',
+                  lastWeek: 'DD MMM YYYY, hh.mm A',
+                  sameElse: 'DD MMM YYYY,  hh.mm A',
+                })}
               </Text>
             </View>
           </View>

@@ -5,6 +5,7 @@ import React from 'react';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { ManageProfiles } from 'components/MyAccount/ManageProfiles';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -16,7 +17,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     myAccountPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -45,11 +45,16 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 0,
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
 export const MyAccount: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
@@ -65,6 +70,9 @@ export const MyAccount: React.FC = (props) => {
             </div>
           </div>
         </div>
+      </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
       </div>
       <NavigationBottom />
     </div>

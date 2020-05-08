@@ -10,8 +10,8 @@ declare global {
     // add you custom properties and methods
     gep(a: any, b: any, c?: any, d?: any): void;
     _ur(a: any, b?: any, c?: any): void;
-    _cb(a: any, b: any, c: any, d: any, e: any, f: any, g: any, h: any, i: any): void;
-    _ob(a: any, b: any, c: any, d: any, e: any, f: any, g: any): void;
+    _cb(a: any, b: any, c: any, d: any, e: any, f: any): void;
+    _ob(a: any, b: any, c: any, d: any, e: any, f: any): void;
   }
 }
 

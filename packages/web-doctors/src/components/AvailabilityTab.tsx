@@ -294,7 +294,7 @@ interface AvailabilityTabProps {
   onBack: () => void;
 }
 export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const data = values;
 
   return (

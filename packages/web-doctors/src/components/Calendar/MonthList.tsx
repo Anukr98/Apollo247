@@ -148,7 +148,7 @@ const defaultMaterialTheme = createMuiTheme({
 });
 
 export const MonthList: React.FC<MonthListProps> = ({ date, onChange }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [selectedDate, handleDateChange] = useState<MaterialUiPickersDate>(new Date());
   const [isOpen, setIsOpen] = useState<boolean>(false);
 

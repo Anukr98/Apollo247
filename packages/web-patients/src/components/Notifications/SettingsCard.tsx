@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const SettingsCard: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isSwitchOpen, setIsSwitchOpen] = React.useState<boolean>(false);
 
   return (

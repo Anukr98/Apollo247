@@ -43,7 +43,7 @@ export interface DaySelectorProps {
   selectedDays: string;
 }
 export const DaySelector: React.FC<DaySelectorProps> = (selectedDays) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const days: Day[] = [
     'Monday',
     'Tuesday',

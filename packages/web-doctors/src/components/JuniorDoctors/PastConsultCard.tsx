@@ -81,7 +81,7 @@ export interface PastConsultCardProps {
   };
 }
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { id, patient, appointment } = props;
   const appointmentDateIST = format(
     new Date(appointment.appointmentDateTime).getTime(),

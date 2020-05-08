@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const NavigationBottom: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { isSignedIn } = useAuth();
 

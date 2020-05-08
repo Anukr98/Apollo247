@@ -64,7 +64,7 @@ interface LifeStyleProps {
 }
 
 export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   let { loading, patientDetails } = useContext(CaseSheetContext);
   if (patientDetails === null) {
     patientDetails = props.patientDetails;

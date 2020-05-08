@@ -178,7 +178,7 @@ interface AddNewProfileProps {
 }
 
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
 
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
