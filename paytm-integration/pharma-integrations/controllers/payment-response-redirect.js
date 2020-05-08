@@ -8,7 +8,9 @@ const mob = (req, res, next) => {
             code: '800',
         });
     }
+
 };
+
 const mobError = (req, res, next) => {
     res.send({
         status: 'failed',

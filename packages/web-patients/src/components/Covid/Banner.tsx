@@ -1,9 +1,12 @@
-import React from 'react';
-import { Theme } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import Typography from '@material-ui/core/Typography';
+
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
+import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,6 +89,74 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        maxWidth: '100%',
+        width: '100%',
+        left: '0 !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 0,
+        marginBottom: 0,
+      },
+    },
+    windowWrap: {
+      width: '100%',
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
+    bottomActions: {
+      display: 'flex',
+      alignItems: 'center',
+      '& button': {
+        boxShadow: 'none',
+        padding: 0,
+        color: '#fc9916',
+      },
+    },
+    contentGroup: {
+      padding: 20,
+      paddingTop: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    noServiceRoot: {
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
   };
 });
 
@@ -95,7 +166,9 @@ interface BannerProps {
 
 export const Banner: React.FC<BannerProps> = (props) => {
   const classes = useStyles({});
+  const subRef = React.useRef(null);
 
+  const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
   return (
     <div
       className={classes.root}
@@ -110,12 +183,44 @@ export const Banner: React.FC<BannerProps> = (props) => {
           </Link>
         )}
 
-        <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
+        <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
+          Subscribe
+        </AphButton>
       </div>
       <div className={classes.content}>
         <h2>Coronavirus (Covid-19)</h2>
         <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
       </div>
+      <Popover
+        open={openSubscriptionForm}
+        anchorEl={subRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.noServiceRoot}>
+              <div className={classes.windowBody}>
+                <Typography variant="h3">
+                  <div>Subscribe?</div>
+                </Typography>
+                <p>Subscribe to receive the latest info on COVID 19 from Apollo247</p>
+              </div>
+              <NewsletterSubscriptionForm onClose={() => setOpenSubscriptionForm(false)} />
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

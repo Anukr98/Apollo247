@@ -267,7 +267,7 @@ export const MedicineListingCard: React.FC = (props) => {
                       category: 'Pharmacy',
                       action: 'Remove From Cart',
                       label: item.name,
-                      value: item.price,
+                      value: item.special_price || item.price,
                     });
                     /**Gtm code End  */
                     removeCartItem && removeCartItem(item.id);

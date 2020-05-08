@@ -275,7 +275,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
         variables: {
-          patientId: currentPatient && currentPatient.id,
+          patientId: currentPatient ? currentPatient.id : '',
         },
         fetchPolicy: 'no-cache',
       })
@@ -322,7 +322,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   }, [currentPatient, deliveryAddressId]);
 
   const checkServiceAvailability = (zipCode: string | null) => {
-    setIsLoading(true);
+    // setIsLoading(true);
 
     return axios.post(
       apiDetails.service_url || '',
@@ -453,7 +453,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             }
           }
           setSelectingAddress(false);
-          setIsLoading(false);
+          // setIsLoading(false);
         } catch (error) {
           setDeliveryLoading(false);
           setIsLoading(false);
@@ -496,7 +496,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             />
           </li>
         </ul>
-      ) : (
+      ) : ( 
         <>{isLoading ? <CircularProgress /> : null}</>
       )} */}
 

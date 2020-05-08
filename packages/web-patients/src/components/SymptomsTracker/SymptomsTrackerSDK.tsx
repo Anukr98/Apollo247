@@ -6,7 +6,6 @@ import { useAuth } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Header } from 'components/Header';
-import { NavigationBottom } from 'components/NavigationBottom';
 import { NavigatorSDK, $Generator } from '@praktice/navigator-react-web-sdk';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
@@ -391,16 +390,26 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
-  const getAge = (dob: string) => moment().diff(moment(dob, 'YYYY-MM-DD'), 'years').toString();
+  const getAge = (dob: string) =>
+    moment()
+      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
+      .toString();
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
-  const setUserGender = (gender: string) => gender.toLowerCase();
+  const convertUserGenderToLowercase = (gender: string) => gender.toLowerCase();
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
+    } else if (
+      isSignedIn &&
+      currentPatient &&
+      (!currentPatient.dateOfBirth || !currentPatient.gender)
+    ) {
+      setUserAge('2000-12-20');
+      setPatientGender(convertUserGenderToLowercase('MALE'));
     }
   }, [isSignedIn, currentPatient]);
 
@@ -415,9 +424,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
     } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
-      setPatientGender(setUserGender(loggedOutPatientGender));
+      setPatientGender(convertUserGenderToLowercase(loggedOutPatientGender));
     }
   }, [loggedOutPatientGender]);
 
@@ -431,7 +440,17 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
 
   const customListner = (resultData: any) => {
-    return;
+    let specialities = [];
+    specialities = resultData.specialists.map((item: { speciality: string }) =>
+      item.speciality.trim()
+    );
+    if (specialities.length > 0) {
+      const specialitiesEncoded = encodeURI(specialities.join(','));
+      localStorage.setItem('symptomTracker', specialitiesEncoded);
+      setDoctorPopOver(true);
+      setIsRedirect(true);
+      // window.location.href = clientRoutes.doctorsLanding();
+    }
   };
 
   const onePrimaryUser = hasOnePrimaryUser();
@@ -697,8 +716,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </div>
         </Popover>
       )}
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
       <div className={classes.footerLinks}>
-        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
     </div>

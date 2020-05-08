@@ -48,7 +48,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking } from '../../../gtmTracking'
+import { gtmTracking } from '../../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -843,7 +843,12 @@ export const TestsCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Payment-COD', value: cartTotal.toFixed(2) })
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'Order',
+                  label: 'Payment-COD',
+                  value: cartTotal.toFixed(2),
+                });
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentOrderTest();

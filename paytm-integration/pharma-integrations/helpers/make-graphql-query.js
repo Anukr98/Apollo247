@@ -1,4 +1,4 @@
-const medicineOrderQuery = (payload, isWebhook) => {
+const medicineOrderQuery = (payload) => {
     let txnDate = new Date(new Date().toUTCString()).toISOString();
     if (payload.TXNDATETIME) {
         txnDate = new Date(new Date(payload.TXNDATETIME).toUTCString()).toISOString();

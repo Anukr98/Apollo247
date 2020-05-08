@@ -40,7 +40,7 @@ import {
 } from 'graphql/types/ValidateConsultCoupon';
 import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -396,7 +396,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
   appointmentDateTime =
-    timeSelected && new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString();
+    timeSelected && moment(`${apiDateFormat}T${timeSelected.padStart(5, '0')}`).toISOString();
   const checkCouponValidity = () => {
     couponMutation({
       variables: {
@@ -431,8 +431,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
-          appointmentDateTime: new Date(
-            `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
+          appointmentDateTime: moment(
+            `${apiDateFormat}T${timeSelected.padStart(5, '0')}`
           ).toISOString(),
           appointmentType: AppointmentType.PHYSICAL,
           hospitalId: defaultClinicId,
@@ -441,6 +441,25 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       },
     })
       .then((res: any) => {
+        /* Gtm code start */
+        const specialty = getSpeciality();
+        const { getDoctorDetailsById } = doctorDetails;
+        const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
+        gtmTracking({
+          category: 'Consultations',
+          action: specialty,
+          label: 'Order Success',
+          value: revisedAmount,
+        });
+        _cbTracking({
+          specialty: specialty,
+          bookingType: AppointmentType.PHYSICAL,
+          scheduledDate: `${appointmentDateTime}`,
+          couponCode: couponCode ? couponCode : null,
+          couponValue: couponValue ? couponValue : null,
+          finalBookingValue: revisedAmount,
+        });
+        /* Gtm code END */
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
           if (revisedAmount == '0') {
             makePaymentMutation({

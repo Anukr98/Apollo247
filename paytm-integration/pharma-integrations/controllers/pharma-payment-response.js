@@ -6,6 +6,7 @@ const { medicineOrderQuery } = require('../helpers/make-graphql-query');
 module.exports = async (req, res, next) => {
     let transactionStatus = '';
     let orderId;
+    let bookingSource = 'MOBILE';
     try {
 
         const payload = req.body;
@@ -48,14 +49,14 @@ module.exports = async (req, res, next) => {
         logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`)
+            logger.error(`${orderId} - consult - payment - response - ${JSON.stringify(response.data.errors)}`)
             throw new Error("Error Occured in SaveMedicineOrderPaymentMq!")
         }
 
         if (bookingSource === 'WEB') {
-            let redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
             if (transactionStatus === 'failed') {
-                redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
+                redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
             }
             res.redirect(redirectUrl);
         } else {
@@ -75,7 +76,7 @@ module.exports = async (req, res, next) => {
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
+            const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
             res.redirect(`/mob-error?status=${transactionStatus}`);

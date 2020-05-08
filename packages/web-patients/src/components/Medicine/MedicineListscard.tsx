@@ -276,7 +276,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                   category: 'Pharmacy',
                                   action: 'Remove From Cart',
                                   label: medicine.name,
-                                  value: medicine.price,
+                                  value: medicine.special_price || medicine.price,
                                 });
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
@@ -314,7 +314,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 category: 'Pharmacy',
                                 action: 'Add to Cart',
                                 label: medicine.name,
-                                value: medicine.price,
+                                value: medicine.special_price || medicine.price,
                               });
                               /**Gtm code End  */
                               addCartItem && addCartItem(cartItem);
