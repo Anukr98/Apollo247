@@ -113,6 +113,10 @@ import {
   appointmentNotificationTypeDefs,
   appointmentNotificationResolvers,
 } from 'consults-service/resolvers/appointmentNotifications';
+import {
+  getOrderInvoiceTypeDefs,
+  getOrderInvoiceResolvers,
+} from 'consults-service/resolvers/getOrderInvoice';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
@@ -256,6 +260,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: appointmentNotificationTypeDefs,
         resolvers: appointmentNotificationResolvers,
+      },
+      {
+        typeDefs: getOrderInvoiceTypeDefs,
+        resolvers: getOrderInvoiceResolvers,
       },
     ]),
     plugins: [
