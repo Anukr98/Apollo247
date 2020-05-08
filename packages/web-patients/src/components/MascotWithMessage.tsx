@@ -77,7 +77,7 @@ export interface MascotWithMessageProps {
 }
 
 export const MascotWithMessage: React.FC<MascotWithMessageProps> = (props, history) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   // const { refreshPage } = props;
 

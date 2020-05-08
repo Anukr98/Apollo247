@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.up('sm')]: {
           display: 'flex',
           alignItems: 'center',
-        },        
+        },
         '& li': {
           listStyleType: 'none',
           paddingTop: 6,
@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const BottomLinks: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
@@ -64,19 +64,13 @@ export const BottomLinks: React.FC = (props) => {
               <Link to={clientRoutes.FAQ()}>Frequently Asked Questions</Link>
             </li>
             <li>
-              <Link to={clientRoutes.termsConditions()}>
-                Terms & Conditions
-              </Link>
+              <Link to={clientRoutes.termsConditions()}>Terms & Conditions</Link>
             </li>
             <li>
-              <Link to={clientRoutes.privacy()}>
-                Privacy Policy
-              </Link>
+              <Link to={clientRoutes.privacy()}>Privacy Policy</Link>
             </li>
             <li>
-              <Link to={clientRoutes.contactUs()}>
-                Contact Us
-              </Link>
+              <Link to={clientRoutes.contactUs()}>Contact Us</Link>
             </li>
           </ul>
         </div>

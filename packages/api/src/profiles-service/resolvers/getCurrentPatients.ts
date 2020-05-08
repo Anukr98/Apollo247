@@ -88,6 +88,7 @@ export const getCurrentPatientsTypeDefs = gql`
 
   type LifeStyle {
     description: String
+    occupationHistory: String
   }
 
   type FamilyHistory {
@@ -105,6 +106,7 @@ export const getCurrentPatientsTypeDefs = gql`
     pastSurgicalHistory: String
     temperature: String
     weight: String
+    medicationHistory: String
   }
 
   type GetCurrentPatientsResult {

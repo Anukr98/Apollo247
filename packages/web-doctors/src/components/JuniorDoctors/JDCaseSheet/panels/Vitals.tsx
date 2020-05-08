@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export const Vitals: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     height,
     setHeight,

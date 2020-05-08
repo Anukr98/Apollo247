@@ -51,7 +51,7 @@ export const NotificationProvider: React.FC = (props) => {
           variables: {
             toId: doctorDetails.id,
             startDate: moment(new Date())
-              .add(-7, 'day')
+              .add(-6, 'day')
               .format('YYYY-MM-DD'),
             endDate: moment(new Date())
               .add(1, 'day')

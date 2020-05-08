@@ -9,6 +9,9 @@ import axios from 'axios';
 import { Brand } from './../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { Help } from 'components/Help/Help';
+import { BottomLinks } from 'components/BottomLinks';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -20,7 +23,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     viewAllBrands: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
@@ -169,10 +171,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     scrollbar: {
-      [theme.breakpoints.down('xs')]: {
-        maxHeight: 'calc(100vh - 110px) !important',
+      [theme.breakpoints.down(900)]: {
+        maxHeight: 'calc(100vh - 149px) !important',
         '& > div': {
-          maxHeight: 'calc(100vh - 110px) !important',
+          maxHeight: 'calc(100vh - 149px) !important',
         },
       },
     },
@@ -247,6 +249,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
         marginLeft: 'auto',
         float: 'right',
+      },
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
   };
@@ -401,7 +408,11 @@ export const ViewAllBrands: React.FC = (props) => {
           </Scrollbars>
         </div>
       </div>
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        {onePrimaryUser ? <Help /> : <ManageProfile />}
+        <BottomLinks />
+      </div>
+      <NavigationBottom />
     </div>
   );
 };

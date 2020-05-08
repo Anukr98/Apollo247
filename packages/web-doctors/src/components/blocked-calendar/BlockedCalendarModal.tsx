@@ -395,7 +395,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       },
     },
   });
-  const classes = useStyles();
+  const classes = useStyles({});
   const fromDatePickerRef = useRef(null);
   const toDatePickerRef = useRef(null);
   const TextFieldComponent = (props: any) => {

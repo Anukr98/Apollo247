@@ -185,7 +185,7 @@ interface ErrorObject {
 }
 
 export const Symptoms: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');

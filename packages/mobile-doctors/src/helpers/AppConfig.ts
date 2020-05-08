@@ -6,7 +6,7 @@ export enum AppEnv {
   VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 //Common keys
 const commonConfigs = {
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -21,16 +21,16 @@ const commonConfigs = {
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.014',
-  Android_Version: '1.014',
+  iOS_Version: '1.002',
+  Android_Version: '1.002',
 };
 
 //QA
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.014',
-  Android_Version: '1.014',
+  iOS_Version: '1.0015',
+  Android_Version: '1.0015',
 };
 
 //Prod
@@ -39,6 +39,8 @@ const ConfigurationProd = {
   LOG_ENVIRONMENT: 'release',
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/',
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
+  PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
   iOS_Version: '1.000',
   Android_Version: '1.000',
 };

@@ -371,7 +371,7 @@ interface ConsultRoomProps {
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isVideoCall = false;
 
   const [showVideo, setShowVideo] = useState<boolean>(false);

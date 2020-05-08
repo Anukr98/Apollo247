@@ -4,7 +4,11 @@
     "outDir": "dist",
     "baseUrl": "src",
     "traceResolution": false,
+    "skipLibCheck": true,
     "jsx": "react",
+    "downlevelIteration": true,
+    "strict": false,
+    "noImplicitAny": true,
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },
   "exclude": ["node_modules", "dist", "src/cypress"]

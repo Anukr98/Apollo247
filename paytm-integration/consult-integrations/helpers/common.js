@@ -39,11 +39,13 @@ const generatePaymentOrderId = () => {
     let minutes =
         dateObj.getMinutes() < 10 ? '0' + dateObj.getMinutes() : dateObj.getMinutes().toString();
     let hours = dateObj.getHours() < 10 ? '0' + dateObj.getHours() : dateObj.getHours().toString();
-    let month = dateObj.getMonth() < 10 ? '0' + dateObj.getMonth() : dateObj.getMonth().toString();
+    let month = (dateObj.getMonth() + 1) < 10 ? '0' + (dateObj.getMonth() + 1) : (dateObj.getMonth() + 1).toString();
     let seconds =
         dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds().toString();
     let date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate().toString();
-    let random4Digits = Math.random().toString().slice(-4);
+    let random4Digits = Math.random()
+        .toString()
+        .slice(-4);
 
     return (
         dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits
@@ -53,7 +55,7 @@ const generatePaymentOrderId = () => {
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
     const paymentTypeParams = {};
     const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
-    logger.info(`${paymentTypeID} -${bankCode} - payment type id`);
+    logger.info(`${paymentTypeID} - paymentTypeID`);
     if (!possiblePaymentTypes.includes(paymentTypeID)) {
         throw new Error('Invalid payment type! Please contact IT department.');
     }
@@ -73,9 +75,8 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
             paymentTypeParams['AUTH_MODE'] = 'USRPWD';
             break;
     }
-    logger.info(`Params returned for paytm request - ${paymentTypeParams}`);
-    return paymentTypeParams;
 
+    return paymentTypeParams;
 };
 
 module.exports = { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams };

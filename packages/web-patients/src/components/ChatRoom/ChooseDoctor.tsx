@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const ChooseDoctor: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.shadowHide}>

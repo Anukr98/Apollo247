@@ -27,7 +27,8 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
 import { addRecordClickTracking } from '../../webEngageTracking';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,7 +40,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     addRecordsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f0f1ec',
@@ -337,6 +337,11 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 288,
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -551,7 +556,11 @@ export const AddRecords: React.FC = (props) => {
                     setUploadedDocuments([]);
                     refFileInput.current.value = null;
                     /**Gtm code start start */
-                    gtmTracking({ category: 'Profile', action: 'Record Added', label: `${typeOfRecord} - Self` })
+                    gtmTracking({
+                      category: 'Profile',
+                      action: 'Record Added',
+                      label: `${typeOfRecord} - Self`,
+                    });
                     /**Gtm code start start */
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
@@ -608,7 +617,11 @@ export const AddRecords: React.FC = (props) => {
             setUploadedDocuments([]);
             refFileInput.current.value = null;
             /**Gtm code start start */
-            gtmTracking({ category: 'Profile', action: 'Record Added', label: `${typeOfRecord} - Self` })
+            gtmTracking({
+              category: 'Profile',
+              action: 'Record Added',
+              label: `${typeOfRecord} - Self`,
+            });
             /**Gtm code start start */
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
@@ -1094,6 +1107,9 @@ export const AddRecords: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
     </div>
   );
 };

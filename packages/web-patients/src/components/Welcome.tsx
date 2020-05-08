@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Welcome: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser =
