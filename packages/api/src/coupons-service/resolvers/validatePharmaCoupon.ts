@@ -240,7 +240,7 @@ const validatePharmaCoupon: Resolver<
   let mrpPriceTotal = 0;
   let discountedPriceTotal = 0;
 
-  lineItemsWithDiscount.forEach(async (lineItem, index) => {
+  lineItemsWithDiscount.forEach((lineItem, index) => {
     //coupon couponCategoryApplicable check
 
     if (couponRulesData.couponCategoryApplicable) {
