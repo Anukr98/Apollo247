@@ -29,7 +29,6 @@ import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
-import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -628,7 +627,7 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
-      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       <NavigationBottom />
     </div>
