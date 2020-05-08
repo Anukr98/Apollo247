@@ -175,7 +175,7 @@ export const WeAreHelpYou: React.FC = (props) => {
         <div className={classes.cardContent}>
           <div className={classes.contentHeader}>
             <span>
-              <img src={require('images/ic-doctor.svg')} alt="We are here to help you" />
+              <img src={require('images/ic-mascot.png')} alt="We are here to help you" />
             </span>
             <span>We are here to help you.</span>
           </div>
