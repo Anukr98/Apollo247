@@ -578,7 +578,7 @@ export const MedicineCart: React.FC = (props) => {
           };
         })
       : [];
-
+  console.log('*******', cartTat);
   const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
     SAVE_MEDICINE_ORDER,
     {
@@ -794,6 +794,7 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
+      deliveryTime &&
       deliveryTime.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
@@ -1086,15 +1087,11 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
-              className={
-                disableSubmit || !isPaymentButtonEnable || mutationLoading
-                  ? classes.buttonDisable
-                  : ''
-              }
+              disabled={!cartTat}
+              className={!cartTat ? classes.buttonDisable : ''}
               title={'Proceed to pay bill'}
             >
-              {cartItems && cartItems.length > 0 && !nonCartFlow && cartTat ? (
+              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
                 `Proceed to pay — RS. ${totalAmount}`
               ) : uploadingFiles ? (
                 <CircularProgress size={22} color="secondary" />
