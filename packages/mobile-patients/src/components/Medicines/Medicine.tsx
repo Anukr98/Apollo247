@@ -1257,6 +1257,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+            keyword: searchText,
+            Source: 'Pharmacy Home',
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
@@ -1275,6 +1280,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
@@ -1300,17 +1310,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
           errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
+            ...theme.viewStyles.text('M', 14, '#02475b'),
             marginHorizontal: 10,
           }}
           errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
+            itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined
           }
         />
       </>
