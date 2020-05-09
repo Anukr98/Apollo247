@@ -96,6 +96,11 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       padding: '8px 5px',
       borderBottom: '1px solid #02475b',
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        marginRight: 10,
+      },
     },
     prescriptionSection: {
       marginBottom: 10,
@@ -103,45 +108,48 @@ const useStyles = makeStyles((theme: Theme) => {
     accountDetails: {
       fontSize: 10,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12,
+      padding: '20px 12px',
     },
     infoRow: {
       display: 'flex',
-      paddingBottom: 5,
+      paddingBottom: 10,
+      alignItems: 'center',
     },
     label: {
       width: 80,
       paddingRight: 10,
+      fontSize: 10,
     },
     patientName: {
-      fontSize: 12,
-      color: '#02475b',
+      fontSize: 11,
       fontWeight: 500,
+      color: 'rgba(0, 0, 0, 0.8)',
     },
     chiefComplaints: {
       fontSize: 12,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12,
+      padding: '20px 12px',
     },
     complaintsInfoRow: {
-      paddingBottom: 5,
+      paddingBottom: 15,
     },
     complaintsLabel: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 500,
-      color: '#01475b',
+      color: 'rgba(0, 0, 0, 0.8)',
+      paddingBottom: 3,
     },
     diagnosis: {
       fontSize: 12,
-      color: '#02475b',
+      color: 'rgba(0, 0, 0, 0.8)',
       fontWeight: 500,
-      padding: 12,
+      padding: '20px 12px',
     },
     medicationList: {
       fontSize: 12,
       fontWeight: 600,
-      padding: 12,
-      color: '#02475b',
+      padding: '20px 12px',
+      color: 'rgba(0, 0, 0, 0.8)',
       '& ol': {
         padding: 0,
         paddingLeft: 18,
@@ -158,8 +166,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     advice: {
-      fontSize: 12,
-      padding: 12,
+      display: 'flex',
+      '& span': {
+        marginRight: 15,
+        fontSize: 10,
+        color: 'rgba(0, 0, 0, 0.5)',
+        width: 100,
+        flex: '0 0 100px',
+        lineHeight: 1.5,
+      },
+    },
+    adviceInstruction: {
+      padding: '20px 12px',
     },
     disclaimer: {
       fontSize: 9,
@@ -196,13 +214,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     labelBlue: {
-      color: '#02475b',
+      color: 'rgba(0, 0, 0, 0.8)',
+      fontWeight: 500,
+      fontSize: 11,
     },
     prescriptionHeader: {
       marginBottom: 10,
       marginTop: 30,
       borderTop: '1px solid #02475b',
-      padding: 12,
+      padding: '20px 12px',
       '& h6': {
         fontSize: 11,
         color: 'rgba(0, 0, 0, 0.6)',
@@ -217,6 +237,35 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+    },
+    consultInfo: {
+      display: 'flex',
+      justifyContent: 'space-between',
+    },
+    labelRight: {
+      width: 120,
+    },
+    subInfo: {
+      fontSize: 8,
+      color: 'rgba(0, 0, 0, 0.5)',
+      fontWeight: 400,
+    },
+    vitalLabel: {
+      color: '#02475b',
+      marginBottom: 5,
+    },
+    instruction: {
+      whiteSpace: 'pre-wrap',
+      marginBottom: 10,
+      color: 'rgba(0, 0, 0, 0.6)',
+      fontSize: 11,
+    },
+
+    followContent: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: 'rgba(0, 0, 0, 0.8)',
+      lineHeight: 1.5,
     },
   };
 });
@@ -246,7 +295,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     medicinePrescription,
   } = useContext(CaseSheetContext);
 
-  /*console.log({
+  console.log({
     patientDetails,
     sdConsultationDate,
     height,
@@ -265,7 +314,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptoms,
     diagnosticPrescription,
     medicinePrescription,
-  });*/
+  });
 
   const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
@@ -482,8 +531,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
 
-  console.log(appointmentInfo);
-
   return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -530,68 +577,81 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         <div className={classes.pageContent}>
           <div className={classes.prescriptionSection}>
             <div className={classes.sectionHeader}>Appointment Details</div>
-            <div className={classes.accountDetails}>
-              <div className={classes.infoRow}>
-                <div className={classes.label}>Patient</div>
-                <div className={classes.labelContent}>
-                  {patientDetails ? (
-                    <div className={classes.patientName}>
-                      {`${patientDetails.firstName}  ${patientDetails.lastName}`} |{' '}
-                      {patientDetails.gender} | {getAge(patientDetails.dateOfBirth)}
+            <div className={classes.consultInfo}>
+              <div className={classes.accountDetails}>
+                {patientDetails && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Patient</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.patientName}>
+                        {`${patientDetails.firstName}  ${patientDetails.lastName} | ${
+                          patientDetails.gender
+                        } | ${getAge(patientDetails.dateOfBirth)}yrs`}
+                      </div>
                     </div>
-                  ) : null}
+                  </div>
+                )}
+                {patientDetails && (patientDetails.emailAddress || patientDetails.mobileNumber) && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Contact</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{`${
+                        patientDetails.emailAddress ? patientDetails.emailAddress : ''
+                      } | ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
+                    </div>
+                  </div>
+                )}
+                {patientDetails && patientDetails.uhid && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>UHID</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{patientDetails.uhid}</div>
+                    </div>
+                  </div>
+                )}
+                {appointmentInfo && appointmentInfo.displayId && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Appt Id</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className={classes.accountDetails}>
+                {appointmentInfo && appointmentInfo.appointmentDateTime ? (
+                  <div className={classes.infoRow}>
+                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Date</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>
+                        {sdConsultationDate && sdConsultationDate !== ''
+                          ? `${moment(sdConsultationDate).format('DD/MM/YYYY')} at ${moment(
+                              sdConsultationDate
+                            ).format('h:mm a')}`
+                          : `${moment(appointmentInfo.appointmentDateTime).format(
+                              'DD/MM/YYYY'
+                            )} at ${moment(appointmentInfo.appointmentDateTime).format('h:mm a')}`}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {consultType ? (
+                  <div className={classes.infoRow}>
+                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Type</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>
+                        {_startCase(_toLower(consultType[0]))}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                <div className={classes.infoRow}>
+                  <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
+                  <div className={classes.labelContent}>
+                    <div className={classes.labelBlue}>2</div>
+                  </div>
                 </div>
               </div>
-              {weight || height || bp || temperature ? (
-                <div className={classes.infoRow}>
-                  <div className={classes.label}>Vitals</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>
-                      {`${weight ? `Weight : ${weight}` : ''} ${
-                        height ? `| Height: ${height}` : ''
-                      } ${bp ? `| BP: ${bp}` : ''}  ${
-                        temperature ? `| Temperature: ${temperature}` : ''
-                      }`}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-              {patientDetails && patientDetails.uhid ? (
-                <div className={classes.infoRow}>
-                  <div className={classes.label}>UHID</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>{patientDetails.uhid}</div>
-                  </div>
-                </div>
-              ) : null}
-              {appointmentInfo && appointmentInfo.displayId ? (
-                <div className={classes.infoRow}>
-                  <div className={classes.label}>Appt Id</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
-                  </div>
-                </div>
-              ) : null}
-              {appointmentInfo && appointmentInfo.appointmentDateTime ? (
-                <div className={classes.infoRow}>
-                  <div className={classes.label}>Consult Date</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>
-                      {sdConsultationDate && sdConsultationDate !== ''
-                        ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                        : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-              {consultType ? (
-                <div className={classes.infoRow}>
-                  <div className={classes.label}>Consult Type</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>{_startCase(_toLower(consultType[0]))}</div>
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
           {!loader && symptoms && symptoms.length > 0 ? (
@@ -604,6 +664,22 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
+                {weight || height || bp || temperature ? (
+                  <div className={classes.complaintsInfoRow}>
+                    <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
+                      VITALS <span className={classes.subInfo}>(as declared by patient)</span>
+                    </div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
+                        {`${weight ? `Weight : ${weight}` : ''} ${
+                          height ? `| Height: ${height}` : ''
+                        } ${bp ? `| BP: ${bp}` : ''}  ${
+                          temperature ? `| Temperature: ${temperature}` : ''
+                        }`}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -621,7 +697,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           ) : null}
           {!loader && medicinePrescription && medicinePrescription.length > 0 ? (
             <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Medication Prescribed</div>
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
+              </div>
               <div className={classes.medicationList}>
                 <ol>{medicineHtml}</ol>
               </div>
@@ -629,7 +707,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           ) : null}
           {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
             <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Diagnostic Tests</div>
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-microscope-solid.svg')} /> Diagnostic Tests
+              </div>
               <div className={classes.medicationList}>
                 <ol>
                   {diagnosticPrescription.map(
@@ -644,23 +724,43 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           ) : null}
           {isPageContentFull() ? null : (
             <>
-              {!loader && otherInstructions && otherInstructions.length > 0 ? (
+              {!loader &&
+              ((otherInstructions && otherInstructions.length > 0) ||
+                (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0)) ? (
                 <div className={classes.prescriptionSection}>
-                  <div className={classes.sectionHeader}>Advice Given</div>
-                  <div className={classes.advice}>
-                    {otherInstructions.map((instruction, index) => (
-                      <span>
-                        {`${instruction.instruction}`}
-                        {index < otherInstructions.length - 1 && ','}
-                      </span>
-                    ))}
+                  <div className={classes.sectionHeader}>
+                    <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
                   </div>
-                </div>
-              ) : null}
-              {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-                <div className={classes.prescriptionSection}>
-                  <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUpContent}>{getFollowUpData()}</div>
+                  <div className={classes.adviceInstruction}>
+                    {otherInstructions && otherInstructions.length > 0 && (
+                      <div className={classes.advice}>
+                        <span>Doctor’s Advise</span>
+                        <div>
+                          {otherInstructions.map((instruction) => (
+                            <div className={classes.instruction}>{instruction.instruction}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                      <div className={classes.advice}>
+                        <span>Follow Up</span>
+                        <div className={classes.followContent}>{getFollowUpData()}</div>
+                      </div>
+                    ) : null}
+                    <div className={classes.advice}>
+                      <span>Referral</span>
+                      <div>
+                        <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                          Consult a Pulmologist
+                        </div>
+                        <div className={classes.instruction}>
+                          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+                          tempor incididunt ut labore et dolore magna aliqua.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : null}
             </>

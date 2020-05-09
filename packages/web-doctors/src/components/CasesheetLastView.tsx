@@ -75,13 +75,28 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       padding: '8px 5px',
       borderBottom: '1px solid #02475b',
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        marginRight: 10,
+      },
     },
     prescriptionSection: {
       marginBottom: 10,
     },
     advice: {
-      fontSize: 12,
-      padding: 12,
+      display: 'flex',
+      '& span': {
+        marginRight: 15,
+        fontSize: 10,
+        color: 'rgba(0, 0, 0, 0.5)',
+        width: 100,
+        flex: '0 0 100px',
+        lineHeight: 1.5,
+      },
+    },
+    adviceInstruction: {
+      padding: '20px 12px',
     },
     disclaimer: {
       fontSize: 9,
@@ -117,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
     prescriptionHeader: {
       marginBottom: 10,
       borderTop: '1px solid #02475b',
-      padding: 12,
+      padding: '20px 12px',
       marginTop: 30,
       '& h6': {
         fontSize: 11,
@@ -133,6 +148,18 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-end',
+    },
+    instruction: {
+      whiteSpace: 'pre-wrap',
+      marginBottom: 10,
+      color: 'rgba(0, 0, 0, 0.6)',
+      fontSize: 11,
+    },
+    followContent: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: 'rgba(0, 0, 0, 0.8)',
+      lineHeight: 1.5,
     },
   };
 });
@@ -198,22 +225,45 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
           ) : null}
         </div> */}
         <div className={classes.pageContent}>
-          {otherInstructions && otherInstructions.length > 0 ? (
+          {(otherInstructions && otherInstructions.length > 0) ||
+          (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ? (
             <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Advice Given</div>
-              <div className={classes.advice}>
-                {otherInstructions.map((instruction) => (
-                  <div>{instruction.instruction}</div>
-                ))}
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
+              </div>
+              <div className={classes.adviceInstruction}>
+                {otherInstructions && otherInstructions.length > 0 && (
+                  <div className={classes.advice}>
+                    <span>Doctor’s Advise</span>
+                    <div>
+                      {otherInstructions.map((instruction) => (
+                        <div className={classes.instruction}>{instruction.instruction}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                  <div className={classes.advice}>
+                    <span>Follow Up</span>
+                    <div className={classes.followContent}>{props.getFollowUpData()}</div>
+                  </div>
+                ) : null}
+                <div className={classes.advice}>
+                  <span>Referral</span>
+                  <div>
+                    <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                      Consult a Pulmologist
+                    </div>
+                    <div className={classes.instruction}>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                      incididunt ut labore et dolore magna aliqua.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
-          {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Follow Up</div>
-              <div className={classes.followUpContent}>{props.getFollowUpData()}</div>
-            </div>
-          ) : null}
+
           {createdDoctorProfile && createdDoctorProfile.signature && (
             <div className={classes.prescriptionHeader}>
               <h6>
