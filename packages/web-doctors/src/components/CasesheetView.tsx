@@ -596,8 +596,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={classes.label}>Contact</div>
                     <div className={classes.labelContent}>
                       <div className={classes.labelBlue}>{`${
-                        patientDetails.emailAddress ? patientDetails.emailAddress : ''
-                      } | ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
+                        patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
+                      } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
                     </div>
                   </div>
                 )}
