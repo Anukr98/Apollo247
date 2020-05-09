@@ -45,10 +45,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageHeader: {
       display: 'flex',
+      justifyContent: 'space-between',
     },
     doctorInformation: {
       marginLeft: 'auto',
-      width: 198,
+      maxWidth: 250,
       '& h3': {
         fontSize: 11,
         fontWeight: 'bold',
@@ -68,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     signInformation: {
       marginRight: 'auto',
-      width: 198,
+      maxWidth: 250,
       '& h3': {
         fontSize: 11,
         fontWeight: 'bold',
