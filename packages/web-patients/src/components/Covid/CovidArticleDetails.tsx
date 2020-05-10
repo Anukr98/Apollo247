@@ -6,6 +6,7 @@ import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
+import { CallOurExperts } from 'components/CallOurExperts';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
@@ -125,6 +126,9 @@ const useStyles = makeStyles((theme: Theme) => {
       whiteSpace: 'pre-wrap',
       wordWrap: 'break-word',
     },
+    expertsContainer: {
+      paddingTop: 20,
+    },
   };
 });
 
@@ -210,6 +214,9 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                       </a>
                     </>
                   )}
+                  <div className={classes.expertsContainer}>
+                    <CallOurExperts />
+                  </div>
                 </div>
                 {/* <div className={classes.rightSidebar}>
               <div className={classes.formCard}>
@@ -225,7 +232,6 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
-      {/* <NavigationBottom /> */}
     </div>
   );
 };
