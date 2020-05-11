@@ -225,7 +225,7 @@ const getMonthRange = ({ start, end }: { start: string | Date; end: string | Dat
 
 export const Calendar: React.FC = () => {
   const today: Date = startOfToday();
-  const classes = useStyles();
+  const classes = useStyles({});
   const [doctorData, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 
@@ -33,13 +32,14 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
         padding: 40,
+        borderRadius: '0 0 10px 10px',
       },
     },
   };
 });
 
 export const ContactUs: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
@@ -62,7 +62,6 @@ export const ContactUs: React.FC = (props) => {
           </p>
         </div>
       </div>
-      <BottomLinks />
       <NavigationBottom />
     </div>
   );

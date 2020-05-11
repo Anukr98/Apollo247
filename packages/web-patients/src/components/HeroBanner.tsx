@@ -187,7 +187,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const HeroBanner: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);

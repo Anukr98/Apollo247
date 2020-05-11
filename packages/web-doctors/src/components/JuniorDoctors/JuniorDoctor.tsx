@@ -114,7 +114,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JuniorDoctor: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentDoctor = useCurrentPatient();
   const { isSigningIn } = useAuth();
 

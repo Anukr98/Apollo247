@@ -144,7 +144,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JDAdminDashboard: React.FC = (rops) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const handleChangePage = (event: unknown, newPage: number) => {

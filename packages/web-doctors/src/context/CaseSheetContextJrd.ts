@@ -12,6 +12,11 @@ import {
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { createContext } from 'react';
 
+export interface VitalErrorProps {
+  height: String;
+  weight: String;
+}
+
 export interface CaseSheetContextPropsJrd {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -90,6 +95,7 @@ export interface CaseSheetContextPropsJrd {
   familyHistory: string;
   menstrualHistory: string;
   dosageList: any;
+  vitalError: VitalErrorProps;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -102,6 +108,7 @@ export interface CaseSheetContextPropsJrd {
   setLifeStyle: (lifeStyle: string) => void;
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
+  setVitalError: (vitalError: VitalErrorProps) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -156,6 +163,10 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   familyHistory: '',
   menstrualHistory: '',
   dosageList: [],
+  vitalError: {
+    height: '',
+    weight: '',
+  },
 
   setBp: () => {},
   setHeight: () => {},
@@ -168,6 +179,7 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setLifeStyle: () => {},
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
+  setVitalError: () => {},
 
   gender: '',
   setGender: () => {},

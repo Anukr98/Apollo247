@@ -316,4 +316,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     }
     return [totalCount, deliveryCount, vdcCount, vdcDeliveryCount];
   }
+
+  getMedicineOrdersCountByPatient(patient: string) {
+    return this.count({
+      where: { patient, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrdersCountByCoupon(coupon: string) {
+    return this.count({
+      where: { coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
+    return this.count({
+      where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
 }

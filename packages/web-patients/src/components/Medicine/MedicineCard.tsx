@@ -6,7 +6,7 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -140,9 +140,15 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         type_id: product.type_id,
                         mou: product.mou,
                         quantity: 1,
+                        isShippable: true,
                       };
                       /**Gtm code start  */
-                      gtmTracking({ category: 'Pharmacy', action: 'Add to Cart', label: product.name, value: product.price })
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Add to Cart',
+                        label: product.name,
+                        value: product.special_price || product.price,
+                      });
                       /**Gtm code End  */
                       const index = cartItems.findIndex((item) => item.id === cartItem.id);
                       if (index >= 0) {
@@ -159,7 +165,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     className={classes.addToCartBtn}
                     onClick={() => {
                       /**Gtm code start  */
-                      gtmTracking({ category: 'Pharmacy', action: 'Remove From Cart', label: product.name, value: product.price })
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Remove From Cart',
+                        label: product.name,
+                        value: product.special_price || product.price,
+                      });
                       /**Gtm code End  */
                       removeCartItem && removeCartItem(product.id);
                     }}

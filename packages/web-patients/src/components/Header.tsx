@@ -185,7 +185,6 @@ export const Header: React.FC = (props) => {
     });
     return !x;
   };
-
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>

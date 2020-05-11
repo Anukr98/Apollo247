@@ -122,7 +122,7 @@ interface PastAppointmentProps {
 }
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
@@ -153,7 +153,7 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Card style={{ width: '100%', height: 45 }}>
       <CardContent>
@@ -263,7 +263,7 @@ interface pastConsultationProps {
 }
 export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
   const pastAppointments = props.pastAppointments;
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = false;
 
   return (
