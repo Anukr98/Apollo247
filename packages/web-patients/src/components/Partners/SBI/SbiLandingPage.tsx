@@ -233,8 +233,8 @@ export const SbiLandingPage: React.FC = (props) => {
               </div>
               <div className={classes.cardExt}>
                 <p>
-                  Use coupon code <span>‘TRYAPOLLO’</span> and get Rs.999 off if you book between{' '}
-                  <span>5pm – 8am</span>
+                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span> if you
+                  book between <span>5pm – 8am</span>
                 </p>
               </div>
             </div>

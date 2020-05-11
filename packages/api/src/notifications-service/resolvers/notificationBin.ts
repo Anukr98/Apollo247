@@ -7,6 +7,7 @@ import {
   notificationType,
   NotificationBin,
   NotificationBinArchive,
+  STATUS,
 } from 'consults-service/entities';
 import {
   NotificationBinRepository,
@@ -15,7 +16,7 @@ import {
 import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subDays, format, differenceInDays } from 'date-fns';
+import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -83,6 +84,7 @@ export const notificationBinTypeDefs = gql`
   extend type Query {
     getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
     sendUnreadMessagesNotification: String
+    archiveMessages: String
   }
 
   extend type Mutation {
@@ -138,6 +140,16 @@ const insertMessage: Resolver<
     const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const appointmentData = await appointmentRepo.findById(messageInput.eventId);
     if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+    if (appointmentData.status != STATUS.COMPLETED)
+      throw new AphError(AphErrorMessages.APPOINTMENT_NOT_COMPLETED);
+
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const consultDate = format(appointmentData.sdConsultationDate, 'yyyy-MM-dd');
+    const difference = differenceInDays(new Date(today), new Date(consultDate));
+
+    if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
+      throw new AphError(AphErrorMessages.FREE_CHAT_DAYS_COMPLETED);
 
     //create message body
     messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace('{0}', doctorDetails.firstName).replace(
@@ -225,74 +237,126 @@ const sendUnreadMessagesNotification: Resolver<
     appointmentIds.push(appointmentId);
   });
 
-  //Getting the appointments data of uniqueAppointmentNotifications
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
-    appointmentIds,
-    ['appointment.doctorId', 'appointment.sdConsultationDate']
-  );
+  if (appointmentIds.length) {
+    //Getting the appointments data of uniqueAppointmentNotifications
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
+      appointmentIds,
+      ['appointment.doctorId', 'appointment.sdConsultationDate']
+    );
 
-  //Filtering the last date appointments
-  const lastDayAppointments = appointmentsData.filter((appointment) => {
-    if (!appointment.sdConsultationDate) return false;
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
-    const difference = differenceInDays(new Date(today), new Date(consultDate));
-    return difference >= parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10);
-  });
+    //Filtering the last date appointments
+    const lastDayAppointments = appointmentsData.filter((appointment) => {
+      if (!appointment.sdConsultationDate) return false;
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+      const difference = differenceInDays(new Date(today), new Date(consultDate));
+      return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
+    });
 
-  //Mapping the doctor ids with count of last day appointments
-  const lastDayAppointmentsCount: { [key: string]: number } = {};
-  lastDayAppointments.map((appointment) => {
-    if (lastDayAppointmentsCount[appointment.doctorId]) {
-      lastDayAppointmentsCount[appointment.doctorId] =
-        lastDayAppointmentsCount[appointment.doctorId] + 1;
-    } else {
-      lastDayAppointmentsCount[appointment.doctorId] = 1;
-    }
-  });
-
-  //Get the Notifications count for each doctor
-  const notificationsCount: { [key: string]: number } = {};
-  const doctorIdsToSendNotification: string[] = [];
-  uniqueNotifications.map((notification) => {
-    if (notification.toId) {
-      if (notificationsCount[notification.toId]) {
-        notificationsCount[notification.toId] = notificationsCount[notification.toId] + 1;
+    //Mapping the doctor ids with count of last day appointments
+    const lastDayAppointmentsCount: { [key: string]: number } = {};
+    lastDayAppointments.map((appointment) => {
+      if (lastDayAppointmentsCount[appointment.doctorId]) {
+        lastDayAppointmentsCount[appointment.doctorId] =
+          lastDayAppointmentsCount[appointment.doctorId] + 1;
       } else {
-        doctorIdsToSendNotification.push(notification.toId);
-        notificationsCount[notification.toId] = 1;
+        lastDayAppointmentsCount[appointment.doctorId] = 1;
       }
+    });
+
+    //Get the Notifications count for each doctor
+    const notificationsCount: { [key: string]: number } = {};
+    const doctorIdsToSendNotification: string[] = [];
+    uniqueNotifications.map((notification) => {
+      if (notification.toId) {
+        if (notificationsCount[notification.toId]) {
+          notificationsCount[notification.toId] = notificationsCount[notification.toId] + 1;
+        } else {
+          doctorIdsToSendNotification.push(notification.toId);
+          notificationsCount[notification.toId] = 1;
+        }
+      }
+    });
+
+    //Filter the specific doctor details for which notification has to be sent
+    const doctorDetails = doctors.filter((doctor) =>
+      doctorIdsToSendNotification.includes(doctor.id)
+    );
+
+    //Mapping the doctor id and mobile number
+    const doctorMobileMapper: { [key: string]: string[] } = {};
+    doctorDetails.map((doctor) => {
+      doctorMobileMapper[doctor.id] = [doctor.displayName, doctor.mobileNumber];
+    });
+
+    //Sending the Notification to doctors
+    Object.keys(notificationsCount).map((doctorId) => {
+      let messageBody = '';
+      if (lastDayAppointmentsCount[doctorId]) {
+        messageBody = ApiConstants.DOCTOR_CHAT_SMS_LAST_DAY.replace(
+          '{0}',
+          doctorMobileMapper[doctorId][0].toString()
+        )
+          .replace('{1}', notificationsCount[doctorId].toString())
+          .replace('{2}', lastDayAppointmentsCount[doctorId].toString());
+      } else {
+        messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
+          '{0}',
+          doctorMobileMapper[doctorId][0].toString()
+        ).replace('{1}', notificationsCount[doctorId].toString());
+      }
+      sendNotificationSMS(doctorMobileMapper[doctorId][1], messageBody);
+    });
+  }
+
+  return 'success';
+};
+
+const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> = async (
+  parent,
+  args,
+  { consultsDb }
+) => {
+  //Getting all the appointments past 1 day of free chat days
+  const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
+  const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
+    appointmentDateToBeArchived
+  );
+  const appointmentIdsToBeArchived = appointments.map((appointment) => appointment.id);
+
+  if (appointmentIdsToBeArchived.length) {
+    //Getting the Notifications which needs to be archived
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notificationsToBeArchived = await notificationBinRepo.getAllNotificationsByAppointmentIds(
+      appointmentIdsToBeArchived
+    );
+    const idsToBeDeleted: string[] = [];
+    const dataToArchieve: Partial<NotificationBinArchive>[] = notificationsToBeArchived.map(
+      (notification) => {
+        const notificationBinData: Partial<NotificationBinArchive> = { ...notification };
+        notificationBinData.status = notificationStatus.READ;
+        if (notificationBinData.id) idsToBeDeleted.push(notificationBinData.id);
+        delete notificationBinData.id;
+        delete notificationBinData.createdDate;
+        delete notificationBinData.updatedDate;
+        return notificationBinData;
+      }
+    );
+
+    if (dataToArchieve.length) {
+      //Copying the notifications to notification bin archive Table
+      const notificationArchieveBinRepo = consultsDb.getCustomRepository(
+        NotificationBinArchiveRepository
+      );
+      await notificationArchieveBinRepo.saveNotification(dataToArchieve);
+
+      //Deleting the moved notifications
+      await notificationBinRepo.removeNotificationByIds(idsToBeDeleted);
     }
-  });
-
-  //Filter the specific doctor details for which notification has to be sent
-  const doctorDetails = doctors.filter((doctor) => doctorIdsToSendNotification.includes(doctor.id));
-
-  //Mapping the doctor id and mobile number
-  const doctorMobileMapper: { [key: string]: string[] } = {};
-  doctorDetails.map((doctor) => {
-    doctorMobileMapper[doctor.id] = [doctor.displayName, doctor.mobileNumber];
-  });
-
-  //Sending the Notification to doctors
-  Object.keys(notificationsCount).map((doctorId) => {
-    let messageBody = '';
-    if (lastDayAppointmentsCount[doctorId]) {
-      messageBody = ApiConstants.DOCTOR_CHAT_SMS_LAST_DAY.replace(
-        '{0}',
-        doctorMobileMapper[doctorId][0].toString()
-      )
-        .replace('{1}', notificationsCount[doctorId].toString())
-        .replace('{2}', lastDayAppointmentsCount[doctorId].toString());
-    } else {
-      messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
-        '{0}',
-        doctorMobileMapper[doctorId][0].toString()
-      ).replace('{1}', notificationsCount[doctorId].toString());
-    }
-    sendNotificationSMS(doctorMobileMapper[doctorId][1], messageBody);
-  });
+  }
 
   return 'success';
 };
@@ -397,5 +461,6 @@ export const notificationBinResolvers = {
   Query: {
     getNotifications,
     sendUnreadMessagesNotification,
+    archiveMessages,
   },
 };

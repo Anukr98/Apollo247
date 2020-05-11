@@ -9,7 +9,6 @@ import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
-import { BottomLinks } from 'components/BottomLinks';
 // import { NavigationBottom } from 'components/NavigationBottom';
 // import { CommentsForm } from 'components/Covid/CommentsForm';
 // import { CommentsList } from 'components/Covid/CommentsList';
@@ -19,9 +18,6 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       padding: 0,
-      [theme.breakpoints.down(900)]: {
-        marginBottom: -55,
-      }
     },
     container: {
       maxWidth: 1064,
@@ -37,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
+        borderRadius: '0 0 10px 10px',
         marginTop: 0,
       },
     },
@@ -132,7 +129,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CovidArticleDetails: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [htmlData, setHtmlData] = useState('');
   const [source, setSource] = useState('');
@@ -228,7 +225,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
-      <BottomLinks />
+      {/* <NavigationBottom /> */}
     </div>
   );
 };

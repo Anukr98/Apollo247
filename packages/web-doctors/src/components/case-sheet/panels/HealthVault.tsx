@@ -214,7 +214,7 @@ interface PastAppointmentProps {
 }
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
@@ -242,7 +242,7 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Card style={{ width: '100%', height: 45 }}>
       <CardContent>
@@ -348,7 +348,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments, patientDetails } = useContext(
     CaseSheetContext

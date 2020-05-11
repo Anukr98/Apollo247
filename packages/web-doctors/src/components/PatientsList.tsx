@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export interface PatientsListProps {}
 
 export const PatientsList: React.FC<PatientsListProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { data, error, loading } = useQuery<GetPatients>(GET_PATIENTS);
   if (loading) return <CircularProgress />;
   if (error) return <div>Error loading patients :(</div>;

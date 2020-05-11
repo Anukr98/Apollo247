@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Theme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
@@ -115,8 +115,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Params = { id: string; patientId: string; tabValue: string };
 export const Vital: React.FC = () => {
   const classes = useStyles({});
-  const heightElement = useRef(null);
-  const weightElement = useRef(null);
   const params = useParams<Params>();
   const {
     loading,
@@ -133,16 +131,6 @@ export const Vital: React.FC = () => {
     vitalError,
     setVitalError,
   } = useContext(CaseSheetContext);
-
-  useEffect(() => {
-    if (vitalError.height) {
-      const node = (heightElement as any).current;
-      if (node) node.focus();
-    } else if (vitalError.weight) {
-      const node = (weightElement as any).current;
-      if (node) node.focus();
-    }
-  }, [vitalError]);
 
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
@@ -183,7 +171,6 @@ export const Vital: React.FC = () => {
               onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               fullWidth
               required
-              inputRef={heightElement}
               multiline
               error={
                 getDefaultValue('height') === '' ||
@@ -193,7 +180,7 @@ export const Vital: React.FC = () => {
               helperText={vitalError.height}
               defaultValue={getDefaultValue('height')}
               onBlur={(e) => {
-                if (e.target.value !== '')
+                if (e.target.value !== '' && e.target.value.trim() !== '')
                   setVitalError({
                     ...vitalError,
                     height: '',
@@ -223,7 +210,6 @@ export const Vital: React.FC = () => {
               onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               fullWidth
               required
-              inputRef={weightElement}
               multiline
               error={
                 getDefaultValue('weight') === '' ||
@@ -233,7 +219,7 @@ export const Vital: React.FC = () => {
               helperText={vitalError.weight}
               defaultValue={getDefaultValue('weight')}
               onBlur={(e) => {
-                if (e.target.value !== '')
+                if (e.target.value !== '' && e.target.value.trim() !== '')
                   setVitalError({
                     ...vitalError,
                     weight: '',

@@ -121,7 +121,7 @@ export const caseSheetTypeDefs = gql`
     BOTTLE
     CAPSULE
     CREAM
-    DROPS
+    DROP
     GEL
     GM
     INJECTION
@@ -247,6 +247,8 @@ export const caseSheetTypeDefs = gql`
     status: String
     symptoms: [SymptomList]
     updatedDate: DateTime
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type Diagnosis {
@@ -318,6 +320,7 @@ export const caseSheetTypeDefs = gql`
     TWICE_A_WEEK
     ONCE_IN_15_DAYS
     ONCE_A_MONTH
+    STAT
   }
 
   enum ROUTE_OF_ADMINISTRATION {
@@ -334,6 +337,7 @@ export const caseSheetTypeDefs = gql`
     NASAL_DROPS
     EYE_DROPS
     EAR_DROPS
+    INTRAVAGINAL
   }
 
   type MedicinePrescription {
@@ -400,6 +404,7 @@ export const caseSheetTypeDefs = gql`
 
   type PatientLifeStyle {
     description: String
+    occupationHistory: String
   }
 
   type PatientMedicalHistory {
@@ -412,6 +417,7 @@ export const caseSheetTypeDefs = gql`
     pastSurgicalHistory: String
     temperature: String
     weight: String
+    medicationHistory: String
   }
 
   type PatientHealthVault {
@@ -464,6 +470,10 @@ export const caseSheetTypeDefs = gql`
     temperature: String
     weight: String
     bp: String
+    medicationHistory: String
+    occupationHistory: String
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type PatientPrescriptionSentResponse {
@@ -643,6 +653,10 @@ type ModifyCaseSheetInput = {
   temperature: string;
   weight: string;
   bp: string;
+  medicationHistory?: string;
+  occupationHistory?: string;
+  referralSpecialtyName?: string;
+  referralDescription?: string;
 };
 
 type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
@@ -668,6 +682,16 @@ const modifyCaseSheet: Resolver<
     if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
       throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
     getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  }
+
+  if (inputArguments.referralSpecialtyName) {
+    getCaseSheetData.referralSpecialtyName = inputArguments.referralSpecialtyName;
+
+    if (inputArguments.referralDescription) {
+      getCaseSheetData.referralDescription = inputArguments.referralDescription;
+    } else {
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_DESCRIPTION);
+    }
   }
 
   if (!(inputArguments.notes === undefined)) {
@@ -742,32 +766,34 @@ const modifyCaseSheet: Resolver<
 
     if (familyHistoryRecord == null) {
       //create
-      await familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
+      familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
-      await familyHistoryRepo.updatePatientFamilyHistory(
-        familyHistoryRecord.id,
-        familyHistoryInputs
-      );
+      familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
   //familyHistory upsert ends
 
   //lifestyle upsert starts
-  if (!(inputArguments.lifeStyle === undefined)) {
+  if (inputArguments.lifeStyle || inputArguments.occupationHistory) {
     const lifeStyleInputs: Partial<PatientLifeStyle> = {
       patient: patientData,
-      description: inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined,
     };
+    if (inputArguments.lifeStyle) {
+      lifeStyleInputs.description = inputArguments.lifeStyle;
+    }
+    if (inputArguments.occupationHistory) {
+      lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
+    }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
     const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
 
     if (lifeStyleRecord == null) {
       //create
-      await lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
+      lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
     } else {
       //update
-      await lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+      lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
     }
   }
   //lifestyle upsert ends
@@ -776,6 +802,10 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+
+  if (inputArguments.medicationHistory) {
+    medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
+  }
 
   if (!(inputArguments.bp === undefined))
     medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
@@ -819,13 +849,10 @@ const modifyCaseSheet: Resolver<
   );
   if (medicalHistoryRecord == null) {
     //create
-    await medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
   } else {
     //update
-    await medicalHistoryRepo.updatePatientMedicalHistory(
-      medicalHistoryRecord.id,
-      medicalHistoryInputs
-    );
+    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
   }
 
   getCaseSheetData.updatedDate = new Date();

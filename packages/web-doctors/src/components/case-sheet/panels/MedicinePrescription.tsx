@@ -842,6 +842,11 @@ export const MedicinePrescription: React.FC = () => {
       value: 'Once in 15 days',
       selected: false,
     },
+    { 
+      id: MEDICINE_FREQUENCY.STAT,
+      value: 'Stat(Immediately)',
+      selected: false,
+    },
     {
       id: MEDICINE_FREQUENCY.ONCE_A_MONTH,
       value: 'Once a month',
@@ -882,6 +887,11 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.INTRAMUSCULAR,
       value: 'Intramuscular',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRAVAGINAL,
+      value: 'Intravaginal',
       selected: false,
     },
     {
@@ -1044,6 +1054,8 @@ export const MedicinePrescription: React.FC = () => {
     SPRAY: { value: 'spray(s)' },
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
+    DROP: {value: 'drop(s)'},
+    CAPSULE: {value: 'capsule(s)'},
   };
   function renderSuggestion(
     suggestion: OptionType,

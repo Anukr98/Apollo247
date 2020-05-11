@@ -57,6 +57,7 @@ import {
   PatientNotificationSettings,
   SearchHistory,
   RegistrationCodes,
+  CouponPharmaRules,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -90,6 +91,7 @@ export const connect = async () => {
         Coupon,
         CouponConsultRules,
         CouponGenericRules,
+        CouponPharmaRules,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
@@ -100,8 +102,6 @@ export const connect = async () => {
         Diagnostics,
         LoginOtp,
         LoginOtpArchive,
-        ReferralCodesMaster,
-        ReferalCouponMapping,
         MedicalRecordParameters,
         MedicalRecords,
         MedicineOrderInvoice,
@@ -119,8 +119,10 @@ export const connect = async () => {
         PatientLifeStyle,
         PatientMedicalHistory,
         PatientNotificationSettings,
-        SearchHistory,
+        ReferalCouponMapping,
+        ReferralCodesMaster,
         RegistrationCodes,
+        SearchHistory,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

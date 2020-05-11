@@ -272,15 +272,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
-type priceFilter = { fromPrice: string; toPrice: string };
-type discountFilter = { fromDiscount: string; toDiscount: string };
+type PriceFilter = { fromPrice: string; toPrice: string };
+type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
 interface MedicineFilterProps {
   medicineList?: any;
   setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
-  setPriceFilter?: (priceFilter: priceFilter) => void;
+  setPriceFilter?: (priceFilter: PriceFilter | null) => void;
   setFilterData?: (filterData: []) => void;
-  setDiscountFilter?: (discountFilter: discountFilter) => void;
+  setDiscountFilter?: (discountFilter: DiscountFilter | null) => void;
   setSortBy?: (sortValue: string) => void;
   disableFilters: boolean;
   manageFilter: (disableFilters: boolean) => void;

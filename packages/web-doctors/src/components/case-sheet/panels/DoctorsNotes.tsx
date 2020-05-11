@@ -17,7 +17,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const DoctorsNotes: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { juniorDoctorNotes } = useContext(CaseSheetContext);
 

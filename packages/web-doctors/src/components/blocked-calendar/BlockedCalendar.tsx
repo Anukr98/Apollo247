@@ -80,7 +80,7 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
       },
     };
   });
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div data-cypress="BlockedCalendar" className={classes.blockcalendarSection}>
       <BlockedCalendarAddModal

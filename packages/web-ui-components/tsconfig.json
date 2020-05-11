@@ -5,8 +5,10 @@
     "baseUrl": "src",
     "allowJs": false,
     "declaration": true,
+    "skipLibCheck": true,
     "module": "commonjs",
     "jsx": "react",
+    "esModuleInterop": true,
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
   },
   "exclude": ["node_modules", "dist"]

@@ -228,7 +228,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MyAccount: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { currentPatient, signOut } = useAuth();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();

@@ -44,7 +44,7 @@ import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, _obTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -473,6 +473,7 @@ export const MedicineCart: React.FC = (props) => {
     ePrescriptionData,
     setEPrescriptionData,
     setUploadedEPrescription,
+    cartTat,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -724,7 +725,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -789,11 +790,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime.length > 0) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1085,9 +1082,19 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+              disabled={
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
+              }
               className={
-                disableSubmit || !isPaymentButtonEnable || mutationLoading
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
                   ? classes.buttonDisable
                   : ''
               }
@@ -1169,6 +1176,16 @@ export const MedicineCart: React.FC = (props) => {
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {
+                    /**Gtm code start  */
+                    _obTracking({
+                      userLocation: city,
+                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+                      itemCount: cartItems ? cartItems.length : 0,
+                      couponCode: couponCode == '' ? null : couponCode,
+                      couponValue: discountAmount,
+                      finalBookingValue: grossValue,
+                    });
+                    /**Gtm code end  */
                     if (res && res.data && res.data.SaveMedicineOrder) {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';

@@ -154,7 +154,7 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
   monthChangeHandler,
   dayClickHandler,
 }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [date, setDate] = useState<Date>(selectedDate);
   const [userSelection, setUserSelection] = useState<Date>(selectedDate);
 
