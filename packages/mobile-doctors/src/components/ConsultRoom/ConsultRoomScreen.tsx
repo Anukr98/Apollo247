@@ -115,6 +115,7 @@ import {
 import KeepAwake from 'react-native-keep-awake';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -353,6 +354,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [doctorNotes, setDoctorNotes] = useState<string>('');
   const [displayId, setDisplayId] = useState<string>('');
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
+  const [selectedReferral, setSelectedReferral] = useState<OptionsObject>({
+    key: '-1',
+    value: strings.case_sheet.select_Speciality,
+  });
+  const [referralReason, setReferralReason] = useState<string>('');
 
   const getFamilyHistoryText = (
     familyValues:
@@ -601,6 +607,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           .filter((i) => i !== '')
           .join('\n')
           .trim(),
+      occupationHistory:
+        lifeStyleData &&
+        lifeStyleData
+          .map((i) => (i ? i.occupationHistory || '' : ''))
+          .filter((i) => i !== '')
+          .join('\n')
+          .trim(),
       familyHistory:
         familyValues &&
         getFamilyHistoryObject(familyValues)
@@ -612,11 +625,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       drugAllergies: medicalHistory ? medicalHistory.drugAllergies || '' : '',
       height: medicalHistory ? medicalHistory.height || '' : '',
       menstrualHistory: medicalHistory ? medicalHistory.menstrualHistory || '' : '',
+      medicationHistory: medicalHistory ? medicalHistory.medicationHistory || '' : '',
       pastMedicalHistory: medicalHistory ? medicalHistory.pastMedicalHistory || '' : '',
       pastSurgicalHistory: medicalHistory ? medicalHistory.pastSurgicalHistory || '' : '',
       temperature: medicalHistory ? medicalHistory.temperature || '' : '',
       weight: medicalHistory ? medicalHistory.weight || '' : '',
       bp: medicalHistory ? medicalHistory.bp || '' : '',
+      referralSpecialtyName: selectedReferral.key !== '-1' ? selectedReferral.value : null,
+      referralDescription: selectedReferral.key !== '-1' ? referralReason : null,
     } as ModifyCaseSheetInput;
   };
 
@@ -1631,6 +1647,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setDisplayId={setDisplayId}
                 prescriptionPdf={prescriptionPdf}
                 setPrescriptionPdf={setPrescriptionPdf}
+                selectedReferral={selectedReferral}
+                setSelectedReferral={setSelectedReferral}
+                referralReason={referralReason}
+                setReferralReason={setReferralReason}
               />
             ) : (
               <View

@@ -65,13 +65,17 @@ export const More: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_more.png')} />
 );
 
-export const DropdownGreen: React.FC<IconProps> = (props) => (
+export const Dropdown: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 9, width: 14, left: 5 }}
     size="sm"
     {...props}
     source={require('../../images/icons/expand.png')}
   />
+);
+
+export const DropdownGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_dropdown_green.png')} />
 );
 
 export const Download: React.FC<IconProps> = (props) => (

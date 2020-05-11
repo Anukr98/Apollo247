@@ -1,4 +1,4 @@
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GET_DOCTOR_DETAILS, GET_ALL_SPECIALTIES } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
@@ -14,6 +14,13 @@ import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
+import {
+  getAllSpecialties,
+  getAllSpecialties_getAllSpecialties,
+} from '@aph/mobile-doctors/src/graphql/types/getAllSpecialties';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import moment from 'moment';
+import AsyncStorage from '@react-native-community/async-storage';
 
 /*eslint-disable */
 function wait<R, E>(promise: Promise<R>): [R, E] {
@@ -33,6 +40,8 @@ export interface AuthContextProps {
   // signOut: (() => void) | null;
   getDoctorDetailsError: boolean;
   setDoctorDetailsError: ((arg0: boolean) => void) | null;
+  getSpecialties: () => void;
+  specialties: getAllSpecialties_getAllSpecialties[] | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -46,6 +55,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   getDoctorDetailsApi: null,
   getDoctorDetailsError: false,
   setDoctorDetailsError: null,
+  getSpecialties: () => {},
+  specialties: null,
 });
 
 export const AuthProvider: React.FC = (props) => {
@@ -58,7 +69,9 @@ export const AuthProvider: React.FC = (props) => {
     null
   );
   const [getDoctorDetailsError, setDoctorDetailsError] = useState<boolean>(false);
-
+  const [specialties, setSpecialties] = useState<getAllSpecialties_getAllSpecialties[] | null>(
+    null
+  );
   const analytics = firebase.analytics();
   const auth = firebase.auth();
 
@@ -235,6 +248,43 @@ export const AuthProvider: React.FC = (props) => {
     });
   };
 
+  const getSpecialties = async () => {
+    const storedDate = await AsyncStorage.getItem('SpecialistAPICalledDate');
+    const specialistData = await AsyncStorage.getItem('SpecialistData');
+    if (storedDate) {
+      if (storedDate !== moment(new Date()).format('DDMMYYYY')) {
+        fetchSpecialities();
+      } else {
+        if (specialistData) {
+          setSpecialties(JSON.parse(specialistData));
+        } else {
+          fetchSpecialities();
+        }
+      }
+    } else {
+      fetchSpecialities();
+    }
+  };
+
+  const fetchSpecialities = () => {
+    apolloClient
+      .query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          setSpecialties(data.getAllSpecialties);
+          AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
+          AsyncStorage.setItem('SpecialistAPICalledDate', moment(new Date()).format('DDMMYYYY'));
+        } catch (e) {
+          CommonBugFender('DoctorSearch_fetchSpecialities_try', e);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorSearch_fetchSpecialities', e);
+      });
+  };
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
@@ -251,6 +301,8 @@ export const AuthProvider: React.FC = (props) => {
             // signOut,
             getDoctorDetailsError,
             setDoctorDetailsError,
+            specialties,
+            getSpecialties,
           }}
         >
           {props.children}
