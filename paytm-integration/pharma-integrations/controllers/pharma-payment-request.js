@@ -1,6 +1,6 @@
 const axios = require('axios');
 const logger = require('../../winston-logger')('Pharmacy-logs');
-const initPayment = require('../helpers/getPaymentObject');
+const { initPayment, singlePaymentAdditionalParams } = require('../helpers/common');
 module.exports = async (req, res) => {
 
     // variable to log order id in catch
@@ -39,10 +39,18 @@ module.exports = async (req, res) => {
             response.data.data.getMedicineOrderDetails &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails
         ) {
-            logger.info(`${orderId} - getMedicineOrderDetails -  ${JSON.stringify(response.data)}`)
+            logger.info(`${orderId} - getMedicineOrderDetails -  ${JSON.stringify(response.data)}`);
+            let addParams = {};
 
+            /**
+             * If paymentModeOnly key == 'YES' then add additional params
+             * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
+             */
+            if (req.query.paymentModeOnly === 'YES') {
+                addParams = singlePaymentAdditionalParams(req.query.paymentTypeID, req.query.bankCode);
+                addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
+            }
             const { orderAutoId: responseOrderId, estimatedAmount: responseAmount, bookingSource } = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
-            console.log(responseAmount);
             if (responseAmount != amount) {
                 return res.status(400).json({
                     status: 'failed',
@@ -50,8 +58,7 @@ module.exports = async (req, res) => {
                     code: '10000',
                 });
             }
-            const success = await initPayment(patientId, responseOrderId.toString(), amount, bookingSource);
-
+            const success = await initPayment(patientId, responseOrderId.toString(), amount, bookingSource, addParams);
             return res.render('paytmRedirect.ejs', {
                 resultData: success,
                 paytmFinalUrl: process.env.PAYTM_FINAL_URL,
@@ -75,4 +82,4 @@ module.exports = async (req, res) => {
             code: '10002',
         });
     }
-}
+};
