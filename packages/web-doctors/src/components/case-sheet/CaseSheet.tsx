@@ -22,7 +22,7 @@ import {
   DiagnosticPrescription,
   FollowUp,
   OtherInstructions,
-  Refferal,
+  RefferalCode
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -286,7 +286,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       key: 'refferal',
       value: 'Refferal (Optional)',
       state: refferalState,
-      component: <Refferal />,
+      component: <RefferalCode />,
     },
   ];
 

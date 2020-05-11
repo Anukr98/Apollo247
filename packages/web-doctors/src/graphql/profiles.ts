@@ -16,6 +16,19 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
+export const GET_ALL_SPECIALTIES = gql`
+  query GetAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+      specialistSingularTerm
+      specialistPluralTerm
+      userFriendlyNomenclature
+      displayOrder
+    }
+  }
+`;
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
     makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
