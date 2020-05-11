@@ -373,10 +373,10 @@ export const AuthProvider: React.FC = (props) => {
               res.data.getCurrentPatients.patients &&
               res.data.getCurrentPatients.patients[0].id;
             /**Gtm code start */
-            if (isNewUser && currentPath === '/') {
+            if (isNewUser) {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Register' });
               _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
-            } else if (currentPath === '/') {
+            } else {
               gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Login' });
               /* webengage code start */
               webengageUserLoginTracking(user.uid);
