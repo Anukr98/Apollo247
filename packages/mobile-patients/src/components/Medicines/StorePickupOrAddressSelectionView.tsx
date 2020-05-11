@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -131,8 +132,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
         } else {
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
           });
         }
       })

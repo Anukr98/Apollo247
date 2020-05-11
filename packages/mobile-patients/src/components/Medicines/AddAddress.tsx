@@ -64,6 +64,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -303,8 +304,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           );
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
             onPressOk: () => {
               props.navigation.goBack();
               hideAphAlert!();
