@@ -725,7 +725,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -790,11 +790,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime.length > 0) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1086,15 +1082,25 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+              disabled={
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
+              }
               className={
-                disableSubmit || !isPaymentButtonEnable || mutationLoading
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
                   ? classes.buttonDisable
                   : ''
               }
               title={'Proceed to pay bill'}
             >
-              {cartItems && cartItems.length > 0 && !nonCartFlow && cartTat ? (
+              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
                 `Proceed to pay — RS. ${totalAmount}`
               ) : uploadingFiles ? (
                 <CircularProgress size={22} color="secondary" />

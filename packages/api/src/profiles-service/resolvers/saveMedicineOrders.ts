@@ -66,6 +66,7 @@ export const saveMedicineOrderTypeDefs = gql`
     prismPrescriptionFileId: String
     orderTat: String
     items: [MedicineCartItem]
+    coupon: String
   }
 
   input MedicineCartItem {
@@ -107,6 +108,7 @@ type MedicineCartInput = {
   bookingSource: BOOKING_SOURCE;
   deviceType: DEVICE_TYPE;
   items: MedicineCartItem[];
+  coupon: string;
 };
 
 type MedicineCartItem = {
@@ -174,6 +176,7 @@ const SaveMedicineOrder: Resolver<
     bookingSource: MedicineCartInput.bookingSource,
     deviceType: MedicineCartInput.deviceType,
     patientAddressId: MedicineCartInput.patientAddressId,
+    coupon: MedicineCartInput.coupon,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
