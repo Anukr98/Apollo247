@@ -2,12 +2,12 @@ const axios = require('axios');
 const logger = require('../../winston-logger')('Consults-logs');
 const { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams } = require('../helpers/common');
 
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
     let appointmentIdGlobal;
 
     try {
 
-        const { appointmentId, patientId, price: amount } = req.query;
+        const { appointmentId } = req.query;
         appointmentIdGlobal = appointmentId;
         //res.send('consult payment');
         let source = 'MOBILE';
@@ -45,13 +45,7 @@ module.exports = async (req, res, next) => {
 
         const { discountedAmount, patientId: patientIdExisting } = aptResp.data.data.getAppointmentData.appointmentsHistory[0];
 
-        if (discountedAmount != amount || patientId != patientIdExisting) {
-            logger.error(`consults-payment-request -  ${JSON.stringify(req.query)}`)
-            return next(new Error("Invalid request received!"));
-        }
-
         const paymentOrderId = generatePaymentOrderId();
-        console.log("paymentOrderId:", paymentOrderId);
 
         const requestJSON = {
             query:
@@ -63,7 +57,6 @@ module.exports = async (req, res, next) => {
                 source +
                 '"){ status } }',
         };
-        console.log("requestJson:", requestJSON);
         const updateResp = await axios.post(process.env.API_URL, requestJSON);
 
         logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
@@ -72,7 +65,7 @@ module.exports = async (req, res, next) => {
             throw new Error(`Error Occured in updatePaymentOrderId for appoinment id: ${appointmentId}`);
         }
 
-        const success = await initPayment(patientId, paymentOrderId, amount, source, addParams);
+        const success = await initPayment(patientIdExisting, paymentOrderId, discountedAmount, source, addParams);
 
         res.render('paytmRedirect.ejs', {
             resultData: success,

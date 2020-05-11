@@ -291,7 +291,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 /**Gtm code start start */
                 gtmTracking({
                   category: 'Profile',
-                  action: 'Signup / Login',
+                  action: 'Register / Login',
                   label: 'OTP Entered',
                 });
                 /**Gtm code start end */
