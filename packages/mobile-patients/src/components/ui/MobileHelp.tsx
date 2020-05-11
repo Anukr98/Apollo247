@@ -213,7 +213,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
                   color: theme.colors.SHERPA_BLUE,
                 },
               ]}
-              numberOfLines={1}
+              numberOfLines={2}
             >
               {selectedQuery || 'Select a query'}
             </Text>
