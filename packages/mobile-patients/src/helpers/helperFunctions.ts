@@ -6,6 +6,7 @@ import {
   GooglePlacesType,
   MedicineProduct,
   PlacesApiResponse,
+  getDeliveryTime,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -48,6 +49,13 @@ import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
 import firebase from 'react-native-firebase';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  ShoppingCartItem,
+  ShoppingCartContextProps,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -1113,4 +1121,46 @@ export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
     moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
     AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
   );
+};
+
+export const addPharmaItemToCart = (
+  cartItem: ShoppingCartItem,
+  pincode: string,
+  addCartItem: ShoppingCartContextProps['addCartItem'],
+  setLoading: UIElementsContextProps['setLoading'],
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  onComplete?: () => void
+) => {
+  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const navigate = () =>
+    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      deliveryError: unServiceableMsg,
+    });
+  setLoading && setLoading(true);
+  getDeliveryTime({
+    postalcode: pincode,
+    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
+    lookup: [
+      {
+        sku: cartItem.id,
+        qty: cartItem.quantity,
+      },
+    ],
+  })
+    .then((res) => {
+      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      if (deliveryDate && isDeliveryDateWithInXDays(deliveryDate)) {
+        addCartItem!(cartItem);
+      } else {
+        navigate();
+      }
+    })
+    .catch((err) => {
+      CommonBugFender('helperFunctions_fetchDeliveryTime', err);
+      navigate();
+    })
+    .finally(() => {
+      setLoading && setLoading(false);
+      onComplete && onComplete();
+    });
 };

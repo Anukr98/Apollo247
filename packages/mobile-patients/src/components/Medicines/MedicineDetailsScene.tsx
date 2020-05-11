@@ -63,7 +63,6 @@ import {
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import Geolocation from '@react-native-community/geolocation';
 import {
   WebEngageEvents,
   WebEngageEventName,

@@ -60,6 +60,7 @@ import {
   postwebEngageAddToCartEvent,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
+  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -704,8 +705,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderYourOrders = () => {
-    console.log('rendereef', ordersFetched);
-
     return (
       // (ordersFetched.length > 0 && (
       <ListCard
@@ -1011,22 +1010,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     } = data.item;
 
     const addToCart = () => {
-      addCartItem!({
-        id: sku,
-        mou: mou,
-        name: name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
-        quantity: 1,
-        thumbnail,
-        isInStock: true,
-      });
+      addPharmaItemToCart(
+        {
+          id: sku,
+          mou: mou,
+          name: name,
+          price: price,
+          specialPrice: special_price
+            ? typeof special_price == 'string'
+              ? parseInt(special_price)
+              : special_price
+            : undefined,
+          prescriptionRequired: is_prescription_required == '1',
+          isMedicine: type_id == 'Pharma',
+          quantity: 1,
+          thumbnail,
+          isInStock: true,
+        },
+        pharmacyPincode!,
+        addCartItem,
+        globalLoading,
+        props.navigation
+      );
+
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home');
       postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
@@ -1179,6 +1185,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
 
   const onSearchMedicine = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
@@ -1318,22 +1325,30 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         type_id,
         thumbnail,
       } = item;
-      addCartItem!({
-        id: sku,
-        mou,
-        name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
-        quantity: Number(1),
-        thumbnail: thumbnail,
-        isInStock: true,
-      });
+      setItemsLoading({ ...itemsLoading, [sku]: true });
+      addPharmaItemToCart(
+        {
+          id: sku,
+          mou,
+          name,
+          price: price,
+          specialPrice: special_price
+            ? typeof special_price == 'string'
+              ? parseInt(special_price)
+              : special_price
+            : undefined,
+          prescriptionRequired: is_prescription_required == '1',
+          isMedicine: type_id == 'Pharma',
+          quantity: Number(1),
+          thumbnail: thumbnail,
+          isInStock: true,
+        },
+        pharmacyPincode!,
+        addCartItem,
+        null,
+        props.navigation,
+        () => setItemsLoading({ ...itemsLoading, [sku]: false })
+      );
       postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
     };
 
@@ -1354,11 +1369,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() =>
-            data.isOutOfStock ? onNotifyMeClick() : onAddCartItem(data.medicineProduct)
+            data.isOutOfStock
+              ? onNotifyMeClick()
+              : itemsLoading[data.sku]
+              ? null
+              : onAddCartItem(data.medicineProduct)
           }
         >
           <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
-            {data.isOutOfStock ? 'NOTIFY ME' : 'ADD TO CART'}
+            {data.isOutOfStock
+              ? 'NOTIFY ME'
+              : itemsLoading[data.sku]
+              ? 'Loading...'
+              : 'ADD TO CART'}
           </Text>
         </TouchableOpacity>
       );
@@ -1618,6 +1641,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 backgroundColor: '#f7f8f5',
               }}
               data={medicineList}
+              extraData={itemsLoading}
               renderItem={renderSearchSuggestionItemView}
             />
           )
