@@ -22,6 +22,7 @@ import {
   DiagnosticPrescription,
   FollowUp,
   OtherInstructions,
+  Refferal,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -217,6 +218,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [otherInstructionsState, setOtherInstructionsState] = useState<boolean>(
     props.startAppointment
   );
+  const [refferalState, setRefferalState] = useState<boolean>(props.startAppointment);
   const [vitalsState, setVitalsState] = useState<boolean>(props.startAppointment);
   const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
   const items = [
@@ -280,6 +282,12 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: followUpPanelState,
       component: <FollowUp startAppointment={props.startAppointment} />,
     },
+    {
+      key: 'refferal',
+      value: 'Refferal (Optional)',
+      state: refferalState,
+      component: <Refferal />,
+    },
   ];
 
   useEffect(() => {
@@ -292,6 +300,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setDiagnosticPrescriptionState(props.startAppointment);
     setFollowUpPanelState(props.startAppointment);
     setOtherInstructionsState(props.startAppointment);
+    setRefferalState(props.startAppointment);
     setVitalsState(props.startAppointment);
   }, [props.startAppointment]);
 
@@ -383,6 +392,9 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         break;
       case 'otherInstructions':
         setOtherInstructionsState(isExpanded);
+        break;
+      case 'refferal':
+        setRefferalState(isExpanded);
         break;
     }
   };
