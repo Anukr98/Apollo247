@@ -128,6 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     expertsContainer: {
       paddingTop: 20,
+      width: '30%',
     },
   };
 });

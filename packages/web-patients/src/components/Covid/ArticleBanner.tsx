@@ -168,6 +168,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     callOurExpertsContainer: {
       padding: 20,
+      width: '30%',
     },
   };
 });
