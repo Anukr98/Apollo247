@@ -282,11 +282,11 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                 <h3 className={classes.followUpContent}>
                   {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                 </h3>
-                {currentDoctor.qualification && (
+                {/* {currentDoctor.qualification && (
                   <p className={`${classes.specialty} ${classes.qualification}`}>
                     {currentDoctor.qualification}
                   </p>
-                )}
+                )} */}
                 <p className={classes.specialty}>{`${
                   createdDoctorProfile.specialty.specialistSingularTerm
                 } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
