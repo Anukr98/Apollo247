@@ -2,6 +2,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useContext, useState } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { useCurrentPatient } from 'hooks/authHooks';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import _startCase from 'lodash/startCase';
@@ -195,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageNumbers: {
       textAlign: 'right',
-      color: '#02475b',
+      color: 'rgba(0, 0, 0, 0.66)',
       fontSize: 8,
       fontWeight: 500,
       paddingBottom: 8,
@@ -274,6 +275,7 @@ interface savingProps {
 }
 export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles({});
+  const currentDoctor = useCurrentPatient();
   const {
     patientDetails,
     sdConsultationDate,
@@ -295,7 +297,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     medicinePrescription,
   } = useContext(CaseSheetContext);
 
-  console.log({
+  /*console.log({
     patientDetails,
     sdConsultationDate,
     height,
@@ -315,6 +317,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     diagnosticPrescription,
     medicinePrescription,
   });
+
+  console.log({ currentDoctor });*/
 
   const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
@@ -544,9 +548,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <h3>
                 {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
               </h3>
-              <p className={`${classes.specialty} ${classes.qualification}`}>
-                MBBS, MD (Internal Medicine)
-              </p>
+              {currentDoctor.qualification && (
+                <p className={`${classes.specialty} ${classes.qualification}`}>
+                  {currentDoctor.qualification}
+                </p>
+              )}
+
               <p className={classes.specialty}>{`${
                 createdDoctorProfile.specialty.specialistSingularTerm
                   ? createdDoctorProfile.specialty.specialistSingularTerm
@@ -783,9 +790,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <h3 className={classes.followUpContent}>
                       {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                     </h3>
-                    <p className={`${classes.specialty} ${classes.qualification}`}>
-                      MBBS, MD (Internal Medicine)
-                    </p>
+                    {currentDoctor.qualification && (
+                      <p className={`${classes.specialty} ${classes.qualification}`}>
+                        {currentDoctor.qualification}
+                      </p>
+                    )}
                     <p className={classes.specialty}>{`${
                       createdDoctorProfile.specialty.specialistSingularTerm
                     } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>

@@ -1,6 +1,7 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import moment from 'moment';
+import { useCurrentPatient } from 'hooks/authHooks';
 import React, { useContext } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
@@ -114,7 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageNumbers: {
       textAlign: 'right',
-      color: '#02475b',
+      color: 'rgba(0, 0, 0, 0.66)',
       fontSize: 8,
       fontWeight: 500,
       paddingBottom: 8,
@@ -170,6 +171,7 @@ export interface CaseSheetViewProps {
 
 export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   const classes = useStyles({});
+  const currentDoctor = useCurrentPatient();
   const {
     followUp,
     otherInstructions,
@@ -280,9 +282,11 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                 <h3 className={classes.followUpContent}>
                   {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                 </h3>
-                <p className={`${classes.specialty} ${classes.qualification}`}>
-                  MBBS, MD (Internal Medicine)
-                </p>
+                {currentDoctor.qualification && (
+                  <p className={`${classes.specialty} ${classes.qualification}`}>
+                    {currentDoctor.qualification}
+                  </p>
+                )}
                 <p className={classes.specialty}>{`${
                   createdDoctorProfile.specialty.specialistSingularTerm
                 } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
