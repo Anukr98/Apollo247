@@ -8,6 +8,10 @@ const getIconStyle = (size?: IconProps['size']) => {
   return { width: 48, height: 48 };
 };
 
+const getCustomIconSize = (wt: number, ht: number) => {
+  return { width: wt, height: ht };
+};
+
 interface IconProps extends Partial<ImageProps> {
   size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
@@ -604,6 +608,19 @@ export const Minus: React.FC<IconProps> = (props) => (
 
 export const Plus: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
+);
+
+export const SuccessIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_success.png')} />
+);
+export const FailedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_failed.png')} />
+);
+export const RefundIcon: React.FC<IconProps> = (props) => (
+  <Image style={[getCustomIconSize(25, 29)]} {...props} source={require('./icons/ic_refund.png')} />
+);
+export const PendingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.png')} />
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (

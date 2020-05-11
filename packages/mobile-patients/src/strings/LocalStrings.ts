@@ -60,6 +60,19 @@ const AddFile = {
   mb: 'File should not be of more than 5mb.',
 };
 
+const MyPayments = {
+  pendingToFail: 'Your pending payment has failed!',
+  pendingToSuccess: 'Your pending payment is successful!',
+  refundInitiated:
+    'Your refund has been initiated. The amount should be credited in your account in 7-14 business days.',
+  successNoSlt:
+    'We regret to inform you that while your payment is successful, the appointment slot you selected is not available. Kindly book another slot to continue with your consult.',
+  paymentSuccessful: 'PAYMENT SUCCESSFUL',
+  paymentFailed: 'PAYMENT FAILED',
+  paymentPending: 'PAYMENT PENDING',
+  paymentRefund: 'REFUND',
+  noPayments: 'You have no payment history!',
+};
 
 export const LocalStrings = {
   ...common,
@@ -67,4 +80,5 @@ export const LocalStrings = {
   ...Appointment,
   ...Notification,
   ...AddFile,
+  ...MyPayments,
 };

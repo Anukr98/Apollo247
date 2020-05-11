@@ -14,6 +14,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { TabsComponent } from '../ui/TabsComponent';
 import { colors } from '../../theme/colors';
+import PharmacyPaymentsList from './components/PharmacyPaymentsList';
+import ConsultPaymentsList from './components/ConsultPaymentsList';
 
 interface MyPaymentsScreenProps extends NavigationScreenProps<{}> {}
 const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
@@ -53,11 +55,19 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
       />
     );
   };
+
+  const getPaymentsList = () => {
+    if (selectedTab === 'Pharmacy Payments') {
+      return <PharmacyPaymentsList />;
+    }
+    return <ConsultPaymentsList />;
+  };
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {renderTabSwitch()}
+        {getPaymentsList()}
       </SafeAreaView>
     </View>
   );
