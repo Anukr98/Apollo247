@@ -84,6 +84,7 @@ import {
   PatientNotificationSettings,
   SearchHistory,
   RegistrationCodes,
+  CouponPharmaRules,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -168,6 +169,7 @@ export const connect = async () => {
         Coupon,
         CouponConsultRules,
         CouponGenericRules,
+        CouponPharmaRules,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
