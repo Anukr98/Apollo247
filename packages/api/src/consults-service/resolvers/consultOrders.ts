@@ -7,10 +7,16 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import _ from 'lodash';
+import { STATUS } from 'consults-service/entities';
 
 export const consultOrdersTypeDefs = gql`
 type AppointmentsResult {
   appointments : [ApptResponse]
+  doctor: [doctorResponse]
+}
+type doctorResponse {
+  typeId: String
+  name: String
 }
 type ApptResponse {
     displayId: Int
@@ -20,7 +26,8 @@ type ApptResponse {
     discountedAmount: Float
     appointmentType: String
     appointmentPayments: [appointmentPayment]
-    status: String
+    status: STATUS
+    doctorId: String
   }
 type appointmentPayment {
   amountPaid: Float
@@ -44,7 +51,8 @@ type ApptResponse = {
   discountedAmount: Number;
   appointmentType: string
   appointmentPayments: appointmentPayment[];
-  status: String;
+  status: STATUS;
+  doctorId: string;
 };
 
 type AppointmentsResult = {
@@ -70,7 +78,7 @@ const consultOrders: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
-  console.log('orders Response', JSON.stringify(response, null, 2));
+  // console.log('orders Response', JSON.stringify(response, null, 2));
   let result = [];
   for (let i = 0; i < response.length; i++) {
     result.push(response[i].doctorId);
@@ -79,19 +87,7 @@ const consultOrders: Resolver<
   // console.log('doc Response', JSON.stringify(doc, null, 2));
 
   if (response && response.length > 0) {
-    // let output: any = [];
-    response.forEach(val => {
-      let obj = val;
-      let index = _.findIndex(doc, (key) => key.typeId === val.doctorId);
-      if (index !== -1) {
-        console.log('index', index);
-        // obj.name = doc[index].name;
-        // output.push(Object.contains(obj, { name: doc[index].name}))
-        // output.push(obj);
-      }
-
-    })
-    return { appointments: response }
+    return { appointments: response, doctor: doc }
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
