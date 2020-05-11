@@ -567,6 +567,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
         <TextInputComponent
           value={city}
+          textInputprops={{ editable: false }}
           onChangeText={(city) =>
             city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
               ? null
