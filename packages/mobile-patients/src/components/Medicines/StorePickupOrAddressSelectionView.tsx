@@ -3,7 +3,7 @@ import { useShoppingCart } from '../ShoppingCartProvider';
 import { TabsComponent } from '../ui/TabsComponent';
 import { theme } from '../../theme/theme';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { TextInputComponent } from '../ui/TextInputComponent';
+// import { TextInputComponent } from '../ui/TextInputComponent';
 import { searchPickupStoresApi, pinCodeServiceabilityApi, Store } from '../../helpers/apiCalls';
 import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
@@ -42,7 +42,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     stores,
     setStores,
   } = useShoppingCart();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert } = useUIElements();
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
@@ -54,6 +54,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   const [slicedAddressList, setSlicedAddressList] = useState<
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
+
+  useEffect(() => {
+    setDeliveryAddressId!('');
+  }, []);
 
   const updateStoreSelection = () => {
     const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
@@ -122,6 +126,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    if (deliveryAddressId && deliveryAddressId == address.id) {
+      return;
+    }
+    setDeliveryAddressId!('');
     setCheckingServicability(true);
     pinCodeServiceabilityApi(address.zipcode!)
       .then(({ data: { Availability } }) => {
