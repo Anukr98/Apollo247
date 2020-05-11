@@ -652,12 +652,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     </div>
                   </div>
                 ) : null}
-                <div className={classes.infoRow}>
+                {/* <div className={classes.infoRow}>
                   <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
                   <div className={classes.labelContent}>
                     <div className={classes.labelBlue}>2</div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
