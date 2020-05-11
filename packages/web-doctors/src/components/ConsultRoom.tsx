@@ -449,10 +449,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [isCallAccepted]);
 
   useEffect(() => {
-    if(params.tabValue === '1') {
+    if (params.tabValue === '1') {
       srollToBottomAction();
     }
-  },[params.tabValue]);
+  }, [params.tabValue]);
 
   useEffect(() => {
     const lastMsg = props.lastMsg;

@@ -22,7 +22,7 @@ import {
   DiagnosticPrescription,
   FollowUp,
   OtherInstructions,
-  RefferalCode
+  RefferalCode,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';

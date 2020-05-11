@@ -5,7 +5,7 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import SelectSearch from 'react-select-search';
 import { GET_ALL_SPECIALTIES } from 'graphql/profiles';
-import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties'
+import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { Script } from 'vm';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
@@ -100,18 +100,15 @@ type Params = { id: string; patientId: string; tabValue: string };
 export const RefferalCode: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const [options, setOptions] = useState<any>([]); 
-//   const options = [
-//     {name: 'Swedish', value: 'sv'},
-//     {name: 'English', value: 'en'},
-//     {name: 'Marathi', value: 'mr'},
-//     {name: 'Hindi', value: 'hn'},
-//     {name: 'Spanish', value: 'sp'},
-// ];
-  const {
-    loading,
-    caseSheetEdit,
-  } = useContext(CaseSheetContext);
+  const [options, setOptions] = useState<any>([]);
+  //   const options = [
+  //     {name: 'Swedish', value: 'sv'},
+  //     {name: 'English', value: 'en'},
+  //     {name: 'Marathi', value: 'mr'},
+  //     {name: 'Hindi', value: 'hn'},
+  //     {name: 'Spanish', value: 'sp'},
+  // ];
+  const { loading, caseSheetEdit } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
   const moveCursorToEnd = (element: any) => {
@@ -131,18 +128,19 @@ export const RefferalCode: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-    if(data && data.data && data.data.getAllSpecialties && data.data.getAllSpecialties.length > 0){
-      //console.log(data.data.getAllSpecialties);
-      let optionData: any = [];
-      data.data.getAllSpecialties.forEach((value, index) => {
-        optionData.push({name: value.name, value: value.name})
-      })
-      setOptions(optionData)
-    } 
-  //       setAdviceList(
-  //         data.data.getDoctorFavouriteAdviceList &&
-  //           data.data.getDoctorFavouriteAdviceList.adviceList
-  //       );
+        if (
+          data &&
+          data.data &&
+          data.data.getAllSpecialties &&
+          data.data.getAllSpecialties.length > 0
+        ) {
+          //console.log(data.data.getAllSpecialties);
+          let optionData: any = [];
+          data.data.getAllSpecialties.forEach((value, index) => {
+            optionData.push({ name: value.name, value: value.name });
+          });
+          setOptions(optionData);
+        }
       });
   }, []);
   console.log(options);
@@ -151,7 +149,13 @@ export const RefferalCode: React.FC = () => {
   ) : (
     <Typography component="div" className={classes.mainContainer}>
       <div>
-      <SelectSearch search={true} options={options} defaultValue="sv" name="language" placeholder="Choose your language" />
+        <SelectSearch
+          search={true}
+          options={options}
+          defaultValue={options && options[0] ? options[0].value : ''}
+          name="language"
+          placeholder="Choose your language"
+        />
       </div>
     </Typography>
   );
