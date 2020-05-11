@@ -333,7 +333,7 @@ export const HealthVault: React.FC = () => {
   const [prismImageList, setPrismImageList] = useState<any>([]);
 
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   const [loading, setLoading] = React.useState(true);
   useEffect(() => {

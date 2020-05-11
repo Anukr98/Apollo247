@@ -378,6 +378,8 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                         }}
                         onChange={(date) => handleDateChange(date as Date)}
                         disabled={!props.startAppointment}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
                       />
                     </span>
                   </ThemeProvider>

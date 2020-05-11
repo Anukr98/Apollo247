@@ -39,28 +39,6 @@ interface OptionType {
 
 let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      className={classes.inputField}
-      autoFocus
-      fullWidth
-      InputProps={{
-        inputRef: (node) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
 const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
@@ -404,8 +382,8 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Tests: React.FC = () => {
   const classes = useStyles({});
   const [searchInput, setSearchInput] = useState('');
-  const [selectedValues, setSelectedValues] = useState();
-  const [idx, setIdx] = React.useState();
+  const [selectedValues, setSelectedValues] = useState<any>();
+  const [idx, setIdx] = React.useState<any>();
   const client = useApolloClient();
   const { patientDetails } = useContext(CaseSheetContext);
   const [updateText, setUpdateText] = useState('');
@@ -609,6 +587,29 @@ export const Tests: React.FC = () => {
     const sum = idx + Math.random();
     setIdx(sum);
   };
+
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+  
+    return (
+      <AphTextField
+        className={classes.inputField}
+        autoFocus
+        fullWidth
+        InputProps={{
+          inputRef: (node) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -801,7 +802,7 @@ export const Tests: React.FC = () => {
                     }}
                     {...autosuggestProps}
                     inputProps={{
-                      classes,
+                      //classes,
                       id: 'react-autosuggest-simple',
                       placeholder: 'Search Tests',
                       value: state.single,

@@ -347,7 +347,7 @@ export const ConsultTabs: React.FC = () => {
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
-  const [documentArray, setDocumentArray] = useState();
+  const [documentArray, setDocumentArray] = useState<any>();
   const [diagnosis, setDiagnosis] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
