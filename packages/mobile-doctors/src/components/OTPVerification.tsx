@@ -94,7 +94,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             if (event.message) {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
-                setOtp(messageOTP.toString());
+                isOtpValid(messageOTP[0]);
+                onClickOk(messageOTP[0]);
               }
             }
             SmsRetriever.removeSmsListener();
@@ -115,13 +116,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
-    // smsListenerAndroid();
+    if (Platform.OS === 'android') {
+      smsListenerAndroid();
+    }
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
-      // if (Platform.OS === 'android') {
-      //   SmsRetriever.removeSmsListener();
-      // }
+      if (Platform.OS === 'android') {
+        SmsRetriever.removeSmsListener();
+      }
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
@@ -306,7 +309,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const onClickOk = () => {
+  const onClickOk = (readOtp?: string) => {
     try {
       Keyboard.dismiss();
     } catch (error) {}
@@ -317,7 +320,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
         const { loginId } = props.navigation.state.params!;
 
-        verifyOTP(loginId, otp)
+        verifyOTP(loginId, readOtp || otp)
           .then((data: any) => {
             console.log(data.status === true, data.status, 'status');
 
@@ -616,7 +619,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             heading={string.login.great}
             description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
-            onClickButton={onClickOk}
+            onClickButton={() => onClickOk()}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
