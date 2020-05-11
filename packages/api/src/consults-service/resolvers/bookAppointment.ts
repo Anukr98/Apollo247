@@ -184,7 +184,7 @@ const bookAppointment: Resolver<
   // check if hospital id is linked to doctor
   let facilityFlag = 0;
   docDetails.doctorHospital.forEach((facility) => {
-    if (facility.id == appointmentInput.hospitalId) {
+    if (facility.facility.id == appointmentInput.hospitalId) {
       facilityFlag = 1;
     }
   });
