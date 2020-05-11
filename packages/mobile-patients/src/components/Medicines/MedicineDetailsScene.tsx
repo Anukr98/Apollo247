@@ -24,7 +24,6 @@ import {
 import {
   getDeliveryTime,
   getMedicineDetailsApi,
-  getPlaceInfoByLatLng,
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
@@ -32,11 +31,11 @@ import {
 import {
   aphConsole,
   isEmptyObject,
-  handleGraphQlError,
-  doRequestAndAccessLocation,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
   postAppsFlyerAddToCartEvent,
+  g,
+  isDeliveryDateWithInXDays,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -44,7 +43,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Dimensions,
   Keyboard,
   SafeAreaView,
@@ -65,7 +63,6 @@ import {
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import Geolocation from '@react-native-community/geolocation';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -95,12 +92,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(13),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 3.5,
-  },
-  descriptionStyle: {
-    paddingTop: 7.5,
-    paddingBottom: 16,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SKY_BLUE,
   },
   labelViewStyle: {
     marginHorizontal: 20,
@@ -219,41 +210,23 @@ export interface MedicineDetailsSceneProps
     sku: string;
     title: string;
     movedFrom: string;
+    deliveryError: string;
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
+  const _deliveryError = props.navigation.getParam('deliveryError');
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
-  const { locationDetails, setLocationDetails } = useAppCommonData();
-
-  useEffect(() => {
-    if (!locationDetails) {
-      doRequestAndAccessLocation()
-        .then((response) => {
-          setLoading(false);
-          response && setLocationDetails && setLocationDetails(response);
-        })
-        .catch((e) => {
-          CommonBugFender('MedicineDetailsScene_Location_Request', e);
-          setLoading(false);
-          showAphAlert &&
-            showAphAlert({
-              title: 'Uh oh! :(',
-              description: 'Unable to access location.',
-            });
-        });
-    } else {
-      setpincode(locationDetails.pincode || '');
-    }
-  }, [locationDetails]);
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setselectedTab] = useState<string>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
-  const [deliveryError, setdeliveryError] = useState<string>('');
-  const [pincode, setpincode] = useState<string>('');
+  const [deliveryError, setdeliveryError] = useState<string>(_deliveryError || '');
+  const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [Substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
   const [showPopup, setShowPopup] = useState<boolean>(false);
@@ -347,8 +320,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) =>item.id == id); 
-    return foundItem ? foundItem.quantity: 1;
+    const foundItem = cartItems.find((item) => item.id == id);
+    return foundItem ? foundItem.quantity : 1;
   };
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
@@ -364,6 +337,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         aphConsole.log('getMedicineDetailsApi\n', data);
         if (data && data.productdp) {
           setmedicineDetails((data && data.productdp[0]) || {});
+          if (_deliveryError) {
+            setTimeout(() => {
+              scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+            }, 20);
+          }
         } else if (data && data.message) {
           setMedicineError(data.message);
         }
@@ -433,46 +411,44 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
+    const genericErrorMsg = 'Sorry, unable to check serviceability.';
+    const unServiceableMsg = 'Sorry, not serviceable in your area.';
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
     getDeliveryTime({
       postalcode: pincode,
-      ordertype: 'pharma',
+      ordertype: medicineDetails.type_id == 'Fmcg' ? 'fmcg' : 'pharma',
       lookup: [
         {
           sku: sku,
-          qty: 1,
+          qty: getItemQuantity(sku),
         },
       ],
     })
       .then((res) => {
-        try {
-          console.log('resresres', res);
-          if (res && res.data) {
-            if (
-              typeof res.data === 'object' &&
-              Array.isArray(res.data.tat) &&
-              res.data.tat.length
-            ) {
-              setdeliveryTime(res.data.tat[0].deliverydate);
-            } else if (typeof res.data === 'string') {
-              setdeliveryError(res.data);
-            } else if (typeof res.data.errorMSG === 'string') {
-              setdeliveryError(res.data.errorMSG);
-            }
-          }
-        } catch (error) {
-          CommonBugFender('MedicineDetailsScene_fetchDeliveryTime_try', error);
-          console.log(error);
+        const errorMSG = g(res, 'data', 'errorMSG');
+        if (errorMSG) {
+          setdeliveryError(unServiceableMsg);
+          return;
         }
-        setshowDeliverySpinner(false);
+        const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+        if (deliveryDate) {
+          if (isDeliveryDateWithInXDays(deliveryDate)) {
+            setdeliveryTime(deliveryDate);
+            setdeliveryError('');
+          } else {
+            setdeliveryError(unServiceableMsg);
+            setdeliveryTime('');
+          }
+        } else {
+          setdeliveryError(genericErrorMsg);
+        }
       })
       .catch((err) => {
         CommonBugFender('MedicineDetailsScene_fetchDeliveryTime', err);
-        aphConsole.log('fetchDeliveryTime err\n', { err });
-        handleGraphQlError(err);
-        setshowDeliverySpinner(false);
-      });
+        setdeliveryError(genericErrorMsg);
+      })
+      .finally(() => setshowDeliverySpinner(false));
   };
 
   const fetchSubstitutes = () => {
@@ -689,8 +665,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderTopView = () => {
-    const _title = props.navigation.getParam('title');
-
     return (
       <View style={styles.mainView}>
         <View
@@ -871,58 +845,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       );
   };
 
-  // const renderInfo = () => {
-  //   const description = filterHtmlContent(medicineDetails.description);
-  //   if (!!description)
-  //     return (
-  //       <View>
-  //         <Text
-  //           style={{
-  //             ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
-  //             paddingHorizontal: 20,
-  //             paddingTop: 20,
-  //             paddingBottom: 17,
-  //           }}
-  //         >
-  //           Product Information
-  //         </Text>
-  //         <View
-  //           style={[
-  //             {
-  //               backgroundColor: theme.colors.WHITE,
-  //               flex: 1,
-  //               padding: 20,
-  //               ...theme.viewStyles.shadowStyle,
-  //             },
-  //           ]}
-  //         >
-  //           <View>
-  //             <Text
-  //               style={{
-  //                 color: theme.colors.SKY_BLUE,
-  //                 ...theme.fonts.IBMPlexSansMedium(14),
-  //                 lineHeight: 22,
-  //               }}
-  //             >
-  //               {description}
-  //             </Text>
-  //             {/* <WebView
-  //               useWebKit={true}
-  //               source={{
-  //                 html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
-  //               }}
-  //               style={{
-  //                 backgroundColor: 'red',
-  //                 width: '100%',
-  //                 height: 100,
-  //               }}
-  //             /> */}
-  //           </View>
-  //         </View>
-  //       </View>
-  //     );
-  // };
-
   const renderIconOrImage = (data: MedicineProductDetails) => {
     return (
       <View style={styles.iconOrImageContainerStyle}>
@@ -944,42 +866,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderSubstitutes = () => {
     const localStyles = StyleSheet.create({
-      containerStyle: {
-        // ...data.style,
-      },
+      containerStyle: {},
       iconAndDetailsContainerStyle: {
         flexDirection: 'row',
         alignItems: 'center',
-        // marginVertical: 9.5,
-        // marginHorizontal: 12,
         justifyContent: 'space-between',
       },
-      nameAndPriceViewStyle: {
-        flex: 1,
-      },
     });
-
-    const renderNamePriceAndInStockStatus = (data: MedicineProductDetails) => {
-      return (
-        <View style={localStyles.nameAndPriceViewStyle}>
-          <Text
-            numberOfLines={1}
-            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
-          >
-            {data.name}
-          </Text>
-          {isOutOfStock ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
-              {'Out Of Stock'}
-            </Text>
-          ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-              RS. {data.price}
-            </Text>
-          )}
-        </View>
-      );
-    };
 
     return (
       <View>
@@ -987,19 +880,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           <Text style={styles.labelStyle}>SUBSTITUTE DRUGS</Text>
         </View>
         <View style={styles.cardStyle}>
-          {/* {Substitutes.map((data, i) => (
-            <TouchableOpacity activeOpacity={1}>
-              <View style={localStyles.containerStyle} key={data.name}>
-                <View style={localStyles.iconAndDetailsContainerStyle}>
-                  {renderIconOrImage(data)}
-                  <View style={{ width: 16 }} />
-                  {renderNamePriceAndInStockStatus(data)}
-                </View>
-              </View>
-              {Substitutes.length !== i + 1 && <Spearator />}
-            </TouchableOpacity>
-          ))} */}
-
           <TouchableOpacity activeOpacity={1} onPress={() => setShowPopup(true)}>
             <View style={localStyles.containerStyle}>
               <View style={localStyles.iconAndDetailsContainerStyle}>
@@ -1016,21 +896,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       </View>
     );
   };
-
-  // const renderSubstitutes = () => {
-  //   return (
-  //     <View>
-  //       <View style={styles.labelViewStyle}>
-  //         <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — 09</Text>
-  //       </View>
-  //       {Substitutes.map((item) => (
-  //         <View style={styles.cardStyle}>
-  //           <Text>{item.name}</Text>
-  //         </View>
-  //       ))}
-  //     </View>
-  //   );
-  // };
 
   const renderDeliveryView = () => {
     return (
@@ -1107,12 +972,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 </Text>
               </View>
             ) : !!deliveryError ? (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.INPUT_FAILURE_TEXT, 1, 24),
-                  // paddingVertical: 10,
-                }}
-              >
+              <Text style={[theme.viewStyles.text('R', 10, '#890000'), { marginBottom: 6 }]}>
                 {deliveryError}
               </Text>
             ) : null}
@@ -1122,41 +982,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       </View>
     );
   };
-
-  // const renderTitleAndDescriptionList = () => {
-  //   return medicineOverview
-  //     .filter((item) => item.CaptionDesc)
-  //     .map((data, index, array) => {
-  //       const desc = data.CaptionDesc || '';
-  //       let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
-
-  //       if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
-  //         trimmedDesc = `${medicineName} ${trimmedDesc}`;
-  //       }
-
-  //       trimmedDesc = trimmedDesc
-  //         .replace(/&amp;deg;/g, '°')
-  //         .replace(/&#039;/g, "'")
-  //         .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-  //         .replace(/&amp;lt;br \/&amp;gt;/g, '\n');
-
-  //       trimmedDesc = trimmedDesc
-  //         .split('\n')
-  //         .filter((item) => item)
-  //         .join('\n');
-
-  //       return (
-  //         <View key={index}>
-  //           <Text style={styles.heading}>{data.Caption}</Text>
-  //           <Text
-  //             style={[styles.description, index == array.length - 1 ? { marginBottom: 0 } : {}]}
-  //           >
-  //             {trimmedDesc}
-  //           </Text>
-  //         </View>
-  //       );
-  //     });
-  // };
 
   const formatComposition = (value: string) => {
     return value
