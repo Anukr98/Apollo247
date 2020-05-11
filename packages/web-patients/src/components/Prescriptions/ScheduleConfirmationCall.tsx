@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const ScheduleConfirmationCall: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       Pick a time for our executive to call back & confirm your order details.

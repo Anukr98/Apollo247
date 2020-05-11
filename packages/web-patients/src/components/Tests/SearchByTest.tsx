@@ -25,6 +25,8 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,7 +63,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     medicineDetailsPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 20,
@@ -200,6 +201,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       fontSize: 14,
       fontWeight: 500,
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
     },
   };
 });
@@ -439,7 +445,11 @@ export const SearchByTest: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
-      {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        {!onePrimaryUser && <ManageProfile />}
+        <BottomLinks />
+      </div>
+      <NavigationBottom />
     </div>
   );
 };

@@ -171,6 +171,7 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
               type_id: data.productdp[0].type_id,
               mou: data.productdp[0].mou,
               quantity: qty,
+              isShippable: true,
             };
             cartMedicines.push(cartItem);
           }

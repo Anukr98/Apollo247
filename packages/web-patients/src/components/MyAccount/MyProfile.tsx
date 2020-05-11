@@ -135,7 +135,7 @@ const defaultMaterialTheme = createMuiTheme({
 });
 
 export const MyProfile: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { signOut } = useAuth();
   const [state, setState] = React.useState({

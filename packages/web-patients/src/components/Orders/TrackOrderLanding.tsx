@@ -52,7 +52,7 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const TrackOrderLanding: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   return (
     <div className={classes.root}>

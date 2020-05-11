@@ -340,7 +340,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
     setAnchorEl((null as unknown) as HTMLButtonElement);
     setCurrentDoctor('');
   }
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Card className={classes.card}>
       <div className={classes.details}>
@@ -523,7 +523,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
   const client = useApolloClient();
   const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
 
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Mutation<MakeTeamDoctorActive, MakeTeamDoctorActiveVariables>
       mutation={MAKE_TEAM_DOCTOR_ACTIVE}
@@ -608,7 +608,7 @@ interface DoctorDetailsProps {
 }
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div>
@@ -722,7 +722,7 @@ interface DoctorProfileTabProps {
   onNext: () => void;
 }
 export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const currentUserId = useAuthContext().currentUserId!;
   const currentUserType = useAuthContext().currentUserType!;

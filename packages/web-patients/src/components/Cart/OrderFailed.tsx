@@ -43,7 +43,7 @@ interface OrderFailedProps {
 }
 
 export const OrderFailed: React.FC<OrderFailedProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>

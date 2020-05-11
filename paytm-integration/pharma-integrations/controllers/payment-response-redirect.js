@@ -1,4 +1,4 @@
-const mobRedirect = (req, res, next) => {
+const mob = (req, res, next) => {
     if (req.query.status) {
         res.status(200).send({ status: req.query.status });
     } else {
@@ -9,9 +9,16 @@ const mobRedirect = (req, res, next) => {
         });
     }
 
+};
+
+const mobError = (req, res, next) => {
+    res.send({
+        status: 'failed',
+    });
 
 };
 
 module.exports = {
-    mobRedirect
+    mob,
+    mobError
 }

@@ -1334,6 +1334,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail: thumbnail,
         isInStock: true,
       });
+      postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
     };
 
     const getItemQuantity = (id: string) => {
@@ -1384,7 +1385,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <TouchableOpacity
             style={{ marginRight: 20 }}
             activeOpacity={1}
-            onPress={() => onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)}
+            onPress={() =>
+              getItemQuantity(data.sku) == 20
+                ? null
+                : onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)
+            }
           >
             <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
           </TouchableOpacity>
@@ -1474,6 +1479,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+            keyword: searchText,
+            Source: 'Pharmacy Home',
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
@@ -1492,6 +1502,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
@@ -1517,18 +1532,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
           errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
+            ...theme.viewStyles.text('M', 14, '#02475b'),
             marginHorizontal: 10,
           }}
-          errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
-          }
+          errorMessage={itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined}
         />
       </>
     );

@@ -46,7 +46,7 @@ import {
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { CaseSheetContextJrd, VitalErrorProps } from 'context/CaseSheetContextJrd';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -388,7 +388,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JDConsultRoom: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
@@ -475,6 +475,7 @@ export const JDConsultRoom: React.FC = () => {
   const [callId, setcallId] = useState<string>('');
   const [chatRecordId, setChatRecordId] = useState<string>('');
   const [documentArray, setDocumentArray] = useState();
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -1278,6 +1279,7 @@ export const JDConsultRoom: React.FC = () => {
             autoCloseCaseSheet,
             height,
             weight,
+            vitalError,
             bp,
             temperature,
             pastMedicalHistory,
@@ -1296,6 +1298,7 @@ export const JDConsultRoom: React.FC = () => {
             setFamilyHistory,
             setMenstrualHistory,
             setHeight,
+            setVitalError,
             setWeight,
             setBp,
             setTemperature,

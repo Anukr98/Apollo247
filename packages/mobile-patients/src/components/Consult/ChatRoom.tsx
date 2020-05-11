@@ -115,7 +115,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import CryptoJS from 'react-native-crypto-js';
+import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
@@ -576,8 +576,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       AppConfig.Configuration.CRYPTO_SECRET_KEY
     ).toString();
 
-    console.log('ciphertext', ciphertext);
-
     const messageInput: MessageInput = {
       fromId: patientId,
       toId: doctorId,
@@ -902,6 +900,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
       if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+      if (status !== STATUS.COMPLETED) return;
 
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
@@ -1402,6 +1401,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CALL_ABANDON) return;
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+      if (status !== STATUS.COMPLETED) return;
 
       abondmentStarted = true;
       startCallAbondmentTimer(620, true);
@@ -1425,6 +1425,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.CALL_ABANDON) return;
         if (appointmentData.status === STATUS.CANCELLED) return;
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+        if (status !== STATUS.COMPLETED) return;
 
         abondmentStarted = true;
         startCallAbondmentTimer(620, false);
@@ -5715,7 +5716,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
-
+        {renderChatHeader()}
         {doctorJoined ? (
           <View
             style={{
@@ -5747,7 +5748,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </Text>
           </View>
         ) : null}
-        {renderChatHeader()}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <View

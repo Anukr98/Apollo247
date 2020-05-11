@@ -4,8 +4,52 @@ declare global {
     webengage: any;
   }
 }
+interface UserDetail {
+  emailAddress: string | null;
+  dateOfBirth: string;
+  mobileNumber: string;
+  gender: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}
 
 window.webengage = window.webengage || {};
+
+export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
+  const {  emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.setAttribute('we_email', emailAddress);
+      window.webengage.user.setAttribute('we_birth_date', dateOfBirth);
+      window.webengage.user.setAttribute('we_phone', mobileNumber);
+      window.webengage.user.setAttribute('we_gender', gender);
+      window.webengage.user.setAttribute('we_first_name', firstName);
+      window.webengage.user.setAttribute('we_last_name', lastName);
+    } catch (err) {
+      console.log('Webengage user tracking err: ', err)
+    }
+  }
+}
+export const webengageUserLoginTracking = (id:string) => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.login(id);
+    } catch (err) {
+      console.log('Webengage user login tracking err: ', err)
+    }
+  }
+}
+
+export const webengageUserLogoutTracking = () => {
+  if (window && window.webengage) {
+    try {
+      window.webengage.user.logout();
+    } catch (err) {
+      console.log('Webengage user logout tracking err: ', err)
+    }
+  }
+}
+
 export const phrConsultTabClickTracking = (userData: any) => {
   if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
@@ -20,7 +64,7 @@ export const phrConsultTabClickTracking = (userData: any) => {
         Age: age,
       });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -37,9 +81,9 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
         'Mobile Number': mobileNumber,
         'Customer ID': id,
         Age: age,
-      })
+      });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -51,7 +95,7 @@ export const addRecordClickTracking = (source: string) => {
       Source: source,
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Upload Prescription
@@ -68,7 +112,7 @@ export const uploadPrescriptionTracking = (data: any) => {
       'Customer ID': id || '',
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Upload Photo
@@ -78,7 +122,7 @@ export const uploadPhotoTracking = (source: string) => {
       Source: source, //Take Photo/Gallery
     });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //Items Clicked
@@ -88,9 +132,9 @@ export const itemsClickedTracking = (data: any) => {
     window.webengage.track('Items Clicked', {
       Source: source, //Consult/Medical
       Type: type, //Prescription/Test Result
-    })
+    });
   } catch (err) {
-    console.log('WebEngage Err: ', err)
+    console.log('WebEngage Err: ', err);
   }
 };
 //PHR Consult Card click
@@ -107,9 +151,9 @@ export const phrConsultCardClickTracking = (data: any) => {
         'Mobile Number': mobileNumber,
         'Customer ID': id,
         'Consult ID': consultId,
-      })
+      });
     } catch (err) {
-      console.log('WebEngage Err: ', err)
+      console.log('WebEngage Err: ', err);
     }
   }
 };

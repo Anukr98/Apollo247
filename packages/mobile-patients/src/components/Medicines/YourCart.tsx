@@ -258,8 +258,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setDeliveryAddressId && setDeliveryAddressId('');
               showAphAlert!({
                 title: 'Uh oh.. :(',
-                description:
-                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                description: string.medicine_cart.pharmaAddressUnServiceableAlert,
               });
             }
           })
@@ -634,8 +633,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
           });
         }
       })

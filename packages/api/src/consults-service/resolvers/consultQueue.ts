@@ -7,6 +7,7 @@ import {
   PatientFamilyHistory,
   PatientLifeStyle,
   PatientMedicalHistory,
+  Gender,
 } from 'profiles-service/entities';
 import {
   CASESHEET_STATUS,
@@ -26,6 +27,7 @@ import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/pa
 import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { ApiConstants } from 'ApiConstants';
+import { format, subYears } from 'date-fns';
 
 export const consultQueueTypeDefs = gql`
   type ConsultQueueItem {
@@ -71,6 +73,8 @@ export const consultQueueTypeDefs = gql`
     familyHistory: String
     dietAllergies: String
     drugAllergies: String
+    age: Float
+    gender: Gender
   }
 
   extend type Mutation {
@@ -301,6 +305,8 @@ type ConsultQueueInput = {
   familyHistory: string;
   dietAllergies: string;
   drugAllergies: string;
+  age?: number;
+  gender?: Gender;
 };
 
 type ConsultQueueInputArgs = {
@@ -408,12 +414,44 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const patientData = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const {
+    age,
+    gender,
+    familyHistory,
+    lifeStyle,
+    bp,
+    weight,
+    temperature,
+    height,
+    drugAllergies,
+    dietAllergies,
+  } = consultQueueInput;
+
+  if (age || gender) {
+    const patientAttrs: Partial<Patient> = { ...patientData };
+    if (age) {
+      const sampleDate = format(new Date(), 'yyyy-01-01');
+      const dob = subYears(new Date(sampleDate), Math.floor(age));
+      patientAttrs.dateOfBirth = dob;
+    }
+    if (gender) {
+      patientAttrs.gender = gender;
+    }
+    delete patientAttrs.lifeStyle;
+    delete patientAttrs.healthVault;
+    delete patientAttrs.familyHistory;
+    delete patientAttrs.patientAddress;
+    delete patientAttrs.patientDeviceTokens;
+    delete patientAttrs.patientNotificationSettings;
+    delete patientAttrs.patientMedicalHistory;
+    if (patientAttrs.id) patientRepo.updateProfile(patientAttrs.id, patientAttrs);
+  }
+
   //familyHistory upsert starts
-  if (!(consultQueueInput.familyHistory === undefined)) {
+  if (!(familyHistory === undefined)) {
     const familyHistoryInputs: Partial<PatientFamilyHistory> = {
       patient: patientData,
-      description:
-        consultQueueInput.familyHistory.length > 0 ? consultQueueInput.familyHistory : undefined,
+      description: familyHistory.length > 0 ? familyHistory : undefined,
     };
     const familyHistoryRepo = context.patientsDb.getCustomRepository(
       PatientFamilyHistoryRepository
@@ -424,32 +462,29 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
 
     if (familyHistoryRecord == null) {
       //create
-      await familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
+      familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
-      await familyHistoryRepo.updatePatientFamilyHistory(
-        familyHistoryRecord.id,
-        familyHistoryInputs
-      );
+      familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
   //familyHistory upsert ends
 
   //lifestyle upsert starts
-  if (!(consultQueueInput.lifeStyle === undefined)) {
+  if (!(lifeStyle === undefined)) {
     const lifeStyleInputs: Partial<PatientLifeStyle> = {
       patient: patientData,
-      description: consultQueueInput.lifeStyle.length > 0 ? consultQueueInput.lifeStyle : undefined,
+      description: lifeStyle.length > 0 ? lifeStyle : undefined,
     };
     const lifeStyleRepo = context.patientsDb.getCustomRepository(PatientLifeStyleRepository);
     const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(appointmentData.patientId);
 
     if (lifeStyleRecord == null) {
       //create
-      await lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
+      lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
     } else {
       //update
-      await lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+      lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
     }
   }
   //lifestyle upsert ends
@@ -459,26 +494,19 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     patient: patientData,
   };
 
-  if (!(consultQueueInput.bp === undefined))
-    medicalHistoryInputs.bp = consultQueueInput.bp.length > 0 ? consultQueueInput.bp : undefined;
+  if (!(bp === undefined)) medicalHistoryInputs.bp = bp.length > 0 ? bp : undefined;
 
-  if (!(consultQueueInput.weight === undefined))
-    medicalHistoryInputs.weight =
-      consultQueueInput.weight.length > 0 ? consultQueueInput.weight : undefined;
+  if (!(weight === undefined)) medicalHistoryInputs.weight = weight.length > 0 ? weight : undefined;
 
-  if (!(consultQueueInput.temperature === undefined))
-    medicalHistoryInputs.temperature =
-      consultQueueInput.temperature.length > 0 ? consultQueueInput.temperature : undefined;
+  if (!(temperature === undefined))
+    medicalHistoryInputs.temperature = temperature.length > 0 ? temperature : undefined;
 
-  if (!(consultQueueInput.height === undefined))
-    medicalHistoryInputs.height = consultQueueInput.height;
-  if (!(consultQueueInput.drugAllergies === undefined))
-    medicalHistoryInputs.drugAllergies =
-      consultQueueInput.drugAllergies.length > 0 ? consultQueueInput.drugAllergies : undefined;
+  if (!(height === undefined)) medicalHistoryInputs.height = height;
+  if (!(drugAllergies === undefined))
+    medicalHistoryInputs.drugAllergies = drugAllergies.length > 0 ? drugAllergies : undefined;
 
-  if (!(consultQueueInput.dietAllergies === undefined))
-    medicalHistoryInputs.dietAllergies =
-      consultQueueInput.dietAllergies.length > 0 ? consultQueueInput.dietAllergies : undefined;
+  if (!(dietAllergies === undefined))
+    medicalHistoryInputs.dietAllergies = dietAllergies.length > 0 ? dietAllergies : undefined;
 
   const medicalHistoryRepo = context.patientsDb.getCustomRepository(
     PatientMedicalHistoryRepository
@@ -488,13 +516,10 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   );
   if (medicalHistoryRecord == null) {
     //create
-    await medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
   } else {
     //update
-    await medicalHistoryRepo.updatePatientMedicalHistory(
-      medicalHistoryRecord.id,
-      medicalHistoryInputs
-    );
+    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
   }
   //medicalHistory upsert ends
   //automated questions ends

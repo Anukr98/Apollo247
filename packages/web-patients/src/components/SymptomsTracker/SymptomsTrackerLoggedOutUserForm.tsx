@@ -185,7 +185,7 @@ export interface NewProfileProps {
 }
 
 export const SymptomsTrackerLoggedOutForm: React.FC<NewProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [gender, setGender] = useState<Gender>();
   const [dob, setDob] = useState('');
   const orderedGenders = [Gender.MALE, Gender.FEMALE];

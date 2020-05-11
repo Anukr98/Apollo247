@@ -16,6 +16,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -24,10 +26,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      borderRadius: '0 0 10px 10px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
-      marginBottom: 20,
+      borderRadius: '0 0 10px 10px',
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
       },
@@ -220,6 +221,11 @@ const useStyles = makeStyles((theme: Theme) => {
     signUpBar: {
       marginBottom: 20,
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -235,6 +241,7 @@ export const SymptomsTracker: React.FC = () => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px)');
+  const onePrimaryUser = hasOnePrimaryUser();
 
   return (
     <div>
@@ -354,10 +361,8 @@ export const SymptomsTracker: React.FC = () => {
           </div>
         </div>
       </div>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
       {isSignedIn && <NavigationBottom />}
-      <div className={classes.signUpBar}>
-        <ManageProfile />
-      </div>
     </div>
   );
 };
