@@ -5728,7 +5728,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               borderRadius: 0,
               shadowOffset: { width: 0, height: 0 },
               shadowRadius: 2,
-              elevation: 2,
+              elevation: 17,
               zIndex: 100,
               backgroundColor: '#ff748e',
               position: 'absolute',
