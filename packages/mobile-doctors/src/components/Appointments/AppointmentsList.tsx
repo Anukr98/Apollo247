@@ -235,8 +235,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                       ) {
                                         const config: Pubnub.PubnubConfig = {
                                           subscribeKey:
-                                            'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b', //'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-                                          publishKey: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e', //'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+                                            AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                                          publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
                                           ssl: true,
                                           uuid: REQUEST_ROLES.DOCTOR,
                                         };
