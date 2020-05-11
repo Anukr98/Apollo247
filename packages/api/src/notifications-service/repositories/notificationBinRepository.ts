@@ -104,6 +104,15 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
       .andWhere('notificationBin.eventName = :name', { name: notificationEventName.APPOINTMENT })
       .getMany();
   }
+
+  async getRequiredFieldsByAppointmentIds(ids: string[], fields: string[]) {
+    return this.createQueryBuilder('notificationBin')
+      .select(fields)
+      .where('notificationBin.eventId IN (:...ids)', { ids })
+      .andWhere('notificationBin.eventName = :name', { name: notificationEventName.APPOINTMENT })
+      .andWhere('notificationBin.status = :status', { status: notificationStatus.UNREAD })
+      .getMany();
+  }
 }
 
 @EntityRepository(NotificationBinArchive)
