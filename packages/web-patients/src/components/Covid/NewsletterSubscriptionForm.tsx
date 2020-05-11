@@ -89,7 +89,7 @@ interface FormValues {
 }
 
 export interface SubscriptionFormProps {
-  //   patient: Patient;
+  category: string;
   onClose: () => void;
 }
 
@@ -118,7 +118,7 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
             {
               email: values.emailAddress,
               name: values.firstName,
-              category: 'covid19',
+              category: props.category,
             },
             '',
             true
