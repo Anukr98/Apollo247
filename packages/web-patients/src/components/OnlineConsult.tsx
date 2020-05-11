@@ -564,7 +564,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
                   orderId: res.data.bookAppointment.appointment.id,
-                  bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+                  bookingSource:  BOOKINGSOURCE.WEB,
                   deviceType: getDeviceType()
                 },
               },

@@ -635,7 +635,7 @@ export const MedicineCart: React.FC = (props) => {
         responseCode: '',
         responseMessage: '',
         ...(chennaiOrderVariables && chennaiOrderVariables),
-        bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+        bookingSource: BOOKINGSOURCE.WEB,
         deviceType: getDeviceType()
       },
     };

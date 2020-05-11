@@ -608,7 +608,7 @@ export const TestsCart: React.FC = (props) => {
       diagnosticDate: date,
       prescriptionUrl: '',
       paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-      bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+      bookingSource: BOOKINGSOURCE.WEB,
       totalPrice: parseFloat(cartTotal.toFixed(2)),
       patientId: (currentPatient && currentPatient.id) || '',
       items: diagnosticsCartItems.map(
