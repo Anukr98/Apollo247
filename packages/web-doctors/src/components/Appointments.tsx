@@ -307,6 +307,10 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fcb716',
       fontWeight: 500,
     },
+    ApptTypeStyle: {
+      fontSize: 15,
+      paddingLeft: 10,
+    },
   })
 );
 
@@ -465,7 +469,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                       {!!appointment.details.checkups &&
                       !!appointment.details.checkups.symptoms &&
                       !!appointment.details.checkups.symptoms.length ? (
-                        <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
+                        <Grid lg={4} sm={4} xs={8} key={2} item className={classes.valign}>
                           <div className={classes.section1}>
                             {(appointment.details.checkups.symptoms.length > 2
                               ? appointment.details.checkups.symptoms.slice(0, 2)
@@ -482,7 +486,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           </div>
                         </Grid>
                       ) : (
-                        <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
+                        <Grid lg={4} sm={4} xs={8} key={2} item className={classes.valign}>
                           <div className={classes.section1}>
                             <Typography
                               gutterBottom
@@ -492,7 +496,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           </div>
                         </Grid>
                       )}
-                      <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
+                      <Grid lg={3} sm={3} xs={3} key={3} className={classes.valign} item>
                         <div className={`${classes.section2} ${classes.videoIcomm}`}>
                           <IconButton aria-label="Video call">
                             {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
@@ -500,6 +504,11 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                             ) : (
                               <img src={require('images/ic_physical_consult.svg')} alt="" />
                             )}
+                            <span className={classes.ApptTypeStyle}>
+                              {appointment.type === APPOINTMENT_TYPE.ONLINE
+                                ? 'Online'
+                                : 'In-person'}
+                            </span>
                           </IconButton>
                           <IconButton aria-label="Navigate next">
                             <NavigateNextIcon />
