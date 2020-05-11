@@ -125,12 +125,12 @@ export const convertCaseSheetToRxPdfData = async (
       if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
         frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
-      if (csRx.medicineConsumptionDuration) {
+      if (csRx.medicineConsumptionDurationInDays) {
         frequency = frequency + ' for';
-        frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
+        frequency = frequency + ' ' + csRx.medicineConsumptionDurationInDays;
         if (csRx.medicineConsumptionDurationUnit) {
           const unit =
-            parseInt(csRx.medicineConsumptionDuration, 10) > 1
+            parseInt(csRx.medicineConsumptionDurationInDays.toString(), 10) > 1
               ? csRx.medicineConsumptionDurationUnit
               : csRx.medicineConsumptionDurationUnit.replace('S', '');
           frequency = frequency + ' ' + unit;
