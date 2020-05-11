@@ -200,6 +200,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     otherInstructions,
     setOtherInstructions,
     caseSheetEdit,
+    referralDescription,
+    referralSpecialtyName,
+    setReferralSpecialtyName,
+    setReferralDescription,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -329,6 +333,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           followUpDate: followUpDate,
           notes: notes,
           diagnosticPrescription: diagnosticPrescription,
+          referralSpecialtyName: referralSpecialtyName,
+          referralDescription: referralDescription,
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
@@ -354,6 +360,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setDiagnosticPrescription(storageItem.diagnosticPrescription);
         setOtherInstructions(storageItem.otherInstructions);
         setFirstTimeLanding(false);
+        setReferralSpecialtyName(storageItem.referralSpecialtyName || '');
+        setReferralDescription(storageItem.referralDescription || '');
       }
     }
   }, [firstTimeLanding, caseSheetEdit]);

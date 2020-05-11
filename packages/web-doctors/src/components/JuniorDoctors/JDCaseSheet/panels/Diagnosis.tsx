@@ -233,7 +233,7 @@ export const Diagnosis: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        let filterVal: any = _data!.data!.searchDiagnosis!;
+        const filterVal: any = _data!.data!.searchDiagnosis!;
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
             if (val.name === selectedval.name) {

@@ -124,7 +124,7 @@ export const LifeStyle: React.FC = () => {
       element.selectionStart = element.selectionEnd = element.value.length;
     } else if (typeof element.createTextRange != 'undefined') {
       element.focus();
-      var range = element.createTextRange();
+      const range = element.createTextRange();
       range.collapse(false);
       range.select();
     }

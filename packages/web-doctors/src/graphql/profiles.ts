@@ -487,6 +487,8 @@ export const GET_CASESHEET_JRD = gql`
         id
         doctorId
         status
+        referralSpecialtyName
+        referralDescription
         appointment {
           id
           appointmentDateTime
@@ -563,6 +565,7 @@ export const GET_CASESHEET_JRD = gql`
         lastName
         lifeStyle {
           description
+          occupationHistory
         }
         mobileNumber
         patientAddress {
@@ -578,6 +581,7 @@ export const GET_CASESHEET_JRD = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         photoUrl
         uhid
@@ -729,6 +733,7 @@ export const GET_CASESHEET = gql`
         allergies
         lifeStyle {
           description
+          occupationHistory
         }
         patientMedicalHistory {
           bp
@@ -740,6 +745,7 @@ export const GET_CASESHEET = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         familyHistory {
           description
@@ -767,6 +773,8 @@ export const GET_CASESHEET = gql`
         blobName
         doctorId
         sentToPatient
+        referralSpecialtyName
+        referralDescription
         appointment {
           id
           sdConsultationDate

@@ -255,7 +255,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
         )}`}</div>
         {data &&
         data.caseSheet &&
-        (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+        data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR'
           ? data &&
             data.caseSheet &&
             data.caseSheet.length > 0 &&
@@ -288,9 +288,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
             )}
         {data &&
         data.caseSheet &&
-        (data.caseSheet.length > 1 &&
+        data.caseSheet.length > 1 &&
           data.caseSheet[1] &&
-          data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+          data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
           <div className={`${classes.iconButton}`}>
             <IconButton aria-label="Video call">
               {data &&
@@ -329,7 +329,7 @@ export const HealthVault: React.FC = () => {
     CaseSheetContextJrd
   );
   const client = useApolloClient();
-  var prismIdList: any = [];
+  const prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
 
   const [modalOpen, setModalOpen] = React.useState(false);

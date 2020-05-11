@@ -9,6 +9,7 @@ import { DiagnosticPrescription } from './DiagnosticPrescription';
 import { FollowUp } from './FollowUp';
 import { OtherInstructions } from './OtherInstructions';
 import { RefferalCode } from './RefferalCode';
+
 export { LifeStyle };
 export { Vital };
 export { Symptoms };

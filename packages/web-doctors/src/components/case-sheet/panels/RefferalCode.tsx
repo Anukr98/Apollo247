@@ -3,7 +3,6 @@ import { Typography, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
-import SelectSearch from 'react-select-search';
 import { GET_ALL_SPECIALTIES } from 'graphql/profiles';
 import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import Autocomplete from '@material-ui/lab/Autocomplete';
@@ -61,18 +60,19 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 type Params = { id: string; patientId: string; tabValue: string };
 
-interface SpecialityOptions {
-  name: string;
-  value: string;
-}
-
 export const RefferalCode: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const [options, setOptions] = useState<Array<SpecialityOptions>>([]);
-  const [selectedSpeciality, setselectedSpeciality] = useState<SpecialityOptions>(null);
+  const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
-  const { loading, caseSheetEdit } = useContext(CaseSheetContext);
+  const {
+    loading,
+    caseSheetEdit,
+    referralSpecialtyName,
+    referralDescription,
+    setReferralSpecialtyName,
+    setReferralDescription,
+  } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
 
@@ -81,7 +81,7 @@ export const RefferalCode: React.FC = () => {
       element.selectionStart = element.selectionEnd = element.value.length;
     } else if (typeof element.createTextRange != 'undefined') {
       element.focus();
-      var range = element.createTextRange();
+      const range = element.createTextRange();
       range.collapse(false);
       range.select();
     }
@@ -100,18 +100,26 @@ export const RefferalCode: React.FC = () => {
           data.data.getAllSpecialties &&
           data.data.getAllSpecialties.length > 0
         ) {
-          console.log(data);
-          let optionData: Array<SpecialityOptions> = [];
+          const optionData: string[] = [];
           data.data.getAllSpecialties.forEach((value) => {
-            optionData.push({ name: value.name, value: value.name });
+            optionData.push(value.name);
           });
-          //setselectedSpeciality(optionData[0]);
           setOptions(optionData);
         }
       });
   }, []);
 
   if (loading) return null;
+
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.id);
+    switch (type) {
+      case 'referralSpecialtyName':
+        return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
+      case 'referralDescription':
+        return localStorageItem ? localStorageItem.referralDescription : referralDescription;
+    }
+  };
 
   return (
     <div className={classes.mainContainer}>
@@ -121,14 +129,20 @@ export const RefferalCode: React.FC = () => {
         </Typography>
         <div className={classes.selectContainer}>
           <Autocomplete
-            value={selectedSpeciality}
-            getOptionLabel={(option) => option.name}
-            onChange={(event: ChangeEvent, newValue: SpecialityOptions) => {
-              console.log(event);
-              setselectedSpeciality(newValue);
+            value={getDefaultValue('referralSpecialtyName')}
+            disabled={!caseSheetEdit}
+            onChange={(event: ChangeEvent, newValue: string) => {
+              //console.log(event);
+              const storageItem = getLocalStorageItem(params.id);
+              if (storageItem) {
+                storageItem.referralSpecialtyName = newValue;
+                updateLocalStorageItem(params.id, storageItem);
+              }
+              setReferralSpecialtyName(newValue);
             }}
             inputValue={inputValue}
-            onInputChange={(event, newInputValue) => {
+            onInputChange={(event: ChangeEvent, newInputValue: string) => {
+              //console.log(event);
               setInputValue(newInputValue);
             }}
             options={options}
@@ -141,7 +155,7 @@ export const RefferalCode: React.FC = () => {
               option: classes.option,
             }}
             id="speciality"
-            renderInput={(params) => (
+            renderInput={(params: any) => (
               <AphTextField {...params} variant="outlined" placeholder="Select Speciality" />
             )}
           />

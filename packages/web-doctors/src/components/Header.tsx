@@ -391,8 +391,8 @@ export const Header: React.FC = (props) => {
 
   const sortByDate = (notificationData: NotificationDataType[]) => {
     return notificationData.sort((data1: NotificationDataType, data2: NotificationDataType) => {
-      let date1 = new Date(data1.lastUnreadMessageDate);
-      let date2 = new Date(data2.lastUnreadMessageDate);
+      const date1 = new Date(data1.lastUnreadMessageDate);
+      const date2 = new Date(data2.lastUnreadMessageDate);
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
   };
@@ -475,7 +475,7 @@ export const Header: React.FC = (props) => {
           } else {
             // request permission from user
             Notification.requestPermission()
-              .then(function(p) {
+              .then((p) => {
                 if (p === 'granted') {
                   // show notification here
                   sendNotification(message.message.message);
@@ -492,7 +492,7 @@ export const Header: React.FC = (props) => {
                   console.log('User blocked notifications.');
                 }
               })
-              .catch(function(err) {
+              .catch((err) => {
                 const logObject = {
                   api: 'NotificationRequestPermission',
                   doctorId: currentPatient!.id,
