@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Raw } from 'typeorm';
+import { EntityRepository, Repository, Raw, IsNull, Not } from 'typeorm';
 import { Coupon, ReferralCodesMaster, ReferalCouponMapping } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -9,6 +9,7 @@ export class CouponRepository extends Repository<Coupon> {
     return this.find({
       where: {
         isActive: 'true',
+        couponConsultRule: Not(IsNull()),
       },
       order: {
         createdDate: 'DESC',
@@ -31,6 +32,40 @@ export class CouponRepository extends Repository<Coupon> {
         createdDate: 'DESC',
       },
       relations: ['couponConsultRule', 'couponGenericRule'],
+    }).catch((getCouponsError) => {
+      throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
+        getCouponsError,
+      });
+    });
+  }
+
+  async findPharmaCouponByCode(code: string) {
+    return this.findOne({
+      where: {
+        isActive: 'true',
+        code: Raw((alias) => `${alias} ILIKE '${code}'`),
+      },
+      order: {
+        createdDate: 'DESC',
+      },
+      relations: ['couponPharmaRule', 'couponGenericRule'],
+    }).catch((getCouponsError) => {
+      throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
+        getCouponsError,
+      });
+    });
+  }
+
+  async getPharmaActiveCoupons() {
+    return this.find({
+      where: {
+        isActive: 'true',
+        couponPharmaRule: Not(IsNull()),
+      },
+      order: {
+        createdDate: 'DESC',
+      },
+      relations: ['couponPharmaRule', 'couponGenericRule'],
     }).catch((getCouponsError) => {
       throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
         getCouponsError,
