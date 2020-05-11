@@ -922,8 +922,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (showVideo) {
             stopAudioVideoCall();
           }
-          setIscallAbandonment(true);
-          setShowAbandonment(true);
+          // setIscallAbandonment(true);
+          // setShowAbandonment(true);
         }
       } else {
         // clear abundant
@@ -945,8 +945,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
         if (missedCallCounter >= 3) {
-          setIscallAbandonment(true);
-          setShowAbandonment(true);
+          //setIscallAbandonment(true);
+          //setShowAbandonment(true);
         }
       }
     }, 1000);
