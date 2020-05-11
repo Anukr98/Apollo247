@@ -268,4 +268,47 @@ export const styles = StyleSheet.create({
     width: 100,
     resizeMode: 'contain',
   },
+  materialContainer: {
+    alignItems: 'flex-end',
+    marginLeft: 0,
+    marginTop: 20,
+    width: width - 80,
+  },
+  selTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#00b38e'),
+    alignSelf: 'flex-start',
+  },
+  textItemStyle: { ...theme.viewStyles.text('M', 14, '#01475b'), paddingHorizontal: 0 },
+  itemContainerStyle: {
+    height: 44,
+    marginHorizontal: 12,
+    width: width,
+    maxWidth: width - 110,
+  },
+  menuContainer: {
+    flexDirection: 'row',
+    marginLeft: 0,
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  MtextView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 44,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 71, 91, 0.2)',
+    padding: 12,
+    borderRadius: 5,
+    backgroundColor: '#F9F9F9',
+    width: width - 70,
+  },
+  dropValueText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
+  },
+  dropDownGreenView: {
+    flex: 1,
+    alignItems: 'flex-end',
+    marginRight: 0,
+  },
 });

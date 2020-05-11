@@ -222,6 +222,7 @@ export const MODIFY_CASESHEET = gql`
         lastName
         lifeStyle {
           description
+          occupationHistory
         }
         mobileNumber
         patientAddress {
@@ -248,6 +249,7 @@ export const MODIFY_CASESHEET = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         photoUrl
         uhid
@@ -369,6 +371,8 @@ export const MODIFY_CASESHEET = gql`
       status
       sentToPatient
       updatedDate
+      referralSpecialtyName
+      referralDescription
     }
   }
 `;
@@ -521,6 +525,7 @@ export const GET_CASESHEET = gql`
         allergies
         lifeStyle {
           description
+          occupationHistory
         }
         patientMedicalHistory {
           bp
@@ -532,6 +537,7 @@ export const GET_CASESHEET = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         familyHistory {
           description
@@ -561,6 +567,8 @@ export const GET_CASESHEET = gql`
         patientId
         sentToPatient
         status
+        referralSpecialtyName
+        referralDescription
         patientDetails {
           allergies
           dateOfBirth
@@ -579,6 +587,7 @@ export const GET_CASESHEET = gql`
           lastName
           lifeStyle {
             description
+            occupationHistory
           }
           mobileNumber
           patientAddress {
@@ -605,6 +614,7 @@ export const GET_CASESHEET = gql`
             pastSurgicalHistory
             temperature
             weight
+            medicationHistory
           }
           photoUrl
           uhid
@@ -1399,6 +1409,20 @@ export const GET_NOTIFICATIONS = gql`
         patientPhotoUrl
         unreadNotificationsCount
       }
+    }
+  }
+`;
+
+export const GET_ALL_SPECIALTIES = gql`
+  query getAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+      # specialistSingularTerm
+      # specialistPluralTerm
+      userFriendlyNomenclature
+      # displayOrder
     }
   }
 `;

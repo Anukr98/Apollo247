@@ -18,7 +18,7 @@ const styles = SplashScreenStyles;
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
+  const { firebaseUser, doctorDetails, getDoctorDetailsApi, getSpecialties } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
@@ -156,6 +156,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           } else {
             props.navigation.replace(AppRoutes.ProfileSetup);
           }
+          getSpecialties();
         } else if (isOnboardingDone === 'true') {
           props.navigation.replace(AppRoutes.Login);
         } else {

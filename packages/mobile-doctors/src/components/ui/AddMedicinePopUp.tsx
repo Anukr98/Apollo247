@@ -7,12 +7,7 @@ import {
 import AddMedicinePopUpStyles from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
-import {
-  AddPlus,
-  BackArrow,
-  DropdownGreen,
-  Remove,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { AddPlus, BackArrow, Dropdown, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -723,7 +718,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               >
                 <Text style={styles.dropValueText}>{typeDrop && typeDrop.value}</Text>
                 <View style={styles.dropDownGreenView}>
-                  <DropdownGreen />
+                  <Dropdown />
                 </View>
               </View>
             </View>
@@ -746,7 +741,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               <View style={styles.dropdownView}>
                 <Text style={styles.takeDropdownText}>{takeDrop.value}</Text>
                 <View style={styles.dropdownGreenView}>
-                  <DropdownGreen />
+                  <Dropdown />
                 </View>
               </View>
             </View>
@@ -910,7 +905,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               <View style={styles.forDropTextView}>
                 <Text style={styles.forDropText}>{forTimeDrop.value}</Text>
                 <View style={styles.dropDownGreenView}>
-                  <DropdownGreen />
+                  <Dropdown />
                 </View>
               </View>
             </View>
@@ -933,7 +928,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             <View style={styles.dropdownView}>
               <Text style={styles.takeDropdownText}>{routeOfAdminDrop.value}</Text>
               <View style={styles.dropdownGreenView}>
-                <DropdownGreen />
+                <Dropdown />
               </View>
             </View>
           </View>

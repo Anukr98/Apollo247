@@ -11,6 +11,7 @@ import { Gender, Relation, PATIENT_ADDRESS_TYPE, STATUS, APPOINTMENT_TYPE, Docto
 export interface GetCaseSheet_getCaseSheet_patientDetails_lifeStyle {
   __typename: "PatientLifeStyle";
   description: string | null;
+  occupationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory {
@@ -24,6 +25,7 @@ export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory 
   pastSurgicalHistory: string | null;
   temperature: string | null;
   weight: string | null;
+  medicationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_patientDetails_familyHistory {
@@ -78,6 +80,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healt
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle {
   __typename: "LifeStyle";
   description: string | null;
+  occupationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientAddress {
@@ -107,6 +110,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patie
   pastSurgicalHistory: string | null;
   temperature: string | null;
   weight: string | null;
+  medicationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails {
@@ -242,6 +246,8 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   patientId: string | null;
   sentToPatient: boolean | null;
   status: string | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;

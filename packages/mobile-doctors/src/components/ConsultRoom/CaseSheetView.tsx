@@ -18,6 +18,7 @@ import {
   CheckboxUnSelected,
   ClosePopup,
   DiagonisisRemove,
+  DropdownGreen,
   Edit,
   End,
   FileBig,
@@ -35,6 +36,7 @@ import {
   UserPlaceHolder,
   Video,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
@@ -238,6 +240,10 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
+  selectedReferral: OptionsObject;
+  setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
+  referralReason: string;
+  setReferralReason: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -257,6 +263,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [showdiagonisticPrescription, setshowdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
   const [adviceInstructions, setAdviceInstructions] = useState(false);
+  const [referral, setReferral] = useState(false);
   const [followup, setFollowUp] = useState(false);
 
   const [diagnosisView, setDiagnosisView] = useState(false);
@@ -268,7 +275,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
 
   const { showAphAlert, setLoading, loading, hideAphAlert } = useUIElements();
-  const { doctorDetails } = useAuth();
+  const { doctorDetails, specialties } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [yesorno, setyesorno] = useState<boolean>(false);
@@ -319,6 +326,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setShowPDF,
     setPatientImageshow,
     setUrl,
+    selectedReferral,
+    setSelectedReferral,
+    referralReason,
+    setReferralReason,
   } = props;
 
   const sendToPatientAction = () => {
@@ -803,6 +814,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View
           style={{
             minHeight: 44,
+            maxHeight: 110,
             marginTop: 8,
             marginBottom: 16,
             backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -814,6 +826,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInput
             style={{
               minHeight: 44,
+              maxHeight: 110,
               justifyContent: 'center',
               paddingTop: 12,
               paddingBottom: 12,
@@ -897,12 +910,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={{ marginHorizontal: 16 }}>
             {renderFields(
-              strings.case_sheet.medication_history,
+              strings.case_sheet.medical_history,
               (medicalHistory && medicalHistory.pastMedicalHistory) || '',
               (text) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   pastMedicalHistory: text,
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              strings.case_sheet.medication_history,
+              (medicalHistory && medicalHistory.medicationHistory) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  medicationHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
@@ -933,16 +957,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               strings.case_sheet.lifestyle_habits,
               (lifeStyleData && lifeStyleData.map((i) => i && i.description).join('\n')) || '',
               (text) => {
-                const _lifeStyleData = text.split('\n').map((i) => {
-                  if (i) {
-                    return {
-                      description: i,
-                    };
-                  }
-                });
-                setLifeStyleData(
-                  _lifeStyleData as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]
-                );
+                setLifeStyleData([
+                  {
+                    description: text,
+                    occupationHistory:
+                      (lifeStyleData && (lifeStyleData[0] || {}).occupationHistory) || null,
+                  },
+                ] as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]);
+              },
+              true
+            )}
+            {renderFields(
+              strings.case_sheet.occupational_history,
+              (lifeStyleData && lifeStyleData.map((i) => i && i.occupationHistory).join('\n')) ||
+                '',
+              (text) => {
+                setLifeStyleData([
+                  {
+                    description: (lifeStyleData && (lifeStyleData[0] || {}).description) || null,
+                    occupationHistory: text,
+                  },
+                ] as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]);
               },
               true
             )}
@@ -2480,10 +2515,77 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  const [specialtiesData, setSpecialtiesData] = useState<OptionsObject[]>([
+    { key: '-1', value: strings.case_sheet.select_Speciality },
+  ]);
+  useEffect(() => {
+    if (specialties) {
+      setSpecialtiesData([
+        ...specialties.map((i) => {
+          return { key: i.id, value: i.name };
+        }),
+        { key: '-1', value: strings.case_sheet.select_Speciality },
+      ]);
+    }
+  }, [specialties]);
+
+  const renderReferral = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading={strings.case_sheet.referral_headding}
+          collapse={referral}
+          onPress={() => setReferral(!referral)}
+        >
+          <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+            {renderHeaderText(strings.case_sheet.referral_drop_selection_header)}
+            <MaterialMenu
+              options={specialtiesData}
+              selectedText={selectedReferral ? selectedReferral.key : ''}
+              menuContainerStyle={styles.materialContainer}
+              onPress={(item) => {
+                setSelectedReferral(item);
+              }}
+              selectedTextStyle={styles.selTextStyle}
+              itemTextStyle={styles.textItemStyle}
+              itemContainer={styles.itemContainerStyle}
+              bottomPadding={{ paddingBottom: 10 }}
+              disable={!caseSheetEdit}
+            >
+              <View style={styles.menuContainer}>
+                <View style={styles.MtextView}>
+                  <Text style={styles.dropValueText}>
+                    {selectedReferral && selectedReferral.value}
+                  </Text>
+                  <View style={styles.dropDownGreenView}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+            {renderFields(
+              'Reason',
+              referralReason,
+              (text) => {
+                setReferralReason(text);
+              },
+              true
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={styles.casesheetView}>
       <View style={styles.casesheetView}>
-        <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
+        <KeyboardAwareScrollView
+          scrollEnabled={true}
+          enableAutomaticScroll={true}
+          style={{ flex: 1 }}
+          extraScrollHeight={80}
+          bounces={false}
+        >
           <ScrollView bounces={false} style={{ zIndex: 1 }}>
             <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
             {renderPatientImage()}
@@ -2498,6 +2600,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderDiagonisticPrescription()}
             {renderAdviceInstruction()}
             {/* {renderFollowUpView()} */}
+            {renderReferral()}
 
             <View style={{ zIndex: -1 }}>
               {/* {renderOtherInstructionsView()} */}
