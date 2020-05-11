@@ -201,7 +201,7 @@ export const caseSheetTypeDefs = gql`
     transferParentId: String
     caseSheet: [CaseSheet!]
     doctorInfo: Profile @provides(fields: "id")
-    sdConsultationDate: Date
+    sdConsultationDate: DateTime
   }
 
   type AppointmentDocuments {
