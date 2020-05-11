@@ -55,6 +55,7 @@ import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
 import { AboutUs } from 'components/AboutUs';
+import { MyPayments } from 'components/MyAccount/MyPayments';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -152,6 +153,7 @@ const App: React.FC = () => {
           />
           <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
           <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
+          <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
           <AuthRouted
             exact
             path={clientRoutes.notificationSettings()}
