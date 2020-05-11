@@ -1164,3 +1164,9 @@ export const addPharmaItemToCart = (
       onComplete && onComplete();
     });
 };
+
+export const dataSavedUserID = async (key: string) => {
+  let userId: any = await AsyncStorage.getItem(key);
+  userId = JSON.parse(userId);
+  return userId;
+};
