@@ -231,7 +231,10 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 </Typography>
                 <p>Subscribe to receive the latest info on COVID 19 from Apollo247</p>
               </div>
-              <NewsletterSubscriptionForm onClose={() => setOpenSubscriptionForm(false)} />
+              <NewsletterSubscriptionForm
+                category={props.title}
+                onClose={() => setOpenSubscriptionForm(false)}
+              />
             </div>
           </div>
         </div>

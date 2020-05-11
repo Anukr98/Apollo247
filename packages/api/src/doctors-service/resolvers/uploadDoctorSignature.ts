@@ -3,7 +3,6 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Resolver } from 'api-gateway';
 import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { format } from 'date-fns';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';

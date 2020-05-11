@@ -104,6 +104,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -128,7 +129,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -164,6 +165,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
   NASAL_DROPS = "NASAL_DROPS",
@@ -357,6 +359,10 @@ export interface ModifyCaseSheetInput {
   temperature?: string | null;
   weight?: string | null;
   bp?: string | null;
+  medicationHistory?: string | null;
+  occupationHistory?: string | null;
+  referralSpecialtyName?: string | null;
+  referralDescription?: string | null;
 }
 
 export interface OtherInstructionsInput {

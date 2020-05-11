@@ -238,6 +238,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     medicineCartType,
     removeCartItem,
     updateItemShippingStatus,
+    changeCartTatStatus,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -260,10 +261,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const [showNonDeliverablePopup, setShowNonDeliverablePopup] = React.useState(false);
   const addToCartRef = useRef(null);
   const isMounted = useRef(false);
+  const urlParams = new URLSearchParams(window.location.search);
+  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
 
   useEffect(() => {
     if (isMounted.current && deliveryAddressId && !selectingAddress) {
-      fetchDeliveryTime(zipCode);
+      !nonCartFlow && fetchDeliveryTime(zipCode);
     } else {
       isMounted.current = true;
     }
@@ -291,7 +294,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const index = addresses.findIndex((address) => address.id === deliveryAddressId);
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
               setZipCode(zipCode);
-              if (cartItems.length > 0) {
+              if (cartItems.length > 0 && !nonCartFlow) {
                 fetchDeliveryTime(zipCode);
               }
               props.selectedZipCode(zipCode);
@@ -323,6 +326,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const checkServiceAvailability = (zipCode: string | null) => {
     // setIsLoading(true);
+    changeCartTatStatus && changeCartTatStatus(false);
 
     return axios.post(
       apiDetails.service_url || '',
@@ -444,7 +448,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               if (nonDeliverySKUArr && nonDeliverySKUArr.length) {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
+              } else {
+                changeCartTatStatus && changeCartTatStatus(true);
               }
+
               setErrorDeliveryTimeMsg('');
               setDeliveryTime(deliveryTime);
             } else if (typeof res.data.errorMSG === 'string') {
@@ -453,6 +460,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             }
           }
           setSelectingAddress(false);
+
           // setIsLoading(false);
         } catch (error) {
           setDeliveryLoading(false);
