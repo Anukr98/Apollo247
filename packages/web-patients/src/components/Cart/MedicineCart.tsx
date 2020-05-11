@@ -513,6 +513,16 @@ export const MedicineCart: React.FC = (props) => {
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [selectedZip, setSelectedZip] = React.useState<string>('');
 
+  useEffect(() => {
+    if (params.orderStatus === 'failed') {
+      gtmTracking({
+        category: 'Pharmacy',
+        action: 'Order',
+        label: 'Failed / Cancelled',
+      });
+    }
+  }, [showOrderPopup]);
+
   const removeImagePrescription = (fileName: string) => {
     const finalPrescriptions =
       prescriptions && prescriptions.filter((fileDetails) => fileDetails.name !== fileName);
@@ -725,7 +735,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);

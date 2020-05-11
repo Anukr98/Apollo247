@@ -364,18 +364,6 @@ export const Appointments: React.FC = (props) => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  useEffect(() => {
-    if (isFailurePayment) {
-      /**Gtm code start start */
-      gtmTracking({
-        category: 'Consultations',
-        action: specialtyName,
-        label: 'Failed / Cancelled',
-      });
-      /**Gtm code start end */
-    }
-  }, [isFailurePayment]);
-
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -496,6 +484,24 @@ export const Appointments: React.FC = (props) => {
       }
     }
   }, [availableAppointments, successApptId, isConfirmPopupLoaded]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    if (pageUrl.includes('failed')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Failed / Cancelled',
+      });
+    } else if (pageUrl.includes('success')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Order Success',
+      });
+    }
+    /**Gtm code start end */
+  }, [specialtyName]);
 
   // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
