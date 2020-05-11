@@ -816,6 +816,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                         </Text>
                         {search_heading_text[4]}
                       </Text>
+                      <View style={{ backgroundColor:'#02475b', marginTop:5, opacity:0.2, height:1 }} />
                     </View>
                   ) : (
                     <SectionHeaderComponent
