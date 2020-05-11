@@ -80,6 +80,7 @@ import {
   PatientNotificationSettings,
   SearchHistory,
   RegistrationCodes,
+  CouponPharmaRules,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -164,6 +165,7 @@ export const connect = async () => {
         Coupon,
         CouponConsultRules,
         CouponGenericRules,
+        CouponPharmaRules,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
