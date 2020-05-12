@@ -844,7 +844,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     { 
       id: MEDICINE_FREQUENCY.STAT,
-      value: 'Stat(Immediately)',
+      value: 'STAT (Immediately)',
       selected: false,
     },
     {
@@ -1053,9 +1053,9 @@ export const MedicinePrescription: React.FC = () => {
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
     PATCH: { value: 'patch' },
-    AS_PRESCRIBED: { value: 'As prescribed' },
     DROP: {value: 'drop(s)'},
     CAPSULE: {value: 'capsule(s)'},
+    AS_PRESCRIBED: { value: 'As prescribed' },
   };
   function renderSuggestion(
     suggestion: OptionType,
@@ -1952,7 +1952,7 @@ export const MedicinePrescription: React.FC = () => {
                       medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
                         ? ''
                         : medicine.medicineFrequency
-                        ? medicine.medicineFrequency
+                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT ? 'STAT (Immediately)' : medicine.medicineFrequency
                             .split('_')
                             .join(' ')
                             .toLowerCase()
@@ -2020,7 +2020,7 @@ export const MedicinePrescription: React.FC = () => {
                 const favMedicine = _favMedicine!;
                 const favDurations =
                   favMedicine.medicineConsumptionDurationInDays &&
-                  ` for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
+                  `for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
                     favMedicine.medicineConsumptionDurationUnit
                       ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                       : 'day(s)'
@@ -2088,11 +2088,11 @@ export const MedicinePrescription: React.FC = () => {
                           favMedicine.medicineCustomDosage !== ''
                             ? ''
                             : favMedicine.medicineFrequency
-                            ? favMedicine.medicineFrequency
-                                .split('_')
-                                .join(' ')
-                                .toLowerCase()
-                            : dosageFrequency[0].id
+                            ? favMedicine.medicineFrequency === MEDICINE_FREQUENCY.STAT ? 'STAT (Immediately)' : favMedicine.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                        : dosageFrequency[0].id
                                 .split('_')
                                 .join(' ')
                                 .toLowerCase()
