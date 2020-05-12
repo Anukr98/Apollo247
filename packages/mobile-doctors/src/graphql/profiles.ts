@@ -720,6 +720,8 @@ export const GET_CASESHEET = gql`
         caseSheet {
           consultType
           doctorType
+          referralSpecialtyName
+          referralDescription
           diagnosis {
             name
           }
