@@ -84,7 +84,7 @@ const consultOrders: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
-  // console.log('orders Response', JSON.stringify(response, null, 2));
+  // console.log('appointments Response', JSON.stringify(response, null, 2));
 
 
 
