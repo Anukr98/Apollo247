@@ -532,7 +532,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const showCancel = !isAwaitingReschedule ? true : false;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -634,7 +634,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
+                opacity: 1,
               }}
               onPress={() => {
                 console.log(data.status, 'statis');
@@ -650,7 +650,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     'Reschdule_Appointment_Online_Details_Clicked'
                   );
                   try {
-                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                    NextAvailableSlotAPI();
                   } catch (error) {
                     CommonBugFender('AppointmentOnlineDetails_RESCHEDULE_try', error);
                   }
