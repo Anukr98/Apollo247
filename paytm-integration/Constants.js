@@ -16,4 +16,10 @@ module.exports = Object.freeze({
   DOCTOR_COUNT_SENIOR: `query {seniorDoctorCount}`,
   DOCTOR_COUNT_JUNIOR: `query {juniorDoctorCount}`,
   UPDATE_DOC_SLOTS_ES: `mutation{ addAllDoctorSlotsElastic(id: "0",fromSlotDate:"{0}",toSlotDate:"{1}",limit: {2} ,offset: {3} ) }`,
+  POSSIBLE_PAYMENT_TYPES: ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'],
+  PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS: 'Invalid parameters',
+  PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON: 'Something went wrong, please try again!',
+  PAYMENT_MODE_ONLY_TRUE: 'YES',
+  INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.'
+
 });

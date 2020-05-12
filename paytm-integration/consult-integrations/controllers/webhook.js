@@ -32,8 +32,8 @@ module.exports = async (req, res, next) => {
         logger.info(`${payload.ORDERID} - makeAppointmentPayment -  ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.info(`${orderId} - consult-payment-webhook - ${JSON.stringify(response.data.errors)}`)
-            throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
+            logger.info(`${orderId} - consult-payment-webhook - ${JSON.stringify(response.data.errors)}`);
+            //throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
         }
         res.send("webhook consumed successfully!");
 
@@ -45,4 +45,4 @@ module.exports = async (req, res, next) => {
         }
         next(e);
     }
-}
+};

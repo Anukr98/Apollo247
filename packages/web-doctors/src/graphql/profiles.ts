@@ -1204,6 +1204,10 @@ export const GET_PATIENT_LOG = gql`
           uhid
           photoUrl
         }
+        unreadMessagesCount {
+          appointmentId
+          count
+        }
       }
       totalResultCount
     }

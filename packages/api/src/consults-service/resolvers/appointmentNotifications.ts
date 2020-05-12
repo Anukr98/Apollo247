@@ -74,7 +74,7 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
     new Date(currentDate),
     parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME.toString(), 10)
   );
-  const appointments = await apptRepo.getAppointmentsByDate(futureTime);
+  const appointments = await apptRepo.getAllAppointmentsWithDate(futureTime);
   const appointmentIds = appointments.map((appointment) => appointment.id);
 
   if (appointmentIds.length) {

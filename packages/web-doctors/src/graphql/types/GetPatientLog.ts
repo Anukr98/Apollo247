@@ -22,6 +22,12 @@ export interface GetPatientLog_getPatientLog_patientLog_patientInfo {
   photoUrl: string | null;
 }
 
+export interface GetPatientLog_getPatientLog_patientLog_unreadMessagesCount {
+  __typename: "AppointmentCount";
+  appointmentId: string | null;
+  count: number | null;
+}
+
 export interface GetPatientLog_getPatientLog_patientLog {
   __typename: "PatientLog";
   patientid: string | null;
@@ -29,6 +35,7 @@ export interface GetPatientLog_getPatientLog_patientLog {
   appointmentids: (string | null)[] | null;
   appointmentdatetime: any | null;
   patientInfo: GetPatientLog_getPatientLog_patientLog_patientInfo | null;
+  unreadMessagesCount: (GetPatientLog_getPatientLog_patientLog_unreadMessagesCount | null)[] | null;
 }
 
 export interface GetPatientLog_getPatientLog {
