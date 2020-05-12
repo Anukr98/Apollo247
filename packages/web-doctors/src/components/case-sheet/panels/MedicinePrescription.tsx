@@ -1049,12 +1049,12 @@ export const MedicinePrescription: React.FC = () => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
+    CAPSULE: {value: 'capsule(s)'},
+    DROP: {value: 'drop(s)'},
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
     PATCH: { value: 'patch' },
-    DROP: {value: 'drop(s)'},
-    CAPSULE: {value: 'capsule(s)'},
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
   function renderSuggestion(
