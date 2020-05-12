@@ -118,7 +118,6 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
 
   useEffect(() => {
     if (isEmailValid(userEmail) && comment.length) {
-      console.log('enable enable');
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
@@ -170,7 +169,6 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       } else {
       }
     });
-    console.log('144', commentData);
   };
 
   return (

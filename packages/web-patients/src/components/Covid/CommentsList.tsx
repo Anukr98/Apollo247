@@ -101,7 +101,6 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
     <div className={classes.root}>
       {commentsArr.length > 0 &&
         commentsArr.map((item) => {
-          console.log(555, item);
           return (
             <div className={classes.listRow}>
               <div className={classes.listHeader}>
