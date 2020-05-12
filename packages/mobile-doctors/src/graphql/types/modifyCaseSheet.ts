@@ -23,6 +23,7 @@ export interface modifyCaseSheet_modifyCaseSheet_patientDetails_healthVault {
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails_lifeStyle {
   __typename: "LifeStyle";
   description: string | null;
+  occupationHistory: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientAddress {
@@ -52,6 +53,7 @@ export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHi
   pastSurgicalHistory: string | null;
   temperature: string | null;
   weight: string | null;
+  medicationHistory: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails {
@@ -226,6 +228,8 @@ export interface modifyCaseSheet_modifyCaseSheet {
   status: string | null;
   sentToPatient: boolean | null;
   updatedDate: any | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
 }
 
 export interface modifyCaseSheet {

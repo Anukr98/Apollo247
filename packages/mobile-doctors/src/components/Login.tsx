@@ -22,6 +22,7 @@ import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppSignature } from '@aph/mobile-doctors/src/helpers/AppSignature';
 
 const styles = LoginStyles;
 
@@ -41,12 +42,17 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const { setLoading } = useUIElements();
   const { setDoctorDetailsError, setDoctorDetails, clearFirebaseUser } = useAuth();
+  const [appSign, setAppSign] = useState<string>('');
 
   useEffect(() => {
     try {
       fireBaseFCM();
       clearFirebaseUser && clearFirebaseUser();
       setLoading && setLoading(false);
+      if (Platform.OS === 'android')
+        AppSignature.getAppSignature().then((sign: string[]) => {
+          setAppSign(sign[0] || '');
+        });
     } catch (error) {}
   }, []);
 
@@ -125,7 +131,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI('+91' + phoneNumber)
+            loginAPI('+91' + phoneNumber, appSign)
               .then((confirmResult) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);

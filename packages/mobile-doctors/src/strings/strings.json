@@ -338,10 +338,12 @@
     "weight": "Weight (kgs)",
     "bp": "BP (mm Hg)",
     "temperature": "Temperature (°F)",
+    "medical_history": "Medical History*",
     "medication_history": "Medication History*",
     "drug_allergies": "Drug Allergies",
     "diet_allergies": "Diet Allergies/Restrictions",
     "lifestyle_habits": "Personal History, Lifestyle & Habits",
+    "occupational_history": "Occupational History",
     "menstrual_history": "Menstrual History",
     "family_medical_history": "Family Medical History",
     "tests": "Tests",
@@ -364,10 +366,13 @@
     "sort_by": "SORT BY",
     "symptoms": "Symptoms",
     "patients_medi_family_history": "Patient’s Medical & Family History",
+    "referral_headding": "Referral (Optional)",
+    "referral_drop_selection_header": "Which speciality should the patient consult?",
     "referral": "Referral",
     "pulmologist": "Pulmologist",
     "submitted_by": "Submitted by Dr.",
-    "on": "on"
+    "on": "on",
+    "select_Speciality": "Select Speciality"
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",

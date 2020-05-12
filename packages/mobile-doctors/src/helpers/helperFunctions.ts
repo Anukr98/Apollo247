@@ -6,7 +6,6 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -14,24 +13,10 @@ import _ from 'lodash';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 export const getBuildEnvironment = () => {
-  switch (apiRoutes.graphql()) {
-    case 'https://aph.dev.api.popcornapps.com//graphql':
-      return 'DEV';
-    case 'https://aph.staging.api.popcornapps.com//graphql':
-      return 'QA';
-    case 'https://aph.uat.api.popcornapps.com//graphql':
-      return 'UAT';
-    case 'https://aph.vapt.api.popcornapps.com//graphql':
-      return 'VAPT';
-    case 'https://api.apollo247.com//graphql':
-      return 'PROD';
-    case 'https://asapi.apollo247.com//graphql':
-      return 'PRF';
-    default:
-      return '';
-  }
+  return AppConfig.APP_ENV as string;
 };
 
 export const timeTo12HrFormat = (time: string) => {

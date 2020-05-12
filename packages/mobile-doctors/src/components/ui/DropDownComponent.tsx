@@ -1,4 +1,4 @@
-import { DropdownGreen } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Dropdown } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from 'react-native-popup-menu';
@@ -65,7 +65,7 @@ export const DropDownComponent: React.FC<DropDownComponentProps> = (props) => {
             >
               {relation}
             </Text>
-            <DropdownGreen size="sm" />
+            <Dropdown size="sm" />
           </View>
         </MenuTrigger>
         <MenuOptions

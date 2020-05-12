@@ -75,6 +75,7 @@
     "bugsnag-react-native": "^2.23.5",
     "crypto-js": "^3.3.0",
     "date-fns": "^2.0.0-beta.2",
+    "firebase": "^7.6.1",
     "graphql": "~14.2.1",
     "graphql-tag": "^2.10.1",
     "jetifier": "^1.6.5",

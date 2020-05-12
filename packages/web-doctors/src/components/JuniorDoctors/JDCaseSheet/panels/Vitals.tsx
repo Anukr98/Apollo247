@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField } from '@aph/web-ui-components';
@@ -89,8 +89,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const Vitals: React.FC = () => {
   const classes = useStyles({});
-  const heightElement = useRef(null);
-  const weightElement = useRef(null);
   const {
     height,
     setHeight,
@@ -105,16 +103,6 @@ export const Vitals: React.FC = () => {
     setVitalError,
   } = useContext(CaseSheetContextJrd);
 
-  useEffect(() => {
-    if (vitalError.height) {
-      const node = (heightElement as any).current;
-      if (node) node.focus();
-    } else if (vitalError.weight) {
-      const node = (weightElement as any).current;
-      if (node) node.focus();
-    }
-  }, [vitalError]);
-
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
@@ -127,7 +115,6 @@ export const Vitals: React.FC = () => {
                 fullWidth
                 multiline
                 required
-                inputRef={heightElement}
                 value={height}
                 error={height.trim() === '' || height === null || height === undefined}
                 helperText={vitalError.height}
@@ -160,7 +147,6 @@ export const Vitals: React.FC = () => {
                 multiline
                 value={weight}
                 required
-                inputRef={weightElement}
                 error={weight.trim() === '' || weight === null || weight === undefined}
                 helperText={vitalError.weight}
                 onChange={(e) => {
