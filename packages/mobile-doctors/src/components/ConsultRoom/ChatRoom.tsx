@@ -133,7 +133,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const openPopUp = (rowData: any) => {
     setLoading && setLoading(true);
-    if (rowData.url.match(/\.(pdf)$/)) {
+    if (
+      rowData.url.match(/\.(pdf)$/) ||
+      (rowData.fileType && rowData.fileType === 'pdf' && rowData.id !== patientId)
+    ) {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
           .then((data: any) => {
@@ -151,7 +154,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading && setLoading(false);
         props.setShowPDF(true);
       }
-    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+    } else if (
+      rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
+      (rowData.fileType && rowData.fileType === 'image' && rowData.id !== patientId)
+    ) {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
           .then((data: any) => {
@@ -269,7 +275,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderImageView = (rowData: any) => {
-    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    const isMatched =
+      rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
+      (rowData.fileType && rowData.fileType === 'image' && rowData.id !== patientId);
     const onPress = () => {
       if (isMatched) {
         openPopUp(rowData);
