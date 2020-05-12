@@ -7,13 +7,13 @@ import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { CallOurExperts } from 'components/CallOurExperts';
-// import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
-// import { Link } from 'react-router-dom';
+import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
+import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
-// import { NavigationBottom } from 'components/NavigationBottom';
-// import { CommentsForm } from 'components/Covid/CommentsForm';
-// import { CommentsList } from 'components/Covid/CommentsList';
-// import { AphButton } from '@aph/web-ui-components';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { CommentsForm } from 'components/Covid/CommentsForm';
+import { CommentsList } from 'components/Covid/CommentsList';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         fontSize: 16,
         lineHeight: '26px',
-        // width: 'calc(100% - 360px)',
+        width: 'calc(100% - 360px)',
         backgroundColor: 'transparent',
         boxShadow: 'none',
       },
@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     expertsContainer: {
       paddingTop: 20,
-      width: '30%',
+      width: '60%',
     },
   };
 });
@@ -219,15 +219,15 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     <CallOurExperts />
                   </div>
                 </div>
-                {/* <div className={classes.rightSidebar}>
-              <div className={classes.formCard}>
-                <CommentsForm />
-                <CommentsList />
-              </div>
-              <div className={classes.bottomActions}>
-                <AphButton color="primary">Share this article</AphButton>
-              </div>
-            </div> */}
+                <div className={classes.rightSidebar}>
+                  <div className={classes.formCard}>
+                    <CommentsForm />
+                    <CommentsList />
+                  </div>
+                  {/* <div className={classes.bottomActions}>
+                    <AphButton color="primary">Share this article</AphButton>
+                  </div> */}
+                </div>
               </div>
             </>
           )}
