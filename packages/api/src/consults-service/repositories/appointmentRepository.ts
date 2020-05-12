@@ -124,6 +124,19 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
     });
   }
+
+  getAllAppointmentsWithDate(appointmentDateTime: Date) {
+    return this.find({
+      where: {
+        appointmentDateTime,
+        status: STATUS.PENDING,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
   async getAppointmentsByDoctorIds(doctorId: string) {
     const appointmentData = await this.find({
       where: {
