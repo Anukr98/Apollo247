@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -61,6 +62,12 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
 }
 
 export enum DEVICETYPE {
@@ -155,6 +162,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -213,7 +221,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -267,6 +275,11 @@ export enum PATIENT_ADDRESS_TYPE {
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
 export enum REQUEST_ROLES {
@@ -532,6 +545,7 @@ export interface MedicineCartInput {
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
+  coupon?: string | null;
 }
 
 export interface MedicineCartItem {
@@ -582,6 +596,14 @@ export interface OrderCancelInput {
   remarksCode?: string | null;
 }
 
+export interface OrderLineItems {
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
+}
+
 export interface OtpVerificationInput {
   id: string;
   otp: string;
@@ -622,6 +644,12 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
 }
 
 export interface PrescriptionMedicineInput {

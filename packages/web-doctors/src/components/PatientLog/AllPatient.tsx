@@ -13,97 +13,95 @@ import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import MessageIcon from '@material-ui/icons/Message';
 import React from 'react';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: '100%',
-      backgroundColor: theme.palette.background.paper,
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    width: '100%',
+    backgroundColor: theme.palette.background.paper,
+  },
+  card: {
+    width: '100%',
+    margin: 10,
+    height: 90,
+    backgroundColor: '#fff',
+    boxShadow: 'none',
+    marginBottom: 16,
+  },
+  cardContent: {
+    width: '90%',
+  },
+  section2: {
+    margin: '0 10px',
+    color: '#02475b',
+    [theme.breakpoints.between('sm', 'md')]: {
+      margin: '0 2px',
     },
-    card: {
-      width: '100%',
-      margin: 10,
-      height: 90,
-      backgroundColor: '#fff',
-      boxShadow: 'none',
-      marginBottom: 16,
-    },
-    cardContent: {
-      width: '90%',
-    },
-    section2: {
-      margin: '0 10px',
+    '& button': {
       color: '#02475b',
+      marginRight: 15,
       [theme.breakpoints.between('sm', 'md')]: {
-        margin: '0 2px',
-      },
-      '& button': {
-        color: '#02475b',
-        marginRight: 15,
-        [theme.breakpoints.between('sm', 'md')]: {
-          marginRight: 5,
-          padding: '10px 5px',
-        },
+        marginRight: 5,
+        padding: '10px 5px',
       },
     },
-    mainHeading: {
-      color: '#02475b',
-      fontWeight: 500,
+  },
+  mainHeading: {
+    color: '#02475b',
+    fontWeight: 500,
+    fontSize: 18,
+    lineHeight: '25px',
+    [theme.breakpoints.between('sm', 'md')]: {
       fontSize: 18,
-      lineHeight: '25px',
-      [theme.breakpoints.between('sm', 'md')]: {
-        fontSize: 18,
+    },
+  },
+  mainHeadingmini: {
+    fontSize: 14,
+    fontWeight: 'normal',
+    color: 'rgba(2,71,91,0.6)',
+  },
+  mainHeadingconsult: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#02475b',
+  },
+  bigAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: '50%',
+  },
+  valign: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 !important',
+  },
+  bold: {
+    fontWeight: 700,
+  },
+  chatSpan: {
+    '& a': {
+      width: 102,
+      height: 32,
+      paddingTop: 6,
+      borderRadius: 16,
+      backgroundColor: '#fc9916',
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      fontWeight: 600,
+      fontSize: 14,
+      display: 'inline-block',
+      color: '#fff',
+      '& svg': {
+        width: 16,
+        marginTop: -3,
       },
     },
-    mainHeadingmini: {
-      fontSize: 14,
-      fontWeight: 'normal',
-      color: 'rgba(2,71,91,0.6)',
-    },
-    mainHeadingconsult: {
-      fontSize: 14,
-      fontWeight: 500,
-      color: '#02475b',
-    },
-    bigAvatar: {
-      width: 60,
-      height: 60,
-      borderRadius: '50%',
-    },
-    valign: {
-      display: 'flex',
-      alignItems: 'center',
-      padding: '0 !important',
-    },
-    bold: {
-      fontWeight: 700,
-    },
-    chatSpan: {
-      '& a': {
-        width: 102,
-        height: 32,
-        paddingTop: 6,
-        borderRadius: 16,
-        backgroundColor: '#fc9916',
-        textAlign: 'center',
-        textTransform: 'uppercase',
-        fontWeight: 600,
-        fontSize: 14,
-        display: 'inline-block',
-        color: '#fff',
-        '& svg': {
-          width: 16,
-          marginTop: -3,
-        },
-      },
-    },
-    chatIcon: {
-      height: 10,
-      width: 10,
-      marginTop: -18,
-      paddingRight: 15,
-    },
-  })
-);
+  },
+  chatIcon: {
+    height: 10,
+    width: 10,
+    marginTop: -18,
+    paddingRight: 15,
+  },
+}));
 
 interface AllPatientProps {
   patientData: any;
@@ -203,6 +201,13 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           </IconButton>
                           {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
                           Chat
+                          {patient.appointmentids.length > 0 &&
+                          patient.unreadMessagesCount.length > 0 &&
+                          patient.appointmentids[0] ===
+                            patient.unreadMessagesCount[0].appointmentId &&
+                          patient.unreadMessagesCount[0].count > 0
+                            ? '(' + patient.unreadMessagesCount[0].count + ')'
+                            : ''}
                         </Link>
                       </span>
 

@@ -49,29 +49,6 @@ interface OptionType {
 
 let suggestions: OptionType[] = [];
 
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      className={classes.inputContainer}
-      autoFocus
-      placeholder="Search"
-      fullWidth
-      InputProps={{
-        inputRef: (node: any) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -669,7 +646,7 @@ export const MedicinePrescription: React.FC = () => {
   const [customDosageNight, setCustomDosageNight] = React.useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState<any>();
   const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
@@ -787,6 +764,11 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
     {
+      id: MEDICINE_FREQUENCY.STAT,
+      value: 'STAT (Immediately)',
+      selected: false,
+    },
+    {
       id: MEDICINE_FREQUENCY.ONCE_A_MONTH,
       value: 'Once a month',
       selected: false,
@@ -826,6 +808,11 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.INTRAMUSCULAR,
       value: 'Intramuscular',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRAVAGINAL,
+      value: 'Intravaginal',
       selected: false,
     },
     {
@@ -983,6 +970,8 @@ export const MedicinePrescription: React.FC = () => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
+    CAPSULE: { value: 'capsule(s)' },
+    DROP: { value: 'drop(s)' },
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
@@ -1424,10 +1413,12 @@ export const MedicinePrescription: React.FC = () => {
                 medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
                   ? ''
                   : medicine.medicineFrequency
-                  ? medicine.medicineFrequency
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
+                  ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                    ? 'STAT (Immediately)'
+                    : medicine.medicineFrequency
+                        .split('_')
+                        .join(' ')
+                        .toLowerCase()
                   : dosageFrequency[0].id
                       .split('_')
                       .join(' ')
@@ -1520,10 +1511,10 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' &&
-        customDosageNoon.trim() === '' &&
-        customDosageEvening.trim() === '' &&
-        customDosageNight.trim() === '')
+      customDosageMorning.trim() === '' &&
+      customDosageNoon.trim() === '' &&
+      customDosageEvening.trim() === '' &&
+      customDosageNight.trim() === ''
     ) {
       setErrorState({
         ...errorState,
@@ -1716,6 +1707,29 @@ export const MedicinePrescription: React.FC = () => {
     });
   };
 
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+
+    return (
+      <AphTextField
+        className={classes.inputContainer}
+        autoFocus
+        placeholder="Search"
+        fullWidth
+        InputProps={{
+          inputRef: (node: any) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
@@ -1855,7 +1869,7 @@ export const MedicinePrescription: React.FC = () => {
                   }}
                   {...autosuggestProps}
                   inputProps={{
-                    classes,
+                    //classes,
                     color: 'primary',
                     id: 'react-autosuggest-simple',
                     placeholder: 'Search',
@@ -1923,8 +1937,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >

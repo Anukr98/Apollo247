@@ -124,6 +124,19 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
     });
   }
+
+  getAllAppointmentsWithDate(appointmentDateTime: Date) {
+    return this.find({
+      where: {
+        appointmentDateTime,
+        status: STATUS.PENDING,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
   async getAppointmentsByDoctorIds(doctorId: string) {
     const appointmentData = await this.find({
       where: {
@@ -994,22 +1007,22 @@ export class AppointmentRepository extends Repository<Appointment> {
     const results = this.createQueryBuilder('appointment')
       .select([
         'appointment.patientId as patientId',
-        'max("appointmentDateTime") as appointmentDateTime',
-        'ARRAY_AGG("id" order by appointment.appointmentDateTime desc ) as appointmentids',
+        'max("sdConsultationDate") as appointmentDateTime',
+        'ARRAY_AGG("id" order by appointment.sdConsultationDate desc ) as appointmentids',
       ])
       .addSelect('COUNT(*) AS consultsCount')
       .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment.status = :status', { status: STATUS.COMPLETED });
 
     if (type == patientLogType.FOLLOW_UP) {
-      results.andWhere('appointment.appointmentDateTime > :tenDays', {
+      results.andWhere('appointment.sdConsultationDate > :tenDays', {
         tenDays: subDays(new Date(), 10),
       });
-      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+      results.andWhere('appointment.sdConsultationDate < :beforeNow', { beforeNow: new Date() });
     } else if (type == patientLogType.REGULAR) {
       results.having('count(*) > 2');
     } else {
-      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+      results.andWhere('appointment.sdConsultationDate < :beforeNow', { beforeNow: new Date() });
     }
 
     if (patientName && patientName.length > 0) {
@@ -1029,7 +1042,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     } else if (sortBy == patientLogSort.NUMBER_OF_CONSULTS) {
       results.orderBy('count(*)', 'DESC');
     } else {
-      results.orderBy('max("appointmentDateTime")', 'DESC');
+      results.orderBy('max("sdConsultationDate")', 'DESC');
     }
 
     return results.getRawMany();
