@@ -46,7 +46,11 @@ import {
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContextJrd, VitalErrorProps } from 'context/CaseSheetContextJrd';
+import {
+  CaseSheetContextJrd,
+  VitalErrorProps,
+  LifeStyleErrorProps,
+} from 'context/CaseSheetContextJrd';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -475,7 +479,15 @@ export const JDConsultRoom: React.FC = () => {
   const [callId, setcallId] = useState<string>('');
   const [chatRecordId, setChatRecordId] = useState<string>('');
   const [documentArray, setDocumentArray] = useState<any>();
+  const [medicationHistory, setMedicationHistory] = useState<string>('');
+  const [occupationHistory, setOccupationHistory] = useState<string>('');
+  const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
+  const [referralDescription, setReferralDescription] = useState<string>('');
+  const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+  const [lifeStyleError, setLifeStyleError] = useState<LifeStyleErrorProps>({
+    medicationHistory: '',
+  });
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -648,6 +660,12 @@ export const JDConsultRoom: React.FC = () => {
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
+          );
+
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
@@ -772,6 +790,29 @@ export const JDConsultRoom: React.FC = () => {
             setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
           }
 
+          // Refferal
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getJuniorDoctorCaseSheet &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
+          )
+            setReferralSpecialtyName(
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+            );
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getJuniorDoctorCaseSheet &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
+          )
+            setReferralDescription(
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription || ''
+            );
+
           // patient medical and family history
           if (
             _data &&
@@ -801,6 +842,10 @@ export const JDConsultRoom: React.FC = () => {
             setPastMedicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                 .pastMedicalHistory || ''
+            );
+            setMedicationHistory(
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .medicationHistory || ''
             );
             setPastSurgicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
@@ -987,6 +1032,10 @@ export const JDConsultRoom: React.FC = () => {
       temperature: temperature,
       weight: weight,
       bp: bp,
+      medicationHistory: medicationHistory,
+      occupationHistory: occupationHistory,
+      referralSpecialtyName: referralSpecialtyName,
+      referralDescription: referralDescription,
     };
     setSaving(true);
     client
@@ -1316,6 +1365,18 @@ export const JDConsultRoom: React.FC = () => {
             setBp,
             setTemperature,
             setGender,
+            medicationHistory,
+            setMedicationHistory,
+            occupationHistory,
+            setOccupationHistory,
+            referralSpecialtyName,
+            referralDescription,
+            referralError,
+            setReferralError,
+            setReferralSpecialtyName,
+            setReferralDescription,
+            lifeStyleError,
+            setLifeStyleError,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

@@ -78,7 +78,7 @@ import {
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContext, VitalErrorProps } from 'context/CaseSheetContext';
+import { CaseSheetContext, VitalErrorProps, LifeStyleErrorProps } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
 import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
@@ -385,8 +385,13 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+  const [lifeStyleError, setLifeStyleError] = useState<LifeStyleErrorProps>({
+    medicationHistory: '',
+  });
   const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
   const [referralDescription, setReferralDescription] = useState<string>('');
+  const [medicationHistory, setMedicationHistory] = useState<string>('');
+  const [occupationHistory, setOccupationHistory] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
@@ -691,6 +696,9 @@ export const ConsultTabs: React.FC = () => {
             setPastMedicalHistory(
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory || ''
             );
+            setMedicationHistory(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.medicationHistory || ''
+            );
             setPastSurgicalHistory(
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory || ''
             );
@@ -720,6 +728,12 @@ export const ConsultTabs: React.FC = () => {
 
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
+
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
           );
 
           // set Jrd name and Jrd Casesheet submit date.
@@ -867,6 +881,12 @@ export const ConsultTabs: React.FC = () => {
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
+          );
+
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
@@ -1011,6 +1031,10 @@ export const ConsultTabs: React.FC = () => {
             );
             setPastMedicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .medicationHistory || ''
+            );
+            setMedicationHistory(
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                 .pastMedicalHistory || ''
             );
             setPastSurgicalHistory(
@@ -1024,6 +1048,29 @@ export const ConsultTabs: React.FC = () => {
             setWeight(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
+
+            // Refferal
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getJuniorDoctorCaseSheet &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
+            )
+              setReferralSpecialtyName(
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+              );
+
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getJuniorDoctorCaseSheet &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
+            )
+              setReferralDescription(
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription || ''
+              );
 
             // set Jrd name and Jrd Casesheet submit date.
             let jrdFirstName = '',
@@ -1301,6 +1348,10 @@ export const ConsultTabs: React.FC = () => {
         temperature: temperature,
         weight: weight,
         bp: bp,
+        medicationHistory: medicationHistory,
+        occupationHistory: occupationHistory,
+        referralSpecialtyName: referralSpecialtyName,
+        referralDescription: referralDescription,
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -1636,6 +1687,12 @@ export const ConsultTabs: React.FC = () => {
             setReferralSpecialtyName,
             setReferralDescription,
             setReferralError,
+            medicationHistory,
+            setMedicationHistory,
+            occupationHistory,
+            setOccupationHistory,
+            lifeStyleError,
+            setLifeStyleError,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

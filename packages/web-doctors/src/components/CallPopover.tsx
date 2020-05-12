@@ -848,6 +848,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     referralSpecialtyName,
     referralDescription,
     setReferralError,
+    medicationHistory,
+    setLifeStyleError,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -879,6 +881,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [showVital, setShowVital] = React.useState<boolean>(false);
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
+  const [showLifeStyle, setShowLifeStyle] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
 
@@ -1821,6 +1824,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
       case 'referralDescription':
         return localStorageItem ? localStorageItem.referralDescription : referralDescription;
+      case 'medicationHistory':
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
     }
   };
 
@@ -1829,7 +1834,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const weightValue = getDefaultValue('weight');
     const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
     const referralDescription = getDefaultValue('referralDescription');
-    if (heightValue.trim() === '' && weightValue.trim() === '') {
+    const medicationHistory = getDefaultValue('medicationHistory');
+    if (medicationHistory.trim() === '') {
+      setShowLifeStyle(true);
+      setLifeStyleError({
+        medicationHistory: 'This field is required',
+      });
+      return true;
+    } else if (heightValue.trim() === '' && weightValue.trim() === '') {
+      setShowLifeStyle(false);
+      setLifeStyleError({
+        medicationHistory: '',
+      });
       setShowVital(true);
       setVitalError({
         height: 'This field is required',
@@ -2860,7 +2876,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Paper>
       </Modal>
-      {/* Vital field required popup start */}
+      {/* Vital field required popup end */}
       {/* referral field required popup start */}
       <Modal
         open={showReferral}
@@ -2891,7 +2907,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Paper>
       </Modal>
-      {/* Vital field required popup start */}
+      {/* referral field required popup end */}
+      {/* life style field required popup start */}
+      <Modal
+        open={showLifeStyle}
+        onClose={() => setShowLifeStyle(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowLifeStyle(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems some of the life style info is empty. Please fill the "patient medical and
+              family history" section's field under the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowLifeStyle(false)}>
+                Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* life style field required popup end */}
     </div>
   );
 };
