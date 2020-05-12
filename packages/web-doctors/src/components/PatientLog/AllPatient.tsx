@@ -203,6 +203,11 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           </IconButton>
                           {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
                           Chat
+                          {patient.appointmentids.length > 0 &&
+                          patient.unreadMessagesCount.length > 0 &&
+                          patient.appointmentids[0] ===
+                            patient.unreadMessagesCount[0].appointmentId &&
+                          patient.unreadMessagesCount[0].count > 0 ? '('+patient.unreadMessagesCount[0].count+')' : ''} 
                         </Link>
                       </span>
 

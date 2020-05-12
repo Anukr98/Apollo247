@@ -90,19 +90,19 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
     },
     serviceType: {
-      backgroundColor: '#f7f8f5',
-      borderRadius: 5,
-      padding: 10,
+      backgroundColor: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      padding: '10px 10px 16px 16px',
       paddingbottom: 8,
-      display: 'flex',
       width: '100%',
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
       cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-      },
+    },
+    couponTopGroup: {
+      display: 'flex',
     },
     textVCenter: {
       alignItems: 'center',
@@ -121,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: 24,
         verticalAlign: 'middle',
+        marginBottom: -5,
       },
     },
     rightArrow: {
@@ -222,16 +223,14 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
     },
     priceSection: {
-      backgroundColor: '#f7f8f5',
+      backgroundColor: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       padding: 10,
       paddingbottom: 8,
       color: '#01475b',
       fontSize: 14,
       fontWeight: 500,
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-      },
     },
     topSection: {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -453,6 +452,38 @@ const useStyles = makeStyles((theme: Theme) => {
           display: 'none',
         },
       },
+    },
+    couponRight: {
+      width: 'calc(100% - 34px)',
+    },
+    applyCoupon: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    appliedCoupon: {
+      display: 'flex',
+      alignItems: 'center',
+      fontWeight: 600,
+      '& $linkText': {
+        '& span': {
+          color: '#00b38e',
+          textTransform: 'uppercase',
+        },
+      },
+    },
+    couponText: {
+      color: '#01475b',
+      fontSize: 12,
+      lineHeight: '18px',
+    },
+    discountTotal: {
+      color: '#0087ba',
+      borderRadius: 3,
+      border: 'solid 1px #0087ba',
+      backgroundColor: 'rgba(0, 135, 186, 0.07)',
+      padding: '4px 10px',
+      fontSize: 16,
+      marginTop: 16,
     },
   };
 });
@@ -1014,31 +1045,33 @@ export const MedicineCart: React.FC = (props) => {
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
                 </div>
-                <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                  {couponCode === '' && currentPatient && currentPatient.id ? (
+                <div className={`${classes.sectionGroup}`}>
                     <div
                       onClick={() => setIsApplyCouponDialogOpen(true)}
-                      className={`${classes.serviceType} ${classes.textVCenter}`}
+                      className={`${classes.serviceType}`}
                     >
-                      <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                      </span>
-                      <span className={classes.linkText}>Apply Coupon</span>
-                      <span className={classes.rightArrow}>
-                        <img src={require('images/ic_arrow_right.svg')} alt="" />
-                      </span>
+                      <div className={classes.couponTopGroup}>
+                        <span className={classes.serviceIcon}>
+                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                        </span>
+                        <div className={classes.couponRight}>
+                          <div className={classes.applyCoupon}>
+                            <span className={classes.linkText}>Apply Coupon</span>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </span>
+                          </div>
+                          <div className={classes.appliedCoupon}>
+                            <span className={classes.linkText}><span>APOLLO10</span> applied</span>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </span>
+                          </div>
+                          <div className={classes.couponText}>(Applicable on pharma items only)</div>
+                        </div>
+                      </div>
+                      <div className={classes.discountTotal}>Savings of Rs. 50 on the bill</div>
                     </div>
-                  ) : (
-                    <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                      <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                      </span>
-                      <span className={classes.linkText}>Coupon Applied</span>
-                      <span className={classes.rightArrow}>
-                        <img src={require('images/ic_tickmark.svg')} alt="" />
-                      </span>
-                    </div>
-                  )}
                 </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div className={classes.priceSection}>
