@@ -9,6 +9,8 @@ import {
   Selected,
   UnSelected,
   Up,
+  ChatWhite,
+  ChatOrange,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -32,10 +34,12 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { styles } from '@aph/mobile-doctors/src/components/Patients.styles';
 import { callPermissions } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Patients: React.FC<PatientsProps> = (props) => {
+  const { markAsRead, fetchNotifications } = useNotification();
   const tabsData = [
     { title: 'All', key: patientLogType.All },
     { title: 'Follow up', key: patientLogType.FOLLOW_UP },
@@ -209,6 +213,17 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     item: getPatientLog_getPatientLog_patientLog | null,
     index: number
   ) => {
+    const appointmentid =
+      (item && (item.appointmentids && item.appointmentids.length > 0 && item.appointmentids[0])) ||
+      '';
+    const unReadCount =
+      item && item.unreadMessagesCount
+        ? item.unreadMessagesCount
+            .map((i) => {
+              return i && i.count && i.appointmentId === appointmentid ? i.count : 0;
+            })
+            .reduce((a, b) => a + b, 0)
+        : 0;
     return (
       item &&
       item.appointmentids && (
@@ -230,20 +245,31 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                         DoctorId: (doctorDetails && doctorDetails.id) || '',
                         PatientId: item.patientid,
                         PatientConsultTime: null,
-                        AppId:
-                          (item.appointmentids &&
-                            item.appointmentids.length > 0 &&
-                            item.appointmentids[0]) ||
-                          '',
+                        AppId: appointmentid,
                         Appintmentdatetime: item.appointmentdatetime, //getDateFormat(i.appointmentDateTime),
                         // AppointmentStatus: i.status,
                         // AppoinementData: i,
                         activeTabIndex: 1,
                       });
+                      if (unReadCount > 0) {
+                        markAsRead(appointmentid, (success) => {
+                          fetchNotifications();
+                        });
+                      }
                     });
                   }}
                 >
-                  <Chat />
+                  {unReadCount > 0 ? (
+                    <View style={styles.replyChatCta}>
+                      <ChatWhite style={styles.chaticonStyle} />
+                      <Text style={styles.replyText}>REPLY</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.chatCta}>
+                      <ChatOrange style={styles.chaticonStyle} />
+                      <Text style={styles.chatText}>CHAT</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             )

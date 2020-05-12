@@ -785,7 +785,13 @@ export const ChatWhite: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/chat_white.png')}
   />
 );
-
+export const ChatOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/chat_Orange.png')}
+  />
+);
 export const MedicineIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/med_icon.png')} />
 );
