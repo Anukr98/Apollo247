@@ -2,7 +2,6 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
-  MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
@@ -28,7 +27,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     siteId: String
     siteName: String
     apOrderNo: String
-    timestamp: String!
+    updatedDate: String!
     itemDetails: [ArticleDetails]
   }
 
@@ -62,7 +61,7 @@ type Shipment = {
   siteId: string;
   siteName: string;
   apOrderNo: string;
-  timestamp: string;
+  updatedDate: string;
   status: MEDICINE_ORDER_STATUS;
   itemDetails: ArticleDetails[];
 };
@@ -131,7 +130,7 @@ const saveOrderShipments: Resolver<
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
       medicineOrderShipments: shipmentsResult,
-      statusDate: new Date(shipmentsInput[index].timestamp),
+      statusDate: new Date(shipmentsInput[index].updatedDate),
     };
     medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   });

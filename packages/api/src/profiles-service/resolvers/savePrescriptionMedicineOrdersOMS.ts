@@ -272,8 +272,6 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       headers: { 'Content-Type': 'application/json', 'Auth-Token': placeOrderToken },
     });
 
-    console.log(placeOrderToken);
-
     if (pharmaResp.status == 400 || pharmaResp.status == 404) {
       log(
         'profileServiceLogger',
@@ -294,7 +292,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       ''
     );
     const orderResp: PharmaResult = JSON.parse(textRes);
-    console.log(orderResp, 'respp');
+
     if (orderResp.Status === false) {
       errorCode = -1;
       errorMessage = orderResp.Message;

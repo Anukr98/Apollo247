@@ -15,7 +15,7 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     orderId: Int!
     status: MEDICINE_ORDER_STATUS
     apOrderNo: String
-    timestamp: String!
+    updatedDate: String!
     referenceNo: String
     billingDetails: BillingDetails
     itemDetails: [ArticleDetails]
@@ -62,7 +62,7 @@ type SaveOrderShipmentInvoiceInput = {
   orderId: number;
   status: MEDICINE_ORDER_STATUS;
   apOrderNo: string;
-  timestamp: string;
+  updatedDate: string;
   referenceNo: String;
   billingDetails: BillingDetails;
   itemDetails: ArticleDetails[];
@@ -116,7 +116,7 @@ const saveOrderShipmentInvoice: Resolver<
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
     medicineOrderShipments: shipmentDetails,
-    statusDate: new Date(saveOrderShipmentInvoiceInput.timestamp),
+    statusDate: new Date(saveOrderShipmentInvoiceInput.updatedDate),
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
@@ -156,7 +156,7 @@ const saveOrderShipmentInvoice: Resolver<
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
-      new Date(saveOrderShipmentInvoiceInput.timestamp),
+      new Date(saveOrderShipmentInvoiceInput.updatedDate),
       MEDICINE_ORDER_STATUS.ORDER_BILLED
     );
   }

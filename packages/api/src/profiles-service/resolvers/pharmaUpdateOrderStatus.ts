@@ -24,7 +24,7 @@ export const updateOrderStatusTypeDefs = gql`
     trackingProvider: String
     reasonCode: String
     apOrderNo: String
-    timestamp: String!
+    updatedDate: String!
     referenceNo: String
   }
 
@@ -56,7 +56,7 @@ type OrderStatusInput = {
   referenceNo: string;
   reasonCode: string;
   apOrderNo: string;
-  timestamp: string;
+  updatedDate: string;
 };
 
 type OrderStatusInputArgs = {
@@ -93,16 +93,19 @@ const updateOrderStatus: Resolver<
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
-      new Date(updateOrderStatusInput.timestamp),
+      new Date(updateOrderStatusInput.updatedDate),
       MEDICINE_ORDER_STATUS.CANCELLED
     );
   }
 
   if (shipmentDetails) {
+    if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
+    }
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: status,
       medicineOrderShipments: shipmentDetails,
-      statusDate: new Date(updateOrderStatusInput.timestamp),
+      statusDate: new Date(updateOrderStatusInput.updatedDate),
     };
     try {
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
@@ -128,7 +131,7 @@ const updateOrderStatus: Resolver<
       await medicineOrdersRepo.updateMedicineOrderDetails(
         orderDetails.id,
         orderDetails.orderAutoId,
-        new Date(updateOrderStatusInput.timestamp),
+        new Date(updateOrderStatusInput.updatedDate),
         status
       );
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
