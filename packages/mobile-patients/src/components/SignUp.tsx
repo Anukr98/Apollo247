@@ -519,9 +519,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             console.log('MedicineSearch handleopen');
             pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
             break;
+
           case 'MedicineDetail':
             console.log('MedicineDetail handleopen');
             pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
+            break;
+
+          case 'MedicineCart':
+            console.log('MedicineCart handleopen');
+            pushTheView('MedicineCart');
             break;
 
           default:
@@ -684,6 +690,23 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 })
               );
             }
+            break;
+
+          case 'MedicineCart':
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.YourCart,
+                    params: {
+                      movedFrom: 'registration',
+                    },
+                  }),
+                ],
+              })
+            );
             break;
 
           default:
