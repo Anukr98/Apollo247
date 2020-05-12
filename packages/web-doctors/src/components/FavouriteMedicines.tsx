@@ -745,6 +745,11 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
     {
+      id: MEDICINE_FREQUENCY.STAT,
+      value: 'STAT (Immediately)',
+      selected: false,
+    },
+    {
       id: MEDICINE_FREQUENCY.ONCE_A_MONTH,
       value: 'Once a month',
       selected: false,
@@ -784,6 +789,11 @@ export const FavouriteMedicines: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.INTRAMUSCULAR,
       value: 'Intramuscular',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRAVAGINAL,
+      value: 'Intravaginal',
       selected: false,
     },
     {
@@ -924,6 +934,8 @@ export const FavouriteMedicines: React.FC = () => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
+    CAPSULE: { value: 'capsule(s)' },
+    DROP: { value: 'drop(s)' },
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
