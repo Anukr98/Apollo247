@@ -8,7 +8,6 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { PatientsOverview } from 'components/PatientsOverview';
 import { Relation } from 'graphql/types/globalTypes';
-import { Help } from 'components/Help/Help';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
 
@@ -56,7 +55,7 @@ export const Welcome: React.FC = (props) => {
           </div>
         </div>
       </div>
-      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       <NavigationBottom />
     </div>

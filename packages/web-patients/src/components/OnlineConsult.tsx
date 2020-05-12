@@ -306,6 +306,21 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
   }, [dateSelected, prevDateSelected]);
 
+  useEffect(() => {
+    /* Gtm code start */
+    if (couponCode && revisedAmount !== onlineConsultationFees) {
+      const speciality = getSpeciality();
+      const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: `Coupon Applied - ${couponCode}`,
+        value: couponValue,
+      });
+    }
+    /* Gtm code end */
+  }, [couponCode, revisedAmount]);
+
   const getSpeciality = () => {
     let speciality = '';
     if (
@@ -532,14 +547,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       .then((res: any) => {
         /* Gtm code start */
         const specialty = getSpeciality();
-        const { getDoctorDetailsById } = doctorDetails;
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-        gtmTracking({
-          category: 'Consultations',
-          action: specialty,
-          label: 'Order Success',
-          value: revisedAmount,
-        });
         _cbTracking({
           specialty: specialty,
           bookingType: AppointmentType.ONLINE,
@@ -726,16 +734,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           <CouponCode
             disableSubmit={disableCoupon}
             setCouponCodeFxn={() => {
-              /* Gtm code start */
-              const speciality = getSpeciality();
-              const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              gtmTracking({
-                category: 'Consultations',
-                action: speciality,
-                label: `Coupon Applied - ${couponCode}`,
-                value: couponValue,
-              });
-              /* Gtm code end */
               setCouponCode(couponCode);
             }}
             setCouponCode={setCouponCode}
