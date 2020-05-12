@@ -256,7 +256,7 @@ export const FavouriteAdvice: React.FC = () => {
   const [selectedValues, setSelectedValues] = useState<
     (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
   >();
-  const [idx, setIdx] = React.useState<any>();
+  const [idx, setIdx] = React.useState();
   const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState<boolean>(false);
   const [adviceLoader, setAdviceLoader] = useState<boolean>(false);

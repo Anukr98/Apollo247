@@ -44,8 +44,8 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
   const { item, doctorId, onEdit } = props;
   const sameDay =
     item.start.getDate() === item.end.getDate() && item.start.getMonth() === item.end.getMonth();
-  const options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-  const otherOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+  var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
+  var otherOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
     ? item.start.toLocaleDateString('en-AU', options)
     : `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(

@@ -101,18 +101,12 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 12,
       color: '#02475b',
       position: 'relative',
-      marginBottom: 15,
       '& textarea': {
         border: 'none',
         padding: 0,
         fontSize: 15,
         fontWeight: 500,
         borderRadius: 0,
-      },
-      '& p': {
-        position: 'absolute',
-        bottom: -20,
-        color: '#890000 !important',
       },
     },
     boxActions: {
@@ -171,12 +165,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setFamilyHistory,
     setMenstrualHistory,
     gender,
-    medicationHistory,
-    setMedicationHistory,
-    occupationHistory,
-    setOccupationHistory,
-    lifeStyleError,
-    setLifeStyleError,
   } = useContext(CaseSheetContextJrd);
 
   return (
@@ -197,37 +185,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
         </div>
       </Grid>
-
-      <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Medication History*</div>
-        <div
-          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
-        >
-          <AphTextField
-            disabled={!caseSheetEdit}
-            fullWidth
-            multiline
-            required
-            error={lifeStyleError.medicationHistory.trim() === '' ? true : false}
-            helperText={lifeStyleError.medicationHistory}
-            value={medicationHistory}
-            onChange={(e) => {
-              const value = e.target.value.trim();
-              if (value === '' || value === null) {
-                setLifeStyleError({
-                  medicationHistory: 'This field is requird',
-                });
-              } else {
-                setLifeStyleError({
-                  medicationHistory: '',
-                });
-              }
-              setMedicationHistory(e.target.value);
-            }}
-          />
-        </div>
-      </Grid>
-
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient's Past Surgical History</div>
         <div
@@ -294,26 +251,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
         </div>
       </Grid>
-
-      <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Environmental & Occupational History</div>
-        <div
-          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
-            classes.marginNone
-          }`}
-        >
-          <AphTextField
-            disabled={!caseSheetEdit}
-            fullWidth
-            multiline
-            value={occupationHistory}
-            onChange={(e) => {
-              setOccupationHistory(e.target.value);
-            }}
-          />
-        </div>
-      </Grid>
-
       {gender === Gender.FEMALE && (
         <Grid item sm={12}>
           <div className={classes.sectionTitle}>Menstrual History*</div>

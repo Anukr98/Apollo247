@@ -7,7 +7,7 @@ import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
 } from 'graphql/types/UpdateDoctorOnlineStatus';
-import { UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR } from 'graphql/doctors';
+import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import { Mutation } from 'react-apollo';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
@@ -85,7 +85,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
 
   return (
     <Mutation<UpdateDoctorOnlineStatus, UpdateDoctorOnlineStatusVariables>
-      mutation={UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR}
+      mutation={UPDATE_DOCTOR_ONLINE_STATUS}
     >
       {(updateDoctorOnlineStatus, { loading }) => (
         <>

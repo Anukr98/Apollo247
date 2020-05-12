@@ -10,7 +10,7 @@ import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
 import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { GET_DOCTOR_FAVOURITE_TESTS_DOCTOR } from 'graphql/doctors';
+import { GET_DOCTOR_FAVOURITE_TESTS } from 'graphql/doctors';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
@@ -21,6 +21,27 @@ interface OptionType {
 }
 
 let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
+
+function renderInputComponent(inputProps: any) {
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+
+  return (
+    <AphTextField
+      autoFocus
+      fullWidth
+      InputProps={{
+        inputRef: (node) => {
+          ref(node);
+          inputRef(node);
+        },
+        classes: {
+          root: classes.inputRoot,
+        },
+      }}
+      {...other}
+    />
+  );
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -251,18 +272,18 @@ export const DiagnosticPrescription: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const [searchInput, setSearchInput] = useState('');
-  const [favTests, setFavTests] = useState<any>();
+  const [favTests, setFavTests] = useState();
   const {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContext);
-  const [idx, setIdx] = React.useState<any>();
+  const [idx, setIdx] = React.useState();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
   useEffect(() => {
     client
       .query<GetDoctorFavouriteTestList>({
-        query: GET_DOCTOR_FAVOURITE_TESTS_DOCTOR,
+        query: GET_DOCTOR_FAVOURITE_TESTS,
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -414,28 +435,6 @@ export const DiagnosticPrescription: React.FC = () => {
     const sum = idx + Math.random();
     setIdx(sum);
   };
-
-  function renderInputComponent(inputProps: any) {
-    const { inputRef = () => {}, ref, ...other } = inputProps;
-  
-    return (
-      <AphTextField
-        autoFocus
-        fullWidth
-        InputProps={{
-          inputRef: (node) => {
-            ref(node);
-            inputRef(node);
-          },
-          classes: {
-            root: classes.inputRoot,
-          },
-        }}
-        {...other}
-      />
-    );
-  }
-
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -530,7 +529,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 }}
                 {...autosuggestProps}
                 inputProps={{
-                  //classes,
+                  classes,
                   id: 'react-autosuggest-simple',
                   placeholder: 'Search Tests',
                   value: state.single,
