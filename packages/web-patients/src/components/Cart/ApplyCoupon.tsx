@@ -79,8 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sectionHeader: {
       marginBottom: 20,
-      paddingTop: 20,
       paddingBottom: 4,
+      paddingTop: 20,
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
@@ -125,6 +125,10 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '20px auto',
       textAlign: 'center',
       display: 'block',
+    },
+    noCoupons: {
+      textAlign: 'center',
+      paddingBottom: 10,
     },
   };
 });
@@ -290,7 +294,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                    'No available Coupons'
+                    <div className={classes.noCoupons}>No available Coupons</div>
                   )}
                 </ul>
               </div>
