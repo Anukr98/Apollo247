@@ -200,7 +200,8 @@ export const Header: React.FC = (props) => {
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||
-                currentPath === clientRoutes.addressBook()
+                currentPath === clientRoutes.addressBook() ||
+                currentPath === clientRoutes.needHelp()
                   ? classes.userAccountActive
                   : ''
               }`}
