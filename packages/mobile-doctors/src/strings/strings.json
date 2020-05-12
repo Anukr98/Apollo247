@@ -201,6 +201,8 @@
       "TABLET",
       "PUFF",
       "UNIT",
+      "DROP",
+      "CAPSULE",
       "SPRAY",
       "PATCH",
       "AS_PRESCRIBED"
@@ -221,6 +223,14 @@
       {
         "single": "spray",
         "multiple": "spray(s)"
+      },
+      {
+        "single": "drop",
+        "multiple": "drop(s)"
+      },
+      {
+        "single": "capsule",
+        "multiple": "capsule(s)"
       }
     ]
   },
