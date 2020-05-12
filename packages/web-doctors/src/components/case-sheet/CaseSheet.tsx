@@ -288,7 +288,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'refferal',
-      value: 'Refferal (Optional)',
+      value: 'Referral (Optional)',
       state: refferalState,
       component: <RefferalCode />,
     },

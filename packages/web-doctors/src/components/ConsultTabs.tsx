@@ -387,6 +387,7 @@ export const ConsultTabs: React.FC = () => {
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
   const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
   const [referralDescription, setReferralDescription] = useState<string>('');
+  const [referralError, setReferralError] = useState<boolean>(false);
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -1631,8 +1632,10 @@ export const ConsultTabs: React.FC = () => {
             jrdSubmitDate,
             referralSpecialtyName,
             referralDescription,
+            referralError,
             setReferralSpecialtyName,
             setReferralDescription,
+            setReferralError,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

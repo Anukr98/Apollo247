@@ -2,23 +2,20 @@ import React, { useContext, useState, useEffect, ChangeEvent } from 'react';
 import { Typography, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 import { GET_ALL_SPECIALTIES } from 'graphql/profiles';
 import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { Script } from 'vm';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 import { useApolloClient } from 'react-apollo-hooks';
-import { from } from 'zen-observable';
 
 const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     width: '100%',
   },
-  sectionContainer: {},
-  selectContainer: {
-    position: 'relative',
+  sectionContainer: {
+    marginBottom: 20,
   },
   input: {
     width: '100%',
@@ -27,12 +24,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 15,
     fontWeight: 500,
     color: '#01475b',
-    padding: '0 !important',
+    padding: '14px 16px !important',
   },
   inputRoot: {
     border: '1px solid rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    padding: '14px 16px !important',
+    padding: '0 !important',
     borderRadius: 5,
     '& fieldset': {
       border: 0,
@@ -56,6 +53,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontWeight: 500,
     marginBottom: 12,
   },
+  error: {
+    '& + p': {
+      position: 'absolute',
+      bottom: -25,
+      margin: 0,
+    },
+  },
 }));
 
 type Params = { id: string; patientId: string; tabValue: string };
@@ -70,8 +74,10 @@ export const RefferalCode: React.FC = () => {
     caseSheetEdit,
     referralSpecialtyName,
     referralDescription,
+    referralError,
     setReferralSpecialtyName,
     setReferralDescription,
+    setReferralError,
   } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
@@ -127,39 +133,76 @@ export const RefferalCode: React.FC = () => {
         <Typography variant="h5" className={classes.label}>
           Which speciality should the patient consult?
         </Typography>
-        <div className={classes.selectContainer}>
-          <Autocomplete
-            value={getDefaultValue('referralSpecialtyName')}
-            disabled={!caseSheetEdit}
-            onChange={(event: ChangeEvent, newValue: string) => {
-              //console.log(event);
-              const storageItem = getLocalStorageItem(params.id);
-              if (storageItem) {
-                storageItem.referralSpecialtyName = newValue;
-                updateLocalStorageItem(params.id, storageItem);
-              }
-              setReferralSpecialtyName(newValue);
-            }}
-            inputValue={inputValue}
-            onInputChange={(event: ChangeEvent, newInputValue: string) => {
-              //console.log(event);
-              setInputValue(newInputValue);
-            }}
-            options={options}
-            closeIcon={null}
-            noOptionsText="No speciality matching your search"
-            classes={{
-              inputRoot: classes.inputRoot,
+        <Autocomplete
+          value={getDefaultValue('referralSpecialtyName')}
+          disabled={!caseSheetEdit}
+          onChange={(event: ChangeEvent, newValue: string) => {
+            //console.log(event);
+            const storageItem = getLocalStorageItem(params.id);
+            if (storageItem) {
+              storageItem.referralSpecialtyName = newValue;
+              updateLocalStorageItem(params.id, storageItem);
+            }
+            setReferralSpecialtyName(newValue);
+          }}
+          inputValue={inputValue}
+          onInputChange={(event: ChangeEvent, newInputValue: string) => {
+            //console.log(event);
+            setInputValue(newInputValue);
+          }}
+          options={options}
+          closeIcon={null}
+          noOptionsText="No speciality matching your search"
+          classes={{
+            inputRoot: classes.inputRoot,
+            input: classes.input,
+            popupIndicator: classes.popupIndicator,
+            option: classes.option,
+          }}
+          id="speciality"
+          renderInput={(params: any) => (
+            <AphTextField {...params} variant="outlined" placeholder="Select Speciality" />
+          )}
+        />
+      </div>
+      <div className={classes.sectionContainer}>
+        <Typography variant="h5" className={classes.label}>
+          Reason*
+        </Typography>
+        <AphTextField
+          variant="outlined"
+          placeholder="Enter reason for referral"
+          multiline
+          disabled={!caseSheetEdit}
+          required
+          onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+          error={referralError}
+          defaultValue={getDefaultValue('referralDescription')}
+          helperText={referralError && 'This field is required'}
+          InputProps={{
+            classes: {
+              root: classes.inputRoot,
               input: classes.input,
-              popupIndicator: classes.popupIndicator,
-              option: classes.option,
-            }}
-            id="speciality"
-            renderInput={(params: any) => (
-              <AphTextField {...params} variant="outlined" placeholder="Select Speciality" />
-            )}
-          />
-        </div>
+              error: classes.error,
+            },
+          }}
+          onChange={(e) => {
+            const value = e.target.value.trim();
+            if (referralSpecialtyName && !value) setReferralError(true);
+            else setReferralError(false);
+          }}
+          onBlur={(e) => {
+            const value = e.target.value.trim();
+            if (referralSpecialtyName && !value) setReferralError(true);
+            else setReferralError(false);
+            const storageItem = getLocalStorageItem(params.id);
+            if (storageItem) {
+              storageItem.referralDescription = value;
+              updateLocalStorageItem(params.id, storageItem);
+            }
+            setReferralDescription(value);
+          }}
+        />
       </div>
     </div>
   );

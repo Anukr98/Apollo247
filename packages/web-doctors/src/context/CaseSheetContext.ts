@@ -96,6 +96,7 @@ export interface CaseSheetContextProps {
   vitalError: VitalErrorProps;
   referralDescription: string;
   referralSpecialtyName: string;
+  referralError: boolean;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -111,6 +112,7 @@ export interface CaseSheetContextProps {
   setVitalError: (vitalError: VitalErrorProps) => void;
   setReferralSpecialtyName: (referralSpecialtyName: string) => void;
   setReferralDescription: (referralDescription: string) => void;
+  setReferralError: (referralError: boolean) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -179,6 +181,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   },
   referralSpecialtyName: '',
   referralDescription: '',
+  referralError: false,
 
   setBp: () => {},
   setHeight: () => {},
@@ -194,6 +197,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setVitalError: () => {},
   setReferralSpecialtyName: () => {},
   setReferralDescription: () => {},
+  setReferralError: () => {},
 
   gender: '',
   setGender: () => {},
