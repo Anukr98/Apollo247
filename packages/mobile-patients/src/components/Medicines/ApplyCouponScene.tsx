@@ -1,36 +1,45 @@
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  SearchSendIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  GET_PHARMA_COUPON_LIST,
+  VALIDATE_PHARMA_COUPON,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CouponCategoryApplicable,
+  OrderLineItems,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_COUPONS } from '@aph/mobile-patients/src/graphql/profiles';
+import { getPharmaCouponList } from '../../graphql/types/getPharmaCouponList';
 import {
-  getCoupons,
-  getCoupons_getCoupons_coupons,
-} from '@aph/mobile-patients/src/graphql/types/getCoupons';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+  validatePharmaCoupon,
+  validatePharmaCouponVariables,
+} from '../../graphql/types/validatePharmaCoupon';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
     alignSelf: 'center',
     marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 20, // statusBarHesight(),
     width: '66%',
     position: 'absolute',
     bottom: 0,
@@ -84,58 +93,91 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     letterSpacing: 0.04,
   },
-  tickIconContainer: {
-    position: 'absolute',
-    right: 0,
-  },
 });
 
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
-  const isTest = props.navigation.getParam('isTest');
+  // const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
-  const [isValidCoupon, setValidCoupon] = useState<boolean>(false);
-  const { setCoupon, coupon: cartCoupon, cartTotal } = isTest
-    ? useDiagnosticsCart()
-    : useShoppingCart();
-  const [couponList, setCouponList] = useState<(getCoupons_getCoupons_coupons | null)[]>([]);
+  const [couponError, setCouponError] = useState<string>('');
+  const { currentPatient } = useAllCurrentPatients();
+  const { setCoupon, coupon: cartCoupon, cartItems } = useShoppingCart();
+  const { setLoading: setGlobalLoading, loading: globalLoading, showAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { loading, setLoading } = useUIElements();
+
+  const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
+    fetchPolicy: 'no-cache',
+  });
+  const couponList = g(data, 'getPharmaCouponList', 'coupons') || [];
 
   useEffect(() => {
-    client
-      .query<getCoupons>({ query: GET_COUPONS, fetchPolicy: 'no-cache' })
-      .then(({ data: { getCoupons } }) => {
-        setLoading && setLoading(false);
-        setCouponList(g(getCoupons, 'coupons') || []);
-      })
-      .catch((e) => {
-        CommonBugFender('ApplyCouponScene_GET_COUPONS', e);
-        setLoading && setLoading(false);
-        handleGraphQlError(e, 'Unable to fetch coupons');
-      });
-  }, []);
+    setGlobalLoading!(loading);
+  }, [loading]);
 
-  const applyCoupon = (coupon: getCoupons_getCoupons_coupons) => {
-    setCoupon && setCoupon(coupon);
-    props.navigation.goBack();
+  useEffect(() => {
+    if (error) {
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: "Sorry, we're unable to fetch coupon codes right now. Please try again.",
+      });
+    }
+  }, [error]);
+
+  const validateCoupon = (variables: validatePharmaCouponVariables) =>
+    client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
+      mutation: VALIDATE_PHARMA_COUPON,
+      variables,
+    });
+
+  const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
+    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Select coupon');
+    setGlobalLoading!(true);
+    validateCoupon({
+      pharmaCouponInput: {
+        code: coupon,
+        patientId: g(currentPatient, 'id') || '',
+        orderLineItems: cartItems.map(
+          (item) =>
+            ({
+              itemId: item.id,
+              mrp: item.price,
+              productName: item.name,
+              productType: item.isMedicine
+                ? CouponCategoryApplicable.PHARMA
+                : CouponCategoryApplicable.FMCG,
+              quantity: item.quantity,
+              specialPrice: item.specialPrice || item.price,
+            } as OrderLineItems)
+        ),
+      },
+    })
+      .then(({ data }) => {
+        const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
+        if (validityStatus) {
+          setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
+          props.navigation.goBack();
+        } else {
+          setCouponError(
+            g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code'
+          );
+        }
+      })
+      .catch(() => {
+        setCouponError('Sorry, unable to validate coupon right now.');
+      })
+      .finally(() => setGlobalLoading!(false));
   };
 
   const renderBottomButtons = () => {
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
-          disabled={!(couponText.length > 3)}
+          disabled={!couponText.length}
           title="APPLY COUPON"
           onPress={() => {
             CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply Coupon');
-            const foundCoupon = couponList.find((coupon) => coupon!.code == couponText);
-            if (foundCoupon) {
-              applyCoupon(foundCoupon);
-            } else {
-              setValidCoupon(false);
-            }
+            applyCoupon(couponText, cartItems);
           }}
           style={{ flex: 1 }}
         />
@@ -144,34 +186,45 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   };
 
   const renderInputWithValidation = () => {
+    const rightIconView = () => {
+      return (
+        !couponError && (
+          <View style={{ opacity: couponText ? 1 : 0.5 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              disabled={!couponText}
+              onPress={() => applyCoupon(couponText, cartItems)}
+            >
+              <SearchSendIcon />
+            </TouchableOpacity>
+          </View>
+        )
+      );
+    };
+
     return (
       <View style={{ paddingBottom: 24 }}>
-        {/*
-        {isValidCoupon && (
-          <View style={styles.tickIconContainer}>
-            <RadioButtonIcon /> Change to tick icon once it's uploaded in assets
-          </View>
-        )}*/}
         <TextInputComponent
           value={couponText}
           onChangeText={(text) => {
-            !isValidCoupon && setValidCoupon(true);
+            couponError && setCouponError('');
             setCouponText(text);
           }}
           textInputprops={{
-            ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
-            maxLength: 6,
+            ...(couponError ? { selectionColor: '#e50000' } : {}),
+            maxLength: 10,
             autoFocus: true,
           }}
           inputStyle={[
             styles.couponInputStyle,
-            !isValidCoupon && couponText.length > 0 ? { borderBottomColor: '#e50000' } : {},
+            couponError ? { borderBottomColor: '#e50000' } : {},
           ]}
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter coupon code'}
+          icon={rightIconView()}
         />
-        {!isValidCoupon && couponText.length > 0 ? (
-          <Text style={styles.inputValidationStyle}>{'Invalid Coupon Code'}</Text>
+        {!!couponError ? (
+          <Text style={styles.inputValidationStyle}>{couponError || 'Invalid Coupon Code'}</Text>
         ) : null}
       </View>
     );
@@ -205,22 +258,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
-        onPress={() => {
-          CommonLogEvent(AppRoutes.ApplyCouponScene, 'Check Minimum cart value and apply coupon');
-          const minimumOrderAmount = coupon!.minimumOrderAmount;
-          if (minimumOrderAmount && cartTotal < minimumOrderAmount)
-            Alert.alert('Error', `Minimum cart value must be ${minimumOrderAmount} or more.`);
-          else applyCoupon(coupon!);
-        }}
+        onPress={() => setCouponText(coupon!.code!)}
       >
-        {coupon!.code == (cartCoupon && cartCoupon.code) ? (
-          <RadioButtonIcon />
-        ) : (
-          <RadioButtonUnselectedIcon />
-        )}
+        {coupon!.code == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>
           <Text style={styles.radioButtonTitle}>{coupon!.code}</Text>
-          <Text style={styles.radioButtonDesc}>{coupon!.description}</Text>
+          <Text style={styles.radioButtonDesc}>
+            {g(coupon, 'couponPharmaRule', 'messageOnCouponScreen') || ''}
+          </Text>
           <View style={styles.separator} />
         </View>
       </TouchableOpacity>

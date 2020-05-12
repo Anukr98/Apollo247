@@ -63,6 +63,17 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
+export enum CustomerType {
+  FIRST = "FIRST",
+  RECURRING = "RECURRING",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
@@ -161,6 +172,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -219,7 +231,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -282,6 +294,11 @@ export enum PRISM_DOCUMENT_CATEGORY {
   OpSummary = "OpSummary",
 }
 
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -294,6 +311,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
   NASAL_DROPS = "NASAL_DROPS",
@@ -349,6 +367,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -497,6 +516,8 @@ export interface ConsultQueueInput {
   familyHistory?: string | null;
   dietAllergies?: string | null;
   drugAllergies?: string | null;
+  age?: number | null;
+  gender?: Gender | null;
 }
 
 export interface DiagnosticLineItem {
@@ -614,6 +635,7 @@ export interface MedicineCartInput {
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
+  coupon?: string | null;
 }
 
 export interface MedicineCartItem {
@@ -648,6 +670,7 @@ export interface MedicinePaymentMqInput {
   bankTxnId?: string | null;
   email?: string | null;
   CODCity?: CODCity | null;
+  orderId?: string | null;
 }
 
 export interface MessageInput {
@@ -658,6 +681,15 @@ export interface MessageInput {
   message: string;
   status: notificationStatus;
   type: notificationType;
+}
+
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
 }
 
 export interface OtpVerificationInput {
@@ -709,6 +741,12 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
 }
 
 export interface PrescriptionMedicineInput {

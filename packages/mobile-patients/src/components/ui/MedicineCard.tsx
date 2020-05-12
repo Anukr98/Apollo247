@@ -289,12 +289,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             },
           ]}
         >
-          {specialPrice && (
-            <Text style={[styles.unitAndRupeeOfferText, { flex: 1, marginRight: 4 }]}>
-              {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-              {')'}
-            </Text>
+          {specialPrice ? (
+            <>
+              <Text style={[styles.unitAndRupeeOfferText, { flex: 1, marginRight: 4 }]}>
+                <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+                <Text style={{ textDecorationLine: 'line-through' }}>(MRP)</Text>
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
           <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>{`Rs. ${specialPrice ||
             price}`}</Text>
