@@ -744,7 +744,7 @@ export const FavouriteMedicines: React.FC = () => {
       value: 'Once in 15 days',
       selected: false,
     },
-    { 
+    {
       id: MEDICINE_FREQUENCY.STAT,
       value: 'STAT (Immediately)',
       selected: false,
@@ -934,8 +934,8 @@ export const FavouriteMedicines: React.FC = () => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
-    CAPSULE: {value: 'capsule(s)'},
-    DROP: {value: 'drop(s)'},
+    CAPSULE: { value: 'capsule(s)' },
+    DROP: { value: 'drop(s)' },
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },

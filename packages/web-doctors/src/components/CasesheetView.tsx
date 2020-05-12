@@ -7,9 +7,7 @@ import moment from 'moment';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { isEmpty, trim } from 'lodash';
-import {
-  MEDICINE_FREQUENCY
-} from 'graphql/types/globalTypes';
+import { MEDICINE_FREQUENCY } from 'graphql/types/globalTypes';
 import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -251,8 +249,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
-    CAPSULE: {value: 'capsule(s)'},
-    DROP: {value: 'drop(s)'},
+    CAPSULE: { value: 'capsule(s)' },
+    DROP: { value: 'drop(s)' },
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
@@ -377,10 +375,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''
                   ? ''
                   : prescription!.medicineFrequency
-                  ? prescription!.medicineFrequency ===  MEDICINE_FREQUENCY.STAT ? 'STAT (Immediately)' : prescription!.medicineFrequency
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
+                  ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                    ? 'STAT (Immediately)'
+                    : prescription!.medicineFrequency
+                        .split('_')
+                        .join(' ')
+                        .toLowerCase()
                   : dosageFrequency[0].id
                       .split('_')
                       .join(' ')

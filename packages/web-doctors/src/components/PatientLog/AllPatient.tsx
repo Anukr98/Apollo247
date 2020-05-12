@@ -207,7 +207,9 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           patient.unreadMessagesCount.length > 0 &&
                           patient.appointmentids[0] ===
                             patient.unreadMessagesCount[0].appointmentId &&
-                          patient.unreadMessagesCount[0].count > 0 ? '('+patient.unreadMessagesCount[0].count+')' : ''} 
+                          patient.unreadMessagesCount[0].count > 0
+                            ? '(' + patient.unreadMessagesCount[0].count + ')'
+                            : ''}
                         </Link>
                       </span>
 
