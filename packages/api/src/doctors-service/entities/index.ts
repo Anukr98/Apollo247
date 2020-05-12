@@ -62,6 +62,7 @@ export enum Salutation {
   MR = 'MR',
   MRS = 'MRS',
   DR = 'DR',
+  MS = 'MS',
 }
 
 export enum WeekDay {
