@@ -258,7 +258,7 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   orderType: MEDICINE_ORDER_TYPE;
 
-  @Column({ nullable: true, type: 'timestamptz' })
+  @Column({ nullable: true, type: 'timestamp' })
   orderDateTime: Date;
 
   @Column({ nullable: true })
@@ -474,7 +474,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true, type: 'timestamptz' })
+  @Column({ nullable: true, type: 'timestamp' })
   statusDate: Date;
 
   @Column({ nullable: true })

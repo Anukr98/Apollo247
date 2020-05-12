@@ -1,7 +1,8 @@
 export interface PharmaResult {
   Message: string;
-  ReferenceNo: string;
+  OrderNo: string;
   Status: boolean;
+  ReferenceNo: string;
 }
 
 export interface PharmaResponse {

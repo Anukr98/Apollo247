@@ -5,20 +5,15 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
-  MedicineOrderShipments,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
-    orderid: Int!
-    status: String
+    orderId: Int!
+    status: MEDICINE_ORDER_STATUS
     apOrderNo: String
     timestamp: String!
     referenceNo: String
@@ -44,33 +39,33 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     status: String
     errorCode: Int
     errorMessage: String
-    orderid: Int
+    orderId: Int
     apOrderNo: String
   }
 
   extend type Mutation {
-    SaveOrderShipmentInvoice(
+    saveOrderShipmentInvoice(
       saveOrderShipmentInvoiceInput: SaveOrderShipmentInvoiceInput
     ): SaveOrderShipmentInvoiceResult!
   }
 `;
 
 type SaveOrderShipmentInvoiceResult = {
-  status: string;
+  status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
-  orderid: number;
+  orderId: number;
   apOrderNo: string;
 };
 
 type SaveOrderShipmentInvoiceInput = {
-  orderid: number;
+  orderId: number;
   status: MEDICINE_ORDER_STATUS;
   apOrderNo: string;
   timestamp: string;
   referenceNo: String;
   billingDetails: BillingDetails;
-  itemDetails: [ArticleDetails];
+  itemDetails: ArticleDetails[];
 };
 
 type BillingDetails = {
@@ -87,19 +82,19 @@ type ArticleDetails = {
   unitPrice: number;
 };
 
-type saveOrderShipmentInvoiceInputArgs = {
+type SaveOrderShipmentInvoiceInputArgs = {
   saveOrderShipmentInvoiceInput: SaveOrderShipmentInvoiceInput;
 };
 
-const SaveOrderShipmentInvoice: Resolver<
+const saveOrderShipmentInvoice: Resolver<
   null,
-  saveOrderShipmentInvoiceInputArgs,
+  SaveOrderShipmentInvoiceInputArgs,
   ProfilesServiceContext,
   SaveOrderShipmentInvoiceResult
 > = async (parent, { saveOrderShipmentInvoiceInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
-    saveOrderShipmentInvoiceInput.orderid
+    saveOrderShipmentInvoiceInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -117,7 +112,6 @@ const SaveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
-  console.log(orderDetails);
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
@@ -127,7 +121,7 @@ const SaveOrderShipmentInvoice: Resolver<
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
-    orderNo: saveOrderShipmentInvoiceInput.orderid,
+    orderNo: saveOrderShipmentInvoiceInput.orderId,
     apOrderNo: shipmentDetails.apOrderNo,
     siteId: shipmentDetails.siteId,
     billDetails: JSON.stringify({
@@ -171,13 +165,13 @@ const SaveOrderShipmentInvoice: Resolver<
     status: MEDICINE_ORDER_STATUS.ORDER_BILLED,
     errorCode: 0,
     errorMessage: '',
-    orderid: orderDetails.orderAutoId,
+    orderId: orderDetails.orderAutoId,
     apOrderNo: shipmentDetails.apOrderNo,
   };
 };
 
 export const saveOrderShipmentInvoiceResolvers = {
   Mutation: {
-    SaveOrderShipmentInvoice,
+    saveOrderShipmentInvoice,
   },
 };

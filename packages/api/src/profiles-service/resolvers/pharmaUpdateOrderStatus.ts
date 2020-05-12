@@ -17,8 +17,8 @@ import {
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
-    orderid: Int!
-    status: String!
+    orderId: Int!
+    status: MEDICINE_ORDER_STATUS!
     trackingNo: String
     trackingUrl: String
     trackingProvider: String
@@ -32,23 +32,23 @@ export const updateOrderStatusTypeDefs = gql`
     status: String
     errorCode: Int
     errorMessage: String
-    orderid: Int
+    orderId: Int
   }
 
   extend type Mutation {
-    UpdateOrderStatus(updateOrderStatusInput: OrderStatusInput): UpdateOrderStatusResult!
+    updateOrderStatus(updateOrderStatusInput: OrderStatusInput): UpdateOrderStatusResult!
   }
 `;
 
 type UpdateOrderStatusResult = {
-  status: string;
+  status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
-  orderid: number;
+  orderId: number;
 };
 
 type OrderStatusInput = {
-  orderid: number;
+  orderId: number;
   status: MEDICINE_ORDER_STATUS;
   trackingNo: string;
   trackingUrl: string;
@@ -59,20 +59,20 @@ type OrderStatusInput = {
   timestamp: string;
 };
 
-type orderStatusInputArgs = {
+type OrderStatusInputArgs = {
   updateOrderStatusInput: OrderStatusInput;
 };
 
-const UpdateOrderStatus: Resolver<
+const updateOrderStatus: Resolver<
   null,
-  orderStatusInputArgs,
+  OrderStatusInputArgs,
   ProfilesServiceContext,
   UpdateOrderStatusResult
 > = async (parent, { updateOrderStatusInput }, { profilesDb }) => {
   const status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
-    updateOrderStatusInput.orderid
+    updateOrderStatusInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -81,8 +81,7 @@ const UpdateOrderStatus: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  console.log(orderDetails);
-  let shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
+  const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
     return shipment.apOrderNo == updateOrderStatusInput.apOrderNo;
   });
 
@@ -155,12 +154,12 @@ const UpdateOrderStatus: Resolver<
     status: updateOrderStatusInput.status,
     errorCode: 0,
     errorMessage: '',
-    orderid: orderDetails.orderAutoId,
+    orderId: orderDetails.orderAutoId,
   };
 };
 
 export const updateOrderStatusResolvers = {
   Mutation: {
-    UpdateOrderStatus,
+    updateOrderStatus,
   },
 };

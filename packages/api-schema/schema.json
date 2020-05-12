@@ -20576,7 +20576,7 @@
             "deprecationReason": null
           },
           {
-            "name": "SavePrescriptionMedicineOrderOMS",
+            "name": "savePrescriptionMedicineOrderOMS",
             "description": null,
             "args": [
               {
@@ -20833,7 +20833,7 @@
             "deprecationReason": null
           },
           {
-            "name": "UpdateOrderStatus",
+            "name": "updateOrderStatus",
             "description": null,
             "args": [
               {
@@ -20860,7 +20860,7 @@
             "deprecationReason": null
           },
           {
-            "name": "SaveOrderShipmentInvoice",
+            "name": "saveOrderShipmentInvoice",
             "description": null,
             "args": [
               {
@@ -20887,7 +20887,7 @@
             "deprecationReason": null
           },
           {
-            "name": "SaveOrderShipments",
+            "name": "saveOrderShipments",
             "description": null,
             "args": [
               {
@@ -26092,16 +26092,6 @@
               "ofType": null
             },
             "defaultValue": null
-          },
-          {
-            "name": "orderId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -27187,8 +27177,8 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "ENUM",
+                "name": "MEDICINE_ORDER_STATUS",
                 "ofType": null
               }
             },
@@ -27339,7 +27329,7 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "orderid",
+            "name": "orderId",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -27356,8 +27346,8 @@
             "name": "status",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "ENUM",
+              "name": "MEDICINE_ORDER_STATUS",
               "ofType": null
             },
             "defaultValue": null
@@ -27569,7 +27559,7 @@
             "deprecationReason": null
           },
           {
-            "name": "orderid",
+            "name": "orderId",
             "description": null,
             "args": [],
             "type": {
@@ -27670,8 +27660,8 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "ENUM",
+                "name": "MEDICINE_ORDER_STATUS",
                 "ofType": null
               }
             },

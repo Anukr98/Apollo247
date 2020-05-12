@@ -17,14 +17,14 @@ import {
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
-    orderid: Int!
+    orderId: Int!
     split: Boolean
     referenceNo: String
     shipments: [Shipment]
   }
 
   input Shipment {
-    status: String!
+    status: MEDICINE_ORDER_STATUS!
     siteId: String
     siteName: String
     apOrderNo: String
@@ -36,26 +36,26 @@ export const saveOrderShipmentsTypeDefs = gql`
     status: String
     errorCode: Int
     errorMessage: String
-    orderid: Int
+    orderId: Int
   }
 
   extend type Mutation {
-    SaveOrderShipments(saveOrderShipmentsInput: SaveOrderShipmentsInput): SaveOrderShipmentsResult!
+    saveOrderShipments(saveOrderShipmentsInput: SaveOrderShipmentsInput): SaveOrderShipmentsResult!
   }
 `;
 
 type SaveOrderShipmentsResult = {
-  status: string;
+  status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
-  orderid: number;
+  orderId: number;
 };
 
 type SaveOrderShipmentsInput = {
-  orderid: number;
+  orderId: number;
   split: boolean;
   referenceNo: String;
-  shipments: [Shipment];
+  shipments: Shipment[];
 };
 
 type Shipment = {
@@ -64,7 +64,7 @@ type Shipment = {
   apOrderNo: string;
   timestamp: string;
   status: MEDICINE_ORDER_STATUS;
-  itemDetails: [ArticleDetails];
+  itemDetails: ArticleDetails[];
 };
 
 type ArticleDetails = {
@@ -75,19 +75,19 @@ type ArticleDetails = {
   unitPrice: number;
 };
 
-type saveOrderShipmentsInputArgs = {
+type SaveOrderShipmentsInputArgs = {
   saveOrderShipmentsInput: SaveOrderShipmentsInput;
 };
 
-const SaveOrderShipments: Resolver<
+const saveOrderShipments: Resolver<
   null,
-  saveOrderShipmentsInputArgs,
+  SaveOrderShipmentsInputArgs,
   ProfilesServiceContext,
   SaveOrderShipmentsResult
 > = async (parent, { saveOrderShipmentsInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
-    saveOrderShipmentsInput.orderid
+    saveOrderShipmentsInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -97,7 +97,6 @@ const SaveOrderShipments: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
-  console.log(orderDetails);
   const shipmentsInput = saveOrderShipmentsInput.shipments.sort(
     (a, b) => b.itemDetails.length - a.itemDetails.length
   );
@@ -119,7 +118,7 @@ const SaveOrderShipments: Resolver<
   } catch (e) {
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
   }
-  console.log(shipmentsInput[0].timestamp);
+
   shipmentsResults.forEach(async (shipmentsResult, index) => {
     medicineOrdersRepo.saveMedicineOrderStatus(
       {
@@ -147,12 +146,12 @@ const SaveOrderShipments: Resolver<
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
     errorCode: 0,
     errorMessage: '',
-    orderid: orderDetails.orderAutoId,
+    orderId: orderDetails.orderAutoId,
   };
 };
 
 export const saveOrderShipmentsResolvers = {
   Mutation: {
-    SaveOrderShipments,
+    saveOrderShipments,
   },
 };

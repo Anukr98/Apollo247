@@ -64,7 +64,7 @@ export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
   }
 
   extend type Mutation {
-    SavePrescriptionMedicineOrderOMS(
+    savePrescriptionMedicineOrderOMS(
       prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
     ): SavePrescriptionMedicineOrderOMSResult!
   }
@@ -112,7 +112,7 @@ type PrescriptionMedicineOMSInputInputArgs = {
   prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput;
 };
 
-const SavePrescriptionMedicineOrderOMS: Resolver<
+const savePrescriptionMedicineOrderOMS: Resolver<
   null,
   PrescriptionMedicineOMSInputInputArgs,
   ProfilesServiceContext,
@@ -373,6 +373,6 @@ const SavePrescriptionMedicineOrderOMS: Resolver<
 
 export const savePrescriptionMedicineOrderOMSResolvers = {
   Mutation: {
-    SavePrescriptionMedicineOrderOMS,
+    savePrescriptionMedicineOrderOMS,
   },
 };
