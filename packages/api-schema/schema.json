@@ -9390,6 +9390,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "MS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -13613,7 +13619,19 @@
             "args": [],
             "type": {
               "kind": "SCALAR",
-              "name": "Date",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "unreadMessagesCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
               "ofType": null
             },
             "isDeprecated": false,
@@ -15189,6 +15207,57 @@
             "type": {
               "kind": "OBJECT",
               "name": "Patient",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "unreadMessagesCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AppointmentCount",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AppointmentCount",
+        "description": null,
+        "fields": [
+          {
+            "name": "appointmentId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "count",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
               "ofType": null
             },
             "isDeprecated": false,
@@ -19458,6 +19527,20 @@
         "fields": null,
         "inputFields": [
           {
+            "name": "itemId",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
             "name": "mrp",
             "description": null,
             "type": {
@@ -19653,6 +19736,22 @@
             "deprecationReason": null
           },
           {
+            "name": "mrpPriceTotal",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "productDiscount",
             "description": null,
             "args": [],
@@ -19680,6 +19779,22 @@
         "description": null,
         "fields": [
           {
+            "name": "applicableDiscount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "discountedPrice",
             "description": null,
             "args": [],
@@ -19689,6 +19804,22 @@
               "ofType": {
                 "kind": "SCALAR",
                 "name": "Float",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "itemId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
                 "ofType": null
               }
             },

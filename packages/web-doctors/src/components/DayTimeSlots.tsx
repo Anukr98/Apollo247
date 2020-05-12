@@ -157,7 +157,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
     },
   ];
 
-  const getTwelveHour = (key: string, timeStringArray: Array<string>) => {
+  const getTwelveHour = (key: string, timeStringArray: string[]) => {
     const twelveHourHour =
       parseInt(timeStringArray[0], 10) > 12
         ? parseInt(timeStringArray[0], 10) - 12

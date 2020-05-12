@@ -12,6 +12,7 @@ import {
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
+  STATUS,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -50,6 +51,7 @@ import {
   sendBrowserNotitication,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
+import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 
 export type DiagnosisJson = {
   name: string;
@@ -201,7 +203,8 @@ export const caseSheetTypeDefs = gql`
     transferParentId: String
     caseSheet: [CaseSheet!]
     doctorInfo: Profile @provides(fields: "id")
-    sdConsultationDate: Date
+    sdConsultationDate: DateTime
+    unreadMessagesCount: Int
   }
 
   type AppointmentDocuments {
@@ -558,6 +561,34 @@ const getJuniorDoctorCaseSheet: Resolver<
   };
 };
 
+type AppointmentDocuments = {
+  documentPath: string;
+  prismFileId: string;
+};
+
+type AppointmentDetails = {
+  id: string;
+  appointmentDateTime: Date;
+  appointmentDocuments: AppointmentDocuments[];
+  appointmentState: string;
+  appointmentType: APPOINTMENT_TYPE;
+  displayId: number;
+  doctorId: string;
+  hospitalId: string;
+  patientId: string;
+  parentId: string;
+  status: STATUS;
+  rescheduleCount: number;
+  rescheduleCountByDoctor: number;
+  isFollowUp: Boolean;
+  followUpParentId: string;
+  isTransfer: Boolean;
+  transferParentId: string;
+  caseSheet: CaseSheet[];
+  sdConsultationDate: Date;
+  unreadMessagesCount: number;
+};
+
 const getCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -565,7 +596,7 @@ const getCaseSheet: Resolver<
   {
     caseSheetDetails: CaseSheet;
     patientDetails: Patient;
-    pastAppointments: Appointment[];
+    pastAppointments: AppointmentDetails[];
     juniorDoctorNotes: string;
     juniorDoctorCaseSheet: CaseSheet;
     allowedDosages: string[];
@@ -612,11 +643,40 @@ const getCaseSheet: Resolver<
     appointmentData.doctorId,
     appointmentData.patientId
   );
+  let pastAppointmentsWithUnreadMessages: AppointmentDetails[] = [];
+  if (pastAppointments.length) {
+    const appointmentIds: string[] = [];
+    const appointmentMessagesCount: { [key: string]: number } = {};
+    pastAppointments.map((appointment) => {
+      appointmentMessagesCount[appointment.id] = 0;
+      appointmentIds.push(appointment.id);
+    });
 
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
+
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
+
+    pastAppointmentsWithUnreadMessages = pastAppointments.map((appointment) => {
+      return {
+        ...appointment,
+        unreadMessagesCount: appointmentMessagesCount[appointment.id],
+      };
+    });
+  }
   return {
     caseSheetDetails,
     patientDetails,
-    pastAppointments,
+    pastAppointments: pastAppointmentsWithUnreadMessages,
     juniorDoctorNotes,
     juniorDoctorCaseSheet,
     allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),

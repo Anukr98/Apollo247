@@ -19,27 +19,6 @@ interface OptionType {
 
 let suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      autoFocus
-      fullWidth
-      InputProps={{
-        inputRef: (node) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -243,7 +222,7 @@ export const DiagnosticPrescription: React.FC = () => {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContextJrd);
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState<any>();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContextJrd);
 
@@ -380,6 +359,29 @@ export const DiagnosticPrescription: React.FC = () => {
     const sum = idx + Math.random();
     setIdx(sum);
   };
+
+
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+  
+    return (
+      <AphTextField
+        autoFocus
+        fullWidth
+        InputProps={{
+          inputRef: (node) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -466,7 +468,7 @@ export const DiagnosticPrescription: React.FC = () => {
           }}
           {...autosuggestProps}
           inputProps={{
-            classes,
+            //classes,
             id: 'react-autosuggest-simple',
             placeholder: 'Search Tests',
             value: state.single,
