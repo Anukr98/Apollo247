@@ -1102,7 +1102,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
     if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
 
-    const uploadPdfInput = {
+    /* const uploadPdfInput = {
       fileType: UPLOAD_FILE_TYPES.PDF,
       base64FileInput: uploadedPdfData.base64pdf,
       patientId: patientData.id,
@@ -1120,11 +1120,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
     };
-    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb); */
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
-      prismFileId: prismUploadResponse.fileId,
+      prismFileId: '',
       status: CASESHEET_STATUS.COMPLETED,
     };
   }

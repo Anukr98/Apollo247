@@ -1535,6 +1535,8 @@ export interface RxPdfData {
     gender: string;
     uhid: string;
     age: string;
+    email: string;
+    phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };

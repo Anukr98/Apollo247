@@ -228,6 +228,8 @@ export const convertCaseSheetToRxPdfData = async (
     gender: '',
     uhid: '',
     age: '',
+    email: '',
+    phoneNumber: '',
   };
 
   let vitals = {
@@ -252,6 +254,8 @@ export const convertCaseSheetToRxPdfData = async (
         gender: patientData.gender,
         uhid: patientData.uhid,
         age: patientAge,
+        email: patientData.emailAddress,
+        phoneNumber: patientData.mobileNumber,
       };
     }
 
@@ -390,18 +394,53 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       pageBreak();
     }
     return doc
-      .moveTo(margin, doc.y)
-      .lineTo(doc.page.width - margin, doc.y)
-      .lineTo(doc.page.width - margin, doc.y + 30)
-      .lineTo(margin, doc.y + 30)
-      .lineTo(margin, doc.y)
-      .fill('#f7f7f7')
       .opacity(0.7)
-      .fillColor('#000')
+      .fillColor('#02475b')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(11)
-      .text(_capitalize(headerText), margin + 10, doc.y + 10, { fill: true })
-      .moveDown(2);
+      .text(headerText.toUpperCase(), margin, doc.y, { fill: true })
+      .moveDown(0.5)
+
+      .moveTo(margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y)
+      .lineWidth(1)
+      .fill('#02475b')
+      .moveDown(0.5);
+  };
+
+  const renderFourColumnRow = (
+    labelText1: string,
+    labelValue1: string,
+    labelText2: string,
+    labelValue2: string,
+    y?: number
+  ) => {
+    doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#000000')
+      .opacity(0.6)
+      .text(labelText1, margin + 15, y, { lineBreak: false });
+    doc
+      .fontSize(11)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#000000')
+      .opacity(0.8)
+      .text(`${labelValue1}`, 100, y, { lineBreak: false })
+      .moveDown(0.5);
+    doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#000000')
+      .opacity(0.6)
+      .text(labelText2, margin + 350, y, { lineBreak: false });
+    return doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#000000')
+      .opacity(0.8)
+      .text(`${labelValue2}`, 475, y)
+      .moveDown(0.5);
   };
 
   const renderDetailsRow = (labelText: string, labelValue: string, y?: number) => {
@@ -411,12 +450,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#000000')
       .text(labelText, margin + 15, y, { lineBreak: false });
     return doc
-      .fontSize(labelText === 'Patient' ? 10 : 9)
-      .font(
-        labelText === 'Patient'
-          ? assetsDir + '/fonts/IBMPlexSans-Bold.ttf'
-          : assetsDir + '/fonts/IBMPlexSans-Medium.ttf'
-      )
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
       .text(`${labelValue}`, 115, y)
       .opacity(0.6)
@@ -481,7 +516,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     return doc;
   };
 
-  const renderSymptoms = (prescriptions: RxPdfData['caseSheetSymptoms']) => {
+  const renderSymptoms = (
+    prescriptions: RxPdfData['caseSheetSymptoms'],
+    vitals: RxPdfData['vitals']
+  ) => {
     renderSectionHeader('Chief Complaints', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
@@ -493,11 +531,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       doc
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
+        .fillColor('#000000')
+        .opacity(0.8)
         .text(`${_capitalize(prescription.symptom)}`, margin + 15)
         .moveDown(0.5);
       doc
-        .fontSize(12)
+        .fontSize(11)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
         .opacity(0.6)
@@ -518,6 +557,34 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         pageBreak();
       }
     });
+
+    const vitalsArray = [];
+    if (vitals.weight) vitalsArray.push(`Weight : ${vitals.weight}`);
+    if (vitals.height) vitalsArray.push(`Height : ${vitals.height}`);
+    if (vitals.bp) vitalsArray.push(`BP: ${vitals.bp}`);
+    if (vitals.temperature) vitalsArray.push(`Temperature: ${vitals.temperature}`);
+
+    if (vitalsArray.length > 0) {
+      doc
+        .fontSize(11)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text('VITALS', margin + 15, doc.y, { lineBreak: false });
+      doc
+        .fontSize(8)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#000000')
+        .opacity(0.5)
+        .text('(as declared by patient)', margin + 55, doc.y + 3)
+        .moveDown(0.5);
+      doc
+        .fontSize(11)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#000000')
+        .opacity(0.8)
+        .text(`${vitalsArray.join('   |   ')}`, margin + 15)
+        .moveDown(0.5);
+    }
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
@@ -531,11 +598,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       doc
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
+        .fillColor('#000000')
+        .opacity(0.8)
         .text(`${index + 1}.  ${prescription.name}`, margin + 15)
         .moveDown(0.5);
       doc
-        .fontSize(10)
+        .fontSize(11)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
         .opacity(0.6)
@@ -544,7 +612,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
       if (prescription.routeOfAdministration) {
         doc
-          .fontSize(10)
+          .fontSize(11)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
           .opacity(0.6)
@@ -557,7 +625,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
       if (prescription.instructions) {
         doc
-          .fontSize(10)
+          .fontSize(11)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
           .opacity(0.6)
@@ -595,7 +663,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         doc
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-          .fillColor('#02475b')
+          .fillColor('#000000')
+          .opacity(0.8)
           .text(`${diag.name}`, margin + 15)
           .moveDown(0.5);
       });
@@ -604,7 +673,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnosticTest = (diagnosticTests: RxPdfData['diagnosesTests']) => {
     if (diagnosticTests) {
-      renderSectionHeader('Diagnostic Tests');
+      renderSectionHeader('Diagnostic Tests Prescribed');
       diagnosticTests.forEach((diagTest, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
@@ -614,6 +683,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#02475b')
+          .opacity(0.8)
           .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
           .moveDown(0.5);
       });
@@ -622,7 +692,6 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderpatients = (
     patientInfo: RxPdfData['patientInfo'],
-    vitals: RxPdfData['vitals'],
     appointmentData: RxPdfData['appointmentDetails']
   ) => {
     renderSectionHeader('Appointment Details');
@@ -639,33 +708,35 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (patientInfo.age) textArray.push(`${patientInfo.age} yrs`);
 
     if (textArray.length > 0) {
-      renderDetailsRow('Patient', `${textArray.join('   |   ')}`, doc.y);
+      renderFourColumnRow(
+        'Patient',
+        `${textArray.join('   |   ')}`,
+        'Consult Date',
+        `${appointmentData.consultDate}`,
+        doc.y
+      );
     }
 
-    const vitalsArray = [];
-    if (vitals.weight) vitalsArray.push(`Weight : ${vitals.weight}`);
-    if (vitals.height) vitalsArray.push(`Height : ${vitals.height}`);
-    if (vitals.bp) vitalsArray.push(`BP: ${vitals.bp}`);
-    if (vitals.temperature) vitalsArray.push(`Temperature: ${vitals.temperature}`);
+    const contactDetails = [];
+    if (patientInfo.email) contactDetails.push(patientInfo.email);
+    if (patientInfo.phoneNumber) contactDetails.push(patientInfo.phoneNumber);
 
-    if (vitalsArray.length > 0) {
-      renderDetailsRow('Vitals', `${vitalsArray.join('   |   ')}`, doc.y);
+    if (contactDetails.length > 0) {
+      renderFourColumnRow(
+        'Contact',
+        `${contactDetails.join('   |   ')}`,
+        'Consult Type',
+        `${appointmentData.consultType}`,
+        doc.y
+      );
     }
 
     if (patientInfo.uhid) {
-      renderDetailsRow('UHID', `${patientInfo.uhid}`, doc.y);
+      renderFourColumnRow('UHID', `${patientInfo.uhid}`, ' ', ' ', doc.y);
     }
 
     if (appointmentData.displayId) {
-      renderDetailsRow('Appt ID', `${appointmentData.displayId}`, doc.y);
-    }
-
-    if (appointmentData.consultDate) {
-      renderDetailsRow('Consult Date', `${appointmentData.consultDate}`, doc.y);
-    }
-
-    if (appointmentData.consultType) {
-      renderDetailsRow('Consult Type', `${appointmentData.consultType}`, doc.y);
+      renderFourColumnRow('Appt ID', `${appointmentData.displayId}`, ' ', ' ', doc.y);
     }
   };
 
@@ -725,8 +796,15 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
-      doc
 
+      doc
+        .fontSize(10)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${specialty} | ${registrationLine}`, margin + 15)
+        .moveDown(0.5);
+
+      doc
         .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
@@ -744,12 +822,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.patientInfo)) {
-    renderpatients(rxPdfData.patientInfo, rxPdfData.vitals, rxPdfData.appointmentDetails);
+    renderpatients(rxPdfData.patientInfo, rxPdfData.appointmentDetails);
     doc.moveDown(1.5);
   }
 
   if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
-    renderSymptoms(rxPdfData.caseSheetSymptoms);
+    renderSymptoms(rxPdfData.caseSheetSymptoms, rxPdfData.vitals);
     doc.moveDown(1.5);
   }
 
@@ -808,17 +886,14 @@ export const uploadRxPdf = async (
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(350);
 
-  const blob = await client.uploadFile({ name, filePath });
-  const blobUrl = client.getBlobUrl(blob.name);
-  console.log('blobUrl===', blobUrl);
-  const base64pdf = await convertPdfUrlToBase64(blobUrl);
-  fs.unlink(filePath, (error) => console.log(error));
-  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+  //const blob = await client.uploadFile({ name, filePath });
+  //const blobUrl = client.getBlobUrl(blob.name);
+  //console.log('blobUrl===', blobUrl);
+  //const base64pdf = await convertPdfUrlToBase64(blobUrl);
+  const base64pdf = '';
+  //fs.unlink(filePath, (error) => console.log(error));
+  const uploadData = { name, filePath, base64pdf }; // returning blob details and base64Pdf
   return uploadData;
-
-  //previous code
-  // const blob = await client.uploadFile({ name, filePath });
-  // return blob;
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
