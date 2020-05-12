@@ -18824,7 +18824,7 @@
             "deprecationReason": null
           },
           {
-            "name": "doc",
+            "name": "doctor",
             "description": null,
             "args": [],
             "type": {
