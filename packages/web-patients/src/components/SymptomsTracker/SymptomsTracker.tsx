@@ -17,7 +17,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -361,7 +360,7 @@ export const SymptomsTracker: React.FC = () => {
           </div>
         </div>
       </div>
-      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      {!onePrimaryUser && <ManageProfile />}
       {isSignedIn && <NavigationBottom />}
     </div>
   );

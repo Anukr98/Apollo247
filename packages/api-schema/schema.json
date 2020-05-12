@@ -15195,7 +15195,7 @@
             "deprecationReason": null
           },
           {
-            "name": "UnreadMessagesCount",
+            "name": "unreadMessagesCount",
             "description": null,
             "args": [],
             "type": {
