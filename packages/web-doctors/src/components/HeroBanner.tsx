@@ -140,7 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const HeroBanner: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.heroBanner}>

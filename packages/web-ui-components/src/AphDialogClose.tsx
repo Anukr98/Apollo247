@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const AphDialogClose: React.FC<ButtonProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <Button {...props} className={classes.dialogBoxClose}>
       <img src={require('images/ic_cross_popup.svg')} alt="" />

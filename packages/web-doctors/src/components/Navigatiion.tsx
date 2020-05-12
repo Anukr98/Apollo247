@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Navigation: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.appNavigation}>
       <Link to={clientRoutes.healthRecords()}>Health Records</Link>

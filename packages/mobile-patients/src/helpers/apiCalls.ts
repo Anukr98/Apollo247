@@ -49,6 +49,7 @@ export interface MedicineProductDetailsResponse {
 export interface MedicineProductsResponse {
   product_count: number;
   products: MedicineProduct[];
+  search_heading?: string;
 }
 
 export interface Brand {

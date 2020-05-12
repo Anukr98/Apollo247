@@ -225,7 +225,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'Add New Profile'}
+        title={'Add New Family Member'}
         onPressLeftIcon={() => props.setdisplayoverlay(false)}
       />
     );

@@ -40,7 +40,7 @@ export interface BlockedCalendarItemProps {
 }
 
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { item, doctorId, onEdit } = props;
   const sameDay =
     item.start.getDate() === item.end.getDate() && item.start.getMonth() === item.end.getMonth();

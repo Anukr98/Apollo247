@@ -279,7 +279,7 @@ export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
   onNext,
   onBack,
 }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const data = values;
 
   return (

@@ -15,6 +15,22 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 
+export enum CouponApplicability {
+  CONSULT = 'CONSULT',
+  PHARMACY = 'PHARMACY',
+}
+
+export enum CouponCategoryApplicable {
+  PHARMA = 'PHARMA',
+  FMCG = 'FMCG',
+  PHARMA_FMCG = 'PHARMA_FMCG',
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = 'MRP',
+  SPECIAL_PRICE = 'SPECIAL_PRICE',
+}
+
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
@@ -200,6 +216,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   appointmentId: string;
+
+  @Column({ nullable: true })
+  coupon: string;
 
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
@@ -835,6 +854,9 @@ export class PatientLifeStyle extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  occupationHistory: string;
+
   @ManyToOne((type) => Patient, (patient) => patient.lifeStyle)
   patient: Patient;
 
@@ -1046,14 +1068,21 @@ export class Coupon extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('Coupon_code')
   @Column({ type: 'text' })
   code: string;
+
+  @Column({ default: CouponApplicability.CONSULT })
+  couponApplicability: CouponApplicability;
 
   @ManyToOne((type) => CouponConsultRules, (couponConsultRule) => couponConsultRule.coupon)
   couponConsultRule: CouponConsultRules;
 
   @ManyToOne((type) => CouponGenericRules, (couponGenericRule) => couponGenericRule.coupon)
   couponGenericRule: CouponGenericRules;
+
+  @ManyToOne((type) => CouponPharmaRules, (couponPharmaRule) => couponPharmaRule.coupon)
+  couponPharmaRule: CouponPharmaRules;
 
   @OneToMany((type) => ReferalCouponMapping, (referalCouponMapping) => referalCouponMapping.coupon)
   referalCouponMapping: ReferalCouponMapping[];
@@ -1163,6 +1192,43 @@ export class CouponConsultRules extends BaseEntity {
 }
 //Consult Coupon Rules ends
 
+//Pharma Coupon Rules starts
+@Entity()
+export class CouponPharmaRules extends BaseEntity {
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponPharmaRule)
+  coupon: Coupon[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column()
+  couponCategoryApplicable: CouponCategoryApplicable;
+
+  @Column()
+  discountApplicableOn: PharmaDiscountApplicableOn;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text', nullable: true })
+  messageOnCouponScreen: string;
+
+  @Column({ type: 'text', nullable: true })
+  successMessage: string;
+
+  @Column({ default: false })
+  isActive: Boolean;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Pharma Coupon Rules ends
+
 //patientMedicalHistory starts
 @Entity()
 export class PatientMedicalHistory extends BaseEntity {
@@ -1196,6 +1262,9 @@ export class PatientMedicalHistory extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  medicationHistory: string;
 
   @Column({ nullable: true })
   temperature: string;

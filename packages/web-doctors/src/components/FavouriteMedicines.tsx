@@ -601,7 +601,7 @@ export interface MedicineProductsResponse {
 }
 let cancel: any;
 export const FavouriteMedicines: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const customInputRef = useRef(null);
   const defaultInputRef = useRef(null);
   const [selectedMedicinesArr, setSelectedMedicinesArr] = React.useState<

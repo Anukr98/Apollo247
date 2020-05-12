@@ -149,7 +149,7 @@ interface HelpFormProps {
 }
 
 export const HelpForm: React.FC<HelpFormProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { submitStatus, closeHelpForm } = props;
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>(defaultSelectedCategory);
   const [selectedReason, setSelectedReason] = useState<string>('placeholder');

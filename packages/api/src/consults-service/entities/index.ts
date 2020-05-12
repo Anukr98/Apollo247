@@ -505,6 +505,7 @@ export enum MEDICINE_FREQUENCY {
   TWICE_A_WEEK = 'TWICE_A_WEEK',
   ONCE_IN_15_DAYS = 'ONCE_IN_15_DAYS',
   ONCE_A_MONTH = 'ONCE_IN_15_DAYS',
+  STAT = 'STAT',
 }
 export enum MEDICINE_TIMINGS {
   AS_NEEDED = 'AS_NEEDED',
@@ -528,7 +529,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
-  DROPS = 'DROPS',
+  DROPS = 'DROP',
   GEL = 'GEL',
   GM = 'GM',
   INJECTION = 'INJECTION',
@@ -650,6 +651,12 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ default: () => 0, type: 'float' })
   preperationTimeInSeconds: number;
+
+  @Column({ nullable: true })
+  referralSpecialtyName: string;
+
+  @Column({ nullable: true })
+  referralDescription: string;
 
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;

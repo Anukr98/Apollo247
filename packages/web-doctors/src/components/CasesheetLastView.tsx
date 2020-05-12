@@ -102,7 +102,7 @@ export interface CaseSheetViewProps {
 }
 
 export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { followUp, otherInstructions, followUpAfterInDays, createdDoctorProfile } = useContext(
     CaseSheetContext
   );

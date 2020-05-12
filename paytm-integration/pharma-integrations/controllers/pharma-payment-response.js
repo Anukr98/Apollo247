@@ -6,6 +6,7 @@ const { medicineOrderQuery } = require('../helpers/make-graphql-query');
 module.exports = async (req, res, next) => {
     let transactionStatus = '';
     let orderId;
+    let bookingSource = 'MOBILE';
     try {
 
         const payload = req.body;
@@ -37,8 +38,7 @@ module.exports = async (req, res, next) => {
 
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-
-        console.log(medicineOrderQuery(payload));
+        logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
         // this needs to be altered later.
         const requestJSON = {
             query: medicineOrderQuery(payload)
@@ -46,32 +46,40 @@ module.exports = async (req, res, next) => {
 
         /// write medicineoirder
         const response = await axios.post(process.env.API_URL, requestJSON);
-        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq -  ${JSON.stringify(response.data)}`);
+        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`)
+            logger.error(`${orderId} - consult - payment - response - ${JSON.stringify(response.data.errors)}`)
             throw new Error("Error Occured in SaveMedicineOrderPaymentMq!")
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
+            if (transactionStatus === 'failed') {
+                redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
+            }
             res.redirect(redirectUrl);
         } else {
-            res.redirect(`/mob?status=${transactionStatus}`);
+            if (transactionStatus === 'failed') {
+                res.redirect(`/mob-error?status=${transactionStatus}`);
+            }
+            else {
+                res.redirect(`/mob?status=${transactionStatus}`);
+            }
+
         }
     } catch (e) {
-
         if (e.response && e.response.data) {
             logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
         } else {
-            logger.error(`${orderId} - paymed-response -  ${e.stack}`);
+            logger.error(`${orderId} - paymed-response - ${e.stack}`);
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
-            res.redirect(`/mob?status=${transactionStatus}`);
+            res.redirect(`/mob-error?status=${transactionStatus}`);
         }
     }
 }

@@ -48,6 +48,7 @@ export interface MaterialMenuProps {
   itemContainer?: StyleProp<ViewStyle> | undefined;
   itemTextStyle?: StyleProp<TextStyle> | undefined;
   menuContainerStyle?: StyleProp<ViewStyle> | undefined;
+  scrollViewContainerStyle?: StyleProp<ViewStyle> | undefined;
   selectedText?: string | number;
   selectedTextStyle?: StyleProp<TextStyle> | undefined;
   lastTextStyle?: StyleProp<TextStyle> | undefined;
@@ -84,7 +85,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
       }
       style={[styles.menuContainer, props.menuContainerStyle]}
     >
-      <ScrollView bounces={false} style={{ paddingVertical: 8 }}>
+      <ScrollView bounces={false} style={[{ paddingVertical: 8 }, props.scrollViewContainerStyle]}>
         {optionsObject.map((item, index) => (
           <MenuItem
             key={item.key}

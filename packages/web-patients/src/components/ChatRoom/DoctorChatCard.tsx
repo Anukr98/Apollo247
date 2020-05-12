@@ -55,7 +55,7 @@ interface DoctorChatCardProps {
   transferData: any;
 }
 export const DoctorChatCard: React.FC<DoctorChatCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   const transferDate = props.transferData.transferDateTime

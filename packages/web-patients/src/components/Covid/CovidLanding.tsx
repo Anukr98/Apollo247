@@ -16,7 +16,6 @@ import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -30,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
+        borderRadius: '0 0 10px 10px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
         paddingBottom: 20,
@@ -225,7 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CovidLanding: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
@@ -260,6 +260,7 @@ export const CovidLanding: React.FC = (props: any) => {
   const [expandedTitle, setExpandedTitle] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const scrollToRef = useRef<HTMLDivElement>(null);
 
   const didMount = useRef(false);
   const covidArticleBaseUrl =
@@ -267,7 +268,12 @@ export const CovidLanding: React.FC = (props: any) => {
       ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
       : process.env.COVID_ARTICLE_LIST_URL;
   useEffect(() => {
-    typeof window !== 'undefined' && window.scrollTo(0, 0);
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
     if (props && props.location && props.location.search && props.location.search.length) {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
@@ -322,7 +328,7 @@ export const CovidLanding: React.FC = (props: any) => {
     <div className={classes.root}>
       {isDesktopOnly ? <Header /> : ''}
       <div className={classes.container}>
-        <div className={classes.pageContainer}>
+        <div className={classes.pageContainer} ref={scrollToRef}>
           <Banner isWebView={isWebView} />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
@@ -354,6 +360,7 @@ export const CovidLanding: React.FC = (props: any) => {
                         covidContent[parentCat.category] &&
                         covidContent[parentCat.category].length && (
                           <ArticleCard
+                            isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
                           />
@@ -449,7 +456,6 @@ export const CovidLanding: React.FC = (props: any) => {
           </Modal>
         </div>
       </div>
-      <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>
   );

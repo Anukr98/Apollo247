@@ -237,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const DiagnosticPrescription: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [searchInput, setSearchInput] = useState('');
   const {
     diagnosticPrescription: selectedValues,

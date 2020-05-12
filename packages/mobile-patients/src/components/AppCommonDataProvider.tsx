@@ -19,7 +19,9 @@ export interface LocationData {
 
 export interface AppCommonDataContextProps {
   locationDetails: LocationData | null;
+  pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
+  setPharmacyLocation: ((items: LocationData) => void) | null;
   diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
@@ -51,7 +53,9 @@ export interface AppCommonDataContextProps {
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationDetails: null,
+  pharmacyLocation: null,
   setLocationDetails: null,
+  setPharmacyLocation: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
   locationForDiagnostics: null,
@@ -86,6 +90,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['locationDetails']
   >(null);
 
+  const [pharmacyLocation, _setPharmacyLocation] = useState<
+    AppCommonDataContextProps['pharmacyLocation']
+  >(null);
+
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
@@ -115,6 +123,15 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setLocationDetails(locationDetails);
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
       console.log('Failed to save location in local storage.');
+    });
+  };
+
+  const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
+    pharmacyLocation
+  ) => {
+    _setPharmacyLocation(pharmacyLocation);
+    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {
+      console.log('Failed to save pharmacy location in local storage.');
     });
   };
 
@@ -149,9 +166,14 @@ export const AppCommonDataProvider: React.FC = (props) => {
     // update location from async storage the very first time app opened
     const updateLocationFromStorage = async () => {
       try {
-        const locationFromStorage = await AsyncStorage.multiGet(['locationDetails']);
+        const locationFromStorage = await AsyncStorage.multiGet([
+          'locationDetails',
+          'pharmacyLocation',
+        ]);
         const location = locationFromStorage[0][1];
+        const pharmacyLocation = locationFromStorage[1][1];
         _setLocationDetails(JSON.parse(location || 'null'));
+        _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
         CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
@@ -167,6 +189,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCurrentLocationFetched,
         locationDetails,
         setLocationDetails,
+        pharmacyLocation,
+        setPharmacyLocation,
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,

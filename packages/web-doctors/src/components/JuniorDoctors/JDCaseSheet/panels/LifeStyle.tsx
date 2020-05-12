@@ -36,7 +36,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const LifeStyle: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { loading, patientDetails } = useContext(CaseSheetContextJrd);
   return loading && !patientDetails ? (
     <div></div>

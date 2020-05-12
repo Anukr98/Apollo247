@@ -176,7 +176,7 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
           <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {isSignedIn &&
+        {/* {isSignedIn &&
           pageName !== '/terms' &&
           pageName !== '/privacy' &&
           pageName !== '/faq' &&
@@ -185,7 +185,7 @@ const App: React.FC = () => {
             <div className={classes.helpIcon}>
               <Help />
             </div>
-          )}
+          )} */}
       </div>
     </Scrollbars>
   );

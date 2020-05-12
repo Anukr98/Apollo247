@@ -10,7 +10,8 @@ import {
   ScrollView,
   TextStyle,
 } from 'react-native';
-import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
+// import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {

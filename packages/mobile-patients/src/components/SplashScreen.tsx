@@ -182,9 +182,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineSearch handleopen');
           getData('MedicineSearch', data.length === 2 ? linkId : undefined);
           break;
+
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
           getData('MedicineDetail', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'MedicineCart':
+          console.log('MedicineCart handleopen');
+          getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
 
         default:
@@ -372,6 +378,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });
         }
+        break;
+
+      case 'MedicineCart':
+        console.log('MedicineCart handleopen');
+        props.navigation.navigate(AppRoutes.YourCart, {
+          movedFrom: 'splashscreen',
+        });
         break;
 
       default:

@@ -4,6 +4,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   g,
+  dataSavedUserID,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
@@ -26,7 +27,10 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPLOAD_DOCUMENT,
+  GET_PATIENT_ADDRESS_LIST,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
@@ -52,7 +56,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
 import {
   WebEngageEvents,
@@ -64,6 +73,10 @@ import {
   postPhamracyCartAddressSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '../../graphql/types/getPatientAddressList';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -153,6 +166,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setStores,
     ePrescriptions,
     deliveryType,
+    setAddresses,
   } = useShoppingCart();
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
@@ -168,6 +182,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
+
+  const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
   useEffect(() => {
     if (cartItems.length) {
@@ -258,8 +274,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setDeliveryAddressId && setDeliveryAddressId('');
               showAphAlert!({
                 title: 'Uh oh.. :(',
-                description:
-                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                description: string.medicine_cart.pharmaAddressUnServiceableAlert,
               });
             }
           })
@@ -272,29 +287,44 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   setLoading!(true);
-  //   (currentPatient &&
-  //     addresses.length == 0 &&
-  //     client
-  //       .query<getPatientAddressList, getPatientAddressListVariables>({
-  //         query: GET_PATIENT_ADDRESS_LIST,
-  //         variables: { patientId: currentPatientId },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
-  //         setLoading!(false);
-  //         setAddresses && setAddresses(addressList!);
-  //       })
-  //       .catch((e) => {
-  //         setLoading!(false);
-  //         showAphAlert!({
-  //           title: `Uh oh.. :(`,
-  //           description: `Something went wrong, unable to fetch addresses.`,
-  //         });
-  //       })) ||
-  //     setLoading!(false);
-  // }, [currentPatient]);
+  useEffect(() => {
+    getUserAddress();
+  }, []);
+
+  const getUserAddress = async () => {
+    setLoading!(true);
+    const userId = await dataSavedUserID('selectedProfileId');
+    console.log('selectedProfileId', userId);
+    ((navigatedFrom === 'splashscreen' || 'registration') &&
+      addresses.length == 0 &&
+      client
+        .query<getPatientAddressList, getPatientAddressListVariables>({
+          query: GET_PATIENT_ADDRESS_LIST,
+          variables: {
+            patientId:
+              userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            setLoading!(false);
+            setAddresses && setAddresses(addressList!);
+          }
+        )
+        .catch((e) => {
+          setLoading!(false);
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: `Something went wrong, unable to fetch addresses.`,
+          });
+        })) ||
+      setLoading!(false);
+  };
 
   useEffect(() => {
     onFinishUpload();
@@ -488,7 +518,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
                 else {
                   CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
-                  props.navigation.goBack();
+                  if (navigatedFrom === 'registration') {
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.ConsultRoom,
+                          }),
+                        ],
+                      })
+                    );
+                  } else {
+                    props.navigation.goBack();
+                  }
                 }
               }}
             >
@@ -634,8 +678,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
           });
         }
       })

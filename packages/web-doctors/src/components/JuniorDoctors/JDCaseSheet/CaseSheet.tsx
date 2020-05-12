@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CaseSheet: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
 
   const [symptoms, setSymptoms] = useState<boolean>(true);

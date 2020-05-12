@@ -27,7 +27,9 @@ import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
-import { gtmTracking } from '../../gtmTracking'
+import { gtmTracking } from '../../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,12 +39,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(900)]: {
-        marginBottom: 20,
-      },
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         marginTop: 82,
@@ -338,7 +336,7 @@ export const MedicineLanding: React.FC = (props) => {
     setCartItems,
     ePrescriptionData,
     prescriptions,
-    cartTotal
+    cartTotal,
   } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
@@ -348,8 +346,12 @@ export const MedicineLanding: React.FC = (props) => {
   // const { city } = useLocationDetails()
 
   if (params.orderStatus === 'success') {
-    console.log(cartTotal)
-    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'Order Success', value: cartTotal })
+    gtmTracking({
+      category: 'Pharmacy',
+      action: 'Order',
+      label: 'Order Success',
+      value: cartTotal,
+    });
     // _obTracking(
     //   {
     //     mobileNumber: currentPatient && currentPatient.mobileNumber
@@ -412,7 +414,7 @@ export const MedicineLanding: React.FC = (props) => {
       .then((res: any) => {
         setData(res.data);
         /**Gtm code start  */
-        gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' })
+        gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
         /**Gtm code End  */
         setLoading(false);
       })
@@ -626,8 +628,9 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      <BottomLinks />
       <NavigationBottom />
-      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

@@ -188,6 +188,10 @@ export const Filter: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_filter.png')} />
 );
 
+export const DoctorFilter: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_doctor_filter.png')} />
+);
+
 export const BackArrow: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 16, width: 25 }}

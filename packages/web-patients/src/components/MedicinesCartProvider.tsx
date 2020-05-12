@@ -1,6 +1,8 @@
 /** Acknowledgement: This work is based on the POC done by Kabir Sarin :) **/
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
+import _isEmpty from 'lodash/isEmpty';
+import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
@@ -23,6 +25,7 @@ export interface MedicineCartItem {
   type_id: string;
   quantity: number;
   mou: string;
+  isShippable: boolean;
 }
 
 export interface StoreAddresses {
@@ -86,6 +89,10 @@ export interface MedicineCartContextProps {
   setEPrescriptionData: ((ePrescriptionData: EPrescription[] | null) => void) | null;
   uploadedEPrescription: boolean | null;
   setUploadedEPrescription: ((uploadedEPrescription: boolean | null) => void) | null;
+  medicineCartType: string | null;
+  updateItemShippingStatus: ((item: any) => void) | null;
+  cartTat: boolean | null;
+  changeCartTatStatus: ((status: boolean) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -117,7 +124,17 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setPrescriptionUploaded: null,
   uploadedEPrescription: null,
   setUploadedEPrescription: null,
+  medicineCartType: '',
+  updateItemShippingStatus: null,
+  cartTat: false,
+  changeCartTatStatus: null
 });
+
+enum CartTypes {
+  PHARMA = 'PHARMA',
+  FMCG = 'FMCG',
+  BOTH = 'BOTH',
+}
 
 export const MedicinesCartProvider: React.FC = (props) => {
   const defPresObject = {
@@ -131,6 +148,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [storePickupPincode, setStorePickupPincode] = useState<
     MedicineCartContextProps['storePickupPincode']
   >(null);
+
+  const [cartTat, setCartTat] = useState<boolean>(false)
 
   const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
   const [deliveryAddressId, setDeliveryAddressId] = useState<
@@ -229,10 +248,21 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   };
 
+  const updateItemShippingStatus = (itemUpdates: any) => {
+    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    if (foundIndex !== -1) {
+      if (cartItems && itemUpdates) {
+        cartItems[foundIndex].isShippable = itemUpdates.isShippable;
+        setCartItems([...cartItems]);
+        setIsCartUpdated(true);
+      }
+    }
+  };
+
   const updateCartItemQty: MedicineCartContextProps['updateCartItemQty'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
-      if (cartItems && itemUpdates && itemUpdates.quantity) {
+      if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
@@ -265,6 +295,22 @@ export const MedicinesCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
+  const checkCartType = () => {
+    let cartTypes: string[] = [];
+    if (!_isEmpty(cartItems)) {
+      cartItems.map((item) => {
+        cartTypes.push(item.type_id);
+      });
+      const finalCartTypeArr = _uniq(cartTypes);
+      if (finalCartTypeArr.length > 1) return CartTypes.BOTH;
+      if (finalCartTypeArr[0].toLowerCase() === 'pharma') return CartTypes.PHARMA;
+      else return CartTypes.FMCG;
+    }
+    return CartTypes.PHARMA;
+  };
+
+  const medicineCartType = checkCartType();
+
   const clearCartInfo = () => {
     localStorage.setItem('prescriptions', JSON.stringify([]));
     localStorage.setItem('ePrescriptionData', JSON.stringify([]));
@@ -278,9 +324,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     // setCartItems([]);
   };
 
+
+  const changeCartTatStatus = (status: boolean) => {
+    setCartTat(status)
+  }
   return (
     <MedicinesCartContext.Provider
       value={{
+        medicineCartType,
         cartItems,
         setCartItems,
         itemsStr,
@@ -309,6 +360,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setEPrescriptionData,
         uploadedEPrescription,
         setUploadedEPrescription,
+        updateItemShippingStatus,
+        cartTat,
+        changeCartTatStatus
       }}
     >
       {props.children}
@@ -346,4 +400,8 @@ export const useShoppingCart = () => ({
   ePrescriptionData: useShoppingCartContext().ePrescriptionData,
   uploadedEPrescription: useShoppingCartContext().uploadedEPrescription,
   setUploadedEPrescription: useShoppingCartContext().setUploadedEPrescription,
+  medicineCartType: useShoppingCartContext().medicineCartType,
+  updateItemShippingStatus: useShoppingCartContext().updateItemShippingStatus,
+  cartTat: useShoppingCartContext().cartTat,
+  changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
 });

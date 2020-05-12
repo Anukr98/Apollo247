@@ -15,7 +15,7 @@ import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { gtmTracking } from '../gtmTracking'
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -207,7 +207,7 @@ export interface DoctorsFilterProps {
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const {
     handleFilterOptions,
@@ -308,7 +308,11 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   const doctorFilterGepTracking = (filterName: string, filterValue: string) => {
-    gtmTracking({ category: 'Consultations', action: selectedSpecialtyName, label: `${filterName} - ${filterValue}`})
+    gtmTracking({
+      category: 'Consultations',
+      action: selectedSpecialtyName,
+      label: `${filterName} - ${filterValue}`,
+    });
   };
 
   return (

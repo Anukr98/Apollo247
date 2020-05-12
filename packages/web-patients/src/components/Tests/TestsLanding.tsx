@@ -34,6 +34,7 @@ import { GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from 'graphql/types/getDiagnosticsCites';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,12 +44,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(900)]: {
-        marginBottom: 20,
-      },
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         marginTop: 82,
@@ -657,8 +654,9 @@ export const TestsLanding: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
-      <NavigationBottom />
       {!onePrimaryUser && <ManageProfile />}
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };
