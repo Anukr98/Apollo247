@@ -116,49 +116,6 @@ export const GET_COUPONS = gql`
   }
 `;
 
-export const PHRAMA_COUPONS_LIST = gql`
-  query getPharmaCouponList {
-    getPharmaCouponList {
-      coupons {
-        code
-        couponPharmaRule {
-          couponCategoryApplicable
-          discountApplicableOn
-          messageOnCouponScreen
-          successMessage
-        }
-        createdDate
-        description
-        id
-        isActive
-      }
-    }
-  }
-`;
-
-export const VALIDATE_PHARMA_COUPONS = gql`
-  query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
-    validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
-      discountedTotals {
-        applicableDiscount
-        couponDiscount
-        productDiscount
-      }
-      pharmaLineItemsWithDiscountedPrice {
-        discountedPrice
-        mrp
-        productName
-        productType
-        quantity
-        specialPrice
-      }
-      successMessage
-      reasonForInvalidStatus
-      validityStatus
-    }
-  }
-`;
-
 export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
   query getPatientPastConsultsAndPrescriptions(
     $consultsAndOrdersInput: PatientConsultsAndOrdersInput

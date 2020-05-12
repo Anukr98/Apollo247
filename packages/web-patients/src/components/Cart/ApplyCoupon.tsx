@@ -6,7 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import _each from 'lodash';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { PHRAMA_COUPONS_LIST, VALIDATE_PHARMA_COUPONS } from '../../graphql/profiles';
+import { PHRAMA_COUPONS_LIST, VALIDATE_PHARMA_COUPONS } from '../../graphql/medicines';
 import {
   getPharmaCouponList,
   getPharmaCouponList_getPharmaCouponList_coupons,
