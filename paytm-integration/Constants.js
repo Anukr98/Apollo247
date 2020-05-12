@@ -19,6 +19,7 @@ module.exports = Object.freeze({
   POSSIBLE_PAYMENT_TYPES: ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'],
   PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS: 'Invalid parameters',
   PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON: 'Something went wrong, please try again!',
-  PAYMENT_MODE_ONLY_TRUE: 'YES'
+  PAYMENT_MODE_ONLY_TRUE: 'YES',
+  INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.'
 
 });
