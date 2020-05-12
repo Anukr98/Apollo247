@@ -5,6 +5,7 @@ import {
   MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
+  MEDICINE_FREQUENCY,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
 import { Alert, Platform } from 'react-native';
@@ -192,7 +193,11 @@ export const medicineDescription = (
             : ''
         }`
       : `${item.medicineDosage ? item.medicineDosage : ''} ${item.medicineUnit ? unit + ' ' : ''}${
-          item.medicineFrequency ? nameFormater(item.medicineFrequency, 'lower') + ' ' : ''
+          item.medicineFrequency
+            ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+              ? 'STAT (Immediately) '
+              : nameFormater(item.medicineFrequency, 'lower') + ' '
+            : ''
         }${
           item.medicineConsumptionDurationInDays
             ? `for ${item.medicineConsumptionDurationInDays} ${
