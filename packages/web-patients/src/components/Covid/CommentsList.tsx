@@ -2,6 +2,7 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,34 +51,41 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CommentsList: React.FC = (props) => {
-  const classes = useStyles({});
+type CommentItem = {
+  email: string;
+  createdAt: string;
+  content: string;
+};
 
+interface CommentListProps {
+  commentData: Array<CommentItem>;
+  totalComments: string;
+}
+
+export const CommentsList: React.FC<CommentListProps> = (props) => {
+  const classes = useStyles({});
+  let currentCommentsArr = props.commentData || [];
   return (
     <div className={classes.root}>
-      <div className={classes.listRow}>
-        <div className={classes.listHeader}>
-          <div className={classes.postTitle}>xyz@email.com wrote</div>
-          <div className={classes.postDate}>Mon, 20 Apr 2020</div>
+      {currentCommentsArr.length > 0 &&
+        currentCommentsArr.map((item) => {
+          return (
+            <div className={classes.listRow}>
+              <div className={classes.listHeader}>
+                <div className={classes.postTitle}>{item.email} wrote</div>
+                <div className={classes.postDate}>
+                  {item.createdAt && moment.unix(parseInt(item.createdAt)).format('ddd, ll')}
+                </div>
+              </div>
+              <div className={classes.postContent}>{item.content}</div>
+            </div>
+          );
+        })}
+      {parseInt(props.totalComments) > currentCommentsArr.length && (
+        <div className={classes.bottomActions}>
+          <AphButton>View More</AphButton>
         </div>
-        <div className={classes.postContent}>
-          This article is really helpful, it helped me and my family to take extra measures to
-          prevent ourselves from coronavirus. Thanks!
-        </div>
-      </div>
-      <div className={classes.listRow}>
-        <div className={classes.listHeader}>
-          <div className={classes.postTitle}>Kriti wrote</div>
-          <div className={classes.postDate}>Sun, 19 Apr 2020</div>
-        </div>
-        <div className={classes.postContent}>
-          This article helped me how to wash my hands. Now my hands are super clean and fresh.
-          #stayhomestaysafe #washyourhands
-        </div>
-      </div>
-      <div className={classes.bottomActions}>
-        <AphButton>View More</AphButton>
-      </div>
+      )}
     </div>
   );
 };

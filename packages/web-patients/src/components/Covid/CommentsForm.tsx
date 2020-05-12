@@ -97,7 +97,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CommentsForm: React.FC = (props) => {
+interface CommentsFormProps {
+  titleId: string;
+}
+
+export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
   const classes = useStyles({});
   const [subscribe, setSubscribe] = useState<boolean>(true);
   const [maskEmail, setMaskEmail] = useState<boolean>(false);
@@ -109,6 +113,8 @@ export const CommentsForm: React.FC = (props) => {
   const [userNameValid, setUserNameValid] = useState<boolean>(true);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const postCommentUrl = process.env.POST_COMMENT_URL || '';
 
   useEffect(() => {
     if (isEmailValid(userEmail) && comment.length) {
@@ -154,13 +160,17 @@ export const CommentsForm: React.FC = (props) => {
       name: userName,
       maskEmail,
       subcription: subscribe,
+      id: props.titleId,
     };
+    fetchUtil(postCommentUrl, 'POST', commentData, '', true).then((res: any) => {
+      if (res && res.success) {
+        handleCancelForm();
+        setIsLoading(false);
+        setIsPopoverOpen(true);
+      } else {
+      }
+    });
     console.log('144', commentData);
-    setTimeout(() => {
-      handleCancelForm();
-      setIsLoading(false);
-      setIsPopoverOpen(true);
-    }, 5000);
   };
 
   return (
@@ -256,12 +266,12 @@ export const CommentsForm: React.FC = (props) => {
       >
         <MascotWithMessage
           messageTitle=""
-          message="Comment posted successfully."
+          message="We have received your comment. We will let you know once it is approved."
           closeButtonLabel="OK"
           closeMascot={() => {
             setIsPopoverOpen(false);
           }}
-          refreshPage
+          // refreshPage
         />
       </Popover>
     </div>

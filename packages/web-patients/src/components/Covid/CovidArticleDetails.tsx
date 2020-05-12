@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     expertsContainer: {
       paddingTop: 20,
-      width: '60%',
+      width: '45%',
     },
   };
 });
@@ -142,10 +142,15 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [thumbnailMobile, setThumbnailMobile] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [titleId, setTitleId] = useState<string>('');
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
   const [isWebView, setIsWebView] = useState<boolean>(false);
-  const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
+  const [comments, setComments] = useState([]);
+  const [totalComments, setTotalComments] = useState('');
+
+  // const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
+  const covidArticleDetailUrl = 'https://uatcms.apollo247.com/api/article-details';
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
@@ -169,6 +174,9 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             title,
             type,
             sourceUrl,
+            id,
+            comments,
+            totalComments,
           } = postData;
           setHtmlData(htmlData);
           setSource(source);
@@ -176,8 +184,11 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           setThumbnailWeb(thumbnailWeb);
           setThumbnailMobile(thumbnailMobile);
           setTitle(title);
+          setTitleId(id);
           setType(type);
           setShowLoader(false);
+          setComments(comments);
+          setTotalComments(totalComments);
         }
       });
     } else {
@@ -221,8 +232,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                 </div>
                 <div className={classes.rightSidebar}>
                   <div className={classes.formCard}>
-                    <CommentsForm />
-                    <CommentsList />
+                    <CommentsForm titleId={titleId} />
+                    <CommentsList commentData={comments} totalComments={totalComments} />
                   </div>
                   {/* <div className={classes.bottomActions}>
                     <AphButton color="primary">Share this article</AphButton>
