@@ -32,6 +32,7 @@ export const GET_DOCTOR_DETAILS = gql`
       streetLine2
       streetLine3
       zip
+      signature
       specialty {
         name
       }
@@ -54,6 +55,8 @@ export const GET_DOCTOR_DETAILS = gql`
           city
           country
           facilityType
+          id
+          imageUrl
           latitude
           longitude
           name
@@ -61,6 +64,7 @@ export const GET_DOCTOR_DETAILS = gql`
           streetLine1
           streetLine2
           streetLine3
+          zipcode
         }
       }
       starTeam {
@@ -627,12 +631,20 @@ export const GET_CASESHEET = gql`
             documentPath
             prismFileId
           }
-          status
           appointmentState
+          appointmentType
           displayId
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
           rescheduleCount
           rescheduleCountByDoctor
-          appointmentType
+          isFollowUp
+          followUpParentId
+          isTransfer
+          transferParentId
           sdConsultationDate
         }
         createdDoctorProfile {

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, PATIENT_ADDRESS_TYPE, STATUS, APPOINTMENT_TYPE, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -144,12 +144,20 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   id: string;
   appointmentDateTime: any;
   appointmentDocuments: (GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;
-  status: STATUS;
   appointmentState: string | null;
+  appointmentType: APPOINTMENT_TYPE;
   displayId: string;
+  doctorId: string;
+  hospitalId: string | null;
+  patientId: string;
+  parentId: string | null;
+  status: STATUS;
   rescheduleCount: number;
   rescheduleCountByDoctor: number;
-  appointmentType: APPOINTMENT_TYPE;
+  isFollowUp: number;
+  followUpParentId: string | null;
+  isTransfer: number;
+  transferParentId: string | null;
   sdConsultationDate: any | null;
 }
 

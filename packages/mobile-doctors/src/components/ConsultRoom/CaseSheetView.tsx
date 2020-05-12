@@ -425,33 +425,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   const prescriptionView = () => {
     if (patientDetails) {
-      const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
       props.navigation.navigate(AppRoutes.PreviewPrescription, {
-        appointmentDetails: {
-          patient: `${(patientDetails.firstName || '').trim()} ${(
-            patientDetails.lastName || ''
-          ).trim()} | ${patientDetails.gender || '-'} | ${
-            age > -1 ? Math.round(age).toString() : '-'
-          }`,
-          vitals: medicalHistory
-            ? `Weight: ${medicalHistory.weight || '-'} | Height: ${medicalHistory.height ||
-                '-'} | BP: ${medicalHistory.bp ||
-                '-'} | Temperature: ${medicalHistory.temperature || '-'} `
-            : '',
-          uhid: patientDetails.uhid,
-          appId: displayId,
-          date: moment(
-            g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate') ||
-              Appintmentdatetimeconsultpage
-          ).format('DD/MM/YYYY'),
-          type: g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType'),
-        },
+        caseSheet: caseSheet,
         complaints: symptonsData,
         diagnosis: diagnosisData,
         medicine: medicinePrescriptionData,
-        tests: tests.filter((i) => i.isSelected).map((i) => i.itemname),
-        advice: addedAdvices.map((i) => i.value),
-        // followUp: null,
+        tests: tests.filter((i) => i.isSelected).map((i) => ({ itemname: i.itemname })),
+        advice: addedAdvices.map((i) => ({ instruction: i.value })),
+        followUp: {
+          doFollowUp: switchValue,
+          followUpType: followUpConsultationType,
+          followUpDays: followupDays,
+        },
+        referalData: {
+          referTo: selectedReferral.key !== '-1' ? selectedReferral.value.toString() : null,
+          referReason: selectedReferral.key !== '-1' ? referralReason : null,
+        },
         onEditPress: () => {
           props.setCaseSheetEdit(true);
           setShowEditPreviewButtons(true);
