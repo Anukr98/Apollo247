@@ -284,55 +284,56 @@ const getPatientLog: Resolver<
     args.offset,
     args.limit
   );
+  let patientLog = [];
+  if (appointmentsHistory.length) {
+    const appointmentIds: string[] = [];
+    const patientAppointmentsMapper: { [key: string]: string[] } = {};
+    const appointmentMessagesCount: { [key: string]: number } = {};
 
-  const appointmentIds: string[] = [];
-  const patientAppointmentsMapper: { [key: string]: string[] } = {};
-  const appointmentMessagesCount: { [key: string]: number } = {};
-
-  appointmentsHistory.map((appointmentsHistory) => {
-    patientAppointmentsMapper[appointmentsHistory.patientid] = appointmentsHistory.appointmentids;
-    appointmentsHistory.appointmentids.map((appointmentId: string) => {
-      appointmentMessagesCount[appointmentId] = 0;
-      appointmentIds.push(appointmentId);
+    appointmentsHistory.map((appointmentsHistory) => {
+      patientAppointmentsMapper[appointmentsHistory.patientid] = appointmentsHistory.appointmentids;
+      appointmentsHistory.appointmentids.map((appointmentId: string) => {
+        appointmentMessagesCount[appointmentId] = 0;
+        appointmentIds.push(appointmentId);
+      });
     });
-  });
 
-  //Getting all the notifications with appointment ids
-  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
-  const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
-    appointmentIds,
-    ['notificationBin.eventId']
-  );
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
 
-  //Mapping the count of messages with appointment ids
-  notifications.map((notification) => {
-    if (appointmentMessagesCount[notification.eventId] != undefined) {
-      appointmentMessagesCount[notification.eventId]++;
-    }
-  });
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
 
-  //Mapping the patient id with object containing his appointment id and count of unread messages
-  const patientMessagesMapper: { [key: string]: AppointmentCount[] } = {};
-  Object.keys(patientAppointmentsMapper).map((patientId) => {
-    const appointmentsCount = patientAppointmentsMapper[patientId].map((appointmentId) => {
-      return {
-        appointmentId,
-        count: appointmentMessagesCount[appointmentId],
+    //Mapping the patient id with object containing his appointment id and count of unread messages
+    const patientMessagesMapper: { [key: string]: AppointmentCount[] } = {};
+    Object.keys(patientAppointmentsMapper).map((patientId) => {
+      const appointmentsCount = patientAppointmentsMapper[patientId].map((appointmentId) => {
+        return {
+          appointmentId,
+          count: appointmentMessagesCount[appointmentId],
+        };
+      });
+
+      patientMessagesMapper[patientId] = appointmentsCount;
+    });
+
+    //Appending the appointments and count object to the response
+    patientLog = appointmentsHistory.map((appointmentsHistoryItem) => {
+      const patientDetails = {
+        ...appointmentsHistoryItem,
+        unreadMessagesCount: patientMessagesMapper[appointmentsHistoryItem.patientid],
       };
+      return patientDetails;
     });
-
-    patientMessagesMapper[patientId] = appointmentsCount;
-  });
-
-  //Appending the appointments and count object to the response
-  const patientLog = appointmentsHistory.map((appointmentsHistoryItem) => {
-    const patientDetails = {
-      ...appointmentsHistoryItem,
-      unreadMessagesCount: patientMessagesMapper[appointmentsHistoryItem.patientid],
-    };
-    return patientDetails;
-  });
-
+  }
   return {
     patientLog,
     totalResultCount: totalResultCount.length,
