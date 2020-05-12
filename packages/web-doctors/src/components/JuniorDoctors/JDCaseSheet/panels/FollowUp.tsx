@@ -350,8 +350,6 @@ export const FollowUp: React.FC = () => {
                           if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                         }}
                         onChange={(date) => handleDateChange((date as unknown) as Date)}
-                        onFocus={() => {}}
-                        onBlur={() => {}}
                       />
                     </span>
                   </ThemeProvider>

@@ -22,7 +22,6 @@ import {
   DiagnosticPrescription,
   FollowUp,
   OtherInstructions,
-  RefferalCode,
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -200,14 +199,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     otherInstructions,
     setOtherInstructions,
     caseSheetEdit,
-    referralDescription,
-    referralSpecialtyName,
-    setReferralSpecialtyName,
-    setReferralDescription,
-    medicationHistory,
-    setMedicationHistory,
-    occupationHistory,
-    setOccupationHistory,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -226,7 +217,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [otherInstructionsState, setOtherInstructionsState] = useState<boolean>(
     props.startAppointment
   );
-  const [refferalState, setRefferalState] = useState<boolean>(props.startAppointment);
   const [vitalsState, setVitalsState] = useState<boolean>(props.startAppointment);
   const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
   const items = [
@@ -290,12 +280,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: followUpPanelState,
       component: <FollowUp startAppointment={props.startAppointment} />,
     },
-    {
-      key: 'refferal',
-      value: 'Referral (Optional)',
-      state: refferalState,
-      component: <RefferalCode />,
-    },
   ];
 
   useEffect(() => {
@@ -308,7 +292,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setDiagnosticPrescriptionState(props.startAppointment);
     setFollowUpPanelState(props.startAppointment);
     setOtherInstructionsState(props.startAppointment);
-    setRefferalState(props.startAppointment);
     setVitalsState(props.startAppointment);
   }, [props.startAppointment]);
 
@@ -337,10 +320,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           followUpDate: followUpDate,
           notes: notes,
           diagnosticPrescription: diagnosticPrescription,
-          referralSpecialtyName: referralSpecialtyName,
-          referralDescription: referralDescription,
-          medicationHistory: medicationHistory,
-          occupationHistory: occupationHistory,
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
@@ -366,10 +345,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setDiagnosticPrescription(storageItem.diagnosticPrescription);
         setOtherInstructions(storageItem.otherInstructions);
         setFirstTimeLanding(false);
-        setReferralSpecialtyName(storageItem.referralSpecialtyName || '');
-        setReferralDescription(storageItem.referralDescription || '');
-        setMedicationHistory(storageItem.medicationHistory || '');
-        setOccupationHistory(storageItem.occupationHistory || '');
       }
     }
   }, [firstTimeLanding, caseSheetEdit]);
@@ -408,9 +383,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         break;
       case 'otherInstructions':
         setOtherInstructionsState(isExpanded);
-        break;
-      case 'refferal':
-        setRefferalState(isExpanded);
         break;
     }
   };

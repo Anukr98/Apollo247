@@ -273,7 +273,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     return tobeTakenObjectList;
   };
   const term = (value: string, char: string) => {
-    const changedString = value.substring(0, value.length - 1);
+    let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
   const isPageContentFull = () => {

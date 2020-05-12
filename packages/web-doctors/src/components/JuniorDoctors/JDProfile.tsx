@@ -8,7 +8,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
-import { UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR } from 'graphql/doctors';
+import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
@@ -111,7 +111,7 @@ export const JDProfile: React.FC = (props) => {
   const doctorAwayMutation = useMutation<
     UpdateDoctorOnlineStatus,
     UpdateDoctorOnlineStatusVariables
-  >(UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR, {
+  >(UPDATE_DOCTOR_ONLINE_STATUS, {
     variables: {
       doctorId: (currentDoctor && currentDoctor.id) || '',
       onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,

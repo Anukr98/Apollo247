@@ -83,7 +83,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   }
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   const doctorSlot = data && data.getDoctorDetails && data.getDoctorDetails.consultHours;
-  const [consultHours, setConsultHours] = useState<any>();
+  const [consultHours, setConsultHours] = useState();
   const { item, dialogProps, doctorId } = props;
   const [selectedValue, setSelectedValue] = useState(RadioValues.DAY);
   const [selectedBlockOption, setSelectedBlockOption] = useState(BlockOption.entireday);
@@ -97,13 +97,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [isPastTimeError, setIsPastTimeError] = useState(false);
   const [blockReason, setBlockReason] = useState('personal leave');
   const [val, setVal] = useState(customTimeArray);
-  const [val1, setVal1] = useState<any>();
+  const [val1, setVal1] = useState();
   const [startVal, setStartVal] = useState(customTimeArray);
-  const [startVal1, setStartVal1] = useState<any>();
-  const [dateRange, setDateRange] = useState<any>();
-  const [chackedSingleValue, setChackedSingleValue] = useState<any>();
+  const [startVal1, setStartVal1] = useState();
+  const [dateRange, setDateRange] = useState();
+  const [chackedSingleValue, setChackedSingleValue] = useState();
   const [checked, setChecked] = useState(false);
-  const [startEndList, setStartEndList] = useState<any>();
+  const [startEndList, setStartEndList] = useState();
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
@@ -861,8 +861,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       }}
                       autoOk
                       TextFieldComponent={TextFieldComponent}
-                      onFocus={() => {}}
-                      onBlur={() => {}}
                     />
                   </div>
                   {!daySelected && (
@@ -897,8 +895,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         }}
                         autoOk
                         TextFieldComponent={TextFieldComponent}
-                        onFocus={() => {}}
-                        onBlur={() => {}}
                       />
                     </div>
                   )}
