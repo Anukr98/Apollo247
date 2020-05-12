@@ -675,37 +675,36 @@ const getCaseSheet: Resolver<
     appointmentData.doctorId,
     appointmentData.patientId
   );
+  let pastAppointmentsWithUnreadMessages: AppointmentDetails[] = [];
+  if (pastAppointments.length) {
+    const appointmentIds: string[] = [];
+    const appointmentMessagesCount: { [key: string]: number } = {};
+    pastAppointments.map((appointment) => {
+      appointmentMessagesCount[appointment.id] = 0;
+      appointmentIds.push(appointment.id);
+    });
 
-  const appointmentIds: string[] = [];
-  const appointmentMessagesCount: { [key: string]: number } = {};
-  pastAppointments.map((appointment) => {
-    appointmentMessagesCount[appointment.id] = 0;
-    appointmentIds.push(appointment.id);
-  });
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
 
-  //Getting all the notifications with appointment ids
-  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
-  const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
-    appointmentIds,
-    ['notificationBin.eventId']
-  );
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
 
-  //Mapping the count of messages with appointment ids
-  notifications.map((notification) => {
-    if (appointmentMessagesCount[notification.eventId] != undefined) {
-      appointmentMessagesCount[notification.eventId]++;
-    }
-  });
-
-  const pastAppointmentsWithUnreadMessages: AppointmentDetails[] = pastAppointments.map(
-    (appointment) => {
+    pastAppointmentsWithUnreadMessages = pastAppointments.map((appointment) => {
       return {
         ...appointment,
         unreadMessagesCount: appointmentMessagesCount[appointment.id],
       };
-    }
-  );
-
+    });
+  }
   return {
     caseSheetDetails,
     patientDetails,
