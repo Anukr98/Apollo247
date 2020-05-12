@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import moment from 'moment';
 import { useCurrentPatient } from 'hooks/authHooks';
 import React, { useContext } from 'react';
+import { isEmpty } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -179,6 +180,8 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
     createdDoctorProfile,
     appointmentInfo,
     sdConsultationDate,
+    referralDescription,
+    referralSpecialtyName,
   } = useContext(CaseSheetContext);
 
   let doctorFacilityDetails = null;
@@ -228,7 +231,8 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
         </div> */}
         <div className={classes.pageContent}>
           {(otherInstructions && otherInstructions.length > 0) ||
-          (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ? (
+          (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
+          !isEmpty(referralSpecialtyName) || !isEmpty(referralDescription) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
                 <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
@@ -250,18 +254,22 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                     <div className={classes.followContent}>{props.getFollowUpData()}</div>
                   </div>
                 ) : null}
-                <div className={classes.advice}>
-                  <span>Referral</span>
-                  <div>
-                    <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                      Consult a Pulmologist
-                    </div>
-                    <div className={classes.instruction}>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                      incididunt ut labore et dolore magna aliqua.
+
+                {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                  <div className={classes.advice}>
+                    <span>Referral</span>
+                    <div>
+                      {!isEmpty(referralSpecialtyName) && (
+                        <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                          {referralSpecialtyName}
+                        </div>
+                      )}
+                      {!isEmpty(referralDescription) && (
+                        <div className={classes.instruction}>{referralDescription}</div>
+                      )}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ) : null}

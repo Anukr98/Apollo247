@@ -215,6 +215,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
