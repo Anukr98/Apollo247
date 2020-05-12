@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, Gender, Relation, DoctorType } from "./globalTypes";
@@ -71,6 +72,8 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   id: string | null;
   doctorId: string | null;
   status: string | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
   appointment: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment | null;
   medicinePrescription: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   otherInstructions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
@@ -112,6 +115,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetail
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_lifeStyle {
   __typename: "PatientLifeStyle";
   description: string | null;
+  occupationHistory: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientAddress {
@@ -130,6 +134,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetail
   pastSurgicalHistory: string | null;
   temperature: string | null;
   weight: string | null;
+  medicationHistory: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails {

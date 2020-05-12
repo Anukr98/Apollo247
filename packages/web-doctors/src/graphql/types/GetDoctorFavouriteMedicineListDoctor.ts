@@ -6,10 +6,10 @@
 import { MEDICINE_CONSUMPTION_DURATION, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: GetDoctorFavouriteMedicineList
+// GraphQL query operation: GetDoctorFavouriteMedicineListDoctor
 // ====================================================
 
-export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList {
+export interface GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicineList_medicineList {
   __typename: "DoctorFavouriteMedicine";
   medicineConsumptionDurationInDays: string | null;
   medicineConsumptionDuration: string | null;
@@ -28,12 +28,12 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   medicineCustomDosage: string | null;
 }
 
-export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {
+export interface GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicineList {
   __typename: "GetDoctorFavouriteMedicineListResult";
-  medicineList: (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null;
+  medicineList: (GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicineList_medicineList | null)[] | null;
   allowedDosages: (string | null)[] | null;
 }
 
-export interface GetDoctorFavouriteMedicineList {
-  getDoctorFavouriteMedicineList: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList | null;
+export interface GetDoctorFavouriteMedicineListDoctor {
+  getDoctorFavouriteMedicineList: GetDoctorFavouriteMedicineListDoctor_getDoctorFavouriteMedicineList | null;
 }

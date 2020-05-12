@@ -35,7 +35,7 @@ import { isEmpty, trim } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
-import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
+import { GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR } from 'graphql/doctors';
 import {
   GetDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
@@ -55,29 +55,6 @@ interface OptionType {
   sku: string;
 }
 let suggestions: OptionType[] = [];
-
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      className={classes.inputField}
-      autoFocus
-      placeholder="Search"
-      fullWidth
-      InputProps={{
-        inputRef: (node: any) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -707,7 +684,7 @@ export const MedicinePrescription: React.FC = () => {
   useEffect(() => {
     client
       .query<GetDoctorFavouriteMedicineList>({
-        query: GET_DOCTOR_FAVOURITE_MEDICINE,
+        query: GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR,
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -1561,10 +1538,10 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' &&
+      customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
-        customDosageNight.trim() === '')
+        customDosageNight.trim() === ''
     ) {
       setErrorState({
         ...errorState,
@@ -1766,6 +1743,29 @@ export const MedicinePrescription: React.FC = () => {
       [name]: newValue,
     });
   };
+
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+
+    return (
+      <AphTextField
+        className={classes.inputField}
+        autoFocus
+        placeholder="Search"
+        fullWidth
+        InputProps={{
+          inputRef: (node: any) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
 
   const autosuggestProps = {
     renderInputComponent,
@@ -2171,8 +2171,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
@@ -2634,7 +2635,7 @@ export const MedicinePrescription: React.FC = () => {
                   }}
                   {...autosuggestProps}
                   inputProps={{
-                    classes,
+                    //classes,
                     color: 'primary',
                     id: 'react-autosuggest-simple',
                     placeholder: 'Search',
@@ -2705,8 +2706,9 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm((e.target as HTMLInputElement)
-                                .value as MEDICINE_FORM_TYPES);
+                              setMedicineForm(
+                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                              );
                             }}
                             row
                           >

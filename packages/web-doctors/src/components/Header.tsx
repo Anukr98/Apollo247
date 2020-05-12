@@ -40,7 +40,7 @@ import ReactCountdownClock from 'react-countdown-clock';
 import { useMutation, useQuery } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import moment from 'moment';
-import {GetNotifications_getNotifications_notificationData as NotificationDataType} from 'graphql/types/GetNotifications'; 
+import { GetNotifications_getNotifications_notificationData as NotificationDataType } from 'graphql/types/GetNotifications';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -377,18 +377,22 @@ export const Header: React.FC = (props) => {
   const getFormattedDate = (date: string) => {
     const dateFormat = moment(date).format('DD MMM YYYY');
     const timeStamp = moment(date).format('hh.mm A');
-    if(moment().format('DD MMM YYYY') === dateFormat) {
-      return  `Today, ${timeStamp}`;
-    } else if(moment().add(-1, "days").format('DD MMM YYYY') === dateFormat) {
+    if (moment().format('DD MMM YYYY') === dateFormat) {
+      return `Today, ${timeStamp}`;
+    } else if (
+      moment()
+        .add(-1, 'days')
+        .format('DD MMM YYYY') === dateFormat
+    ) {
       return `Yesterday, ${timeStamp}`;
     }
     return `${dateFormat}, ${timeStamp} `;
-  }
+  };
 
-  const sortByDate = ( notificationData: NotificationDataType[]) => {
-    return notificationData.sort((data1: NotificationDataType , data2: NotificationDataType ) => {
-      let date1 = new Date(data1.lastUnreadMessageDate);
-      let date2 = new Date(data2.lastUnreadMessageDate);
+  const sortByDate = (notificationData: NotificationDataType[]) => {
+    return notificationData.sort((data1: NotificationDataType, data2: NotificationDataType) => {
+      const date1 = new Date(data1.lastUnreadMessageDate);
+      const date2 = new Date(data2.lastUnreadMessageDate);
       return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
     });
   };
@@ -400,7 +404,6 @@ export const Header: React.FC = (props) => {
     data.getNotifications.notificationData &&
     data.getNotifications.notificationData.length > 0
   ) {
-    
     const notificationData = sortByDate(data.getNotifications.notificationData);
     notificationCount = notificationData.length;
     content = [
@@ -427,17 +430,21 @@ export const Header: React.FC = (props) => {
                       />
                     </Grid>
                     <Grid item lg={10} sm={10} xs={10} className={classes.noticationContent}>
-                    {`${
+                      {`${
                         notificationObject.unreadNotificationsCount > 1 ? 'There are' : 'There is'
-                      }`} {' '}
+                      }`}{' '}
                       {`${notificationObject.unreadNotificationsCount} ${
-                        notificationObject.unreadNotificationsCount > 1 ? 'new messages' : 'new message'
+                        notificationObject.unreadNotificationsCount > 1
+                          ? 'new messages'
+                          : 'new message'
                       }`}{' '}
                       from your patient,{' '}
                       <span className={classes.bold}>
                         {notificationObject.patientFirstName} {notificationObject.patientLastName}
                       </span>
-                      <div className={classes.timeStamp}>{getFormattedDate(notificationObject.lastUnreadMessageDate)}</div>
+                      <div className={classes.timeStamp}>
+                        {getFormattedDate(notificationObject.lastUnreadMessageDate)}
+                      </div>
                     </Grid>
                   </Grid>
                 </div>
@@ -468,7 +475,7 @@ export const Header: React.FC = (props) => {
           } else {
             // request permission from user
             Notification.requestPermission()
-              .then(function(p) {
+              .then((p) => {
                 if (p === 'granted') {
                   // show notification here
                   sendNotification(message.message.message);
@@ -485,7 +492,7 @@ export const Header: React.FC = (props) => {
                   console.log('User blocked notifications.');
                 }
               })
-              .catch(function(err) {
+              .catch((err) => {
                 const logObject = {
                   api: 'NotificationRequestPermission',
                   doctorId: currentPatient!.id,

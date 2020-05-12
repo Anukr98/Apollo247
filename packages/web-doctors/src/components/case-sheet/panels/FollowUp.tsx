@@ -353,7 +353,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                 min={2}
                 max={9}
                 defaultValue={defaultValue}
-                onChange={debounce((e, value : number) => setFollowUpDays(value), 200)}
+                onChange={debounce((e, value: number) => setFollowUpDays(value), 200)}
                 disabled={!props.startAppointment}
               />
               {followUpDays === 9 && (
@@ -378,6 +378,8 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                         }}
                         onChange={(date) => handleDateChange(date as Date)}
                         disabled={!props.startAppointment}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
                       />
                     </span>
                   </ThemeProvider>

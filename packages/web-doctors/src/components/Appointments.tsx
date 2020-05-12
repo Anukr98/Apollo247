@@ -368,7 +368,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   };
 
   const getSymptomTooltip = (appointment: any, symptomArr: any) => {
-    let symptms: any = [];
+    const symptms: any = [];
     symptomArr.filter((value: any, index: number) => {
       if (index > 1) {
         symptms.push(value.symptom.toUpperCase());
