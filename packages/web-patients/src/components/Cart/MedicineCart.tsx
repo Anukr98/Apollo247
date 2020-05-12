@@ -45,6 +45,7 @@ import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking } from '../../gtmTracking';
+import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -512,6 +513,10 @@ export const MedicineCart: React.FC = (props) => {
 
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [selectedZip, setSelectedZip] = React.useState<string>('');
+  const [
+    validateCouponResult,
+    setValidateCouponResult,
+  ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
 
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -735,7 +740,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1009,34 +1014,32 @@ export const MedicineCart: React.FC = (props) => {
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
                 </div>
-                {/* {isPaymentButtonEnable && (
-                  <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                    {couponCode === '' ? (
-                      <div
-                        onClick={() => setIsApplyCouponDialogOpen(true)}
-                        className={`${classes.serviceType} ${classes.textVCenter}`}
-                      >
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                        </span>
-                        <span className={classes.linkText}>Apply Coupon</span>
-                        <span className={classes.rightArrow}>
-                          <img src={require('images/ic_arrow_right.svg')} alt="" />
-                        </span>
-                      </div>
-                    ) : (
-                      <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                        </span>
-                        <span className={classes.linkText}>Coupon Applied</span>
-                        <span className={classes.rightArrow}>
-                          <img src={require('images/ic_tickmark.svg')} alt="" />
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )} */}
+                <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+                  {couponCode === '' && currentPatient && currentPatient.id ? (
+                    <div
+                      onClick={() => setIsApplyCouponDialogOpen(true)}
+                      className={`${classes.serviceType} ${classes.textVCenter}`}
+                    >
+                      <span className={classes.serviceIcon}>
+                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                      </span>
+                      <span className={classes.linkText}>Apply Coupon</span>
+                      <span className={classes.rightArrow}>
+                        <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      </span>
+                    </div>
+                  ) : (
+                    <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                      <span className={classes.serviceIcon}>
+                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                      </span>
+                      <span className={classes.linkText}>Coupon Applied</span>
+                      <span className={classes.rightArrow}>
+                        <img src={require('images/ic_tickmark.svg')} alt="" />
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div className={classes.priceSection}>
                     <div className={classes.topSection}>
@@ -1260,6 +1263,7 @@ export const MedicineCart: React.FC = (props) => {
         <ApplyCoupon
           setCouponCode={setCouponCode}
           couponCode={couponCode}
+          setValidateCouponResult={setValidateCouponResult}
           close={(isApplyCouponDialogOpen: boolean) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
