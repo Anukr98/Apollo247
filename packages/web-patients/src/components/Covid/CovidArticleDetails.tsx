@@ -233,7 +233,11 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                 <div className={classes.rightSidebar}>
                   <div className={classes.formCard}>
                     <CommentsForm titleId={titleId} />
-                    <CommentsList commentData={comments} totalComments={totalComments} />
+                    <CommentsList
+                      titleId={titleId}
+                      commentData={comments}
+                      totalComments={totalComments}
+                    />
                   </div>
                   {/* <div className={classes.bottomActions}>
                     <AphButton color="primary">Share this article</AphButton>

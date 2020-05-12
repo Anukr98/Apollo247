@@ -1,8 +1,9 @@
-import React from 'react';
-import { Theme } from '@material-ui/core';
+import React, { useRef, useEffect, useState } from 'react';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -17,6 +18,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       fontSize: 12,
       lineHeight: '18px',
+    },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
     },
     listHeader: {
       display: 'flex',
@@ -55,24 +61,53 @@ type CommentItem = {
   email: string;
   createdAt: string;
   content: string;
+  name: string;
 };
 
 interface CommentListProps {
   commentData: Array<CommentItem>;
   totalComments: string;
+  titleId: string;
 }
 
 export const CommentsList: React.FC<CommentListProps> = (props) => {
   const classes = useStyles({});
+  const [commentsArr, setCommentsArr] = useState(props.commentData);
+  const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
+  const articleCommentListUrl = process.env.ARTICLE_COMMENT_LIST_URL;
   let currentCommentsArr = props.commentData || [];
+  useEffect(() => {
+    setCommentsArr(currentCommentsArr);
+  }, [props]);
+
+  const getMoreComments = () => {
+    setCommentsLoading(true);
+    const currentOffset = commentsArr.length;
+    fetchUtil(
+      `${articleCommentListUrl}/${props.titleId}?limit=2&offset=${currentOffset}`,
+      'GET',
+      {},
+      '',
+      true
+    ).then((res: any) => {
+      const newComments = res.data[0]['comments'];
+      const allComments = commentsArr.concat(newComments);
+      setCommentsArr(allComments);
+      setCommentsLoading(false);
+    });
+  };
+
   return (
     <div className={classes.root}>
-      {currentCommentsArr.length > 0 &&
-        currentCommentsArr.map((item) => {
+      {commentsArr.length > 0 &&
+        commentsArr.map((item) => {
+          console.log(555, item);
           return (
             <div className={classes.listRow}>
               <div className={classes.listHeader}>
-                <div className={classes.postTitle}>{item.email} wrote</div>
+                <div className={classes.postTitle}>
+                  {item.name && item.name.length ? item.name : item.email} wrote
+                </div>
                 <div className={classes.postDate}>
                   {item.createdAt && moment.unix(parseInt(item.createdAt)).format('ddd, ll')}
                 </div>
@@ -81,10 +116,18 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
             </div>
           );
         })}
-      {parseInt(props.totalComments) > currentCommentsArr.length && (
-        <div className={classes.bottomActions}>
-          <AphButton>View More</AphButton>
-        </div>
+      {parseInt(props.totalComments) > commentsArr.length && (
+        <>
+          {!commentsLoading ? (
+            <div className={classes.bottomActions} onClick={() => getMoreComments()}>
+              <AphButton>View More</AphButton>
+            </div>
+          ) : (
+            <div className={classes.circlularProgress}>
+              <CircularProgress />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
