@@ -1,6 +1,11 @@
 const axios = require('axios');
 const logger = require('../../winston-logger')('Pharmacy-logs');
 const { initPayment, singlePaymentAdditionalParams } = require('../helpers/common');
+const {
+    PAYMENT_MODE_ONLY_TRUE,
+    PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON,
+    PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS
+} = require('../../Constants');
 module.exports = async (req, res) => {
 
     // variable to log order id in catch
@@ -46,7 +51,7 @@ module.exports = async (req, res) => {
              * If paymentModeOnly key == 'YES' then add additional params
              * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
              */
-            if (req.query.paymentModeOnly === 'YES') {
+            if (req.query.paymentModeOnly === PAYMENT_MODE_ONLY_TRUE) {
                 addParams = singlePaymentAdditionalParams(req.query.paymentTypeID, req.query.bankCode);
                 addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
             }
@@ -54,7 +59,7 @@ module.exports = async (req, res) => {
             if (responseAmount != amount) {
                 return res.status(400).json({
                     status: 'failed',
-                    reason: 'Invalid parameters',
+                    reason: PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS,
                     code: '10000',
                 });
             }
@@ -66,7 +71,7 @@ module.exports = async (req, res) => {
         } else {
             res.status(500).json({
                 status: 'failed',
-                reason: 'Something went wrong, please try again!',
+                reason: PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON,
                 code: '10002',
             });
         }
@@ -78,7 +83,7 @@ module.exports = async (req, res) => {
         }
         res.status(500).json({
             status: 'failed',
-            reason: 'Something went wrong, please try again!',
+            reason: PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON,
             code: '10002',
         });
     }

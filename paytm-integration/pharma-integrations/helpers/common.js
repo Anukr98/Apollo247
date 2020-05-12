@@ -1,6 +1,8 @@
 const { genchecksum } = require('../../paytm/lib/checksum');
 const logger = require('../../winston-logger')('Pharmacy-logs');
-
+const {
+    POSSIBLE_PAYMENT_TYPES
+} = require('../../Constants');
 /**
  * Method for returning the promise 
  * @param {*} orderAutoId 
@@ -36,9 +38,8 @@ const initPayment = function (patientId, orderAutoId, amount, bookingSource, add
 
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
     const paymentTypeParams = {};
-    const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
     logger.info(`${paymentTypeID} - paymentTypeID`);
-    if (!possiblePaymentTypes.includes(paymentTypeID)) {
+    if (!POSSIBLE_PAYMENT_TYPES.includes(paymentTypeID)) {
         throw new Error('Invalid payment type! Please contact IT department.');
     }
     paymentTypeParams['PAYMENT_TYPE_ID'] = paymentTypeID;
