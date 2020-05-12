@@ -44,7 +44,7 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking';
-import { OrderStatus } from 'components/OrderStatus';
+import { OrderStatusContent } from 'components/OrderStatusContent';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -758,7 +758,7 @@ export const Appointments: React.FC = (props) => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <OrderStatus
+        <OrderStatusContent
           paymentStatus={'failed'}
           paymentInfo={'fdsafa'}
           orderStatusCallback={() => {}}

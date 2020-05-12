@@ -247,7 +247,7 @@ interface OrderStatusDetail {
   consultMode?: string;
 }
 
-export const OrderStatus: React.FC<any> = (props: OrderStatusDetail) => {
+export const OrderStatusContent: React.FC<any> = (props: OrderStatusDetail) => {
   const classes = useStyles({});
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(true);
   const {
