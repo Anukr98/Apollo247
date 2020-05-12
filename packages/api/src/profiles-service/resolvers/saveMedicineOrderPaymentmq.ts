@@ -43,7 +43,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     email: String
     CODCity: CODCity
     orderId: String
-}
+  }
 
   type SaveMedicineOrderPaymentMqResult {
     errorCode: Int
@@ -318,15 +318,15 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 

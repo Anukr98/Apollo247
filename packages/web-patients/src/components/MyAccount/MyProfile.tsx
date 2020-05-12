@@ -177,6 +177,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Health Records'
             : currentPath === clientRoutes.needHelp()
             ? 'Need Help'
+            : currentPath === clientRoutes.myPayments()
+            ? 'My Payments'
             : 'Manage Profiles'}
         </div>
       </div>
@@ -196,6 +198,25 @@ export const MyProfile: React.FC = (props) => {
                 </span>
                 <span className={classes.linkText} title={'Manage Profiles'}>
                   Manage Profiles
+                </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.myPayments()}
+                title={'My Payments'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/ic_manageprofile.svg')} alt="" />
+                </span>
+                <span className={classes.linkText} title={'My Payments'}>
+                  My Payments
                 </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
@@ -318,6 +339,25 @@ export const MyProfile: React.FC = (props) => {
                     </span>
                     <span className={classes.linkText} title={'Manage Profiles'}>
                       Manage Profiles
+                    </span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.myPayments()}
+                    title={'My Payments'}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/ic_manageprofile.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText} title={'My Payments'}>
+                      My Payments
                     </span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />

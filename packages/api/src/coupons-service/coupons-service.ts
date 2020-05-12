@@ -15,6 +15,10 @@ import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
+import {
+  validatePharmaCouponTypeDefs,
+  validatePharmaCouponResolvers,
+} from 'coupons-service/resolvers/validatePharmaCoupon';
 //import fetch from 'node-fetch';
 
 (async () => {
@@ -53,6 +57,10 @@ import gql from 'graphql-tag';
       {
         typeDefs: validateConsultCouponTypeDefs,
         resolvers: validateConsultCouponResolvers,
+      },
+      {
+        typeDefs: validatePharmaCouponTypeDefs,
+        resolvers: validatePharmaCouponResolvers,
       },
     ]),
     plugins: [

@@ -50,6 +50,7 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
+import { getLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -943,10 +944,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        if (missedCallCounter >= 3) {
-          setIscallAbandonment(true);
-          setShowAbandonment(true);
-        }
+        // if (missedCallCounter >= 3) {
+        //   setIscallAbandonment(true);
+        //   setShowAbandonment(true);
+        // }
       }
     }, 1000);
   };
@@ -1490,8 +1491,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       } else {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
-            abondmentStarted = true;
-            callAbundantIntervalTimer(620);
+            //abondmentStarted = true;
+            //callAbundantIntervalTimer(620);
           }
         }
       }
@@ -1804,6 +1805,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [timeSelected, setTimeSelected] = useState<string>('');
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.id);
+    switch (type) {
+      case 'height':
+        return localStorageItem ? localStorageItem.height : height;
+      case 'weight':
+        return localStorageItem ? localStorageItem.weight : weight;
+    }
+  };
+
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1928,19 +1940,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      if (height === '' && weight === '') {
+                      const heightValue = getDefaultValue('height');
+                      const weightValue = getDefaultValue('weight');
+                      if (heightValue.trim() === '' && weightValue.trim() === '') {
                         setShowVital(true);
                         setVitalError({
                           height: 'This field is required',
                           weight: 'This field is required',
                         });
-                      } else if (height === '' && weight !== '') {
+                      } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
                         setShowVital(true);
                         setVitalError({
                           height: 'This field is required',
                           weight: '',
                         });
-                      } else if (height !== '' && weight === '') {
+                      } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
                         setShowVital(true);
                         setVitalError({
                           height: '',

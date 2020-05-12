@@ -473,6 +473,7 @@ export const MedicineCart: React.FC = (props) => {
     ePrescriptionData,
     setEPrescriptionData,
     setUploadedEPrescription,
+    cartTat,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -511,6 +512,16 @@ export const MedicineCart: React.FC = (props) => {
 
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [selectedZip, setSelectedZip] = React.useState<string>('');
+
+  useEffect(() => {
+    if (params.orderStatus === 'failed') {
+      gtmTracking({
+        category: 'Pharmacy',
+        action: 'Order',
+        label: 'Failed / Cancelled',
+      });
+    }
+  }, [showOrderPopup]);
 
   const removeImagePrescription = (fileName: string) => {
     const finalPrescriptions =
@@ -789,11 +800,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime.length > 0) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1085,9 +1092,19 @@ export const MedicineCart: React.FC = (props) => {
               }}
               color="primary"
               fullWidth
-              disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+              disabled={
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
+              }
               className={
-                disableSubmit || !isPaymentButtonEnable || mutationLoading
+                (!nonCartFlow
+                  ? !cartTat
+                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                !isPaymentButtonEnable ||
+                disableSubmit
                   ? classes.buttonDisable
                   : ''
               }
