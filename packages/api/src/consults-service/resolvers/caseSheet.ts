@@ -204,29 +204,6 @@ export const caseSheetTypeDefs = gql`
     caseSheet: [CaseSheet!]
     doctorInfo: Profile @provides(fields: "id")
     sdConsultationDate: DateTime
-  }
-
-  type AppointmentWithUnreadMessagesCount {
-    id: String!
-    appointmentDateTime: DateTime!
-    appointmentDocuments: [AppointmentDocuments]
-    appointmentState: String
-    appointmentType: APPOINTMENT_TYPE!
-    displayId: String!
-    doctorId: String!
-    hospitalId: String
-    patientId: String!
-    parentId: String
-    status: STATUS!
-    rescheduleCount: Int!
-    rescheduleCountByDoctor: Int!
-    isFollowUp: Int!
-    followUpParentId: String
-    isTransfer: Int!
-    transferParentId: String
-    caseSheet: [CaseSheet!]
-    doctorInfo: Profile @provides(fields: "id")
-    sdConsultationDate: DateTime
     unreadMessagesCount: Int
   }
 
@@ -239,15 +216,6 @@ export const caseSheetTypeDefs = gql`
     caseSheetDetails: CaseSheet
     patientDetails: PatientDetails
     pastAppointments: [Appointment]
-    juniorDoctorNotes: String
-    juniorDoctorCaseSheet: CaseSheet
-    allowedDosages: [String]
-  }
-
-  type SDCaseSheetFullDetails {
-    caseSheetDetails: CaseSheet
-    patientDetails: PatientDetails
-    pastAppointments: [AppointmentWithUnreadMessagesCount]
     juniorDoctorNotes: String
     juniorDoctorCaseSheet: CaseSheet
     allowedDosages: [String]
@@ -533,7 +501,7 @@ export const caseSheetTypeDefs = gql`
   }
 
   extend type Query {
-    getCaseSheet(appointmentId: String): SDCaseSheetFullDetails
+    getCaseSheet(appointmentId: String): CaseSheetFullDetails
     getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     searchDiagnosis(searchString: String): [DiagnosisJson]
     searchDiagnostic(searchString: String): [DiagnosticJson]
