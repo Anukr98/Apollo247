@@ -103,7 +103,7 @@ const saveOrderShipmentInvoice: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  let shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
+  const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
     return shipment.apOrderNo == saveOrderShipmentInvoiceInput.apOrderNo;
   });
   if (!shipmentDetails) {
