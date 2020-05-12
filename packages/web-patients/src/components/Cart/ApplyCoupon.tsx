@@ -184,7 +184,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
       setIsLoading(true);
       getCouponMutation()
         .then(({ data }) => {
-          console.log(data);
           if (
             data &&
             data.getPharmaCouponList &&
@@ -206,7 +205,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
       setMuationLoading(true);
       validateCoupon()
         .then((res) => {
-          console.log(res);
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
             if (couponValidateResult.validityStatus) {
