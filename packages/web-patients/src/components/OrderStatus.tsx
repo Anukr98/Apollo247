@@ -1,32 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Link, CircularProgress } from '@material-ui/core';
-import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
-import CreditCardIcon from '@material-ui/icons/CreditCard';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { CircularProgress, Link, Theme, Typography } from '@material-ui/core';
+import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
+import { AphButton } from '@aph/web-ui-components';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import CancelIcon from '@material-ui/icons/Cancel';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    root: {
-    },
     container: {
       maxWidth: 1064,
       margin: 'auto',
-    },
-    payMedicineContainer: {
-      background: '#f7f8f5',
-      padding: 20,
-      borderRadius: '0 0 10px 10px',
-      height: '100%',
     },
     sectionHeader: {
       padding: '0 0 10px',
@@ -37,14 +23,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontFamily: 'IBM Plex Sans',
         fontWeight: '600',
         textTransform: 'uppercase',
-        color: '#01475b'
+        color: '#01475b',
       },
       [theme.breakpoints.down('sm')]: {
-        display: 'none'
-      }
-    },
-    paymentContainer: {
-      height: '100%',
+        display: 'none',
+      },
     },
     paper: {
       borderRadius: 5,
@@ -52,8 +35,8 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       [theme.breakpoints.down('sm')]: {
         background: 'none',
-        padding: 0
-      }
+        padding: 0,
+      },
     },
     paperHeading: {
       padding: '0 0 10px',
@@ -64,67 +47,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontFamily: 'IBM Plex Sans',
         fontWeight: '600',
         textTransform: 'uppercase',
-        color: '#01475b'
-      }
-    },
-    checkbox: {
-      '& span': {
-        fontSize: 13,
-        fontWeight: 700
-      }
-    },
-    paymentOptions: {
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      gridGap: 20,
-      listStyleType: 'none',
-      padding: 0,
-      '& li': {
-        background: '#fff',
-        borderRadius: 10,
-        color: '#fc9916',
-        textTransform: 'uppercase',
-        boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
-        fontWeight: 700,
-        fontSize: 13,
-        padding: 15,
-        display: 'flex',
-        alignItems: 'center',
-        lineHeight: 'normal',
-        '& >svg': {
-          margin: '0 10px 0 0'
-        },
-        '&:last-child': {
-          padding: '0 10px'
-        }
-      },
-      [theme.breakpoints.down('xs')]: {
-        gridTemplateColumns: 'auto',
-        '& li:last-child': {
-          padding: 10
-        }
+        color: '#01475b',
       },
     },
-    charges: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      fontSize: 14,
-      color: '#01475b',
-      padding: '6px 0',
-      fontWeight: 600,
-      '& p': {
-        margin: 0
-      }
-    },
-    total: {
-      padding: '10px 0 0 !important',
-      borderTop: '0.5px solid rgba(2,71,91,0.3)',
-      margin: '10px 0 0'
-    },
-    discount: {
-      color: '#0187ba !important'
-    },
+
     payBtn: {
       padding: '10px 20px',
       borderRadius: '10px',
@@ -140,37 +66,23 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       width: 200,
     },
-    chargesContainer: {
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      }
-    },
-    chargesMobile: {
-      display: 'none',
-      [theme.breakpoints.down('sm')]: {
-        display: 'flex',
-        padding: 10,
-        borderRadius: 10,
-        background: 'rgba(0, 135, 186, .15)',
-        margin: '0 0 20px'
-      }
-    },
     modal: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-
     },
     modalContent: {
       width: '600px',
       height: 'auto',
       background: '#fff',
+      borderRadius: 10,
+      outline: 'none',
       [theme.breakpoints.down('sm')]: {
         width: 400,
         height: '100vh',
       },
       [theme.breakpoints.down('xs')]: {
-        width: '100%'
+        width: '100%',
       },
     },
     modalHeader: {
@@ -182,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         color: '#02475b',
         fontWeight: 700,
-      }
+      },
     },
     closePopup: {
       width: 30,
@@ -210,7 +122,7 @@ const useStyles = makeStyles((theme: Theme) => {
     modalBody: {
       padding: 20,
       '& button': {
-        margin: '0 auto'
+        margin: '0 auto',
       },
       [theme.breakpoints.down('sm')]: {
         height: 'calc(100% - 64px)',
@@ -219,10 +131,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalSHeader: {
       [theme.breakpoints.down('sm')]: {
-        display: 'block !important'
+        display: 'block !important',
       },
     },
-    StatusCard: {
+    statusCard: {
       padding: 20,
       borderRadius: 10,
       textAlign: 'center',
@@ -236,14 +148,14 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 13,
         fontWeight: 700,
         textTransform: 'uppercase',
-        padding: '5px 0'
+        padding: '5px 0',
       },
       '& p': {
         fontSize: 13,
         fontWeight: 700,
         color: '#666666',
-        lineHeight: '24px'
-      }
+        lineHeight: '24px',
+      },
     },
     orderDetails: {
       padding: 20,
@@ -256,13 +168,13 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h6': {
         fontSize: 13,
         fontWeight: 700,
-        color: '#02475b'
+        color: '#02475b',
       },
       '& p': {
         fontSize: 13,
         fontWeight: 700,
-        color: '#666666'
-      }
+        color: '#666666',
+      },
     },
     note: {
       width: '80%',
@@ -271,8 +183,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 13,
         fontWeight: 700,
-        color: '#666666'
-      }
+        color: '#666666',
+      },
     },
     pending: {
       background: '#eed9c6',
@@ -280,17 +192,17 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#e87e38',
       },
       '& h5': {
-        color: '#e87e38'
-      }
+        color: '#e87e38',
+      },
     },
-    error: {
+    failed: {
       background: '#edc6c2',
       '& svg': {
         color: '#e02020',
       },
       '& h5': {
-        color: '#e02020'
-      }
+        color: '#e02020',
+      },
     },
     success: {
       background: '#edf7ed',
@@ -298,8 +210,8 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#4aa54a',
       },
       '& h5': {
-        color: '#4aa54a'
-      }
+        color: '#4aa54a',
+      },
     },
     refund: {
       background: '#edc6c2',
@@ -307,78 +219,142 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#a30808',
       },
       '& h5': {
-        color: '#a30808'
-      }
+        color: '#a30808',
+      },
     },
-  }
+    loader: {
+      textAlign: 'center',
+      padding: '20px 0',
+    },
+    consultDetail: {
+      display: 'flex !important',
+    },
+  };
 });
 
 interface OrderStatusDetail {
   paymentStatus: string;
   paymentInfo: string;
-  orderStatusCallback: Function;
+  orderStatusCallback: () => void;
   orderId: number;
   amountPaid: number;
-  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
   paymentRefId: string;
-  paymentDateTime: any;
+  paymentDateTime?: any;
+  type: string;
+  bookingDateTime?: string;
+  doctorName?: string;
+  consultMode?: string;
 }
 
 export const OrderStatus: React.FC<any> = (props: OrderStatusDetail) => {
   const classes = useStyles({});
-  const [checked, setChecked] = React.useState(true);
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
-  };
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(true);
-  const { paymentStatus, paymentInfo, orderStatusCallback, orderId, amountPaid, paymentType, paymentRefId, paymentDateTime } = props
+  const {
+    paymentStatus,
+    paymentInfo,
+    orderStatusCallback,
+    orderId,
+    amountPaid,
+    paymentType,
+    paymentRefId,
+    paymentDateTime,
+    type,
+    bookingDateTime,
+    doctorName,
+    consultMode,
+  } = props;
 
   return (
-    <Modal
-      open={isPopoverOpen}
-      onClose={() => setIsPopoverOpen(false)}
-      className={classes.modal}
-      disableBackdropClick
-      disableEscapeKeyDown
-    >
-      {!paymentRefId ? (<div className={classes.loader}>
-        <CircularProgress />
-      </div>) : (<div className={classes.modalContent}>
-        <div className={classes.modalHeader}>
-          <Typography component="h5">Payment Status</Typography>
-          <Link href="javascript:void(0);" className={classes.closePopup}><img src={require('images/ic_cross_popup.svg')} /></Link>
-          <Link href="javascript:void(0);" className={`${classes.closePopup} ${classes.mobileBack}`}><img src={require('images/ic_back.svg')} /></Link>
+    <>
+      {!paymentRefId ? (
+        <div className={classes.loader}>
+          <CircularProgress />
         </div>
-        <div className={classes.modalBody}>
-          <div className={`${classes.StatusCard}
-           ${paymentStatus == 'pending' ? classes.pending :
-              paymentStatus == 'failed' ? classes.error :
-                paymentStatus == 'success' ? classes.success : ''}`}>
-            <ErrorOutlineIcon></ErrorOutlineIcon>
-            <Typography component="h5">PAYMENT {paymentStatus == 'success' ? 'SUCCESSFUL' : paymentStatus.toUpperCase()}</Typography>
-            <Typography component="p">Rs. {amountPaid}</Typography>
-            <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
-            <Typography component="p">Order ID : {orderId}</Typography>
+      ) : (
+        <div className={classes.modalContent}>
+          <div className={classes.modalHeader}>
+            <Typography component="h5">Payment Status</Typography>
+            <Link href="javascript:void(0);" className={classes.closePopup}>
+              <img src={require('images/ic_cross_popup.svg')} />
+            </Link>
+            <Link
+              href="javascript:void(0);"
+              className={`${classes.closePopup} ${classes.mobileBack}`}
+            >
+              <img src={require('images/ic_back.svg')} />
+            </Link>
           </div>
-          <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
-            <Typography component="h4">Order Details</Typography>
-          </div>
-          <Paper className={classes.orderDetails}>
-            <div className={classes.details}>
-              <Typography component="h6">Order Date &amp; Time</Typography>
-              <Typography component="p">{paymentDateTime}</Typography>
+          <div className={classes.modalBody}>
+            <div
+              className={`${classes.statusCard} ${
+                paymentStatus == 'pending'
+                  ? classes.pending
+                  : paymentStatus == 'failed'
+                  ? classes.failed
+                  : paymentStatus == 'success'
+                  ? classes.success
+                  : ''
+              }`}
+            >
+              <ErrorOutlineIcon></ErrorOutlineIcon>
+              <Typography component="h5">
+                PAYMENT {paymentStatus == 'success' ? 'SUCCESSFUL' : paymentStatus.toUpperCase()}
+              </Typography>
+              <Typography component="p">Rs. {amountPaid}</Typography>
+              <Typography component="p">Order ID : {orderId}</Typography>
+              <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
             </div>
-            <div className={classes.details}>
-              <Typography component="h6">Mode of Payment</Typography>
-              <Typography component="p">{paymentType}</Typography>
+            <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
+              <Typography component="h4">
+                {type === 'consult' ? 'Booking' : 'Order'} Details
+              </Typography>
             </div>
-          </Paper>
-          <div className={classes.note}>
-            <Typography component="p">{paymentInfo}</Typography>
+            {type === 'consult' ? (
+              <Paper className={`${classes.orderDetails} ${classes.consultDetail}`}>
+                <Grid container spacing={1}>
+                  <Grid item xs={12} sm={5}>
+                    <div className={classes.details}>
+                      <Typography component="h6">Date &amp; Time of Appointment</Typography>
+                      <Typography component="p">{bookingDateTime}</Typography>
+                    </div>
+                  </Grid>
+                  <Grid item xs>
+                    <div className={classes.details}>
+                      <Typography component="h6">Doctor Name</Typography>
+                      <Typography component="p">{doctorName}</Typography>
+                    </div>
+                  </Grid>
+                  <Grid item xs>
+                    <div className={classes.details}>
+                      <Typography component="h6">Mode of Consult</Typography>
+                      <Typography component="p">{consultMode}</Typography>
+                    </div>
+                  </Grid>
+                </Grid>
+              </Paper>
+            ) : (
+              <Paper className={classes.orderDetails}>
+                <div className={classes.details}>
+                  <Typography component="h6">Order Date &amp; Time</Typography>
+                  <Typography component="p">{paymentDateTime}</Typography>
+                </div>
+                <div className={classes.details}>
+                  <Typography component="h6">Mode of Payment</Typography>
+                  <Typography component="p">{paymentType}</Typography>
+                </div>
+              </Paper>
+            )}
+
+            <div className={classes.note}>
+              <Typography component="p">{paymentInfo}</Typography>
+            </div>
+            <AphButton className={classes.payBtn} onClick={() => orderStatusCallback()}>
+              Try Again
+            </AphButton>
           </div>
-          <button className={classes.payBtn} onClick={orderStatusCallback}>Try Again</button>
         </div>
-      </div>)}
-    </Modal>
-  )
-}
+      )}
+    </>
+  );
+};
