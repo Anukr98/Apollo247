@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import me.furtado.smsretriever.RNSmsRetrieverPackage;
 import com.bugfender.react.RNBugfenderPackage;
 import com.facebook.reactnative.androidsdk.FBSDKPackage;
 import com.appsflyer.reactnative.RNAppsFlyerPackage;
@@ -68,6 +69,7 @@ import io.fabric.sdk.android.Fabric;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -104,6 +106,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new StreamPackage());
                     packages.add(new RNFirebaseRemoteConfigPackage());
                     packages.add(new RNFirebaseDatabasePackage());
+                    packages.add(new RNAppSignatureHelperPackage());
                     // packages.add(new ReactNativeExceptionHandlerPackage());
                     return packages;
                 }
