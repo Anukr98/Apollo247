@@ -24,10 +24,10 @@ const locationRoutesBlackList: string[] = [
 const sortByProperty = (arr: any[], property: string) =>
   arr.sort((a, b) => parseFloat(a[property]) - parseFloat(b[property]));
 
-const getDeviceType = ()=>{
+const getDeviceType = (): DEVICETYPE => {
   var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-  if(!navigator || !navigator.userAgent) return 
-  if(screen.width < 768 ){
+  if (!navigator || !navigator.userAgent) return
+  if (screen.width < 768) {
     //mobile
     return /Android/i.test(userAgent) ? DEVICETYPE.ANDROID : (/iPhone/i.test(userAgent) ? DEVICETYPE.IOS : null);
   } else {

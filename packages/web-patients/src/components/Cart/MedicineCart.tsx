@@ -651,6 +651,7 @@ export const MedicineCart: React.FC = (props) => {
           ].join(','),
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
+          deviceType: getDeviceType()
         },
       },
     }
@@ -681,9 +682,7 @@ export const MedicineCart: React.FC = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
-        ...(chennaiOrderVariables && chennaiOrderVariables),
-        bookingSource: BOOKINGSOURCE.WEB,
-        deviceType: getDeviceType()
+        ...(chennaiOrderVariables && chennaiOrderVariables)
       },
     };
 

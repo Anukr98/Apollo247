@@ -538,7 +538,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: appointmentDateTime,
-          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+          bookingSource: BOOKINGSOURCE.WEB,
+          deviceType: getDeviceType(),
           appointmentType: AppointmentType.ONLINE,
           hospitalId: hospitalId,
           couponCode: couponCode ? couponCode : null,
@@ -571,9 +572,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   responseCode: couponCode,
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
-                  orderId: res.data.bookAppointment.appointment.id,
-                  bookingSource:  BOOKINGSOURCE.WEB,
-                  deviceType: getDeviceType()
+                  orderId: res.data.bookAppointment.appointment.id
                 },
               },
               fetchPolicy: 'no-cache',
