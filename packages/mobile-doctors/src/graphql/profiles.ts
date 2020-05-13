@@ -991,6 +991,28 @@ export const SEARCH_DIAGNOSTIC = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($searchText: String!, $patientId: String, $city: String) {
+    searchDiagnostics(searchText: $searchText, patientId: $patientId, city: $city) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        gender
+        rate
+        itemRemarks
+        city
+        state
+        itemType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+        collectionType
+      }
+    }
+  }
+`;
+
 export const NEXT_AVAILABLE_SLOT = gql`
   query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
     getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {

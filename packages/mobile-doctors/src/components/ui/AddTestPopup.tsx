@@ -6,27 +6,29 @@ import { DropDown, Option } from '@aph/mobile-doctors/src/components/ui/DropDown
 import { AddPlus } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { SEARCH_DIAGNOSTIC } from '@aph/mobile-doctors/src/graphql/profiles';
+import { SEARCH_DIAGNOSTICS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import {
-  searchDiagnostic,
-  searchDiagnosticVariables,
-  searchDiagnostic_searchDiagnostic,
-} from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from '@aph/mobile-doctors/src/graphql/types/searchDiagnostics';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, Alert, Keyboard, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, View } from 'react-native';
 
 const styles = AddTestPopupStyles;
 
 export interface AddTestPopupProps {
   searchTestVal?: string;
   onClose: () => void;
-  onPressDone: (searchTestVal: string, tempTestArray: searchDiagnostic_searchDiagnostic[]) => void;
+  onPressDone: (
+    searchTestVal: string,
+    tempTestArray: searchDiagnostics_searchDiagnostics_diagnostics[]
+  ) => void;
   data?:
     | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
     | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription;
@@ -41,12 +43,14 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   const [searchTestVal, setsearchTestVal] = useState<string>(props.searchTestVal || '');
   const [loading, setLoading] = useState<boolean>(false);
   const [istestsSearchList, settestsSearchList] = useState<
-    (searchDiagnostic_searchDiagnostic | null)[] | null
+    (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >([]);
 
   const [isSearchTestListVisible, setisSearchTestListVisible] = useState<boolean>(false);
 
-  const [tempTestArray, settempTestArray] = useState<searchDiagnostic_searchDiagnostic[]>([]);
+  const [tempTestArray, settempTestArray] = useState<
+    searchDiagnostics_searchDiagnostics_diagnostics[]
+  >([]);
   const tabsData = [
     { title: 'ADD TEST' },
     //  { title: 'SCANS & HEALTH CHECK' }
@@ -61,23 +65,25 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
     }
   }, []);
 
-  const getTempTestArray = (Testitemname: searchDiagnostic_searchDiagnostic | null) => {
+  const getTempTestArray = (
+    Testitemname: searchDiagnostics_searchDiagnostics_diagnostics | null
+  ) => {
     if (Testitemname) {
       if (tempTestArray.length > 0) {
         console.log('length is greater than  zero');
         for (let i = 0; i < tempTestArray.length; i++) {
           console.log('for loop');
-          if (tempTestArray[i].itemname === Testitemname.itemname) {
+          if (tempTestArray[i].itemName === Testitemname.itemName) {
             Alert.alert(strings.common.alert, 'Test existed in the list.');
             console.log('same test name');
           } else {
             console.log(' test name not same');
-            settempTestArray([...tempTestArray, Testitemname].filter((i) => i.itemname !== ''));
+            settempTestArray([...tempTestArray, Testitemname].filter((i) => i.itemName !== ''));
           }
         }
       } else {
         console.log('length is zero');
-        settempTestArray([Testitemname].filter((i) => i.itemname !== ''));
+        settempTestArray([Testitemname].filter((i) => i.itemName !== ''));
       }
     }
     // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
@@ -99,7 +105,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
             options={istestsSearchList.map(
               (item, i) =>
                 ({
-                  optionText: item!.itemname,
+                  optionText: item!.itemName,
                   onPress: () => {
                     Keyboard.dismiss();
                     // getTempTestArray(item);
@@ -123,23 +129,38 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
       setLoading(true);
       setisSearchTestListVisible(true);
       client
-        .query<searchDiagnostic, searchDiagnosticVariables>({
-          query: SEARCH_DIAGNOSTIC,
-          variables: { searchString: search_value },
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: { searchText: search_value, patientId: '', city: '' },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
-          if (_data && _data.data && _data.data.searchDiagnostic) {
-            const dataArray: (searchDiagnostic_searchDiagnostic | null)[] = [];
-            const searchTestResp = _data.data.searchDiagnostic;
+          if (_data && _data.data && _data.data.searchDiagnostics.diagnostics) {
+            const dataArray: (searchDiagnostics_searchDiagnostics_diagnostics | null)[] = [];
+            const searchTestResp = _data.data.searchDiagnostics.diagnostics.filter(
+              (i) => i !== null
+            );
             if (
               searchTestResp.findIndex(
-                (i) => i && (i.itemname || '').toLowerCase() === search_value.trim().toLowerCase()
+                (i) => i && (i.itemName || '').toLowerCase() === search_value.trim().toLowerCase()
               ) === -1
             ) {
               dataArray.push({
-                itemname: search_value.trim(),
-              } as searchDiagnostic_searchDiagnostic);
+                __typename: 'Diagnostics',
+                id: '',
+                itemId: -1,
+                itemName: search_value.trim(),
+                gender: '',
+                rate: -1,
+                itemRemarks: '',
+                city: '',
+                state: '',
+                itemType: null,
+                fromAgeInDays: -1,
+                toAgeInDays: -1,
+                testPreparationData: '',
+                collectionType: null,
+              } as searchDiagnostics_searchDiagnostics_diagnostics);
             }
 
             dataArray.push(...searchTestResp);
@@ -239,7 +260,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                         console.log('......tempTestArray:', tempTestArray);
                         return (
                           <ChipIconView
-                            title={item.itemname || ''}
+                            title={item.itemName || ''}
                             onPress={(e: any) => {
                               console.log('deleted');
                               settempTestArray(tempTestArray.slice(1));

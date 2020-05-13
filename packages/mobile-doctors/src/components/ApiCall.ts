@@ -1,7 +1,6 @@
 import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import Axios, { AxiosResponse, Canceler } from 'axios';
-
-const AUTH_TOKEN = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 export interface MedicineProductsResponse {
   product_count: number;
@@ -73,11 +72,11 @@ export const searchMedicineApi = (
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
   return Axios.post(
-    `https://www.apollopharmacy.in/popcsrchprd_api.php`,
+    `${AppConfig.Configuration.APOLLO_BASE_URL}/popcsrchss_api.php`,
     { params: searchText },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: AppConfig.Configuration.APOLLO_AUTH_TOKEN,
         'Content-Type': 'application/json',
       },
       cancelToken: new CancelToken((c) => {
@@ -92,11 +91,11 @@ export const getMedicineDetailsApi = (
   productSku: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
-    `https://www.apollopharmacy.in//popcsrchpdp_api.php`,
+    `${AppConfig.Configuration.APOLLO_BASE_URL}/popcsrchpdp_api.php`,
     { params: productSku },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: AppConfig.Configuration.APOLLO_AUTH_TOKEN,
       },
     }
   );
