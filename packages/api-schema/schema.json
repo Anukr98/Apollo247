@@ -18799,7 +18799,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "appointmentPayment",
+                "name": "ApptPayment",
                 "ofType": null
               }
             },
@@ -18836,7 +18836,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "doctorResponse",
+              "name": "DoctorResponse",
               "ofType": null
             },
             "isDeprecated": false,
@@ -18850,7 +18850,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "appointmentPayment",
+        "name": "ApptPayment",
         "description": null,
         "fields": [
           {
@@ -18945,7 +18945,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "doctorResponse",
+        "name": "DoctorResponse",
         "description": null,
         "fields": [
           {

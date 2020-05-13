@@ -21,7 +21,7 @@ type ApptResponse {
     actualAmount: Float
     discountedAmount: Float
     appointmentType: String
-    appointmentPayments: [AppointmentPayment]
+    appointmentPayments: [ApptPayment]
     status: STATUS
     doctorId: String
     doctor: DoctorResponse
@@ -30,7 +30,7 @@ type ApptResponse {
     typeId: String
     name: String
   }
-type AppointmentPayment {
+type ApptPayment {
   amountPaid: Float
   bankTxnId: String
   id: String
@@ -51,7 +51,7 @@ type ApptResponse = {
   actualAmount: Number;
   discountedAmount: Number;
   appointmentType: string
-  appointmentPayments: AppointmentPayment[];
+  appointmentPayments: ApptPayment[];
   status: STATUS;
   doctorId: string;
   doctor: DoctorResponse;
@@ -64,7 +64,7 @@ type AppointmentsResult = {
   appointments: Partial<ApptResponse[]>;
 };
 
-type AppointmentPayment = {
+type ApptPayment = {
   amountPaid: Number;
   bankTxnId: string;
   id: string;
