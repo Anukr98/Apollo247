@@ -58,6 +58,7 @@ import {
   SearchHistory,
   RegistrationCodes,
   CouponPharmaRules,
+  MedicineOrderShipments,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -107,6 +108,7 @@ export const connect = async () => {
         MedicineOrderInvoice,
         MedicineOrderLineItems,
         MedicineOrderPayments,
+        MedicineOrderShipments,
         MedicineOrders,
         MedicineOrdersStatus,
         Patient,

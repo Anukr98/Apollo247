@@ -251,6 +251,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   patientId: string;
   parentId: string | null;
   status: STATUS;
+  unreadMessagesCount: number | null;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 

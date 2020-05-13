@@ -870,6 +870,7 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
+        unreadMessagesCount
         caseSheet {
           consultType
           doctorType
