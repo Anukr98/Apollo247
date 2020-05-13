@@ -944,10 +944,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        if (missedCallCounter >= 3) {
-          setIscallAbandonment(true);
-          setShowAbandonment(true);
-        }
+        // if (missedCallCounter >= 3) {
+        //   setIscallAbandonment(true);
+        //   setShowAbandonment(true);
+        // }
       }
     }, 1000);
   };
@@ -1491,8 +1491,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       } else {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
-            abondmentStarted = true;
-            callAbundantIntervalTimer(620);
+            //abondmentStarted = true;
+            //callAbundantIntervalTimer(620);
           }
         }
       }

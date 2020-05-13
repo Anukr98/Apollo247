@@ -50,6 +50,10 @@ export const clientRoutes = {
   covidLanding: () => '/covid19',
   covidDetails: () => '/covid19/*',
   aboutUs: () => '/aboutUs',
+  needHelp: () => '/needHelp',
+  myPayments: () => '/my-payments',
+  payMedicine: () => '/pay-medicine',
+  payOnlineConsult: () => '/pay-online-consult',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

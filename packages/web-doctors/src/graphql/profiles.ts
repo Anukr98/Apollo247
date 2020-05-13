@@ -849,6 +849,7 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
+        unreadMessagesCount
         caseSheet {
           consultType
           doctorType
@@ -1182,6 +1183,10 @@ export const GET_PATIENT_LOG = gql`
           gender
           uhid
           photoUrl
+        }
+        unreadMessagesCount {
+          appointmentId
+          count
         }
       }
       totalResultCount

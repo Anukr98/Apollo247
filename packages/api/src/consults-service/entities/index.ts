@@ -99,6 +99,7 @@ export enum BOOKINGSOURCE {
 export enum DEVICETYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 export enum PATIENT_TYPE {
   NEW = 'NEW',

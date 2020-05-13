@@ -62,6 +62,10 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
     top: -5,
   },
+  countStyle: {
+    paddingTop: 5,
+    paddingBottom: 10,
+  },
   videoIcon: {
     position: 'absolute',
     top: 7,
@@ -154,8 +158,9 @@ interface AppointmentCardProps {
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   const classes = useStyles({});
+  console.log(data);
   return (
-    <Card style={{ width: '100%', height: 45 }}>
+    <Card style={{ width: '100%', height: 55 }}>
       <CardContent>
         <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank">
           <Grid item xs={12} style={{ width: '100%' }}>
@@ -168,7 +173,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                       {`${format(
                         new Date(data.appointmentDateTime),
                         'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                      )}`}
+                      )} `}
+                      <div className={classes.countStyle}>
+                        {data.unreadMessagesCount && data.unreadMessagesCount > 0
+                          ? 'Unread messages (' + data.unreadMessagesCount + ')'
+                          : ''}
+                      </div>
                     </Typography>
                   </div>
                 </Grid>

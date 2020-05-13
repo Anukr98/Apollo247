@@ -15,14 +15,12 @@ import { Alerts } from 'components/Alerts/Alerts';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: 368,
       borderRadius: 10,
-      paddingTop: 36,
+      padding: '36px 0',
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-        borderRadius: 0,
+      [theme.breakpoints.down('sm')]: {
+        margin: '24px 20px',
       },
       '& p': {
         fontSize: 17,
@@ -31,18 +29,6 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         margin: 0,
       },
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 80,
-      },
-    },
-    customScrollBar: {
-      height: '65vh',
-      overflow: 'auto',
     },
     contentGroup: {
       padding: 20,
@@ -132,6 +118,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       opacity: 0.5,
     },
+    resetButton: {
+      backgroundColor: '#fff !important',
+    },
   };
 });
 
@@ -145,12 +134,11 @@ interface HelpSectionProps {
 
 interface HelpFormProps {
   submitStatus: (status: boolean) => void;
-  closeHelpForm: () => void;
 }
 
 export const HelpForm: React.FC<HelpFormProps> = (props) => {
+  const { submitStatus } = props;
   const classes = useStyles({});
-  const { submitStatus, closeHelpForm } = props;
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>(defaultSelectedCategory);
   const [selectedReason, setSelectedReason] = useState<string>('placeholder');
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
@@ -158,17 +146,18 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const reasonsList = _find(generalHelpSections, (helpSection: HelpSectionProps) => {
     return helpSection.category === selectedCategoryName;
   });
-  const disableSubmit = !(selectedCategoryName.length > 0 && selectedReason.length > 0);
+  const disableSubmit = !(
+    selectedCategoryName.length > 0 &&
+    selectedReason.length > 0 &&
+    selectedReason !== 'placeholder'
+  );
   const { currentPatient } = useAllCurrentPatients();
   const helpSectionMutation = useMutation<SendHelpEmail, SendHelpEmailVariables>(SEND_HELP_EMAIL);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   return (
-    <div className={classes.root}>
-      <div className={classes.mascotIcon}>
-        <img src={require('images/ic-mascot.png')} alt="" />
-      </div>
-      <div className={classes.customScrollBar}>
+    <div>
+      <div className={classes.root}>
         <div className={classes.contentGroup}>
           <Typography variant="h2">Hi! :)</Typography>
           <div className={classes.formGroup}>
@@ -246,6 +235,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
       </div>
       <div className={classes.bottomActions}>
         <AphButton
+          className={classes.resetButton}
           onClick={() => {
             setSelectedReason('placeholder');
             setSelectedCategoryName(defaultSelectedCategory);
@@ -256,7 +246,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
         </AphButton>
         <AphButton
           color="primary"
-          disabled={disableSubmit || mutationLoading}
+          disabled={disableSubmit}
           className={classes.submitBtn}
           classes={{
             disabled: classes.submitDisable,
@@ -277,16 +267,23 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
               },
             })
               .then((response) => {
+                setMutationLoading(false);
+                setSelectedReason('placeholder');
+                setSelectedCategoryName(defaultSelectedCategory);
+                setComments('');
                 const status =
                   response && response.data && response.data.sendHelpEmail
                     ? response.data.sendHelpEmail
                     : '';
                 if (status === 'Success') {
-                  closeHelpForm();
                   submitStatus(true);
                 }
               })
               .catch(() => {
+                setMutationLoading(false);
+                setSelectedReason('placeholder');
+                setSelectedCategoryName(defaultSelectedCategory);
+                setComments('');
                 setIsAlertOpen(true);
                 setAlertMessage('An error occurred while processing your request');
               });

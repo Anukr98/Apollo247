@@ -282,7 +282,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     gtmTracking({
       category: 'Consultations',
       action: speciality,
-      label: 'Order Initiatedd',
+      label: 'Order Initiated',
       value: onlineConsultationFees,
     });
     /* Gtm code end */
