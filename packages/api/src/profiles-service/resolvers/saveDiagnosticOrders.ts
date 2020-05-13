@@ -98,6 +98,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
   enum DEVICETYPE {
     IOS
     ANDROID
+    DESKTOP
   }
 
   type DiagnosticOrders {
