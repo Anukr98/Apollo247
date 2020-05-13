@@ -6,6 +6,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
+import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,6 +70,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#890000',
       fontWeight: 500,
       paddingTop: 2,
+    },
+    lineThrough: {
+      fontWeight: 500,
+      opacity: 0.6,
+      paddingRight: 5,
+      textDecoration: 'line-through',
     },
     medicinePrice: {
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
@@ -166,16 +173,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineListingCard: React.FC = (props) => {
+type MedicineListingCardProps = {
+  validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
+};
+
+export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x + 1);
+  const { validateCouponResult } = props;
 
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item) => (
+        cartItems.map((item, idx) => (
           <div
             key={item.id}
             className={`${classes.medicineStrip} ${
@@ -254,9 +266,38 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>
-                    Rs. {item.special_price || item.price}
-                  </div>
+                  {validateCouponResult &&
+                  validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
+                    <>
+                      <div className={classes.medicinePrice}>
+                        <span className={classes.lineThrough}>
+                          Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                        </span>
+                        <div>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs.{' '}
+                        {
+                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                            .applicableDiscount
+                        }
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={classes.medicinePrice}>
+                        {item.special_price ? (
+                          <span className={classes.lineThrough}>Rs. {item.price}</span>
+                        ) : null}
+                        <div>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs. {item.special_price || item.price}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : null}
               <div className={classes.addToCart}>

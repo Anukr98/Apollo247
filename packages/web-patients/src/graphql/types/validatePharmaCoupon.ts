@@ -18,6 +18,7 @@ export interface validatePharmaCoupon_validatePharmaCoupon_discountedTotals {
 
 export interface validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice {
   __typename: "PharmaLineItems";
+  applicableDiscount: number;
   discountedPrice: number;
   mrp: number;
   productName: string;

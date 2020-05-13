@@ -62,6 +62,7 @@ export const VALIDATE_PHARMA_COUPONS = gql`
         productDiscount
       }
       pharmaLineItemsWithDiscountedPrice {
+        applicableDiscount
         discountedPrice
         mrp
         productName
