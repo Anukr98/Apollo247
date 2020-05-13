@@ -30,7 +30,11 @@ export const useGetPayments = (type?: string, patientId?: string) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log('payments-->', res);
+        const { data } = res;
+        const { consultOrders } = data;
+        const { appointments } = consultOrders;
+        console.log('payments-->', appointments.length);
+        // setPayments(appointments.reverse());
         // setLoading(false);
       })
       .catch((error) => {
@@ -65,7 +69,7 @@ export const useGetPayments = (type?: string, patientId?: string) => {
   const setPaymentsFromAPI = () => {
     if (type === 'consult') {
       //TODO: consult gql
-      // getConsultPaymentsAPI();
+      getConsultPaymentsAPI();
       const paymentsResponse: any = [];
       setPayments(require('../components/MyPayments/fixtures.json'));
       return;

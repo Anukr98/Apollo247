@@ -14,13 +14,13 @@ interface PaymentCardHeaderProps {
 }
 const PaymentCardHeader: FC<PaymentCardHeaderProps> = (props) => {
   const getPaymentStatusText = (type: string) => {
-    const { successNoSlt, refundInitiated } = LocalStrings;
+    const { refundInitiated } = LocalStrings;
     const { REFUND } = PaymentStatusConstants;
     switch (type) {
       case REFUND:
         return refundInitiated;
       default:
-        return successNoSlt;
+        return;
     }
   };
   const { status } = props;

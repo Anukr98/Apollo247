@@ -22,7 +22,7 @@ const astronautBlue = '#01475b';
 const shadeCyanBlue = '#6d7278';
 const lightGray = '#d8d8d8';
 const deepRed = '#a30808';
-const lightPaleRed = '#32e02020';
+const lightPaleRed = '#EDC6C2';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,

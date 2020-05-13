@@ -1,0 +1,205 @@
+import React, { FC } from 'react';
+import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { textComponent } from './GenericText';
+
+interface DetailsCardProps {
+  item: any;
+  paymentFor: string;
+}
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+const DetailsCard: FC<DetailsCardProps> = (props) => {
+  const { paymentFor, item } = props;
+  const getLowerHeadersText = () => {
+    const { status } = item;
+    let leftHeaderText = 'Doctor Name';
+    let rightHeaderText = 'Mode of Consult';
+    let doctorNameOrTime = '';
+    let modeOfConsultOrPmt = '';
+    if (paymentFor === 'pharmacy') {
+      const { paymentType, appointmentDateTime } = item;
+      rightHeaderText = 'Mode of Payment';
+      doctorNameOrTime = appointmentDateTime;
+      modeOfConsultOrPmt = paymentType;
+      if (status === 'REFUND') {
+        leftHeaderText = 'Date of Refund';
+      } else {
+        leftHeaderText = 'Order Date & Time';
+      }
+    }
+    if (item.doctor) {
+      const { doctor, appointmentType } = item;
+      const { name } = doctor;
+      const type = appointmentType === 'ONLINE' ? 'Online' : 'Clinic Visit';
+      doctorNameOrTime = name;
+      modeOfConsultOrPmt = type;
+    }
+    return {
+      leftHeaderText: leftHeaderText,
+      rightHeaderText: rightHeaderText,
+      doctorNameOrTime: doctorNameOrTime,
+      modeOfConsultOrPmt: modeOfConsultOrPmt,
+    };
+  };
+
+  const getUpperHeaderText = () => {
+    const { status } = item;
+    if (paymentFor === 'consult') {
+      const { appointmentDateTime } = item;
+      console.log('status', status);
+      if (status === 'PAYMENT_REFUND') {
+        return (
+          <View style={styles.upperContainerRefundStyle}>
+            <View>
+              <View style={styles.headerTextStyle}>
+                {textComponent(
+                  'Date & Time of Appointment',
+                  undefined,
+                  theme.colors.ASTRONAUT_BLUE,
+                  false
+                )}
+              </View>
+              <View style={styles.subTextStyle}>
+                {textComponent(appointmentDateTime, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+              </View>
+            </View>
+            <View>
+              <View style={styles.cancelledTextStyle}>
+                <Text
+                  style={{ ...theme.viewStyles.text('M', 12, colors.FAILURE_TEXT, 1, 20, 0.04) }}
+                >
+                  Cancelled
+                </Text>
+              </View>
+              <View style={styles.subTextStyle}></View>
+            </View>
+          </View>
+        );
+      } else {
+        return (
+          <View style={styles.upperContainerStyle}>
+            <View style={styles.headerTextStyle}>
+              {textComponent(
+                'Date & Time of Appointment',
+                undefined,
+                theme.colors.ASTRONAUT_BLUE,
+                false
+              )}
+            </View>
+            <View style={styles.subTextStyle}>
+              {textComponent(appointmentDateTime, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+            </View>
+          </View>
+        );
+      }
+    }
+    if (paymentFor === 'pharmacy') {
+      if (status === 'PAYMENT_REFUND') {
+        return (
+          <View style={styles.upperContainerStyle}>
+            <View style={styles.cancelledTextStyle}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, colors.FAILURE_TEXT, 1, 20, 0.04) }}>
+                Cancelled
+              </Text>
+            </View>
+          </View>
+        );
+      }
+    }
+  };
+
+  const lowerView = () => {
+    const {
+      leftHeaderText,
+      rightHeaderText,
+      doctorNameOrTime,
+      modeOfConsultOrPmt,
+    } = getLowerHeadersText();
+    return (
+      <View style={styles.lowerContainerStyle}>
+        <View>
+          <View style={styles.headerTextStyle}>
+            {textComponent(leftHeaderText, undefined, theme.colors.ASTRONAUT_BLUE, false)}
+          </View>
+          <View style={styles.subTextStyle}>
+            {textComponent(doctorNameOrTime, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+          </View>
+        </View>
+        <View>
+          <View style={styles.headerTextStyle}>
+            {textComponent(rightHeaderText, undefined, theme.colors.ASTRONAUT_BLUE, false)}
+          </View>
+          <View style={styles.subTextStyle}>
+            {textComponent(modeOfConsultOrPmt, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.appointmentCardStyle}>
+      {getUpperHeaderText()}
+      {lowerView()}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  lowerContainerStyle: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+  },
+  upperContainerStyle: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+    marginBottom: 20,
+  },
+  upperContainerRefundStyle: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  statusIconStyles: {
+    width: 45,
+    height: 45,
+  },
+  appointmentCardStyle: {
+    paddingVertical: 22,
+    paddingHorizontal: 28,
+    marginVertical: 0.03 * windowWidth,
+    marginHorizontal: 0.06 * windowWidth,
+    backgroundColor: '#fff',
+    display: 'flex',
+    borderRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  headerTextStyle: {
+    flex: 0.4,
+    justifyContent: 'center',
+  },
+  subTextStyle: {
+    flex: 0.6,
+    justifyContent: 'flex-start',
+    marginTop: 5,
+  },
+  cancelledTextStyle: {
+    justifyContent: 'center',
+  },
+});
+
+export default DetailsCard;
