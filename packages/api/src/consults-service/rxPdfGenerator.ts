@@ -518,13 +518,21 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital. This is an electronically generated prescription and will not require a doctor signature.';
+      'This prescription is issued on the basis of your teleconsultation. It is valid from the date of issue for upto 90 days(for the specific period / dosage of each medicine as advised).';
+
+    doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#000000')
+      .opacity(0.6)
+      .text('Disclaimer:', margin, doc.page.height - 80, { lineBreak: false });
+
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-      .fontSize(10)
+      .fontSize(9)
       .fillColor('#000000')
       .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 80, { align: 'left' });
+      .text(disclaimerText, margin + 55, doc.page.height - 80, { align: 'left' });
     return doc;
   };
 
@@ -958,6 +966,7 @@ export const uploadRxPdf = async (
 
   fs.unlink(filePath, (error) => console.log(error));
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+
   return uploadData;
 
   function delay(ms: number) {
