@@ -38,8 +38,8 @@ import moment from 'moment';
 import _find from 'lodash/find';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
-// import { GET_APPOINTMENT_DATA } from 'graphql/consult';
-
+import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -354,7 +354,7 @@ export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
-  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
+  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';
   // const client = useApolloClient();
   // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
 
@@ -363,7 +363,7 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -372,7 +372,18 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [appointmentDateTime, setAppointmentDateTime] = React.useState<string>('');
+  const [appointmentType, setAppointmentType] = React.useState<string>('');
+  const [doctorDetail, setDoctorDetail] = React.useState<any>({});
+  const [paymentStatus, setPaymentStatus] = React.useState<string>('');
+  const [paymentRefId, setPaymentRefId] = React.useState<string>('');
+  const [displayId, setDisplayId] = React.useState<number>(0);
+  const [amountPaid, setAmountPaid] = React.useState<number>(0);
+  const paymentPendingInfo =
+    'Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
+  const paymentFailedInfo =
+    'In case your account has been debited, you should get the refund in 10-14 working days.';
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -388,6 +399,48 @@ export const Appointments: React.FC = (props) => {
   //   },
   //   fetchPolicy: 'no-cache',
   // });
+
+  const getPaymentData = useQueryWithSkip(PAYMENT_TRANSACTION_STATUS, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  const appointmentDetail = useQueryWithSkip(GET_APPOINTMENT_DATA, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  useEffect(() => {
+    if (!successApptId) {
+      setIsLoading(false);
+    }
+    const paymentData =
+      getPaymentData &&
+      getPaymentData.data &&
+      getPaymentData.data.paymentTransactionStatus &&
+      getPaymentData.data.paymentTransactionStatus.appointment;
+    const appointmentData =
+      appointmentDetail &&
+      appointmentDetail.data &&
+      appointmentDetail.data.getAppointmentData &&
+      appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
+    if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
+      const { appointmentDateTime, appointmentType, doctorInfo } = appointmentData;
+      const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
+      setAppointmentDateTime(appointmentDateTime);
+      setAppointmentType(appointmentType);
+      setDoctorDetail(doctorInfo);
+      setPaymentStatus(paymentStatus);
+      setPaymentRefId(paymentRefId);
+      setDisplayId(displayId);
+      setAmountPaid(amountPaid);
+      setIsLoading(false);
+    }
+  }, [getPaymentData, appointmentDetail]);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAllAppointments,
@@ -470,6 +523,7 @@ export const Appointments: React.FC = (props) => {
       );
 
       if (isAppointmentAvailable && Object.keys(isAppointmentAvailable).length > 0) {
+        console.log(555, isAppointmentAvailable.doctorInfo);
         const doctorName =
           isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.fullName
             ? isAppointmentAvailable.doctorInfo.fullName
@@ -534,6 +588,18 @@ export const Appointments: React.FC = (props) => {
               .isBefore(moment(new Date()).startOf('day'))
           ).length || 'no') +
           ' past appointment(s)!';
+  };
+
+  const handleSuccessPaymentModalCTA = () => {
+    window.open(getAppStoreLink(), '_blank');
+  };
+
+  const handleFailedPaymentModalCTA = () => {
+    console.log(333, props);
+  };
+
+  const handlePendingPaymentModalCTA = () => {
+    console.log(333, props);
   };
 
   const TabContainer: React.FC = (props) => {
@@ -708,7 +774,7 @@ export const Appointments: React.FC = (props) => {
         </div>
       </div>
 
-      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <Route
           render={({ history }) => (
             <AphDialogClose
@@ -750,27 +816,57 @@ export const Appointments: React.FC = (props) => {
             Download Apollo247 App
           </a>
         </div>
-      </AphDialog>
-      {/* <Modal
-        open={true}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.modal}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <OrderStatusContent
-          paymentStatus={'failed'}
-          paymentInfo={'fdsafa'}
-          orderStatusCallback={() => {}}
-          orderId={323232}
-          amountPaid={3232}
-          doctorName={'Dr. therapist'}
-          paymentRefId={'fdsafda'}
-          bookingDateTime={'23 May'}
-          type={'consult'}
-          consultMode={'Online'}
-        />
-      </Modal> */}
+      </AphDialog> */}
+      {successApptId && (
+        <Modal
+          open={isConfirmedPopoverOpen}
+          onClose={() => {
+            setIsConfirmedPopoverOpen(false);
+            // history.push(clientRoutes.appointments());
+          }}
+          className={classes.modal}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          {isLoading ? (
+            <div className={classes.loader}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <>
+              <OrderStatusContent
+                paymentStatus={paymentStatus}
+                paymentInfo={
+                  paymentStatus === 'PAYMENT_FAILED'
+                    ? paymentFailedInfo
+                    : paymentStatus === 'PAYMENT_PENDING'
+                    ? paymentPendingInfo
+                    : ''
+                }
+                orderId={displayId}
+                amountPaid={amountPaid}
+                doctorDetail={doctorDetail}
+                paymentRefId={paymentRefId}
+                bookingDateTime={moment(appointmentDateTime)
+                  .format('DD MMMM YYYY[,] LT')
+                  .toString()}
+                type={'consult'}
+                consultMode={appointmentType}
+                onClose={() => setIsConfirmedPopoverOpen(false)}
+                ctaText={'DOWNLOAD APOLLO 247 APP'}
+                orderStatusCallback={
+                  paymentStatus === 'PAYMENT_SUCCESS'
+                    ? handleSuccessPaymentModalCTA
+                    : paymentStatus === 'PAYMENT_FAILED'
+                    ? handleFailedPaymentModalCTA
+                    : handlePendingPaymentModalCTA
+                }
+              />
+            </>
+          )}
+        </Modal>
+      )}
+      {/* 
       <Popover
         open={isFailurePayment}
         anchorEl={anchorEl}
@@ -810,7 +906,7 @@ export const Appointments: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
+      </Popover> */}
 
       {/* <Popover
         open={isPopoverOpen}

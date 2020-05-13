@@ -60,7 +60,6 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
     },
     modal: {
       display: 'flex',
@@ -228,6 +227,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type doctorDetail = {
+  fullName: string;
+};
+
 interface OrderStatusDetail {
   paymentStatus: string;
   paymentInfo: string;
@@ -236,11 +239,13 @@ interface OrderStatusDetail {
   amountPaid: number;
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
   paymentRefId: string;
-  paymentDateTime?: any;
+  paymentDateTime?: string;
   type: string;
   bookingDateTime?: string;
-  doctorName?: string;
+  doctorDetail?: doctorDetail;
   consultMode?: string;
+  onClose: () => void;
+  ctaText: string;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
@@ -256,100 +261,100 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     paymentDateTime,
     type,
     bookingDateTime,
-    doctorName,
+    doctorDetail,
     consultMode,
+    onClose,
+    ctaText,
   } = props;
 
+  interface statusMap {
+    [name: string]: string;
+  }
+  const status: statusMap = {
+    PAYMENT_SUCCESS: 'PAYMENT SUCCESSFUL',
+    PAYMENT_FAILED: 'PAYMENT FAILED',
+    PAYMENT_PENDING: 'PAYMENT PENDING',
+  };
+  console.log(4343, doctorDetail);
   return (
-    <>
-      {!paymentRefId ? (
-        <div className={classes.loader}>
-          <CircularProgress />
+    <div className={classes.modalContent}>
+      <div className={classes.modalHeader}>
+        <Typography component="h5">Payment Status</Typography>
+        <Link onClick={onClose} className={classes.closePopup}>
+          <img src={require('images/ic_cross_popup.svg')} />
+        </Link>
+        <Link href="javascript:void(0);" className={`${classes.closePopup} ${classes.mobileBack}`}>
+          <img src={require('images/ic_back.svg')} />
+        </Link>
+      </div>
+      <div className={classes.modalBody}>
+        <div
+          className={`${classes.statusCard} ${
+            paymentStatus == 'PAYMENT_PENDING'
+              ? classes.pending
+              : paymentStatus == 'PAYMENT_FAILED'
+              ? classes.failed
+              : paymentStatus == 'PAYMENT_SUCCESS'
+              ? classes.success
+              : ''
+          }`}
+        >
+          <ErrorOutlineIcon></ErrorOutlineIcon>
+          <Typography component="h5">{status[paymentStatus]}</Typography>
+          <Typography component="p">Rs. {amountPaid}</Typography>
+          <Typography component="p">Order ID : {orderId}</Typography>
+          <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
         </div>
-      ) : (
-          <div className={classes.modalContent}>
-            <div className={classes.modalHeader}>
-              <Typography component="h5">Payment Status</Typography>
-              <Link href="javascript:void(0);" className={classes.closePopup}>
-                <img src={require('images/ic_cross_popup.svg')} />
-              </Link>
-              <Link
-                href="javascript:void(0);"
-                className={`${classes.closePopup} ${classes.mobileBack}`}
-              >
-                <img src={require('images/ic_back.svg')} />
-              </Link>
-            </div>
-            <div className={classes.modalBody}>
-              <div
-                className={`${classes.statusCard} ${
-                  paymentStatus == 'pending'
-                    ? classes.pending
-                    : paymentStatus == 'failed'
-                      ? classes.failed
-                      : paymentStatus == 'success'
-                        ? classes.success
-                        : ''
-                  }`}
-              >
-                <ErrorOutlineIcon></ErrorOutlineIcon>
-                <Typography component="h5">
-                  PAYMENT {paymentStatus == 'success' ? 'SUCCESSFUL' : paymentStatus.toUpperCase()}
-                </Typography>
-                <Typography component="p">Rs. {amountPaid}</Typography>
-                <Typography component="p">Order ID : {orderId}</Typography>
-                <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+        <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
+          <Typography component="h4">{type === 'consult' ? 'Booking' : 'Order'} Details</Typography>
+        </div>
+        <>
+          {type === 'consult' ? (
+            <Paper className={`${classes.orderDetails} ${classes.consultDetail}`}>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={5}>
+                  <div className={classes.details}>
+                    <Typography component="h6">Date &amp; Time of Appointment</Typography>
+                    <Typography component="p">{bookingDateTime}</Typography>
+                  </div>
+                </Grid>
+                <Grid item xs>
+                  <div className={classes.details}>
+                    <Typography component="h6">Doctor Name</Typography>
+                    <Typography component="p">{doctorDetail && doctorDetail.fullName}</Typography>
+                  </div>
+                </Grid>
+                <Grid item xs>
+                  <div className={classes.details}>
+                    <Typography component="h6">Mode of Consult</Typography>
+                    <Typography component="p">{consultMode}</Typography>
+                  </div>
+                </Grid>
+              </Grid>
+            </Paper>
+          ) : (
+            <Paper className={classes.orderDetails}>
+              <div className={classes.details}>
+                <Typography component="h6">Order Date &amp; Time</Typography>
+                <Typography component="p">{paymentDateTime}</Typography>
               </div>
-              <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
-                <Typography component="h4">
-                  {type === 'consult' ? 'Booking' : 'Order'} Details
-              </Typography>
+              <div className={classes.details}>
+                <Typography component="h6">Mode of Payment</Typography>
+                <Typography component="p">{paymentType}</Typography>
               </div>
-              {type === 'consult' ? (
-                <Paper className={`${classes.orderDetails} ${classes.consultDetail}`}>
-                  <Grid container spacing={1}>
-                    <Grid item xs={12} sm={5}>
-                      <div className={classes.details}>
-                        <Typography component="h6">Date &amp; Time of Appointment</Typography>
-                        <Typography component="p">{bookingDateTime}</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item xs>
-                      <div className={classes.details}>
-                        <Typography component="h6">Doctor Name</Typography>
-                        <Typography component="p">{doctorName}</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item xs>
-                      <div className={classes.details}>
-                        <Typography component="h6">Mode of Consult</Typography>
-                        <Typography component="p">{consultMode}</Typography>
-                      </div>
-                    </Grid>
-                  </Grid>
-                </Paper>
-              ) : (
-                  <Paper className={classes.orderDetails}>
-                    <div className={classes.details}>
-                      <Typography component="h6">Order Date &amp; Time</Typography>
-                      <Typography component="p">{paymentDateTime}</Typography>
-                    </div>
-                    <div className={classes.details}>
-                      <Typography component="h6">Mode of Payment</Typography>
-                      <Typography component="p">{paymentType}</Typography>
-                    </div>
-                  </Paper>
-                )}
+            </Paper>
+          )}
+        </>
+        <div className={classes.note}>
+          {paymentInfo && paymentInfo.length > 1 && (
+            <Typography component="p">Note : {paymentInfo}</Typography>
+          )}
+        </div>
 
-              <div className={classes.note}>
-                <Typography component="p">{paymentInfo}</Typography>
-              </div>
-              <AphButton className={classes.payBtn} onClick={() => orderStatusCallback()}>
-                Try Again
-            </AphButton>
-            </div>
-          </div>
-        )}
-    </>
+        <AphButton className={classes.payBtn} onClick={() => orderStatusCallback()}>
+          {ctaText}
+        </AphButton>
+      </div>
+    </div>
   );
 };
