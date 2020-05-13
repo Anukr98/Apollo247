@@ -170,6 +170,10 @@ import {
   registerPatientsTypeDefs,
   registerPatientsResolvers,
 } from 'profiles-service/resolvers/registerPatients';
+import {
+  pharmaOrdersTypeDefs,
+  pharmacyOrdersResolvers,
+} from 'profiles-service/resolvers/pharmacyOrders';
 
 (async () => {
   await connect();
@@ -383,6 +387,10 @@ import {
       {
         typeDefs: registerPatientsTypeDefs,
         resolvers: registerPatientsResolvers,
+      },
+      {
+        typeDefs: pharmaOrdersTypeDefs,
+        resolvers: pharmacyOrdersResolvers,
       },
     ]),
     plugins: [
