@@ -57,6 +57,7 @@ import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
 import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
+import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -177,7 +178,8 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.payOnlineConsult()} component={OnlineCheckout} />{' '}
         </Switch>
       </div>
     </Scrollbars>
