@@ -13,6 +13,16 @@ import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { useAuth } from 'hooks/authHooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  MarkMessageToUnread,
+  MarkMessageToUnreadVariables,
+} from 'graphql/types/MarkMessageToUnread';
+import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { ApolloError } from 'apollo-client';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -97,6 +107,9 @@ const useStyles = makeStyles(() => ({
     borderLeft: 'none',
     paddingLeft: 0,
   },
+  cursorStyle: {
+    cursor: 'pointer',
+  },
 }));
 
 const theme = createMuiTheme({
@@ -158,11 +171,41 @@ interface AppointmentCardProps {
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   const classes = useStyles({});
-  console.log(data);
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const mutationMarkMessageToUnread = useMutation<
+    MarkMessageToUnread,
+    MarkMessageToUnreadVariables
+  >(MARK_MESSAGE_TO_UNREAD);
+
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    mutationMarkMessageToUnread({
+      variables: {
+        eventId: appointmentId,
+      },
+    })
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
+      })
+      .catch((e: ApolloError) => {
+        console.log(e, 'erroe');
+      });
+  };
   return (
     <Card style={{ width: '100%', height: 55 }}>
       <CardContent>
-        <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank">
+        <div
+          className={classes.cursorStyle}
+          onClick={() => {
+            if (data.unreadMessagesCount && data.unreadMessagesCount > 0) {
+              callMessageReadAction(data.id, currentPatient.id, data.patientId);
+            } else {
+              window.location.href = clientRoutes.ConsultTabs(data.id, data.patientId, '1');
+            }
+          }}
+        >
+          {/* <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank"> */}
           <Grid item xs={12} style={{ width: '100%' }}>
             <Grid item container spacing={2}>
               <Grid item lg={5} sm={5} xs={4} key={1} container>
@@ -263,7 +306,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
               )}
             </Grid>
           </Grid>
-        </Link>
+        </div>
+        {/* </Link> */}
       </CardContent>
     </Card>
   );

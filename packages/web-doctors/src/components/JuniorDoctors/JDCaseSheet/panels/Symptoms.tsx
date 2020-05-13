@@ -192,7 +192,7 @@ export const Symptoms: React.FC = (props) => {
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
   const [details, setDetails] = React.useState('');
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState<any>();
   const [severity, setSeverity] = React.useState('');
   const [isUpdate, setIsUpdate] = React.useState(false);
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
@@ -226,7 +226,7 @@ export const Symptoms: React.FC = (props) => {
     });
   };
 
-  const [idxValue, setIdxValue] = React.useState();
+  const [idxValue, setIdxValue] = React.useState<any>();
 
   const addUpdateSymptom = () => {
     let duplicate = false;

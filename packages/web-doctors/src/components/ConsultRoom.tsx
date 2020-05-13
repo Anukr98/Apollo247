@@ -378,7 +378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { currentPatient, isSignedIn } = useAuth();
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
     CaseSheetContext
@@ -449,10 +449,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [isCallAccepted]);
 
   useEffect(() => {
-    if(params.tabValue === '1') {
+    if (params.tabValue === '1') {
       srollToBottomAction();
     }
-  },[params.tabValue]);
+  }, [params.tabValue]);
 
   useEffect(() => {
     const lastMsg = props.lastMsg;

@@ -159,7 +159,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   });
 
   const getTypeOfProduct = (type: string | null) => {
-    return medicineCartType === 'BOTH' ? CouponCategoryApplicable.PHARMA_FMCG : medicineCartType;
+    switch (type) {
+      case 'Pharma':
+        return CouponCategoryApplicable.PHARMA;
+      case 'Fmcg':
+        return CouponCategoryApplicable.FMCG;
+    }
   };
 
   const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
@@ -173,7 +178,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             productName: item.name,
             productType: getTypeOfProduct(item.type_id),
             quantity: item.quantity,
-            specialPrice: item.special_price,
+            specialPrice: item.special_price ? item.special_price : item.price,
+            itemId: item.id.toString(),
           };
         }),
       },
@@ -214,6 +220,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             if (couponValidateResult.validityStatus) {
               props.setCouponCode(selectCouponCode);
               props.close(false);
+              props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
             } else {
               setMuationLoading(false);
