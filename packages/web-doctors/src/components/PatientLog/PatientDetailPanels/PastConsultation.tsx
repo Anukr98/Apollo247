@@ -62,7 +62,7 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
     top: -5,
   },
-  countStyle:{
+  countStyle: {
     paddingTop: 5,
     paddingBottom: 10,
   },
@@ -175,8 +175,11 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                         'dd  MMMMMMMMMMMM yyyy, h:mm a'
                       )} `}
                       <div className={classes.countStyle}>
-                      {data.unreadMessagesCount && data.unreadMessagesCount > 0 ? 'Unread messages ('+data.unreadMessagesCount+')' : ''}
-                    </div></Typography>
+                        {data.unreadMessagesCount && data.unreadMessagesCount > 0
+                          ? 'Unread messages (' + data.unreadMessagesCount + ')'
+                          : ''}
+                      </div>
+                    </Typography>
                   </div>
                 </Grid>
               </Grid>
