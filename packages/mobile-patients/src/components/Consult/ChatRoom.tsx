@@ -488,8 +488,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   }, [currentPatient]);
 
-  console.log('.........console.log(slides);');
-
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
@@ -601,7 +599,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const setSendAnswers = (val: number) => {
-    let s = isSendAnswers;
+    const s = isSendAnswers;
     s[val] = true;
     setisSendAnswers(s);
   };
@@ -618,41 +616,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const setAnswerData = (value: { k: string; v: string[] }[]) => {
-    let data = userAnswers || ({} as ConsultQueueInput);
+    const data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
-        // case 'gender':
-        //   data.gender = item.v[0] || currentPatient.gender;
-        //   try {
-        //     const text = {
-        //       id: patientId,
-        //       message: 'Gender:\n' + data.gender,
-        //       messageDate: new Date(),
-        //     };
-        //     setMessageText('');
-        //     !isSendAnswers[9] && sendAnswerMessage(text);
-        //     setSendAnswers(9);
-        //     console.log('isSendAnswers[2]', isSendAnswers[2]);
-        //   } catch (error) {
-        //     CommonBugFender('ChatRoom_Answers11_try', error);
-        //   }
-        //   break;
-        // case 'age':
-        //   data.age = item.v[0] || currentPatient.age;
-        //   try {
-        //     const text = {
-        //       id: patientId,
-        //       message: 'Age:\n' + data.age,
-        //       messageDate: new Date(),
-        //     };
-        //     setMessageText('');
-        //     console.log('isSendAnswers[1]', isSendAnswers[1], sendAnswerMessage(text));
-        //     !isSendAnswers[10] && sendAnswerMessage(text);
-        //     setSendAnswers(10);
-        //   } catch (error) {
-        //     CommonBugFender('ChatRoom_Answers12_try', error);
-        //   }
-        //break;
+        case 'gender':
+          data.gender = (item.v[0] as Gender) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Gender:\n' + (data.gender || 'Unspecified'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[9] && sendAnswerMessage(text);
+            setSendAnswers(9);
+            console.log('isSendAnswers[2]', isSendAnswers[2]);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers11_try', error);
+          }
+          break;
+        case 'age':
+          data.age = Number(item.v[0]) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Age:\n' + (data.age || 'No Idea'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[10] && sendAnswerMessage(text);
+            setSendAnswers(10);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers12_try', error);
+          }
+          break;
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
           console.log('data.height:', 'data.height:' + data.height);
@@ -665,7 +662,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
-            setSendAnswers(6);
+            setSendAnswers(6); // this is added here since family history is hidded in questions
           } catch (error) {
             CommonBugFender('ChatRoom_Answers0_try', error);
           }
