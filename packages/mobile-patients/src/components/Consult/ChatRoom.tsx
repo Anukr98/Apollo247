@@ -65,6 +65,7 @@ import {
   REQUEST_ROLES,
   STATUS,
   TRANSFER_INITIATED_TYPE,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -385,6 +386,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
     false,
     false,
+    false,
+    false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
@@ -596,7 +599,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const setSendAnswers = (val: number) => {
-    let s = isSendAnswers;
+    const s = isSendAnswers;
     s[val] = true;
     setisSendAnswers(s);
   };
@@ -613,9 +616,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const setAnswerData = (value: { k: string; v: string[] }[]) => {
-    let data = userAnswers || ({} as ConsultQueueInput);
+    const data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
+        case 'gender':
+          data.gender = (item.v[0] as Gender) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Gender:\n' + (data.gender || 'Unspecified'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[9] && sendAnswerMessage(text);
+            setSendAnswers(9);
+            console.log('isSendAnswers[2]', isSendAnswers[2]);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers11_try', error);
+          }
+          break;
+        case 'age':
+          data.age = Number(item.v[0]) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Age:\n' + (data.age || 'No Idea'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[10] && sendAnswerMessage(text);
+            setSendAnswers(10);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers12_try', error);
+          }
+          break;
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
           console.log('data.height:', 'data.height:' + data.height);
@@ -628,7 +662,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
-            setSendAnswers(6);
+            setSendAnswers(6); // this is added here since family history is hidded in questions
           } catch (error) {
             CommonBugFender('ChatRoom_Answers0_try', error);
           }
@@ -5839,7 +5873,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {displayChatQuestions && Platform.OS === 'ios' && (
               <ChatQuestions
                 onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and', value);
+                  console.log('and....', value);
                   setAnswerData([value]);
                 }}
                 onDonePress={(values: { k: string; v: string[] }[]) => {

@@ -325,8 +325,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
             <View style={styles.imageView}>
-              {props.navigation.state.params!.DoctorInfo &&
-                props.navigation.state.params!.DoctorInfo.photoUrl && (
+              {!!props.navigation.state.params!.DoctorInfo &&
+                !!props.navigation.state.params!.DoctorInfo.photoUrl && (
                   <Image
                     source={{
                       uri:

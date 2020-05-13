@@ -53,6 +53,10 @@ import {
   savePrescriptionMedicineOrderResolvers,
 } from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
 import {
+  savePrescriptionMedicineOrderOMSTypeDefs,
+  savePrescriptionMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/savePrescriptionMedicineOrdersOMS';
+import {
   saveMedicineOrderPaymentTypeDefs,
   saveMedicineOrderPaymentResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPayment';
@@ -97,7 +101,15 @@ import {
 import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
-} from 'profiles-service/resolvers/updateOrderStatusPharma';
+} from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
+import {
+  saveOrderShipmentInvoiceTypeDefs,
+  saveOrderShipmentInvoiceResolvers,
+} from 'profiles-service/resolvers/pharmaOrderBilled';
+import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
   pharmaOrderConfirmationResolvers,
@@ -245,6 +257,10 @@ import {
         resolvers: savePrescriptionMedicineOrderResolvers,
       },
       {
+        typeDefs: savePrescriptionMedicineOrderOMSTypeDefs,
+        resolvers: savePrescriptionMedicineOrderOMSResolvers,
+      },
+      {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
         resolvers: saveMedicineOrderPaymentResolvers,
       },
@@ -295,6 +311,14 @@ import {
       {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentInvoiceTypeDefs,
+        resolvers: saveOrderShipmentInvoiceResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentsTypeDefs,
+        resolvers: saveOrderShipmentsResolvers,
       },
       {
         typeDefs: pharmaOrderConfirmationTypeDefs,

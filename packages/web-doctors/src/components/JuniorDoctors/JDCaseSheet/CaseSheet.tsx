@@ -182,7 +182,7 @@ export const CaseSheet: React.FC = () => {
     { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
       key: 'patientHistory&Lifestyle',
-      value: 'Patient’s Medical and Family History',
+      value: "Patient's Medical and Family History",
       state: patientHistory,
       component: <HistoryAndLifeStyle />,
     },

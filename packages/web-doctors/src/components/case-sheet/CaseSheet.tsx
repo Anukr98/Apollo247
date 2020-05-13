@@ -238,7 +238,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'lifestyle',
-      value: 'Patient’s Medical and Family History',
+      value: "Patient's Medical and Family History",
       state: lifestyleState,
       component: <LifeStyle />,
     },

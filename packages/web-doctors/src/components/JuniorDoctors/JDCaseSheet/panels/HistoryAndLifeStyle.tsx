@@ -182,7 +182,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Patient’s Past Medical History</div>
+        <div className={classes.sectionTitle}>Patient's Past Medical History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
@@ -335,7 +335,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         </Grid>
       )}
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
+        <div className={classes.sectionTitle}>Patient's Family Medical History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone

@@ -658,29 +658,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const consultDoctorCTA = () => {
-    return (
-      <View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-            paddingBottom: 8,
-          }}
-        >
-          Don’t have a prescription? Don’t worry!
-        </Text>
-        <Text
-          onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
-          style={{
-            ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
-          }}
-        >
-          CONSULT A DOCTOR
-        </Text>
-      </View>
-    );
-  };
-
   const renderUploadPrescriptionSection = () => {
     return (
       <View
@@ -698,8 +675,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         ]}
       >
         {uploadPrescriptionCTA()}
-        <Spearator style={{ marginVertical: 11.5 }} />
-        {consultDoctorCTA()}
       </View>
     );
   };

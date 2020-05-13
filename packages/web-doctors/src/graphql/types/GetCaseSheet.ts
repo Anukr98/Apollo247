@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { Gender, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
@@ -12,7 +11,6 @@ import { Gender, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MED
 export interface GetCaseSheet_getCaseSheet_patientDetails_lifeStyle {
   __typename: "PatientLifeStyle";
   description: string | null;
-  occupationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory {
@@ -26,7 +24,6 @@ export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory 
   pastSurgicalHistory: string | null;
   temperature: string | null;
   weight: string | null;
-  medicationHistory: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_patientDetails_familyHistory {
@@ -176,8 +173,6 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   blobName: string | null;
   doctorId: string | null;
   sentToPatient: boolean | null;
-  referralSpecialtyName: string | null;
-  referralDescription: string | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
@@ -256,6 +251,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   patientId: string;
   parentId: string | null;
   status: STATUS;
+  unreadMessagesCount: number | null;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 

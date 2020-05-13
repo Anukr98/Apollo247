@@ -329,7 +329,7 @@ export const HealthVault: React.FC = () => {
     CaseSheetContextJrd
   );
   const client = useApolloClient();
-  const prismIdList: any = [];
+  var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
 
   const [modalOpen, setModalOpen] = React.useState(false);

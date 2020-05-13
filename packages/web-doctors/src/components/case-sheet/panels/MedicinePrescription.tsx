@@ -1539,9 +1539,9 @@ export const MedicinePrescription: React.FC = () => {
     } else if (
       isCustomform &&
       customDosageMorning.trim() === '' &&
-        customDosageNoon.trim() === '' &&
-        customDosageEvening.trim() === '' &&
-        customDosageNight.trim() === ''
+      customDosageNoon.trim() === '' &&
+      customDosageEvening.trim() === '' &&
+      customDosageNight.trim() === ''
     ) {
       setErrorState({
         ...errorState,
@@ -1884,7 +1884,7 @@ export const MedicinePrescription: React.FC = () => {
             const medicine = _medicine!;
             const duration =
               medicine.medicineConsumptionDurationInDays &&
-              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
                 medicine.medicineConsumptionDurationUnit
                   ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                   : 'day(s)'
@@ -2085,7 +2085,7 @@ export const MedicinePrescription: React.FC = () => {
                           favMedicine.medicineCustomDosage !== ''
                             ? ' (' + favTimesString + ') '
                             : ' '
-                        } ${
+                        } ${
                           favMedicine.medicineCustomDosage &&
                           favMedicine.medicineCustomDosage !== ''
                             ? ''

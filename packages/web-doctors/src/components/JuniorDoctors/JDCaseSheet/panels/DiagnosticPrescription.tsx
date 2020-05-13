@@ -360,10 +360,9 @@ export const DiagnosticPrescription: React.FC = () => {
     setIdx(sum);
   };
 
-
   function renderInputComponent(inputProps: any) {
     const { inputRef = () => {}, ref, ...other } = inputProps;
-  
+
     return (
       <AphTextField
         autoFocus

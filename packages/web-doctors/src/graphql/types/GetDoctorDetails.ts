@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, WeekDay, ConsultMode, ConsultType, AccountType } from "./globalTypes";

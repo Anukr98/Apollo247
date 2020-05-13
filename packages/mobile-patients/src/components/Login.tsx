@@ -54,6 +54,7 @@ import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 import { TouchableOpacity, ScrollView } from 'react-native-gesture-handler';
+import { AppSignature } from '../helpers/AppSignature';
 
 const { height, width } = Dimensions.get('window');
 
@@ -141,6 +142,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [appSign, setAppSign] = useState<string>('');
 
   const { setLoading } = useUIElements();
   const webengage = new WebEngage();
@@ -159,6 +161,11 @@ export const Login: React.FC<LoginProps> = (props) => {
       // }
       setLoading && setLoading(false);
       firebase.auth().appVerificationDisabledForTesting = true;
+      if (Platform.OS === 'android') {
+        AppSignature.getAppSignature().then((sign: string[]) => {
+          setAppSign(sign[0] || '');
+        });
+      }
     } catch (error) {
       CommonBugFender('Login_useEffect_try', error);
     }
@@ -296,7 +303,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               AsyncStorage.setItem('phoneNumber', phoneNumber);
               setShowSpinner(true);
 
-              loginAPI('+91' + phoneNumber)
+              loginAPI('+91' + phoneNumber, appSign)
                 .then((confirmResult: any) => {
                   console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);

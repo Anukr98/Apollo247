@@ -1,36 +1,28 @@
 import {
-  ArrowFull,
-  ArrowStep1,
-  ArrowStep2,
-  ArrowStep3,
   ArrowLeft,
-  ChatSend,
   DropdownGreen,
   SearchSendIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   ImageStyle,
+  Keyboard,
   StyleProp,
   StyleSheet,
   Text,
+  TextInputProps,
   TextStyle,
   View,
-  TextInputProps,
-  TouchableOpacity,
-  Keyboard,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
-import firebase from 'react-native-firebase';
-import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { MaterialMenu } from '../ui/MaterialMenu';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { Button } from '../ui/Button';
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { TextInputComponent } from '../ui/TextInputComponent';
 import { useUIElements } from '../UIElementsProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -307,6 +299,47 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
+    const tmpSlide: Slide[] = [];
+    if (slides.findIndex((i) => i.key === 'gender') > -1) {
+      slides.splice(
+        slides.findIndex((i) => i.key === 'gender'),
+        1
+      );
+    }
+    if (slides.findIndex((i) => i.key === 'age') > -1) {
+      slides.splice(
+        slides.findIndex((i) => i.key === 'age'),
+        1
+      );
+    }
+    if (!currentPatient.gender) {
+      tmpSlide.push({
+        key: 'gender',
+        index: 0,
+        title: 'Please specify your gender',
+        buttonText: ['Male', 'Female'],
+        inputData: ['value'],
+      });
+    }
+    if (currentPatient && !currentPatient.dateOfBirth) {
+      tmpSlide.push({
+        key: 'age',
+        index: tmpSlide.length,
+        title: 'What is your age (in yrs)?',
+        inputPlacerholder: 'Enter age in years…',
+        inputData: ['value'],
+        keyboardType: 'number-pad',
+        validation: /^(0?[1-9]|[1-9][0-9]|[1][1-9][1-9]|200)$/,
+      });
+    }
+    if (tmpSlide.length > 0) {
+      slides.forEach((i) => {
+        tmpSlide.push({ ...i, index: tmpSlide.length });
+      });
+      slides.splice(0, slides.length);
+      slides.push(...tmpSlide);
+    }
+
     const v = slides.map((item) => {
       return {
         k: item.key,
@@ -315,6 +348,17 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
     });
 
     if (currentPatient && currentPatient.patientMedicalHistory) {
+      currentPatient.patientMedicalHistory.age &&
+        (v.find((i) => i.k === 'age')!.v = [
+          currentPatient.patientMedicalHistory.age !== 'No'
+            ? currentPatient.patientMedicalHistory.age
+            : '',
+        ]);
+      currentPatient.patientMedicalHistory.gender &&
+        (currentPatient.patientMedicalHistory.gender === 'No'
+          ? (v.find((i) => i.k === 'gender')!.v = ['Male'])
+          : (v.find((i) => i.k === 'gender')!.v = ['Female']) &&
+            (v.find((i) => i.k === 'gender')!.v = [currentPatient.patientMedicalHistory.gender]));
       currentPatient.patientMedicalHistory.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
           currentPatient.patientMedicalHistory.bp !== 'No Idea'
@@ -384,13 +428,13 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       appIntroSliderRef.current.goToSlide(index + 1);
     }
     if (slides[index].key === 'lifeStyleDrink') {
-      let v = values!;
+      const v = values!;
       v[index].v[0] = v[index - 1].v[0];
       setValues(v);
       setRefresh(!refresh);
     }
     if (slides[index].key === 'lifeStyleSmoke') {
-      let v = values!;
+      const v = values!;
       v[index].v[0] = v[index - 1].v[0];
       setValues(v);
       setRefresh(!refresh);
@@ -399,7 +443,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       // appIntroSliderRef.current.goToSlide(currentIndex);
     } else {
       !isSend[index - 1] && props.onItemDone!(values![index - 1]);
-      let send = isSend;
+      const send = isSend;
       send[index - 1] = true;
       setisSend(send);
       setcurrentIndex(index);
@@ -419,7 +463,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         } else {
           v = v[0] ? validations.find((i) => i.test(v[0])) || v[0] === '' : v[1] || v[1] === '';
         }
-        console.log(v, 'text');
         if (v) {
           onSlideChangeContinue(index);
         } else {
@@ -434,8 +477,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
             });
           appIntroSliderRef.current.goToSlide(index - 1);
         }
-
-        console.log(v, 'final');
       } else {
         onSlideChangeContinue(index);
       }
@@ -446,7 +487,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   };
 
   const returnPlaceHolder = (item: Slide) => {
-    let v = values && values.find((i) => i.k === item.key);
+    const v = values && values.find((i) => i.k === item.key);
     return (
       (item.basedonDropValue &&
         (item.basedonDropValue.find((i) => i.dropValue === ((v && v.v[1]) || '')) || {})
@@ -479,7 +520,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
               value={`${values && values[item.index].v[0]}`}
               onChangeText={(text) => {
                 if (currentIndex <= item.index) {
-                  let v = values!;
+                  const v = values!;
                   if (item.validation) {
                     if (item.validation.test(text) || text === '') {
                       v[item.index].v[0] = text;
@@ -518,7 +559,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
               bottomPadding={{ paddingBottom: 20 }}
               onPress={(selectedDrop) => {
                 if (currentIndex <= item.index) {
-                  let v = values!;
+                  const v = values!;
                   v[item.index].v[item.inputPlacerholder ? 1 : 0] = selectedDrop.value.toString();
                   setValues(v);
                   setRefresh(!refresh);
@@ -593,7 +634,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                 key={text}
                 title={text}
                 onPress={() => {
-                  let v = values!;
+                  const v = values!;
                   v[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] = text;
                   setValues(v);
                   setRefresh(!refresh);
@@ -606,7 +647,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   );
 
   const renderDots = (count: number, type: 'p' | 'c' | 'n') => {
-    let a = [];
+    const a = [];
     if (type === 'p') {
       for (let index = 0; index < count; index++) {
         a.push(<View style={styles.pastDotStyle} />);
