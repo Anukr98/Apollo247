@@ -183,6 +183,10 @@ export const GET_PATIENT_LOG = gql`
             city
           }
         }
+        unreadMessagesCount {
+          appointmentId
+          count
+        }
       }
       totalResultCount
     }
