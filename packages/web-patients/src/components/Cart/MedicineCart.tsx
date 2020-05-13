@@ -23,9 +23,9 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  CODCity,
   NonCartOrderCity,
   BOOKING_SOURCE,
+  NonCartOrderOMSCity,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -37,7 +37,8 @@ import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
-import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/savePrescriptionMedicineOrderOMS';
+import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { uploadPrescriptionTracking } from '../../webEngageTracking';
@@ -680,8 +681,9 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
       chennaiOrderVariables = {
-        CODCity: CODCity.CHENNAI,
+        NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
+        orderAutoId: orderAutoId,
       };
     }
 
@@ -720,14 +722,25 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
-  const savePrescriptionMutation = useMutation(SAVE_PRESCRIPTION_MEDICINE_ORDER);
+  const savePrescriptionMutation = useMutation(SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS);
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     savePrescriptionMutation({
       variables,
     })
-      .then(({ data }) => {
-        window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+      .then(({ data }: any) => {
+        if (
+          data &&
+          data.savePrescriptionMedicineOrderOMS &&
+          data.savePrescriptionMedicineOrderOMS.errorMessage === ''
+        ) {
+          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+        } else {
+          setIsAlertOpen(true);
+          setAlertMessage(`Something went wrong, please try later.`);
+        }
       })
       .catch((e) => {
         console.log({ e });
@@ -790,23 +803,23 @@ export const MedicineCart: React.FC = (props) => {
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
-          const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-            prescriptionMedicineInput: {
+          const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
+            prescriptionMedicineOMSInput: {
+              shopId: storeAddressId || '0',
               patientId: (currentPatient && currentPatient.id) || '',
+              bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
                 ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-              shopId: storeAddressId || '0',
-              appointmentId: '',
-              bookingSource: BOOKING_SOURCE.WEB,
-              ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+              appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+              ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
-          submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+          submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
         })
         .catch((e) => {
           console.log(e);
@@ -815,23 +828,23 @@ export const MedicineCart: React.FC = (props) => {
           setAlertMessage('something went wrong');
         });
     } else {
-      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-        prescriptionMedicineInput: {
+      const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
+        prescriptionMedicineOMSInput: {
+          shopId: storeAddressId || '0',
           patientId: (currentPatient && currentPatient.id) || '',
+          bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          shopId: storeAddressId || '0',
-          appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
-          bookingSource: BOOKING_SOURCE.WEB,
-          ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
+          appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+          ...(chennaiOrderVariables && chennaiOrderVariables),
         },
       };
-      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+      submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
     }
   };
 
