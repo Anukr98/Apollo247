@@ -106,7 +106,7 @@ export const RefferalCode: React.FC = () => {
           data.data.getAllSpecialties.length > 0
         ) {
           const optionData: any[] = [];
-          data.data.getAllSpecialties.forEach((value) => {
+          data.data.getAllSpecialties.forEach((value: any) => {
             optionData.push(buildOption(value.name));
           });
           setOptions(optionData);
