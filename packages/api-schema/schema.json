@@ -27321,7 +27321,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -27449,7 +27449,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -27784,7 +27784,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -29848,6 +29848,12 @@
           },
           {
             "name": "ANDROID",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "DESKTOP",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

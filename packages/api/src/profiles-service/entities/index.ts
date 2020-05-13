@@ -143,6 +143,7 @@ export enum BOOKING_SOURCE {
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum PHARMA_CART_TYPE {
