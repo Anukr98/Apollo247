@@ -19710,22 +19710,6 @@
         "description": null,
         "fields": [
           {
-            "name": "applicableDiscount",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "Float",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "couponDiscount",
             "description": null,
             "args": [],
@@ -19785,7 +19769,7 @@
         "description": null,
         "fields": [
           {
-            "name": "applicableDiscount",
+            "name": "applicablePrice",
             "description": null,
             "args": [],
             "type": {
@@ -27321,7 +27305,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -27449,7 +27433,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -27784,7 +27768,7 @@
             "defaultValue": null
           },
           {
-            "name": "timestamp",
+            "name": "updatedDate",
             "description": null,
             "type": {
               "kind": "NON_NULL",
