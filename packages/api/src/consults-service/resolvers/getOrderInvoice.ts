@@ -14,7 +14,7 @@ import _isEmpty from 'lodash/isEmpty';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import util from 'util';
+import moment from 'moment';
 
 export const getOrderInvoiceTypeDefs = gql`
 type AppointmentsResult {
@@ -71,6 +71,9 @@ type ApptResponse = {
 
 type AppointmentsResult = {
   appointments: ApptResponse[];
+  doctor: doctorResponse;
+  patient: patientResponse
+  hospitalAddress: hospitalDetails
 }
 
 type appointmentPayment = {
@@ -106,11 +109,11 @@ const getOrderInvoice: Resolver<
     hospitalDetails = await facilityRepo.getfacilityDetails(response[0].hospitalId);
 
   const assetsDir = <string>process.env.ASSETS_DIRECTORY;
-
+  console.log('assets', assetsDir);
   const loadAsset = (file: string) => path.resolve(assetsDir, file);
-  const rxPdfData = { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails };
+  const AppointmentsResult = { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails };
 
-  // export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
+  // export const generateRxPdfDocument = (AppointmentsResult: RxPdfData): typeof PDFDocument => {
   const margin = 35;
   const doc = new PDFDocument({ margin, bufferPages: true });
 
@@ -155,7 +158,7 @@ const getOrderInvoice: Resolver<
       .opacity(0.7)
       .fillColor('#000')
       .fontSize(11)
-      .text(_capitalize(headerText), margin + 10, doc.y + 10, { fill: true })
+      .text(_capitalize(headerText), margin + 100, doc.y + 10, { fill: true })
       .moveDown(2);
   };
 
@@ -164,11 +167,11 @@ const getOrderInvoice: Resolver<
       .fontSize(9)
       // .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#000000')
-      .text(labelText, margin + 15, y, { lineBreak: false });
+      .text(labelText, margin + 10, y, { lineBreak: false });
     return doc
       .fontSize(labelText === 'Patient' ? 10 : 9)
       .fillColor('#02475b')
-      .text(`${labelValue}`, 115, y)
+      .text(`${labelValue}`, 200, y)
       .opacity(0.6)
       .moveDown(0.5);
   };
@@ -176,14 +179,14 @@ const getOrderInvoice: Resolver<
   const headerEndY = 120;
 
   const renderHeader = (
-    doctorInfo: rxPdfData['doctor'],
-    hospitalAddress: rxPdfData['hospitalAddress']
+    doctorInfo: AppointmentsResult['doctor'],
+    hospitalAddress: AppointmentsResult['hospitalAddress']
   ) => {
     // doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
-    const specialty = doctorInfo.specialty;
+    const specialty = doctorInfo.specialization;
     const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
@@ -218,8 +221,7 @@ const getOrderInvoice: Resolver<
 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
-    const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital. This is an electronically generated prescription and will not require a doctor signature.';
+    const disclaimerText = 'This is a computer generated Receipt. No signature required.'
     doc
       .fontSize(10)
       .fillColor('#000000')
@@ -229,10 +231,10 @@ const getOrderInvoice: Resolver<
   };
 
   const renderpatients = (
-    patientInfo: rxPdfData['patient'],
-    appointmentData: rxPdfData['appointments']
+    patientInfo: AppointmentsResult['patient'],
+    appointmentData: AppointmentsResult['appointments']
   ) => {
-    renderSectionHeader('Appointment Details');
+    renderSectionHeader('PAYMENT RECEIPT');
 
     const textArray = [];
     let patientName = '';
@@ -244,11 +246,11 @@ const getOrderInvoice: Resolver<
     if (patientName) textArray.push(`${patientName}`);
     console.log('text Array ', textArray);
     if (textArray.length > 0) {
-      renderDetailsRow('Patient', `${textArray.join('   |   ')}`, doc.y);
+      renderDetailsRow('Patient Name', `${textArray.join('   |   ')}`, doc.y);
     }
 
     // if (patientInfo.uhid) {
-    renderDetailsRow('UHID', `${patientInfo.uhid}`, doc.y);
+    renderDetailsRow('Patient UHID', `${patientInfo.uhid}`, doc.y);
     // }
     if (patientInfo.mobileNumber) {
       renderDetailsRow('Mobile Number', `${patientInfo.mobileNumber}`, doc.y);
@@ -261,7 +263,7 @@ const getOrderInvoice: Resolver<
     }
 
     if (appointmentData[0].appointmentDateTime) {
-      renderDetailsRow('Consult Date', `${appointmentData[0].appointmentDateTime}`, doc.y);
+      renderDetailsRow('Consult Date', `${moment(appointmentData[0].appointmentDateTime).format('DD MMM YYYY hh:mm A')}`, doc.y);
     }
 
     if (appointmentData[0].appointmentType) {
@@ -274,7 +276,7 @@ const getOrderInvoice: Resolver<
       renderDetailsRow('Payment Status', `${appointmentData[0].appointmentPayments[0].paymentStatus}`, doc.y);
     };
     if (appointmentData[0].actualAmount) {
-      renderDetailsRow('Apollo 24/7 ' + appointmentData[0].appointmentType + 'TeleCommunication Fees', `${appointmentData[0].actualAmount}`, doc.y);
+      renderDetailsRow(appointmentData[0].appointmentType + ' Consultation Fees', `${appointmentData[0].actualAmount}`, doc.y);
     };
     if (appointmentData[0].discountedAmount) {
       renderDetailsRow('Discount Applied', ` - ${appointmentData[0].discountedAmount}`, doc.y);
@@ -284,77 +286,18 @@ const getOrderInvoice: Resolver<
       renderDetailsRow('Total Amount', `${totalAmount}`, doc.y);
     };
   };
-
-
-  const renderDoctorData = async (doctorInfo: rxPdfData['doctor']) => {
-    if (doctorInfo) {
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-      drawHorizontalDivider(doc.y);
-      doc.moveDown(0.5);
-
-      doc
-        .opacity(0.6)
-        .fontSize(12)
-        // .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#000000')
-        .text('Prescribed by', margin + 15)
-        .moveDown(0.5);
-
-      if (doctorInfo.signature) {
-        const request = require('sync-request');
-        const res = request('GET', doctorInfo.signature);
-        if (doc.y > doc.page.height - 150) {
-          pageBreak();
-        }
-        doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
-        doc.moveDown(0.5);
-      }
-
-      //Doctor Details
-      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
-      const specialty = doctorInfo.specialty;
-      const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
-
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-
-      doc
-        .opacity(1)
-        .fontSize(12)
-        .fillColor('#02475b')
-        .text(nameLine, margin + 15);
-      doc
-
-        .fontSize(10)
-        .fillColor('#02475b')
-        .text(`${specialty} | ${registrationLine}`, margin + 15)
-        .moveDown(0.5);
-    }
-  };
-
   doc.on('pageAdded', () => {
     renderFooter();
-    renderHeader(rxPdfData.doctor, rxPdfData.hospitalAddress);
+    renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
   });
 
   renderFooter();
-  renderHeader(rxPdfData.doctor, rxPdfData.hospitalAddress);
+  renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
 
-  if (!_isEmpty(rxPdfData.patient)) {
-    renderpatients(rxPdfData.patient, rxPdfData.appointments);
+  if (!_isEmpty(AppointmentsResult.patient)) {
+    renderpatients(AppointmentsResult.patient, AppointmentsResult.appointments);
     doc.moveDown(1.5);
   }
-
-
-
-  if (!_isEmpty(rxPdfData.doctor)) {
-    renderDoctorData(rxPdfData.doctor);
-    doc.moveDown(1.5);
-  }
-
   let i;
   let end;
   const range = doc.bufferedPageRange();
@@ -366,17 +309,6 @@ const getOrderInvoice: Resolver<
       .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
   }
 
-  // doc.end();
-  // return doc;
-
-  // const margin = 35;
-  // const doc = new PDFDocument({ margin, bufferPages: true });
-  // // console.log('docment', doc);
-  // doc.y = 300
-
-  // if (docResponse) {
-  //   let DoctorName = "Doctor Name   Dr. " + docResponse.firstName + " " + docResponse.lastName;
-  //   doc.text(JSON.stringify(DoctorName), 50, 50)
   doc.pipe(fs.createWriteStream('./file.pdf'));
   doc.end();
   if (response && response.length > 0) {
