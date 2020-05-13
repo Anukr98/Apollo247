@@ -39,6 +39,8 @@ export const buildRxPdfData = (): RxPdfData => {
     gender: '',
     uhid: '',
     age: '',
+    email: '',
+    phoneNumber: '',
   };
 
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
@@ -50,6 +52,8 @@ export const buildRxPdfData = (): RxPdfData => {
   ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];
   const followUpDetails = '';
+  const referralSpecialtyName = '';
+  const referralSpecialtyDescription = '';
 
   return {
     prescriptions,
@@ -63,5 +67,7 @@ export const buildRxPdfData = (): RxPdfData => {
     diagnosesTests,
     caseSheetSymptoms,
     followUpDetails,
+    referralSpecialtyName,
+    referralSpecialtyDescription,
   };
 };

@@ -99,6 +99,7 @@ export enum BOOKINGSOURCE {
 export enum DEVICETYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 export enum PATIENT_TYPE {
   NEW = 'NEW',
@@ -1535,11 +1536,15 @@ export interface RxPdfData {
     gender: string;
     uhid: string;
     age: string;
+    email: string;
+    phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
+  referralSpecialtyName: string;
+  referralSpecialtyDescription: string;
 }
 ///////////////////////////////////////////////////////////
