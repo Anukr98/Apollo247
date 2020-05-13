@@ -48,8 +48,8 @@ type ApptResponse = {
   displayId: number;
   id: string;
   appointmentDateTime: Date;
-  actualAmount: Number;
-  discountedAmount: Number;
+  actualAmount: number;
+  discountedAmount: number;
   appointmentType: string;
   appointmentPayments: ApptPayment[];
   status: STATUS;
@@ -65,7 +65,7 @@ type AppointmentsResult = {
 };
 
 type ApptPayment = {
-  amountPaid: Number;
+  amountPaid: number;
   bankTxnId: string;
   id: string;
   paymentRefId: string;
