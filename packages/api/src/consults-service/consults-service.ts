@@ -115,7 +115,7 @@ import {
 } from 'consults-service/resolvers/appointmentNotifications';
 import {
   consultOrdersTypeDefs,
-  consultOrdersResolvers
+  consultOrdersResolvers,
 } from 'consults-service/resolvers/consultOrders';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';

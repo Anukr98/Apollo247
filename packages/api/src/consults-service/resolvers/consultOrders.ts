@@ -10,11 +10,11 @@ import _ from 'lodash';
 import { STATUS } from 'consults-service/entities';
 
 export const consultOrdersTypeDefs = gql`
-type AppointmentsResult {
-  appointments : [ApptResponse]
-}
+  type AppointmentsResult {
+    appointments: [ApptResponse]
+  }
 
-type ApptResponse {
+  type ApptResponse {
     displayId: Int
     id: String
     appointmentDateTime: DateTime
@@ -30,15 +30,15 @@ type ApptResponse {
     typeId: String
     name: String
   }
-type ApptPayment {
-  amountPaid: Float
-  bankTxnId: String
-  id: String
-  paymentRefId: String
-  paymentStatus: String
-  paymentType: String
-  responseMessage: String
-}
+  type ApptPayment {
+    amountPaid: Float
+    bankTxnId: String
+    id: String
+    paymentRefId: String
+    paymentStatus: String
+    paymentType: String
+    responseMessage: String
+  }
   extend type Query {
     consultOrders(patientId: String): AppointmentsResult
   }
@@ -50,7 +50,7 @@ type ApptResponse = {
   appointmentDateTime: Date;
   actualAmount: Number;
   discountedAmount: Number;
-  appointmentType: string
+  appointmentType: string;
   appointmentPayments: ApptPayment[];
   status: STATUS;
   doctorId: string;
@@ -59,7 +59,7 @@ type ApptResponse = {
 type DoctorResponse = {
   typeId: string;
   name: string;
-}
+};
 type AppointmentsResult = {
   appointments: Partial<ApptResponse[]>;
 };
@@ -72,8 +72,7 @@ type ApptPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
-}
-
+};
 
 const consultOrders: Resolver<
   null,
@@ -86,8 +85,6 @@ const consultOrders: Resolver<
   const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
   // console.log('appointments Response', JSON.stringify(response, null, 2));
 
-
-
   if (response && response.length > 0) {
     const result = [];
     for (let i = 0; i < response.length; i++) {
@@ -98,7 +95,7 @@ const consultOrders: Resolver<
     // console.log('doc Response', JSON.stringify(doc, null, 2));
     if (doc && doc.length > 0) {
       let output: Partial<ApptResponse[]> = [];
-      response.forEach(val => {
+      response.forEach((val) => {
         let obj: ApptResponse = {
           actualAmount: val.actualAmount,
           displayId: val.displayId,
@@ -109,16 +106,15 @@ const consultOrders: Resolver<
           id: val.id,
           doctorId: val.doctorId,
           status: val.status,
-          doctor: { typeId: '', name: '' }
+          doctor: { typeId: '', name: '' },
         };
         const index = _.findIndex(doc, (key) => key.typeId === val.doctorId);
         if (index !== -1) {
           obj.doctor = doc[index];
           output.push(obj);
         }
-
-      })
-      return { appointments: output }
+      });
+      return { appointments: output };
     } else {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
