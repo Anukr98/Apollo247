@@ -171,6 +171,14 @@ export const RefferalCode: React.FC = () => {
               fontWeight: 500,
               color: '#01475b !important',
             }),
+            input: (base: any) => ({
+              ...base,
+              '& input': {
+                fontSize: 15,
+                fontWeight: 500,
+                color: '#01475b !important',
+              },
+            }),
             dropdownIndicator: (base: any) => ({
               ...base,
               color: '#00b38e !important',
