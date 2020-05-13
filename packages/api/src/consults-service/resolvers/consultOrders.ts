@@ -21,16 +21,16 @@ type ApptResponse {
     actualAmount: Float
     discountedAmount: Float
     appointmentType: String
-    appointmentPayments: [appointmentPayment]
+    appointmentPayments: [AppointmentPayment]
     status: STATUS
     doctorId: String
-    doctor: doctorResponse
+    doctor: DoctorResponse
   }
-  type doctorResponse {
+  type DoctorResponse {
     typeId: String
     name: String
   }
-type appointmentPayment {
+type AppointmentPayment {
   amountPaid: Float
   bankTxnId: String
   id: String
@@ -51,12 +51,12 @@ type ApptResponse = {
   actualAmount: Number;
   discountedAmount: Number;
   appointmentType: string
-  appointmentPayments: appointmentPayment[];
+  appointmentPayments: AppointmentPayment[];
   status: STATUS;
   doctorId: string;
-  doctor: doctorResponse;
+  doctor: DoctorResponse;
 };
-type doctorResponse = {
+type DoctorResponse = {
   typeId: string;
   name: string;
 }
@@ -64,7 +64,7 @@ type AppointmentsResult = {
   appointments: Partial<ApptResponse[]>;
 };
 
-type appointmentPayment = {
+type AppointmentPayment = {
   amountPaid: Number;
   bankTxnId: string;
   id: string;
@@ -89,7 +89,7 @@ const consultOrders: Resolver<
 
 
   if (response && response.length > 0) {
-    let result = [];
+    const result = [];
     for (let i = 0; i < response.length; i++) {
       result.push(response[i].doctorId);
     }
@@ -111,7 +111,7 @@ const consultOrders: Resolver<
           status: val.status,
           doctor: { typeId: '', name: '' }
         };
-        let index = _.findIndex(doc, (key) => key.typeId === val.doctorId);
+        const index = _.findIndex(doc, (key) => key.typeId === val.doctorId);
         if (index !== -1) {
           obj.doctor = doc[index];
           output.push(obj);
