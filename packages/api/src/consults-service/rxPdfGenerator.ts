@@ -957,7 +957,7 @@ export const uploadRxPdf = async (
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
 
   fs.unlink(filePath, (error) => console.log(error));
-  const uploadData = { name, filePath, base64pdf }; // returning blob details and base64Pdf
+  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
   return uploadData;
 
   function delay(ms: number) {
