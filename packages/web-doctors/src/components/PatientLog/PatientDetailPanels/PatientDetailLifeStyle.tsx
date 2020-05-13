@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
 import { Gender } from 'graphql/types/globalTypes';
+import { isEmpty } from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -78,7 +79,7 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
         {
           <Typography className={classes.fullRow} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
-              Patient’s Past Medical History
+              Patient's Past Medical History
             </Typography>
             <Typography component="div" className={classes.content}>
               <div className={classes.historyList}>
@@ -93,6 +94,22 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
             </Typography>
           </Typography>
         }
+        <Typography className={classes.fullRow} component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Medication History*
+          </Typography>
+          <Typography component="div" className={classes.content}>
+            <div className={classes.historyList}>
+              {patientDetails &&
+              patientDetails.patientMedicalHistory &&
+              patientDetails.patientMedicalHistory.medicationHistory
+                ? patientDetails &&
+                  patientDetails.patientMedicalHistory &&
+                  patientDetails.patientMedicalHistory.medicationHistory
+                : 'None'}
+            </div>
+          </Typography>
+        </Typography>
         {
           <Typography className={classes.fullRow} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
@@ -171,6 +188,30 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
               </Typography>
             </Typography>
           )}
+
+        {patientDetails &&
+          patientDetails!.lifeStyle &&
+          patientDetails!.lifeStyle !== null &&
+          patientDetails!.lifeStyle.length > 0 && (
+            <Typography component="div">
+              <Typography component="h5" variant="h5" className={classes.header}>
+                Environmental & Occupational History
+              </Typography>
+              <Typography component="div" className={classes.content}>
+                <List>
+                  {patientDetails!.lifeStyle!.map((item, idx) => (
+                    <ListItem key={idx}>
+                      <Fragment>
+                        <Typography component="p" className={classes.textContent}>
+                          {item!.occupationHistory}
+                        </Typography>
+                      </Fragment>
+                    </ListItem>
+                  ))}
+                </List>
+              </Typography>
+            </Typography>
+          )}
         {patientDetails && patientDetails.gender === Gender.FEMALE && (
           <Typography className={classes.fullRow} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
@@ -205,7 +246,8 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
                     <ListItem key={idx}>
                       <Fragment>
                         <Typography component="p" className={classes.textContent}>
-                          {item!.relation}: {item!.description}
+                          {!isEmpty(item!.relation) && `${item!.relation}: `}
+                          {item!.description}
                         </Typography>
                       </Fragment>
                     </ListItem>
