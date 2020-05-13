@@ -598,7 +598,6 @@ export const MedicineCart: React.FC = (props) => {
     });
     return sum;
   };
-  console.log(cartTotal);
   const mrpTotal = getMRPTotal();
   const productDiscount = mrpTotal - cartTotal;
   const totalWithCouponDiscount =
