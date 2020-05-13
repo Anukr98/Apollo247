@@ -5,7 +5,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { log } from 'customWinstonLogger';
 import _ from 'lodash';
 import { STATUS } from 'consults-service/entities';
 
@@ -94,9 +93,9 @@ const consultOrders: Resolver<
     const doc = await docConsultRep.getSearchDoctorsByIds(result);
     // console.log('doc Response', JSON.stringify(doc, null, 2));
     if (doc && doc.length > 0) {
-      let output: Partial<ApptResponse[]> = [];
+      const output: Partial<ApptResponse[]> = [];
       response.forEach((val) => {
-        let obj: ApptResponse = {
+        const obj: ApptResponse = {
           actualAmount: val.actualAmount,
           displayId: val.displayId,
           discountedAmount: val.discountedAmount,
