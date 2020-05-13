@@ -17,6 +17,10 @@ export interface VitalErrorProps {
   weight: String;
 }
 
+export interface LifeStyleErrorProps {
+  medicationHistory: String;
+}
+
 export interface CaseSheetContextPropsJrd {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -96,6 +100,12 @@ export interface CaseSheetContextPropsJrd {
   menstrualHistory: string;
   dosageList: any;
   vitalError: VitalErrorProps;
+  lifeStyleError: LifeStyleErrorProps;
+  medicationHistory: string;
+  occupationHistory: string;
+  referralDescription: string;
+  referralSpecialtyName: string;
+  referralError: boolean;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -109,6 +119,12 @@ export interface CaseSheetContextPropsJrd {
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
   setVitalError: (vitalError: VitalErrorProps) => void;
+  setLifeStyleError: (lifeStyleError: LifeStyleErrorProps) => void;
+  setMedicationHistory: (medicationHistory: string) => void;
+  setOccupationHistory: (occupationHistory: string) => void;
+  setReferralSpecialtyName: (referralSpecialtyName: string) => void;
+  setReferralDescription: (referralDescription: string) => void;
+  setReferralError: (referralError: boolean) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -167,6 +183,14 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
     height: '',
     weight: '',
   },
+  lifeStyleError: {
+    medicationHistory: '',
+  },
+  medicationHistory: '',
+  occupationHistory: '',
+  referralSpecialtyName: '',
+  referralDescription: '',
+  referralError: false,
 
   setBp: () => {},
   setHeight: () => {},
@@ -180,6 +204,12 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
   setVitalError: () => {},
+  setMedicationHistory: () => {},
+  setOccupationHistory: () => {},
+  setReferralSpecialtyName: () => {},
+  setReferralDescription: () => {},
+  setReferralError: () => {},
+  setLifeStyleError: () => {},
 
   gender: '',
   setGender: () => {},
