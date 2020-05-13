@@ -391,7 +391,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
-    // Below line needs to be modified as product discount won't chnage. Hence remove
+
+    if (cartTotal == 0) {
+      setCouponDiscount(0);
+      setProductDiscount(0);
+      setCoupon(null);
+      return;
+    }
+
     const productDiscount =
       cartItems.reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0) -
       cartItems.reduce(

@@ -105,6 +105,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { setCoupon, coupon: cartCoupon, cartItems } = useShoppingCart();
   const { setLoading: setGlobalLoading, loading: globalLoading, showAphAlert } = useUIElements();
   const client = useApolloClient();
+  const isEnableApplyBtn = couponText.length >= 5;
 
   const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
     fetchPolicy: 'no-cache',
@@ -173,7 +174,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
-          disabled={!couponText.length}
+          disabled={!isEnableApplyBtn}
           title="APPLY COUPON"
           onPress={() => {
             CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply Coupon');
@@ -189,10 +190,10 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     const rightIconView = () => {
       return (
         !couponError && (
-          <View style={{ opacity: couponText ? 1 : 0.5 }}>
+          <View style={{ opacity: isEnableApplyBtn ? 1 : 0.5 }}>
             <TouchableOpacity
               activeOpacity={1}
-              disabled={!couponText}
+              disabled={!isEnableApplyBtn}
               onPress={() => applyCoupon(couponText, cartItems)}
             >
               <SearchSendIcon />
@@ -207,8 +208,10 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         <TextInputComponent
           value={couponText}
           onChangeText={(text) => {
-            couponError && setCouponError('');
-            setCouponText(text);
+            if (/^\S*$/.test(text)) {
+              couponError && setCouponError('');
+              setCouponText(text);
+            }
           }}
           textInputprops={{
             ...(couponError ? { selectionColor: '#e50000' } : {}),

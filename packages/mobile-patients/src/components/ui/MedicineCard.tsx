@@ -256,7 +256,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <></>
         ) : (
           <>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 0.7 }}>
               <MaterialMenu
                 options={opitons}
                 selectedText={unit!.toString()}
@@ -293,7 +293,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             <>
               <Text style={[styles.unitAndRupeeOfferText, { flex: 1, marginRight: 4 }]}>
                 <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-                <Text style={{ textDecorationLine: 'line-through' }}>(MRP)</Text>
+                <Text>{'\n'}(MRP)</Text>
               </Text>
             </>
           ) : (

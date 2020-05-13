@@ -1102,7 +1102,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                Savings of Rs. {couponDiscount + productDiscount} on the bill
+                Savings of Rs. {couponDiscount.toFixed(2)} on the bill
               </Text>
             </View>
           )}
