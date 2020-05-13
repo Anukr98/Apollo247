@@ -354,7 +354,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         if (data.medicineFrequency) {
           setTakeDrop({
             key: data.medicineFrequency,
-            value: nameFormater(data.medicineFrequency),
+            value:
+              data.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                ? 'STAT (Immediately)'
+                : nameFormater(data.medicineFrequency),
           });
         }
         if (data.medicineConsumptionDurationUnit) {

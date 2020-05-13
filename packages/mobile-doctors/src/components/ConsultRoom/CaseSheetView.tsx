@@ -96,6 +96,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -828,6 +829,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
+            editable={caseSheetEdit}
           />
         </View>
       </View>
@@ -1003,16 +1005,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           onPress={() => setJuniorShow(!juniorshow)}
         >
           <View style={styles.symptomsInputView}>
-            <TextInput
-              style={[styles.symptomsText, { marginRight: 12 }]}
-              multiline={true}
-              onChangeText={(juniordoctornotes) =>
-                caseSheetEdit && false && setJuniorDoctorNotes(juniordoctornotes)
-              }
-              editable={false}
-            >
-              {juniordoctornotes}
-            </TextInput>
+            <Text style={[styles.symptomsText, { marginRight: 12 }]}>{juniordoctornotes}</Text>
           </View>
         </CollapseCard>
       </View>
@@ -1421,6 +1414,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         onChangeText={(value) => {
                           setFollowupDays(parseInt(value, 10) || '');
                         }}
+                        editable={caseSheetEdit}
                       />
                       <Text
                         style={{
@@ -1443,6 +1437,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   value={folloUpNotes}
                   onChangeText={(value) => setFolloUpNotes(value)}
                   autoCorrect={true}
+                  editable={caseSheetEdit}
                 />
                 {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
                   <Text
@@ -2570,9 +2565,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View style={styles.casesheetView}>
         <KeyboardAwareScrollView
           scrollEnabled={true}
+          enableOnAndroid={true}
           enableAutomaticScroll={true}
           style={{ flex: 1 }}
-          extraScrollHeight={80}
+          extraHeight={Platform.OS === 'android' ? 20 : 60}
+          extraScrollHeight={Platform.OS === 'android' ? 20 : 120}
           bounces={false}
         >
           <ScrollView bounces={false} style={{ zIndex: 1 }}>
@@ -2607,6 +2604,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     value={doctorNotes}
                     onChangeText={(value) => caseSheetEdit && setDoctorNotes(value)}
                     autoCorrect={true}
+                    editable={caseSheetEdit}
                   />
                 </View>
               </View>

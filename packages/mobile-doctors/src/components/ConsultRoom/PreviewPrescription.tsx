@@ -459,7 +459,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         <View style={styles.seperatorView2} />
         <View style={styles.subContainer}>
           {renderDescription(
-            `Prescribed ${moment(appointmentDetails.date).format('DD/MM/YYYY')} by`
+            `Prescribed ${moment(
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate')
+            ).format('DD/MM/YYYY')} by`
           )}
           <Image
             style={styles.signatureStyle}
