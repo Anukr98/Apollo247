@@ -58,11 +58,11 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
   };
 
   const getPaymentsList = () => {
-    const id = { patientInfo };
+    const { id } = patientInfo;
     if (selectedTab === 'Pharmacy Payments') {
-      return <PharmacyPaymentsList patientId={id} />;
+      return <PharmacyPaymentsList patientId={id} navigationProps={props.navigation} />;
     }
-    return <ConsultPaymentsList patientId={id} />;
+    return <ConsultPaymentsList patientId={id} navigationProps={props.navigation} />;
   };
   return (
     <View style={styles.mainContainer}>

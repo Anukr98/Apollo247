@@ -9,20 +9,19 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+
 import { colors } from '../../../theme/colors';
 import PaymentCardHeader from './PaymentCardHeader';
 import PaymentCardBody from './PaymentCardBody';
 import PaymentCardFooter from './PaymentCardFooter';
 
-//extends NavigationScreenProps<{}>
 interface PaymentHistoryCardProps {
   id: string;
   item: any;
   index: number;
   lastIndex: boolean;
   paymentFor: string;
+  navigationProps: any;
 }
 const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   useEffect(() => {}, []);
@@ -42,7 +41,11 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <PaymentCardBody item={item} paymentFor={paymentFor} />
+      <PaymentCardBody
+        item={item}
+        paymentFor={paymentFor}
+        navigationProps={props.navigationProps}
+      />
       <PaymentCardFooter item={item} paymentFor={paymentFor} />
     </View>
   );

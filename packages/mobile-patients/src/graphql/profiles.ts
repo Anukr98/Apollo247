@@ -2160,39 +2160,46 @@ export const GET_TRANSACTION_STATUS = gql`
 
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
   query consultOrders($patientId: String!) {
-    appointments {
-      id
-      doctorId
-      displayId
-      appointmentDateTime
-      actualAmount
-      status
-      appointmentType
-      discountedAmount
-      appointmentPayments {
-        paymentRefId
-        paymentStatus
-      }
-      doctor {
-        name
+    consultOrders(patientId: $patientId) {
+      appointments {
+        id
+        doctorId
+        displayId
+        appointmentDateTime
+        actualAmount
+        status
+        appointmentType
+        discountedAmount
+        appointmentPayments {
+          paymentRefId
+          paymentStatus
+        }
+        doctor {
+          name
+        }
       }
     }
   }
 `;
 
 // export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-// query {
-//   consultOrders(patientId: String!)
-//   {
-//     appointments{
+// query consultOrders($patientId: String!) {
+//   consultOrders(patientId: $patientId) {
+//     appointments {
 //       id
+//       doctorId
 //       displayId
 //       appointmentDateTime
 //       actualAmount
+//       status
 //       appointmentType
+//       discountedAmount
 //       appointmentPayments {
 //         paymentRefId
 //         paymentStatus
+//       }
+//       doctor {
+//         name
 //       }
 //     }
 //   }

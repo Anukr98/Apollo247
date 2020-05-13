@@ -72,6 +72,11 @@ const MyPayments = {
   paymentPending: 'PAYMENT PENDING',
   paymentRefund: 'REFUND INITIATED',
   noPayments: 'You have no payment history!',
+  failureNote:
+    'Note : In case your account has been debited, you should get the refund in 1-7 working days.',
+  pendingNote:
+    'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.',
+  refundNote: 'Note : The amount should be credited in your account in 10-14 business days.',
 };
 
 export const LocalStrings = {

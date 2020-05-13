@@ -27,6 +27,8 @@ const StatusCard: FC<StatusCardProps> = (props) => {
 
   const getStatusItems = () => {
     const { status } = props;
+    //TODO: get status type value for pending
+    console.log('status-->', status, pending);
     switch (status) {
       case success:
         return {
@@ -42,7 +44,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
           statusText: paymentFailed,
           textColor: theme.colors.FAILURE_TEXT,
         };
-      case pending:
+      case 'PAYMENT_PENDING':
         return {
           icon: <Pending style={styles.statusIconStyles} />,
           cardColor: colors.PENDING,
@@ -51,7 +53,11 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         };
       case refund:
         return {
-          icon: <Refund style={styles.statusIconStyles} />,
+          icon: (
+            <View style={styles.refundIconStyles}>
+              <Refund />
+            </View>
+          ),
           cardColor: colors.REFUND,
           statusText: paymentRefund,
           textColor: theme.colors.REFUND_TEXT,
@@ -90,6 +96,9 @@ const styles = StyleSheet.create({
   statusIconStyles: {
     width: 45,
     height: 45,
+  },
+  refundIconStyles: {
+    paddingVertical: 15,
   },
   statusCardStyle: {
     height: 0.27 * windowHeight,

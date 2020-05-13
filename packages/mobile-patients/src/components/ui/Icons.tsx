@@ -617,7 +617,7 @@ export const FailedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_payment_failed.png')} />
 );
 export const RefundIcon: React.FC<IconProps> = (props) => (
-  <Image style={[getCustomIconSize(25, 29)]} {...props} source={require('./icons/ic_refund.png')} />
+  <Image style={[getCustomIconSize(21, 24)]} source={require('./icons/ic_refund.png')} />
 );
 export const PendingIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.png')} />
@@ -796,7 +796,11 @@ export const Pending: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Pending.png')} />
 );
 export const Refund: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/Refund.png')} />
+  <Image
+    style={[getCustomIconSize(47, 53)]}
+    source={require('./icons/Refund.png')}
+    resizeMode="cover"
+  />
 );
 
 export const Diabetes: React.FC<IconProps> = (props) => (

@@ -3,14 +3,13 @@
  * @email vishnu.r@apollo247.org
  */
 import React, { FC, useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 import { colors } from '../../../theme/colors';
 import {
   SuccessIcon,
@@ -25,6 +24,7 @@ import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 interface PaymentCardBodyProps {
   item: any;
   paymentFor: string;
+  navigationProps: any;
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   useEffect(() => {}, []);
@@ -89,18 +89,29 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       </View>
     );
   };
+
+  const goToPaymentStatus = () => {
+    const { item, paymentFor } = props;
+    props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
+      item: item,
+      paymentFor: paymentFor,
+    });
+  };
   const { status, appointmentDateTime } = props.item;
   const borderRadiusValue = status === 'PAYMENT_REFUND' || !appointmentDateTime ? 0 : 10;
   return (
-    <View
+    <TouchableOpacity
       style={{
         ...styles.mainContainer,
         borderTopRightRadius: borderRadiusValue,
         borderTopLeftRadius: borderRadiusValue,
       }}
+      onPress={() => {
+        goToPaymentStatus();
+      }}
     >
       {renderContainer()}
-    </View>
+    </TouchableOpacity>
   );
 };
 const styles = StyleSheet.create({

@@ -10,6 +10,7 @@ import PaymentsList from './PaymentsList';
 
 interface ConsultPaymentsListProps {
   patientId: string;
+  navigationProps: any;
 }
 const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
   const { patientId } = props;
@@ -18,6 +19,8 @@ const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
   if (!payments) {
     return <Spinner />;
   }
-  return <PaymentsList payments={payments} type="consult" />;
+  return (
+    <PaymentsList payments={payments} type="consult" navigationProps={props.navigationProps} />
+  );
 };
 export default ConsultPaymentsList;

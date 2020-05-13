@@ -80,6 +80,7 @@ import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
+import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -152,6 +153,7 @@ export enum AppRoutes {
   // ConsultDetailsById = 'ConsultDetailsById',
   NotificationScreen = 'NotificationScreen',
   MyPaymentsScreen = 'MyPaymentsScreen',
+  PaymentStatusScreen = 'PaymentStatusScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -393,6 +395,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyPaymentsScreen]: {
     screen: MyPaymentsScreen,
+  },
+  [AppRoutes.PaymentStatusScreen]: {
+    screen: PaymentStatusScreen,
   },
 };
 

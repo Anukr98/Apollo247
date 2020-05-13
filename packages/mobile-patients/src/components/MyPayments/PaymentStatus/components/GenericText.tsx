@@ -1,3 +1,4 @@
+import React from 'react';
 import { Text, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 

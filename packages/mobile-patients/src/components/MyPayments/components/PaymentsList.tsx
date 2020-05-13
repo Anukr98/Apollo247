@@ -13,9 +13,11 @@ import NoPaymentsScreen from './NoPaymentsScreen';
 interface IProps {
   payments: IPayment[];
   type: string;
+  navigationProps: any;
 }
 
-const PaymentsList: FC<IProps> = ({ payments, type }) => {
+const PaymentsList: FC<IProps> = (props) => {
+  const { payments, type } = props;
   const _renderAllPayments = ({ item, index }: any) => {
     return (
       <PaymentHistoryCard
@@ -24,6 +26,7 @@ const PaymentsList: FC<IProps> = ({ payments, type }) => {
         index={index}
         lastIndex={index === payments.length - 1}
         paymentFor={type}
+        navigationProps={props.navigationProps}
       />
     );
   };
