@@ -229,6 +229,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type doctorDetail = {
   fullName: string;
+  doctorHospital: Array<any>;
 };
 
 interface OrderStatusDetail {
@@ -271,11 +272,14 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     [name: string]: string;
   }
   const status: statusMap = {
-    PAYMENT_SUCCESS: 'PAYMENT SUCCESSFUL',
-    PAYMENT_FAILED: 'PAYMENT FAILED',
-    PAYMENT_PENDING: 'PAYMENT PENDING',
+    success: 'PAYMENT SUCCESSFUL',
+    failed: 'PAYMENT FAILED',
+    pending: 'PAYMENT PENDING',
   };
-  console.log(4343, doctorDetail);
+
+  const doctorAddressDetail =
+    (doctorDetail && doctorDetail.doctorHospital[0] && doctorDetail.doctorHospital[0].facility) ||
+    '';
   return (
     <div className={classes.modalContent}>
       <div className={classes.modalHeader}>
@@ -290,11 +294,11 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
       <div className={classes.modalBody}>
         <div
           className={`${classes.statusCard} ${
-            paymentStatus == 'PAYMENT_PENDING'
+            paymentStatus == 'pending'
               ? classes.pending
-              : paymentStatus == 'PAYMENT_FAILED'
+              : paymentStatus == 'failed'
               ? classes.failed
-              : paymentStatus == 'PAYMENT_SUCCESS'
+              : paymentStatus == 'success'
               ? classes.success
               : ''
           }`}
@@ -327,9 +331,27 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                 <Grid item xs>
                   <div className={classes.details}>
                     <Typography component="h6">Mode of Consult</Typography>
-                    <Typography component="p">{consultMode}</Typography>
+                    <Typography component="p">
+                      {consultMode === 'PHYSICAL' ? 'Clinic Visit' : consultMode}
+                    </Typography>
                   </div>
                 </Grid>
+                {consultMode === 'PHYSICAL' &&
+                  doctorAddressDetail &&
+                  Object.keys(doctorAddressDetail).length > 1 && (
+                    <Grid item xs={12} sm={12}>
+                      <div className={classes.details}>
+                        <Typography component="h6">Clinic Address</Typography>
+                        <Typography component="p">{`${doctorAddressDetail.name}, ${
+                          doctorAddressDetail.streetLine1
+                        },${
+                          doctorAddressDetail.streetLine2
+                            ? doctorAddressDetail.streetLine2 + ','
+                            : ''
+                        } ${doctorAddressDetail.city} `}</Typography>
+                      </div>
+                    </Grid>
+                  )}
               </Grid>
             </Paper>
           ) : (

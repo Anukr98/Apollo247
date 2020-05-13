@@ -835,7 +835,13 @@ export const Appointments: React.FC = (props) => {
           ) : (
             <>
               <OrderStatusContent
-                paymentStatus={paymentStatus}
+                paymentStatus={
+                  paymentStatus === 'PAYMENT_FAILED'
+                    ? 'failed'
+                    : paymentStatus === 'PAYMENT_PENDING'
+                    ? 'pending'
+                    : 'success'
+                }
                 paymentInfo={
                   paymentStatus === 'PAYMENT_FAILED'
                     ? paymentFailedInfo
