@@ -47,9 +47,11 @@ export const bookAppointmentTypeDefs = gql`
     MOBILE
     WEB
   }
+
   enum DEVICETYPE {
     IOS
     ANDROID
+    DESKTOP
   }
 
   type AppointmentBooking {

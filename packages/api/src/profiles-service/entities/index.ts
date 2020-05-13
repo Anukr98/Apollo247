@@ -94,6 +94,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
+  ORDER_BILLED = 'ORDER_BILLED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -215,6 +216,9 @@ export class MedicineOrders extends BaseEntity {
   apOrderNo: string;
 
   @Column({ nullable: true })
+  referenceNo: string;
+
+  @Column({ nullable: true })
   appointmentId: string;
 
   @Column({ nullable: true })
@@ -304,6 +308,7 @@ export class MedicineOrders extends BaseEntity {
   )
   medicineOrderLineItems: MedicineOrderLineItems[];
 
+  // to be removed with oms
   @OneToMany(
     (type) => MedicineOrderInvoice,
     (medicineOrderInvoice) => medicineOrderInvoice.medicineOrders
@@ -316,11 +321,18 @@ export class MedicineOrders extends BaseEntity {
   )
   medicineOrderPayments: MedicineOrderPayments[];
 
+  // to be removed with oms
   @OneToMany(
     (type) => MedicineOrdersStatus,
     (medicineOrdersStatus) => medicineOrdersStatus.medicineOrders
   )
   medicineOrdersStatus: MedicineOrdersStatus[];
+
+  @OneToMany(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrders
+  )
+  medicineOrderShipments: MedicineOrderShipments[];
 }
 //medicine orders ends
 
@@ -447,6 +459,12 @@ export class MedicineOrdersStatus extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
   medicineOrders: MedicineOrders;
 
+  @ManyToOne(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrdersStatus
+  )
+  medicineOrderShipments: MedicineOrderShipments;
+
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
@@ -456,7 +474,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ nullable: true, type: 'timestamp' })
   statusDate: Date;
 
   @Column({ nullable: true })
@@ -486,8 +504,17 @@ export class MedicineOrderInvoice extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderInvoice)
   medicineOrders: MedicineOrders;
 
+  @ManyToOne(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrderInvoice
+  )
+  medicineOrderShipments: MedicineOrderShipments;
+
   @Column()
   orderNo: number;
+
+  @Column()
+  apOrderNo: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -1922,4 +1949,71 @@ export class ReferalCouponMapping extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+}
+
+@Entity()
+export class MedicineOrderShipments extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  apOrderNo: string;
+
+  @Column({ nullable: true })
+  siteId: string;
+
+  @Column({ nullable: true })
+  siteName: string;
+
+  @Column({ nullable: true })
+  trackingNo: string;
+
+  @Column({ nullable: true })
+  trackingUrl: string;
+
+  @Column({ nullable: true })
+  trackingProvider: string;
+
+  @Column({ nullable: true })
+  cancelReasonCode: string;
+
+  @Column({ nullable: true })
+  currentStatus: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @Column({ nullable: true, type: 'json' })
+  itemDetails: string;
+
+  @Column()
+  isPrimary: boolean;
+
+  @OneToMany(
+    (type) => MedicineOrdersStatus,
+    (medicineOrdersStatus) => medicineOrdersStatus.medicineOrderShipments
+  )
+  medicineOrdersStatus: MedicineOrdersStatus[];
+
+  @OneToMany(
+    (type) => MedicineOrderInvoice,
+    (medicineOrderInvoice) => medicineOrderInvoice.medicineOrderShipments
+  )
+  medicineOrderInvoice: MedicineOrderInvoice[];
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderShipments)
+  medicineOrders: MedicineOrders;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }

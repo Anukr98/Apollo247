@@ -23,7 +23,9 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   type PharmaLineItems {
+    applicableDiscount: Float!
     discountedPrice: Float!
+    itemId: String!
     mrp: Float!
     productName: String!
     productType: CouponCategoryApplicable!
@@ -34,6 +36,7 @@ export const validatePharmaCouponTypeDefs = gql`
   type DiscountedTotals {
     applicableDiscount: Float!
     couponDiscount: Float!
+    mrpPriceTotal: Float!
     productDiscount: Float!
   }
 
@@ -46,6 +49,7 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   input OrderLineItems {
+    itemId: String!
     mrp: Float!
     productName: String!
     productType: CouponCategoryApplicable!
@@ -66,6 +70,7 @@ export const validatePharmaCouponTypeDefs = gql`
 `;
 
 type OrderLineItems = {
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;
@@ -82,7 +87,9 @@ type PharmaCouponInput = {
 type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
 
 type PharmaLineItems = {
+  applicableDiscount: number;
   discountedPrice: number;
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;
@@ -93,6 +100,7 @@ type PharmaLineItems = {
 type DiscountedTotals = {
   applicableDiscount: number;
   couponDiscount: number;
+  mrpPriceTotal: number;
   productDiscount: number;
 };
 
@@ -233,6 +241,7 @@ const validatePharmaCoupon: Resolver<
     return {
       ...item,
       discountedPrice: 0,
+      applicableDiscount: 0,
     };
   });
 
@@ -250,8 +259,8 @@ const validatePharmaCoupon: Resolver<
       ) {
         const itemPrice =
           couponRulesData.discountApplicableOn == PharmaDiscountApplicableOn.MRP
-            ? lineItem.mrp * lineItem.quantity
-            : lineItem.specialPrice * lineItem.quantity;
+            ? lineItem.mrp
+            : lineItem.specialPrice;
 
         if (
           couponGenericRulesData.minimumCartValue &&
@@ -270,13 +279,17 @@ const validatePharmaCoupon: Resolver<
           couponGenericRulesData.discountType,
           couponGenericRulesData.discountValue
         );
-        lineItem.discountedPrice = Number((itemPrice - discountedPrice).toFixed(2));
+        lineItem.discountedPrice = Number(discountedPrice.toFixed(2));
+        lineItem.applicableDiscount =
+          lineItem.discountedPrice < lineItem.specialPrice
+            ? lineItem.discountedPrice
+            : lineItem.specialPrice;
       }
     }
 
     specialPriceTotal = specialPriceTotal + lineItem.specialPrice * lineItem.quantity;
     mrpPriceTotal = mrpPriceTotal + lineItem.mrp * lineItem.quantity;
-    discountedPriceTotal = discountedPriceTotal + lineItem.discountedPrice;
+    discountedPriceTotal = discountedPriceTotal + lineItem.discountedPrice * lineItem.quantity;
   });
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
@@ -285,6 +298,7 @@ const validatePharmaCoupon: Resolver<
     applicableDiscount:
       productDiscount < discountedPriceTotal ? productDiscount : discountedPriceTotal,
     couponDiscount: Number(discountedPriceTotal.toFixed(2)),
+    mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };
 

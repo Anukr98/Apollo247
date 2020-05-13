@@ -1,7 +1,10 @@
-import React from 'react';
-import { Theme, FormControlLabel, Checkbox } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
+import { Theme, FormControlLabel, Checkbox, Popover, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { isEmailValid, isNameValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import fetchUtil from 'helpers/fetch';
+import { MascotWithMessage } from '../MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,25 +81,124 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916 !important',
       },
     },
+    error: {
+      color: '#890000',
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+    },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
-export const CommentsForm: React.FC = (props) => {
+interface CommentsFormProps {
+  titleId: string;
+}
+
+export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
   const classes = useStyles({});
+  const [subscribe, setSubscribe] = useState<boolean>(true);
+  const [maskEmail, setMaskEmail] = useState<boolean>(false);
+  const [isPostSubmitDisable, setIsPostSubmitDisable] = useState<boolean>(true);
+  const [comment, setComment] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
+  const [emailValid, setEmailValid] = useState<boolean>(true);
+  const [userNameValid, setUserNameValid] = useState<boolean>(true);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const postCommentUrl = process.env.POST_COMMENT_URL || '';
+
+  useEffect(() => {
+    if (isEmailValid(userEmail) && comment.length) {
+      setIsPostSubmitDisable(false);
+    } else {
+      setIsPostSubmitDisable(true);
+    }
+  }, [userEmail, comment]);
+
+  const handleCancelForm = () => {
+    setComment('');
+    setUserName('');
+    setUserEmail('');
+    setEmailValid(true);
+    setUserNameValid(true);
+    setMaskEmail(false);
+    setSubscribe(true);
+  };
+
+  const handleEmailValidityCheck = () => {
+    if (userEmail.length && !isEmailValid(userEmail)) {
+      setEmailValid(false);
+    } else {
+      setEmailValid(true);
+    }
+  };
+
+  const handleNameChange = (ev: any) => {
+    if (isNameValid(ev && ev.target.value)) {
+      setUserNameValid(true);
+    } else {
+      setUserNameValid(false);
+    }
+    setUserName(ev && ev.target.value);
+  };
+
+  const submitComment = () => {
+    setIsLoading(true);
+    const commentData = {
+      comment,
+      email: userEmail,
+      name: userName,
+      maskEmail,
+      subcription: subscribe,
+      id: props.titleId,
+    };
+    fetchUtil(postCommentUrl, 'POST', commentData, '', true).then((res: any) => {
+      if (res && res.success) {
+        handleCancelForm();
+        setIsLoading(false);
+        setIsPopoverOpen(true);
+      } else {
+      }
+    });
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.formRow}>
         <div className={classes.commentsBox}>
-          <AphTextField label="Comments" multiline />
+          <AphTextField
+            label="Comments"
+            onChange={(event) => setComment(event.target.value)}
+            value={comment}
+            multiline
+          />
         </div>
       </div>
       <div className={classes.formRow}>
-        <AphTextField label="Email*" placeholder="Add your email" />
+        <AphTextField
+          onChange={(event) => setUserEmail(event.target.value)}
+          label="Email*"
+          placeholder="Add your email"
+          value={userEmail}
+          onBlur={handleEmailValidityCheck}
+        />
+        {!emailValid && <div className={classes.error}>Invalid email</div>}
+
         <div className={classes.checkboxGroup}>
           <FormControlLabel
             control={
               <Checkbox
+                checked={maskEmail}
+                onChange={() => setMaskEmail(!maskEmail)}
                 classes={{
                   root: classes.checkboxRoot,
                 }}
@@ -107,19 +209,69 @@ export const CommentsForm: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.formRow}>
-        <AphTextField label="Full Name" placeholder="Add your name" />
+        <AphTextField
+          onChange={(event) => handleNameChange(event)}
+          label="Full Name"
+          placeholder="Add your name"
+          value={userName}
+        />
+        {!userNameValid && <div className={classes.error}>Invalid name</div>}
       </div>
-      <div className={classes.bottomActions}>
-        <AphButton
-          disabled
-          classes={{
-            disabled: classes.buttonDisabled,
+      <div className={classes.formRow}>
+        <div className={classes.checkboxGroup}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={subscribe}
+                onChange={() => setSubscribe(!subscribe)}
+                classes={{
+                  root: classes.checkboxRoot,
+                }}
+              />
+            }
+            label="I would like to subscribe to Apollo 24|7 newsletter"
+          />
+        </div>
+      </div>
+      {!isLoading ? (
+        <div className={classes.bottomActions}>
+          <AphButton onClick={() => handleCancelForm()}>Cancel</AphButton>
+          <AphButton
+            disabled={isPostSubmitDisable}
+            onClick={() => submitComment()}
+            className={isPostSubmitDisable ? classes.buttonDisabled : ''}
+          >
+            Post comment
+          </AphButton>
+        </div>
+      ) : (
+        <div className={classes.loader}>
+          <CircularProgress />
+        </div>
+      )}
+
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle=""
+          message="We have received your comment. We will let you know once it is approved."
+          closeButtonLabel="OK"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
           }}
-        >
-          Cancel
-        </AphButton>
-        <AphButton>Post comment</AphButton>
-      </div>
+          // refreshPage
+        />
+      </Popover>
     </div>
   );
 };
