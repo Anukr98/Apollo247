@@ -603,7 +603,7 @@ export const MedicineCart: React.FC = (props) => {
   const productDiscount = mrpTotal - cartTotal;
   const totalWithCouponDiscount =
     validateCouponResult && validateCouponResult.discountedTotals
-      ? Number(totalAmount) - Number(validateCouponResult.discountedTotals.applicableDiscount)
+      ? Number(totalAmount) - Number(validateCouponResult.discountedTotals.couponDiscount)
       : Number(totalAmount);
 
   const disableSubmit =
@@ -1105,7 +1105,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.applicableDiscount
+                          ? validateCouponResult.discountedTotals.couponDiscount
                           : 0}{' '}
                         on the bill
                       </div>
@@ -1154,7 +1154,7 @@ export const MedicineCart: React.FC = (props) => {
                           <div className={classes.priceRow}>
                             <span>Discount({couponCode})</span>
                             <span className={classes.priceCol}>
-                              -Rs. {validateCouponResult.discountedTotals.applicableDiscount}
+                              -Rs. {validateCouponResult.discountedTotals.couponDiscount}
                             </span>
                           </div>{' '}
                         </>
@@ -1302,7 +1302,7 @@ export const MedicineCart: React.FC = (props) => {
                       couponCode: couponCode == '' ? null : couponCode,
                       couponValue:
                         validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.applicableDiscount
+                          ? validateCouponResult.discountedTotals.couponDiscount
                           : 0,
                       finalBookingValue: totalWithCouponDiscount,
                     });

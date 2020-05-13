@@ -280,7 +280,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         Rs.{' '}
                         {
                           validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
-                            .applicableDiscount
+                            .applicablePrice
                         }
                       </div>
                     </>
