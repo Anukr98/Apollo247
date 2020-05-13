@@ -14,14 +14,12 @@ import MessageIcon from '@material-ui/icons/Message';
 import React from 'react';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useMutation} from 'react-apollo-hooks';
+import { useMutation } from 'react-apollo-hooks';
 import {
   MarkMessageToUnread,
   MarkMessageToUnreadVariables,
 } from 'graphql/types/MarkMessageToUnread';
-import {
-  MARK_MESSAGE_TO_UNREAD,
-} from 'graphql/profiles';
+import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApolloError } from 'apollo-client';
 
@@ -31,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
       backgroundColor: theme.palette.background.paper,
     },
-    ChatStyle:{
+    ChatStyle: {
       cursor: 'pointer',
     },
     card: {
@@ -231,27 +229,36 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
-                        <div className={classes.ChatStyle} onClick={() => {
-                          if(patient.appointmentids.length > 0 &&
-                          patient.unreadMessagesCount.length > 0 &&
-                          patient.appointmentids[0] ===
-                            patient.unreadMessagesCount[0].appointmentId &&
-                          patient.unreadMessagesCount[0].count > 0){
-                    callMessageReadAction(
-                      patient.appointmentids[0],
-                      currentPatient.id,
-                      patient.patientid
-                    );}else{
-                      window.location.href = clientRoutes.ConsultTabs(patient.appointmentids[0], patient.patientid, '1');
-                    }
-                  }}>
-                        {/* <Link
+                        <div
+                          className={classes.ChatStyle}
+                          onClick={() => {
+                            if (
+                              patient.appointmentids.length > 0 &&
+                              patient.unreadMessagesCount.length > 0 &&
+                              patient.appointmentids[0] ===
+                                patient.unreadMessagesCount[0].appointmentId &&
+                              patient.unreadMessagesCount[0].count > 0
+                            ) {
+                              callMessageReadAction(
+                                patient.appointmentids[0],
+                                currentPatient.id,
+                                patient.patientid
+                              );
+                            } else {
+                              window.location.href = clientRoutes.ConsultTabs(
+                                patient.appointmentids[0],
+                                patient.patientid,
+                                '1'
+                              );
+                            }
+                          }}
+                        >
+                          {/* <Link
                           to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
                         > */}
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>
                             <MessageIcon />
                           </IconButton>
-
                           Chat
                           {patient.appointmentids.length > 0 &&
                           patient.unreadMessagesCount.length > 0 &&
@@ -260,7 +267,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           patient.unreadMessagesCount[0].count > 0
                             ? '(' + patient.unreadMessagesCount[0].count + ')'
                             : ''}
-                        {/* </Link> */}
+                          {/* </Link> */}
                         </div>
                       </span>
 
