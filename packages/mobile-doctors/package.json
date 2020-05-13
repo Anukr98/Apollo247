@@ -14,7 +14,8 @@
     "start": "react-native start",
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
-    "jetify": "jetify"
+    "jetify": "jetify",
+    "postinstall": "chmod +x replace.sh && bash replace.sh"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
