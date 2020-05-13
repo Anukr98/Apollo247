@@ -67,6 +67,7 @@ export const RefferalCode: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const [options, setOptions] = useState([]);
+  const [inputValue, setInputValue] = useState<string>('');
 
   const {
     loading,
@@ -157,6 +158,10 @@ export const RefferalCode: React.FC = () => {
           isDisabled={!caseSheetEdit}
           menuShouldScrollIntoView
           backspaceRemovesValue
+          inputValue={inputValue}
+          onInputChange={(newValue: any) => {
+            setInputValue(newValue);
+          }}
           styles={{
             placeholder: (base: any) => ({
               ...base,
