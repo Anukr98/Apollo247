@@ -32,7 +32,7 @@ module.exports = async (req, res, next) => {
             logger.error(`${orderId} - pharma-response-webhook - ${JSON.stringify(response.data.errors)}`)
             throw new Error(`Error Occured in SaveMedicineOrderPaymentMq for order id: ${orderId}`);
         }
-
+        res.send("webhook consumed successfully!");
     } catch (e) {
 
         if (e.response && e.response.data) {

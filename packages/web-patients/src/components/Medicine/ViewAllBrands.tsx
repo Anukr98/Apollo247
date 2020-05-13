@@ -9,7 +9,6 @@ import axios from 'axios';
 import { Brand } from './../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
-import { Help } from 'components/Help/Help';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 
@@ -408,8 +407,8 @@ export const ViewAllBrands: React.FC = (props) => {
           </Scrollbars>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <div className={classes.footerLinks}>
-        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
       <NavigationBottom />

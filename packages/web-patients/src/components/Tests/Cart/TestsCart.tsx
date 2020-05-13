@@ -870,7 +870,7 @@ export const TestsCart: React.FC = (props) => {
         </div>
       </AphDialog>
 
-      <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
+      {/* <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
@@ -881,7 +881,7 @@ export const TestsCart: React.FC = (props) => {
           }}
           cartValue={cartTotal}
         />
-      </AphDialog>
+      </AphDialog> */}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

@@ -249,6 +249,7 @@ export const NewsletterSubscriptionForm: React.FC<SubscriptionFormProps> = (prop
 
                   <AphButton
                     disabled={submitIsDisabled}
+                    data-subscribe={'covid19'}
                     className={
                       submitIsDisabled
                         ? `${classes.subscribeBtn} ${classes.noBoxShadow}`
