@@ -1543,5 +1543,7 @@ export interface RxPdfData {
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
+  referralSpecialtyName: string;
+  referralSpecialtyDescription: string;
 }
 ///////////////////////////////////////////////////////////
