@@ -158,9 +158,9 @@ export const RefferalCode: React.FC = () => {
           isDisabled={!caseSheetEdit}
           menuShouldScrollIntoView
           backspaceRemovesValue
-          inputValue={inputValue}
-          onInputChange={(newValue: any) => {
-            setInputValue(newValue);
+          inputValue={inputValue || ''}
+          onInputChange={(newValue: string) => {
+            setInputValue(newValue || '');
           }}
           styles={{
             placeholder: (base: any) => ({
