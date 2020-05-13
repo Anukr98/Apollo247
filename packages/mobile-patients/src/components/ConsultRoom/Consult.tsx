@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.yellowTextStyle,
     ...theme.fonts.IBMPlexSansBold(13),
     textAlign: 'right',
-    // paddingHorizontal: 15,
+    paddingHorizontal: 15,
     paddingTop: 11,
     paddingBottom: 16,
   },
@@ -482,11 +482,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         showsHorizontalScrollIndicator={false}
         ListEmptyComponent={renderNoAppointments()}
         renderItem={({ item }) => {
-          const tomorrowDate = moment(new Date())
+          let tomorrowDate = moment(new Date())
             .add(1, 'days')
             .format('DD MMM');
           // console.log(tomorrow, 'tomorrow');
-          const appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
+          let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
 
           const appointmentDateTime = moment
@@ -507,13 +507,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
 
-          const day1 = moment(appointmentDateTime)
+          var day1 = moment(appointmentDateTime)
             .set('hour', 0)
             .set('minute', 0)
             .add(7 - 1, 'days'); // since we're calculating as EOD
-          const day2 = moment(new Date());
+          var day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
-          console.log(minutes, 'minutes');
 
           return (
             <View style={{}}>
@@ -717,118 +716,59 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
                     item.status == STATUS.NO_SHOW ||
                     item.status == STATUS.CALL_ABANDON ? (
-                    <View
-                      style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}
-                    >
+                    <View>
                       {item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
                       item.status == STATUS.NO_SHOW ||
                       item.status == STATUS.CALL_ABANDON ? (
-                        <View style={{ flex: 1, paddingRight: 10 }}>
-                          <TouchableOpacity
-                            activeOpacity={1}
-                            onPress={() => {
-                              CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-                              if (item.doctorInfo) {
-                                item.appointmentType === 'ONLINE'
-                                  ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                      data: item,
-                                      from: 'notification',
-                                    })
-                                  : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                      data: item,
-                                      from: 'notification',
-                                    });
-                              }
-                            }}
-                          >
-                            <Text style={[styles.prepareForConsult, { paddingRight: 10 }]}>
-                              PICK ANOTHER SLOT
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
+                            if (item.doctorInfo) {
+                              item.appointmentType === 'ONLINE'
+                                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  })
+                                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                    data: item,
+                                    from: 'notification',
+                                  });
+                            }
+                          }}
+                        >
+                          <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
+                        </TouchableOpacity>
                       ) : (
-                        <>
-                          {minutes < -30 ? (
-                            <View style={{ flex: 0.5, paddingLeft: 20 }}>
-                              <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => {
-                                  postConsultCardEvents(
-                                    item.isConsultStarted
-                                      ? 'Continue Consult'
-                                      : 'Fill Medical Details',
-                                    item
-                                  );
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            postConsultCardEvents(
+                              item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+                              item
+                            );
 
-                                  if (item.doctorInfo && selectedTab === tabs[0].title) {
-                                    CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                                    if (item.doctorInfo) {
-                                      item.appointmentType === 'ONLINE'
-                                        ? props.navigation.navigate(
-                                            AppRoutes.AppointmentOnlineDetails,
-                                            {
-                                              data: item,
-                                              from: 'notification',
-                                            }
-                                          )
-                                        : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                            data: item,
-                                            from: 'notification',
-                                          });
-                                    }
-                                  }
-                                }}
-                              >
-                                <Text
-                                  style={[
-                                    styles.prepareForConsult,
-                                    {
-                                      textAlign: 'left',
-                                      opacity: selectedTab === tabs[0].title ? 1 : 0.5,
-                                    },
-                                  ]}
-                                >
-                                  RESCHEDULE
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                          ) : (
-                            <View style={{ flex: 0.5, paddingLeft: 20 }} />
-                          )}
-                          <TouchableOpacity
-                            activeOpacity={1}
-                            onPress={() => {
-                              postConsultCardEvents(
-                                item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
-                                item
-                              );
-
-                              if (item.doctorInfo && selectedTab === tabs[0].title) {
-                                CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                                props.navigation.navigate(AppRoutes.ChatRoom, {
-                                  data: item,
-                                  callType: '',
-                                  prescription: '',
-                                });
-                              }
-                            }}
+                            if (item.doctorInfo && selectedTab === tabs[0].title) {
+                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                              props.navigation.navigate(AppRoutes.ChatRoom, {
+                                data: item,
+                                callType: '',
+                                prescription: '',
+                              });
+                            }
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.prepareForConsult,
+                              { opacity: selectedTab === tabs[0].title ? 1 : 0.5 },
+                            ]}
                           >
-                            <Text
-                              style={[
-                                styles.prepareForConsult,
-                                {
-                                  opacity: selectedTab === tabs[0].title ? 1 : 0.5,
-                                  paddingRight: 20,
-                                  paddingHorizontal: item.isConsultStarted ? 0 : 15,
-                                },
-                              ]}
-                            >
-                              {item.isConsultStarted
-                                ? string.common.continueConsult
-                                : string.common.prepareForConsult}
-                            </Text>
-                          </TouchableOpacity>
-                        </>
+                            {item.isConsultStarted
+                              ? string.common.continueConsult
+                              : string.common.prepareForConsult}
+                          </Text>
+                        </TouchableOpacity>
                       )}
                     </View>
                   ) : (
@@ -853,7 +793,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             {
                               paddingBottom: -16,
                               opacity: selectedTab === tabs[0].title ? 1 : 0.5,
-                              paddingRight: 20,
                             },
                           ]}
                         >
