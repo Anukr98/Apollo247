@@ -48,6 +48,11 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
 export enum DOCTOR_CALL_TYPE {
   JUNIOR = "JUNIOR",
   SENIOR = "SENIOR",
@@ -229,6 +234,11 @@ export enum Salutation {
   MR = "MR",
   MRS = "MRS",
   MS = "MS",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {

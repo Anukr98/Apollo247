@@ -65,6 +65,7 @@ import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineL
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
   APPOINTMENT_TYPE,
+  Gender,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
@@ -90,13 +91,13 @@ import {
   Alert,
   Dimensions,
   Linking,
+  Platform,
   SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -972,17 +973,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               },
               true
             )}
-            {renderFields(
-              strings.case_sheet.menstrual_history,
-              (medicalHistory && medicalHistory.menstrualHistory) || '',
-              (text) => {
-                setMedicalHistory({
-                  ...medicalHistory,
-                  menstrualHistory: text,
-                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
-              },
-              true
-            )}
+            {(patientDetails &&
+              ((patientDetails.gender &&
+                [Gender.FEMALE, Gender.OTHER].includes(patientDetails.gender)) ||
+                !patientDetails.gender)) ||
+            !patientDetails
+              ? renderFields(
+                  strings.case_sheet.menstrual_history,
+                  (medicalHistory && medicalHistory.menstrualHistory) || '',
+                  (text) => {
+                    setMedicalHistory({
+                      ...medicalHistory,
+                      menstrualHistory: text,
+                    } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+                  },
+                  true
+                )
+              : null}
             {renderFields(
               strings.case_sheet.family_medical_history,
               familyValues,
@@ -2372,12 +2379,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           const tempTest = tests;
           const newData = tempTestArray.length
             ? tempTestArray.map((ele) => {
-                const existingElement = tests.findIndex((i) => i.itemname === ele.itemname);
+                const existingElement = tests.findIndex((i) => i.itemname === ele.itemName);
                 if (existingElement > -1) {
                   tempTest[existingElement].isSelected = true;
                   return { itemname: '', isSelected: false };
                 } else {
-                  return { itemname: ele.itemname || '', isSelected: true };
+                  return { itemname: ele.itemName || '', isSelected: true };
                 }
               })
             : [{ itemname: searchTestVal, isSelected: true }];

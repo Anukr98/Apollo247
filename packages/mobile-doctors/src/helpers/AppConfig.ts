@@ -19,6 +19,8 @@ const commonConfigs = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
   CHAT_ENCRYPTION_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
+  APOLLO_BASE_URL: 'https://www.apollopharmacy.in',
+  APOLLO_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
 };
 
 //Development;
