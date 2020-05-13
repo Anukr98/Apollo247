@@ -474,10 +474,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
               //     )
               // ),
-              // header: 'MY PAYMENTS',
               // refetch: ordersRefetch,
               // error: ordersError,
               // loading: ordersLoading,
+              patientId: currentPatient,
             });
           }}
         />

@@ -16,13 +16,14 @@ import { TabsComponent } from '../ui/TabsComponent';
 import { colors } from '../../theme/colors';
 import PharmacyPaymentsList from './components/PharmacyPaymentsList';
 import ConsultPaymentsList from './components/ConsultPaymentsList';
+import { IPatientDetails } from '@aph/mobile-patients/src/models/IPatientDetails';
 
 interface MyPaymentsScreenProps extends NavigationScreenProps<{}> {}
 const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
+  const patientInfo: IPatientDetails = props.navigation.getParam('patientId');
   const tabs = [{ title: 'Consult Payments' }, { title: 'Pharmacy Payments' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   useEffect(() => {}, []);
-
   const renderHeader = () => {
     return (
       <Header
@@ -57,10 +58,11 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
   };
 
   const getPaymentsList = () => {
+    const id = { patientInfo };
     if (selectedTab === 'Pharmacy Payments') {
-      return <PharmacyPaymentsList />;
+      return <PharmacyPaymentsList patientId={id} />;
     }
-    return <ConsultPaymentsList />;
+    return <ConsultPaymentsList patientId={id} />;
   };
   return (
     <View style={styles.mainContainer}>

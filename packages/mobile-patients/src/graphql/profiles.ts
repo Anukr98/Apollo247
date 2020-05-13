@@ -2148,13 +2148,53 @@ export const GET_DEVICE_TOKEN_COUNT = gql`
 export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
-      appointment{
+      appointment {
         displayId
         bankTxnId
         paymentStatus
         amountPaid
-       
       }
+    }
   }
-}
 `;
+
+export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
+  query consultOrders($patientId: String!) {
+    appointments {
+      id
+      doctorId
+      displayId
+      appointmentDateTime
+      actualAmount
+      status
+      appointmentType
+      discountedAmount
+      appointmentPayments {
+        paymentRefId
+        paymentStatus
+      }
+      doctor {
+        name
+      }
+    }
+  }
+`;
+
+// export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
+// query {
+//   consultOrders(patientId: String!)
+//   {
+//     appointments{
+//       id
+//       displayId
+//       appointmentDateTime
+//       actualAmount
+//       appointmentType
+//       appointmentPayments {
+//         paymentRefId
+//         paymentStatus
+//       }
+//     }
+//   }
+// }
+// `;

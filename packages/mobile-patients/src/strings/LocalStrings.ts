@@ -70,7 +70,7 @@ const MyPayments = {
   paymentSuccessful: 'PAYMENT SUCCESSFUL',
   paymentFailed: 'PAYMENT FAILED',
   paymentPending: 'PAYMENT PENDING',
-  paymentRefund: 'REFUND',
+  paymentRefund: 'REFUND INITIATED',
   noPayments: 'You have no payment history!',
 };
 

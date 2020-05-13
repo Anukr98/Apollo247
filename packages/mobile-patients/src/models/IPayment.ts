@@ -1,5 +1,6 @@
 export interface IPayment {
   id: string;
+  doctorId: string;
   displayId?: string;
   appointmentDateTime: string;
   actualAmount: string;

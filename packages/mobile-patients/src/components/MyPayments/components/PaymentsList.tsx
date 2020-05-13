@@ -12,9 +12,10 @@ import NoPaymentsScreen from './NoPaymentsScreen';
 
 interface IProps {
   payments: IPayment[];
+  type: string;
 }
 
-const PaymentsList: FC<IProps> = ({ payments }) => {
+const PaymentsList: FC<IProps> = ({ payments, type }) => {
   const _renderAllPayments = ({ item, index }: any) => {
     return (
       <PaymentHistoryCard
@@ -22,6 +23,7 @@ const PaymentsList: FC<IProps> = ({ payments }) => {
         item={item}
         index={index}
         lastIndex={index === payments.length - 1}
+        paymentFor={type}
       />
     );
   };

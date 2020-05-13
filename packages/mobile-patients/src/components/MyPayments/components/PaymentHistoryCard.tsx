@@ -22,6 +22,7 @@ interface PaymentHistoryCardProps {
   item: any;
   index: number;
   lastIndex: boolean;
+  paymentFor: string;
 }
 const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   useEffect(() => {}, []);
@@ -31,7 +32,7 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       return <PaymentCardHeader status={status} />;
     }
   };
-  const { id, item, lastIndex, index } = props;
+  const { id, item, lastIndex, index, paymentFor } = props;
   return (
     <View
       style={{
@@ -41,8 +42,8 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <PaymentCardBody item={item} />
-      <PaymentCardFooter />
+      <PaymentCardBody item={item} paymentFor={paymentFor} />
+      <PaymentCardFooter item={item} paymentFor={paymentFor} />
     </View>
   );
 };

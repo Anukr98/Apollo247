@@ -21,6 +21,8 @@ const darkShadeGrey = '#666666';
 const astronautBlue = '#01475b';
 const shadeCyanBlue = '#6d7278';
 const lightGray = '#d8d8d8';
+const deepRed = '#a30808';
+const lightPaleRed = '#32e02020';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -126,6 +128,7 @@ const StatusColors = {
   SUCCESS: lightShadeGreen,
   FAILURE: lightShadeRed,
   PENDING: almond,
+  REFUND: lightPaleRed,
 };
 
 export const colors = {

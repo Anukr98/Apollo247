@@ -24,6 +24,7 @@ import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 
 interface PaymentCardBodyProps {
   item: any;
+  paymentFor: string;
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   useEffect(() => {}, []);
@@ -55,10 +56,12 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       <View style={styles.contentViewStyles}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {renderLeftContainer()}
-          <Text style={{ color: textColor }}>{text}</Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 13, textColor, 1, 20, 0.5) }}>{text}</Text>
         </View>
         <View>
-          <Text style={{ color: colors.CARD_HEADER }}>Rs. {actualAmount}</Text>
+          <Text style={{ ...theme.viewStyles.text('M', 14, colors.CARD_HEADER, 1, 20) }}>
+            Rs. {actualAmount}
+          </Text>
         </View>
       </View>
     );
@@ -68,7 +71,9 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     return (
       <View style={styles.lowerView}>
         <View>
-          <Text>Payment Ref Number - {displayId}</Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, colors.SHADE_GREY, 1, 20, 0.5) }}>
+            Payment Ref Number - {displayId}
+          </Text>
         </View>
         <View>
           <ArrowRight />
@@ -76,7 +81,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       </View>
     );
   };
-  const renderRightContainer = () => {
+  const renderContainer = () => {
     return (
       <View style={styles.rightContainerStyles}>
         {upperSection()}
@@ -94,7 +99,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         borderTopLeftRadius: borderRadiusValue,
       }}
     >
-      {renderRightContainer()}
+      {renderContainer()}
     </View>
   );
 };
@@ -126,7 +131,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginLeft: 34,
-    marginTop: 10,
+    marginTop: 5,
   },
 });
 
