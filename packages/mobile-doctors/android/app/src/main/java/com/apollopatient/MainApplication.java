@@ -23,6 +23,7 @@ import io.invertase.firebase.auth.RNFirebaseAuthPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
+import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -40,6 +41,7 @@ public class MainApplication extends Application implements ReactApplication {
             packages.add(new RNFirebaseMessagingPackage());
             packages.add(new RNFirebaseNotificationsPackage());
             packages.add(new RNAppSignatureHelperPackage());
+            packages.add(new RNFirebaseRemoteConfigPackage());
             return packages;
         }
 
