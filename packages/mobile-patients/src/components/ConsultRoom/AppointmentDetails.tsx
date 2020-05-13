@@ -492,7 +492,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const showCancel = !isAwaitingReschedule ? true : false;
     return (
       <View
         style={{
@@ -617,7 +617,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule ? 1 : 0.5,
+                opacity: 1,
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -632,7 +632,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    isAwaitingReschedule ? NextAvailableSlotAPI() : null;
+                    NextAvailableSlotAPI();
                   } catch (error) {
                     CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
                   }
