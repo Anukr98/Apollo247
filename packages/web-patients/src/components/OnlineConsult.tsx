@@ -732,7 +732,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </Grid>
             </>
           )}
-          <CouponCode
+          {/* <CouponCode
             disableSubmit={disableCoupon}
             setCouponCodeFxn={() => {
               setCouponCode(couponCode);
@@ -745,7 +745,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             appointmentDateTime={appointmentDateTime}
             appointmentType={consultType}
             removeCouponCode={() => {
-              /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
               gtmTracking({
@@ -754,9 +753,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 label: `Coupon Removed - ${couponCode}`,
                 value: couponValue,
               });
-              /* Gtm code end */
             }}
-          />
+          /> */}
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am

@@ -19,7 +19,6 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
-import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -340,7 +339,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OnlineCheckout: React.FC = () => {
+export const ClinicCheckout: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
@@ -401,12 +400,12 @@ export const OnlineCheckout: React.FC = () => {
         doctorDetails.getDoctorDetailsById.specialty &&
         doctorDetails.getDoctorDetailsById.specialty.name) ||
       null;
-    // const facilityAddress =
-    //   (doctorDetails &&
-    //     doctorDetails.getDoctorDetailsById &&
-    //     doctorDetails.getDoctorDetailsById.doctorHospital &&
-    //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
-    //   null;
+    const facilityAddress =
+      (doctorDetails &&
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorHospital &&
+        doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
+      null;
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -440,25 +439,25 @@ export const OnlineCheckout: React.FC = () => {
                     <div className={classes.appointmentDetails}>
                       <div className={classes.blockHeader}>Appointment Details</div>
                       <div className={classes.consultServices}>
-                        {/* <div className={classes.serviceType}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_clinic.svg')} alt="" />
-                        </span>
-                        <span>Clinic Visit</span>
-                      </div> */}
                         <div className={classes.serviceType}>
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_clinic.svg')} alt="" />
+                          </span>
+                          <span>Clinic Visit</span>
+                        </div>
+                        {/* <div className={classes.serviceType}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_round_video.svg')} alt="" />
                           </span>
                           <span>Online Consultation</span>
-                        </div>
+                        </div> */}
                         <div className={classes.serviceType}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_calendar_show.svg')} alt="" />
                           </span>
                           <span>{newAppointmentDateTime}</span>
                         </div>
-                        {/* <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
+                        <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_location.svg')} alt="" />
                           </span>
@@ -467,7 +466,7 @@ export const OnlineCheckout: React.FC = () => {
                             {facilityAddress.streetLine1}, {facilityAddress.streetLine2} <br />
                             {facilityAddress.city}, {facilityAddress.state}
                           </span>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -549,31 +548,12 @@ export const OnlineCheckout: React.FC = () => {
                   </div>
                 </div>
                 <div className={classes.bottomActions}>
-                  <Route
-                    render={({ history }) => (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          const updatedValues = {
-                            ...pageData,
-                            consultCouponCode: couponCode,
-                            consultCouponValue:
-                              validateCouponResult &&
-                              validateCouponResult.revisedAmount &&
-                              validateCouponResult.revisedAmount,
-                          };
-                          localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
-                          console.log('updatedValues', updatedValues);
-                          history.push(clientRoutes.payMedicine('consults'));
-                        }}
-                      >
-                        Pay Rs.{' '}
-                        {validateCouponResult && validateCouponResult.revisedAmount
-                          ? validateCouponResult.revisedAmount
-                          : onlineConsultationFees}
-                      </AphButton>
-                    )}
-                  />
+                  <AphButton color="primary">
+                    Pay Rs.{' '}
+                    {validateCouponResult && validateCouponResult.revisedAmount
+                      ? validateCouponResult.revisedAmount
+                      : onlineConsultationFees}
+                  </AphButton>
                 </div>
               </div>
             </div>
@@ -584,7 +564,7 @@ export const OnlineCheckout: React.FC = () => {
             <CouponCodeConsult
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
-              consultType={AppointmentType.ONLINE}
+              consultType={AppointmentType.PHYSICAL}
               setCouponCode={setCouponCode}
               couponCode={couponCode}
               setValidateCouponResult={setValidateCouponResult}

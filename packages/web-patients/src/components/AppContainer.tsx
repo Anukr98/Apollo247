@@ -58,6 +58,7 @@ import { Help } from 'components/Help/Help';
 import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
+import { ClinicCheckout } from './Checkout/ClinicCheckout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -178,11 +179,12 @@ const App: React.FC = () => {
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
           <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.payOnlineConsult()} component={OnlineCheckout} />
           <AuthRouted
             exact
-            path={clientRoutes.payOnlineConsult()}
-            component={OnlineCheckout}
-          />{' '}
+            path={clientRoutes.payOnlineClinicConsult()}
+            component={ClinicCheckout}
+          />
         </Switch>
       </div>
     </Scrollbars>
