@@ -1059,7 +1059,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
                 maxHeight: 266,
                 backgroundColor: '#f7f8f5',
               }}
