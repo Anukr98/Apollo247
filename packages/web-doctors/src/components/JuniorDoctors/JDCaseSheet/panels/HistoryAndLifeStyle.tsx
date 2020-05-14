@@ -137,9 +137,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     inputFieldEdit: {
-      border: '1px solid #00b38e',
-      borderEadius: 10,
-      backgroundColor: '#fff',
+      borderRadius: 10,
       padding: 0,
       '& textarea': {
         color: '#01475b',
@@ -147,6 +145,12 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 500,
         paddingRight: 40,
+      },
+
+      '& textarea:focus': {
+        borderRadius: "5px",
+        boxShadow: "0 0 5px #00b38e",
+        backgroundColor: "#ffffff"
       },
     },
   };
@@ -281,7 +285,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-          }`}
+            }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}
@@ -300,7 +304,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-          }`}
+            }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}
@@ -320,7 +324,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <div
             className={`${classes.inputFieldContent} ${
               caseSheetEdit ? classes.inputFieldEdit : ''
-            } ${classes.marginNone}`}
+              } ${classes.marginNone}`}
           >
             <AphTextField
               disabled={!caseSheetEdit}
@@ -339,7 +343,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-          }`}
+            }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}

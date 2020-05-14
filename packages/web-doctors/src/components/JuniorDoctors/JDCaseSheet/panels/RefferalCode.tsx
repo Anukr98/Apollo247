@@ -22,6 +22,12 @@ const DropdownIndicator = (props: any) => {
 const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     width: '100%',
+
+    '& textarea:focus': {
+      borderRadius: "5px",
+      boxShadow: "0 0 5px #00b38e",
+      backgroundColor: "#ffffff"
+    }
   },
   sectionContainer: {
     marginBottom: 20,
@@ -208,8 +214,8 @@ export const RefferalCode: React.FC = () => {
               backgroundColor: state.isSelected
                 ? '#fc9916 !important'
                 : state.isFocused
-                ? '#f0f4f5 !important'
-                : '#fff',
+                  ? '#f0f4f5 !important'
+                  : '#fff',
               cursor: 'pointer',
             }),
           }}
