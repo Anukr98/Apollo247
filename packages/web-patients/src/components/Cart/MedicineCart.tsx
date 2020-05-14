@@ -586,11 +586,6 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   // const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   // const grossValue = cartTotal;
-  const deliveryCharges =
-    cartTotal >= Number(pharmacyMinDeliveryValue) || cartTotal <= 0 || tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
-  const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   // const showGross = deliveryCharges && deliveryCharges < 0;
   const getMRPTotal = () => {
     let sum = 0;
@@ -601,6 +596,18 @@ export const MedicineCart: React.FC = (props) => {
   };
   const mrpTotal = getMRPTotal();
   const productDiscount = mrpTotal - cartTotal;
+  // below variable is for calculating delivery charges after applying coupon discount
+  const modifiedAmountForCharges =
+    validateCouponResult && validateCouponResult.discountedTotals
+      ? Number(cartTotal) - Number(validateCouponResult.discountedTotals.couponDiscount)
+      : Number(cartTotal);
+  const deliveryCharges =
+    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+    modifiedAmountForCharges <= 0 ||
+    tabValue === 1
+      ? 0
+      : Number(pharmacyDeliveryCharges);
+  const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult && validateCouponResult.discountedTotals
       ? Number(totalAmount) - Number(validateCouponResult.discountedTotals.couponDiscount)
