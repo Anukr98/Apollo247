@@ -24,9 +24,9 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
-  CODCity,
   NonCartOrderCity,
   BOOKING_SOURCE,
+  NonCartOrderOMSCity,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -38,7 +38,8 @@ import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
-import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/savePrescriptionMedicineOrderOMS';
+import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { uploadPrescriptionTracking } from '../../webEngageTracking';
@@ -47,6 +48,7 @@ import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -584,14 +586,34 @@ export const MedicineCart: React.FC = (props) => {
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
-  const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
-  const grossValue = cartTotal - discountAmount;
+  // const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
+  // const grossValue = cartTotal;
+  // const showGross = deliveryCharges && deliveryCharges < 0;
+  const getMRPTotal = () => {
+    let sum = 0;
+    cartItems.forEach((item) => {
+      sum += Number(item.price) * item.quantity;
+    });
+    return sum;
+  };
+  const mrpTotal = getMRPTotal();
+  const productDiscount = mrpTotal - cartTotal;
+  // below variable is for calculating delivery charges after applying coupon discount
+  const modifiedAmountForCharges =
+    validateCouponResult && validateCouponResult.discountedTotals
+      ? Number(cartTotal) - Number(validateCouponResult.discountedTotals.couponDiscount)
+      : Number(cartTotal);
   const deliveryCharges =
-    grossValue >= Number(pharmacyMinDeliveryValue) || grossValue <= 0 || tabValue === 1
+    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+    modifiedAmountForCharges <= 0 ||
+    tabValue === 1
       ? 0
       : Number(pharmacyDeliveryCharges);
-  const totalAmount = (grossValue + Number(deliveryCharges)).toFixed(2);
-  const showGross = (deliveryCharges && deliveryCharges < 0) || discountAmount > 0;
+  const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
+  const totalWithCouponDiscount =
+    validateCouponResult && validateCouponResult.discountedTotals
+      ? Number(totalAmount) - Number(validateCouponResult.discountedTotals.couponDiscount)
+      : Number(totalAmount);
 
   const disableSubmit =
     deliveryMode === 'HOME'
@@ -640,7 +662,7 @@ export const MedicineCart: React.FC = (props) => {
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
           bookingSource: BOOKINGSOURCE.WEB,
-          estimatedAmount: parseFloat(totalAmount),
+          estimatedAmount: totalWithCouponDiscount,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
             ...prescriptions!.map((item) => item.imageUrl),
@@ -668,7 +690,7 @@ export const MedicineCart: React.FC = (props) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
       chennaiOrderVariables = {
-        CODCity: CODCity.CHENNAI,
+        NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
       };
     }
@@ -677,7 +699,7 @@ export const MedicineCart: React.FC = (props) => {
       medicinePaymentMqInput: {
         // orderId: orderId,
         orderAutoId: orderAutoId,
-        amountPaid: parseFloat(totalAmount),
+        amountPaid: totalWithCouponDiscount,
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
         paymentStatus: 'success',
         responseCode: '',
@@ -708,19 +730,30 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
-  const savePrescriptionMutation = useMutation(SAVE_PRESCRIPTION_MEDICINE_ORDER);
+  const savePrescriptionMutation = useMutation(SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS);
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     savePrescriptionMutation({
       variables,
     })
-      .then(({ data }) => {
-        window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+      .then(({ data }: any) => {
+        if (
+          data &&
+          data.savePrescriptionMedicineOrderOMS &&
+          data.savePrescriptionMedicineOrderOMS.errorMessage === ''
+        ) {
+          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+        } else {
+          setIsAlertOpen(true);
+          setAlertMessage('Something went wrong, please try later.');
+        }
       })
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
-        setAlertMessage(`Something went wrong, please try later.`);
+        setAlertMessage('Something went wrong, please try later.');
       })
       .finally(() => {
         // setLoading!(false);
@@ -773,28 +806,28 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
-          const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-            prescriptionMedicineInput: {
+          const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
+            prescriptionMedicineOMSInput: {
+              shopId: storeAddressId || '0',
               patientId: (currentPatient && currentPatient.id) || '',
+              bookingSource: BOOKING_SOURCE.WEB,
               medicineDeliveryType: deliveryAddressId
                 ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-              shopId: storeAddressId || '0',
-              appointmentId: '',
-              bookingSource: BOOKING_SOURCE.WEB,
-              ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+              appointmentId: '',
               isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+              ...(chennaiOrderVariables && chennaiOrderVariables),
             },
           };
-          submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+          submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
         })
         .catch((e) => {
           console.log(e);
@@ -803,23 +836,23 @@ export const MedicineCart: React.FC = (props) => {
           setAlertMessage('something went wrong');
         });
     } else {
-      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-        prescriptionMedicineInput: {
+      const prescriptionMedicineOMSInput: savePrescriptionMedicineOrderOMSVariables = {
+        prescriptionMedicineOMSInput: {
+          shopId: storeAddressId || '0',
           patientId: (currentPatient && currentPatient.id) || '',
+          bookingSource: BOOKING_SOURCE.WEB,
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          shopId: storeAddressId || '0',
-          appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
-          bookingSource: BOOKING_SOURCE.WEB,
-          ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
+          appointmentId: '',
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+          ...(chennaiOrderVariables && chennaiOrderVariables),
         },
       };
-      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+      submitPrescriptionMedicineOrder(prescriptionMedicineOMSInput);
     }
   };
 
@@ -864,9 +897,14 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    gtmTracking({ category: 'Pharmacy', action: 'Order', label: 'View Cart', value: totalAmount });
+    gtmTracking({
+      category: 'Pharmacy',
+      action: 'Order',
+      label: 'View Cart',
+      value: totalWithCouponDiscount,
+    });
     /**Gtm code  End */
-  }, [grossValue]);
+  }, [cartTotal]);
 
   return (
     <div className={classes.root}>
@@ -900,7 +938,9 @@ export const MedicineCart: React.FC = (props) => {
             (prescriptions && prescriptions.length > 0) ||
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
-                {!nonCartFlow && <MedicineListingCard />}
+                {!nonCartFlow && (
+                  <MedicineListingCard validateCouponResult={validateCouponResult} />
+                )}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
                 (ePrescriptionData && ePrescriptionData.length > 0) ? (
@@ -1042,43 +1082,60 @@ export const MedicineCart: React.FC = (props) => {
                 </div>
               </>
             )}
-            {cartItems && cartItems.length > 0 && !nonCartFlow && (
+            {cartItems && cartItems.length > 0 && !nonCartFlow && currentPatient && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
                 </div>
                 <div className={`${classes.sectionGroup}`}>
-                    <div
-                      onClick={() => setIsApplyCouponDialogOpen(true)}
-                      className={`${classes.serviceType}`}
-                    >
-                      <div className={classes.couponTopGroup}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                        </span>
-                        <div className={classes.couponRight}>
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceType}`}
+                  >
+                    <div className={classes.couponTopGroup}>
+                      <span className={classes.serviceIcon}>
+                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                      </span>
+                      <div className={classes.couponRight}>
+                        {couponCode === '' ? (
                           <div className={classes.applyCoupon}>
                             <span className={classes.linkText}>Apply Coupon</span>
                             <span className={classes.rightArrow}>
                               <img src={require('images/ic_arrow_right.svg')} alt="" />
                             </span>
                           </div>
-                          <div className={classes.appliedCoupon}>
-                            <span className={classes.linkText}><span>APOLLO10</span> applied</span>
-                            <span className={classes.rightArrow}>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </span>
-                          </div>
-                          <div className={classes.couponText}>(Applicable on pharma items only)</div>
-                        </div>
+                        ) : (
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{couponCode}</span> applied
+                              </span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                            <div className={classes.couponText}>
+                              {validateCouponResult ? validateCouponResult.successMessage : ''}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div className={classes.discountTotal}>Savings of Rs. 50 on the bill</div>
                     </div>
+                    {couponCode.length > 0 && (
+                      <div className={classes.discountTotal}>
+                        Savings of Rs.{' '}
+                        {validateCouponResult && validateCouponResult.discountedTotals
+                          ? validateCouponResult.discountedTotals.couponDiscount
+                          : 0}{' '}
+                        on the bill
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div className={classes.priceSection}>
                     <div className={classes.topSection}>
-                      <div className={classes.priceRow}>
+                      {/* <div className={classes.priceRow}>
                         <span>Subtotal</span>
                         <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
                       </div>
@@ -1087,13 +1144,46 @@ export const MedicineCart: React.FC = (props) => {
                         <span className={classes.priceCol}>
                           {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
                         </span>
+                      </div> */}
+                      <div className={classes.priceRow}>
+                        <span>MRP Total</span>
+                        <span className={classes.priceCol}>Rs. {mrpTotal.toFixed(2)}</span>
                       </div>
+                      <div className={classes.priceRow}>
+                        <span>Product Discount</span>
+                        <span className={classes.priceCol}>- Rs. {productDiscount.toFixed(2)}</span>
+                      </div>
+                      <div className={classes.priceRow}>
+                        <span>Delivery Charges</span>
+                        <span className={classes.priceCol}>
+                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
+                        </span>
+                      </div>
+                      {/* <div className={classes.priceRow}>
+                        <span>Packaging Charges</span>
+                        <span className={classes.priceCol}>{'+ Rs. 0'}</span>
+                      </div> */}
                     </div>
                     <div className={classes.bottomSection}>
+                      {validateCouponResult && (
+                        <>
+                          <div className={classes.priceRow}>
+                            <span>Total</span>
+                            <span className={classes.priceCol}>Rs. {totalAmount}</span>
+                          </div>
+                          <div className={classes.priceRow}>
+                            <span>Discount({couponCode})</span>
+                            <span className={classes.priceCol}>
+                              -Rs. {validateCouponResult.discountedTotals.couponDiscount}
+                            </span>
+                          </div>{' '}
+                        </>
+                      )}
                       <div className={classes.priceRow}>
                         <span>To Pay</span>
                         <span className={classes.totalPrice}>
-                          {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                          {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
+                          Rs. {totalWithCouponDiscount.toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -1105,57 +1195,77 @@ export const MedicineCart: React.FC = (props) => {
         </Scrollbars>
         <div className={classes.checkoutBtn}>
           {currentPatient && currentPatient.id ? (
-            <AphButton
-              onClick={() => {
-                const zipCodeInt = parseInt(selectedZip);
-                if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                  if (isChennaiZipCode(zipCodeInt)) {
-                    // redirect to chennai orders form
-                    setIsChennaiCheckoutDialogOpen(true);
-                    return;
+            <Route
+              render={({ history }) => (
+                <AphButton
+                  onClick={() => {
+                    const zipCodeInt = parseInt(selectedZip);
+                    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if (isChennaiZipCode(zipCodeInt)) {
+                        // redirect to chennai orders form
+                        setIsChennaiCheckoutDialogOpen(true);
+                        return;
+                      }
+                      // setCheckoutDialogOpen(true);
+                      sessionStorage.setItem(
+                        'cartValues',
+                        JSON.stringify({
+                          couponCode: couponCode == '' ? null : couponCode,
+                          couponValue:
+                            validateCouponResult && validateCouponResult.discountedTotals
+                              ? validateCouponResult.discountedTotals.couponDiscount
+                              : 0,
+                          totalWithCouponDiscount: totalWithCouponDiscount,
+                          deliveryTime: deliveryTime,
+                        })
+                      );
+                      // window.location.href = clientRoutes.payMedicine('pharmacy');
+                      history.push(clientRoutes.payMedicine('pharmacy'));
+                    } else if (
+                      nonCartFlow &&
+                      ((prescriptions && prescriptions.length > 0) ||
+                        (ePrescriptionData && ePrescriptionData.length > 0))
+                    ) {
+                      if (isChennaiZipCode(zipCodeInt)) {
+                        // redirect to chennai orders form
+                        setIsChennaiCheckoutDialogOpen(true);
+                        return;
+                      }
+                      onPressSubmit();
+                    }
+                  }}
+                  color="primary"
+                  fullWidth
+                  disabled={
+                    (!nonCartFlow
+                      ? !cartTat
+                      : !deliveryAddressId ||
+                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    !isPaymentButtonEnable ||
+                    disableSubmit
                   }
-                  setCheckoutDialogOpen(true);
-                } else if (
-                  nonCartFlow &&
-                  ((prescriptions && prescriptions.length > 0) ||
-                    (ePrescriptionData && ePrescriptionData.length > 0))
-                ) {
-                  if (isChennaiZipCode(zipCodeInt)) {
-                    // redirect to chennai orders form
-                    setIsChennaiCheckoutDialogOpen(true);
-                    return;
+                  className={
+                    (!nonCartFlow
+                      ? !cartTat
+                      : !deliveryAddressId ||
+                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    !isPaymentButtonEnable ||
+                    disableSubmit
+                      ? classes.buttonDisable
+                      : ''
                   }
-                  onPressSubmit();
-                }
-              }}
-              color="primary"
-              fullWidth
-              disabled={
-                (!nonCartFlow
-                  ? !cartTat
-                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                !isPaymentButtonEnable ||
-                disableSubmit
-              }
-              className={
-                (!nonCartFlow
-                  ? !cartTat
-                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                !isPaymentButtonEnable ||
-                disableSubmit
-                  ? classes.buttonDisable
-                  : ''
-              }
-              title={'Proceed to pay bill'}
-            >
-              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-                `Proceed to pay — RS. ${totalAmount}`
-              ) : uploadingFiles ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                'Submit Prescription'
+                  title={'Proceed to pay bill'}
+                >
+                  {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                    `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
+                  ) : uploadingFiles ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : (
+                    'Submit Prescription'
+                  )}
+                </AphButton>
               )}
-            </AphButton>
+            />
           ) : (
             <AphButton
               color="primary"
@@ -1194,85 +1304,6 @@ export const MedicineCart: React.FC = (props) => {
           </div>
         </div>
       </Popover>
-
-      <AphDialog open={checkoutDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Checkout</AphDialogTitle>
-        <div className={classes.shadowHide}>
-          <div className={classes.dialogContent}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
-              <div className={classes.customScrollBar}>
-                <Checkout
-                  setPaymentMethod={(paymentMethod: string) => {
-                    setPaymentMethod(paymentMethod);
-                  }}
-                />
-              </div>
-            </Scrollbars>
-          </div>
-          <div className={classes.dialogActions}>
-            <AphButton
-              onClick={(e) => {
-                /**Gtm code start  */
-                gtmTracking({
-                  category: 'Pharmacy',
-                  action: 'Order',
-                  label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-                  value: totalAmount,
-                });
-                /**Gtm code End  */
-                setMutationLoading(true);
-                paymentMutation()
-                  .then((res) => {
-                    /**Gtm code start  */
-                    _obTracking({
-                      userLocation: city,
-                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                      itemCount: cartItems ? cartItems.length : 0,
-                      couponCode: couponCode == '' ? null : couponCode,
-                      couponValue: discountAmount,
-                      finalBookingValue: grossValue,
-                    });
-                    /**Gtm code end  */
-                    if (res && res.data && res.data.SaveMedicineOrder) {
-                      const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-                      const currentPatiendId = currentPatient ? currentPatient.id : '';
-                      if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
-                        window.location.href = pgUrl;
-                      } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId, false, '');
-                      }
-                    }
-                  })
-                  .catch((e) => {
-                    /**Gtm code start  */
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Order',
-                      label: 'Failed / Cancelled',
-                    });
-                    /**Gtm code End  */
-                    setIsAlertOpen(true);
-                    setAlertMessage('something went wrong');
-                    console.log(e);
-                    setMutationLoading(false);
-                  });
-              }}
-              color="primary"
-              fullWidth
-              disabled={disablePayButton}
-              className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `Pay - RS. ${totalAmount}`
-              )}
-            </AphButton>
-          </div>
-        </div>
-      </AphDialog>
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />

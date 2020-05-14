@@ -10,13 +10,14 @@ import { PharmaCouponInput, CouponCategoryApplicable } from "./globalTypes";
 
 export interface validatePharmaCoupon_validatePharmaCoupon_discountedTotals {
   __typename: "DiscountedTotals";
-  applicableDiscount: number;
   couponDiscount: number;
   productDiscount: number;
+  mrpPriceTotal: number;
 }
 
 export interface validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice {
   __typename: "PharmaLineItems";
+  applicablePrice: number;
   discountedPrice: number;
   mrp: number;
   productName: string;

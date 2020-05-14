@@ -1162,6 +1162,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  getAllAppointmentsByPatientId(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.patientId = :patientId', { patientId: patientId })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
   }

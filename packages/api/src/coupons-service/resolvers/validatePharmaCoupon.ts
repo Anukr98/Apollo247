@@ -23,7 +23,7 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   type PharmaLineItems {
-    applicableDiscount: Float!
+    applicablePrice: Float!
     discountedPrice: Float!
     itemId: String!
     mrp: Float!
@@ -34,7 +34,6 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   type DiscountedTotals {
-    applicableDiscount: Float!
     couponDiscount: Float!
     mrpPriceTotal: Float!
     productDiscount: Float!
@@ -87,7 +86,7 @@ type PharmaCouponInput = {
 type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
 
 type PharmaLineItems = {
-  applicableDiscount: number;
+  applicablePrice: number;
   discountedPrice: number;
   itemId: string;
   mrp: number;
@@ -98,7 +97,6 @@ type PharmaLineItems = {
 };
 
 type DiscountedTotals = {
-  applicableDiscount: number;
   couponDiscount: number;
   mrpPriceTotal: number;
   productDiscount: number;
@@ -241,7 +239,7 @@ const validatePharmaCoupon: Resolver<
     return {
       ...item,
       discountedPrice: 0,
-      applicableDiscount: 0,
+      applicablePrice: 0,
     };
   });
 
@@ -280,24 +278,26 @@ const validatePharmaCoupon: Resolver<
           couponGenericRulesData.discountValue
         );
         lineItem.discountedPrice = Number(discountedPrice.toFixed(2));
-        lineItem.applicableDiscount =
+        lineItem.applicablePrice =
           lineItem.discountedPrice < lineItem.specialPrice
             ? lineItem.discountedPrice
             : lineItem.specialPrice;
+      } else {
+        lineItem.applicablePrice =
+          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
       }
     }
 
     specialPriceTotal = specialPriceTotal + lineItem.specialPrice * lineItem.quantity;
     mrpPriceTotal = mrpPriceTotal + lineItem.mrp * lineItem.quantity;
-    discountedPriceTotal = discountedPriceTotal + lineItem.discountedPrice * lineItem.quantity;
+    discountedPriceTotal =
+      discountedPriceTotal + (lineItem.mrp - lineItem.applicablePrice) * lineItem.quantity;
   });
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
 
   const discountedTotals = {
-    applicableDiscount:
-      productDiscount < discountedPriceTotal ? productDiscount : discountedPriceTotal,
-    couponDiscount: Number(discountedPriceTotal.toFixed(2)),
+    couponDiscount: Number(discountedPriceTotal.toFixed(2)) - productDiscount,
     mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };

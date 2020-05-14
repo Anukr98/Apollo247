@@ -57,11 +57,12 @@ export const VALIDATE_PHARMA_COUPONS = gql`
   query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
     validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
       discountedTotals {
-        applicableDiscount
         couponDiscount
         productDiscount
+        mrpPriceTotal
       }
       pharmaLineItemsWithDiscountedPrice {
+        applicablePrice
         discountedPrice
         mrp
         productName
@@ -72,6 +73,20 @@ export const VALIDATE_PHARMA_COUPONS = gql`
       successMessage
       reasonForInvalidStatus
       validityStatus
+    }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
     }
   }
 `;

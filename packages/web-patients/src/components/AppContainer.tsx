@@ -57,7 +57,7 @@ import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
 import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
-
+import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -119,7 +119,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
-          <Route exact path={clientRoutes.payMedicine()} component={PayMedicine} />
+          <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
@@ -177,7 +177,12 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted
+            exact
+            path={clientRoutes.payOnlineConsult()}
+            component={OnlineCheckout}
+          />{' '}
         </Switch>
       </div>
     </Scrollbars>
