@@ -1,51 +1,61 @@
 import {
-  useAppCommonData,
   LocationData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DoctorFilter, LocationOff, LocationOn } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorFilter,
+  LocationOff,
+  LocationOn,
+  ToggleOff,
+  ToggleOn,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import {
   ConsultMode,
+  FilterDoctorInput,
   Gender,
   Range,
   SpecialtySearchType,
-  FilterDoctorInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
+  getPlaceInfoByLatLng,
   getPlaceInfoByPlaceId,
   GooglePlacesType,
-  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  callPermissions,
   doRequestAndAccessLocation,
   g,
   getNetStatus,
-  postWebEngageEvent,
-  callPermissions,
   postAppsFlyerEvent,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -57,24 +67,20 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
   BackHandler,
+  Dimensions,
+  Image,
   PermissionsAndroid,
   Platform,
   SafeAreaView,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
-  StyleProp,
+  FlatList,
   ViewStyle,
-  Image,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -101,8 +107,17 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     color: theme.colors.CARD_DESCRIPTION,
-    paddingBottom: 20,
+    paddingBottom: 11,
     ...theme.fonts.IBMPlexSansMedium(17),
+  },
+  viewRowStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  textStyle: {
+    color: theme.colors.LIGHT_BLUE,
+    letterSpacing: 0.35,
+    ...theme.fonts.IBMPlexSansSemiBold(14),
   },
 });
 
@@ -202,6 +217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const [value, setValue] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1110,7 +1126,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         {doctors.length > 0 && (
           <FlatList
             contentContainerStyle={{
-              marginTop: 20,
+              marginTop: 10,
               marginBottom: 8,
             }}
             bounces={false}
@@ -1127,7 +1143,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
-    outputRange: [0, -105, -105],
+    outputRange: [0, -65, -65],
   });
   const headColor = scrollY.interpolate({
     inputRange: [0, 100],
@@ -1143,7 +1159,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       <Animated.View
         style={{
           position: 'absolute',
-          height: 156,
+          height: 120,
           width: '100%',
           top: Platform.OS === 'ios' ? 80 : 56,
           backgroundColor: headColor,
@@ -1154,8 +1170,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           elevation: 2,
         }}
       >
-        <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
-          <Text style={styles.headingText}>{string.common.okay}</Text>
+        <Animated.View
+          style={{
+            paddingHorizontal: 20,
+            top: 0,
+            opacity: imgOp,
+          }}
+        >
           <Text style={styles.descriptionText}>
             {string.common.best_doctor_text}
             {specialities && specialities.specialistPluralTerm
@@ -1164,15 +1185,33 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               ? params[0]
               : 'Specialists'}
           </Text>
+          <View>
+            <View style={styles.viewRowStyle}>
+              <Text style={[styles.textStyle, { opacity: value ? 0.6 : 1 }]}>Sort by Distance</Text>
+              {value && (
+                <TouchableOpacity onPress={() => setValue(!value)}>
+                  <ToggleOn style={{ marginHorizontal: 10, height: 32, width: 32 }} />
+                </TouchableOpacity>
+              )}
+              {!value && (
+                <TouchableOpacity onPress={() => setValue(!value)}>
+                  <ToggleOff style={{ marginHorizontal: 10, height: 32, width: 32 }} />
+                </TouchableOpacity>
+              )}
+              <Text style={[styles.textStyle, { opacity: value ? 1 : 0.6 }]}>
+                Sort by Availability
+              </Text>
+            </View>
+          </View>
         </Animated.View>
 
         <TabsComponent
           style={{
-            backgroundColor: theme.colors.CARD_BG,
             ...theme.viewStyles.cardViewStyle,
             borderRadius: 0,
             shadowOffset: { width: 0, height: 1 },
             shadowRadius: 1.0,
+            backgroundColor: theme.colors.CARD_BG,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
@@ -1343,7 +1382,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           bounces={false}
           scrollEventThrottle={16}
           contentContainerStyle={{
-            paddingTop: 215,
+            paddingTop: 190,
           }}
           onScroll={Animated.event(
             [
