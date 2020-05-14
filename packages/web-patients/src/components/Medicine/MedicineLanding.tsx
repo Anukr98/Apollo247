@@ -15,6 +15,7 @@ import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
@@ -534,8 +535,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
@@ -544,28 +545,7 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      <Popover
-        open={showOrderPopup}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
-          </div>
-        </div>
-      </Popover>
+      {showOrderPopup && <PaymentStatusModal />}
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}
