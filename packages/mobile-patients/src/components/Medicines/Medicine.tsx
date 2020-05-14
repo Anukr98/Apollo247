@@ -467,16 +467,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     };
 
+    const formatText = (text: string, count: number) =>
+      text.length > count ? `${text.slice(0, count)}...` : text;
+
     const renderDeliverToLocationCTA = () => {
       const location = pharmacyLocation
-        ? `${g(pharmacyLocation, 'city')} ${g(pharmacyLocation, 'pincode')}`
-        : `${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`;
+        ? `${formatText(g(pharmacyLocation, 'city') || '', 18)} ${g(pharmacyLocation, 'pincode')}`
+        : `${formatText(g(locationDetails, 'city') || '', 18)} ${g(locationDetails, 'pincode')}`;
+
       return (
-        <View style={{ paddingLeft: 15, width: '80%' }}>
+        <View style={{ paddingLeft: 15 }}>
           <View style={{ flexDirection: 'row' }}>
             <View>
               <Text numberOfLines={1} style={localStyles.deliverToText}>
-                Deliver to {g(currentPatient, 'firstName') || ''}
+                Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
               </Text>
               <View>
                 <Text style={localStyles.locationText}>{location}</Text>
