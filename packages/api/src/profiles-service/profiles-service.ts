@@ -72,10 +72,6 @@ import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
-import {
-  getMedicineOrdersOMSListTypeDefs,
-  getMedicineOrdersOMSListResolvers,
-} from 'profiles-service/resolvers/getMedicineOrdersOMSList';
 import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
 import {
   uploadDocumentTypeDefs,
