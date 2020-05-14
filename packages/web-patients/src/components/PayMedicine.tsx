@@ -380,7 +380,7 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     fetchUtil(
-      `https://aph.dev.pmt.popcornapps.com/list-of-payment-methods`,
+      `${process.env.PHARMACY_PG_URL}/list-of-payment-methods`,
       'GET',
       {},
       '',
@@ -395,23 +395,23 @@ export const PayMedicine: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-          return {
-            medicineSKU: cartItemDetails.sku,
-            medicineName: cartItemDetails.name,
-            price: cartItemDetails.price,
-            quantity: cartItemDetails.quantity,
-            mrp: cartItemDetails.price,
-            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
-            mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              cartItemDetails.type_id === 'Pharma'
-                ? '1'
-                : cartItemDetails.type_id === 'Fmcg'
+        return {
+          medicineSKU: cartItemDetails.sku,
+          medicineName: cartItemDetails.name,
+          price: cartItemDetails.price,
+          quantity: cartItemDetails.quantity,
+          mrp: cartItemDetails.price,
+          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+          prescriptionImageUrl: '',
+          mou: parseInt(cartItemDetails.mou),
+          isMedicine:
+            cartItemDetails.type_id === 'Pharma'
+              ? '1'
+              : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-          };
-        })
+        };
+      })
       : [];
 
   const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
@@ -490,6 +490,57 @@ export const PayMedicine: React.FC = (props) => {
       });
   };
 
+  const onClickPay = (value: string) => {
+    /**Gtm code start  */
+    gtmTracking({
+      category: 'Pharmacy',
+      action: 'Order',
+      label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+      value: totalWithCouponDiscount.toFixed(2),
+    });
+    /**Gtm code End  */
+    setMutationLoading(true);
+    setPaymentMethod(value)
+    paymentMutation()
+      .then((res) => {
+        /**Gtm code start  */
+        _obTracking({
+          userLocation: city,
+          paymentType: paymentMethod || value === 'COD' ? 'COD' : 'Prepaid',
+          itemCount: cartItems ? cartItems.length : 0,
+          couponCode: couponCode ? couponCode : null,
+          couponValue: couponValue ? couponValue : null,
+          finalBookingValue: totalWithCouponDiscount,
+        });
+        /**Gtm code end  */
+        if (res && res.data && res.data.SaveMedicineOrder) {
+          const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+          const currentPatiendId = currentPatient ? currentPatient.id : '';
+          if (orderAutoId && orderAutoId > 0 && paymentMethod !== 'COD') {
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+              }/paymed?amount=${totalWithCouponDiscount.toFixed(
+                2
+              )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${paymentMethod || value}&paymentModeOnly=YES`;
+            window.location.href = pgUrl;
+          } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+            placeOrder(orderId, orderAutoId, false, '');
+          }
+        }
+      })
+      .catch((e) => {
+        /**Gtm code start  */
+        gtmTracking({
+          category: 'Pharmacy',
+          action: 'Order',
+          label: 'Failed / Cancelled',
+        });
+        /**Gtm code End  */
+        console.log(e);
+        setMutationLoading(false);
+      });
+  }
+
   return (
     <div className={classes.root}>
       <Header />
@@ -513,7 +564,7 @@ export const PayMedicine: React.FC = (props) => {
                   {paymentOptions.length > 0 &&
                     paymentOptions.map((payType, index) => {
                       return (
-                        <li key={index}>
+                        <li key={index} onClick={() => onClickPay(payType.paymentMode)}>
                           <img src={payType.imageUrl} alt="" style={{ height: 30, width: 30 }} />
                           <span style={{ paddingLeft: 10 }}>{payType.name}</span>
                         </li>
@@ -534,63 +585,15 @@ export const PayMedicine: React.FC = (props) => {
                 {checked && (
                   <AphButton
                     className={classes.payBtn}
-                    onClick={(e) => {
-                      /**Gtm code start  */
-                      gtmTracking({
-                        category: 'Pharmacy',
-                        action: 'Order',
-                        label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-                        value: totalWithCouponDiscount.toFixed(2),
-                      });
-                      /**Gtm code End  */
-                      setMutationLoading(true);
-                      paymentMutation()
-                        .then((res) => {
-                          /**Gtm code start  */
-                          _obTracking({
-                            userLocation: city,
-                            paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                            itemCount: cartItems ? cartItems.length : 0,
-                            couponCode: couponCode ? couponCode : null,
-                            couponValue: couponValue ? couponValue : null,
-                            finalBookingValue: totalWithCouponDiscount,
-                          });
-                          /**Gtm code end  */
-                          if (res && res.data && res.data.SaveMedicineOrder) {
-                            const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-                            const currentPatiendId = currentPatient ? currentPatient.id : '';
-                            if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                              const pgUrl = `${
-                                process.env.PHARMACY_PG_URL
-                              }/paymed?amount=${totalWithCouponDiscount.toFixed(
-                                2
-                              )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
-                              window.location.href = pgUrl;
-                            } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                              placeOrder(orderId, orderAutoId, false, '');
-                            }
-                          }
-                        })
-                        .catch((e) => {
-                          /**Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Order',
-                            label: 'Failed / Cancelled',
-                          });
-                          /**Gtm code End  */
-                          console.log(e);
-                          setMutationLoading(false);
-                        });
-                    }}
+                    onClick={() => onClickPay('COD')}
                     color="primary"
                     fullWidth
                   >
                     {mutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
                     ) : (
-                      `Pay RS. ${totalAmount} On delivery`
-                    )}
+                        `Pay RS. ${totalAmount} On delivery`
+                      )}
                   </AphButton>
                 )}
               </Paper>
