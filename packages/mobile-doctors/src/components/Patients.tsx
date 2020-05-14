@@ -84,6 +84,13 @@ export const Patients: React.FC<PatientsProps> = (props) => {
 
   useEffect(() => {
     ShowAllTypeData(patientLogType.All, sortingList[0].key);
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      ShowAllTypeData(patientLogType.All, sortingList[0].key);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+    };
   }, []);
 
   const _scrolled = () => {
