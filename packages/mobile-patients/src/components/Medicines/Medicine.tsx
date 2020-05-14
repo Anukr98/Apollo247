@@ -1,4 +1,3 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   useAppCommonData,
   LocationData,
@@ -25,6 +24,7 @@ import {
   PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -396,7 +396,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         paddingBottom: serviceabilityMsg ? 0 : 10,
         backgroundColor: '#fff',
       },
-      apolloLogo: { width: 57, height: 37 },
       menuItemContainer: {
         marginHorizontal: 0,
         padding: 0,
@@ -424,7 +423,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
     });
 
-    const renderApolloLogo = () => (
+    const renderIcon = () => (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
@@ -437,7 +436,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           );
         }}
       >
-        <ApolloLogo style={localStyles.apolloLogo} resizeMode="contain" />
+        <HomeIcon />
       </TouchableOpacity>
     );
 
@@ -473,10 +472,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         ? `${g(pharmacyLocation, 'city')} ${g(pharmacyLocation, 'pincode')}`
         : `${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`;
       return (
-        <View style={{ paddingLeft: 10 }}>
+        <View style={{ paddingLeft: 15, width: '80%' }}>
           <View style={{ flexDirection: 'row' }}>
             <View>
-              <Text style={localStyles.deliverToText}>
+              <Text numberOfLines={1} style={localStyles.deliverToText}>
                 Deliver to {g(currentPatient, 'firstName') || ''}
               </Text>
               <View>
@@ -516,7 +515,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <View style={localStyles.headerContainer}>
-        {renderApolloLogo()}
+        {renderIcon()}
         {renderDeliverToLocationMenuAndCTA()}
         {renderCartIcon()}
       </View>
