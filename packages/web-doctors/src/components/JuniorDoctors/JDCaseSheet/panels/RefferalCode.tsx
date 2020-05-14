@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, ChangeEvent } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Typography, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
