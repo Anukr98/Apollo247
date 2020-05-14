@@ -457,6 +457,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
+      checkForVersionUpdate();
     }
     setAppState(nextAppState);
   };
