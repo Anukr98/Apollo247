@@ -674,6 +674,7 @@ export const MedicineCart: React.FC = (props) => {
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
           coupon: couponCode,
+          deviceType: getDeviceType()
         },
       },
     }
