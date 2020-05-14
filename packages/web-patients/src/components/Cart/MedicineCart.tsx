@@ -683,7 +683,6 @@ export const MedicineCart: React.FC = (props) => {
       chennaiOrderVariables = {
         NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
-        orderAutoId: orderAutoId,
       };
     }
 
@@ -739,13 +738,13 @@ export const MedicineCart: React.FC = (props) => {
           window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
         } else {
           setIsAlertOpen(true);
-          setAlertMessage(`Something went wrong, please try later.`);
+          setAlertMessage('Something went wrong, please try later.');
         }
       })
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
-        setAlertMessage(`Something went wrong, please try later.`);
+        setAlertMessage('Something went wrong, please try later.');
       })
       .finally(() => {
         // setLoading!(false);
