@@ -95,7 +95,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
                 isOtpValid(messageOTP[0]);
-                onClickOk(messageOTP[0]);
+                // onClickOk(messageOTP[0]);
               }
             }
             SmsRetriever.removeSmsListener();
