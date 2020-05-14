@@ -785,7 +785,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1183,7 +1183,23 @@ export const MedicineCart: React.FC = (props) => {
                     setIsChennaiCheckoutDialogOpen(true);
                     return;
                   }
-                  setCheckoutDialogOpen(true);
+                  // setCheckoutDialogOpen(true);
+                  sessionStorage.setItem(
+                    'cartValues',
+                    JSON.stringify({
+                      couponCode: couponCode == '' ? null : couponCode,
+                      couponValue:
+                        validateCouponResult && validateCouponResult.discountedTotals
+                          ? validateCouponResult.discountedTotals.couponDiscount
+                          : 0,
+                      totalWithCouponDiscount: totalWithCouponDiscount,
+                      deliveryTime: deliveryTime,
+                    })
+                  );
+                  window.location.href = clientRoutes.payMedicine(
+                    'pharmacy',
+                    `${totalWithCouponDiscount}`
+                  );
                 } else if (
                   nonCartFlow &&
                   ((prescriptions && prescriptions.length > 0) ||
