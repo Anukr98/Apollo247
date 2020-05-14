@@ -230,7 +230,7 @@ export const RefferalCode: React.FC = () => {
           multiline
           disabled={!caseSheetEdit}
           required
-          onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
+          onFocus={(e) => moveCursorToEnd(e.currentTarget)}
           error={referralError}
           defaultValue={referralDescription}
           helperText={referralError && 'This field is required'}
@@ -241,12 +241,12 @@ export const RefferalCode: React.FC = () => {
               error: classes.error,
             },
           }}
-          onChange={(e: any) => {
+          onChange={(e) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
           }}
-          onBlur={(e: any) => {
+          onBlur={(e) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
