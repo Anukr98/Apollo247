@@ -18,7 +18,7 @@ import {
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
-import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -333,6 +333,9 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 'normal',
       paddingRight: 10,
     },
+    discountRow: {
+      color: '#0187ba',
+    },
   };
 });
 
@@ -346,8 +349,11 @@ export const OnlineCheckout: React.FC = () => {
   const [
     validateCouponResult,
     setValidateCouponResult,
-  ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
+  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
 
+  useEffect(() => {
+    console.log(555, validateCouponResult);
+  }, [validateCouponResult]);
   const apolloClient = useApolloClient();
 
   console.log(9898, JSON.parse(localStorage.getItem('consultBookDetails')));
@@ -499,7 +505,7 @@ export const OnlineCheckout: React.FC = () => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateCouponResult ? validateCouponResult.successMessage : ''}
+                              {validateCouponResult ? 'Coupon succefully applied' : ''}
                             </div>
                           </>
                         )}
@@ -508,8 +514,9 @@ export const OnlineCheckout: React.FC = () => {
                     {couponCode.length > 0 && (
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
-                        {validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? parseFloat(onlineConsultationFees) -
+                            parseFloat(validateCouponResult.revisedAmount)
                           : 0}{' '}
                         on the bill
                       </div>
@@ -522,13 +529,35 @@ export const OnlineCheckout: React.FC = () => {
                     <span>Subtotal</span>
                     <span className={classes.price}>Rs. {onlineConsultationFees}</span>
                   </div>
+                  {validateCouponResult && validateCouponResult.revisedAmount && (
+                    <div className={`${classes.priceRow} ${classes.discountRow}`}>
+                      <span>
+                        Coupon Applied <br /> ({couponCode})
+                      </span>
+                      <span className={classes.price}>
+                        - Rs.{' '}
+                        {parseFloat(onlineConsultationFees) -
+                          parseFloat(validateCouponResult.revisedAmount)}
+                      </span>
+                    </div>
+                  )}
                   <div className={`${classes.priceRow} ${classes.totalPrice}`}>
                     <span>To Pay</span>
-                    <span className={classes.price}>Rs. {onlineConsultationFees}</span>
+                    <span className={classes.price}>
+                      Rs.{' '}
+                      {validateCouponResult && validateCouponResult.revisedAmount
+                        ? validateCouponResult.revisedAmount
+                        : onlineConsultationFees}
+                    </span>
                   </div>
                 </div>
                 <div className={classes.bottomActions}>
-                  <AphButton color="primary">Pay Rs.{onlineConsultationFees}</AphButton>
+                  <AphButton color="primary">
+                    Pay Rs.{' '}
+                    {validateCouponResult && validateCouponResult.revisedAmount
+                      ? validateCouponResult.revisedAmount
+                      : onlineConsultationFees}
+                  </AphButton>
                 </div>
               </div>
             </div>
@@ -542,7 +571,7 @@ export const OnlineCheckout: React.FC = () => {
               consultType={AppointmentType.ONLINE}
               setCouponCode={setCouponCode}
               couponCode={couponCode}
-              // setValidateCouponResult={setValidateCouponResult}
+              setValidateCouponResult={setValidateCouponResult}
               close={(isApplyCouponDialogOpen: boolean) => {
                 setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
               }}

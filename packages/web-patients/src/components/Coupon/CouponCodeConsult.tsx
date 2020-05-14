@@ -134,9 +134,9 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ApplyCouponProps {
-  // setValidateCouponResult: (
-  //   validateCouponResult: ValidateConsultCoupon_validateConsultCoupon | null
-  // ) => void;
+  setValidateCouponResult: (
+    validateCouponResult: ValidateConsultCoupon_validateConsultCoupon | null
+  ) => void;
   setCouponCode: (couponCode: string) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
@@ -204,8 +204,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
             if (couponValidateResult.validityStatus) {
               props.setCouponCode(selectCouponCode);
               props.close(false);
-              console.log('&&&', couponValidateResult);
-              // props.setValidateCouponResult(couponValidateResult);
+              props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
             } else {
               setMuationLoading(false);
@@ -278,7 +277,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
                               }}
-                              disabled={props.cartValue < 200}
+                              // disabled={props.cartValue < 200}
                             />
                           </li>
                         )
