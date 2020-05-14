@@ -63,8 +63,20 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
+export enum CustomerType {
+  FIRST = "FIRST",
+  RECURRING = "RECURRING",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -283,6 +295,11 @@ export enum PRISM_DOCUMENT_CATEGORY {
   OpSummary = "OpSummary",
 }
 
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -351,6 +368,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -666,6 +684,15 @@ export interface MessageInput {
   type: notificationType;
 }
 
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
+}
+
 export interface OtpVerificationInput {
   id: string;
   otp: string;
@@ -704,6 +731,7 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
+  orderId?: string | null;
 }
 
 export interface PatientProfileInput {
@@ -715,6 +743,12 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
 }
 
 export interface PrescriptionMedicineInput {

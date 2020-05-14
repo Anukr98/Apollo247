@@ -1379,6 +1379,68 @@ export const GET_COUPONS = gql`
   }
 `;
 
+export const GET_PHARMA_COUPON_LIST = gql`
+  query getPharmaCouponList {
+    getPharmaCouponList {
+      coupons {
+        code
+        couponConsultRule {
+          couponApplicability
+          id
+        }
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        couponGenericRule {
+          id
+          minimumCartValue
+          maximumCartValue
+          couponDueDate
+          couponEndDate
+          couponStartDate
+          couponReuseCount
+          couponReuseCountPerCustomer
+          couponApplicableCustomerType
+          discountType
+          discountValue
+        }
+        createdDate
+        description
+        id
+        isActive
+      }
+    }
+  }
+`;
+
+export const VALIDATE_PHARMA_COUPON = gql`
+  query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
+    validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
+      discountedTotals {
+        couponDiscount
+        mrpPriceTotal
+        productDiscount
+      }
+      pharmaLineItemsWithDiscountedPrice {
+        applicablePrice
+        discountedPrice
+        itemId
+        mrp
+        productName
+        productType
+        quantity
+        specialPrice
+      }
+      successMessage
+      reasonForInvalidStatus
+      validityStatus
+    }
+  }
+`;
+
 export const VALIDATE_CONSULT_COUPON = gql`
   query ValidateConsultCoupon(
     $doctorId: ID!
