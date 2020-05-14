@@ -1323,7 +1323,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+        // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
         // console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
