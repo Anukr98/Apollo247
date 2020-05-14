@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -796,55 +797,71 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       ) : (
         <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            disabled={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-            }
-            onClick={() => {
-              // let appointmentDateTime = '';
-              if (scheduleLater || !consultNowAvailable) {
-                const dateForScheduleLater =
-                  dateSelected.length > 0
-                    ? dateSelected.replace(/\//g, '-')
-                    : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
-                appointmentDateTime = moment(
-                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
-                  'DD-MM-YYYY HH:mm:ss'
-                )
-                  .utc()
-                  .format();
-              } else {
-                appointmentDateTime = consultNowSlotTime;
+          <Link to={clientRoutes.payOnlineConsult()}>
+            <AphButton
+              color="primary"
+              disabled={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
               }
-              setMutationLoading(true);
-              if (couponCode) {
-                checkCouponValidity();
-              } else {
-                bookAppointment();
+              onClick={() => {
+                localStorage.setItem(
+                  'consultBookDetails',
+                  JSON.stringify({
+                    patientId: currentPatient ? currentPatient.id : '',
+                    doctorId: doctorId,
+                    appointmentDateTime: appointmentDateTime,
+                    appointmentType: AppointmentType.ONLINE,
+                    hospitalId: hospitalId,
+                    couponCode: couponCode ? couponCode : null,
+                    amoount: revisedAmount,
+                  })
+                );
+              }}
+              // onClick={() => {
+              //   // let appointmentDateTime = '';
+              //   if (scheduleLater || !consultNowAvailable) {
+              //     const dateForScheduleLater =
+              //       dateSelected.length > 0
+              //         ? dateSelected.replace(/\//g, '-')
+              //         : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
+              //     appointmentDateTime = moment(
+              //       `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
+              //       'DD-MM-YYYY HH:mm:ss'
+              //     )
+              //       .utc()
+              //       .format();
+              //   } else {
+              //     appointmentDateTime = consultNowSlotTime;
+              //   }
+              //   setMutationLoading(true);
+              //   if (couponCode) {
+              //     checkCouponValidity();
+              //   } else {
+              //     bookAppointment();
+              //   }
+              // }}
+              className={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
+                  ? classes.buttonDisable
+                  : ''
               }
-            }}
-            className={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Pay'}
-          >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${revisedAmount}`
-            )}
-          </AphButton>
+              title={'Pay'}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `PAY Rs. ${revisedAmount}`
+              )}
+            </AphButton>
+          </Link>
         </div>
       )}
       <AphDialog
