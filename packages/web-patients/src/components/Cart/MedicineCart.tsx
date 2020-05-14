@@ -650,7 +650,8 @@ export const MedicineCart: React.FC = (props) => {
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
-          items: cartItemsForApi
+          items: cartItemsForApi,
+          coupon: couponCode,
         },
       },
     }
