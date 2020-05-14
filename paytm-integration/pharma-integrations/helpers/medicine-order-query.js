@@ -42,6 +42,6 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
     }`;
 };
 
-export default {
+module.exports = {
   getMedicineOrderQuery,
 };

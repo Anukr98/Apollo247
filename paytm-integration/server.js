@@ -32,9 +32,7 @@ const {
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
 const { getAddressDetails } = require('./commons/getAddressDetails');
-const {
-  getMedicineOrderQuery,
-} = require('./pharma-integrations/helpers/medicine-order-query').default;
+const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 
 require('dotenv').config();
 
