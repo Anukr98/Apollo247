@@ -2,17 +2,22 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { ArrowRight, Mascot, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DOCTOR_SPECIALITY_BY_FILTERS,
   GET_ALL_SPECIALTIES,
   GET_PATIENT_PAST_SEARCHES,
   SAVE_SEARCH,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-  DOCTOR_SPECIALITY_BY_FILTERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
@@ -20,28 +25,36 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
 import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
 import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
-import { SEARCH_TYPE, FilterDoctorInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { FilterDoctorInput, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   SearchDoctorAndSpecialtyByName,
+  SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
-  SearchDoctorAndSpecialtyByNameVariables,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import {
+  dataSavedUserID,
+  g,
   getNetStatus,
   isValidSearch,
-  postWebEngageEvent,
-  g,
-  postWEGNeedHelpEvent,
   postAppsFlyerEvent,
+  postWebEngageEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -57,28 +70,18 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
+  Platform,
 } from 'react-native';
 import {
+  NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
-  NavigationActions,
 } from 'react-navigation';
-import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import moment from 'moment';
 import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import AsyncStorage from '@react-native-community/async-storage';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { useUIElements } from '../UIElementsProvider';
+import { ProfileList } from '../ui/ProfileList';
 
 const { width } = Dimensions.get('window');
 
@@ -141,7 +144,81 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginBottom: 20,
   },
+  showPopUp: {
+    backgroundColor: 'rgba(0,0,0,0.01)',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    elevation: 5,
+  },
+  container: {
+    justifyContent: 'flex-end',
+    flex: 1,
+  },
+  subViewPopup: {
+    marginTop: 150,
+    backgroundColor: 'white',
+    width: '100%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    shadowColor: '#808080',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 15,
+  },
+  congratulationsDescriptionStyle: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  aphAlertCtaViewStyle: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginVertical: 18,
+  },
+  ctaWhiteButtonViewStyle: {
+    flex: 1,
+    minHeight: 40,
+    height: 'auto',
+    backgroundColor: theme.colors.WHITE,
+  },
+  ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
+  ctaOrangeTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+    marginHorizontal: 5,
+  },
+  hiTextStyle: {
+    marginLeft: 20,
+    marginTop: 27,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(18),
+  },
+  nameTextContainerStyle: {
+    maxWidth: '75%',
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    marginTop: 27,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(18),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 6,
+    marginHorizontal: 5,
+    marginBottom: 6,
+  },
 });
+
 let timeout: NodeJS.Timeout;
 
 // let doctorIds: (string | undefined)[] = [];
@@ -195,6 +272,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setDermatology,
     setEnt,
   } = useAppCommonData();
+  const [showList, setShowList] = useState<boolean>(false);
+  const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(true);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -204,35 +283,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
-
-  // const fetchNextSlots = (doctorIds: (string | undefined)[]) => {
-  //   const todayDate = new Date().toISOString().slice(0, 10);
-
-  //   getNextAvailableSlots(client, doctorIds, todayDate)
-  //     .then(({ data }: any) => {
-  //       try {
-  //         console.log(data, 'data res');
-  //         if (data) {
-  //           if (doctorAvailalbeSlots !== data) {
-  //             // setdoctorAvailalbeSlots(data);
-  //             setshowSpinner(false);
-  //           }
-  //         }
-  //       } catch {}
-  //     })
-  //     .catch((e: string) => {
-  //       setshowSpinner(false);
-  //       console.log('Error occured ', e);
-  //     });
-  // };
-
-  // const getIds = (list: any) => {
-  //   if (list)
-  //     return list.map((item: any) => {
-  //       if (item) return item.id;
-  //     });
-  //   return [];
-  // };
 
   const fetchDoctorData = (id: string, speciality: string) => {
     let geolocation = {} as any;
@@ -423,14 +473,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       });
   };
 
-  const fetchPastSearches = () => {
+  const fetchPastSearches = async () => {
     setshowPastSearchSpinner(true);
+    const userId = await dataSavedUserID('selectedProfileId');
+
+    const Input = {
+      patientId: userId ? userId : g(currentPatient, 'id'),
+    };
+
     client
       .query<getPatientPastSearches>({
         query: GET_PATIENT_PAST_SEARCHES,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
+        variables: Input,
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
@@ -478,22 +532,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const setLocalData = (data) => {
+  const setLocalData = (data: any) => {
     const Physicians = data.filter(
-      (item) => item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
+      (item: any) =>
+        item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
     );
     Physicians.length > 0 &&
       fetchDoctorData(Physicians[0].id, 'General Physician/ Internal Medicine');
 
-    const Ent = data.filter((item) => item.name.toLowerCase() === 'ENT'.toLowerCase());
+    const Ent = data.filter((item: any) => item.name.toLowerCase() === 'ENT'.toLowerCase());
     Ent.length > 0 && fetchDoctorData(Ent[0].id, 'ENT');
 
     const Dermatology = data.filter(
-      (item) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
+      (item: any) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
     );
     Dermatology.length > 0 && fetchDoctorData(Dermatology[0].id, 'Dermatology');
 
-    const Urology = data.filter((item) => item.name.toLowerCase() === 'Urology'.toLowerCase());
+    const Urology = data.filter((item: any) => item.name.toLowerCase() === 'Urology'.toLowerCase());
     Urology.length > 0 && fetchDoctorData(Urology[0].id, 'Urology');
   };
 
@@ -1087,6 +1142,120 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return null;
   };
 
+  const alertParams = [
+    {
+      text: 'MYSELF',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'SOMEONE ELSE',
+      index: 1,
+      type: 'orange-button',
+    },
+  ];
+
+  const renderCTAs = () => (
+    <View style={styles.aphAlertCtaViewStyle}>
+      {alertParams.map((item, index, array) =>
+        item.type == 'orange-link' ? (
+          <Text
+            onPress={() => {
+              console.log('myself');
+            }}
+            style={[styles.ctaOrangeTextStyle, { marginRight: index == array.length - 1 ? 0 : 16 }]}
+          >
+            {item.text}
+          </Text>
+        ) : (
+          <Button
+            style={[
+              item.type == 'white-button'
+                ? styles.ctaWhiteButtonViewStyle
+                : styles.ctaOrangeButtonViewStyle,
+              { marginRight: index == array.length - 1 ? 0 : 16 },
+            ]}
+            titleTextStyle={[item.type == 'white-button' && styles.ctaOrangeTextStyle]}
+            title={item.text}
+            onPress={() => {
+              if (index == 0) {
+                setShowProfilePopUp(false);
+              } else {
+                setShowList(true);
+              }
+            }}
+          />
+        )
+      )}
+    </View>
+  );
+
+  const onProfileChange = () => {
+    setShowList(false);
+
+    setTimeout(() => {
+      setShowProfilePopUp(false);
+      fetchPastSearches();
+    }, 1000);
+  };
+
+  const renderProfileDrop = () => {
+    return (
+      <ProfileList
+        showList={showList}
+        onProfileChange={onProfileChange}
+        navigation={props.navigation}
+        saveUserChange={true}
+        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : -10 }}
+        childView={
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingRight: 8,
+              borderRightWidth: 0,
+              // paddingTop: 80,
+              // marginTop: 30,
+              borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              backgroundColor: theme.colors.CLEAR,
+            }}
+          >
+            <Text style={styles.hiTextStyle}>{'Hi'}</Text>
+            <View style={styles.nameTextContainerStyle}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {(currentPatient && currentPatient!.firstName) || ''}
+                </Text>
+                <View style={{ paddingTop: 28 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+              <View style={styles.seperatorStyle} />
+            </View>
+          </View>
+        }
+        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+        unsetloaderDisplay={true}
+      />
+    );
+  };
+
+  const renderProfileListView = () => {
+    return (
+      <View style={styles.showPopUp}>
+        <TouchableOpacity activeOpacity={1} style={styles.container} onPress={() => {}}>
+          <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
+            {renderProfileDrop()}
+            <Text style={styles.congratulationsDescriptionStyle}>
+              Who is the patient today? If not you, select from the list above.
+            </Text>
+            {renderCTAs()}
+            <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
@@ -1125,6 +1294,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             </ScrollView>
           )
         ) : null}
+        {showProfilePopUp && renderProfileListView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

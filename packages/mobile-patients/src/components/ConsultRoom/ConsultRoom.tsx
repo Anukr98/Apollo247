@@ -462,7 +462,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
-        showProfileSelectionAlert();
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        // showProfileSelectionAlert();
       },
     },
     {
