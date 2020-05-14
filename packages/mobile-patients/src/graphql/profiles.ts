@@ -1420,13 +1420,12 @@ export const VALIDATE_PHARMA_COUPON = gql`
   query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
     validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
       discountedTotals {
-        applicableDiscount
         couponDiscount
         mrpPriceTotal
         productDiscount
       }
       pharmaLineItemsWithDiscountedPrice {
-        applicableDiscount
+        applicablePrice
         discountedPrice
         itemId
         mrp

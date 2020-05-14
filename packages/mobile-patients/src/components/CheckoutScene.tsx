@@ -431,6 +431,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     const orderInfo: SaveMedicineOrderVariables = {
       MedicineCartInput: {
+        coupon: coupon ? coupon.code : null,
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,

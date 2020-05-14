@@ -76,6 +76,7 @@ export enum CustomerType {
 
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -730,6 +731,7 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
+  orderId?: string | null;
 }
 
 export interface PatientProfileInput {

@@ -447,7 +447,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [deliveryAddressId, cartItems]);
 
   useEffect(() => {
-    if (coupon) {
+    if (coupon && cartTotal > 0) {
       applyCoupon(coupon.code, cartItems);
     }
   }, [cartTotal]);
@@ -1027,7 +1027,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.ApplyCouponScene);
+          if(cartTotal == 0){
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: 'Please add items in the cart to apply coupon.'
+            })
+          }else{
+            props.navigation.navigate(AppRoutes.ApplyCouponScene);
+
+          }
         }}
       >
         <View
@@ -1156,12 +1164,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 <Text style={styles.blueTextStyle}>Discount({coupon.code})</Text>
                 <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
               </View>
-              <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
+              <View
+                style={[
+                  styles.separatorStyle,
+                  { marginTop: 16, marginBottom: 7, borderBottomWidth: 0.75 },
+                ]}
+              />
             </>
           )}
           <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold(16) }]}>
-              TO PAY{' '}
+              TO PAY
             </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold(16) }]}>
               Rs. {grandTotal.toFixed(2)}

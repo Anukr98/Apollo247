@@ -10,6 +10,7 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice,
 } from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface ShoppingCartItem {
   id: string;
@@ -293,7 +294,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&
-        cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+        cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
@@ -408,8 +409,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
-      setCouponDiscount(coupon.discountedTotals!.couponDiscount);
-      setProductDiscount(productDiscount);
+      setCouponDiscount(g(coupon, 'discountedTotals', 'couponDiscount') || 0);
+      setProductDiscount(g(coupon, 'discountedTotals', 'productDiscount') || 0);
       setCartItems(
         cartItems.map((item) => ({
           ...item,
