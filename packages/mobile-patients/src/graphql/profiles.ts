@@ -1344,9 +1344,11 @@ export const UPLOAD_FILE = gql`
   }
 `;
 
-export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
-  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
-    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
       status
       orderId
       orderAutoId

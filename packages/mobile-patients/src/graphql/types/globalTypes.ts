@@ -273,7 +273,7 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
-export enum NonCartOrderCity {
+export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
@@ -751,7 +751,7 @@ export interface PharmaCouponInput {
   orderLineItems?: (OrderLineItems | null)[] | null;
 }
 
-export interface PrescriptionMedicineInput {
+export interface PrescriptionMedicineOrderOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
@@ -763,13 +763,13 @@ export interface PrescriptionMedicineInput {
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
   isEprescription?: number | null;
-  payment?: PrescriptionMedicinePaymentDetails | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
   email?: string | null;
-  NonCartOrderCity?: NonCartOrderCity | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
 }
 
-export interface PrescriptionMedicinePaymentDetails {
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;
