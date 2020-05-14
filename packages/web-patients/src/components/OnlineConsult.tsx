@@ -817,7 +817,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     appointmentType: AppointmentType.ONLINE,
                     hospitalId: hospitalId,
                     couponCode: couponCode ? couponCode : null,
-                    amoount: revisedAmount,
+                    amount: revisedAmount,
+                    speciality: getSpeciality(),
                   })
                 );
               }}

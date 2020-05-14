@@ -19,6 +19,7 @@ import {
 } from 'graphql/types/GetDoctorDetailsById';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -552,12 +553,31 @@ export const OnlineCheckout: React.FC = () => {
                   </div>
                 </div>
                 <div className={classes.bottomActions}>
-                  <AphButton color="primary">
-                    Pay Rs.{' '}
-                    {validateCouponResult && validateCouponResult.revisedAmount
-                      ? validateCouponResult.revisedAmount
-                      : onlineConsultationFees}
-                  </AphButton>
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        color="primary"
+                        onClick={() => {
+                          const updatedValues = {
+                            ...pageData,
+                            consultCouponCode: couponCode,
+                            consultCouponValue:
+                              validateCouponResult &&
+                              validateCouponResult.revisedAmount &&
+                              validateCouponResult.revisedAmount,
+                          };
+                          localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
+                          console.log('updatedValues', updatedValues);
+                          history.push(clientRoutes.payMedicine('consults'));
+                        }}
+                      >
+                        Pay Rs.{' '}
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? validateCouponResult.revisedAmount
+                          : onlineConsultationFees}
+                      </AphButton>
+                    )}
+                  />
                 </div>
               </div>
             </div>
