@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, ChangeEvent } from 'react';
 import { Typography, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
@@ -230,7 +230,7 @@ export const RefferalCode: React.FC = () => {
           multiline
           disabled={!caseSheetEdit}
           required
-          onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+          onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
           error={referralError}
           defaultValue={referralDescription}
           helperText={referralError && 'This field is required'}
@@ -241,12 +241,12 @@ export const RefferalCode: React.FC = () => {
               error: classes.error,
             },
           }}
-          onChange={(e) => {
+          onChange={(e: any) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
           }}
-          onBlur={(e) => {
+          onBlur={(e: any) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
