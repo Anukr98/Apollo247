@@ -23,6 +23,7 @@ export const useGetPayments = (type?: string, patientId?: string) => {
         const { consultOrders } = data;
         const { appointments } = consultOrders;
         console.log('payments-->', appointments.length);
+        setPayments(appointments);
         // setPayments(appointments.reverse());
         // setLoading(false);
       })
@@ -60,7 +61,7 @@ export const useGetPayments = (type?: string, patientId?: string) => {
       //TODO: consult gql
       getConsultPaymentsAPI();
       const paymentsResponse: any = [];
-      setPayments(require('../components/MyPayments/fixtures.json'));
+      // setPayments(require('../components/MyPayments/fixtures.json'));
       return;
     }
     const paymentsResponse: any = [];

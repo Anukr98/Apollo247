@@ -2182,26 +2182,26 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
   }
 `;
 
-// export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-// query consultOrders($patientId: String!) {
-//   consultOrders(patientId: $patientId) {
-//     appointments {
-//       id
-//       doctorId
-//       displayId
-//       appointmentDateTime
-//       actualAmount
-//       status
-//       appointmentType
-//       discountedAmount
-//       appointmentPayments {
-//         paymentRefId
-//         paymentStatus
-//       }
-//       doctor {
-//         name
-//       }
-//     }
-//   }
-// }
-// `;
+export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
+  query getMedicineOrdersList($patientId: String!) {
+    getMedicineOrdersList(patientId: $patientId) {
+      MedicineOrdersList {
+        id
+        orderAutoId
+        estimatedAmount
+        devliveryCharges
+        bookingSource
+        orderType
+        deliveryType
+        currentStatus
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+        }
+      }
+    }
+  }
+`;

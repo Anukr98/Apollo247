@@ -1,9 +1,9 @@
 const PaymentStatusConstants = {
   SUCCESS_NO_SLOT: 'C',
   REFUND_INITIATED: 'D',
-  SUCCESS: 'PAYMENT_SUCCESS',
-  FAILED: 'PAYMENT_FAILED',
-  REFUND: 'PAYMENT_REFUND',
+  SUCCESS: 'TXN_SUCCESS',
+  FAILED: 'TXN_FAILURE',
+  REFUND: 'TXN_REFUND',
 };
 
 export default PaymentStatusConstants;

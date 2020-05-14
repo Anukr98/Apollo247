@@ -28,10 +28,36 @@ interface PaymentCardBodyProps {
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   useEffect(() => {}, []);
-
+  const statusItemValues = () => {
+    const { paymentFor, item } = props;
+    let status = 'PENDING';
+    let refId = '';
+    let price = 0;
+    if (paymentFor === 'consult') {
+      const { appointmentPayments, actualAmount } = item;
+      price = actualAmount;
+      if (!appointmentPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = appointmentPayments[0].paymentStatus;
+        refId = appointmentPayments[0].paymentRefId;
+      }
+      return { status: status, refId: refId, price: price };
+    } else {
+      const { medicineOrderPayments, devliveryCharges, estimatedAmount } = item;
+      price = estimatedAmount + devliveryCharges;
+      if (!medicineOrderPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = medicineOrderPayments[0].paymentStatus;
+        refId = medicineOrderPayments[0].paymentRefId;
+      }
+      return { status: status, refId: refId, price: price };
+    }
+  };
   const getPaymentStatus = () => {
     const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
-    const { status } = props.item;
+    const { status } = statusItemValues();
     const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
     const { SUCCESS_TEXT, PENDING_TEXT, FAILURE_TEXT, REFUND_TEXT } = colors;
     switch (status) {
@@ -51,7 +77,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   };
   const upperSection = () => {
     const { text, textColor } = getPaymentStatus();
-    const { actualAmount } = props.item;
+    const { price } = statusItemValues();
     return (
       <View style={styles.contentViewStyles}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -60,19 +86,23 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         </View>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 14, colors.CARD_HEADER, 1, 20) }}>
-            Rs. {actualAmount}
+            Rs. {price}
           </Text>
         </View>
       </View>
     );
   };
   const lowerSection = () => {
-    const { displayId } = props.item;
+    const { refId } = statusItemValues();
     return (
       <View style={styles.lowerView}>
         <View>
-          <Text style={{ ...theme.viewStyles.text('M', 13, colors.SHADE_GREY, 1, 20, 0.5) }}>
-            Payment Ref Number - {displayId}
+          <Text
+            style={{ ...theme.viewStyles.text('M', 13, colors.SHADE_GREY, 1, 20, 0.5) }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            Payment Ref Number - {refId.slice(0, 6)}
           </Text>
         </View>
         <View>
@@ -97,8 +127,8 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       paymentFor: paymentFor,
     });
   };
-  const { status, appointmentDateTime } = props.item;
-  const borderRadiusValue = status === 'PAYMENT_REFUND' || !appointmentDateTime ? 0 : 10;
+  const { status } = statusItemValues();
+  const borderRadiusValue = status === 'TXN_REFUND' ? 0 : 10;
   return (
     <TouchableOpacity
       style={{

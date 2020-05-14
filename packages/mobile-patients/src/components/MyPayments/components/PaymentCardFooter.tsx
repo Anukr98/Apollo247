@@ -21,14 +21,53 @@ interface PaymentCardFooterProps {
 }
 const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
   useEffect(() => {}, []);
+  const statusItemValues = () => {
+    const { paymentFor, item } = props;
+    let leftHeaderText = '';
+    let dateAndTime = '';
+    let type = '';
+    let status = 'PENDING';
+    if (paymentFor === 'consult') {
+      const { appointmentDateTime, appointmentPayments, doctor, appointmentType } = item;
+      leftHeaderText = doctor.name;
+      type = appointmentType === 'ONLINE' ? 'Online' : 'Clinic Visit';
+      if (!appointmentPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = appointmentPayments[0].paymentStatus;
+      }
+      return {
+        leftHeaderText: leftHeaderText,
+        dateAndTime: appointmentDateTime,
+        type: type,
+        status: status,
+      };
+    } else {
+      const { medicineOrderPayments, orderAutoId } = item;
+      if (!medicineOrderPayments.length) {
+        type = '';
+        status = 'PENDING';
+      } else {
+        type = medicineOrderPayments[0].paymentType;
+        dateAndTime = medicineOrderPayments[0].paymentDateTime;
+        status = medicineOrderPayments[0].paymentStatus;
+      }
+      return {
+        leftHeaderText: 'Order No. - ' + orderAutoId,
+        dateAndTime: dateAndTime,
+        type: type,
+        status: status,
+      };
+    }
+  };
   const upperSection = () => {
-    const { status } = props.item;
-    const showStatus = status === 'PAYMENT_REFUND' ? 'Cancelled' : null;
+    const { leftHeaderText, status } = statusItemValues();
+    const showStatus = status === 'TXN_REFUND' ? 'Cancelled' : null;
     return (
       <View style={styles.contentViewStyles}>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 16, colors.CARD_HEADER, 1, 20, 0) }}>
-            Hello
+            {leftHeaderText}
           </Text>
         </View>
         <View>
@@ -40,23 +79,23 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     );
   };
   const lowerSection = () => {
-    const { appointmentDateTime, appointmentType } = props.item;
-    const slotTime = !appointmentDateTime ? 'Slot unavailable' : getDate(appointmentDateTime);
+    const { dateAndTime, type } = statusItemValues();
     return (
       <View style={styles.lowerView}>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 12, colors.CARD_HEADER, 0.6, 20, 0.04) }}>
-            {slotTime}
+            {dateAndTime}
           </Text>
         </View>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 12, colors.CARD_HEADER, 0.6, 20, 0.04) }}>
-            {appointmentType}
+            {type}
           </Text>
         </View>
       </View>
     );
   };
+  //TODO:CTA Pending waiting for APIs
   return (
     <View style={styles.mainContainer}>
       {upperSection()}
