@@ -90,6 +90,20 @@ export enum ApiConstants {
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24|7. We're glad you're here! Consult online with our top Apollo doctors now!",
   PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store in Chennai and Hyderabad. Terms and Conditions Apply',
 
+  //payment refund
+  PAYMENT_REFUND_TITLE = 'Your appointment payment will be refunded',
+  PAYMENT_REFUND_BODY = 'Hi there! The refund of Rs.{0} for your Consultation ID: {2}  has been initiated by Apollo 24/7 with the refund ID - {2}. Due to the lockdown, banks are taking longer than usual to process the refunds.Hence, the amount may take around 10-14 working days to reflect in your source account. However, we are working with banks to speed up the refund process. Thank you for your understanding',
+
+  //book appointment payment success
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE = 'Your appointment payment is received',
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY = 'Your pending payment of Rs. {0} for Appointment : {1} with Dr. {2} has been been received for {3}. Click here to fill your details before your consultation starts.',
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_SMS = 'Your pending payment of Rs. {0} for Appointment : {1} with Dr. {2} has been been received for {3}. Click here {5} to fill your details before your consultation starts.',
+
+  //book appointment payment failure
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_TITLE = 'Your appointment payment is failed',
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_BODY = "Your pending payment of Rs.{0} for Appointment: {1} with Dr. {2} has failed. Your amount will be refunded in 7-10 working days as per your bank's policy. Click here to book appointment again.",
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_SMS = "Your pending payment of Rs.{0} for Appointment: {1} with Dr. {2} has failed. Your amount will be refunded in 7-10 working days as per your bank's policy. Click here {5} to book appointment again.",
+
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
   BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
@@ -289,4 +303,6 @@ export enum ApiConstants {
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
   AUTO_SUBMIT_CASESHEET_TIME = 10,
+  STAT_LOWECASE = 'stat',
+  STAT_UPPERCASE = 'STAT(Immediately)',
 }

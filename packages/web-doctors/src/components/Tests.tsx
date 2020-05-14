@@ -590,7 +590,7 @@ export const Tests: React.FC = () => {
 
   function renderInputComponent(inputProps: any) {
     const { inputRef = () => {}, ref, ...other } = inputProps;
-  
+
     return (
       <AphTextField
         className={classes.inputField}

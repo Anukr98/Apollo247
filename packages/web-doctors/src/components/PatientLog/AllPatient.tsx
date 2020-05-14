@@ -12,96 +12,111 @@ import { makeStyles } from '@material-ui/styles';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import MessageIcon from '@material-ui/icons/Message';
 import React from 'react';
+import { useAuth } from 'hooks/authHooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  MarkMessageToUnread,
+  MarkMessageToUnreadVariables,
+} from 'graphql/types/MarkMessageToUnread';
+import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { ApolloError } from 'apollo-client';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    width: '100%',
-    backgroundColor: theme.palette.background.paper,
-  },
-  card: {
-    width: '100%',
-    margin: 10,
-    height: 90,
-    backgroundColor: '#fff',
-    boxShadow: 'none',
-    marginBottom: 16,
-  },
-  cardContent: {
-    width: '90%',
-  },
-  section2: {
-    margin: '0 10px',
-    color: '#02475b',
-    [theme.breakpoints.between('sm', 'md')]: {
-      margin: '0 2px',
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      width: '100%',
+      backgroundColor: theme.palette.background.paper,
     },
-    '& button': {
+    ChatStyle: {
+      cursor: 'pointer',
+    },
+    card: {
+      width: '100%',
+      margin: 10,
+      height: 90,
+      backgroundColor: '#fff',
+      boxShadow: 'none',
+      marginBottom: 16,
+    },
+    cardContent: {
+      width: '90%',
+    },
+    section2: {
+      margin: '0 10px',
       color: '#02475b',
-      marginRight: 15,
       [theme.breakpoints.between('sm', 'md')]: {
-        marginRight: 5,
-        padding: '10px 5px',
+        margin: '0 2px',
+      },
+      '& button': {
+        color: '#02475b',
+        marginRight: 15,
+        [theme.breakpoints.between('sm', 'md')]: {
+          marginRight: 5,
+          padding: '10px 5px',
+        },
       },
     },
-  },
-  mainHeading: {
-    color: '#02475b',
-    fontWeight: 500,
-    fontSize: 18,
-    lineHeight: '25px',
-    [theme.breakpoints.between('sm', 'md')]: {
+    mainHeading: {
+      color: '#02475b',
+      fontWeight: 500,
       fontSize: 18,
-    },
-  },
-  mainHeadingmini: {
-    fontSize: 14,
-    fontWeight: 'normal',
-    color: 'rgba(2,71,91,0.6)',
-  },
-  mainHeadingconsult: {
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#02475b',
-  },
-  bigAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: '50%',
-  },
-  valign: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 !important',
-  },
-  bold: {
-    fontWeight: 700,
-  },
-  chatSpan: {
-    '& a': {
-      width: 102,
-      height: 32,
-      paddingTop: 6,
-      borderRadius: 16,
-      backgroundColor: '#fc9916',
-      textAlign: 'center',
-      textTransform: 'uppercase',
-      fontWeight: 600,
-      fontSize: 14,
-      display: 'inline-block',
-      color: '#fff',
-      '& svg': {
-        width: 16,
-        marginTop: -3,
+      lineHeight: '25px',
+      [theme.breakpoints.between('sm', 'md')]: {
+        fontSize: 18,
       },
     },
-  },
-  chatIcon: {
-    height: 10,
-    width: 10,
-    marginTop: -18,
-    paddingRight: 15,
-  },
-}));
+    mainHeadingmini: {
+      fontSize: 14,
+      fontWeight: 'normal',
+      color: 'rgba(2,71,91,0.6)',
+    },
+    mainHeadingconsult: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    bigAvatar: {
+      width: 60,
+      height: 60,
+      borderRadius: '50%',
+    },
+    valign: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 !important',
+    },
+    bold: {
+      fontWeight: 700,
+    },
+    chatSpan: {
+      '& div': {
+        width: 102,
+        height: 32,
+        paddingTop: 6,
+        borderRadius: 16,
+        backgroundColor: '#fc9916',
+        textAlign: 'center',
+        textTransform: 'uppercase',
+        fontWeight: 600,
+        fontSize: 14,
+        display: 'inline-block',
+        color: '#fff',
+        '& svg': {
+          width: 16,
+          marginTop: -3,
+        },
+      },
+    },
+    chatIcon: {
+      height: 10,
+      width: 10,
+      marginTop: -18,
+      paddingRight: 15,
+    },
+  })
+);
 
 interface AllPatientProps {
   patientData: any;
@@ -117,6 +132,27 @@ interface PatientObject {
 export const AllPatient: React.FC<AllPatientProps> = (props) => {
   const classes = useStyles({});
   const patientsList = props.patientData;
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const mutationMarkMessageToUnread = useMutation<
+    MarkMessageToUnread,
+    MarkMessageToUnreadVariables
+  >(MARK_MESSAGE_TO_UNREAD);
+
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    mutationMarkMessageToUnread({
+      variables: {
+        eventId: appointmentId,
+      },
+    })
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
+      })
+      .catch((e: ApolloError) => {
+        console.log(e, 'erroe');
+      });
+  };
   const patientsHtml =
     patientsList.length > 0 ? (
       patientsList.map((_patient: any | [], index: number) => {
@@ -193,13 +229,36 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
-                        <Link
-                          to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
+                        <div
+                          className={classes.ChatStyle}
+                          onClick={() => {
+                            if (
+                              patient.appointmentids.length > 0 &&
+                              patient.unreadMessagesCount.length > 0 &&
+                              patient.appointmentids[0] ===
+                                patient.unreadMessagesCount[0].appointmentId &&
+                              patient.unreadMessagesCount[0].count > 0
+                            ) {
+                              callMessageReadAction(
+                                patient.appointmentids[0],
+                                currentPatient.id,
+                                patient.patientid
+                              );
+                            } else {
+                              window.location.href = clientRoutes.ConsultTabs(
+                                patient.appointmentids[0],
+                                patient.patientid,
+                                '1'
+                              );
+                            }
+                          }}
                         >
+                          {/* <Link
+                          to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
+                        > */}
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>
                             <MessageIcon />
                           </IconButton>
-                          {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
                           Chat
                           {patient.appointmentids.length > 0 &&
                           patient.unreadMessagesCount.length > 0 &&
@@ -208,7 +267,8 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           patient.unreadMessagesCount[0].count > 0
                             ? '(' + patient.unreadMessagesCount[0].count + ')'
                             : ''}
-                        </Link>
+                          {/* </Link> */}
+                        </div>
                       </span>
 
                       <div className={classes.section2}>

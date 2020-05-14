@@ -417,7 +417,7 @@ export const DiagnosticPrescription: React.FC = () => {
 
   function renderInputComponent(inputProps: any) {
     const { inputRef = () => {}, ref, ...other } = inputProps;
-  
+
     return (
       <AphTextField
         autoFocus

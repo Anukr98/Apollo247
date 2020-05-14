@@ -137,7 +137,7 @@ export const Vital: React.FC = () => {
       element.selectionStart = element.selectionEnd = element.value.length;
     } else if (typeof element.createTextRange != 'undefined') {
       element.focus();
-      const range = element.createTextRange();
+      var range = element.createTextRange();
       range.collapse(false);
       range.select();
     }
