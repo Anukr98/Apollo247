@@ -30,6 +30,7 @@ import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -545,7 +546,13 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      {showOrderPopup && <PaymentStatusModal />}
+      {showOrderPopup &&
+        <Route
+          render={({ history }) => {
+            return <PaymentStatusModal history={history} />
+          }}
+        />
+      }
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}

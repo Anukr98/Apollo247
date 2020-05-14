@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
+import { History } from 'history';
 import { Modal, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -33,7 +34,11 @@ const status: paymentStatusMap = {
   pending: 'pending',
 };
 
-export const PaymentStatusModal: React.FC = (props) => {
+interface PaymentStatusProps {
+  history: History
+}
+
+export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<{
     orderAutoId: string;
@@ -79,13 +84,16 @@ export const PaymentStatusModal: React.FC = (props) => {
         break;
       case status.failed: redirectUrl = clientRoutes.medicinesCart();
         break;
-      default: redirectUrl = clientRoutes.welcome(); break;
+      default: redirectUrl = clientRoutes.welcome();
     }
-    window.location.href = redirectUrl;
+    paymentStatusRedirect(redirectUrl);
+    // window.location.href = redirectUrl;
   }
   const handleOnClose = () => {
-    window.location.href = clientRoutes.medicines();
-    // setShowPaymentStatusModal(false)
+    paymentStatusRedirect(clientRoutes.medicines());
+  }
+  const paymentStatusRedirect = (url: string) => {
+    props.history && props.history.push && props.history.push(url)
   }
 
   useEffect(() => {
@@ -109,13 +117,13 @@ export const PaymentStatusModal: React.FC = (props) => {
               setOrderData(medicineOrderDetails);
             } else {
               // redirect to medicine 
-              window.location.href = clientRoutes.medicines()
+              paymentStatusRedirect(clientRoutes.medicines());
             }
           }
         })
         .catch((e) => {
           // Redirect to medicine
-          window.location.href = clientRoutes.medicines()
+          paymentStatusRedirect(clientRoutes.medicines());
         });
     }
   }, []);
