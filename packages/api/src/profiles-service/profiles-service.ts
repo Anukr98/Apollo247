@@ -49,6 +49,10 @@ import {
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
+  saveMedicineOrderOMSTypeDefs,
+  saveMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrdersOMS';
+import {
   savePrescriptionMedicineOrderTypeDefs,
   savePrescriptionMedicineOrderResolvers,
 } from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
@@ -68,6 +72,10 @@ import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
+import {
+  getMedicineOrdersOMSListTypeDefs,
+  getMedicineOrdersOMSListResolvers,
+} from 'profiles-service/resolvers/getMedicineOrdersOMSList';
 import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
 import {
   uploadDocumentTypeDefs,
@@ -253,6 +261,10 @@ import {
         resolvers: saveMedicineOrderResolvers,
       },
       {
+        typeDefs: saveMedicineOrderOMSTypeDefs,
+        resolvers: saveMedicineOrderOMSResolvers,
+      },
+      {
         typeDefs: savePrescriptionMedicineOrderTypeDefs,
         resolvers: savePrescriptionMedicineOrderResolvers,
       },
@@ -271,6 +283,10 @@ import {
       {
         typeDefs: getMedicineOrdersListTypeDefs,
         resolvers: getMedicineOrdersListResolvers,
+      },
+      {
+        typeDefs: getMedicineOrdersOMSListTypeDefs,
+        resolvers: getMedicineOrdersOMSListResolvers,
       },
       {
         typeDefs: uploadFileTypeDefs,
