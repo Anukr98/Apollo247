@@ -567,12 +567,13 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
+    debugger;
     paymentMutationConsult({
       variables: {
         bookAppointment: {
           patientId: patientId,
           doctorId: doctorId,
-          appointmentDateTime: moment(appointmentDateTime),
+          appointmentDateTime: moment(appointmentDateTime).utc(),
           bookingSource: BOOKINGSOURCE.WEB,
           appointmentType: appointmentType,
           hospitalId: hospitalId,
