@@ -8,7 +8,13 @@ import {
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  DropdownGreen,
+  More,
+  NotifySymbol,
+  MedicalIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -30,6 +36,7 @@ import {
 import {
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
+  FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -38,10 +45,12 @@ import {
   getOrderStatusText,
   handleGraphQlError,
   postWEGNeedHelpEvent,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { FeedbackPopup } from './FeedbackPopup';
 import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -66,12 +75,16 @@ import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '../graphql/types/GetMedicineOrdersList';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   cancelMedicineOrder,
   cancelMedicineOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelMedicineOrder';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -224,12 +237,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const getFormattedDate = (time: string) => {
-    return moment(time).format('D MMM YYYY');
+    return moment(time).format('D MMMM, YYYY');
   };
 
   const getFormattedTime = (time: string) => {
     return moment(time).format('hh:mm A');
   };
+
+  const getFormattedDateTime = (time: string) => {
+    let finalDateTime =
+      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
+    return finalDateTime;
+  };
+
+  let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${orderDetails.orderTat &&
+    getFormattedDateTime(orderDetails.orderTat)}.`;
 
   const reOrder = () => {
     setLoading!(true);
@@ -310,6 +332,48 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
+  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_FEEDBACK_GIVEN] = {
+      'Patient UHID': g(currentPatient, 'id'),
+      Rating: rating,
+      'Rating Reason': reason,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_FEEDBACK_GIVEN, eventAttributes);
+  };
+
+  const renderFeedbackPopup = () => {
+    const orderAutoId: string = orderDetails.orderAutoId!?.toString();
+    const orderId: string = orderDetails.id;
+    const title: string = `Medicines — #${orderAutoId}`;
+    const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
+      moment(orderDetails.orderTat).format('D MMM YYYY')}`;
+    return (
+      <>
+        <FeedbackPopup
+          containerStyle={{ paddingTop: 120 }}
+          title="We value your feedback! :)"
+          description="How was your overall experience with the following medicine delivery —"
+          info={{
+            title: title,
+            description: subtitle,
+            imageComponent: <MedicalIcon />,
+          }}
+          transactionId={orderId}
+          type={FEEDBACKTYPE.PHARMACY}
+          isVisible={showFeedbackPopup}
+          onComplete={(ratingStatus, ratingOption) => {
+            postRatingGivenWEGEvent(ratingStatus!, ratingOption);
+            setShowFeedbackPopup(false);
+            showAphAlert!({
+              title: 'Thanks :)',
+              description: 'Your feedback has been submitted. Thanks for your time.',
+            });
+          }}
+        />
+      </>
+    );
+  };
+
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
@@ -326,6 +390,27 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const hours = expectedDeliveryDiff.asHours();
     // const formattedDateDeliveryTime =
     //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
+
+    let capsuleViewBGColor: string;
+    let capsuleTextColor: string;
+    let capsuleText: string;
+    if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+      capsuleText = 'Cancelled';
+      capsuleTextColor = '#FFF';
+      capsuleViewBGColor = '#890000';
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED) {
+      capsuleText = 'Return Initiated';
+      capsuleTextColor = '#01475b';
+      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED) {
+      capsuleText = 'Returned';
+      capsuleTextColor = '#01475b';
+      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
+    } else {
+      capsuleText = 'Successful';
+      capsuleTextColor = '#01475b';
+      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
+    }
 
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
@@ -345,8 +430,91 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           : []
       );
 
+    const renderCapsuleView = (backgroundColor: string, capsuleText: string, textColor: string) => {
+      return (
+        <View
+          style={{
+            alignSelf: 'flex-end',
+            backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
+            borderRadius: 16,
+            paddingHorizontal: 15,
+            paddingTop: 4,
+            paddingBottom: 3,
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
+        </View>
+      );
+    };
+
     return (
       <View>
+        <View
+          style={{
+            borderBottomColor: 'rgba(2,71,91,0.3)',
+            borderBottomWidth: 0.5,
+            paddingTop: 16,
+            paddingBottom: 6,
+            paddingHorizontal: 20,
+            marginBottom: 13,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5),
+                // alignSelf: 'center',
+                paddingTop: 2,
+              }}
+            >{`ORDER #${orderAutoId}`}</Text>
+            {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 12 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
+              {string.OrderSummery.name}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>{''}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
+              {string.OrderSummery.address}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
+              {''}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={{
+            backgroundColor: '#f7f8f5',
+            shadowColor: 'rgba(128, 128, 128, 0.3)',
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+            paddingHorizontal: 20,
+            paddingTop: 14,
+            paddingBottom: 13,
+            flexDirection: 'row',
+          }}
+        >
+          <NotifySymbol />
+          <Text
+            style={{
+              ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
+              marginLeft: 20,
+            }}
+          >
+            {'EXPECTED DELIVERY - '}
+          </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
+            }}
+          >
+            {tatInfo && getFormattedDate(tatInfo)}
+          </Text>
+        </View>
         <View style={{ margin: 20 }}>
           {statusList.map((order, index, array) => {
             return (
@@ -376,11 +544,53 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           })}
         </View>
         {isDelivered ? (
-          <Button
-            style={{ flex: 1, width: '80%', alignSelf: 'center' }}
-            onPress={() => reOrder()}
-            title={'RE-ORDER'}
-          />
+          <View
+            style={{
+              borderTopColor: 'rgba(2,71,91,0.3)',
+              borderTopWidth: 0.5,
+              paddingHorizontal: 45,
+              paddingTop: 12,
+              paddingBottom: 25.5,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                marginBottom: 6,
+                ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
+              }}
+            >
+              {orderCompleteText}
+            </Text>
+            <Text
+              style={{
+                textAlign: 'center',
+                marginBottom: 12,
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 21),
+              }}
+            >
+              {'Thank You for choosing Apollo 24|7'}
+            </Text>
+            <Button
+              style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
+              onPress={() => setShowFeedbackPopup(true)}
+              titleTextStyle={{
+                ...theme.viewStyles.text(
+                  'B',
+                  isIphone5s() ? 11 : 13,
+                  theme.colors.BUTTON_TEXT,
+                  1,
+                  24
+                ),
+              }}
+              title={'RATE YOUR DELIVERY EXPERIENCE'}
+            />
+            <Button
+              style={{ flex: 1, width: '95%', alignSelf: 'center' }}
+              onPress={() => reOrder()}
+              title={'RE-ORDER'}
+            />
+          </View>
         ) : null}
         <NeedHelpAssistant
           onNeedHelpPress={() => {
@@ -557,7 +767,18 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return <OrderSummary orderDetails={orderDetails as any} />;
+    return (
+      <View>
+        <OrderSummary orderDetails={orderDetails as any} />
+        <NeedHelpAssistant
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Medicines');
+          }}
+          containerStyle={{ marginTop: 30, marginBottom: 30 }}
+          navigation={props.navigation}
+        />
+      </View>
+    );
   };
 
   const onPressConfirmCancelOrder = () => {
@@ -657,6 +878,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   // };
 
   const [showSpinner, setShowSpinner] = useState(false);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const renderMoreMenu = () => {
     const cannotCancelOrder = orderStatusList.find(
@@ -703,7 +925,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderAutoId}`}
+            title={'ORDER DETAILS'}
             container={{ borderBottomWidth: 0 }}
             // rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
@@ -729,6 +951,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
         </ScrollView>
       </SafeAreaView>
+      {renderFeedbackPopup()}
       {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
