@@ -452,19 +452,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   }, [cartTotal]);
 
-  const validateCoupon = (variables: validatePharmaCouponVariables) =>
+  const _validateCoupon = (variables: validatePharmaCouponVariables) =>
     client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
       mutation: VALIDATE_PHARMA_COUPON,
       variables,
     });
 
-  const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
-    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Select coupon');
-    setLoading!(true);
-    validateCoupon({
+  const validateCoupon = (coupon: string, cartItems: ShoppingCartItem[], patientId: string) => {
+    return _validateCoupon({
       pharmaCouponInput: {
         code: coupon,
-        patientId: g(currentPatient, 'id') || '',
+        patientId: patientId,
         orderLineItems: cartItems.map(
           (item) =>
             ({
@@ -479,28 +477,37 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             } as OrderLineItems)
         ),
       },
-    })
+    });
+  };
+
+  const removeCouponWithAlert = (message: string) => {
+    setCoupon!(null);
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
+
+  const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
+    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+    setLoading!(true);
+    validateCoupon(coupon, cartItems, g(currentPatient, 'id') || '')
       .then(({ data }) => {
         const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
         if (validityStatus) {
           setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
         } else {
-          setCoupon!(null);
-          showAphAlert!({
-            title: string.common.uhOh,
-            description:
-              g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code',
-          });
+          removeCouponWithAlert(
+            g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
+          );
         }
       })
       .catch(() => {
-        setCoupon!(null);
-        showAphAlert!({
-          title: string.common.uhOh,
-          description: 'Sorry, unable to validate coupon right now.',
-        });
+        removeCouponWithAlert('Sorry, unable to validate coupon right now.');
       })
-      .finally(() => setLoading!(false));
+      .finally(() => {
+        setLoading!(false);
+      });
   };
 
   const getTatOrderType = (cartItems: ShoppingCartItem[]) => {
@@ -1027,14 +1034,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          if(cartTotal == 0){
+          if (cartTotal == 0) {
             showAphAlert!({
               title: string.common.uhOh,
-              description: 'Please add items in the cart to apply coupon.'
-            })
-          }else{
+              description: 'Please add items in the cart to apply coupon.',
+            });
+          } else {
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
-
           }
         }}
       >
@@ -1412,16 +1418,41 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      forwardToCheckout();
+    const proceed = () => {
+      const prescriptions = physicalPrescriptions;
+      if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+        coupon && setLoading!(false);
+        forwardToCheckout();
+      } else {
+        if (prescriptions.length > 0) {
+          physicalPrescriptionUpload();
+        }
+        if (ePrescriptions.length > 0) {
+          ePrescriptionUpload();
+        }
+      }
+    };
+
+    if (coupon) {
+      setLoading!(true);
+      validateCoupon(coupon.code, cartItems, g(currentPatient, 'id') || '')
+        .then(({ data }) => {
+          const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
+          if (validityStatus) {
+            proceed();
+          } else {
+            setLoading!(false);
+            removeCouponWithAlert(
+              g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
+            );
+          }
+        })
+        .catch(() => {
+          setLoading!(false);
+          removeCouponWithAlert('Sorry, unable to validate coupon right now.');
+        });
     } else {
-      if (prescriptions.length > 0) {
-        physicalPrescriptionUpload();
-      }
-      if (ePrescriptions.length > 0) {
-        ePrescriptionUpload();
-      }
+      proceed();
     }
   };
 
