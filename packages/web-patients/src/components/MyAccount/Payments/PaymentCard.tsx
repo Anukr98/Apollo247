@@ -1,7 +1,10 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { ConsultOrders_consultOrders_appointments as CardDetails } from 'graphql/types/ConsultOrders';
 import { AphButton } from '@aph/web-ui-components';
+import moment from 'moment';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -169,25 +172,59 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+interface PaymentCardProps {
+  cardDetails?: CardDetails;
+}
 
-export const PaymentCard: React.FC = (props) => {
+export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
-
+  const { cardDetails } = props;
+  const getPaymentStatusText = (paymentStatus: string) => {
+    if (paymentStatus === 'TXN_SUCCESS') return 'Payment Successful';
+    if (paymentStatus === 'TXN_FAILURE') return 'Payment Failed';
+    if (paymentStatus === 'PENDING') return 'Payment Pending';
+    return 'Payment Invalid';
+  };
+  const paymentInfo =
+    cardDetails && cardDetails.appointmentPayments ? cardDetails.appointmentPayments : [];
+  const paymentStatus = paymentInfo[0].paymentStatus;
+  const buttonUrl =
+    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE' ? '' : getAppStoreLink();
+  const buttonText =
+    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
+      ? 'TRY AGAIN'
+      : 'Download Apollo 247 App';
   return (
     <>
-      {/* Payment Successful Card */}
-      <div className={classes.root}>
+      <div
+        className={`${classes.root} ${
+          paymentStatus === 'PENDING'
+            ? classes.pendingCard
+            : paymentStatus === 'TXN_FAILURE'
+            ? classes.failedCard
+            : ''
+        }`}
+      >
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
-            <img src={require('images/ic_tick.svg')} alt="" />
+            <img
+              src={
+                paymentStatus === 'TXN_SUCCESS'
+                  ? require('images/ic_tick.svg')
+                  : paymentStatus === 'TXN_FAILURE'
+                  ? require('images/ic_failed.svg')
+                  : require('images/ic_exclamation.svg')
+              }
+              alt="PaymentStatus"
+            />
           </div>
           <div className={classes.headerContent}>
             <div className={classes.topText}>
-              <h3>Payment Successful</h3>
-              <div className={classes.price}>Rs. 499</div>
+              <h3>{getPaymentStatusText(paymentInfo[0].paymentStatus)}</h3>
+              <div className={classes.price}>Rs. {paymentInfo[0].amountPaid}</div>
             </div>
             <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
+              <span>Payment Ref Number - {paymentInfo[0].bankTxnId}</span>
               <span className={classes.rightArrow}>
                 <img src={require('images/ic_arrow_right.svg')} alt="" />
               </span>
@@ -195,48 +232,29 @@ export const PaymentCard: React.FC = (props) => {
           </div>
         </div>
         <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
+          <div className={classes.doctorName}>{cardDetails.doctor.name}</div>
           <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Online Consult)</span>
+            <span>{moment(cardDetails.appointmentDateTime).format('DD MMM YYYY, h:mma')}</span>
+            <span className={classes.consultType}>
+              {' '}
+              ({cardDetails.appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit'})
+            </span>
           </div>
           <div className={classes.bottomActions}>
-            <AphButton color="primary">Download Apollo 247 App</AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                window.open(buttonUrl);
+              }}
+            >
+              {buttonText}
+            </AphButton>
           </div>
         </div>
       </div>
-      {/* Payment Successful Card */}
-      <div className={classes.root}>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_tick.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Successful</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton color="primary">Download Apollo 247 App</AphButton>
-          </div>
-        </div>
-      </div>
+
       {/* Payment Pending Card */}
-      <div className={`${classes.root} ${classes.pendingCard}`}>
+      {/* <div className={`${classes.root} ${classes.pendingCard}`}>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
             <img src={require('images/ic_exclamation.svg')} alt="" />
@@ -261,9 +279,9 @@ export const PaymentCard: React.FC = (props) => {
             <span className={classes.consultType}> (Clinic Visit)</span>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Payment Failed Card */}
-      <div className={`${classes.root} ${classes.failedCard}`}>
+      {/* <div className={`${classes.root} ${classes.failedCard}`}>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
             <img src={require('images/ic_failed.svg')} alt="" />
@@ -291,12 +309,10 @@ export const PaymentCard: React.FC = (props) => {
             <AphButton color="primary">Try Again</AphButton>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Payment Successful Card */}
-      <div className={classes.root}>
-        <div className={classes.notificationText}>
-          Your pending payment is successful!
-        </div>
+      {/* <div className={classes.root}>
+        <div className={classes.notificationText}>Your pending payment is successful!</div>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
             <img src={require('images/ic_tick.svg')} alt="" />
@@ -324,12 +340,10 @@ export const PaymentCard: React.FC = (props) => {
             <AphButton color="primary">Download Apollo 247 App</AphButton>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Payment Failed Card */}
-      <div className={`${classes.root} ${classes.failedCard}`}>
-        <div className={classes.notificationText}>
-          Your pending payment has failed!
-        </div>
+      {/* <div className={`${classes.root} ${classes.failedCard}`}>
+        <div className={classes.notificationText}>Your pending payment has failed!</div>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
             <img src={require('images/ic_failed.svg')} alt="" />
@@ -357,11 +371,12 @@ export const PaymentCard: React.FC = (props) => {
             <AphButton color="primary">Try Again</AphButton>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Payment Failed Card */}
-      <div className={`${classes.root} ${classes.refundCard}`}>
+      {/* <div className={`${classes.root} ${classes.refundCard}`}>
         <div className={classes.notificationText}>
-          Your refund has been initiated. The amount should be credited in your account in 7-14 business days.
+          Your refund has been initiated. The amount should be credited in your account in 7-14
+          business days.
         </div>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
@@ -390,11 +405,12 @@ export const PaymentCard: React.FC = (props) => {
             <AphButton className={classes.cancelBtn}>Cancelled</AphButton>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Payment Successful Card */}
-      <div className={classes.root}>
+      {/* <div className={classes.root}>
         <div className={classes.notificationText}>
-          We regret to inform you that while your payment is succesful, the appointment slot you selected is not available. Kindly book another slot to continue with your consult.
+          We regret to inform you that while your payment is succesful, the appointment slot you
+          selected is not available. Kindly book another slot to continue with your consult.
         </div>
         <div className={classes.boxHeader}>
           <div className={classes.headerIcon}>
@@ -423,7 +439,7 @@ export const PaymentCard: React.FC = (props) => {
             <AphButton color="primary">Select Appointment Slot</AphButton>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };
