@@ -1830,11 +1830,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const checkForEmptyFields = () => {
-    const heightValue = getDefaultValue('height');
-    const weightValue = getDefaultValue('weight');
-    const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
-    const referralDescription = getDefaultValue('referralDescription');
-    const medicationHistory = getDefaultValue('medicationHistory');
+    const heightValue = getDefaultValue('height') || '';
+    const weightValue = getDefaultValue('weight') || '';
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
+    const referralDescription = getDefaultValue('referralDescription') || '';
+    const medicationHistory = getDefaultValue('medicationHistory') || '';
     if (medicationHistory.trim() === '') {
       setShowLifeStyle(true);
       setLifeStyleError({
