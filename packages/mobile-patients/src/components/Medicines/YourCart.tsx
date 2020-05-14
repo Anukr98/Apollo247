@@ -1418,41 +1418,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    const proceed = () => {
-      const prescriptions = physicalPrescriptions;
-      if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-        coupon && setLoading!(false);
-        forwardToCheckout();
-      } else {
-        if (prescriptions.length > 0) {
-          physicalPrescriptionUpload();
-        }
-        if (ePrescriptions.length > 0) {
-          ePrescriptionUpload();
-        }
-      }
-    };
-
-    if (coupon) {
-      setLoading!(true);
-      validateCoupon(coupon.code, cartItems, g(currentPatient, 'id') || '')
-        .then(({ data }) => {
-          const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-          if (validityStatus) {
-            proceed();
-          } else {
-            setLoading!(false);
-            removeCouponWithAlert(
-              g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
-            );
-          }
-        })
-        .catch(() => {
-          setLoading!(false);
-          removeCouponWithAlert('Sorry, unable to validate coupon right now.');
-        });
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      forwardToCheckout();
     } else {
-      proceed();
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
+      }
     }
   };
 
