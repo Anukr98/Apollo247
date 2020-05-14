@@ -46,6 +46,7 @@ import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1174,70 +1175,77 @@ export const MedicineCart: React.FC = (props) => {
         </Scrollbars>
         <div className={classes.checkoutBtn}>
           {currentPatient && currentPatient.id ? (
-            <AphButton
-              onClick={() => {
-                const zipCodeInt = parseInt(selectedZip);
-                if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                  if (isChennaiZipCode(zipCodeInt)) {
-                    // redirect to chennai orders form
-                    setIsChennaiCheckoutDialogOpen(true);
-                    return;
+            <Route
+              render={({ history }) => (
+                <AphButton
+                  onClick={() => {
+                    const zipCodeInt = parseInt(selectedZip);
+                    if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                      if (isChennaiZipCode(zipCodeInt)) {
+                        // redirect to chennai orders form
+                        setIsChennaiCheckoutDialogOpen(true);
+                        return;
+                      }
+                      // setCheckoutDialogOpen(true);
+                      sessionStorage.setItem(
+                        'cartValues',
+                        JSON.stringify({
+                          couponCode: couponCode == '' ? null : couponCode,
+                          couponValue:
+                            validateCouponResult && validateCouponResult.discountedTotals
+                              ? validateCouponResult.discountedTotals.couponDiscount
+                              : 0,
+                          totalWithCouponDiscount: totalWithCouponDiscount,
+                          deliveryTime: deliveryTime,
+                        })
+                      );
+                      // window.location.href = clientRoutes.payMedicine('pharmacy');
+                      history.push(clientRoutes.payMedicine('pharmacy'));
+                    } else if (
+                      nonCartFlow &&
+                      ((prescriptions && prescriptions.length > 0) ||
+                        (ePrescriptionData && ePrescriptionData.length > 0))
+                    ) {
+                      if (isChennaiZipCode(zipCodeInt)) {
+                        // redirect to chennai orders form
+                        setIsChennaiCheckoutDialogOpen(true);
+                        return;
+                      }
+                      onPressSubmit();
+                    }
+                  }}
+                  color="primary"
+                  fullWidth
+                  disabled={
+                    (!nonCartFlow
+                      ? !cartTat
+                      : !deliveryAddressId ||
+                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    !isPaymentButtonEnable ||
+                    disableSubmit
                   }
-                  // setCheckoutDialogOpen(true);
-                  sessionStorage.setItem(
-                    'cartValues',
-                    JSON.stringify({
-                      couponCode: couponCode == '' ? null : couponCode,
-                      couponValue:
-                        validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount
-                          : 0,
-                      totalWithCouponDiscount: totalWithCouponDiscount,
-                      deliveryTime: deliveryTime,
-                    })
-                  );
-                  window.location.href = clientRoutes.payMedicine('pharmacy');
-                } else if (
-                  nonCartFlow &&
-                  ((prescriptions && prescriptions.length > 0) ||
-                    (ePrescriptionData && ePrescriptionData.length > 0))
-                ) {
-                  if (isChennaiZipCode(zipCodeInt)) {
-                    // redirect to chennai orders form
-                    setIsChennaiCheckoutDialogOpen(true);
-                    return;
+                  className={
+                    (!nonCartFlow
+                      ? !cartTat
+                      : !deliveryAddressId ||
+                        (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    !isPaymentButtonEnable ||
+                    disableSubmit
+                      ? classes.buttonDisable
+                      : ''
                   }
-                  onPressSubmit();
-                }
-              }}
-              color="primary"
-              fullWidth
-              disabled={
-                (!nonCartFlow
-                  ? !cartTat
-                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                !isPaymentButtonEnable ||
-                disableSubmit
-              }
-              className={
-                (!nonCartFlow
-                  ? !cartTat
-                  : !deliveryAddressId || (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                !isPaymentButtonEnable ||
-                disableSubmit
-                  ? classes.buttonDisable
-                  : ''
-              }
-              title={'Proceed to pay bill'}
-            >
-              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-                `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
-              ) : uploadingFiles ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                'Submit Prescription'
+                  title={'Proceed to pay bill'}
+                >
+                  {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                    `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
+                  ) : uploadingFiles ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : (
+                    'Submit Prescription'
+                  )}
+                </AphButton>
               )}
-            </AphButton>
+            />
           ) : (
             <AphButton
               color="primary"
