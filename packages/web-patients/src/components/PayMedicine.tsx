@@ -369,49 +369,44 @@ export const PayMedicine: React.FC = (props) => {
   };
   const mrpTotal = getMRPTotal();
   const productDiscount = mrpTotal - cartTotal;
-  const totalWithCouponDiscount = Number(params.prDis);
 
   const cartValues =
     sessionStorage.getItem('cartValues') && JSON.parse(sessionStorage.getItem('cartValues'));
-  const { couponCode, couponValue, deliveryTime } = cartValues;
+  const { couponCode, couponValue, deliveryTime, totalWithCouponDiscount } = cartValues;
 
   const { city } = useLocationDetails();
   const { authToken } = useAuth();
 
   useEffect(() => {
-    fetchUtil(
-      `${process.env.PHARMACY_PG_URL}/list-of-payment-methods`,
-      'GET',
-      {},
-      '',
-      true
-    ).then((res: any) => {
-      if (res) {
-        setPaymentOptions(res);
+    fetchUtil(`${process.env.PHARMACY_PG_URL}/list-of-payment-methods`, 'GET', {}, '', true).then(
+      (res: any) => {
+        if (res) {
+          setPaymentOptions(res);
+        }
       }
-    });
+    );
   }, []);
 
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-        return {
-          medicineSKU: cartItemDetails.sku,
-          medicineName: cartItemDetails.name,
-          price: cartItemDetails.price,
-          quantity: cartItemDetails.quantity,
-          mrp: cartItemDetails.price,
-          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-          prescriptionImageUrl: '',
-          mou: parseInt(cartItemDetails.mou),
-          isMedicine:
-            cartItemDetails.type_id === 'Pharma'
-              ? '1'
-              : cartItemDetails.type_id === 'Fmcg'
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price: cartItemDetails.price,
+            quantity: cartItemDetails.quantity,
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            prescriptionImageUrl: '',
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine:
+              cartItemDetails.type_id === 'Pharma'
+                ? '1'
+                : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-        };
-      })
+          };
+        })
       : [];
 
   const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
@@ -496,11 +491,11 @@ export const PayMedicine: React.FC = (props) => {
       category: 'Pharmacy',
       action: 'Order',
       label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-      value: totalWithCouponDiscount.toFixed(2),
+      value: totalWithCouponDiscount,
     });
     /**Gtm code End  */
     setMutationLoading(true);
-    setPaymentMethod(value)
+    setPaymentMethod(value);
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
@@ -519,9 +514,8 @@ export const PayMedicine: React.FC = (props) => {
           if (orderAutoId && orderAutoId > 0 && paymentMethod !== 'COD') {
             const pgUrl = `${
               process.env.PHARMACY_PG_URL
-              }/paymed?amount=${totalWithCouponDiscount.toFixed(
-                2
-              )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${paymentMethod || value}&paymentModeOnly=YES`;
+            }/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${paymentMethod ||
+              value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -539,7 +533,7 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
       });
-  }
+  };
 
   return (
     <div className={classes.root}>
@@ -552,7 +546,7 @@ export const PayMedicine: React.FC = (props) => {
           <div className={`${classes.charges} ${classes.chargesMobile}`}>
             {' '}
             <p>Amount To Pay</p>
-            <p>Rs.{totalWithCouponDiscount}</p>
+            <p>Rs.{totalWithCouponDiscount.toFixed(2)}</p>
           </div>
           <Grid container spacing={2} className={classes.paymentContainer}>
             <Grid item xs={12} sm={8}>
@@ -564,7 +558,11 @@ export const PayMedicine: React.FC = (props) => {
                   {paymentOptions.length > 0 &&
                     paymentOptions.map((payType, index) => {
                       return (
-                        <li key={index} onClick={() => onClickPay(payType.paymentMode)}>
+                        <li
+                          key={index}
+                          onClick={() => onClickPay(payType.paymentMode)}
+                          style={{ cursor: 'pointer' }}
+                        >
                           <img src={payType.imageUrl} alt="" style={{ height: 30, width: 30 }} />
                           <span style={{ paddingLeft: 10 }}>{payType.name}</span>
                         </li>
@@ -592,8 +590,8 @@ export const PayMedicine: React.FC = (props) => {
                     {mutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
                     ) : (
-                        `Pay RS. ${totalAmount} On delivery`
-                      )}
+                      `Pay RS. ${totalAmount} On delivery`
+                    )}
                   </AphButton>
                 )}
               </Paper>
@@ -605,7 +603,7 @@ export const PayMedicine: React.FC = (props) => {
               <Paper className={classes.paper}>
                 <div className={classes.charges}>
                   {' '}
-                  <p>MRP Total</p> <p>Rs.{mrpTotal}</p>
+                  <p>MRP Total</p> <p>Rs.{mrpTotal.toFixed(2)}</p>
                 </div>
                 <div className={`${classes.charges} ${classes.discount}`}>
                   <p>Product Discount</p> <p>-Rs.{productDiscount}</p>
@@ -617,7 +615,7 @@ export const PayMedicine: React.FC = (props) => {
                   <p>Packing Charges</p> <p>+ Rs.0</p>
                 </div>
                 <div className={`${classes.charges} ${classes.total}`}>
-                  <p>To Pay</p> <p>Rs.{totalWithCouponDiscount}</p>
+                  <p>To Pay</p> <p>Rs.{totalWithCouponDiscount.toFixed(2)}</p>
                 </div>
               </Paper>
             </Grid>

@@ -1196,10 +1196,7 @@ export const MedicineCart: React.FC = (props) => {
                       deliveryTime: deliveryTime,
                     })
                   );
-                  window.location.href = clientRoutes.payMedicine(
-                    'pharmacy',
-                    `${totalWithCouponDiscount}`
-                  );
+                  window.location.href = clientRoutes.payMedicine('pharmacy');
                 } else if (
                   nonCartFlow &&
                   ((prescriptions && prescriptions.length > 0) ||
@@ -1279,92 +1276,6 @@ export const MedicineCart: React.FC = (props) => {
           </div>
         </div>
       </Popover>
-
-      <AphDialog open={checkoutDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Checkout</AphDialogTitle>
-        <div className={classes.shadowHide}>
-          <div className={classes.dialogContent}>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
-              <div className={classes.customScrollBar}>
-                <Checkout
-                  setPaymentMethod={(paymentMethod: string) => {
-                    setPaymentMethod(paymentMethod);
-                  }}
-                />
-              </div>
-            </Scrollbars>
-          </div>
-          <div className={classes.dialogActions}>
-            <AphButton
-              onClick={(e) => {
-                /**Gtm code start  */
-                gtmTracking({
-                  category: 'Pharmacy',
-                  action: 'Order',
-                  label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
-                  value: totalWithCouponDiscount.toFixed(2),
-                });
-                /**Gtm code End  */
-                setMutationLoading(true);
-                paymentMutation()
-                  .then((res) => {
-                    /**Gtm code start  */
-                    _obTracking({
-                      userLocation: city,
-                      paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-                      itemCount: cartItems ? cartItems.length : 0,
-                      couponCode: couponCode == '' ? null : couponCode,
-                      couponValue:
-                        validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount
-                          : 0,
-                      finalBookingValue: totalWithCouponDiscount,
-                    });
-                    /**Gtm code end  */
-                    if (res && res.data && res.data.SaveMedicineOrder) {
-                      const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-                      const currentPatiendId = currentPatient ? currentPatient.id : '';
-                      if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        const pgUrl = `${
-                          process.env.PHARMACY_PG_URL
-                        }/paymed?amount=${totalWithCouponDiscount.toFixed(
-                          2
-                        )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
-                        window.location.href = pgUrl;
-                      } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId, false, '');
-                      }
-                    }
-                  })
-                  .catch((e) => {
-                    /**Gtm code start  */
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Order',
-                      label: 'Failed / Cancelled',
-                    });
-                    /**Gtm code End  */
-                    setIsAlertOpen(true);
-                    setAlertMessage('something went wrong');
-                    console.log(e);
-                    setMutationLoading(false);
-                  });
-              }}
-              color="primary"
-              fullWidth
-              disabled={disablePayButton}
-              className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `Pay - RS. ${totalWithCouponDiscount.toFixed(2)}`
-              )}
-            </AphButton>
-          </div>
-        </div>
-      </AphDialog>
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />

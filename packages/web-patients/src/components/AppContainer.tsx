@@ -119,11 +119,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
-          <Route
-            exact
-            path={clientRoutes.payMedicine(':payType', ':prDis')}
-            component={PayMedicine}
-          />
+          <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
