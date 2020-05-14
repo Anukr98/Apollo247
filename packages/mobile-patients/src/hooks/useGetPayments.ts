@@ -1,24 +1,13 @@
-import { ApolloClient, ApolloLink, InMemoryCache, HttpLink } from 'apollo-boost';
 import { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { CONSULT_ORDER_PAYMENT_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CONSULT_ORDER_PAYMENT_DETAILS,
+  PHARMACY_ORDER_PAYMENT_DETAILS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 
 export const useGetPayments = (type?: string, patientId?: string) => {
   const [payments, setPayments] = useState();
   const client = useApolloClient();
-  // const httpLink = new HttpLink({ uri: 'https://28ba5846.ngrok.io/' });
-  // const authLink = new ApolloLink((operation, forward) => {
-  //   operation.setContext({
-  //     headers: {
-  //       authorization: `Bearer 3d1833da7020e0602165529446587434`,
-  //     },
-  //   });
-  //   return forward(operation);
-  // });
-  // const client = new ApolloClient({
-  //   link: authLink.concat(httpLink),
-  //   cache: new InMemoryCache(),
-  // });
 
   const getConsultPaymentsAPI = () => {
     client
@@ -48,7 +37,7 @@ export const useGetPayments = (type?: string, patientId?: string) => {
   const getPharmacyPaymentsAPI = () => {
     client
       .query({
-        query: CONSULT_ORDER_PAYMENT_DETAILS,
+        query: PHARMACY_ORDER_PAYMENT_DETAILS,
         variables: {
           patientId: patientId,
         },
