@@ -356,9 +356,9 @@ export const PayMedicine: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const deliveryCharges =
-    cartTotal >= Number(pharmacyMinDeliveryValue) || cartTotal <= 0
+    cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
       ? 0
-      : Number(pharmacyDeliveryCharges);
+      : parseFloat(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const getMRPTotal = () => {
     let sum = 0;
