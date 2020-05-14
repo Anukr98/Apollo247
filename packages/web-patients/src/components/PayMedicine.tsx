@@ -1,17 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Link, CircularProgress } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
-import CreditCardIcon from '@material-ui/icons/CreditCard';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Modal from '@material-ui/core/Modal';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import CancelIcon from '@material-ui/icons/Cancel';
 import fetchUtil from 'helpers/fetch';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
@@ -118,9 +113,9 @@ const useStyles = makeStyles((theme: Theme) => {
         '& >svg': {
           margin: '0 10px 0 0',
         },
-        '&:last-child': {
-          padding: '0 10px',
-        },
+        // '&:last-child': {
+        //   padding: '0 10px',
+        // },
       },
       [theme.breakpoints.down('xs')]: {
         gridTemplateColumns: 'auto',
@@ -179,132 +174,15 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 20px',
       },
     },
-    modal: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    modalContent: {
-      width: '600px',
-      height: 'auto',
-      background: '#fff',
-      [theme.breakpoints.down('sm')]: {
-        width: 400,
-        height: '100vh',
-      },
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
-      },
-    },
-    modalHeader: {
-      padding: 20,
-      textAlign: 'center',
-      boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
+
+    paperHeight: {
+      minHeight: 326,
       position: 'relative',
-      '& h5': {
-        fontSize: 16,
-        color: '#02475b',
-        fontWeight: 700,
-      },
     },
-    closePopup: {
-      width: 30,
-      height: 30,
-      borderRadius: '50%',
-      background: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+    circlularProgress: {
       position: 'absolute',
-      top: 0,
-      right: '-50px',
-      [theme.breakpoints.down('sm')]: {
-        display: 'none',
-      },
-    },
-    mobileBack: {
-      display: 'none',
-      top: '20px',
-      left: '20px',
-      [theme.breakpoints.down('sm')]: {
-        display: 'block',
-      },
-    },
-    modalBody: {
-      padding: 20,
-      '& button': {
-        margin: '0 auto',
-      },
-      [theme.breakpoints.down('sm')]: {
-        height: 'calc(100% - 64px)',
-        overflow: 'auto',
-      },
-    },
-    modalSHeader: {
-      [theme.breakpoints.down('sm')]: {
-        display: 'block !important',
-      },
-    },
-    StatusCard: {
-      padding: 20,
-      borderRadius: 10,
-      textAlign: 'center',
-      boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
-      margin: '0 0 20px',
-      '& svg': {
-        width: 50,
-        height: 50,
-      },
-      '& h5': {
-        fontSize: 13,
-        fontWeight: 700,
-        textTransform: 'uppercase',
-        padding: '5px 0',
-      },
-      '& p': {
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#666666',
-        lineHeight: '24px',
-      },
-    },
-    orderDetails: {
-      padding: 20,
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      gridColumnGap: '20px',
-      boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
-    },
-    details: {
-      '& h6': {
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#02475b',
-      },
-      '& p': {
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#666666',
-      },
-    },
-    note: {
-      width: '80%',
-      textAlign: 'center',
-      margin: '20px  auto',
-      '& p': {
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#666666',
-      },
-    },
-    pending: {
-      background: '#eed9c6',
-      '& svg': {
-        color: '#e87e38',
-      },
-      '& h5': {
-        color: '#e87e38',
-      },
+      left: '50%',
+      top: '50%',
     },
     error: {
       background: '#edc6c2',
@@ -313,24 +191,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h5': {
         color: '#e02020',
-      },
-    },
-    success: {
-      background: '#edf7ed',
-      '& svg': {
-        color: '#4aa54a',
-      },
-      '& h5': {
-        color: '#4aa54a',
-      },
-    },
-    refund: {
-      background: '#edc6c2',
-      '& svg': {
-        color: '#a30808',
-      },
-      '& h5': {
-        color: '#a30808',
       },
     },
   };
@@ -345,6 +205,8 @@ export const PayMedicine: React.FC = (props) => {
     !checked && setPaymentMethod('COD');
   };
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
   const [paymentOptions, setPaymentOptions] = React.useState([]);
   const [mutationLoading, setMutationLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>('');
@@ -512,6 +374,7 @@ export const PayMedicine: React.FC = (props) => {
   };
 
   const onClickPay = (value: string) => {
+    setIsLoading(true);
     /**Gtm code start  */
     gtmTracking({
       category: 'Pharmacy',
@@ -546,6 +409,7 @@ export const PayMedicine: React.FC = (props) => {
           } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
           }
+          setIsLoading(false);
         }
       })
       .catch((e) => {
@@ -558,6 +422,7 @@ export const PayMedicine: React.FC = (props) => {
         /**Gtm code End  */
         console.log(e);
         setMutationLoading(false);
+        setIsLoading(false);
       });
   };
 
@@ -567,6 +432,7 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
+    setIsLoading(true);
     paymentMutationConsult({
       variables: {
         bookAppointment: {
@@ -626,12 +492,14 @@ export const PayMedicine: React.FC = (props) => {
           // setMutationLoading(false);
           // setIsDialogOpen(true);
         }
+        setIsLoading(false);
       })
       .catch((errorResponse) => {
         console.log('enterrr');
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         setMutationLoading(false);
+        setIsLoading(false);
       });
   };
 
@@ -654,40 +522,48 @@ export const PayMedicine: React.FC = (props) => {
           </div>
           <Grid container spacing={2} className={classes.paymentContainer}>
             <Grid item xs={12} sm={8}>
-              <Paper className={classes.paper}>
+              <Paper className={`${classes.paper} ${classes.paperHeight}`}>
                 <div className={classes.paperHeading}>
                   <Typography component="h3">Pay Via</Typography>
                 </div>
-                <ul className={classes.paymentOptions}>
-                  {paymentOptions.length > 0 &&
-                    paymentOptions.map((payType, index) => {
-                      return (
-                        <li
-                          key={index}
-                          onClick={() =>
-                            params.payType === 'pharmacy'
-                              ? onClickPay(payType.paymentMode)
-                              : onClickConsultPay(payType.paymentMode)
-                          }
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <img src={payType.imageUrl} alt="" style={{ height: 30, width: 30 }} />
-                          <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                        </li>
-                      );
-                    })}
-                  {params.payType === 'pharmacy' && (
-                    <li>
-                      <FormGroup>
-                        <FormControlLabel
-                          className={classes.checkbox}
-                          control={<Checkbox onChange={handleChange} name="checked" />}
-                          label="Cash On Delivery"
-                        />
-                      </FormGroup>
-                    </li>
-                  )}
-                </ul>
+                {isLoading ? (
+                  <CircularProgress
+                    className={classes.circlularProgress}
+                    size={34}
+                    color="secondary"
+                  />
+                ) : (
+                  <ul className={classes.paymentOptions}>
+                    {paymentOptions.length > 0 &&
+                      paymentOptions.map((payType, index) => {
+                        return (
+                          <li
+                            key={index}
+                            onClick={() =>
+                              params.payType === 'pharmacy'
+                                ? onClickPay(payType.paymentMode)
+                                : onClickConsultPay(payType.paymentMode)
+                            }
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <img src={payType.imageUrl} alt="" style={{ height: 30, width: 30 }} />
+                            <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                          </li>
+                        );
+                      })}
+                    {params.payType === 'pharmacy' && (
+                      <li>
+                        <FormGroup>
+                          <FormControlLabel
+                            className={classes.checkbox}
+                            control={<Checkbox onChange={handleChange} name="checked" />}
+                            label="Cash On Delivery"
+                          />
+                        </FormGroup>
+                      </li>
+                    )}
+                  </ul>
+                )}
                 {checked && (
                   <AphButton
                     className={classes.payBtn}
@@ -704,6 +580,7 @@ export const PayMedicine: React.FC = (props) => {
                 )}
               </Paper>
             </Grid>
+
             <Grid item xs={12} sm={4} className={classes.chargesContainer}>
               <div className={classes.paperHeading}>
                 <Typography component="h3">Total Charges</Typography>
@@ -747,57 +624,6 @@ export const PayMedicine: React.FC = (props) => {
         </div>
       </div>
 
-      <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.modal}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <div className={classes.modalContent}>
-          <div className={classes.modalHeader}>
-            <Typography component="h5">Payment Status</Typography>
-            <Link href="javascript:void(0);" className={classes.closePopup}>
-              <img src={require('images/ic_cross_popup.svg')} />
-            </Link>
-            <Link
-              href="javascript:void(0);"
-              className={`${classes.closePopup} ${classes.mobileBack}`}
-            >
-              <img src={require('images/ic_back.svg')} />
-            </Link>
-          </div>
-          <div className={classes.modalBody}>
-            <div className={`${classes.StatusCard} ${classes.pending}`}>
-              <ErrorOutlineIcon></ErrorOutlineIcon>
-              <Typography component="h5">Payment Pending</Typography>
-              <Typography component="p">Rs. 499</Typography>
-              <Typography component="p">Payment Ref. Number - 123456</Typography>
-              <Typography component="p">Order ID : 123456789</Typography>
-            </div>
-            <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
-              <Typography component="h4">Order Details</Typography>
-            </div>
-            <Paper className={classes.orderDetails}>
-              <div className={classes.details}>
-                <Typography component="h6">Order Date &amp; Time</Typography>
-                <Typography component="p">23 May 2019, 10 A.M.</Typography>
-              </div>
-              <div className={classes.details}>
-                <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">Debit Card</Typography>
-              </div>
-            </Paper>
-            <div className={classes.note}>
-              <Typography component="p">
-                Note : Your payment is in progress and this may take a couple of minutes to confirm
-                your booking. We’ll intimate you once your bank confirms the payment.
-              </Typography>
-            </div>
-            <button className={classes.payBtn}>Try Again</button>
-          </div>
-        </div>
-      </Modal>
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}
