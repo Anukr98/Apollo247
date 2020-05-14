@@ -166,6 +166,8 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       frequency = _capitalize(frequency);
+      if (frequency.includes(ApiConstants.STAT_LOWECASE))
+        frequency = frequency.replace(ApiConstants.STAT_LOWECASE, ApiConstants.STAT_UPPERCASE);
       frequency += '.';
 
       const instructions = csRx.medicineInstructions;
