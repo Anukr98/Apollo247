@@ -393,7 +393,7 @@ export const ClinicCheckout: React.FC = () => {
       experience,
       fullName,
       photoUrl,
-      onlineConsultationFees,
+      physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
     const speciality =
       (doctorDetails &&
@@ -512,7 +512,7 @@ export const ClinicCheckout: React.FC = () => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? parseFloat(onlineConsultationFees) -
+                          ? parseFloat(physicalConsultationFees) -
                             parseFloat(validateCouponResult.revisedAmount)
                           : 0}{' '}
                         on the bill
@@ -524,7 +524,7 @@ export const ClinicCheckout: React.FC = () => {
                 <div className={classes.priceSection}>
                   <div className={classes.priceRow}>
                     <span>Subtotal</span>
-                    <span className={classes.price}>Rs. {onlineConsultationFees}</span>
+                    <span className={classes.price}>Rs. {physicalConsultationFees}</span>
                   </div>
                   {validateCouponResult && validateCouponResult.revisedAmount && (
                     <div className={`${classes.priceRow} ${classes.discountRow}`}>
@@ -533,7 +533,7 @@ export const ClinicCheckout: React.FC = () => {
                       </span>
                       <span className={classes.price}>
                         - Rs.{' '}
-                        {parseFloat(onlineConsultationFees) -
+                        {parseFloat(physicalConsultationFees) -
                           parseFloat(validateCouponResult.revisedAmount)}
                       </span>
                     </div>
@@ -544,7 +544,7 @@ export const ClinicCheckout: React.FC = () => {
                       Rs.{' '}
                       {validateCouponResult && validateCouponResult.revisedAmount
                         ? validateCouponResult.revisedAmount
-                        : onlineConsultationFees}
+                        : physicalConsultationFees}
                     </span>
                   </div>
                 </div>
@@ -563,14 +563,13 @@ export const ClinicCheckout: React.FC = () => {
                               validateCouponResult.revisedAmount,
                           };
                           localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
-                          console.log('updatedValues', updatedValues);
                           history.push(clientRoutes.payMedicine('consults'));
                         }}
                       >
                         Pay Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
                           ? validateCouponResult.revisedAmount
-                          : onlineConsultationFees}
+                          : physicalConsultationFees}
                       </AphButton>
                     )}
                   />
@@ -591,7 +590,7 @@ export const ClinicCheckout: React.FC = () => {
               close={(isApplyCouponDialogOpen: boolean) => {
                 setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
               }}
-              cartValue={onlineConsultationFees}
+              cartValue={physicalConsultationFees}
             />
           </AphDialog>
         </div>
