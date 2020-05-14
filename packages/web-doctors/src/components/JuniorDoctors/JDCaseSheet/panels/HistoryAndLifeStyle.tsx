@@ -148,9 +148,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
 
       '& textarea:focus': {
-        borderRadius: "5px",
-        boxShadow: "0 0 5px #00b38e",
-        backgroundColor: "#ffffff"
+        borderRadius: '5px',
+        boxShadow: '0 0 5px #00b38e',
+        backgroundColor: '#ffffff',
       },
     },
   };
@@ -179,8 +179,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
-    lifeStyleError,
-    setLifeStyleError,
   } = useContext(CaseSheetContextJrd);
 
   return (
@@ -203,7 +201,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
 
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Medication History*</div>
+        <div className={classes.sectionTitle}>Medication History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
@@ -211,21 +209,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            required
-            error={lifeStyleError.medicationHistory.trim() === '' ? true : false}
-            helperText={lifeStyleError.medicationHistory}
             value={medicationHistory}
             onChange={(e) => {
-              const value = e.target.value.trim();
-              if (value === '' || value === null) {
-                setLifeStyleError({
-                  medicationHistory: 'This field is requird',
-                });
-              } else {
-                setLifeStyleError({
-                  medicationHistory: '',
-                });
-              }
               setMedicationHistory(e.target.value);
             }}
           />
@@ -285,7 +270,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-            }`}
+          }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}
@@ -304,7 +289,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-            }`}
+          }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}
@@ -324,7 +309,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <div
             className={`${classes.inputFieldContent} ${
               caseSheetEdit ? classes.inputFieldEdit : ''
-              } ${classes.marginNone}`}
+            } ${classes.marginNone}`}
           >
             <AphTextField
               disabled={!caseSheetEdit}
@@ -343,7 +328,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone
-            }`}
+          }`}
         >
           <AphTextField
             disabled={!caseSheetEdit}
