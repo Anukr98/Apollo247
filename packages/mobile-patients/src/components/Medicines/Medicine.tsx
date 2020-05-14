@@ -1372,10 +1372,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) - 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingRight: 12,
+                paddingLeft: 3,
+              }}
+            >
+              {'-'}
+            </Text>
           </TouchableOpacity>
           <Text
-            style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal: 12 }}
+            style={{
+              ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0),
+            }}
           >
             {getItemQuantity(data.sku)}
           </Text>
@@ -1388,7 +1398,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingLeft: 12,
+              }}
+            >
+              {'+'}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -1409,6 +1426,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             {renderIconOrImage()}
             <View style={{ width: 16 }} />
             {renderNamePriceAndInStockStatus()}
+            <View style={{ width: 24 }} />
             {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
           </View>
           {data.showSeparator ? <Spearator /> : null}
