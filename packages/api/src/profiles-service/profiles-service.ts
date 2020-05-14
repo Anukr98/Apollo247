@@ -281,10 +281,6 @@ import {
         resolvers: getMedicineOrdersListResolvers,
       },
       {
-        typeDefs: getMedicineOrdersOMSListTypeDefs,
-        resolvers: getMedicineOrdersOMSListResolvers,
-      },
-      {
         typeDefs: uploadFileTypeDefs,
         resolvers: uploadFileResolvers,
       },
