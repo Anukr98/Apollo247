@@ -567,7 +567,6 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
-    debugger;
     paymentMutationConsult({
       variables: {
         bookAppointment: {

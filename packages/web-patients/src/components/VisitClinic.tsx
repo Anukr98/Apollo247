@@ -652,10 +652,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   patientId: currentPatient ? currentPatient.id : '',
                   doctorId: doctorId,
                   appointmentDateTime: appointmentDateTime,
-                  appointmentType: AppointmentType.ONLINE,
+                  appointmentType: AppointmentType.PHYSICAL,
                   hospitalId: defaultClinicId,
                   couponCode: couponCode ? couponCode : null,
-                  amoount: revisedAmount,
+                  amount: revisedAmount,
                 })
               );
             }}
