@@ -386,7 +386,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const apolloClient = useApolloClient();
   const { currentPatient: currentDoctor, sessionClient } = useAuth();
 

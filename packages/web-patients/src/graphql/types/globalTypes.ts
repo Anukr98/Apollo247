@@ -72,6 +72,7 @@ export enum CouponCategoryApplicable {
 
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -333,6 +334,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -597,6 +599,7 @@ export interface OrderCancelInput {
 }
 
 export interface OrderLineItems {
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;
