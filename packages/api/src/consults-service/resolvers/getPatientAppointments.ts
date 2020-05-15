@@ -1,6 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  APPOINTMENT_STATE,
+  NOSHOW_REASON,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -8,6 +13,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getPatinetAppointmentsTypeDefs = gql`
+  enum NOSHOW_REASON {
+    NOSHOW_PATIENT
+    NOSHOW_DOCTOR
+    NOSHOW_30MIN
+  }
   type PatinetAppointments {
     id: ID!
     patientId: ID!
@@ -31,6 +41,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
     doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
+    noShowReason: NOSHOW_REASON
   }
 
   extend type DoctorDetailsWithStatusExclude @key(fields: "id") {
@@ -106,6 +117,7 @@ type PatinetAppointments = {
   actualAmount: number;
   discountedAmount: number;
   appointmentPayments: AppointmentPayment[];
+  noShowReason: NOSHOW_REASON;
 };
 
 type AppointmentPayment = {
