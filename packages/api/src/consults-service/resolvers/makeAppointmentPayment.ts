@@ -54,11 +54,11 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseMessage: String!
     bankTxnId: String!
     orderId: String!
+    appointment: Appointment
   }
 
   type AppointmentPaymentResult {
-    appointmentPayment: AppointmentPayment
-    appointment: Appointment
+    appointment: AppointmentPayment
   }
 
   extend type Mutation {
@@ -67,8 +67,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
 `;
 
 type AppointmentPaymentResult = {
-  appointmentPayment: AppointmentPayment;
-  appointment: Appointment;
+  appointment: AppointmentPayment;
 };
 
 type AppointmentPayment = {
@@ -81,6 +80,7 @@ type AppointmentPayment = {
   responseMessage: string;
   bankTxnId: string;
   orderId: string;
+  appointment: Appointment;
 };
 
 type AppointmentPaymentInput = {
@@ -192,9 +192,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -269,8 +269,8 @@ const makeAppointmentPayment: Resolver<
       false
     );
   }
-
-  return { appointmentPayment: paymentInfo, appointment: processingAppointment };
+  paymentInfo.appointment = processingAppointment;
+  return { appointment: paymentInfo };
 };
 
 const sendPatientAcknowledgements = async (
@@ -372,8 +372,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
