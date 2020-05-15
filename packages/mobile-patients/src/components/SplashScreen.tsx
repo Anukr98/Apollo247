@@ -100,6 +100,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
+      AsyncStorage.removeItem('endAPICalled');
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
@@ -348,6 +349,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
         break;
+
       case 'Speciality':
         console.log('Speciality id', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {

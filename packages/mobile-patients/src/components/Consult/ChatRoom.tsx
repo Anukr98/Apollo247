@@ -34,6 +34,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
   DeviceHelper,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -937,16 +938,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (status !== STATUS.COMPLETED) return;
 
       console.log('API Called');
-      endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+      // endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+      endCallAppointmentSessionAPI(STATUS.NO_SHOW);
     }
   };
 
-  const endCallAppointmentSessionAPI = (status: STATUS) => {
+  const endCallAppointmentSessionAPI = async (status: STATUS) => {
     console.log('endCallAppointmentSessionAPI called');
+
+    const APICalled = await AsyncStorage.getItem('endAPICalled');
+    console.log(APICalled, 'APICalled endCallAppointmentSessionAPI');
+
+    if (APICalled === 'true') {
+      setBugFenderLog('Chat_Room_APICalled', APICalled);
+      stopCallAbondmentTimer();
+      return;
+    }
+
+    console.log(APICalled, 'afterAPICalled endCallAppointmentSessionAPI');
 
     endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
+        AsyncStorage.setItem('endAPICalled', 'true');
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_endCallSessionAppointment', e);
@@ -1272,6 +1286,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
+    AsyncStorage.removeItem('endAPICalled');
+
     pubnub.subscribe({
       channels: [channel],
       withPresence: true,
@@ -1364,18 +1380,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 setSendMessageToDoctor(true);
 
                 if (abondmentStarted == false) {
-                  if (startConsultResult.length > 0) {
-                    // console.log('callAbondmentMethod', abondmentStarted);
-                    abondmentStarted = true;
-                    APIForUpdateAppointmentData(false);
-                  } else {
-                    if (diffInMins < 15) {
-                      // console.log('doctorNoshow', abondmentStarted);
-                      if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-                        callAbondmentMethod(false);
-                      }
+                  // if (startConsultResult.length > 0) {
+                  //   // console.log('callAbondmentMethod', abondmentStarted);
+                  //   abondmentStarted = true;
+                  //   APIForUpdateAppointmentData(false);
+                  // } else {
+                  if (diffInMins < 15) {
+                    // console.log('doctorNoshow', abondmentStarted);
+                    if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+                      callAbondmentMethod(false);
                     }
                   }
+                  // }
                   eventsAfterConnectionDestroyed();
                 }
               }
@@ -1437,8 +1453,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
       if (status !== STATUS.COMPLETED) return;
 
-      abondmentStarted = true;
-      startCallAbondmentTimer(620, true);
+      // abondmentStarted = true;
+      // startCallAbondmentTimer(620, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1471,37 +1487,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
     try {
-      setTransferData(appointmentData);
-      callAbandonmentTimer = setInterval(() => {
-        try {
-          timer = timer - 1;
-          callAbandonmentStoppedTimer = timer;
+      startNoShow(timer, () => {
+        console.log('Trigger no ShowAPi');
+        setTransferData(appointmentData);
 
-          // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
-
-          if (timer < 1) {
-            // console.log('call Abundant', appointmentData);
-            endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
-
-            if (isCallAbandment) {
-              setIsDoctorNoShow(true);
-            } else {
-              setShowDoctorNoShowAlert(true);
-            }
-            callAbandonmentStoppedTimer = 620;
-            callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-          }
-        } catch (error) {
-          // console.log('app crashed', error);
-          CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
-          callAbandonmentStoppedTimer = 620;
-          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+        if (isCallAbandment) {
+          // setIsDoctorNoShow(true);
+        } else {
+          setShowDoctorNoShowAlert(true);
+          endCallAppointmentSessionAPI(STATUS.NO_SHOW);
+          // endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
         }
-      }, 1000);
+        // throw Error;
+      });
     } catch (error) {
       CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
       console.log('error in call abandoment', error);
     }
+  };
+
+  const startNoShow = (timer: number, callback?: () => void) => {
+    stopCallAbondmentTimer();
+    setTransferData(appointmentData);
+    callAbandonmentTimer = setInterval(() => {
+      try {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+
+        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+        if (timer < 1) {
+          stopCallAbondmentTimer();
+          callback && callback();
+        }
+      } catch (error) {
+        CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
+        stopCallAbondmentTimer();
+      }
+    }, 1000);
   };
 
   const stopCallAbondmentTimer = () => {
