@@ -17,27 +17,6 @@ interface OptionType {
 
 let suggestions: OptionType[] = [];
 
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      autoFocus
-      fullWidth
-      InputProps={{
-        inputRef: (node) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -254,7 +233,7 @@ export const Diagnosis: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        let filterVal: any = _data!.data!.searchDiagnosis!;
+        const filterVal: any = _data!.data!.searchDiagnosis!;
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
             if (val.name === selectedval.name) {
@@ -332,6 +311,27 @@ export const Diagnosis: React.FC = () => {
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
 
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+
+    return (
+      <AphTextField
+        autoFocus
+        fullWidth
+        InputProps={{
+          inputRef: (node) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
@@ -404,7 +404,7 @@ export const Diagnosis: React.FC = () => {
             }}
             {...autosuggestProps}
             inputProps={{
-              classes,
+              //classes,
               id: 'react-autosuggest-simple',
               placeholder: 'Search Condition',
               value: state.single,
