@@ -32,3 +32,61 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
     }
   }
 `;
+
+export const PHRAMA_COUPONS_LIST = gql`
+  query getPharmaCouponList {
+    getPharmaCouponList {
+      coupons {
+        code
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        createdDate
+        description
+        id
+        isActive
+      }
+    }
+  }
+`;
+
+export const VALIDATE_PHARMA_COUPONS = gql`
+  query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
+    validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
+      discountedTotals {
+        couponDiscount
+        productDiscount
+        mrpPriceTotal
+      }
+      pharmaLineItemsWithDiscountedPrice {
+        applicablePrice
+        discountedPrice
+        mrp
+        productName
+        productType
+        quantity
+        specialPrice
+      }
+      successMessage
+      reasonForInvalidStatus
+      validityStatus
+    }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
+    }
+  }
+`;

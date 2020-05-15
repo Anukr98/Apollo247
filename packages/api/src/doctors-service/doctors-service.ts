@@ -33,6 +33,10 @@ import {
 } from 'doctors-service/resolvers/facility';
 import { starTeamResolvers, starTeamTypeDefs } from 'doctors-service/resolvers/starTeam';
 import {
+  uploadDoctorSignatureResolvers,
+  uploadDoctorSignatureTypeDefs,
+} from 'doctors-service/resolvers/uploadDoctorSignature';
+import {
   saveDoctorDeviceTokenTypeDefs,
   saveDoctorDeviceTokenResolvers,
 } from 'doctors-service/resolvers/saveDoctorDeviceToken';
@@ -140,6 +144,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: starTeamTypeDefs,
         resolvers: starTeamResolvers,
+      },
+      {
+        typeDefs: uploadDoctorSignatureTypeDefs,
+        resolvers: uploadDoctorSignatureResolvers,
       },
       {
         typeDefs: saveDoctorDeviceTokenTypeDefs,

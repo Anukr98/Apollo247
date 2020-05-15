@@ -11,6 +11,7 @@ import {
 import Scrollbars from 'react-custom-scrollbars';
 import { useDiagnosticsCart, Clinic } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getDeviceType } from 'helpers/commonHelpers'
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -48,6 +49,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { gtmTracking } from '../../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -606,7 +608,7 @@ export const TestsCart: React.FC = (props) => {
       diagnosticDate: date,
       prescriptionUrl: '',
       paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-      bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+      bookingSource: BOOKINGSOURCE.WEB,
       totalPrice: parseFloat(cartTotal.toFixed(2)),
       patientId: (currentPatient && currentPatient.id) || '',
       items: diagnosticsCartItems.map(
@@ -617,6 +619,7 @@ export const TestsCart: React.FC = (props) => {
             quantity: 1,
           } as DiagnosticLineItem)
       ),
+      deviceType: getDeviceType()
     };
     saveDiagnosticOrder({
       variables: { diagnosticOrderInput: orderInfo },
@@ -842,7 +845,12 @@ export const TestsCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                window.gep && window.gep('Pharmacy', 'Order', 'Payment-COD', cartTotal.toFixed(2));
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'Order',
+                  label: 'Payment-COD',
+                  value: cartTotal.toFixed(2),
+                });
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentOrderTest();
@@ -862,7 +870,7 @@ export const TestsCart: React.FC = (props) => {
         </div>
       </AphDialog>
 
-      <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
+      {/* <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
@@ -873,7 +881,7 @@ export const TestsCart: React.FC = (props) => {
           }}
           cartValue={cartTotal}
         />
-      </AphDialog>
+      </AphDialog> */}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

@@ -115,7 +115,7 @@ export interface StarDoctorSearchProps {
 }
 
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [data, setData] = useState<GetDoctorDetails>();
 
   return (

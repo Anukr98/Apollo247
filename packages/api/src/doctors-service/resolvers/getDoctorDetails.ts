@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
+import { Client, RequestParams } from '@elastic/elasticsearch';
 import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -36,6 +36,12 @@ export const getDoctorDetailsTypeDefs = gql`
     PAYROLL
     STAR_APOLLO
     JUNIOR
+    DOCTOR_CONNECT
+    CRADLE
+    CLINIC
+    SPECTRA
+    FERTILITY
+    SUGAR
   }
 
   enum LoggedInUserType {
@@ -50,6 +56,7 @@ export const getDoctorDetailsTypeDefs = gql`
     MR
     MRS
     DR
+    MS
   }
 
   enum DOCTOR_ONLINE_STATUS {

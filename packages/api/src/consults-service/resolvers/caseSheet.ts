@@ -12,6 +12,7 @@ import {
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
   APPOINTMENT_TYPE,
+  STATUS,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -50,6 +51,7 @@ import {
   sendBrowserNotitication,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
+import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 
 export type DiagnosisJson = {
   name: string;
@@ -89,6 +91,12 @@ export const caseSheetTypeDefs = gql`
     JUNIOR
     PAYROLL
     STAR_APOLLO
+    DOCTOR_CONNECT
+    CRADLE
+    CLINIC
+    SPECTRA
+    FERTILITY
+    SUGAR
   }
 
   enum Gender {
@@ -115,7 +123,7 @@ export const caseSheetTypeDefs = gql`
     BOTTLE
     CAPSULE
     CREAM
-    DROPS
+    DROP
     GEL
     GM
     INJECTION
@@ -195,7 +203,8 @@ export const caseSheetTypeDefs = gql`
     transferParentId: String
     caseSheet: [CaseSheet!]
     doctorInfo: Profile @provides(fields: "id")
-    sdConsultationDate: Date
+    sdConsultationDate: DateTime
+    unreadMessagesCount: Int
   }
 
   type AppointmentDocuments {
@@ -212,13 +221,17 @@ export const caseSheetTypeDefs = gql`
     allowedDosages: [String]
   }
 
+  extend type PatientFullDetails @key(fields: "id") {
+    id: ID! @external
+  }
+
   type CaseSheet {
     appointment: Appointment
     blobName: String
+    consultType: String
     createdDate: DateTime
     createdDoctorId: String
     createdDoctorProfile: Profile @provides(fields: "id")
-    consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
     doctorId: String
@@ -232,10 +245,13 @@ export const caseSheetTypeDefs = gql`
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
-    symptoms: [SymptomList]
-    status: String
+    patientDetails: PatientFullDetails @provides(fields: "id")
     sentToPatient: Boolean
+    status: String
+    symptoms: [SymptomList]
     updatedDate: DateTime
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type Diagnosis {
@@ -307,6 +323,7 @@ export const caseSheetTypeDefs = gql`
     TWICE_A_WEEK
     ONCE_IN_15_DAYS
     ONCE_A_MONTH
+    STAT
   }
 
   enum ROUTE_OF_ADMINISTRATION {
@@ -323,6 +340,7 @@ export const caseSheetTypeDefs = gql`
     NASAL_DROPS
     EYE_DROPS
     EAR_DROPS
+    INTRAVAGINAL
   }
 
   type MedicinePrescription {
@@ -389,6 +407,7 @@ export const caseSheetTypeDefs = gql`
 
   type PatientLifeStyle {
     description: String
+    occupationHistory: String
   }
 
   type PatientMedicalHistory {
@@ -401,6 +420,7 @@ export const caseSheetTypeDefs = gql`
     pastSurgicalHistory: String
     temperature: String
     weight: String
+    medicationHistory: String
   }
 
   type PatientHealthVault {
@@ -453,6 +473,10 @@ export const caseSheetTypeDefs = gql`
     temperature: String
     weight: String
     bp: String
+    medicationHistory: String
+    occupationHistory: String
+    referralSpecialtyName: String
+    referralDescription: String
   }
 
   type PatientPrescriptionSentResponse {
@@ -537,6 +561,34 @@ const getJuniorDoctorCaseSheet: Resolver<
   };
 };
 
+type AppointmentDocuments = {
+  documentPath: string;
+  prismFileId: string;
+};
+
+type AppointmentDetails = {
+  id: string;
+  appointmentDateTime: Date;
+  appointmentDocuments: AppointmentDocuments[];
+  appointmentState: string;
+  appointmentType: APPOINTMENT_TYPE;
+  displayId: number;
+  doctorId: string;
+  hospitalId: string;
+  patientId: string;
+  parentId: string;
+  status: STATUS;
+  rescheduleCount: number;
+  rescheduleCountByDoctor: number;
+  isFollowUp: Boolean;
+  followUpParentId: string;
+  isTransfer: Boolean;
+  transferParentId: string;
+  caseSheet: CaseSheet[];
+  sdConsultationDate: Date;
+  unreadMessagesCount: number;
+};
+
 const getCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -544,7 +596,7 @@ const getCaseSheet: Resolver<
   {
     caseSheetDetails: CaseSheet;
     patientDetails: Patient;
-    pastAppointments: Appointment[];
+    pastAppointments: AppointmentDetails[];
     juniorDoctorNotes: string;
     juniorDoctorCaseSheet: CaseSheet;
     allowedDosages: string[];
@@ -591,11 +643,40 @@ const getCaseSheet: Resolver<
     appointmentData.doctorId,
     appointmentData.patientId
   );
+  let pastAppointmentsWithUnreadMessages: AppointmentDetails[] = [];
+  if (pastAppointments.length) {
+    const appointmentIds: string[] = [];
+    const appointmentMessagesCount: { [key: string]: number } = {};
+    pastAppointments.map((appointment) => {
+      appointmentMessagesCount[appointment.id] = 0;
+      appointmentIds.push(appointment.id);
+    });
 
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
+
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
+
+    pastAppointmentsWithUnreadMessages = pastAppointments.map((appointment) => {
+      return {
+        ...appointment,
+        unreadMessagesCount: appointmentMessagesCount[appointment.id],
+      };
+    });
+  }
   return {
     caseSheetDetails,
     patientDetails,
-    pastAppointments,
+    pastAppointments: pastAppointmentsWithUnreadMessages,
     juniorDoctorNotes,
     juniorDoctorCaseSheet,
     allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
@@ -632,6 +713,10 @@ type ModifyCaseSheetInput = {
   temperature: string;
   weight: string;
   bp: string;
+  medicationHistory?: string;
+  occupationHistory?: string;
+  referralSpecialtyName?: string;
+  referralDescription?: string;
 };
 
 type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
@@ -657,6 +742,16 @@ const modifyCaseSheet: Resolver<
     if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
       throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
     getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  }
+
+  if (inputArguments.referralSpecialtyName) {
+    getCaseSheetData.referralSpecialtyName = inputArguments.referralSpecialtyName;
+
+    if (inputArguments.referralDescription) {
+      getCaseSheetData.referralDescription = inputArguments.referralDescription;
+    } else {
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_DESCRIPTION);
+    }
   }
 
   if (!(inputArguments.notes === undefined)) {
@@ -731,32 +826,34 @@ const modifyCaseSheet: Resolver<
 
     if (familyHistoryRecord == null) {
       //create
-      await familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
+      familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
     } else {
       //update
-      await familyHistoryRepo.updatePatientFamilyHistory(
-        familyHistoryRecord.id,
-        familyHistoryInputs
-      );
+      familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
     }
   }
   //familyHistory upsert ends
 
   //lifestyle upsert starts
-  if (!(inputArguments.lifeStyle === undefined)) {
+  if (inputArguments.lifeStyle || inputArguments.occupationHistory) {
     const lifeStyleInputs: Partial<PatientLifeStyle> = {
       patient: patientData,
-      description: inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined,
     };
+    if (inputArguments.lifeStyle) {
+      lifeStyleInputs.description = inputArguments.lifeStyle;
+    }
+    if (inputArguments.occupationHistory) {
+      lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
+    }
     const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
     const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
 
     if (lifeStyleRecord == null) {
       //create
-      await lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
+      lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
     } else {
       //update
-      await lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+      lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
     }
   }
   //lifestyle upsert ends
@@ -765,6 +862,10 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+
+  if (inputArguments.medicationHistory) {
+    medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
+  }
 
   if (!(inputArguments.bp === undefined))
     medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
@@ -808,13 +909,10 @@ const modifyCaseSheet: Resolver<
   );
   if (medicalHistoryRecord == null) {
     //create
-    await medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
   } else {
     //update
-    await medicalHistoryRepo.updatePatientMedicalHistory(
-      medicalHistoryRecord.id,
-      medicalHistoryInputs
-    );
+    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
   }
 
   getCaseSheetData.updatedDate = new Date();
@@ -1122,6 +1220,9 @@ export const caseSheetResolvers = {
   CaseSheet: {
     createdDoctorProfile(caseSheet: CaseSheet) {
       return { __typename: 'Profile', id: caseSheet.createdDoctorId };
+    },
+    patientDetails(caseSheet: CaseSheet) {
+      return { __typename: 'PatientFullDetails', id: caseSheet.patientId };
     },
   },
 

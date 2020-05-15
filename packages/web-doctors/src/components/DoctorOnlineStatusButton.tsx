@@ -7,7 +7,7 @@ import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
 } from 'graphql/types/UpdateDoctorOnlineStatus';
-import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
+import { UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR } from 'graphql/doctors';
 import { Mutation } from 'react-apollo';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
@@ -70,7 +70,7 @@ const { AWAY, ONLINE } = DOCTOR_ONLINE_STATUS;
 export interface OnlineAwayButtonProps {}
 
 export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 10;
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
@@ -85,7 +85,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
 
   return (
     <Mutation<UpdateDoctorOnlineStatus, UpdateDoctorOnlineStatusVariables>
-      mutation={UPDATE_DOCTOR_ONLINE_STATUS}
+      mutation={UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR}
     >
       {(updateDoctorOnlineStatus, { loading }) => (
         <>

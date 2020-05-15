@@ -304,7 +304,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               query: GET_PATIENT_ALL_APPOINTMENTS,
               fetchPolicy: 'no-cache',
               variables: {
-                patientId: userId,
+                patientId:
+                  userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
                 // patientId: currentPatient ? currentPatient!.id : userId,
               },
             })

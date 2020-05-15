@@ -23,6 +23,7 @@ import {
   CovidExpert,
   CovidHealthScan,
   LatestArticle,
+  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -462,7 +463,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
-        showProfileSelectionAlert();
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        // showProfileSelectionAlert();
       },
     },
     {
@@ -494,7 +496,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Understand Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
@@ -1137,10 +1139,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <Image
-              style={{ width: 40, height: 40 }}
-              source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
-            />
+            <Mascot style={{ width: 40, height: 40 }} />
             <Text
               style={{
                 ...theme.viewStyles.text('M', 14, '#01475b', 1, 18),

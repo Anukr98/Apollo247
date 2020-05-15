@@ -1,25 +1,35 @@
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  Badge,
+  SectionHeader,
+  Spearator,
+} from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
+  CartIcon,
   DropdownGreen,
   InjectionIcon,
   MedicineIcon,
   MedicineRxIcon,
+  OfferIcon,
   PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
-  OfferIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
@@ -40,25 +50,36 @@ import {
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
+  pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postWEGNeedHelpEvent,
   postAppsFlyerAddToCartEvent,
+  postwebEngageAddToCartEvent,
+  postWebEngageEvent,
+  postWEGNeedHelpEvent,
+  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
+  Image as ImageNative,
   Keyboard,
   ListRenderItemInfo,
   NativeScrollEvent,
@@ -70,18 +91,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Image as ImageNative,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -118,11 +130,12 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
-  const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, removeCartItem, updateCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
@@ -133,9 +146,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
-  const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
+  const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
-  const { showAphAlert, setLoading: globalLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
   const max_time_to_use_local_medicine_data = 60; // in minutes
   type LocalMedicineData = {
@@ -174,6 +187,44 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
+
+  const updateServiceability = (pincode: string) => {
+    const onPresChangeAddress = () => {
+      hideAphAlert!();
+      setPincodePopupVisible(true);
+    };
+
+    pinCodeServiceabilityApi(pincode)
+      .then(({ data: { Availability } }) => {
+        setServiceabilityMsg(Availability ? '' : 'Sorry, not serviceable here.');
+        !Availability &&
+          showAphAlert!({
+            title: 'We’re sorry!',
+            description: 'We are not serviceable in your area. Please change your location.',
+            titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'CHANGE THE ADDRESS',
+                type: 'orange-link',
+                onPress: onPresChangeAddress,
+              },
+            ],
+          });
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
+        setServiceabilityMsg('Sorry, unable to check serviceability.');
+      });
+  };
+
+  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+
+  useEffect(() => {
+    if (pharmacyPincode) {
+      updateServiceability(pharmacyPincode);
+    }
+  }, [pharmacyPincode]);
 
   useEffect(() => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
@@ -238,7 +289,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setError(e);
         setLoading(false);
         showAphAlert!({
-          title: 'Uh oh! :(',
+          title: string.common.uhOh,
           description: "We're unable to fetch products, try later.",
         });
       });
@@ -316,15 +367,162 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
+  const autoDetectLocation = () => {
+    globalLoading!(true);
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        globalLoading!(false);
+        response && setPharmacyLocation!(response);
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
+        globalLoading!(false);
+        e &&
+          typeof e == 'string' &&
+          !e.includes('denied') &&
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: e,
+          });
+      });
+  };
+
   const renderTopView = () => {
-    return (
-      <TabHeader
-        navigation={props.navigation}
-        locationVisible={true}
-        onLocationPress={() => {
-          setLocationSearchVisible(true);
+    const localStyles = StyleSheet.create({
+      headerContainer: {
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        paddingTop: 16,
+        paddingBottom: serviceabilityMsg ? 0 : 10,
+        backgroundColor: '#fff',
+      },
+      menuItemContainer: {
+        marginHorizontal: 0,
+        padding: 0,
+        margin: 0,
+      },
+      menuMenuContainerStyle: {
+        marginLeft: winWidth * 0.25,
+        marginTop: 50,
+      },
+      menuScrollViewContainerStyle: { paddingVertical: 0 },
+      menuItemTextStyle: {
+        ...theme.viewStyles.text('M', 14, '#01475b'),
+        padding: 0,
+        margin: 0,
+      },
+      menuBottomPadding: { paddingBottom: 0 },
+      deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 18) },
+      locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+      locationTextUnderline: {
+        height: 2,
+        backgroundColor: '#00b38e',
+        opacity: 1,
+      },
+      dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+      serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
+    });
+
+    const renderIcon = () => (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            })
+          );
         }}
-      />
+      >
+        <HomeIcon />
+      </TouchableOpacity>
+    );
+
+    const renderDeliverToLocationMenuAndCTA = () => {
+      const options = ['Auto Select Location', 'Enter Delivery Pincode'].map((item) => ({
+        key: item,
+        value: item,
+      }));
+
+      return (
+        <MaterialMenu
+          options={options}
+          itemContainer={localStyles.menuItemContainer}
+          menuContainerStyle={localStyles.menuMenuContainerStyle}
+          scrollViewContainerStyle={localStyles.menuScrollViewContainerStyle}
+          itemTextStyle={localStyles.menuItemTextStyle}
+          bottomPadding={localStyles.menuBottomPadding}
+          onPress={(item) => {
+            if (item.value == options[0].value) {
+              autoDetectLocation();
+            } else {
+              setPincodePopupVisible(true);
+            }
+          }}
+        >
+          {renderDeliverToLocationCTA()}
+        </MaterialMenu>
+      );
+    };
+
+    const formatText = (text: string, count: number) =>
+      text.length > count ? `${text.slice(0, count)}...` : text;
+
+    const renderDeliverToLocationCTA = () => {
+      const location = pharmacyLocation
+        ? `${formatText(g(pharmacyLocation, 'city') || '', 18)} ${g(pharmacyLocation, 'pincode')}`
+        : `${formatText(g(locationDetails, 'city') || '', 18)} ${g(locationDetails, 'pincode')}`;
+
+      return (
+        <View style={{ paddingLeft: 15 }}>
+          <View style={{ flexDirection: 'row' }}>
+            <View>
+              <Text numberOfLines={1} style={localStyles.deliverToText}>
+                Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
+              </Text>
+              <View>
+                <Text style={localStyles.locationText}>{location}</Text>
+                {!serviceabilityMsg ? (
+                  <Spearator style={localStyles.locationTextUnderline} />
+                ) : (
+                  <View style={{ height: 2 }} />
+                )}
+              </View>
+            </View>
+            <View style={localStyles.dropdownGreenContainer}>
+              <DropdownGreen />
+            </View>
+          </View>
+          {!!serviceabilityMsg && (
+            <Text style={localStyles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+          )}
+        </View>
+      );
+    };
+
+    const renderCartIcon = () => (
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          style={{ alignItems: 'flex-end' }}
+          activeOpacity={1}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+          }
+        >
+          <CartIcon />
+          {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
+        </TouchableOpacity>
+      </View>
+    );
+
+    return (
+      <View style={localStyles.headerContainer}>
+        {renderIcon()}
+        {renderDeliverToLocationMenuAndCTA()}
+        {renderCartIcon()}
+      </View>
     );
   };
 
@@ -463,29 +661,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const consultDoctorCTA = () => {
-    return (
-      <View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-            paddingBottom: 8,
-          }}
-        >
-          Don’t have a prescription? Don’t worry!
-        </Text>
-        <Text
-          onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
-          style={{
-            ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
-          }}
-        >
-          CONSULT A DOCTOR
-        </Text>
-      </View>
-    );
-  };
-
   const renderUploadPrescriptionSection = () => {
     return (
       <View
@@ -503,15 +678,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         ]}
       >
         {uploadPrescriptionCTA()}
-        <Spearator style={{ marginVertical: 11.5 }} />
-        {consultDoctorCTA()}
       </View>
     );
   };
 
   const renderYourOrders = () => {
-    console.log('rendereef', ordersFetched);
-
     return (
       // (ordersFetched.length > 0 && (
       <ListCard
@@ -817,22 +988,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     } = data.item;
 
     const addToCart = () => {
-      addCartItem!({
-        id: sku,
-        mou: mou,
-        name: name,
-        price: price,
-        specialPrice: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : undefined,
-        prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
-        quantity: 1,
-        thumbnail,
-        isInStock: true,
-      });
+      addPharmaItemToCart(
+        {
+          id: sku,
+          mou: mou,
+          name: name,
+          price: price,
+          specialPrice: special_price
+            ? typeof special_price == 'string'
+              ? parseInt(special_price)
+              : special_price
+            : undefined,
+          prescriptionRequired: is_prescription_required == '1',
+          isMedicine: type_id == 'Pharma',
+          quantity: 1,
+          thumbnail,
+          isInStock: true,
+        },
+        pharmacyPincode!,
+        addCartItem,
+        globalLoading,
+        props.navigation
+      );
+
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home');
       postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
@@ -985,6 +1163,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
 
   const onSearchMedicine = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
@@ -1018,6 +1197,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   interface SuggestionType {
+    sku: string;
     name: string;
     price: number;
     specialPrice?: number;
@@ -1028,9 +1208,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     onPress: () => void;
     showSeparator?: boolean;
     style?: ViewStyle;
+    medicineProduct: MedicineProduct;
   }
 
   const renderSearchSuggestionItem = (data: SuggestionType) => {
+    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == data.sku) != -1;
     const localStyles = StyleSheet.create({
       containerStyle: {
         ...data.style,
@@ -1039,7 +1221,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 9.5,
-        marginHorizontal: 12,
       },
       iconOrImageContainerStyle: {
         width: 40,
@@ -1111,6 +1292,137 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     };
 
+    const onAddCartItem = (item: MedicineProduct) => {
+      const {
+        sku,
+        mou,
+        name,
+        price,
+        special_price,
+        is_prescription_required,
+        type_id,
+        thumbnail,
+      } = item;
+      setItemsLoading({ ...itemsLoading, [sku]: true });
+      addPharmaItemToCart(
+        {
+          id: sku,
+          mou,
+          name,
+          price: price,
+          specialPrice: special_price
+            ? typeof special_price == 'string'
+              ? parseInt(special_price)
+              : special_price
+            : undefined,
+          prescriptionRequired: is_prescription_required == '1',
+          isMedicine: type_id == 'Pharma',
+          quantity: Number(1),
+          thumbnail: thumbnail,
+          isInStock: true,
+        },
+        pharmacyPincode!,
+        addCartItem,
+        null,
+        props.navigation,
+        () => setItemsLoading({ ...itemsLoading, [sku]: false })
+      );
+      postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
+    };
+
+    const getItemQuantity = (id: string) => {
+      const foundItem = cartItems.find((item) => item.id == id);
+      return foundItem ? foundItem.quantity : 1;
+    };
+
+    const onNotifyMeClick = () => {
+      showAphAlert!({
+        title: 'Okay! :)',
+        description: `You will be notified when ${data.name} is back in stock.`,
+      });
+    };
+
+    const renderAddToCartView = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() =>
+            data.isOutOfStock
+              ? onNotifyMeClick()
+              : itemsLoading[data.sku]
+              ? null
+              : onAddCartItem(data.medicineProduct)
+          }
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
+            {data.isOutOfStock
+              ? 'NOTIFY ME'
+              : itemsLoading[data.sku]
+              ? 'Loading...'
+              : 'ADD TO CART'}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+
+    const renderQuantityView = () => {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              getItemQuantity(data.sku) == 1
+                ? onRemoveCartItem(data.sku)
+                : onUpdateCartItem(data.sku, getItemQuantity(data.sku) - 1)
+            }
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingRight: 12,
+                paddingLeft: 3,
+              }}
+            >
+              {'-'}
+            </Text>
+          </TouchableOpacity>
+          <Text
+            style={{
+              ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0),
+            }}
+          >
+            {getItemQuantity(data.sku)}
+          </Text>
+          <TouchableOpacity
+            style={{ marginRight: 20 }}
+            activeOpacity={1}
+            onPress={() =>
+              getItemQuantity(data.sku) == 20
+                ? null
+                : onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)
+            }
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingLeft: 12,
+              }}
+            >
+              {'+'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    };
+
+    const onUpdateCartItem = (id: string, quantity: number) => {
+      updateCartItem && updateCartItem({ id, quantity: quantity });
+    };
+
+    const onRemoveCartItem = (id: string) => {
+      removeCartItem && removeCartItem(id);
+    };
+
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
         <View style={localStyles.containerStyle} key={data.name}>
@@ -1118,6 +1430,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             {renderIconOrImage()}
             <View style={{ width: 16 }} />
             {renderNamePriceAndInStockStatus()}
+            <View style={{ width: 24 }} />
+            {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
           </View>
           {data.showSeparator ? <Spearator /> : null}
         </View>
@@ -1134,6 +1448,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSearchBar = () => {
     const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
+    // const isFocusedStyle = isSearchFocused;
     const styles = StyleSheet.create({
       inputStyle: {
         minHeight: 29,
@@ -1183,6 +1498,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+            keyword: searchText,
+            Source: 'Pharmacy Home',
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
           props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
           setSearchText('');
           setMedicineList([]);
@@ -1201,6 +1521,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           autoFocus={focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
@@ -1226,18 +1551,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound ? { borderBottomColor: '#02475b' } : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
           errorStyle={{
-            ...theme.viewStyles.text('M', 12, '#890000'),
+            ...theme.viewStyles.text('M', 14, '#02475b'),
             marginHorizontal: 10,
           }}
-          errorMessage={
-            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
-          }
+          errorMessage={itemsNotFound ? `Hit enter to search for '${searchText}'` : undefined}
         />
       </>
     );
@@ -1274,6 +1597,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           sku: item.sku,
         });
       },
+      sku: item.sku,
       name: item.name,
       price: item.price,
       specialPrice: specialPrice,
@@ -1286,6 +1610,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
       prescriptionRequired: item.is_prescription_required == '1',
+      medicineProduct: item,
     });
   };
 
@@ -1309,9 +1634,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               style={{
                 paddingTop: 10.5,
                 maxHeight: 266,
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+                backgroundColor: '#f7f8f5',
               }}
               data={medicineList}
+              extraData={itemsLoading}
               renderItem={renderSearchSuggestionItemView}
             />
           )
@@ -1378,6 +1704,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderPincodePopup = () => {
+    const onClose = (serviceable?: boolean, response?: LocationData) => {
+      setPincodePopupVisible(false);
+      if (serviceable) setServiceabilityMsg('');
+    };
+    return pincodePopupVisible && <PincodePopup onClickClose={onClose} onComplete={onClose} />;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -1387,7 +1721,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           bounces={false}
-          stickyHeaderIndices={[1]}
+          stickyHeaderIndices={[0]}
           onScroll={handleScroll}
           scrollEventThrottle={20}
           // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
@@ -1395,38 +1729,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View style={{ backgroundColor: theme.colors.WHITE }}>
-            <ProfileList
-              unsetloaderDisplay={true}
-              navigation={props.navigation}
-              saveUserChange={true}
-              childView={
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    paddingRight: 8,
-                    borderRightWidth: 0,
-                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    backgroundColor: theme.colors.WHITE,
-                  }}
-                >
-                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                  <View style={styles.nameTextContainerStyle}>
-                    <Text style={styles.nameTextStyle} numberOfLines={1}>
-                      {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    <View style={styles.seperatorStyle} />
-                  </View>
-                  <View style={{ paddingTop: 15 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-              }
-              // selectedProfile={profile}
-              setDisplayAddProfile={() => {}}
-            ></ProfileList>
-          </View>
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={[isSearchFocused ? { flex: 1 } : { flex: 1 }]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
           </View>
@@ -1437,17 +1740,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
-      {isLocationSearchVisible && (
-        <LocationSearchPopup
-          onPressLocationSearchItem={() => {
-            setLocationSearchVisible(false);
-          }}
-          location={g(locationDetails, 'displayName')}
-          onClose={() => {
-            setLocationSearchVisible(false);
-          }}
-        />
-      )}
+      {renderPincodePopup()}
     </View>
   );
 };

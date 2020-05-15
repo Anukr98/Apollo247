@@ -2,6 +2,7 @@ import { Theme, Typography } from '@material-ui/core';
 import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { TestCall } from './TestCall';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,7 +56,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         fontSize: 16,
         lineHeight: '24px',
-        color: '#0087ba',
+        // color: '#0087ba',
+        color: '#02475b',
         fontWeight: 600,
         margin: '10px 0',
       },
@@ -78,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) => {
     needHelp: {
       marginBottom: 20,
     },
+    testCallWrappper: {
+      borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+    },
   };
 });
 
@@ -86,7 +91,7 @@ interface HelpProps {
 }
 export const HelpPopup: React.FC<HelpProps> = (props) => {
   const { isSignedIn } = useAuth();
-  const classes = useStyles();
+  const classes = useStyles({});
   const helpData = [
     {
       name: 'SPOC for Apollo Hyderabad Doctors',
@@ -118,7 +123,14 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       <Typography variant="h2" className={classes.needHelp}>
         need help?
       </Typography>
-      {helpData &&
+      <div className={classes.testCallWrappper}>
+        <TestCall />
+      </div>
+      <div className={classes.helpSection}>
+        <h4>For any help,</h4>
+        <h5>Please call | 04048217273</h5>
+      </div>
+      {/* {helpData &&
         helpData.length > 0 &&
         helpData.map((helpObj) => (
           <div className={classes.helpSection}>
@@ -128,7 +140,7 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
             </h5>
             <h6>{helpObj.email}</h6>
           </div>
-        ))}
+        ))} */}
     </div>
   );
 };

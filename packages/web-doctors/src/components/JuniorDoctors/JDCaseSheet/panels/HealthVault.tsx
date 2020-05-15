@@ -218,7 +218,7 @@ interface PastAppointmentProps {
 }
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data &&
@@ -245,7 +245,7 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   return (
     <div className={classes.appointmentCardRoot}>
       <Link to={`/jd-consultroom/${data.id}/${data.patientId}/1/done`} target="_blank">
@@ -255,7 +255,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
         )}`}</div>
         {data &&
         data.caseSheet &&
-        (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+        data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR'
           ? data &&
             data.caseSheet &&
             data.caseSheet.length > 0 &&
@@ -288,9 +288,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
             )}
         {data &&
         data.caseSheet &&
-        (data.caseSheet.length > 1 &&
+        data.caseSheet.length > 1 &&
           data.caseSheet[1] &&
-          data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+          data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
           <div className={`${classes.iconButton}`}>
             <IconButton aria-label="Video call">
               {data &&
@@ -323,7 +323,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const ischild: boolean = false;
   const { appointmentDocuments, pastAppointments, patientDetails } = useContext(
     CaseSheetContextJrd
@@ -333,7 +333,7 @@ export const HealthVault: React.FC = () => {
   const [prismImageList, setPrismImageList] = useState<any>([]);
 
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   const [loading, setLoading] = React.useState(true);
   useEffect(() => {

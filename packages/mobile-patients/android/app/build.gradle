@@ -200,6 +200,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sms-retriever')
     implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-fbsdk')
     implementation project(':react-native-appsflyer')

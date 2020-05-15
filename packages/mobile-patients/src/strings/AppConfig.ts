@@ -27,7 +27,7 @@ enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
@@ -41,6 +41,7 @@ const appStaticVariables = {
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
   HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
+  CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -137,8 +138,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.411',
+  Android_Version: '2.411',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -175,8 +176,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.411',
+  Android_Version: '2.411',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
@@ -513,21 +514,16 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Area pharmacy store not found on app',
-      'Cancel the medicine order',
-      'Delay in pharmacy order',
-      'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery',
-      'Inappropriate attitude and behavior of pharmacy staff',
-      'Incorrect medicines',
-      'Issues in order confirmations',
-      'Medicines not delivered',
-      'Order cancelled, no refund',
-      'Orders cancelled without any information',
-      'Payment issues in online pharmacy',
-      'Software not user-friendly',
-      'Updates in order delivery or status of the order',
-      'Refund required',
+      'I want to cancel my medicine order with a refund',
+      'The order was successfully placed but medicines not yet delivered',
+      'I was not able to make the payment due to technical errors',
+      'My money got deducted but no order confirmation received',
+      'My order got canceled with no prior notice hence, need the refund',
+      'There is a mismatch in the quantity of medicines ordered and delivered',
+      'The medicines delivered are not the ones which were ordered by me',
+      'The app is crashing/ website is working too slow',
+      'The excess amount charged for medicine delivery',
+      'Inappropriate attitude or behaviour of delivery staff',
     ],
   },
   {

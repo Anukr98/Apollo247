@@ -54,7 +54,7 @@ interface PrescriptionCardProps {
 }
 
 export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [completed, setCompleted] = React.useState(0);
 
   useEffect(() => {

@@ -55,6 +55,7 @@ import {
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_TIMINGS,
   MEDICINE_FORM_TYPES,
+  MEDICINE_FREQUENCY,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
@@ -325,8 +326,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
             <View style={styles.imageView}>
-              {props.navigation.state.params!.DoctorInfo &&
-                props.navigation.state.params!.DoctorInfo.photoUrl && (
+              {!!props.navigation.state.params!.DoctorInfo &&
+                !!props.navigation.state.params!.DoctorInfo.photoUrl && (
                   <Image
                     source={{
                       uri:
@@ -718,7 +719,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           }`
         : `${item.medicineDosage ? item.medicineDosage : ''} ${
             item.medicineUnit ? unit + ' ' : ''
-          }${item.medicineFrequency ? nameFormater(item.medicineFrequency, 'lower') + ' ' : ''}${
+          }${
+            item.medicineFrequency
+              ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                ? 'STAT (Immediately) '
+                : nameFormater(item.medicineFrequency, 'lower') + ' '
+              : ''
+          }${
             item.medicineConsumptionDurationInDays
               ? `for ${item.medicineConsumptionDurationInDays} ${
                   item.medicineConsumptionDurationUnit

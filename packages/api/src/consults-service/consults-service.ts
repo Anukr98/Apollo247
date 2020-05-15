@@ -113,6 +113,10 @@ import {
   appointmentNotificationTypeDefs,
   appointmentNotificationResolvers,
 } from 'consults-service/resolvers/appointmentNotifications';
+import {
+  consultOrdersTypeDefs,
+  consultOrdersResolvers,
+} from 'consults-service/resolvers/consultOrders';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
@@ -183,7 +187,7 @@ import { winstonLogger } from 'customWinstonLogger';
       },
       {
         typeDefs: paymentTransactionStatusTypeDefs,
-        resolvers: paymentTransactionStatusResolvers
+        resolvers: paymentTransactionStatusResolvers,
       },
       {
         typeDefs: caseSheetTypeDefs,
@@ -256,6 +260,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: appointmentNotificationTypeDefs,
         resolvers: appointmentNotificationResolvers,
+      },
+      {
+        typeDefs: consultOrdersTypeDefs,
+        resolvers: consultOrdersResolvers,
       },
     ]),
     plugins: [

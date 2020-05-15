@@ -17,6 +17,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,8 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     searchByBrandPage: {
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
+      [theme.breakpoints.up('sm')]: {
+        backgroundColor: '#f7f8f5',
+      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -127,6 +129,11 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 'calc(100vh - 185px) !important',
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -140,11 +147,14 @@ const apiDetailsText = {
 };
 type Params = { searchMedicineType: string; searchText: string };
 
+type PriceFilter = { fromPrice: string; toPrice: string };
+type DiscountFilter = { fromDiscount: string; toDiscount: string };
+
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
-  const [priceFilter, setPriceFilter] = useState();
-  const [discountFilter, setDiscountFilter] = useState();
-  const [filterData, setFilterData] = useState();
+  const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
+  const [discountFilter, setDiscountFilter] = useState<DiscountFilter | null>(null);
+  const [filterData, setFilterData] = useState([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -238,13 +248,13 @@ export const SearchByMedicine: React.FC = (props) => {
     let priceFilterArray: MedicineProduct[] | null = null;
     if (
       priceFilter &&
-      !priceFilter.fromPrice &&
-      !priceFilter.toPrice &&
+      priceFilter.fromPrice &&
+      priceFilter.toPrice &&
       filterData &&
       filterData[0] === '' &&
       discountFilter &&
-      discountFilter.fromDiscount === 0 &&
-      discountFilter.toDiscount === 100 &&
+      discountFilter.fromDiscount === '0' &&
+      discountFilter.toDiscount === '100' &&
       sortBy === ''
     ) {
       setMedicineListFiltered(medicineList);
@@ -311,8 +321,8 @@ export const SearchByMedicine: React.FC = (props) => {
     }
     if (
       discountFilter &&
-      !(discountFilter.fromDiscount == 0 && discountFilter.toDiscount == 100) &&
-      discountFilter.toDiscount > 0
+      !(discountFilter.fromDiscount == '0' && discountFilter.toDiscount == '100') &&
+      parseFloat(discountFilter.toDiscount) > 0
     ) {
       const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
       priceFilterArray = filteredArray.filter((item) => {
@@ -320,10 +330,10 @@ export const SearchByMedicine: React.FC = (props) => {
           const specialPrice = getSpecialPrice(item.special_price);
           const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
           return discountPercentage >= (discountFilter.fromDiscount || 0) &&
-            discountPercentage <= discountFilter.toDiscount
+            discountPercentage <= parseFloat(discountFilter.toDiscount)
             ? true
             : false;
-        } else if (discountFilter.fromDiscount == 0) {
+        } else if (discountFilter.fromDiscount == '0') {
           return filteredArray;
         }
       });
@@ -407,8 +417,11 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <NavigationBottom />
       {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
+      <NavigationBottom />
     </div>
   );
 };

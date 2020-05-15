@@ -12,6 +12,11 @@ import {
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { createContext } from 'react';
 
+export interface VitalErrorProps {
+  height: String;
+  weight: String;
+}
+
 export interface CaseSheetContextPropsJrd {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -90,6 +95,12 @@ export interface CaseSheetContextPropsJrd {
   familyHistory: string;
   menstrualHistory: string;
   dosageList: any;
+  vitalError: VitalErrorProps;
+  medicationHistory: string;
+  occupationHistory: string;
+  referralDescription: string;
+  referralSpecialtyName: string;
+  referralError: boolean;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -102,6 +113,12 @@ export interface CaseSheetContextPropsJrd {
   setLifeStyle: (lifeStyle: string) => void;
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
+  setVitalError: (vitalError: VitalErrorProps) => void;
+  setMedicationHistory: (medicationHistory: string) => void;
+  setOccupationHistory: (occupationHistory: string) => void;
+  setReferralSpecialtyName: (referralSpecialtyName: string) => void;
+  setReferralDescription: (referralDescription: string) => void;
+  setReferralError: (referralError: boolean) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -156,6 +173,15 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   familyHistory: '',
   menstrualHistory: '',
   dosageList: [],
+  vitalError: {
+    height: '',
+    weight: '',
+  },
+  medicationHistory: '',
+  occupationHistory: '',
+  referralSpecialtyName: '',
+  referralDescription: '',
+  referralError: false,
 
   setBp: () => {},
   setHeight: () => {},
@@ -168,6 +194,12 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setLifeStyle: () => {},
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
+  setVitalError: () => {},
+  setMedicationHistory: () => {},
+  setOccupationHistory: () => {},
+  setReferralSpecialtyName: () => {},
+  setReferralDescription: () => {},
+  setReferralError: () => {},
 
   gender: '',
   setGender: () => {},

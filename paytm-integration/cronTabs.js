@@ -2,10 +2,45 @@ const axios = require('axios');
 const Constants = require('./Constants');
 const fs = require('fs');
 const format = require('date-fns/format');
+const addDays = require('date-fns/addDays');
 
 exports.autoSubmitJDCasesheet = (req, res) => {
   const requestJSON = {
     query: Constants.AUTO_SUBMIT_JD_CASESHEET,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+exports.sendUnreadMessagesNotification = (req, res) => {
+  const requestJSON = {
+    query: Constants.SEND_UNREAD_MESSAGES_NOTIFICATION,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+exports.archiveMessages = (req, res) => {
+  const requestJSON = {
+    query: Constants.ARCHIVE_MESSAGES,
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
@@ -43,7 +78,7 @@ exports.noShowReminder = (req, res) => {
         ' - ' +
         response.data.data.noShowReminderNotification.apptsListCount;
       ('\n-------------------\n');
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -72,7 +107,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -101,7 +136,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -130,7 +165,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +195,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -193,11 +228,8 @@ exports.updateSdSummary = (req, res) => {
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
-      console.log('totalSets===>', totalSets);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
-        console.log('running set', i);
         //loop for 10times
         const docOffset = i * docLimit;
         task(i);
@@ -221,14 +253,10 @@ exports.updateSdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -238,8 +266,6 @@ exports.updateSdSummary = (req, res) => {
       }
       res.send({
         apiRunningForDate: finalDate,
-        totalSets: totalSets,
-        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -269,7 +295,6 @@ exports.updateJdSummary = (req, res) => {
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
         const docOffset = i * docLimit;
@@ -294,14 +319,10 @@ exports.updateJdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -311,8 +332,6 @@ exports.updateJdSummary = (req, res) => {
       }
       res.send({
         apiRunningForDate: finalDate,
-        totalSets: totalSets,
-        docCount: docCount.seniorDoctorCount,
         status: 'success',
         message: response.data,
       });
@@ -342,12 +361,9 @@ exports.updateDoctorFeeSummary = (req, res) => {
       const doctorLimit = req.query.docLimit;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
-      console.log('totalSets', totalSets);
       let i;
-      //const currentDate = format(new Date(), 'yyyy-MM-dd');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
-        console.log('running set==>', i);
         const docOffset = i * docLimit;
         task(i);
         function task(i) {
@@ -364,7 +380,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +
                   new Date().toDateString() +
-                  '-updateDoctorFeeSummary_test.txt';
+                  '-updateDoctorFeeSummary.txt';
                 let content =
                   new Date().toString() +
                   '\n---------------------------\n' +
@@ -375,14 +391,10 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
-                // res.send({
-                //   status: 'success',
-                //   message: response.data,
-                // });
               })
               .catch((error) => {
                 console.log('error', error);
@@ -391,6 +403,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
         }
       }
       res.send({
+        apiRunningForDate: finalDate,
         status: 'success',
         message: response.data,
       });
@@ -414,12 +427,12 @@ exports.updateDoctorSlotsEs = (req, res) => {
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
       let docCount = response.data.data;
       let finalResult = docCount.seniorDoctorCount;
-      const doctorLimit = 50;
+      const doctorLimit = Constants.ES_DOC_LIMIT;
       const docLimit = doctorLimit;
       let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
       let i;
       let fromDate = format(new Date(), 'yyyy-MM-dd');
-      let toDate = format(addDays(new Date(), 5), 'yyyy-MM-dd');
+      let toDate = format(addDays(new Date(), Constants.ES_ADD_DAYS), 'yyyy-MM-dd');
       console.log(fromDate, toDate, 'dates of slots');
       for (i = 0; i < totalSets; i++) {
         //loop for 10times
@@ -437,7 +450,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
             axios
               .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
               .then((response) => {
-                console.log(response.data.errors[0], 'errorr message from api');
+                //console.log(response.data.errors[0], 'errorr message from api');
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +
                   new Date().toDateString() +
@@ -448,7 +461,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                   '\nupdateDoctorSlotsEs Response\n' +
                   response.data.data.addAllDoctorSlotsElastic +
                   '\n-------------------\n';
-                if (response.data.errors[0]) {
+                if (response.data.errors) {
                   content +=
                     response.data.errors[0].message +
                     ', ' +
@@ -456,14 +469,14 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
               })
               .catch((error) => {
-                //console.log('error', error);
-                console.log(error.response.data.errors, 'erros from api');
+                console.log('error', error);
+                //console.log(error.response.data.errors, 'erros from api');
               });
           }, 5000 * i);
         }

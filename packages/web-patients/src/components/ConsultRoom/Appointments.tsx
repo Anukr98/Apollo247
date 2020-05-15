@@ -1,6 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import React, { useEffect } from 'react';
+import Modal from '@material-ui/core/Modal';
+
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
@@ -9,6 +11,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -40,6 +43,8 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { gtmTracking } from '../../gtmTracking';
+import { OrderStatusContent } from 'components/OrderStatusContent';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,9 +94,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     consultPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       paddingTop: 30,
+      borderRadius: '0 0 10px 10px',
       marginBottom: 20,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -334,6 +339,11 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    modal: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   };
 });
 
@@ -362,14 +372,6 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
-  useEffect(() => {
-    if (isFailurePayment) {
-      /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialtyName, 'Failed / Cancelled');
-      /**Gtm code start end */
-    }
-  }, [isFailurePayment]);
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -491,6 +493,24 @@ export const Appointments: React.FC = (props) => {
       }
     }
   }, [availableAppointments, successApptId, isConfirmPopupLoaded]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    if (pageUrl.includes('failed')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Failed / Cancelled',
+      });
+    } else if (pageUrl.includes('success')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Order Success',
+      });
+    }
+    /**Gtm code start end */
+  }, [specialtyName]);
 
   // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
@@ -731,7 +751,26 @@ export const Appointments: React.FC = (props) => {
           </a>
         </div>
       </AphDialog>
-
+      {/* <Modal
+        open={true}
+        onClose={() => setIsPopoverOpen(false)}
+        className={classes.modal}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <OrderStatusContent
+          paymentStatus={'failed'}
+          paymentInfo={'fdsafa'}
+          orderStatusCallback={() => {}}
+          orderId={323232}
+          amountPaid={3232}
+          doctorName={'Dr. therapist'}
+          paymentRefId={'fdsafda'}
+          bookingDateTime={'23 May'}
+          type={'consult'}
+          consultMode={'Online'}
+        />
+      </Modal> */}
       <Popover
         open={isFailurePayment}
         anchorEl={anchorEl}
@@ -754,14 +793,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h3">Uh oh.. :)</Typography>
               <p> We're sorry but the payment failed</p>
               <div className={classes.bottomButtons}>
-                <AphButton
-                  color="primary"
-                  onClick={() => {
-                    setIsFailurePayment(false);
-                  }}
-                >
-                  OK, GOT IT
-                </AphButton>
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        setIsFailurePayment(false);
+                        history.push(clientRoutes.appointments());
+                      }}
+                    >
+                      OK, GOT IT
+                    </AphButton>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -790,7 +834,6 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </Popover> */}
-
       <NavigationBottom />
     </div>
   );

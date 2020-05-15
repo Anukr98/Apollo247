@@ -162,8 +162,8 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();
   const client = useApolloClient();
-  const classes = useStyles();
-  const [userDetails, setUserDetails] = React.useState();
+  const classes = useStyles({});
+  const [userDetails, setUserDetails] = React.useState<any>();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
   if (currentUserId) {
     localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');

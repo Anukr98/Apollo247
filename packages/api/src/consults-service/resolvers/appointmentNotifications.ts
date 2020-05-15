@@ -70,8 +70,11 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
   const ConsultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
 
   const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
-  const futureTime = addMinutes(new Date(currentDate), 10);
-  const appointments = await apptRepo.getAppointmentsByDate(futureTime);
+  const futureTime = addMinutes(
+    new Date(currentDate),
+    parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME.toString(), 10)
+  );
+  const appointments = await apptRepo.getAllAppointmentsWithDate(futureTime);
   const appointmentIds = appointments.map((appointment) => appointment.id);
 
   if (appointmentIds.length) {

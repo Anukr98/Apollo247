@@ -457,7 +457,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 {doctorDetails.specialty && doctorDetails.specialty.name
                   ? doctorDetails.specialty.name
                   : ''}{' '}
-                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}
+                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'} EXP
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>

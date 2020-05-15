@@ -4,7 +4,7 @@ export const appointmentPaymentEmailTemplate = _.template(`
 <html>
 <body>  
 <ol>
-<p>New Appointment has been booked on Apollo 247 app with the following details </p>
+<p>New Appointment has been booked on Apollo 24|7 app with the following details </p>
 <ul>
 <li>Appointment No : <%- displayId %></li>
 <li>Patient Name : <%- firstName %></li>

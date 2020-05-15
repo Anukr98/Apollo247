@@ -112,10 +112,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateUserType: UpdateUserTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
-    updateUtilizationCapacity(
-      specialityId: String
-      weekDay: WeekDay
-    ): updateUtilizationCapacityResult
+    updateUtilizationCapacity(specialityId: String): updateUtilizationCapacityResult
     updateDoctorsAwayAndOnlineCount(
       doctorId: String
       summaryDate: Date
@@ -496,25 +493,20 @@ const updateDoctorFeeSummary: Resolver<
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
-  console.log('docsList=====>', docsList.length);
   docsList.forEach(async (doctor) => {
-    console.log('doctorIdss=>', doctor.id);
     const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
       doctor.id,
       args.summaryDate,
       ConsultMode.BOTH
     );
-    console.log('totalConsultations==>', totalConsultations);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
       totalConsults = totalConsultations.length;
       totalConsultations.forEach(async (consultation, index, array) => {
-        console.log('inside loop');
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
         );
-        console.log('payment details==', paymentDetails);
         if (!_isEmpty(paymentDetails) && paymentDetails) {
           totalFee += parseFloat(paymentDetails.amountPaid.toString());
         }
@@ -531,9 +523,14 @@ const updateDoctorFeeSummary: Resolver<
         doctorId: doctor.id,
         doctorName: doctor.firstName + ' ' + doctor.lastName,
         amountPaid: totalFee,
-        specialtiyId: doctor.specialty.id,
-        specialityName: doctor.specialty.name,
-        areaName: doctor.doctorHospital[0].facility.city,
+        specialtiyId: doctor.specialty != null ? doctor.specialty.id : '',
+        specialityName: doctor.specialty != null ? doctor.specialty.name : '',
+        areaName:
+          doctor.doctorHospital.length > 0
+            ? doctor.doctorHospital[0].facility != null
+              ? doctor.doctorHospital[0].facility.city
+              : ''
+            : '',
         appointmentsCount: totalConsults,
         isActive: <boolean>doctor.isActive,
         updatedDate: new Date(),
@@ -621,21 +618,20 @@ const updateSpecialtyCount: Resolver<
   updateSpecialtyCountResult
 > = async (parent, args, context) => {
   const { docRepo, DoctorSpecialtyRepo, CurrentAvailStatusRepo } = getRepos(context);
-  //get speciality details
-  const specialityDetails = await DoctorSpecialtyRepo.findById(args.specialityId);
+  const specialityDetails = await DoctorSpecialtyRepo.getAllSpecialities(args.specialityId);
   if (!specialityDetails) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
-  //get totalDoctors count for given speciality
-  const totalDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(args.specialityId, 1);
-  //get online doctors count for given speciality
-  const totalOnlineDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(args.specialityId, 2);
-  //insert in db
-  await CurrentAvailStatusRepo.updateavailabilityStatus(
-    args.specialityId,
-    specialityDetails.name,
-    totalDoctorsCount,
-    totalOnlineDoctorsCount
-  );
-  //send response
+  if (specialityDetails) {
+    specialityDetails.forEach(async (speciality) => {
+      const totalDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(speciality.id, 1);
+      const totalOnlineDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(speciality.id, 2);
+      await CurrentAvailStatusRepo.updateavailabilityStatus(
+        speciality.id,
+        speciality.name,
+        totalDoctorsCount,
+        totalOnlineDoctorsCount
+      );
+    });
+  }
   return { updated: true };
 };
 const updateUtilizationCapacity: Resolver<
@@ -651,23 +647,29 @@ const updateUtilizationCapacity: Resolver<
     UtilizationCapacityRepo,
     consultHoursRepo,
   } = getRepos(context);
-  const DoctorSpeciality = await DoctorSpecialtyRepo.findById(args.specialityId);
+  const weekDay = format(new Date(), 'EEEE').toUpperCase();
+  const DoctorSpeciality = await DoctorSpecialtyRepo.getAllSpecialities(args.specialityId);
   if (!DoctorSpeciality) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
-  const Doctors = await docRepo.getSpecialityDoctors(args.specialityId);
-  if (!Doctors) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
-  const doctorIds = Doctors.map((doctor) => {
-    return doctor.id;
-  });
-  const totalSlots = await consultHoursRepo.getTotalConsultHours(doctorIds, args.weekDay);
-  const appointments = await apptRepo.getBookedSlots(doctorIds);
-  await UtilizationCapacityRepo.updateUtilization(
-    args.specialityId,
-    DoctorSpeciality.name,
-    totalSlots,
-    appointments
-  );
+  if (DoctorSpeciality) {
+    DoctorSpeciality.forEach(async (speciality) => {
+      const Doctors = await docRepo.getSpecialityDoctors(speciality.id);
+      if (!Doctors) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
+      const doctorIds = Doctors.map((doctor) => {
+        return doctor.id;
+      });
+      const totalSlots = await consultHoursRepo.getTotalConsultHours(doctorIds, weekDay);
+      const appointments = await apptRepo.getBookedSlots(doctorIds);
+      await UtilizationCapacityRepo.updateUtilization(
+        speciality.id,
+        speciality.name,
+        totalSlots,
+        appointments
+      );
+    });
+  }
   return { updated: true };
 };
+
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,

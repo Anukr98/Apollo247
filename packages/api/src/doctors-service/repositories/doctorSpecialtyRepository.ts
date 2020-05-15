@@ -38,6 +38,24 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
     });
   }
 
+  getAllSpecialities(specialtyId: string) {
+    if (specialtyId == '0') {
+      return this.createQueryBuilder('specialty')
+        .getMany()
+        .catch((getSpecialtiesError) => {
+          throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
+            getSpecialtiesError,
+          });
+        });
+    } else {
+      return this.find({
+        where: {
+          id: specialtyId,
+        },
+      });
+    }
+  }
+
   findSpecialtyIdsByNames(specialtyNames: string[]) {
     return this.createQueryBuilder('specialty')
       .select('specialty.id', 'id')

@@ -60,7 +60,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.',
+  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your order {1} is placed with us successfully.',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -86,17 +86,31 @@ export enum ApiConstants {
   PATIENT_CANCEL_APPT_BODY_END = 'to book a new appointment with our top Apollo doctors.',
   DOCTOR_PATIENT_CANCEL_SMS = 'Hi Dr. {0}! Your appointment {1} with {2} scheduled for {3} has unfortunately been cancelled. Please make note.',
   //patient registration successfull
-  PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
-  PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
+  PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24|7',
+  PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24|7. We're glad you're here! Consult online with our top Apollo doctors now!",
   PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store in Chennai and Hyderabad. Terms and Conditions Apply',
+
+  //payment refund
+  PAYMENT_REFUND_TITLE = 'Your appointment payment will be refunded',
+  PAYMENT_REFUND_BODY = 'Hi there! The refund of Rs.{0} for your Consultation ID: {2}  has been initiated by Apollo 24/7 with the refund ID - {2}. Due to the lockdown, banks are taking longer than usual to process the refunds.Hence, the amount may take around 10-14 working days to reflect in your source account. However, we are working with banks to speed up the refund process. Thank you for your understanding',
+
+  //book appointment payment success
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE = 'Your appointment payment is received',
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY = 'Your pending payment of Rs. {0} for Appointment : {1} with Dr. {2} has been been received for {3}. Click here to fill your details before your consultation starts.',
+  BOOK_APPOINTMENT_PAYMENT_SUCCESS_SMS = 'Your pending payment of Rs. {0} for Appointment : {1} with Dr. {2} has been been received for {3}. Click here {5} to fill your details before your consultation starts.',
+
+  //book appointment payment failure
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_TITLE = 'Your appointment payment is failed',
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_BODY = "Your pending payment of Rs.{0} for Appointment: {1} with Dr. {2} has failed. Your amount will be refunded in 7-10 working days as per your bank's policy. Click here to book appointment again.",
+  BOOK_APPOINTMENT_PAYMENT_FAILURE_SMS = "Your pending payment of Rs.{0} for Appointment: {1} with Dr. {2} has failed. Your amount will be refunded in 7-10 working days as per your bank's policy. Click here {5} to book appointment again.",
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
-  BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-  BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
+  BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
+  BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   //physical book appointment sucessfull
-  PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-  PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
+  PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better. You may be required to pay additional fees for registration at Hospital for Visit Clinic appointments.',
+  PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
@@ -108,7 +122,7 @@ export enum ApiConstants {
   SENT_BY_API = 'SENT_BY_API',
   //case sheet submitted
   CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you.',
-  DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24x7. Summary of appointments',
+  DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
   ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
@@ -149,10 +163,10 @@ export enum ApiConstants {
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
 
-  BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
+  BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
   CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
-  CANCEL_APPOINTMENT_BODY = 'Appointment booked on Apollo 247 has been cancelled.',
+  CANCEL_APPOINTMENT_BODY = 'Appointment booked on Apollo 24|7 has been cancelled.',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
@@ -185,7 +199,7 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
+  CC_MAIL = 'raj@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
@@ -279,8 +293,16 @@ export enum ApiConstants {
   AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
-  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
+  APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  FREE_CHAT_DAYS = 7,
+  DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
+  DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
+  AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
+  AUTO_SUBMIT_CASESHEET_TIME = 10,
+  STAT_LOWECASE = 'stat',
+  STAT_UPPERCASE = 'STAT(Immediately)',
 }

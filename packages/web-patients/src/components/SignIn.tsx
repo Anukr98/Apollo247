@@ -17,6 +17,7 @@ import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
+import { gtmTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,7 +96,7 @@ const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
 const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Now type in the OTP sent to you for authentication';
@@ -288,7 +289,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 e.preventDefault();
 
                 /**Gtm code start start */
-                window.gep && window.gep('Profile', 'Signup / Login', 'OTP Entered');
+                gtmTracking({
+                  category: 'Profile',
+                  action: 'Register / Login',
+                  label: 'OTP Entered',
+                });
                 /**Gtm code start end */
 
                 verifyOtp(otp, customLoginId).then((authToken) => {
@@ -321,7 +326,7 @@ interface signInProps {
 }
 
 export const SignIn: React.FC<signInProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
@@ -335,7 +340,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           /**Gtm code start start */
-          window.gep && window.gep('Profile', 'Signup / Login', 'Mobile Entered');
+          gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Mobile Entered' });
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

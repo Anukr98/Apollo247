@@ -6,13 +6,14 @@ import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
-// import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
-// import { Link } from 'react-router-dom';
+import { CallOurExperts } from 'components/CallOurExperts';
+import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
+import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
-// import { NavigationBottom } from 'components/NavigationBottom';
-// import { CommentsForm } from 'components/Covid/CommentsForm';
-// import { CommentsList } from 'components/Covid/CommentsList';
-// import { AphButton } from '@aph/web-ui-components';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { CommentsForm } from 'components/Covid/CommentsForm';
+import { CommentsList } from 'components/Covid/CommentsList';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -70,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         fontSize: 16,
         lineHeight: '26px',
-        // width: 'calc(100% - 360px)',
+        width: 'calc(100% - 360px)',
         backgroundColor: 'transparent',
         boxShadow: 'none',
       },
@@ -121,11 +122,19 @@ const useStyles = makeStyles((theme: Theme) => {
     htmlContent: {
       marginBottom: 30,
     },
+    sourceUrl: {
+      whiteSpace: 'pre-wrap',
+      wordWrap: 'break-word',
+    },
+    expertsContainer: {
+      paddingTop: 20,
+      width: '45%',
+    },
   };
 });
 
 export const CovidArticleDetails: React.FC = (props: any) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const [htmlData, setHtmlData] = useState('');
   const [source, setSource] = useState('');
@@ -133,12 +142,25 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [thumbnailMobile, setThumbnailMobile] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [titleId, setTitleId] = useState<string>('');
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
-  const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
+  const [isWebView, setIsWebView] = useState<boolean>(false);
+  const [comments, setComments] = useState([]);
+  const [totalComments, setTotalComments] = useState('');
+
+  // const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
+  const covidArticleDetailUrl = 'https://uatcms.apollo247.com/api/article-details';
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
+    if (props && props.location && props.location.search && props.location.search.length) {
+      const qParamsArr = props.location.search.split('=');
+      if (qParamsArr && qParamsArr.length) {
+        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
+        setIsWebView(isWebView);
+      }
+    }
     if (articleSlug) {
       fetchUtil(`${covidArticleDetailUrl}/${articleSlug}`, 'GET', {}, '', true).then((res: any) => {
         let postData: any = {};
@@ -152,6 +174,9 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             title,
             type,
             sourceUrl,
+            id,
+            comments,
+            totalComments,
           } = postData;
           setHtmlData(htmlData);
           setSource(source);
@@ -159,8 +184,11 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           setThumbnailWeb(thumbnailWeb);
           setThumbnailMobile(thumbnailMobile);
           setTitle(title);
+          setTitleId(id);
           setType(type);
           setShowLoader(false);
+          setComments(comments);
+          setTotalComments(totalComments);
         }
       });
     } else {
@@ -178,7 +206,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             </div>
           ) : (
             <>
-              <ArticleBanner title={title} source={source} type={type} />
+              <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
               <div className={classes.imageBanner}>
                 <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
                 <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
@@ -192,30 +220,34 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a>SOURCE</a>
-                      <div>
-                        <a href={sourceUrl} target="_blank">
-                          {sourceUrl}
-                        </a>
-                      </div>
+                      <a href={sourceUrl} target="_blank">
+                        <div>SOURCE</div>
+                        <div className={classes.sourceUrl}>{sourceUrl}</div>
+                      </a>
                     </>
                   )}
+                  <div className={classes.expertsContainer}>
+                    <CallOurExperts />
+                  </div>
                 </div>
-                {/* <div className={classes.rightSidebar}>
-              <div className={classes.formCard}>
-                <CommentsForm />
-                <CommentsList />
-              </div>
-              <div className={classes.bottomActions}>
-                <AphButton color="primary">Share this article</AphButton>
-              </div>
-            </div> */}
+                <div className={classes.rightSidebar}>
+                  <div className={classes.formCard}>
+                    <CommentsForm titleId={titleId} />
+                    <CommentsList
+                      titleId={titleId}
+                      commentData={comments}
+                      totalComments={totalComments}
+                    />
+                  </div>
+                  {/* <div className={classes.bottomActions}>
+                    <AphButton color="primary">Share this article</AphButton>
+                  </div> */}
+                </div>
               </div>
             </>
           )}
         </div>
       </div>
-      {/* <NavigationBottom /> */}
     </div>
   );
 };

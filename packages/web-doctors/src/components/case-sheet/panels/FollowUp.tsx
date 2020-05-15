@@ -311,6 +311,9 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
   const isFollowUpDisable = true;
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -350,7 +353,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                 min={2}
                 max={9}
                 defaultValue={defaultValue}
-                onChange={debounce((e, value) => setFollowUpDays(value), 200)}
+                onChange={debounce((e, value: number) => setFollowUpDays(value), 200)}
                 disabled={!props.startAppointment}
               />
               {followUpDays === 9 && (
@@ -375,6 +378,8 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                         }}
                         onChange={(date) => handleDateChange(date as Date)}
                         disabled={!props.startAppointment}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
                       />
                     </span>
                   </ThemeProvider>

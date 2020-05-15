@@ -13,15 +13,17 @@ import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import AsyncStorage from '@react-native-community/async-storage';
 import Bugfender from '@bugfender/rn-bugfender';
 
+const { height, width } = Dimensions.get('window');
 const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
 
 Bugfender.init('ZawMMlDXsIzVNhaPh928FvY9YCvMfLDe');
 
+export const isIphone5s = () => height === 568;
+
 export const DeviceHelper = () => {
   const isIphoneX = () => {
-    const { height, width } = Dimensions.get('window');
     return Platform.OS === 'ios' && !Platform.isPad && (height >= 812 || width >= 812);
   };
 

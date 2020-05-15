@@ -8,28 +8,41 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      [theme.breakpoints.down(900)]: {
-        display: 'none',
-      },
-      [theme.breakpoints.up(901)]: {
-        paddingBottom: 20,
-        paddingTop: 20,
-      },
     },
     container: {
       maxWidth: 1064,
       margin: 'auto',
     },
     bottomLinks: {
-      textAlign: 'center',
-      '& a': {
-        marginLeft: 8,
-        marginRight: 8,
-        color: '#01475b',
-        fontSize: 13,
-        textDecoration: 'underline',
-        '&:hover': {
-          textDecoration: 'none',
+      backgroundColor: '#020d11',
+      padding: 20,
+      [theme.breakpoints.up('sm')]: {
+        paddingTop: 30,
+        paddingBottom: 30,
+      },
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        [theme.breakpoints.up('sm')]: {
+          display: 'flex',
+          alignItems: 'center',
+        },
+        '& li': {
+          listStyleType: 'none',
+          paddingTop: 6,
+          paddingBottom: 6,
+          [theme.breakpoints.up('sm')]: {
+            padding: '0 8px',
+            width: '20%',
+            textAlign: 'center',
+          },
+          '& a': {
+            color: '#fff',
+            fontSize: 14,
+            '&:hover': {
+              textDecoration: 'none',
+            },
+          },
         },
       },
     },
@@ -37,22 +50,29 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const BottomLinks: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   return (
     <div className={classes.root}>
       <div className={classes.container}>
         <div className={classes.bottomLinks}>
-          <Link to={clientRoutes.aboutUs()}>About Us</Link>
-          <Link to={clientRoutes.termsConditions()} target="_blank">
-            Terms & Conditions
-          </Link>
-          <Link to={clientRoutes.privacy()} target="_blank">
-            Privacy Policy
-          </Link>
-          <Link to={clientRoutes.contactUs()} target="_blank">
-            Contact Us
-          </Link>
+          <ul>
+            <li>
+              <Link to={clientRoutes.aboutUs()}>About Us</Link>
+            </li>
+            <li>
+              <Link to={clientRoutes.FAQ()}>Frequently Asked Questions</Link>
+            </li>
+            <li>
+              <Link to={clientRoutes.termsConditions()}>Terms & Conditions</Link>
+            </li>
+            <li>
+              <Link to={clientRoutes.privacy()}>Privacy Policy</Link>
+            </li>
+            <li>
+              <Link to={clientRoutes.contactUs()}>Contact Us</Link>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

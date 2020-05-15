@@ -47,6 +47,7 @@ export const validateConsultCouponTypeDefs = gql`
     code: String
     couponConsultRule: CouponConsultRule
     couponGenericRule: CouponGenericRule
+    couponPharmaRule: CouponPharmaRule
     createdDate: DateTime
     description: String
     id: ID
@@ -70,6 +71,18 @@ export const validateConsultCouponTypeDefs = gql`
     numberOfCouponsNeeded: Int
   }
 
+  enum PharmaDiscountApplicableOn {
+    MRP
+    SPECIAL_PRICE
+  }
+
+  type CouponPharmaRule {
+    couponCategoryApplicable: CouponCategoryApplicable
+    discountApplicableOn: PharmaDiscountApplicableOn
+    messageOnCouponScreen: String
+    successMessage: String
+  }
+
   type CouponList {
     coupons: [ConsultCoupon]
   }
@@ -85,7 +98,7 @@ export const validateConsultCouponTypeDefs = gql`
   }
 `;
 
-enum customerTypeInCoupons {
+export enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
 }
@@ -166,7 +179,13 @@ const validateConsultCoupon: Resolver<
 
   //call to check generic rule
   const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, doctorFees);
-  if (genericRuleCheckResult) return genericRuleCheckResult;
+  if (genericRuleCheckResult) {
+    return {
+      validityStatus: genericRuleCheckResult.validityStatus,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: genericRuleCheckResult.reasonForInvalidStatus,
+    };
+  }
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 

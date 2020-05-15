@@ -21,9 +21,10 @@ import { FEEDBACKTYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes
 import {
   aphConsole,
   g,
-  isIphone5s,
+  // isIphone5s,
   handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   ConsultFeedBackData,

@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '65vh',
       overflow: 'auto',
       [theme.breakpoints.down('xs')]: {
-        height: '75vh',
+        height: '66vh',
       },
     },
     signinGroup: {
@@ -181,7 +181,7 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
     relationOrderMap[rel] != null ? relationOrderMap[rel] : 99
   );
 
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patient, number } = props;
 
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
@@ -256,7 +256,7 @@ export interface ExistingProfileProps {
   onComplete: () => void;
 }
 export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [patients, setPatients] = useState(props.patients);
   const [loading, setLoading] = useState(false);
   const loneUser = patients.length === 1 && patients[0].relation !== 'ME';

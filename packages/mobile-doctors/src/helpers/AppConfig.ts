@@ -6,7 +6,7 @@ export enum AppEnv {
   VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 //Development;
 const ConfigurationDev = {
@@ -27,8 +27,8 @@ const ConfigurationQA = {
   BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
-  iOS_Version: '1.013',
-  Android_Version: '1.013',
+  iOS_Version: '1.014',
+  Android_Version: '1.014',
 };
 //Prod
 const ConfigurationProd = {

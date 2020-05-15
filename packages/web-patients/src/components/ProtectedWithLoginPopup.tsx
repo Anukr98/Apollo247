@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
+import { gtmTracking } from '../gtmTracking';
 
 export interface ProtectedWithLoginPopupProps {
   children: React.FC<{ protectWithLoginPopup: () => void; isProtected: boolean }>;
@@ -12,7 +13,7 @@ export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (
   const protectWithLoginPopup = () => {
     if (isProtected) {
       /**Gtm code start start */
-      window.gep && window.gep('Profile', 'Signup / Login', 'Intent');
+      gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Intent' });
       /**Gtm code start end */
 
       setLoginPopupVisible(true);

@@ -5,6 +5,8 @@ import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { gtmTracking } from '../../gtmTracking';
+import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -24,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineStripWrap: {
       display: 'flex',
+      justifyContent: 'space-between',
       [theme.breakpoints.down('xs')]: {
         display: 'block',
       },
@@ -68,6 +71,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       paddingTop: 2,
     },
+    lineThrough: {
+      fontWeight: 500,
+      opacity: 0.6,
+      paddingRight: 5,
+      textDecoration: 'line-through',
+    },
     medicinePrice: {
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
@@ -97,6 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingTop: 8,
       paddingBottom: 8,
+      display: 'flex',
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         right: 15,
@@ -145,6 +155,10 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    noService: {
+      letterSpacing: '0.03px',
+      color: '#890000',
+    },
     menuRoot: {
       fontSize: 13,
       fontWeight: 500,
@@ -159,16 +173,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineListingCard: React.FC = (props) => {
+type MedicineListingCardProps = {
+  validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
+};
+
+export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x + 1);
+  const { validateCouponResult } = props;
 
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item) => (
+        cartItems.map((item, idx) => (
           <div
             key={item.id}
             className={`${classes.medicineStrip} ${
@@ -191,12 +210,18 @@ export const MedicineListingCard: React.FC = (props) => {
                   <div className={classes.medicineName}>
                     {item.name}
                     <div className={classes.tabInfo}>
-                      {item.is_in_stock ? `Pack Of ${item.mou}` : 'Out Of Stock'}
+                      {item.is_in_stock && item.isShippable ? (
+                        `Pack Of ${item.mou}`
+                      ) : !item.is_in_stock ? (
+                        'Out Of Stock'
+                      ) : (
+                        <span className={classes.noService}>Not serviceable in your area.</span>
+                      )}
                     </div>
                   </div>
                 </div>
               </Link>
-              {item.is_in_stock ? (
+              {item.is_in_stock && item.isShippable ? (
                 <div className={classes.cartRight}>
                   <div className={classes.medicinePack}>
                     <div>QTY :</div>
@@ -223,6 +248,7 @@ export const MedicineListingCard: React.FC = (props) => {
                           quantity: parseInt(e.target.value),
                           special_price: item.special_price,
                           mou: item.mou,
+                          isShippable: true,
                         })
                       }
                     >
@@ -240,28 +266,61 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>
-                    Rs. {item.special_price || item.price}
-                  </div>
-                  <div className={classes.addToCart}>
-                    <AphButton
-                      onClick={() => {
-                        /**Gtm code start  */
-                        window.gep &&
-                          window.gep('Pharmacy', 'Remove From Cart', item.name, item.price);
-                        /**Gtm code End  */
-                        removeCartItem && removeCartItem(item.id);
-                      }}
-                    >
-                      <img
-                        src={require('images/ic_cross_onorange_small.svg')}
-                        alt="Remove Item"
-                        title="Remove item from Cart"
-                      />
-                    </AphButton>
-                  </div>
+                  {validateCouponResult &&
+                  validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
+                    <>
+                      <div className={classes.medicinePrice}>
+                        <span className={classes.lineThrough}>
+                          Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                        </span>
+                        <div>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs.{' '}
+                        {
+                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                            .applicablePrice
+                        }
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={classes.medicinePrice}>
+                        {item.special_price ? (
+                          <span className={classes.lineThrough}>Rs. {item.price}</span>
+                        ) : null}
+                        <div>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs. {item.special_price || item.price}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : null}
+              <div className={classes.addToCart}>
+                <AphButton
+                  onClick={() => {
+                    /**Gtm code start  */
+                    gtmTracking({
+                      category: 'Pharmacy',
+                      action: 'Remove From Cart',
+                      label: item.name,
+                      value: item.special_price || item.price,
+                    });
+                    /**Gtm code End  */
+                    removeCartItem && removeCartItem(item.id);
+                  }}
+                >
+                  <img
+                    src={require('images/ic_cross_onorange_small.svg')}
+                    alt="Remove Item"
+                    title="Remove item from Cart"
+                  />
+                </AphButton>
+              </div>
             </div>
           </div>
         ))}

@@ -29,6 +29,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
+import { gtmTracking } from '../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,7 +55,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
@@ -181,6 +182,11 @@ const useStyles = makeStyles((theme: Theme) => {
         visibility: 'hidden',
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -233,7 +239,11 @@ export const DoctorsLanding: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start start */
-    window.gep && window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
+    gtmTracking({
+      category: 'Consultations',
+      action: 'Landing Page',
+      label: 'Listing Page Viewed',
+    });
     /**Gtm code start end */
   }, []);
 
@@ -275,7 +285,11 @@ export const DoctorsLanding: React.FC = (props) => {
       setShowSearchAndPastSearch(false);
 
       /**Gtm code start start */
-      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      gtmTracking({
+        category: 'Consultations',
+        action: specialitySelected,
+        label: 'Listing Page Viewed',
+      });
       /**Gtm code start end */
     }
   }, [specialitySelected]);
@@ -768,6 +782,9 @@ export const DoctorsLanding: React.FC = (props) => {
           </>
         )}
       </LocationContext.Consumer>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
     </div>
   );
 };

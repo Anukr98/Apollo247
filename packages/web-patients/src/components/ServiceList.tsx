@@ -87,7 +87,7 @@ interface ServiceItemProps {
 }
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { title, content, action } = props.item;
   return (
     <ProtectedWithLoginPopup>
@@ -123,7 +123,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
 };
 
 export const ServiceList: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
       title: 'You know which doctor you are looking for?',
