@@ -52,6 +52,7 @@ import {
   paymentStatusTypeDefs,
   paymentStatusResolvers
 } from 'profiles-service/resolvers/pharmaPaymentStatus';
+import {
   saveMedicineOrderOMSTypeDefs,
   saveMedicineOrderOMSResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrdersOMS';
