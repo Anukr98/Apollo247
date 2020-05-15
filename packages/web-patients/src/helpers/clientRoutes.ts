@@ -54,6 +54,7 @@ export const clientRoutes = {
   myPayments: () => '/my-payments',
   payMedicine: (payType: string) => `/pay-medicine/${payType}`,
   payOnlineConsult: () => '/pay-online-consult',
+  payOnlineClinicConsult: () => '/pay-clinic-visit',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
