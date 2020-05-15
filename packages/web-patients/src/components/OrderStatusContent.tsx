@@ -285,10 +285,10 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     <div className={classes.modalContent}>
       <div className={classes.modalHeader}>
         <Typography component="h5">Payment Status</Typography>
-        <Link onClick={onClose} className={classes.closePopup}>
+        <Link onClick={() => onClose()} className={classes.closePopup}>
           <img src={require('images/ic_cross_popup.svg')} />
         </Link>
-        <Link onClick={onClose} className={`${classes.closePopup} ${classes.mobileBack}`}>
+        <Link onClick={() => onClose()} className={`${classes.closePopup} ${classes.mobileBack}`}>
           <img src={require('images/ic_back.svg')} />
         </Link>
       </div>
@@ -363,7 +363,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               </div>
               <div className={classes.details}>
                 <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType === "COD" ? "COD" : "PREPAID"}</Typography>
+                <Typography component="p">{paymentType === 'COD' ? 'COD' : 'PREPAID'}</Typography>
               </div>
             </Paper>
           )}

@@ -476,13 +476,23 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   //     return appointmentDetails;
   //   }
   // });
-  type statusActionType = {
-    [name: string]: any;
-  };
+  interface statusActionInterface {
+    ctaText: string;
+    info: string;
+    callbackFunction: () => void;
+  }
   interface statusMap {
-    [name: string]: statusActionType;
+    [name: string]: statusActionInterface;
   }
   const statusActions: statusMap = {
+    PAYMENT_PENDING: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
     PAYMENT_SUCCESS: {
       ctaText: 'DOWNLOAD APP',
       info: '',
@@ -497,14 +507,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       callbackFunction: () => {
         props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
       },
-    },
-    PAYMENT_PENDING: {
-      ctaText: 'GO TO HOME',
-      info:
-        'Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.',
-    },
-    callbackFunction: () => {
-      props && props.history && props.history.push(clientRoutes.welcome());
     },
   };
 
