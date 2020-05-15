@@ -664,11 +664,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             title={caseSheetEdit ? 'SAVE' : 'EDIT CASE SHEET'}
             onPress={() => {
               if (caseSheetEdit) {
-                setShowButtons(true);
-                saveDetails(true, undefined, () => {
-                  props.setCaseSheetEdit(false);
-                  setLoading && setLoading(false);
-                });
+                if (
+                  selectedReferral.key === '-1' ||
+                  (selectedReferral.key !== '-1' && referralReason)
+                ) {
+                  setShowButtons(true);
+                  saveDetails(true, undefined, () => {
+                    props.setCaseSheetEdit(false);
+                    setLoading && setLoading(false);
+                  });
+                } else {
+                  showAphAlert &&
+                    showAphAlert({
+                      title: strings.common.alert,
+                      description: strings.alerts.missing_referral_description,
+                    });
+                }
               } else {
                 props.setCaseSheetEdit(true);
                 setShowEditPreviewButtons(true);
@@ -681,9 +692,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'PREVIEW PRESCRIPTION'}
             onPress={() => {
-              setShowButtons(true);
-              saveDetails(false);
-              prescriptionView();
+              if (
+                selectedReferral.key === '-1' ||
+                (selectedReferral.key !== '-1' && referralReason)
+              ) {
+                setShowButtons(true);
+                saveDetails(false);
+                prescriptionView();
+              } else {
+                showAphAlert &&
+                  showAphAlert({
+                    title: strings.common.alert,
+                    description: strings.alerts.missing_referral_description,
+                  });
+              }
             }}
             style={styles.buttonendStyle}
           />
