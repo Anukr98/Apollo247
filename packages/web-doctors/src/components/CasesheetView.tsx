@@ -228,9 +228,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 11,
         color: 'rgba(0, 0, 0, 0.6)',
         lineHeight: 1.5,
-        margin: 0,
+        margin: '20px 0 10px',
         fontWeight: 400,
-        marginTop: 20,
       },
     },
     gerenalInfo: {
@@ -786,31 +785,57 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           )}
           {isPageContentFull() ? null : (
             <>
-              {createdDoctorProfile && createdDoctorProfile.signature && (
+              {createdDoctorProfile && (
                 <div className={classes.prescriptionHeader}>
-                  <h6>
-                    Prescribed on{' '}
-                    {sdConsultationDate && sdConsultationDate !== ''
-                      ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                      : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
-                    by
-                  </h6>
-                  <div className={classes.followUpContent}>
-                    <img src={createdDoctorProfile.signature} />
-                  </div>
-                  <div className={classes.signInformation}>
-                    <h3 className={classes.followUpContent}>
-                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                    </h3>
-                    {/* {currentDoctor.qualification && (
+                  {((sdConsultationDate && sdConsultationDate !== '') ||
+                    (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+                    <h6>
+                      Prescribed on{' '}
+                      {sdConsultationDate && sdConsultationDate !== ''
+                        ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                        : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                      by
+                    </h6>
+                  )}
+                  {createdDoctorProfile!.signature && (
+                    <div className={classes.followUpContent}>
+                      <img src={createdDoctorProfile.signature} />
+                    </div>
+                  )}
+                  {(createdDoctorProfile!.salutation ||
+                    createdDoctorProfile!.firstName ||
+                    createdDoctorProfile!.lastName ||
+                    createdDoctorProfile!.registrationNumber ||
+                    (createdDoctorProfile!.specialty &&
+                      createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+                    <div className={classes.signInformation}>
+                      {(createdDoctorProfile.salutation ||
+                        createdDoctorProfile.firstName ||
+                        createdDoctorProfile.lastName) && (
+                        <h3 className={classes.followUpContent}>
+                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                        </h3>
+                      )}
+
+                      {/* {currentDoctor.qualification && (
                       <p className={`${classes.specialty} ${classes.qualification}`}>
                         {currentDoctor.qualification}
                       </p>
                     )} */}
-                    <p className={classes.specialty}>{`${
-                      createdDoctorProfile.specialty.specialistSingularTerm
-                    } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
-                  </div>
+                      {((createdDoctorProfile.specialty &&
+                        createdDoctorProfile.specialty.specialistSingularTerm) ||
+                        createdDoctorProfile.registrationNumber) && (
+                        <p className={classes.specialty}>
+                          {createdDoctorProfile.specialty.specialistSingularTerm
+                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                            : ''}
+                          {createdDoctorProfile.registrationNumber
+                            ? `MCI Reg. No. ${createdDoctorProfile.registrationNumber}`
+                            : ''}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
