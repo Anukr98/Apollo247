@@ -2205,3 +2205,20 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
     }
   }
 `;
+
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
