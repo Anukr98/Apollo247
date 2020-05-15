@@ -634,6 +634,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -642,6 +648,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => PatientLifeStyle, (lifeStyle) => lifeStyle.patient)
   lifeStyle: PatientLifeStyle[];
+
+  @Column({ nullable: true })
+  linkedUhid: string;
 
   @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
   medicineOrders: MedicineOrders[];

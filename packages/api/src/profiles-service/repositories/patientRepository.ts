@@ -25,6 +25,12 @@ type DeviceCount = {
   mobilecount: number;
 };
 
+type UhidFileds = {
+  isUhidPrimary?: boolean;
+  isLinked?: boolean;
+  linkedUhid?: string;
+};
+
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   findById(id: string) {
@@ -633,6 +639,23 @@ export class PatientRepository extends Repository<Patient> {
 
   updateUhid(id: string, uhid: string) {
     return this.update(id, { uhid, uhidCreatedDate: new Date() });
+  }
+
+  updateLinkedUhidAccount(ids: string[], column: string, flag: boolean, primaryUhid?: string) {
+    const fieldToUpdate: UhidFileds = { [column]: flag };
+    if (primaryUhid) {
+      if (primaryUhid == 'null') {
+        fieldToUpdate.linkedUhid = null;
+      } else {
+        fieldToUpdate.linkedUhid = primaryUhid;
+      }
+    }
+
+    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+        updatePatientError,
+      });
+    });
   }
 
   updateToken(id: string, athsToken: string) {
