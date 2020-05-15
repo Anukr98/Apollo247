@@ -5,6 +5,8 @@ import { ConsultOrders_consultOrders_appointments as CardDetails } from 'graphql
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,6 +181,10 @@ interface PaymentCardProps {
 export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
   const { cardDetails } = props;
+  let paymentStatus,
+    bankTxnId = '';
+  let amountPaid = 0;
+
   const getPaymentStatusText = (paymentStatus: string) => {
     if (paymentStatus === 'TXN_SUCCESS') return 'Payment Successful';
     if (paymentStatus === 'TXN_FAILURE') return 'Payment Failed';
@@ -187,9 +193,17 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   };
   const paymentInfo =
     cardDetails && cardDetails.appointmentPayments ? cardDetails.appointmentPayments : [];
-  const paymentStatus = paymentInfo[0].paymentStatus;
+  if (typeof paymentInfo[0] === 'undefined') {
+    paymentStatus = bankTxnId = 'Invalid';
+  } else {
+    paymentStatus = paymentInfo[0].paymentStatus;
+    bankTxnId = paymentInfo[0].bankTxnId;
+    amountPaid = paymentInfo[0].amountPaid;
+  }
   const buttonUrl =
-    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE' ? '' : getAppStoreLink();
+    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
+      ? clientRoutes.doctorDetails(cardDetails.doctorId)
+      : getAppStoreLink();
   const buttonText =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
       ? 'TRY AGAIN'
@@ -220,13 +234,15 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           </div>
           <div className={classes.headerContent}>
             <div className={classes.topText}>
-              <h3>{getPaymentStatusText(paymentInfo[0].paymentStatus)}</h3>
-              <div className={classes.price}>Rs. {paymentInfo[0].amountPaid}</div>
+              <h3>{getPaymentStatusText(paymentStatus)}</h3>
+              <div className={classes.price}>Rs. {amountPaid}</div>
             </div>
             <div className={classes.infoText}>
-              <span>Payment Ref Number - {paymentInfo[0].bankTxnId}</span>
+              <span>Payment Ref Number - {bankTxnId}</span>
               <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                <Link to={clientRoutes.doctorDetails(cardDetails.doctorId)}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
+                </Link>
               </span>
             </div>
           </div>
