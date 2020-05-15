@@ -340,7 +340,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OnlineCheckout: React.FC = () => {
+export const ClinicCheckout: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
@@ -393,7 +393,7 @@ export const OnlineCheckout: React.FC = () => {
       experience,
       fullName,
       photoUrl,
-      onlineConsultationFees,
+      physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
     const speciality =
       (doctorDetails &&
@@ -401,12 +401,12 @@ export const OnlineCheckout: React.FC = () => {
         doctorDetails.getDoctorDetailsById.specialty &&
         doctorDetails.getDoctorDetailsById.specialty.name) ||
       null;
-    // const facilityAddress =
-    //   (doctorDetails &&
-    //     doctorDetails.getDoctorDetailsById &&
-    //     doctorDetails.getDoctorDetailsById.doctorHospital &&
-    //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
-    //   null;
+    const facilityAddress =
+      (doctorDetails &&
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorHospital &&
+        doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
+      null;
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -440,25 +440,25 @@ export const OnlineCheckout: React.FC = () => {
                     <div className={classes.appointmentDetails}>
                       <div className={classes.blockHeader}>Appointment Details</div>
                       <div className={classes.consultServices}>
-                        {/* <div className={classes.serviceType}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_clinic.svg')} alt="" />
-                        </span>
-                        <span>Clinic Visit</span>
-                      </div> */}
                         <div className={classes.serviceType}>
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_clinic.svg')} alt="" />
+                          </span>
+                          <span>Clinic Visit</span>
+                        </div>
+                        {/* <div className={classes.serviceType}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_round_video.svg')} alt="" />
                           </span>
                           <span>Online Consultation</span>
-                        </div>
+                        </div> */}
                         <div className={classes.serviceType}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_calendar_show.svg')} alt="" />
                           </span>
                           <span>{newAppointmentDateTime}</span>
                         </div>
-                        {/* <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
+                        <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
                           <span className={classes.serviceIcon}>
                             <img src={require('images/ic_location.svg')} alt="" />
                           </span>
@@ -467,7 +467,7 @@ export const OnlineCheckout: React.FC = () => {
                             {facilityAddress.streetLine1}, {facilityAddress.streetLine2} <br />
                             {facilityAddress.city}, {facilityAddress.state}
                           </span>
-                        </div> */}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -512,7 +512,7 @@ export const OnlineCheckout: React.FC = () => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? parseFloat(onlineConsultationFees) -
+                          ? parseFloat(physicalConsultationFees) -
                             parseFloat(validateCouponResult.revisedAmount)
                           : 0}{' '}
                         on the bill
@@ -524,7 +524,7 @@ export const OnlineCheckout: React.FC = () => {
                 <div className={classes.priceSection}>
                   <div className={classes.priceRow}>
                     <span>Subtotal</span>
-                    <span className={classes.price}>Rs. {onlineConsultationFees}</span>
+                    <span className={classes.price}>Rs. {physicalConsultationFees}</span>
                   </div>
                   {validateCouponResult && validateCouponResult.revisedAmount && (
                     <div className={`${classes.priceRow} ${classes.discountRow}`}>
@@ -533,7 +533,7 @@ export const OnlineCheckout: React.FC = () => {
                       </span>
                       <span className={classes.price}>
                         - Rs.{' '}
-                        {parseFloat(onlineConsultationFees) -
+                        {parseFloat(physicalConsultationFees) -
                           parseFloat(validateCouponResult.revisedAmount)}
                       </span>
                     </div>
@@ -544,7 +544,7 @@ export const OnlineCheckout: React.FC = () => {
                       Rs.{' '}
                       {validateCouponResult && validateCouponResult.revisedAmount
                         ? validateCouponResult.revisedAmount
-                        : onlineConsultationFees}
+                        : physicalConsultationFees}
                     </span>
                   </div>
                 </div>
@@ -563,14 +563,13 @@ export const OnlineCheckout: React.FC = () => {
                               validateCouponResult.revisedAmount,
                           };
                           localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
-                          console.log('updatedValues', updatedValues);
                           history.push(clientRoutes.payMedicine('consults'));
                         }}
                       >
                         Pay Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
                           ? validateCouponResult.revisedAmount
-                          : onlineConsultationFees}
+                          : physicalConsultationFees}
                       </AphButton>
                     )}
                   />
@@ -584,14 +583,14 @@ export const OnlineCheckout: React.FC = () => {
             <CouponCodeConsult
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
-              consultType={AppointmentType.ONLINE}
+              consultType={AppointmentType.PHYSICAL}
               setCouponCode={setCouponCode}
               couponCode={couponCode}
               setValidateCouponResult={setValidateCouponResult}
               close={(isApplyCouponDialogOpen: boolean) => {
                 setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
               }}
-              cartValue={onlineConsultationFees}
+              cartValue={physicalConsultationFees}
             />
           </AphDialog>
         </div>

@@ -160,6 +160,7 @@ export const RefferalCode: React.FC = () => {
                 updateLocalStorageItem(params.id, storageItem);
               }
               setReferralDescription('');
+              setReferralError(false);
             }
           }}
           noOptionsMessage={() => 'No speciality matching your search'}
@@ -271,15 +272,11 @@ export const RefferalCode: React.FC = () => {
           variant="outlined"
           placeholder="Enter reason for referral"
           multiline
-          disabled={!caseSheetEdit}
+          disabled={!caseSheetEdit || getDefaultValue('referralSpecialtyName') === ''}
           required
           onFocus={(e) => moveCursorToEnd(e.currentTarget)}
           error={referralError}
-          value={
-            referralDescription.trim() !== ''
-              ? referralDescription
-              : getDefaultValue('referralDescription')
-          }
+          value={getDefaultValue('referralDescription')}
           helperText={referralError && 'This field is required'}
           InputProps={{
             classes: {
@@ -292,17 +289,17 @@ export const RefferalCode: React.FC = () => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
+            const storageItem = getLocalStorageItem(params.id);
+            if (storageItem) {
+              storageItem.referralDescription = e.target.value;
+              updateLocalStorageItem(params.id, storageItem);
+            }
             setReferralDescription(e.target.value);
           }}
           onBlur={(e) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
-            const storageItem = getLocalStorageItem(params.id);
-            if (storageItem) {
-              storageItem.referralDescription = e.target.value;
-              updateLocalStorageItem(params.id, storageItem);
-            }
           }}
         />
       </div>
