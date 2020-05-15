@@ -622,7 +622,7 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
-export interface MedicineCartInput {
+export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   estimatedAmount?: number | null;
@@ -635,21 +635,23 @@ export interface MedicineCartInput {
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
-  items?: (MedicineCartItem | null)[] | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
   coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
 }
 
-export interface MedicineCartItem {
+export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
   mou?: number | null;
-  isMedicine?: string | null;
+  isMedicine: string;
 }
 
 export interface MedicineOrderCancelInput {
@@ -710,6 +712,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -731,7 +735,6 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
-  orderId?: string | null;
 }
 
 export interface PatientProfileInput {
@@ -837,6 +840,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {

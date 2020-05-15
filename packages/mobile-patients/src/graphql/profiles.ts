@@ -1085,9 +1085,9 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
-export const SAVE_MEDICINE_ORDER = gql`
-  mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
-    SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
+export const SAVE_MEDICINE_ORDER_OMS = gql`
+  mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
       errorCode
       errorMessage
       orderId
