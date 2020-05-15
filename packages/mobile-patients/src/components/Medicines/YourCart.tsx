@@ -198,7 +198,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
         'Delivery charge': deliveryCharges,
-        'Total Discount': couponDiscount,
+        'Total Discount': Number((couponDiscount + productDiscount).toFixed(2)),
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired,
         'Cart Items': cartItems.map(
