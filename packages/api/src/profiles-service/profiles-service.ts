@@ -49,6 +49,10 @@ import {
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
+  paymentStatusTypeDefs,
+  paymentStatusResolvers
+} from 'profiles-service/resolvers/pharmaPaymentStatus';
+import {
   savePrescriptionMedicineOrderTypeDefs,
   savePrescriptionMedicineOrderResolvers,
 } from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
@@ -215,6 +219,10 @@ import {
       {
         typeDefs: getPatientTypeDefs,
         resolvers: getPatientResolvers,
+      },
+      {
+        typeDefs: paymentStatusTypeDefs,
+        resolvers: paymentStatusResolvers
       },
       {
         typeDefs: getPastSearchesTypeDefs,
