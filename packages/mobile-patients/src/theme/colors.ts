@@ -23,6 +23,7 @@ const shadeCyanBlue = '#6d7278';
 const lightGray = '#d8d8d8';
 const deepRed = '#a30808';
 const lightPaleRed = '#EDC6C2';
+const paleLightGray = '#F1F1F1';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -67,6 +68,7 @@ const Common = {
   PENDING_TEXT: '#e87e38',
   REFUND_TEXT: '#a30808',
   LIGHT_GRAY: lightGray,
+  PALE_LIGHT_GRAY: paleLightGray,
 };
 
 const Header = {

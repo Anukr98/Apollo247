@@ -149,7 +149,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
 const styles = StyleSheet.create({
   mainContainer: {
     display: 'flex',
-    backgroundColor: colors.LIGHT_GRAY,
+    backgroundColor: colors.PALE_LIGHT_GRAY,
     paddingHorizontal: 10,
   },
   iconStyle: {

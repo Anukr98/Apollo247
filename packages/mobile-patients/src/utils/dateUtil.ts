@@ -5,5 +5,12 @@ export const getDate = (date: string) => {
 };
 
 export const findDateType = (date: string) => {
-  const currentDate = new Date();
+  let currentDate = new Date();
+  let nowTimeStamp = currentDate.getTime();
+  let dateTimeStamp = format(date, 'x');
+  if (nowTimeStamp > Number(dateTimeStamp)) {
+    return 'future';
+  } else {
+    return 'past';
+  }
 };
