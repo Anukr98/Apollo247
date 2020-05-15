@@ -2567,15 +2567,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             > */}
             <View style={styles.menuContainer}>
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
-                  props.overlayDisplay(
-                    <ReferralSelectPopup
-                      data={specialtiesData}
-                      selected={selectedReferral}
-                      onSelect={(item) => setSelectedReferral(item)}
-                      onClose={() => props.overlayDisplay(null)}
-                    />
-                  );
+                  caseSheetEdit &&
+                    props.overlayDisplay(
+                      <ReferralSelectPopup
+                        data={specialtiesData}
+                        selected={selectedReferral}
+                        onSelect={(item) => setSelectedReferral(item)}
+                        onClose={() => props.overlayDisplay(null)}
+                      />
+                    );
                 }}
               >
                 <View style={styles.MtextView}>
