@@ -496,7 +496,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
-        .text(`${doctorInfo.qualifications}`, margin + 15)
+        .text(`${doctorInfo.qualifications}`)
         .moveDown(0.5);
     }
 
