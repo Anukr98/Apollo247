@@ -7,7 +7,6 @@ export const PAYMENT_TRANSACTION_STATUS = gql`
         paymentRefId
         bankTxnId
         displayId
-        responseCode
         responseMessage
         paymentDateTime
         paymentStatus
