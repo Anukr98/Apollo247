@@ -46,7 +46,11 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
         paymentFor={paymentFor}
         navigationProps={props.navigationProps}
       />
-      <PaymentCardFooter item={item} paymentFor={paymentFor} />
+      <PaymentCardFooter
+        item={item}
+        paymentFor={paymentFor}
+        navigationProps={props.navigationProps}
+      />
     </View>
   );
 };

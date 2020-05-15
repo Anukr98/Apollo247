@@ -11,7 +11,7 @@ import { IPayment } from 'src/models/IPayment';
 import NoPaymentsScreen from './NoPaymentsScreen';
 
 interface IProps {
-  payments: IPayment[];
+  payments: any;
   type: string;
   navigationProps: any;
 }

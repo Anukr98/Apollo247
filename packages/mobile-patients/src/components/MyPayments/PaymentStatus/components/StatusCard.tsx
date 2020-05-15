@@ -1,3 +1,8 @@
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
 import React, { FC } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -6,52 +11,78 @@ import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { textComponent } from './GenericText';
+import PaymentStatusConstants from '../../constants';
 
 interface StatusCardProps {
-  refNo: string;
-  displayId: string;
-  price: string;
-  status: string;
+  item: any;
+  paymentFor: string;
 }
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const StatusCard: FC<StatusCardProps> = (props) => {
-  const { refNo, displayId, price } = props;
-  const { success, failure, pending, refund } = Payment;
+  const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
   const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
-  const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
-  const orderIdText = 'Order ID: ' + String(displayId);
-  const priceText = 'Rs. ' + String(price);
-
+  const statusItemValues = () => {
+    const { paymentFor, item } = props;
+    let status = 'PENDING';
+    let refId = '';
+    let price = 0;
+    let orderID = '';
+    if (paymentFor === 'consult') {
+      const { appointmentPayments, actualAmount, displayId } = item;
+      price = actualAmount;
+      orderID = 'Order ID: ' + String(displayId);
+      if (!appointmentPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = appointmentPayments[0].paymentStatus;
+        refId = appointmentPayments[0].paymentRefId;
+      }
+      return {
+        status: status,
+        refId: refId,
+        price: 'Rs. ' + String(price),
+        orderID: orderID,
+      };
+    } else {
+      const { medicineOrderPayments, devliveryCharges, estimatedAmount, orderAutoId } = item;
+      price = estimatedAmount + devliveryCharges;
+      orderID = 'Order ID: ' + String(orderAutoId);
+      if (!medicineOrderPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = medicineOrderPayments[0].paymentStatus;
+        refId = medicineOrderPayments[0].paymentRefId;
+      }
+      return {
+        status: status,
+        refId: refId,
+        price: 'Rs. ' + String(price),
+        orderID: orderID,
+      };
+    }
+  };
   const getStatusItems = () => {
-    const { status } = props;
+    const { status } = statusItemValues();
     //TODO: get status type value for pending
-    console.log('status-->', status, pending);
     switch (status) {
-      case success:
+      case SUCCESS:
         return {
           icon: <Success style={styles.statusIconStyles} />,
           cardColor: colors.SUCCESS,
           statusText: paymentSuccessful,
           textColor: theme.colors.SUCCESS_TEXT,
         };
-      case failure:
+      case FAILED:
         return {
           icon: <Failure style={styles.statusIconStyles} />,
           cardColor: colors.FAILURE,
           statusText: paymentFailed,
           textColor: theme.colors.FAILURE_TEXT,
         };
-      case 'PAYMENT_PENDING':
-        return {
-          icon: <Pending style={styles.statusIconStyles} />,
-          cardColor: colors.PENDING,
-          statusText: paymentPending,
-          textColor: theme.colors.PENDING_TEXT,
-        };
-      case refund:
+      case REFUND:
         return {
           icon: (
             <View style={styles.refundIconStyles}>
@@ -64,15 +95,17 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         };
       default:
         return {
-          icon: null,
-          cardColor: '',
-          statusText: '',
-          textColor: '',
+          icon: <Pending style={styles.statusIconStyles} />,
+          cardColor: colors.PENDING,
+          statusText: paymentPending,
+          textColor: theme.colors.PENDING_TEXT,
         };
     }
   };
 
   const { icon, cardColor, statusText, textColor } = getStatusItems();
+  const { refId, price, orderID } = statusItemValues();
+  const payRefId = 'Payment Ref. Number - ' + refId.slice(0, 6);
   return (
     <View style={[styles.statusCardStyle, { backgroundColor: cardColor }]}>
       <View style={styles.statusCardSubContainerStyle}>{icon}</View>
@@ -80,13 +113,13 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         {textComponent(statusText, undefined, textColor, false)}
       </View>
       <View style={styles.orderStyles}>
-        {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
+        {textComponent(price, undefined, theme.colors.SHADE_GREY, false)}
       </View>
       <View style={styles.orderStyles}>
-        {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+        {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
       </View>
       <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
-        {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
+        {textComponent(orderID, undefined, theme.colors.SHADE_GREY, false)}
       </View>
     </View>
   );

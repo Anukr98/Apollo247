@@ -1,13 +1,29 @@
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
 import { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CONSULT_ORDER_PAYMENT_DETAILS,
   PHARMACY_ORDER_PAYMENT_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
-export const useGetPayments = (type?: string, patientId?: string) => {
+export const useGetPayments = (type?: string, patientId?: string, navigationProps?: any) => {
   const [payments, setPayments] = useState();
+  const [loading, setLoading] = useState(true);
   const client = useApolloClient();
+  const { showAphAlert } = useUIElements();
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
 
   const getConsultPaymentsAPI = () => {
     client
@@ -23,15 +39,14 @@ export const useGetPayments = (type?: string, patientId?: string) => {
         const { consultOrders } = data;
         const { appointments } = consultOrders;
         console.log('payments-->', appointments.length);
-        setPayments(appointments);
-        // setPayments(appointments.reverse());
-        // setLoading(false);
+        setPayments(appointments.reverse());
+        setLoading(false);
       })
       .catch((error) => {
-        // CommonBugFender('fetchingTxnStutus', error);
-        console.log('payments error-->', error);
-        // props.navigation.navigate(AppRoutes.DoctorSearch);
-        // renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        setLoading(false);
+        navigationProps.navigate(AppRoutes.MyAccount);
+        renderErrorPopup(`Something went wrong, please try again after sometime`);
+        CommonBugFender('fetchingConsultPayments', error);
       });
   };
 
@@ -45,14 +60,18 @@ export const useGetPayments = (type?: string, patientId?: string) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
+        const { data } = res;
+        const { getMedicineOrdersList } = data;
+        const { MedicineOrdersList } = getMedicineOrdersList;
+        setPayments(MedicineOrdersList.reverse());
+        setLoading(false);
         console.log('payments-->', res);
-        // setLoading(false);
       })
       .catch((error) => {
-        // CommonBugFender('fetchingTxnStutus', error);
-        console.log('payments error-->', error);
-        // props.navigation.navigate(AppRoutes.DoctorSearch);
-        // renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        setLoading(false);
+        navigationProps.navigate(AppRoutes.MyAccount);
+        renderErrorPopup(`Something went wrong, please try again after sometime`);
+        CommonBugFender('fetchingPharmacyPayments', error);
       });
   };
 
@@ -64,13 +83,16 @@ export const useGetPayments = (type?: string, patientId?: string) => {
       // setPayments(require('../components/MyPayments/fixtures.json'));
       return;
     }
-    const paymentsResponse: any = [];
-    setPayments(paymentsResponse);
+    // const paymentsResponse: any = [];
+    // setPayments(paymentsResponse);
+    if (type === 'pharmacy') {
+      getPharmacyPaymentsAPI();
+    }
   };
 
   useEffect(() => {
     setPaymentsFromAPI();
   }, []);
 
-  return payments;
+  return { payments, loading };
 };

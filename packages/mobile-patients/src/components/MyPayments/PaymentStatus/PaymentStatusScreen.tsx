@@ -1,34 +1,22 @@
-import {
-  BackHandler,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-  StatusBar,
-  Dimensions,
-} from 'react-native';
-import React, { useEffect, useState, FC } from 'react';
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
+import { StyleSheet, Text, View, ScrollView, StatusBar, Dimensions } from 'react-native';
+import React, { FC } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  getParameterByName,
-  postWebEngageEvent,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-// import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-// import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import StatusCard from './components/StatusCard';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import DetailsCard from './components/DetailsCard';
+import FooterButton from './components/FooterButton';
+import PaymentConstants from '../constants';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -38,9 +26,8 @@ export interface PaymentStatusScreenProps extends NavigationScreenProps {}
 const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
   const itemDetails = props.navigation.getParam('item');
   const paymentType = props.navigation.getParam('paymentFor');
-  console.log('itemDetails', itemDetails);
-  // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const paymentStatus = props.navigation.getParam('status');
+  const { SUCCESS, FAILED, REFUND } = PaymentConstants;
 
   const handleBack = () => {
     props.navigation.goBack();
@@ -79,69 +66,34 @@ const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
   };
 
   const renderNote = () => {
-    const { status } = itemDetails;
-    const { failure, pending, refund } = Payment;
     const { failureNote, pendingNote, refundNote } = LocalStrings;
-    switch (status) {
-      case failure:
+    switch (paymentStatus) {
+      case FAILED:
         return textComponent(failureNote, undefined, theme.colors.SHADE_GREY, true);
-      case pending:
-        return textComponent(pendingNote, undefined, theme.colors.SHADE_GREY, true);
-      case refund:
+      case REFUND:
         return textComponent(refundNote, undefined, theme.colors.SHADE_GREY, true);
+      case SUCCESS:
+        return null;
       default:
-        return textComponent('', undefined, theme.colors.SHADE_GREY, true);
+        return textComponent(pendingNote, undefined, theme.colors.SHADE_GREY, true);
     }
   };
 
-  // const getButtonText = () => {
-  //   if (status == success) {
-  //     return 'START CONSULTATION';
-  //   } else if (status == failure) {
-  //     return 'TRY AGAIN';
-  //   } else {
-  //     return 'GO TO HOME';
-  //   }
-  // };
-
-  // const handleButton = () => {
-  //   const { navigation } = props;
-  //   const { navigate } = navigation;
-  //   if (status == success) {
-  //     navigate('APPOINTMENTS');
-  //   } else if (status == failure) {
-  //     navigate(AppRoutes.DoctorSearch);
-  //   } else {
-  //     navigate(AppRoutes.ConsultRoom);
-  //   }
-  // };
-
-  // const renderButton = () => {
-  //   return (
-  //     <TouchableOpacity
-  //       style={styles.buttonStyle}
-  //       onPress={() => {
-  //         handleButton();
-  //       }}
-  //     >
-  //       <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>
-  //         {getButtonText()}
-  //       </Text>
-  //     </TouchableOpacity>
-  //   );
-  // };
-  const { actualAmount, status, displayId, appointmentPayments } = itemDetails;
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
 
       <ScrollView style={styles.container}>
-        <StatusCard refNo="1234" displayId={displayId} price={actualAmount} status={status} />
+        <StatusCard item={itemDetails} paymentFor={paymentType} />
         {appointmentHeader()}
         <DetailsCard item={itemDetails} paymentFor={paymentType} />
         {renderNote()}
-        {/*{renderButton()} */}
+        <FooterButton
+          item={itemDetails}
+          paymentFor={paymentType}
+          navigationProps={props.navigation}
+        />
       </ScrollView>
     </View>
   );

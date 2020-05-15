@@ -102,7 +102,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            Payment Ref Number - {refId.slice(0, 6)}
+            Payment Ref Number - {!refId ? null : refId.slice(0, 6)}
           </Text>
         </View>
         <View>
@@ -121,10 +121,12 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   };
 
   const goToPaymentStatus = () => {
+    const { status } = statusItemValues();
     const { item, paymentFor } = props;
     props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
       item: item,
       paymentFor: paymentFor,
+      status: status,
     });
   };
   const { status } = statusItemValues();

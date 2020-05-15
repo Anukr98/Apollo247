@@ -2,62 +2,80 @@
  * @author vishnu-apollo247
  * @email vishnu.r@apollo247.org
  */
-import React, { FC, useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import React, { FC, useEffect } from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
 import { colors } from '../../../theme/colors';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import CardFooterButton from './CardFooterButton';
+import PaymentConstants from '../constants';
 
 interface PaymentCardFooterProps {
   item: any;
   paymentFor: string;
+  navigationProps: any;
 }
 const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
+  const { SUCCESS, FAILED } = PaymentConstants;
   useEffect(() => {}, []);
   const statusItemValues = () => {
     const { paymentFor, item } = props;
     let leftHeaderText = '';
     let dateAndTime = '';
     let type = '';
-    let status = 'PENDING';
+    let status = '';
+    let orderID = 0;
     if (paymentFor === 'consult') {
       const { appointmentDateTime, appointmentPayments, doctor, appointmentType } = item;
       leftHeaderText = doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online' : 'Clinic Visit';
-      if (!appointmentPayments.length) {
+      if (!appointmentPayments || !appointmentPayments.length) {
         status = 'PENDING';
+        return {
+          leftHeaderText: leftHeaderText,
+          dateAndTime: getDate(appointmentDateTime),
+          type: type,
+          status: status,
+        };
       } else {
         status = appointmentPayments[0].paymentStatus;
+        return {
+          leftHeaderText: leftHeaderText,
+          dateAndTime: getDate(appointmentDateTime),
+          type: type,
+          status: status,
+        };
       }
-      return {
-        leftHeaderText: leftHeaderText,
-        dateAndTime: appointmentDateTime,
-        type: type,
-        status: status,
-      };
     } else {
       const { medicineOrderPayments, orderAutoId } = item;
-      if (!medicineOrderPayments.length) {
+      orderID = orderAutoId;
+      if (!medicineOrderPayments || !medicineOrderPayments.length) {
         type = '';
         status = 'PENDING';
+        return {
+          leftHeaderText: 'Order No. - ' + orderAutoId,
+          dateAndTime: dateAndTime,
+          type: type,
+          status: status,
+          orderID: orderID,
+        };
       } else {
         type = medicineOrderPayments[0].paymentType;
         dateAndTime = medicineOrderPayments[0].paymentDateTime;
         status = medicineOrderPayments[0].paymentStatus;
+        return {
+          leftHeaderText: 'Order No. - ' + orderAutoId,
+          dateAndTime: dateAndTime,
+          type: type,
+          status: status,
+          orderID: orderID,
+        };
       }
-      return {
-        leftHeaderText: 'Order No. - ' + orderAutoId,
-        dateAndTime: dateAndTime,
-        type: type,
-        status: status,
-      };
     }
   };
   const upperSection = () => {
@@ -95,17 +113,58 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       </View>
     );
   };
-  //TODO:CTA Pending waiting for APIs
+  const getTitle = () => {
+    const { paymentFor } = props;
+    const { status } = statusItemValues();
+    let buttonTitle = 'TRY AGAIN';
+    if (paymentFor === 'consult') {
+      if (status === SUCCESS) {
+        buttonTitle = 'VIEW CONSULT DETAILS';
+        return { buttonTitle: buttonTitle };
+      }
+      buttonTitle = 'TRY AGAIN';
+      return { buttonTitle: buttonTitle };
+    } else {
+      if (status === SUCCESS) {
+        buttonTitle = 'TRACK ORDER';
+        return { buttonTitle: buttonTitle };
+      }
+      buttonTitle = 'TRY AGAIN';
+      return { buttonTitle: buttonTitle };
+    }
+  };
+  const navigateTo = () => {
+    const { status, orderID } = statusItemValues();
+    const { paymentFor } = props;
+    if (paymentFor === 'consult') {
+      if (status === FAILED) {
+        props.navigationProps.navigate(AppRoutes.DoctorSearch, {});
+      } else if (status === SUCCESS) {
+        props.navigationProps.navigate(AppRoutes.Consult, {});
+      }
+    } else {
+      if (status === FAILED) {
+        props.navigationProps.navigate(AppRoutes.YourCart, {});
+      }
+      props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
+        orderAutoId: orderID,
+      });
+    }
+  };
+  const renderButton = () => {
+    const { status } = statusItemValues();
+    const { buttonTitle } = getTitle();
+    if (status === SUCCESS || status === FAILED) {
+      return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
+    }
+  };
+
   return (
     <View style={styles.mainContainer}>
       {upperSection()}
       {lowerSection()}
-      <CardFooterButton
-        buttonTitle="Helloooooooooooooooooooooooooo"
-        onPressAction={() => {
-          Alert.alert('click');
-        }}
-      />
+      {renderButton()}
     </View>
   );
 };

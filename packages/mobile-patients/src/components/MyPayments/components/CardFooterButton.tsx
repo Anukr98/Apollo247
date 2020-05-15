@@ -1,3 +1,8 @@
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
 import React, { FC } from 'react';
 import { StyleSheet, View, Alert } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';

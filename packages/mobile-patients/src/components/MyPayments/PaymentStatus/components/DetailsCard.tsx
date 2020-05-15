@@ -1,10 +1,15 @@
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
 import React, { FC } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
 interface DetailsCardProps {
@@ -18,17 +23,23 @@ const windowHeight = Dimensions.get('window').height;
 const DetailsCard: FC<DetailsCardProps> = (props) => {
   const { paymentFor, item } = props;
   const getLowerHeadersText = () => {
-    const { status } = item;
+    let status = 'TXN_PENDING';
     let leftHeaderText = 'Doctor Name';
     let rightHeaderText = 'Mode of Consult';
     let doctorNameOrTime = '';
     let modeOfConsultOrPmt = '';
     if (paymentFor === 'pharmacy') {
-      const { paymentType, appointmentDateTime } = item;
+      const { appointmentDateTime, medicineOrderPayments } = item;
+      if (!medicineOrderPayments.length) {
+        status = 'PENDING';
+      } else {
+        status = medicineOrderPayments[0].paymentStatus;
+        modeOfConsultOrPmt = medicineOrderPayments[0].paymentType;
+      }
       rightHeaderText = 'Mode of Payment';
       doctorNameOrTime = appointmentDateTime;
-      modeOfConsultOrPmt = paymentType;
-      if (status === 'REFUND') {
+
+      if (status === 'TXN_REFUND') {
         leftHeaderText = 'Date of Refund';
       } else {
         leftHeaderText = 'Order Date & Time';
@@ -50,11 +61,15 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
   };
 
   const getUpperHeaderText = () => {
-    const { status } = item;
     if (paymentFor === 'consult') {
-      const { appointmentDateTime } = item;
-      console.log('status', status);
-      if (status === 'PAYMENT_REFUND') {
+      let statusType = 'PENDING';
+      const { appointmentDateTime, appointmentPayments } = item;
+      if (!appointmentPayments.length) {
+        statusType = 'PENDING';
+      } else {
+        statusType = appointmentPayments[0].paymentStatus;
+      }
+      if (statusType === 'TXN_REFUND') {
         return (
           <View style={styles.upperContainerRefundStyle}>
             <View>
@@ -67,7 +82,12 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
                 )}
               </View>
               <View style={styles.subTextStyle}>
-                {textComponent(appointmentDateTime, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+                {textComponent(
+                  getDate(appointmentDateTime),
+                  undefined,
+                  theme.colors.SHADE_CYAN_BLUE,
+                  false
+                )}
               </View>
             </View>
             <View>
@@ -94,14 +114,26 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
               )}
             </View>
             <View style={styles.subTextStyle}>
-              {textComponent(appointmentDateTime, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+              {textComponent(
+                getDate(appointmentDateTime),
+                undefined,
+                theme.colors.SHADE_CYAN_BLUE,
+                false
+              )}
             </View>
           </View>
         );
       }
     }
     if (paymentFor === 'pharmacy') {
-      if (status === 'PAYMENT_REFUND') {
+      let statusType = '';
+      const { medicineOrderPayments } = item;
+      if (!medicineOrderPayments.length) {
+        statusType = 'PENDING';
+      } else {
+        statusType = medicineOrderPayments[0].paymentStatus;
+      }
+      if (statusType === 'TXN_REFUND') {
         return (
           <View style={styles.upperContainerStyle}>
             <View style={styles.cancelledTextStyle}>

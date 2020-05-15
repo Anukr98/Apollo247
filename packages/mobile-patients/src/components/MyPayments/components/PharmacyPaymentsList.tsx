@@ -13,14 +13,12 @@ interface PharmacyPaymentsListProps {
   navigationProps: any;
 }
 const PharmacyPaymentsList: FC<PharmacyPaymentsListProps> = (props) => {
-  const { patientId } = props;
-  const payments = useGetPayments('pharmacy', patientId);
+  const { patientId, navigationProps } = props;
+  const { payments, loading } = useGetPayments('pharmacy', patientId, navigationProps);
 
-  if (!payments) {
+  if (loading) {
     return <Spinner />;
   }
-  return (
-    <PaymentsList payments={payments} type="pharmacy" navigationProps={props.navigationProps} />
-  );
+  return <PaymentsList payments={payments} type="pharmacy" navigationProps={navigationProps} />;
 };
 export default PharmacyPaymentsList;

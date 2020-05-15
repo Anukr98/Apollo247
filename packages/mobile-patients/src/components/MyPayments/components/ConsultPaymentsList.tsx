@@ -13,14 +13,12 @@ interface ConsultPaymentsListProps {
   navigationProps: any;
 }
 const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
-  const { patientId } = props;
-  const payments = useGetPayments('consult', patientId);
+  const { patientId, navigationProps } = props;
+  const { payments, loading } = useGetPayments('consult', patientId, navigationProps);
 
-  if (!payments) {
+  if (loading) {
     return <Spinner />;
   }
-  return (
-    <PaymentsList payments={payments} type="consult" navigationProps={props.navigationProps} />
-  );
+  return <PaymentsList payments={payments} type="consult" navigationProps={navigationProps} />;
 };
 export default ConsultPaymentsList;

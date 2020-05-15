@@ -1,3 +1,8 @@
+/**
+ * @author vishnu-apollo247
+ * @email vishnu.r@apollo247.org
+ */
+
 import React from 'react';
 import { Text, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
