@@ -387,7 +387,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
   ) => {
     const foundItem = lineItems.find((item) => item.itemId == cartItem.id);
-    return foundItem ? foundItem.discountedPrice : undefined;
+    return foundItem ? foundItem.applicablePrice : undefined;
   };
 
   useEffect(() => {
