@@ -130,7 +130,12 @@ import {
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
 import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
-import { callPermissions, g, postWebEngageEvent } from '../../helpers/helperFunctions';
+import {
+  callPermissions,
+  g,
+  postWebEngageEvent,
+  nameFormater,
+} from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
 import { RenderPdf } from '../ui/RenderPdf';
@@ -621,11 +626,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     value.forEach((item) => {
       switch (item.k) {
         case 'gender':
-          data.gender = (item.v[0] as Gender) || null;
+          data.gender = (nameFormater(item.v[0] || '', 'upper') as Gender) || null;
           try {
             const text = {
               id: patientId,
-              message: 'Gender:\n' + (data.gender || 'Unspecified'),
+              message: 'Gender:\n' + nameFormater(data.gender || 'Unspecified', 'title'),
               messageDate: new Date(),
             };
             setMessageText('');
