@@ -10,8 +10,8 @@ import {
   MEDICINE_ORDER_STATUS,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
-import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -158,6 +158,17 @@ const saveMedicineOrderOMS: Resolver<
       await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
     });
     await Promise.all(medicineOrderLineItems);
+
+    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      medicineOrders: saveOrder,
+      orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+      statusDate: new Date(),
+      hideStatus: false,
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(
+      medicineOrderStatusAttrs,
+      saveOrder.orderAutoId
+    );
   }
 
   return {

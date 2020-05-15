@@ -69,6 +69,10 @@ import {
   saveMedicineOrderPaymentMqResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPaymentmq';
 import {
+  getMedicineOrdersOMSListTypeDefs,
+  getMedicineOrdersOMSListResolvers,
+} from 'profiles-service/resolvers/getMedicineOrdersOMSList';
+import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
@@ -255,6 +259,10 @@ import {
       {
         typeDefs: saveMedicineOrderTypeDefs,
         resolvers: saveMedicineOrderResolvers,
+      },
+      {
+        typeDefs: getMedicineOrdersOMSListTypeDefs,
+        resolvers: getMedicineOrdersOMSListResolvers,
       },
       {
         typeDefs: saveMedicineOrderOMSTypeDefs,

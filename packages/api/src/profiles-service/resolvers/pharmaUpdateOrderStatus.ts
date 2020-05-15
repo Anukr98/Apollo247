@@ -88,7 +88,6 @@ const updateOrderStatus: Resolver<
   if (!shipmentDetails && status != MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
-
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -96,6 +95,12 @@ const updateOrderStatus: Resolver<
       new Date(updateOrderStatusInput.updatedDate),
       MEDICINE_ORDER_STATUS.CANCELLED
     );
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
+      medicineOrders: orderDetails,
+      statusDate: new Date(updateOrderStatusInput.updatedDate),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   }
 
   if (shipmentDetails) {
@@ -127,13 +132,27 @@ const updateOrderStatus: Resolver<
     } catch (e) {
       throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
     }
-    if (shipmentDetails.isPrimary) {
+    const shipmentsWithDifferentStatus = orderDetails.medicineOrderShipments.filter((shipment) => {
+      if (shipment.apOrderNo != shipmentDetails.apOrderNo) {
+        const sameStatusObject = shipment.medicineOrdersStatus.find((orderStatusObj) => {
+          return orderStatusObj.orderStatus == status;
+        });
+        return !sameStatusObject;
+      }
+    });
+    if (!shipmentsWithDifferentStatus || shipmentsWithDifferentStatus.length == 0) {
       await medicineOrdersRepo.updateMedicineOrderDetails(
         orderDetails.id,
         orderDetails.orderAutoId,
         new Date(updateOrderStatusInput.updatedDate),
         status
       );
+      const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+        orderStatus: status,
+        medicineOrders: orderDetails,
+        statusDate: new Date(updateOrderStatusInput.updatedDate),
+      };
+      await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
         sendMedicineOrderStatusNotification(
           NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
