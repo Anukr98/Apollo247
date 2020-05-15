@@ -5,8 +5,17 @@ import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMen
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
-‚
+import {
+  BackHandler,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 const styles = ReferralSelectPopupStyles;
 
 export interface ReferralSelectPopupProps {
