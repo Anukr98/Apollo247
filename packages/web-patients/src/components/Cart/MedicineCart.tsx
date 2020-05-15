@@ -16,8 +16,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType } from 'helpers/commonHelpers'
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
-import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT, SAVE_MEDICINE_ORDER_OMS} from 'graphql/medicines';
+import { saveMedicineOrderOMS, saveMedicineOrderOMSVariables } from 'graphql/types/saveMedicineOrderOMS'
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -648,11 +648,11 @@ export const MedicineCart: React.FC = (props) => {
         })
       : [];
 
-  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
-    SAVE_MEDICINE_ORDER,
+  const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
+    SAVE_MEDICINE_ORDER_OMS,
     {
       variables: {
-        medicineCartInput: {
+        medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
           shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
@@ -672,7 +672,7 @@ export const MedicineCart: React.FC = (props) => {
             ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
           ].join(','),
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
-          items: cartItemsForApi,
+          // items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType()
         },
@@ -864,8 +864,8 @@ export const MedicineCart: React.FC = (props) => {
       return;
     }
     paymentMutation().then((res) => {
-      if (res && res.data && res.data.SaveMedicineOrder) {
-        const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+      if (res && res.data && res.data.saveMedicineOrderOMS) {
+        const { orderId, orderAutoId } = res.data.saveMedicineOrderOMS;
         placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
       }
     });
