@@ -13,6 +13,7 @@ import {
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
     orderAutoId: Int
+    referenceNo: String
   }
 
   type OrderPlacedResult {
@@ -26,6 +27,7 @@ export const pharmaOrderPlacedTypeDefs = gql`
 
 type OrderPlacedInput = {
   orderAutoId: number;
+  referenceNo: string;
 };
 
 type OrderPlacedResult = {
@@ -65,6 +67,11 @@ const saveOrderPlacedStatus: Resolver<
     orderDetails.orderAutoId,
     new Date(),
     MEDICINE_ORDER_STATUS.ORDER_PLACED
+  );
+  await medicineOrdersRepo.updateOrderReferenceNo(
+    orderDetails.orderAutoId,
+    orderDetails.id,
+    orderPlacedInput.referenceNo
   );
 
   //send order placed notification

@@ -104,3 +104,23 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
     }
   }
 `;
+
+export const CONSULT_COUPONS_LIST = gql`
+  query getConsultCouponList {
+    getConsultCouponList {
+      coupons {
+        code
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        createdDate
+        description
+        id
+        isActive
+      }
+    }
+  }
+`;

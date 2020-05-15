@@ -486,13 +486,21 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
-      .fontSize(10)
+      .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
+    if (doctorInfo.qualifications) {
+      doc
+        .moveDown(0.3)
+        .fontSize(9)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${doctorInfo.qualifications}`);
+    }
+
     doc
-      .moveDown(0.3)
       .fontSize(9)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
@@ -504,7 +512,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
-      .moveDown(1)
+      .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#000000')
@@ -872,12 +880,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      doc
-        .fontSize(9)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
-        .text(`${doctorInfo.qualifications}`, margin + 15)
-        .moveDown(0.5);
+      if (doctorInfo.qualifications) {
+        doc
+          .fontSize(9)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#02475b')
+          .text(`${doctorInfo.qualifications}`, margin + 15)
+          .moveDown(0.5);
+      }
 
       doc
         .fontSize(9)

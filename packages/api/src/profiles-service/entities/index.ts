@@ -155,6 +155,7 @@ export enum BOOKING_SOURCE {
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum PHARMA_CART_TYPE {
@@ -297,6 +298,15 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   shopId: string;
 
+  @Column({ type: 'float8', nullable: true })
+  couponDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  productDiscount: number;
+
+  @Column({ nullable: true })
+  isOmsOrder: boolean;
+
   @Column({ nullable: true })
   updatedDate: Date;
 
@@ -383,6 +393,12 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemValue: number;
 
   @Column()
   quantity: number;
@@ -826,6 +842,12 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   landmark: string;
+
+  @Column({ nullable: true })
+  latitude: number;
+
+  @Column({ nullable: true })
+  longitude: number;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
