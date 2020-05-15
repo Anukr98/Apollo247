@@ -15031,6 +15031,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "appointment",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Appointment",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -31692,24 +31704,12 @@
         "description": null,
         "fields": [
           {
-            "name": "appointmentPayment",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "OBJECT",
-              "name": "AppointmentPayment",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "appointment",
             "description": null,
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "Appointment",
+              "name": "AppointmentPayment",
               "ofType": null
             },
             "isDeprecated": false,

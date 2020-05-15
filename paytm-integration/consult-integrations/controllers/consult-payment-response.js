@@ -52,7 +52,7 @@ module.exports = async (req, res, next) => {
             throw new Error(`Error Occured in makeAppointmentPayment for orderId: ${orderId}`);
         }
 
-        const appointmentId = response.data.data.makeAppointmentPayment.appointment.id;
+        const appointmentId = response.data.data.makeAppointmentPayment.appointment.appointment.id;
 
         if (bookingSource == 'WEB') {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
