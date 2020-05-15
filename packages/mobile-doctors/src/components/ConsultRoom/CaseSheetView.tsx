@@ -439,7 +439,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           followUpType: followUpConsultationType,
           followUpDays: followupDays,
         },
-        referalData: {
+        referralData: {
           referTo: selectedReferral.key !== '-1' ? selectedReferral.value.toString() : null,
           referReason: selectedReferral.key !== '-1' ? referralReason : null,
         },
