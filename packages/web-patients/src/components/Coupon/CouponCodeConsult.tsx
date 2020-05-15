@@ -95,8 +95,19 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
       '& button': {
+        padding: '9px 13px 9px 13px',
+        fontSize: 13,
         borderRadius: 10,
+        backgroundColor: '#fcb716',
+        color: '#fff',
+        '&:hover': {
+          backgroundColor: '#fcb716',
+          color: '#fff',  
+        },
       },
+    },
+    buttonDisabled: {
+      opacity: 0.6,
     },
     customScrollBar: {
       paddingRight: 20,
@@ -300,6 +311,9 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
           disabled={!selectCouponCode}
           onClick={() => {
             verifyCoupon();
+          }}
+          classes={{
+            disabled: classes.buttonDisabled,
           }}
         >
           {muationLoading ? <CircularProgress size={22} color="secondary" /> : 'Apply Coupon'}
