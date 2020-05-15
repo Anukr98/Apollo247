@@ -50,7 +50,7 @@ export interface PreviewPrescriptionProps
       followUpType: APPOINTMENT_TYPE | undefined;
       followUpDays: string | number | undefined;
     };
-    referalData?: {
+    referralData?: {
       referTo: string | null;
       referReason: string | null;
     };
@@ -92,7 +92,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     followUpDays: g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays'),
   };
 
-  const referalData = props.navigation.getParam('referalData') || {
+  const referralData = props.navigation.getParam('referralData') || {
     referTo: g(caseSheet, 'caseSheetDetails', 'referralSpecialtyName'),
     referReason: g(caseSheet, 'caseSheetDetails', 'referralDescription'),
   };
@@ -319,12 +319,12 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     );
   };
   const renderReferral = () => {
-    return referalData && referalData.referTo
+    return referralData && referralData.referTo
       ? renderSubItems(
           'Referral',
           <>
-            <Text style={styles.subHeadingText}>{`Consult a ${referalData.referTo}\n`}</Text>
-            <Text>{referalData.referReason}</Text>
+            <Text style={styles.subHeadingText}>{`Consult a ${referralData.referTo}\n`}</Text>
+            <Text>{referralData.referReason}</Text>
           </>
         )
       : null;
@@ -485,8 +485,10 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {medicine && medicine.length > 0 && renderMedicine()}
         {tests && tests.length > 0 && renderTest()}
         {(advice && advice.length > 0) ||
-          (referalData && referalData.referTo) ||
-          (followUp.doFollowUp && renderAdvice())}
+        (referralData && referralData.referTo) ||
+        followUp.doFollowUp
+          ? renderAdvice()
+          : null}
         {renderDoctorSign()}
         {renderDisclamer()}
         <View

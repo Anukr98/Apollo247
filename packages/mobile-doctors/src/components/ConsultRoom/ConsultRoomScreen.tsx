@@ -473,6 +473,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(caseSheet, 'caseSheetDetails', 'blobName')}`
     );
     setSavedTime(g(caseSheet, 'caseSheetDetails', 'updatedDate'));
+    const referral = g(caseSheet, 'caseSheetDetails', 'referralSpecialtyName');
+    if (referral) {
+      const foundItem = specialties && specialties.find((i) => i.name === referral);
+      setSelectedReferral(
+        foundItem
+          ? { key: foundItem.id, value: foundItem.name }
+          : { key: referral, value: referral }
+      );
+      setReferralReason(g(caseSheet, 'caseSheetDetails', 'referralDescription') || '');
+    }
   };
   const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
@@ -953,7 +963,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  const { doctorDetails } = useAuth();
+  const { doctorDetails, specialties } = useAuth();
   // let dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
 
   const consultTime =
