@@ -86,7 +86,8 @@
     "please_add_other_instructions": "Please add other instructions",
     "instruction_already_added": "This instruction already added",
     "oops": "Oops!",
-    "no_internet": "There is no internet. Please check your internet connection."
+    "no_internet": "There is no internet. Please check your internet connection.",
+    "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab."
   },
   "buttons": {
     "done": "DONE",
@@ -338,12 +339,13 @@
     "weight": "Weight (kgs)",
     "bp": "BP (mm Hg)",
     "temperature": "Temperature (°F)",
-    "medical_history": "Medical History*",
-    "medication_history": "Medication History*",
+    "medical_history": "Medical History",
+    "medication_history": "Medication History",
+    "surgical_history": "Surgical History",
     "drug_allergies": "Drug Allergies",
     "diet_allergies": "Diet Allergies/Restrictions",
     "lifestyle_habits": "Personal History, Lifestyle & Habits",
-    "occupational_history": "Occupational History",
+    "occupational_history": "Environmental & Occupational History",
     "menstrual_history": "Menstrual History",
     "family_medical_history": "Family Medical History",
     "tests": "Tests",

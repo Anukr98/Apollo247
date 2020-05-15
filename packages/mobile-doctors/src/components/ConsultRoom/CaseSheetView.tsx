@@ -107,6 +107,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
 
 const { width } = Dimensions.get('window');
 
@@ -2537,7 +2538,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         ...specialties.map((i) => {
           return { key: i.id, value: i.name };
         }),
-        { key: '-1', value: strings.case_sheet.select_Speciality },
       ]);
     }
   }, [specialties]);
@@ -2552,7 +2552,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
             {renderHeaderText(strings.case_sheet.referral_drop_selection_header)}
-            <MaterialMenu
+            {/* <MaterialMenu
               options={specialtiesData}
               selectedText={selectedReferral ? selectedReferral.key : ''}
               menuContainerStyle={styles.materialContainer}
@@ -2564,8 +2564,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               itemContainer={styles.itemContainerStyle}
               bottomPadding={{ paddingBottom: 10 }}
               disable={!caseSheetEdit}
-            >
-              <View style={styles.menuContainer}>
+            > */}
+            <View style={styles.menuContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  props.overlayDisplay(
+                    <ReferralSelectPopup
+                      data={specialtiesData}
+                      selected={selectedReferral}
+                      onSelect={(item) => setSelectedReferral(item)}
+                      onClose={() => props.overlayDisplay(null)}
+                    />
+                  );
+                }}
+              >
                 <View style={styles.MtextView}>
                   <Text style={styles.dropValueText}>
                     {selectedReferral && selectedReferral.value}
@@ -2574,8 +2586,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <DropdownGreen />
                   </View>
                 </View>
-              </View>
-            </MaterialMenu>
+              </TouchableOpacity>
+            </View>
+            {/* </MaterialMenu> */}
             {renderFields(
               'Reason',
               referralReason,
