@@ -36,20 +36,20 @@ module.exports = async (req, res, next) => {
         /*save response in apollo24x7*/
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-        logger.info(`consults query - ${consultsOrderQuery(payload)}`)
+        logger.info(`consults query - ${consultsOrderQuery(payload)}`);
 
-        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`)
+        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`);
         const requestJSON = {
             query: consultsOrderQuery(payload)
         };
 
         const response = await axios.post(process.env.API_URL, requestJSON);
 
-        logger.info(`${orderId} - consult-payment-response - ${JSON.stringify(response.data)}`)
+        logger.info(`${orderId} - consult-payment-response - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`)
-            throw new Error(`Error Occured in makeAppointmentPayment for orderId: ${orderId}`)
+            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`);
+            throw new Error(`Error Occured in makeAppointmentPayment for orderId: ${orderId}`);
         }
 
         const appointmentId = response.data.data.makeAppointmentPayment.appointment.id;
@@ -81,4 +81,4 @@ module.exports = async (req, res, next) => {
             res.redirect(`/consultpg-error?tk=${orderId}&status=${transactionStatus}`);
         }
     }
-}
+};

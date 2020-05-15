@@ -669,7 +669,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     referralSpecialtyName,
     medicationHistory,
     setReferralError,
-    setLifeStyleError,
   } = useContext(CaseSheetContextJrd);
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -695,7 +694,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [showVital, setShowVital] = React.useState<boolean>(false);
-  const [showLifeStyle, setShowLifeStyle] = React.useState<boolean>(false);
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
   // const startConsultDisableReason =
   //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
@@ -1306,18 +1304,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const checkForEmptyFields = () => {
-    if (medicationHistory.trim() === '') {
-      setShowLifeStyle(true);
-      setLifeStyleError({
-        medicationHistory: 'This field is required',
-      });
-      return true;
-    } else if (height.trim() === '' && weight.trim() === '') {
-      setShowLifeStyle(false);
-      setLifeStyleError({
-        medicationHistory: '',
-      });
-
+    if (height.trim() === '' && weight.trim() === '') {
       setShowVital(true);
       setVitalError({
         height: 'This field is required',
@@ -1942,37 +1929,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
-      {/* life style field required popup start */}
-      <Modal
-        open={showLifeStyle}
-        onClose={() => setShowLifeStyle(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={`${classes.modalBoxCancel} ${classes.modalBoxVital}`}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setShowLifeStyle(false)}
-              />
-            </Button>
-          </div>
-          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
-            <h3>
-              It seems some of the life style info is empty. Please fill the "patient medical and
-              family history" section's field under the Case Sheet tab.
-            </h3>
-            <div className={classes.okButtonWrapper}>
-              <Button className={classes.okButton} onClick={() => setShowLifeStyle(false)}>
-                Ok
-              </Button>
-            </div>
-          </div>
-        </Paper>
-      </Modal>
-      {/* life style field required popup end */}
+
       {/* audio/video start*/}
       <div className={classes.posRelative}>
         <div className={showVideo ? '' : classes.audioVideoContainer}>

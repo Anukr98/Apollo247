@@ -106,30 +106,21 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
   }
 `;
 
-export const GET_CONSULT_PAYMENTS = gql`
-  query ConsultOrders($patientId: String) {
-    consultOrders(patientId: $patientId) {
-      appointments {
-        displayId
+export const CONSULT_COUPONS_LIST = gql`
+  query getConsultCouponList {
+    getConsultCouponList {
+      coupons {
+        code
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        createdDate
+        description
         id
-        appointmentDateTime
-        actualAmount
-        discountedAmount
-        appointmentType
-        appointmentPayments {
-          amountPaid
-          bankTxnId
-          id
-          paymentRefId
-          paymentStatus
-          paymentType
-          responseMessage
-        }
-        status
-        doctorId
-        doctor {
-          name
-        }
+        isActive
       }
     }
   }
