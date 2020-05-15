@@ -14,23 +14,41 @@ import _isEmpty from 'lodash/isEmpty';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
 import moment from 'moment';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { format, getTime } from 'date-fns';
+import { StatusEvent } from 'pubnub';
 
 export const getOrderInvoiceTypeDefs = gql`
 type AppointmentsResult {
   appointments : [ApptResponse]
-  doctor: docResponse
-  patient: patientDetails
+  doctor: DoctorResponse
+  patient: PatientResponse
+  hospitalAddress: HospitalDetails
 }
-type patientDetails {
+type HospitalDetails = {
+  name: String
+  city: String
+  streetLine1: String
+  zipcode: String
+  state: String
+  streetLine2: String
+  country: String
+}
+type PatientResponse {
   uhid: String
   mobileNumber: String
   emailAddress: String
+  firstName: String
+  lastName: String
 }
-type docResponse {
+type DoctorResponse {
   firstName: String
   lastName: String
   specialization: String
+  saluation: String
+  registrationNumber: String
 }
 type ApptResponse {
     displayId: Int
@@ -40,10 +58,10 @@ type ApptResponse {
     appointmentDateTime: DateTime
     actualAmount: Float
     discountedAmount: Float
-    appointmentPayments: [appointmentPayment]
+    appointmentPayments: [AppointmentPayment]
     status: String
   }
-type appointmentPayment {
+type AppointmentPayment {
   amountPaid: Float
   bankTxnId: String
   id: String
@@ -65,18 +83,40 @@ type ApptResponse = {
   actualAmount: Number;
   discountedAmount: Number;
   appointmentType: string
-  appointmentPayments: appointmentPayment[];
+  appointmentPayments: AppointmentPayment[];
   status: String;
 };
 
 type AppointmentsResult = {
   appointments: ApptResponse[];
-  doctor: doctorResponse;
-  patient: patientResponse
-  hospitalAddress: hospitalDetails
+  doctor: DoctorResponse;
+  patient: PatientResponse
+  hospitalAddress: HospitalDetails
 }
-
-type appointmentPayment = {
+type HospitalDetails = {
+  name: string;
+  city: string;
+  streetLine1: string;
+  zipcode: string;
+  state: string;
+  streetLine2: string;
+  country: string;
+}
+type PatientResponse = {
+  uhid: string
+  mobileNumber: string
+  emailAddress: string
+  firstName: string
+  lastName: string
+}
+type DoctorResponse = {
+  firstName: string
+  lastName: string
+  specialization: string
+  salutation: string;
+  registrationNumber: string;
+}
+type AppointmentPayment = {
   amountPaid: Number;
   bankTxnId: string;
   id: string;
@@ -85,6 +125,10 @@ type appointmentPayment = {
   paymentType: string;
   responseMessage: string;
 }
+
+const assetsDir = <string>process.env.ASSETS_DIRECTORY;
+console.log('assets', assetsDir);
+const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
 const getOrderInvoice: Resolver<
   null,
@@ -108,9 +152,6 @@ const getOrderInvoice: Resolver<
   if (response && response.length > 0)
     hospitalDetails = await facilityRepo.getfacilityDetails(response[0].hospitalId);
 
-  const assetsDir = <string>process.env.ASSETS_DIRECTORY;
-  console.log('assets', assetsDir);
-  const loadAsset = (file: string) => path.resolve(assetsDir, file);
   const AppointmentsResult = { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails };
 
   // export const generateRxPdfDocument = (AppointmentsResult: RxPdfData): typeof PDFDocument => {
@@ -281,22 +322,28 @@ const getOrderInvoice: Resolver<
     if (appointmentData[0].discountedAmount) {
       renderDetailsRow('Discount Applied', ` - ${appointmentData[0].discountedAmount}`, doc.y);
     };
-    if (appointmentData[0].discountedAmount) {
-      let totalAmount = parseInt(appointmentData[0].actualAmount) - parseInt(appointmentData[0].discountedAmount)
+    if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
+      const totalAmount: number = (appointmentData[0].actualAmount as number) - (appointmentData[0].discountedAmount as number)
       renderDetailsRow('Total Amount', `${totalAmount}`, doc.y);
     };
   };
+  if (AppointmentsResult.doctor && AppointmentsResult.doctor == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
   doc.on('pageAdded', () => {
     renderFooter();
-    renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
+    if (AppointmentsResult.doctor && AppointmentsResult.hospitalAddress) {
+      renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
+    }
   });
 
   renderFooter();
-  renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
-
+  if (AppointmentsResult.doctor && AppointmentsResult.hospitalAddress) {
+    renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
+  }
   if (!_isEmpty(AppointmentsResult.patient)) {
-    renderpatients(AppointmentsResult.patient, AppointmentsResult.appointments);
-    doc.moveDown(1.5);
+    if (AppointmentsResult.patient) {
+      renderpatients(AppointmentsResult.patient, AppointmentsResult.appointments);
+      doc.moveDown(1.5);
+    }
   }
   let i;
   let end;
@@ -308,13 +355,59 @@ const getOrderInvoice: Resolver<
       .fillColor('#02475b')
       .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
   }
-
   doc.pipe(fs.createWriteStream('./file.pdf'));
   doc.end();
+  // if (response && response.length > 0) {
+
   if (response && response.length > 0) {
-    return { appointments: response, doctor: docResponse, patient: patientDetails }
+    const client = new AphStorageClient(
+      process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+      process.env.AZURE_STORAGE_CONTAINER_NAME
+    );
+    // return await uploadRxPdf(client, response[0].id, doc);
+    // const uploadedPdfData = await uploadRxPdf(client, response[0].id, doc);
+    // if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    // console.log('final res =>', uploadedPdfData);
+    return AppointmentsResult;
+    // return { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails }
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   // }
+};
+
+const convertPdfUrlToBase64 = async (pdfUrl: string) => {
+  const pdf2base64 = require('pdf-to-base64');
+  util.promisify(pdf2base64);
+  try {
+    const base64pdf = await pdf2base64(pdfUrl);
+    console.log('pdfData:', base64pdf);
+    return base64pdf;
+  } catch (e) {
+    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  }
+};
+
+export const uploadRxPdf = async (
+  client: AphStorageClient,
+  appointmentId: String,
+  pdfDoc: PDFKit.PDFDocument
+) => {
+  const name = `${appointmentId}_${getTime(new Date())}.pdf`;
+  const filePath = loadAsset(name);
+  pdfDoc.pipe(fs.createWriteStream(filePath));
+  await delay(350);
+
+  const blob = await client.uploadFile({ name, filePath });
+  const blobUrl = client.getBlobUrl(blob.name);
+  console.log('blobUrl===', blobUrl);
+  const base64pdf = await convertPdfUrlToBase64(blobUrl);
+  fs.unlink(filePath, (error) => console.log(error));
+  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+  return uploadData;
+
+
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 };
 
 export const getOrderInvoiceResolvers = {
