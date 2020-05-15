@@ -850,9 +850,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           <div className={classes.disclaimer}>
             <span>Disclaimer:</span>
             <span>
-              This prescription is issued by the Apollo Hospitals Group on the basis of your
-              teleconsultation. It is valid from the date of issue for upto 90 days (for the
-              specific period/dosage of each medicine as advised).
+              This prescription is issued on the basis of your teleconsultation. It is valid from
+              the date of issue for upto 90 days (for the specific period/dosage of each medicine as
+              advised).
             </span>
           </div>
         </div>
