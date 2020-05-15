@@ -845,6 +845,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     height,
     weight,
     setVitalError,
+    referralSpecialtyName,
+    referralDescription,
+    setReferralError,
+    medicationHistory,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -875,6 +879,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [showVital, setShowVital] = React.useState<boolean>(false);
+  const [showReferral, setShowReferral] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
 
@@ -1813,9 +1818,86 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         return localStorageItem ? localStorageItem.height : height;
       case 'weight':
         return localStorageItem ? localStorageItem.weight : weight;
+      case 'referralSpecialtyName':
+        return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
+      case 'referralDescription':
+        return localStorageItem ? localStorageItem.referralDescription : referralDescription;
+      case 'medicationHistory':
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
     }
   };
 
+  const checkForEmptyFields = () => {
+    const heightValue = getDefaultValue('height') || '';
+    const weightValue = getDefaultValue('weight') || '';
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
+    const referralDescription = getDefaultValue('referralDescription') || '';
+    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
+      if (vitalIgnored) {
+        setVitalError({
+          height: '',
+          weight: '',
+        });
+        return false;
+      } else {
+        if (heightValue.trim() === '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: 'This field is required',
+          });
+          return true;
+        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: '',
+          });
+          return true;
+        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: '',
+            weight: 'This field is required',
+          });
+          return true;
+        }
+      }
+    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+      setShowVital(false);
+      setVitalError({
+        height: '',
+        weight: '',
+      });
+      setReferralError(true);
+      setShowReferral(true);
+      return true;
+    } else {
+      setReferralError(false);
+      setShowReferral(false);
+      return false;
+    }
+  };
+
+  const onEndConuslt = () => {
+    setVitalIgnored(true);
+    setShowVital(false);
+
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
+    const referralDescription = getDefaultValue('referralDescription');
+
+    const isEmptyFields = referralSpecialtyName && referralDescription.trim() === '';
+
+    if (!isEmptyFields) {
+      stopInterval();
+      if (showVideo) {
+        stopAudioVideoCall();
+      }
+      props.endConsultAction();
+      isConsultStarted = false;
+    }
+  };
+  const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1940,32 +2022,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      const heightValue = getDefaultValue('height');
-                      const weightValue = getDefaultValue('weight');
-                      if (heightValue.trim() === '' && weightValue.trim() === '') {
-                        setShowVital(true);
-                        setVitalError({
-                          height: 'This field is required',
-                          weight: 'This field is required',
-                        });
-                      } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
-                        setShowVital(true);
-                        setVitalError({
-                          height: 'This field is required',
-                          weight: '',
-                        });
-                      } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
-                        setShowVital(true);
-                        setVitalError({
-                          height: '',
-                          weight: 'This field is required',
-                        });
-                      } else {
-                        setShowVital(false);
-                        setVitalError({
-                          height: '',
-                          weight: '',
-                        });
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
                         stopInterval();
                         if (showVideo) {
                           stopAudioVideoCall();
@@ -2827,14 +2885,53 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               the Case Sheet tab.
             </h3>
             <div className={classes.okButtonWrapper}>
+              <Button
+                className={classes.okButton}
+                onClick={() => {
+                  onEndConuslt();
+                }}
+              >
+                Continue
+              </Button>
               <Button className={classes.okButton} onClick={() => setShowVital(false)}>
+                Edit
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* Vital field required popup end */}
+      {/* referral field required popup start */}
+      <Modal
+        open={showReferral}
+        onClose={() => setShowReferral(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowReferral(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems referral description field is empty. Please fill the referral section's
+              description field under the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowReferral(false)}>
                 Ok
               </Button>
             </div>
           </div>
         </Paper>
       </Modal>
-      {/* Vital field required popup start */}
+      {/* referral field required popup end */}
     </div>
   );
 };

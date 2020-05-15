@@ -28,7 +28,15 @@ export const saveOrderShipmentsTypeDefs = gql`
     siteName: String
     apOrderNo: String
     updatedDate: String!
-    itemDetails: [ArticleDetails]
+    itemDetails: [ItemArticleDetails]
+  }
+
+  input ItemArticleDetails {
+    articleCode: String
+    articleName: String
+    quantity: Int
+    batch: String
+    unitPrice: Int
   }
 
   type SaveOrderShipmentsResult {
@@ -63,10 +71,10 @@ type Shipment = {
   apOrderNo: string;
   updatedDate: string;
   status: MEDICINE_ORDER_STATUS;
-  itemDetails: ArticleDetails[];
+  itemDetails: ItemArticleDetails[];
 };
 
-type ArticleDetails = {
+type ItemArticleDetails = {
   articleCode: string;
   articleName: string;
   quantity: number;

@@ -101,12 +101,18 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 12,
       color: '#02475b',
       position: 'relative',
+      marginBottom: 15,
       '& textarea': {
         border: 'none',
         padding: 0,
         fontSize: 15,
         fontWeight: 500,
         borderRadius: 0,
+      },
+      '& p': {
+        position: 'absolute',
+        bottom: -20,
+        color: '#890000 !important',
       },
     },
     boxActions: {
@@ -131,9 +137,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     inputFieldEdit: {
-      border: '1px solid #00b38e',
-      borderEadius: 10,
-      backgroundColor: '#fff',
+      borderRadius: 10,
       padding: 0,
       '& textarea': {
         color: '#01475b',
@@ -141,6 +145,12 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 500,
         paddingRight: 40,
+      },
+
+      '& textarea:focus': {
+        borderRadius: '5px',
+        boxShadow: '0 0 5px #00b38e',
+        backgroundColor: '#ffffff',
       },
     },
   };
@@ -165,12 +175,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setFamilyHistory,
     setMenstrualHistory,
     gender,
+    medicationHistory,
+    setMedicationHistory,
+    occupationHistory,
+    setOccupationHistory,
   } = useContext(CaseSheetContextJrd);
 
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Patient’s Past Medical History</div>
+        <div className={classes.sectionTitle}>Patient's Past Medical History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
@@ -185,6 +199,24 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
         </div>
       </Grid>
+
+      <Grid item sm={12}>
+        <div className={classes.sectionTitle}>Medication History</div>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
+        >
+          <AphTextField
+            disabled={!caseSheetEdit}
+            fullWidth
+            multiline
+            value={medicationHistory}
+            onChange={(e) => {
+              setMedicationHistory(e.target.value);
+            }}
+          />
+        </div>
+      </Grid>
+
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient's Past Surgical History</div>
         <div
@@ -251,6 +283,26 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
         </div>
       </Grid>
+
+      <Grid item sm={12}>
+        <div className={classes.sectionTitle}>Environmental & Occupational History</div>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
+            classes.marginNone
+          }`}
+        >
+          <AphTextField
+            disabled={!caseSheetEdit}
+            fullWidth
+            multiline
+            value={occupationHistory}
+            onChange={(e) => {
+              setOccupationHistory(e.target.value);
+            }}
+          />
+        </div>
+      </Grid>
+
       {gender === Gender.FEMALE && (
         <Grid item sm={12}>
           <div className={classes.sectionTitle}>Menstrual History*</div>
@@ -272,7 +324,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         </Grid>
       )}
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
+        <div className={classes.sectionTitle}>Patient's Family Medical History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone

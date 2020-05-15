@@ -23,6 +23,7 @@ import { ApiConstants } from 'ApiConstants';
 import { medicineSendPrescription } from 'helpers/emailTemplates/medicineSendPrescription';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { sendMail } from 'notifications-service/resolvers/email';
+import { format, addMinutes } from 'date-fns';
 
 export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
   input PrescriptionMedicineOrderOMSInput {
@@ -144,6 +145,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     patientAddressId: prescriptionMedicineOMSInput.patinetAddressId,
     currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
     isEprescription: prescriptionMedicineOMSInput.isEprescription,
+    isOmsOrder: true,
   };
   let patientAddressDetails;
   if (
@@ -168,13 +170,16 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       deliveryAddress2 = '',
       landmark = '',
       deliveryAddress = 'Kakinada',
-      deliveryState = 'Telangana';
+      deliveryState = 'Telangana',
+      lat = 0,
+      long = 0;
     if (patientAddressDetails) {
       deliveryState = patientAddressDetails.state;
       deliveryAddress1 = patientAddressDetails.addressLine1;
       deliveryAddress2 = patientAddressDetails.addressLine2;
       landmark = patientAddressDetails.landmark || landmark;
-
+      lat = patientAddressDetails.latitude || lat;
+      long = patientAddressDetails.longitude || long;
       deliveryAddress =
         patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
       deliveryCity = patientAddressDetails.city || deliveryCity;
@@ -202,10 +207,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
       patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
     }
+
     const medicineOrderPharma = {
       orderid: saveOrder.orderAutoId,
-      orderdate: saveOrder.quoteDateTime, //"04-22-2020 14:46:41",
-      couponcode: '',
+      orderdate: format(addMinutes(saveOrder.quoteDateTime, 330), 'MM-dd-yyyy HH:mm:ss'),
+      couponcode: saveOrder.coupon,
       drname: '',
       VendorName: 'Apollo247',
       shippingmethod:
@@ -233,15 +239,16 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         shippingcity: deliveryCity,
         shippingstateid: 'TS',
         customerid: '',
-        patiendname: '',
-        customername: patientDetails.firstName + ' ' + patientDetails.lastName,
+        patiendname: patientDetails.firstName,
+        customername:
+          patientDetails.firstName + (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
         primarycontactno: patientDetails.mobileNumber.substr(3),
         secondarycontactno: '',
         age: patientAge,
-        emailid: patientDetails.emailAddress,
+        emailid: patientDetails.emailAddress || '',
         cardno: '0',
-        latitude: 17.4538043,
-        longitude: 78.3694429,
+        latitude: lat,
+        longitude: long,
       },
       paymentdetails: [],
       itemdetails: [],

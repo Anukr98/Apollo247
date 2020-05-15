@@ -76,3 +76,17 @@ export const VALIDATE_PHARMA_COUPONS = gql`
     }
   }
 `;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
+    }
+  }
+`;
