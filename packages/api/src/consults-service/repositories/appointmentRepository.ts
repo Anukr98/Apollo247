@@ -1164,9 +1164,9 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getAllAppointmentsByPatientId(patientId: string) {
     return this.createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
-      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
   }
