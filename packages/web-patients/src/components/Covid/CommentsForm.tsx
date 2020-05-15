@@ -180,6 +180,9 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
             onChange={(event) => setComment(event.target.value)}
             value={comment}
             multiline
+            inputProps={{
+              maxLength: 300,
+            }}
           />
         </div>
       </div>

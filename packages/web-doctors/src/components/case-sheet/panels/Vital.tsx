@@ -55,6 +55,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     display: 'inline-block',
     width: '100%',
+    '& textarea:focus': {
+      borderRadius: "5px",
+      boxShadow: "0 0 5px #00b38e",
+      backgroundColor: "#ffffff",
+    },
+
   },
   vitalLeft: {
     width: '45%',
@@ -160,104 +166,42 @@ export const Vital: React.FC = () => {
   return loading && !patientDetails ? (
     <div></div>
   ) : (
-    <Typography component="div" className={classes.mainContainer}>
-      <div>
-        <Typography className={classes.vitalLeft} component="div">
-          <Typography component="h5" variant="h5" className={classes.header}>
-            Height
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            <AphTextField
-              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
-              fullWidth
-              required
-              multiline
-              error={
-                getDefaultValue('height') === '' ||
-                getDefaultValue('height') === null ||
-                getDefaultValue('height') === undefined
-              }
-              helperText={vitalError.height}
-              defaultValue={getDefaultValue('height')}
-              onBlur={(e) => {
-                if (e.target.value !== '' && e.target.value.trim() !== '')
-                  setVitalError({
-                    ...vitalError,
-                    height: '',
-                  });
-                else
-                  setVitalError({
-                    ...vitalError,
-                    height: 'This field is required',
-                  });
-                const storageItem = getLocalStorageItem(params.id);
-                if (storageItem) {
-                  storageItem.height = e.target.value;
-                  updateLocalStorageItem(params.id, storageItem);
-                }
-                setHeight(e.target.value);
-              }}
-              disabled={!caseSheetEdit}
-            />
-          </Typography>
-        </Typography>
-        <Typography component="div" className={classes.vitalRight}>
-          <Typography component="h5" variant="h5" className={classes.header}>
-            Weight
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            <AphTextField
-              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
-              fullWidth
-              required
-              multiline
-              error={
-                getDefaultValue('weight') === '' ||
-                getDefaultValue('weight') === null ||
-                getDefaultValue('weight') === undefined
-              }
-              helperText={vitalError.weight}
-              defaultValue={getDefaultValue('weight')}
-              onBlur={(e) => {
-                if (e.target.value !== '' && e.target.value.trim() !== '')
-                  setVitalError({
-                    ...vitalError,
-                    weight: '',
-                  });
-                else
-                  setVitalError({
-                    ...vitalError,
-                    weight: 'This field is required',
-                  });
-                const storageItem = getLocalStorageItem(params.id);
-                if (storageItem) {
-                  storageItem.weight = e.target.value;
-                  updateLocalStorageItem(params.id, storageItem);
-                }
-                setWeight(e.target.value);
-              }}
-              disabled={!caseSheetEdit}
-            />
-          </Typography>
-        </Typography>
+      <Typography component="div" className={classes.mainContainer}>
         <div>
-          <Typography component="div" className={classes.vitalLeft}>
+          <Typography className={classes.vitalLeft} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
-              BP
-            </Typography>
+              Height
+          </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
+                required
                 multiline
-                defaultValue={getDefaultValue('bp')}
+                error={
+                  getDefaultValue('height') === '' ||
+                  getDefaultValue('height') === null ||
+                  getDefaultValue('height') === undefined
+                }
+                helperText={vitalError.height}
+                defaultValue={getDefaultValue('height')}
                 onBlur={(e) => {
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      height: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      height: 'This field is required',
+                    });
                   const storageItem = getLocalStorageItem(params.id);
                   if (storageItem) {
-                    storageItem.bp = e.target.value;
+                    storageItem.height = e.target.value;
                     updateLocalStorageItem(params.id, storageItem);
                   }
-                  setBp(e.target.value);
+                  setHeight(e.target.value);
                 }}
                 disabled={!caseSheetEdit}
               />
@@ -265,28 +209,90 @@ export const Vital: React.FC = () => {
           </Typography>
           <Typography component="div" className={classes.vitalRight}>
             <Typography component="h5" variant="h5" className={classes.header}>
-              Temperature
-            </Typography>
+              Weight
+          </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
+                required
                 multiline
-                defaultValue={getDefaultValue('temperature')}
+                error={
+                  getDefaultValue('weight') === '' ||
+                  getDefaultValue('weight') === null ||
+                  getDefaultValue('weight') === undefined
+                }
+                helperText={vitalError.weight}
+                defaultValue={getDefaultValue('weight')}
                 onBlur={(e) => {
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      weight: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      weight: 'This field is required',
+                    });
                   const storageItem = getLocalStorageItem(params.id);
                   if (storageItem) {
-                    storageItem.temperature = e.target.value;
+                    storageItem.weight = e.target.value;
                     updateLocalStorageItem(params.id, storageItem);
                   }
-                  setTemperature(e.target.value);
+                  setWeight(e.target.value);
                 }}
                 disabled={!caseSheetEdit}
               />
             </Typography>
           </Typography>
+          <div>
+            <Typography component="div" className={classes.vitalLeft}>
+              <Typography component="h5" variant="h5" className={classes.header}>
+                BP
+            </Typography>
+              <Typography component="div" className={classes.content}>
+                <AphTextField
+                  onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                  fullWidth
+                  multiline
+                  defaultValue={getDefaultValue('bp')}
+                  onBlur={(e) => {
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.bp = e.target.value;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
+                    setBp(e.target.value);
+                  }}
+                  disabled={!caseSheetEdit}
+                />
+              </Typography>
+            </Typography>
+            <Typography component="div" className={classes.vitalRight}>
+              <Typography component="h5" variant="h5" className={classes.header}>
+                Temperature
+            </Typography>
+              <Typography component="div" className={classes.content}>
+                <AphTextField
+                  onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                  fullWidth
+                  multiline
+                  defaultValue={getDefaultValue('temperature')}
+                  onBlur={(e) => {
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.temperature = e.target.value;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
+                    setTemperature(e.target.value);
+                  }}
+                  disabled={!caseSheetEdit}
+                />
+              </Typography>
+            </Typography>
+          </div>
         </div>
-      </div>
-    </Typography>
-  );
+      </Typography>
+    );
 };
