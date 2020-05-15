@@ -166,6 +166,8 @@ export const convertCaseSheetToRxPdfData = async (
       }
 
       frequency = _capitalize(frequency);
+      if (frequency.includes(ApiConstants.STAT_LOWECASE))
+        frequency = frequency.replace(ApiConstants.STAT_LOWECASE, ApiConstants.STAT_UPPERCASE);
       frequency += '.';
 
       const instructions = csRx.medicineInstructions;
@@ -484,10 +486,19 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
-      .fontSize(10)
+      .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
+
+    if (doctorInfo.qualifications) {
+      doc
+        .fontSize(9)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${doctorInfo.qualifications}`, margin + 15)
+        .moveDown(0.5);
+    }
 
     doc
       .moveDown(0.3)
@@ -870,12 +881,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      doc
-        .fontSize(9)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
-        .text(`${doctorInfo.qualifications}`, margin + 15)
-        .moveDown(0.5);
+      if (doctorInfo.qualifications) {
+        doc
+          .fontSize(9)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#02475b')
+          .text(`${doctorInfo.qualifications}`, margin + 15)
+          .moveDown(0.5);
+      }
 
       doc
         .fontSize(9)

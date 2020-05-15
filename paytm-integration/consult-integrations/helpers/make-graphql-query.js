@@ -7,7 +7,7 @@ const consultsOrderQuery = (payload) => {
     }
 
     let params = `orderId: "${payload.ORDERID}", amountPaid: ${payload.TXNAMOUNT},
-    paymentRefId: "${payload.TXNID}", paymentStatus: "${payload.STATUS}", paymentDateTime: "${txnDate}", responseCode: "${payload.RESPCODE}", responseMessage: "${payload.RESPMSG}", bankTxnId: "${payload.BANKTXNID}"`
+    paymentRefId: "${payload.TXNID}", paymentStatus: "${payload.STATUS}", paymentDateTime: "${txnDate}", responseCode: "${payload.RESPCODE}", responseMessage: "${payload.RESPMSG}", bankTxnId: "${payload.BANKTXNID}"`;
     // if (payload.REFUNDAMT) {
     //     params += `, refundAmount: ${payload.REFUNDAMT}`
     // }
@@ -16,10 +16,10 @@ const consultsOrderQuery = (payload) => {
     //     params += `, bankName: "${payload.BANKNAME}"`
     // }
 
-    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){appointment { id appointment{ id } } }}';
-}
+    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){ appointment{ id }}}';
+};
 
 module.exports = {
     consultsOrderQuery
-}
+};
 

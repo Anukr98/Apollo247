@@ -17,10 +17,6 @@ export interface VitalErrorProps {
   weight: String;
 }
 
-export interface LifeStyleErrorProps {
-  medicationHistory: String;
-}
-
 export interface CaseSheetContextPropsJrd {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -100,7 +96,6 @@ export interface CaseSheetContextPropsJrd {
   menstrualHistory: string;
   dosageList: any;
   vitalError: VitalErrorProps;
-  lifeStyleError: LifeStyleErrorProps;
   medicationHistory: string;
   occupationHistory: string;
   referralDescription: string;
@@ -119,7 +114,6 @@ export interface CaseSheetContextPropsJrd {
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
   setVitalError: (vitalError: VitalErrorProps) => void;
-  setLifeStyleError: (lifeStyleError: LifeStyleErrorProps) => void;
   setMedicationHistory: (medicationHistory: string) => void;
   setOccupationHistory: (occupationHistory: string) => void;
   setReferralSpecialtyName: (referralSpecialtyName: string) => void;
@@ -183,9 +177,6 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
     height: '',
     weight: '',
   },
-  lifeStyleError: {
-    medicationHistory: '',
-  },
   medicationHistory: '',
   occupationHistory: '',
   referralSpecialtyName: '',
@@ -209,7 +200,6 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setReferralSpecialtyName: () => {},
   setReferralDescription: () => {},
   setReferralError: () => {},
-  setLifeStyleError: () => {},
 
   gender: '',
   setGender: () => {},
