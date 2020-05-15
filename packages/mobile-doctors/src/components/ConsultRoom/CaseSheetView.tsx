@@ -581,7 +581,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 title={strings.buttons.end_consult}
                 buttonIcon={<End />}
                 onPress={() => {
-                  setyesorno(true);
+                  if (
+                    selectedReferral.key === '-1' ||
+                    (selectedReferral.key !== '-1' && referralReason)
+                  ) {
+                    setyesorno(true);
+                  } else {
+                    showAphAlert &&
+                      showAphAlert({
+                        title: strings.common.alert,
+                        description: strings.alerts.missing_referral_description,
+                      });
+                  }
                 }}
                 style={styles.buttonendStyle}
               />
@@ -919,6 +930,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   medicationHistory: text,
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              strings.case_sheet.surgical_history,
+              (medicalHistory && medicalHistory.pastSurgicalHistory) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  pastSurgicalHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true

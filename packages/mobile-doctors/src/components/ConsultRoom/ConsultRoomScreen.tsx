@@ -522,26 +522,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     lifeStyleData,
     familyValues,
     medicalHistory,
+    selectedReferral,
+    referralReason,
   ]);
+
   const getInputData = () => {
     return {
       symptoms:
-        symptonsData &&
-        symptonsData
-          .map((i) => {
-            if (i) {
-              return {
-                symptom: i.symptom || '',
-                since: i.since || '',
-                howOften: i.howOften || '',
-                severity: i.severity || '',
-                details: i.details || '',
-              };
-            } else {
-              return '';
-            }
-          })
-          .filter((i) => i !== ''),
+        symptonsData && symptonsData.length > 0
+          ? symptonsData
+              .map((i) => {
+                if (i) {
+                  return {
+                    symptom: i.symptom || '',
+                    since: i.since || '',
+                    howOften: i.howOften || '',
+                    severity: i.severity || '',
+                    details: i.details || '',
+                  };
+                } else {
+                  return '';
+                }
+              })
+              .filter((i) => i !== '')
+          : null,
       notes: doctorNotes || '',
       diagnosis:
         diagnosisData &&
@@ -684,11 +688,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Doctor', errorMessage, error);
-          showAphAlert &&
-            showAphAlert({
-              title: strings.common.uh_oh,
-              description: strings.common.oops_msg_saving,
-            });
+          if (errorMessage.search('INVALID_REFERRAL_DESCRIPTION')) {
+            showAphAlert &&
+              showAphAlert({
+                title: strings.common.alert,
+                description: strings.alerts.missing_referral_description,
+              });
+          } else {
+            showAphAlert &&
+              showAphAlert({
+                title: strings.common.uh_oh,
+                description: strings.common.oops_msg_saving,
+              });
+          }
         });
     } else {
       if (callBack) {

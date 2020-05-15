@@ -480,7 +480,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
       <ScrollView style={styles.flexStyle} bounces={false}>
         {renderApolloLogo()}
         {appointmentDetails && renderAppointmentData()}
-        {complaints && renderComplaints()}
+        {renderComplaints()}
         {diagnosis && renderDiagnosis()}
         {medicine && medicine.length > 0 && renderMedicine()}
         {tests && tests.length > 0 && renderTest()}
