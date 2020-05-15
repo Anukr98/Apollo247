@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import React, { useEffect } from 'react';
 import Modal from '@material-ui/core/Modal';
-
+import { History } from 'history';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
@@ -348,8 +348,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-
-export const Appointments: React.FC = (props) => {
+interface AppointmentProps {
+  history: History;
+}
+export const Appointments: React.FC<AppointmentProps> = (props) => {
   const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -377,13 +379,11 @@ export const Appointments: React.FC = (props) => {
   const [appointmentType, setAppointmentType] = React.useState<string>('');
   const [doctorDetail, setDoctorDetail] = React.useState<any>({});
   const [paymentStatus, setPaymentStatus] = React.useState<string>('');
-  const [paymentRefId, setPaymentRefId] = React.useState<string>('');
+  const [bankTxnId, setBankTxnId] = React.useState<string>('');
   const [displayId, setDisplayId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
-  const paymentPendingInfo =
-    'Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
-  const paymentFailedInfo =
-    'In case your account has been debited, you should get the refund in 10-14 working days.';
+  const [doctorId, setDoctorId] = React.useState<string>('');
+
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -429,13 +429,15 @@ export const Appointments: React.FC = (props) => {
       appointmentDetail.data.getAppointmentData &&
       appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
     if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
-      const { appointmentDateTime, appointmentType, doctorInfo } = appointmentData;
-      const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
+      const { paymentStatus, bankTxnId, displayId, amountPaid } = paymentData;
       setAppointmentDateTime(appointmentDateTime);
       setAppointmentType(appointmentType);
       setDoctorDetail(doctorInfo);
       setPaymentStatus(paymentStatus);
-      setPaymentRefId(paymentRefId);
+      setBankTxnId(bankTxnId);
+      setDoctorId(doctorId);
+
       setDisplayId(displayId);
       setAmountPaid(amountPaid);
       setIsLoading(false);
@@ -474,6 +476,37 @@ export const Appointments: React.FC = (props) => {
   //     return appointmentDetails;
   //   }
   // });
+  type statusActionType = {
+    [name: string]: any;
+  };
+  interface statusMap {
+    [name: string]: statusActionType;
+  }
+  const statusActions: statusMap = {
+    PAYMENT_SUCCESS: {
+      ctaText: 'DOWNLOAD APP',
+      info: '',
+      callbackFunction: () => {
+        window.open(getAppStoreLink(), '_blank');
+      },
+    },
+    PAYMENT_FAILED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
+    PAYMENT_PENDING: {
+      ctaText: 'GO TO HOME',
+      info:
+        'Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.',
+    },
+    callbackFunction: () => {
+      props && props.history && props.history.push(clientRoutes.welcome());
+    },
+  };
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
     return moment(new Date(appointmentDetails.appointmentDateTime))
@@ -523,7 +556,6 @@ export const Appointments: React.FC = (props) => {
       );
 
       if (isAppointmentAvailable && Object.keys(isAppointmentAvailable).length > 0) {
-        console.log(555, isAppointmentAvailable.doctorInfo);
         const doctorName =
           isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.fullName
             ? isAppointmentAvailable.doctorInfo.fullName
@@ -588,18 +620,6 @@ export const Appointments: React.FC = (props) => {
               .isBefore(moment(new Date()).startOf('day'))
           ).length || 'no') +
           ' past appointment(s)!';
-  };
-
-  const handleSuccessPaymentModalCTA = () => {
-    window.open(getAppStoreLink(), '_blank');
-  };
-
-  const handleFailedPaymentModalCTA = () => {
-    console.log(333, props);
-  };
-
-  const handlePendingPaymentModalCTA = () => {
-    console.log(333, props);
   };
 
   const TabContainer: React.FC = (props) => {
@@ -842,31 +862,19 @@ export const Appointments: React.FC = (props) => {
                     ? 'pending'
                     : 'success'
                 }
-                paymentInfo={
-                  paymentStatus === 'PAYMENT_FAILED'
-                    ? paymentFailedInfo
-                    : paymentStatus === 'PAYMENT_PENDING'
-                    ? paymentPendingInfo
-                    : ''
-                }
+                paymentInfo={statusActions[paymentStatus].info}
                 orderId={displayId}
                 amountPaid={amountPaid}
                 doctorDetail={doctorDetail}
-                paymentRefId={paymentRefId}
+                paymentRefId={bankTxnId}
                 bookingDateTime={moment(appointmentDateTime)
                   .format('DD MMMM YYYY[,] LT')
                   .toString()}
                 type={'consult'}
                 consultMode={appointmentType}
                 onClose={() => setIsConfirmedPopoverOpen(false)}
-                ctaText={'DOWNLOAD APOLLO 247 APP'}
-                orderStatusCallback={
-                  paymentStatus === 'PAYMENT_SUCCESS'
-                    ? handleSuccessPaymentModalCTA
-                    : paymentStatus === 'PAYMENT_FAILED'
-                    ? handleFailedPaymentModalCTA
-                    : handlePendingPaymentModalCTA
-                }
+                ctaText={statusActions[paymentStatus].ctaText}
+                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
               />
             </>
           )}
