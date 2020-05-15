@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useEffect, useContext } from 'react';
-import { Theme } from '@material-ui/core';
+import React, { useEffect, useContext, useState } from 'react';
+import { Theme, Modal, Tabs, Tab, TextField } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
@@ -34,6 +34,7 @@ import { useAuth } from 'hooks/authHooks';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { ApolloError } from 'apollo-client';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,8 +225,163 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: 15,
       },
     },
+    shareLink: {
+      paddingTop: 16,
+      paddingBottom: 16,
+      fontSize: 14,
+      marginRight: 16,
+      color: 'rgba(0, 0, 0, 0.72)',
+      fontWeight: 500,
+      borderTop: '1px solid rgba(2, 71, 91, 0.1)',
+    },
+    shareButton: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#fc9916',
+      textTransform: 'uppercase',
+      marginTop: 16,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 10,
+      },
+    },
+    shareContent: {
+      paddingTop: 16,
+      paddingBottom: 16,
+    },
+    modalBox: {
+      maxWidth: 480,
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: '#f7f7f7',
+      position: 'relative',
+      outline: 'none',
+    },
+    dialogTitle: {
+      color: '#02475b',
+      padding: '18px 20px',
+      fontSize: 13,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      textAlign: 'center',
+      fontWeight: 600,
+      borderRadius: '10px 10px 0 0',
+      backgroundColor: '#fff',
+      position: 'relative',
+      textTransform: 'uppercase',
+    },
+    tabsRoot: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: 0,
+      minHeight: 'auto',
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
+    tabRoot: {
+      fontSize: 14,
+      fontWeight: 500,
+      textAlign: 'center',
+      color: 'rgba(2,71,91,0.5)',
+      padding: '8px 15px',
+      textTransform: 'uppercase',
+      minWidth: 'auto',
+      minHeight: 'auto',
+    },
+    tabSelected: {
+      color: theme.palette.secondary.dark,
+    },
+    tabsIndicator: {
+      backgroundColor: '#00b38e',
+      height: 2,
+    },
+    dialogTop: {
+      backgroundColor: '#fff',
+      padding: 20,
+      '& p': {
+        margin: 0,
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#02475b',
+      },
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: 15,
+      top: 12,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      zIndex: 9,
+      textAlign: 'center',
+      lineHeight: '28px',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    tabsContent: {
+      padding: '30px 20px',
+      minHeight: 200,
+    },
+    formGroup: {
+      fontSize: 14,
+      color: 'rgba(2, 71, 91, 0.8)',
+      '& label': {
+        paddingBottom: 8,
+        fontWeight: 'bold',
+        display: 'block',
+        color: 'rgba(2, 71, 91, 0.8)',
+      },
+    },
+    formWrap: {
+      position: 'relative',
+      '& button': {
+        position: 'absolute',
+        right: 6,
+        top: 6,
+        minWidth: 102,
+        padding: '5px 10px',
+        boxShadow: 'none',
+        borderRadius: 10,
+      },
+    },
+    formInput: {
+      '& fieldset': {
+        border: 'none',
+      },
+      '& input': {
+        padding: '12px 16px',
+        backgroundColor: '#fff',
+        border: '1px solid #30c1a3',
+        borderRadius: 10,
+        fontWeight: 500,
+        paddingRight: 120,
+      },
+    },
+    infoText: {
+      fontSize: 14,
+      lineHeight: '18px',
+      fontWeight: 500,
+    },
+    uploadCSV: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#fc9916',
+      textTransform: 'uppercase',
+      marginTop: 16,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 10,
+      },
+    },
   };
 });
+
+const TabContainer: React.FC = (props) => {
+  return <Typography component="div">{props.children}</Typography>;
+};
 
 export const MyAccount: React.FC = (props) => {
   const classes = useStyles({});
@@ -236,6 +392,8 @@ export const MyAccount: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [userDetails, setUserDetails] = React.useState<any>();
   const [selectedNavTab, setselectedNavTab] = React.useState(1);
+  const [isShareProfileDialogOpen, setIsShareProfileDialogOpen] = React.useState<boolean>(false);
+  const [tabValue, setTabValue] = useState<number>(0);
 
   const getDoctorDetailsById = () => {
     client
@@ -324,6 +482,15 @@ export const MyAccount: React.FC = (props) => {
                         <Typography variant="h6">
                           <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
                         </Typography>
+                        <div className={classes.shareLink}>
+                          Share a link with your contacts privately to book a consult with you
+                          <div
+                            className={classes.shareButton}
+                            onClick={() => setIsShareProfileDialogOpen(true)}
+                          >
+                            <img src={require('images/ic_share_link.svg')} alt="" /> Share My Profile
+                          </div>
+                        </div>
                         <Typography
                           className={classes.logout}
                           onClick={() => setIsDialogOpen(true)}
@@ -566,6 +733,119 @@ export const MyAccount: React.FC = (props) => {
           </div>
         </Scrollbars>
       )}
+      {/* Share profile contact Dialog */}
+      <Modal
+          open={isShareProfileDialogOpen}
+          onClose={() => setIsShareProfileDialogOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox}>
+            <div className={classes.modalBoxClose} onClick={() => setIsShareProfileDialogOpen(false)}>
+              <img src={require('images/ic_cross.svg')} alt="" />
+            </div>
+            <div className={classes.dialogTitle}>Share your profile</div>
+            <div className={classes.dialogTop}>
+              <p>Invite your contacts to consult with you on Apollo247</p>
+            </div>
+            <Tabs
+              value={tabValue}
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="URL"
+                title={'URL'}
+              />
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="SMS"
+                title={'SMS'}
+              />
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="EMAIL"
+                title={'EMAIL'}
+              />
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                <div className={classes.tabsContent}>
+                  <div className={classes.formGroup}>
+                    <label>Invite via Private URL</label>
+                    <div className={classes.formWrap}>
+                      <TextField
+                        placeholder="https://www.apollo247.com/7611df82"
+                        variant="outlined"
+                        fullWidth
+                        className={classes.formInput}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <AphButton color="primary">Copy</AphButton>
+                    </div>
+                  </div>
+                </div>
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
+                <div className={classes.tabsContent}>
+                  <div className={classes.formGroup}>
+                    <label>Invite via SMS</label>
+                    <div className={classes.formWrap}>
+                      <TextField
+                        placeholder="Enter recipient’s mobile number here"
+                        variant="outlined"
+                        fullWidth
+                        className={classes.formInput}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <AphButton color="primary">Send</AphButton>
+                    </div>
+                  </div>
+                  <p className={classes.infoText}>Have a large bunch of contacts to invite? Upload a .CSV File of your contact list here to bulk share.</p>
+                  <div className={classes.uploadCSV}>
+                    <img src={require('images/ic_share_link.svg')} alt="" /> Upload CSV
+                  </div>
+                </div>
+              </TabContainer>
+            )}
+            {tabValue === 2 && (
+              <TabContainer>
+                <div className={classes.tabsContent}>
+                  <div className={classes.formGroup}>
+                    <label>Invite via Email</label>
+                    <div className={classes.formWrap}>
+                      <TextField
+                        placeholder="Enter recipient’s email ID here"
+                        variant="outlined"
+                        fullWidth
+                        className={classes.formInput}
+                        InputLabelProps={{ shrink: true }}
+                      />
+                      <AphButton color="primary">Send</AphButton>
+                    </div>
+                  </div>
+                </div>
+              </TabContainer>
+            )}
+          </Paper>
+        </Modal>
     </div>
   );
 };
