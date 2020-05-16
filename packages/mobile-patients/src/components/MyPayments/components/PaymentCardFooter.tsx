@@ -30,10 +30,12 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     let type = '';
     let status = '';
     let orderID = 0;
+    let aptType = '';
     if (paymentFor === 'consult') {
       const { appointmentDateTime, appointmentPayments, doctor, appointmentType } = item;
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online' : 'Clinic Visit';
+      aptType = appointmentType;
       if (!appointmentPayments || !appointmentPayments.length) {
         status = 'PENDING';
         return {
@@ -41,6 +43,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           dateAndTime: getDate(appointmentDateTime),
           type: type,
           status: status,
+          aptType: aptType,
         };
       } else {
         status = appointmentPayments[0].paymentStatus;
@@ -49,6 +52,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           dateAndTime: getDate(appointmentDateTime),
           type: type,
           status: status,
+          aptType: aptType,
         };
       }
     } else {
@@ -63,6 +67,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           type: type,
           status: status,
           orderID: orderID,
+          aptType: aptType,
         };
       } else {
         type = medicineOrderPayments[0].paymentType;
@@ -74,6 +79,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           type: type,
           status: status,
           orderID: orderID,
+          aptType: aptType,
         };
       }
     }
@@ -115,11 +121,11 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
   };
   const getTitle = () => {
     const { paymentFor } = props;
-    const { status } = statusItemValues();
+    const { status, aptType } = statusItemValues();
     let buttonTitle = 'TRY AGAIN';
     if (paymentFor === 'consult') {
       if (status === SUCCESS) {
-        buttonTitle = 'VIEW CONSULT DETAILS';
+        buttonTitle = aptType === 'ONLINE' ? 'START CONSULTATION' : 'VIEW CONSULT DETAILS';
         return { buttonTitle: buttonTitle };
       }
       buttonTitle = 'TRY AGAIN';
