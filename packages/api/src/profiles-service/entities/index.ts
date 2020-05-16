@@ -831,10 +831,10 @@ export class PatientAddress extends BaseEntity {
   @Column({ nullable: true })
   landmark: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8', nullable: true })
   latitude: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8', nullable: true })
   longitude: number;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
@@ -2010,9 +2010,6 @@ export class MedicineOrderShipments extends BaseEntity {
 
   @Column({ nullable: true, type: 'json' })
   itemDetails: string;
-
-  @Column()
-  isPrimary: boolean;
 
   @OneToMany(
     (type) => MedicineOrdersStatus,

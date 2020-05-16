@@ -128,7 +128,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     expertsContainer: {
       paddingTop: 20,
-      width: '45%',
+      width: 240,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
   };
 });
