@@ -544,6 +544,49 @@ app.get('/processOrders', (req, res) => {
     deliveryZipcode = '500045',
     deliveryAddress = 'Kakinada';
   let queueMessage = '';
+  function getAddressDetails(addressId) {
+    return new Promise(async (resolve, reject) => {
+      axios({
+        url: process.env.API_URL,
+        method: 'post',
+        data: {
+          query: `
+        query {
+          getPatientAddressById(id:"${addressId}") {
+            patientAddress{
+                id
+                city
+                state
+                zipcode
+                addressLine1
+                addressLine2
+                landmark
+              }
+          }
+        }
+      `,
+        },
+      })
+        .then((response) => {
+          deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+          deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
+          deliveryAddress =
+            response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+            ' ' +
+            response.data.data.getPatientAddressById.patientAddress.addressLine2;
+          console.log(
+            response,
+            response.data.data.getPatientAddressById.patientAddress.state,
+            'address resp'
+          );
+          resolve(deliveryAddress);
+        })
+        .catch((error) => {
+          logger.error(`processOrders()-> ${error.stack}`);
+          console.log(error, 'address error');
+        });
+    });
+  }
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
@@ -562,13 +605,55 @@ app.get('/processOrders', (req, res) => {
         logger.info(`message from topic - processOrders()-> ${JSON.stringify(result.body)}`);
         console.log('message from topic', result.body);
         queueMessage = result.body;
-        const [prefix, orderAutoId, patientId] = queueMessage.split(':');
+        const queueDetails = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
         axios({
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery('getMedicineOrderDetails', patientId, orderAutoId),
+            query: `
+            query {
+              getMedicineOrderDetails(patientId:"${queueDetails[2]}", orderAutoId:${queueDetails[1]}) {
+                MedicineOrderDetails {
+                  id
+                  shopId
+                  orderAutoId
+                  estimatedAmount
+                  pharmaRequest
+                  devliveryCharges
+                  deliveryType
+                  patientAddressId
+                  prescriptionImageUrl
+                  orderType
+                  currentStatus
+                  patient{
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth
+                  }
+                  medicineOrderLineItems{
+                    medicineSKU
+                    medicineName
+                    mrp
+                    mou
+                    price
+                    quantity        
+                    isMedicine
+                  }
+                  medicineOrderPayments{
+                    id
+                    bankTxnId
+                    paymentType
+                    amountPaid
+                    paymentRefId
+                    paymentStatus
+                  }
+                }
+              }
+            }
+          `,
           },
         })
           .then(async (response) => {
@@ -594,15 +679,9 @@ app.get('/processOrders', (req, res) => {
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                     .patientAddressId != null
                 ) {
-                  const patientAddressDetails = await getAddressDetails(
+                  await getAddressDetails(
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId
                   );
-                  if (patientAddressDetails) {
-                    deliveryCity = patientAddressDetails.city;
-                    deliveryZipcode = patientAddressDetails.deliveryZipcode;
-                    deliveryAddress =
-                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                  }
                 }
                 const responseOrderId =
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
@@ -740,7 +819,9 @@ app.get('/processOrders', (req, res) => {
                   },
                 };
                 logger.info(
-                  `processOrders()->${orderAutoId}-> pharamInput - ${JSON.stringify(pharmaInput)}`
+                  `processOrders()->${queueDetails[1]}-> pharamInput - ${JSON.stringify(
+                    pharmaInput
+                  )}`
                 );
                 console.log('pharmaInput==========>', pharmaInput, '<===============pharmaInput');
                 const fileName =
@@ -763,7 +844,7 @@ app.get('/processOrders', (req, res) => {
                   })
                   .then((resp) => {
                     logger.info(
-                      `processOrders()->${orderAutoId}-> pharamResponse - ${JSON.stringify(
+                      `processOrders()->${queueDetails[1]}-> pharamResponse - ${JSON.stringify(
                         resp.data
                       )}`
                     );
@@ -777,7 +858,10 @@ app.get('/processOrders', (req, res) => {
                     //console.log(orderData, 'order data');
                     if (resp.data.ordersResult.Status == true) {
                       const requestJSON = {
-                        query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: "${resp.data.ordersResult.ReferenceNo}" }){ message }}`,
+                        query:
+                          'mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ' +
+                          queueDetails[1] +
+                          ' }){ message }}',
                       };
 
                       console.log(requestJSON, 'reqest json');
@@ -794,7 +878,7 @@ app.get('/processOrders', (req, res) => {
                         })
                         .catch((placedError) => {
                           logger.error(
-                            `${orderAutoId} -> processOrders()->orderPlaced -> ${placedError.stack}`
+                            `${queueDetails[1]} -> processOrders()->orderPlaced -> ${placedError.stack}`
                           );
                           console.log(placedError, 'placed error');
                           azureServiceBus.deleteMessage(result, (deleteError) => {
@@ -813,7 +897,7 @@ app.get('/processOrders', (req, res) => {
                   })
                   .catch((pharmaerror) => {
                     logger.error(
-                      `${orderAutoId} -> processOrders()->PharamaOrderPlaced -> ${pharmaerror.stack}`
+                      `${queueDetails[1]} -> processOrders()->PharamaOrderPlaced -> ${pharmaerror.stack}`
                     );
                     console.log('pharma error', pharmaerror);
                     res.send({
@@ -827,7 +911,7 @@ app.get('/processOrders', (req, res) => {
           })
           .catch((error) => {
             logger.error(
-              `${orderAutoId} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
+              `${queueDetails[1]} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
             );
 
             // no need to explicitly saying details about error for clients.
