@@ -156,9 +156,9 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                             <div className={classes.resultGroup}>
                               <label>Normal Range</label>
                               <div className={`${classes.result}`}>
-                                {detail.minimum || detail.maximum
-                                  ? `${detail.minimum} - ${detail.maximum}`
-                                  : 'N/A'}
+                                {detail.range
+                                  ? detail.range
+                                  : `${detail.minimum || ''} - ${detail.maximum || ''}`}
                               </div>
                             </div>
                           </Grid>
