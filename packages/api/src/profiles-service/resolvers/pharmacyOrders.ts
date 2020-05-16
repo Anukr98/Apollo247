@@ -4,6 +4,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import _ from 'lodash';
 
 export const pharmaOrdersTypeDefs = gql`
   type PharmacyOrderResult {
@@ -17,6 +18,7 @@ export const pharmaOrdersTypeDefs = gql`
     estimatedAmount: Float
     orderAutoId: Float
     appointmentId: String
+    currentStatus: String
     orderType: String
     quoteDateTime: DateTime
     orderDateTime: DateTime
@@ -25,6 +27,9 @@ export const pharmaOrdersTypeDefs = gql`
   type PharmacyPayment {
     paymentStatus: String
     paymentRefId: String
+    paymentType: String
+    amountPaid: Float
+    paymentDateTime: DateTime
   }
   extend type Query {
     pharmacyOrders(patientId: String): PharmacyOrderResult
@@ -41,6 +46,7 @@ type PharmaResponse = {
   estimatedAmount: number;
   orderAutoId: number;
   appointmentId: string;
+  currentStatus: string;
   orderType: string;
   quoteDateTime: Date;
   orderDateTime: Date;
@@ -49,6 +55,9 @@ type PharmaResponse = {
 type PharmacyPayment = {
   paymentStatus: string;
   paymentRefId: string;
+  paymentType: string;
+  amountPaid: number;
+  paymentDateTime: Date;
 };
 
 const pharmacyOrders: Resolver<
@@ -61,8 +70,10 @@ const pharmacyOrders: Resolver<
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(args.patientId);
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2))
   if (medicineOrders && medicineOrders.length > 0) {
-    return { pharmaOrders: medicineOrders };
-  } else throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+    const excludeNullPayments = _.filter(medicineOrders, (o) => { return o.medicineOrderPayments !== [] });
+    const result = _.filter(excludeNullPayments, (o) => { return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE' })
+    return { pharmaOrders: result };
+  } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
 export const pharmacyOrdersResolvers = {
