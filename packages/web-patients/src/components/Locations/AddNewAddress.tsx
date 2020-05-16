@@ -189,6 +189,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [addressId, setAddressId] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [showTextbox, setShowText] = useState<boolean>(false);
+  const [latitude, setLatitude] = useState<Number>();
+  const [longitude, setLongitude ] = useState<Number>();
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const [state, setState] = useState<string>('');
@@ -305,6 +307,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
             setPincode(pincode || '');
             setAddress2(location);
+          }
+          if (data && data.results[0] && data.results[0].geometry && data.results[0].geometry.location) {
+            const { lat, lng } = data.results[0].geometry.location;
+            setLatitude(lat);
+            setLongitude(lng)
           }
         } catch {
           (e: AxiosError) => console.log(e);
@@ -450,6 +457,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,
                       otherAddressType: otherTextbox,
+                      latitude,
+                      longitude
                     },
                   },
                 })
@@ -482,6 +491,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,
                       otherAddressType: otherTextbox,
+                      latitude,
+                      longitude
                     },
                   },
                 })
