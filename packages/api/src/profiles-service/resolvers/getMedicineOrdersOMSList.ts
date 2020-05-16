@@ -9,11 +9,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
-    MedicineOrdersList: [MedicineOrdersOMS]
+    medicineOrdersList: [MedicineOrdersOMS]
   }
 
   type MedicineOrderOMSDetailsResult {
-    MedicineOrderDetails: MedicineOrdersOMS
+    medicineOrderDetails: MedicineOrdersOMS
   }
 
   type MedicineOrdersOMS {
@@ -25,6 +25,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
+    quoteDateTime: String
+    coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
@@ -97,12 +99,12 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
   extend type Query {
     getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(patientId: String, orderAutoId: Int): MedicineOrderOMSDetailsResult!
-    getMedicineOMSPaymentOrder: MedicineOrdersListResult!
+    getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
   }
 `;
 
 type MedicineOrdersOMSListResult = {
-  MedicineOrdersList: MedicineOrders[];
+  medicineOrdersList: MedicineOrders[];
 };
 
 type MedicineOrderOMSDetailsResult = {
@@ -122,9 +124,8 @@ const getMedicineOrdersOMSList: Resolver<
   }
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(args.patientId);
-  console.log(MedicineOrdersList);
-  return { MedicineOrdersList };
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(args.patientId);
+  return { medicineOrdersList };
 };
 
 const getMedicineOrderOMSDetails: Resolver<
@@ -166,8 +167,8 @@ const getMedicineOMSPaymentOrder: Resolver<
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { MedicineOrdersList };
+  const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
+  return { medicineOrdersList };
 };
 
 export const getMedicineOrdersOMSListResolvers = {
