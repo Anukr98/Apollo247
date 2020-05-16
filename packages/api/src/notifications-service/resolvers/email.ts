@@ -3,6 +3,7 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import { from } from 'apollo-link';
 
 export const emailTypeDefs = gql`
   extend type Query {
@@ -13,22 +14,25 @@ export const emailTypeDefs = gql`
 export async function sendMail(emailContent: EmailMessage) {
   let ccEmailList = [];
   ccEmailList = emailContent.ccEmail.split(',');
-  const lib = require('pepipost');
-  const controller = lib.EmailController;
-  const apiKey = ApiConstants.PEPIPOST_API_KEY;
-  const body = new lib.EmailBody();
-  body.personalizations = [];
-  body.personalizations[0] = new lib.Personalizations();
-  body.personalizations[0].recipient = emailContent.toEmail;
-  body.personalizations[0].recipientCc = ccEmailList;
-  body.from = new lib.From();
-  body.from.fromEmail = emailContent.fromEmail;
-  body.from.fromName = emailContent.fromName;
-  body.subject = emailContent.subject;
-  body.content = emailContent.messageContent;
-  const mailStatus = await controller.createSendEmail(apiKey, body);
-  console.log(mailStatus, 'status of mail');
-  return mailStatus;
+  const sendgrid = require('sendgrid')(
+    process.env.SENDGRID_USER_NAME,
+    process.env.SENDGRID_PASSWORD
+  );
+  const email = new sendgrid.Email({
+    to: 'pratysh.s@apollo247.org',
+    cc: ccEmailList,
+    from: emailContent.fromEmail,
+    fromname: emailContent.fromName,
+    subject: emailContent.subject,
+    text: emailContent.messageContent,
+    html: emailContent.messageContent,
+  });
+  sendgrid.send(email, function(err: any, json: any) {
+    if (err) {
+      return console.error(err);
+    }
+    return json;
+  });
 }
 
 const sendEmailMessage: Resolver<null, {}, NotificationsServiceContext, string> = async (
