@@ -187,7 +187,7 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
             <div className={classes.doctorImg}>
               <Avatar
                 alt="Dr. Simran Rai"
-                src={require('images/doctordp_01.png')}
+                src={consult.doctorInfo.photoUrl}
                 className={classes.avatar}
               />
             </div>
@@ -250,7 +250,7 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
           <div className={classes.doctorImg}>
             <Avatar
               alt="Dr. Simran Rai"
-              src={require('images/doctordp_01.png')}
+              src={consult.doctorInfo.photoUrl}
               className={classes.avatar}
             />
           </div>

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -63,8 +64,15 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -105,9 +113,15 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  CLINIC = "CLINIC",
+  CRADLE = "CRADLE",
+  DOCTOR_CONNECT = "DOCTOR_CONNECT",
+  FERTILITY = "FERTILITY",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
+  SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
+  SUGAR = "SUGAR",
 }
 
 export enum Gender {
@@ -149,6 +163,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -173,6 +188,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_VERIFIED = "ORDER_VERIFIED",
   OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
   PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
@@ -206,7 +222,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -251,6 +267,10 @@ export enum NonCartOrderCity {
   CHENNAI = "CHENNAI",
 }
 
+export enum NonCartOrderOMSCity {
+  CHENNAI = "CHENNAI",
+}
+
 export enum PATIENT_ADDRESS_TYPE {
   HOME = "HOME",
   OFFICE = "OFFICE",
@@ -260,6 +280,11 @@ export enum PATIENT_ADDRESS_TYPE {
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
 export enum REQUEST_ROLES {
@@ -302,7 +327,9 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
@@ -311,6 +338,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -523,6 +551,7 @@ export interface MedicineCartInput {
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
+  coupon?: string | null;
 }
 
 export interface MedicineCartItem {
@@ -565,11 +594,21 @@ export interface MedicinePaymentMqInput {
   bankTxnId?: string | null;
   email?: string | null;
   CODCity?: CODCity | null;
+  orderId?: string | null;
 }
 
 export interface OrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
+}
+
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
 }
 
 export interface OtpVerificationInput {
@@ -614,6 +653,12 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
 export interface PrescriptionMedicineInput {
   quoteId?: string | null;
   shopId?: string | null;
@@ -632,7 +677,33 @@ export interface PrescriptionMedicineInput {
   orderAutoId?: number | null;
 }
 
+export interface PrescriptionMedicineOrderOMSInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
+  appointmentId?: string | null;
+  isEprescription?: number | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
+  email?: string | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
+  orderAutoId?: number | null;
+}
+
 export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+}
+
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;

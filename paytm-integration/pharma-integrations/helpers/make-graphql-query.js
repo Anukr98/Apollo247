@@ -1,7 +1,9 @@
-const medicineOrderQuery = (payload, isWebhook) => {
-    let txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
-    if (isWebhook) {
+const medicineOrderQuery = (payload) => {
+    let txnDate = new Date(new Date().toUTCString()).toISOString();
+    if (payload.TXNDATETIME) {
         txnDate = new Date(new Date(payload.TXNDATETIME).toUTCString()).toISOString();
+    } else if (payload.TXNDATE) {
+        txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
     }
 
     let params = `orderAutoId: ${payload.ORDERID}, paymentType: CASHLESS, amountPaid: ${payload.TXNAMOUNT},

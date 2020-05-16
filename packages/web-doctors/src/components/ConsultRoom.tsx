@@ -19,6 +19,7 @@ import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
+import { useParams } from 'hooks/routerHooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -361,8 +362,11 @@ interface ConsultRoomProps {
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 
+type Params = { id: string; patientId: string; tabValue: string };
+
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
@@ -374,7 +378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { currentPatient, isSignedIn } = useAuth();
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
     CaseSheetContext
@@ -404,8 +408,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
 
-  const doctorId = props.doctorId;
-  const patientId = props.patientId;
+  const { doctorId, patientId } = props;
   const channel = props.appointmentId;
   let leftComponent = 0;
   let rightComponent = 0;
@@ -444,6 +447,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    if (params.tabValue === '1') {
+      srollToBottomAction();
+    }
+  }, [params.tabValue]);
 
   useEffect(() => {
     const lastMsg = props.lastMsg;

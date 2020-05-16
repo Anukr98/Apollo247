@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const WeAreHelpYou: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 
@@ -175,7 +175,7 @@ export const WeAreHelpYou: React.FC = (props) => {
         <div className={classes.cardContent}>
           <div className={classes.contentHeader}>
             <span>
-              <img src={require('images/ic-doctor.svg')} alt="We are here to help you" />
+              <img src={require('images/ic-mascot.png')} alt="We are here to help you" />
             </span>
             <span>We are here to help you.</span>
           </div>

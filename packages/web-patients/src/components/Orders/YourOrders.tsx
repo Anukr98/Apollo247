@@ -5,7 +5,6 @@ import Scrollbars from 'react-custom-scrollbars';
 import { OrderCard } from 'components/Orders/OrderCard';
 import { OrdersMessage } from 'components/Orders/OrdersMessage';
 import { TrackOrders } from 'components/Orders/TrackOrders';
-import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -123,7 +122,6 @@ export const YourOrders: React.FC = (props) => {
       >
         <TrackOrders orderAutoId={orderAutoId} setShowMobileDetails={setShowMobileDetails} />
       </div>
-      <NavigationBottom />
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}

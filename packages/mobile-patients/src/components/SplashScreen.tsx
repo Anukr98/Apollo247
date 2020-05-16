@@ -100,6 +100,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
+      AsyncStorage.removeItem('endAPICalled');
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
@@ -182,9 +183,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineSearch handleopen');
           getData('MedicineSearch', data.length === 2 ? linkId : undefined);
           break;
+
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
           getData('MedicineDetail', data.length === 2 ? linkId : undefined);
+          break;
+
+        case 'MedicineCart':
+          console.log('MedicineCart handleopen');
+          getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
 
         default:
@@ -342,6 +349,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
         break;
+
       case 'Speciality':
         console.log('Speciality id', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
@@ -372,6 +380,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });
         }
+        break;
+
+      case 'MedicineCart':
+        console.log('MedicineCart handleopen');
+        props.navigation.navigate(AppRoutes.YourCart, {
+          movedFrom: 'splashscreen',
+        });
         break;
 
       default:
@@ -444,6 +459,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
+      checkForVersionUpdate();
     }
     setAppState(nextAppState);
   };

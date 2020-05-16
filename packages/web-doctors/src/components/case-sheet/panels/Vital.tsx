@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     width: '100%',
+    marginBottom: 15,
     '& textarea': {
       border: 'none',
       padding: 15,
@@ -32,6 +33,11 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontWeight: 500,
       paddingRight: 60,
       borderRadius: 0,
+    },
+    '& p': {
+      position: 'absolute',
+      bottom: -20,
+      color: '#890000 !important',
     },
   },
   textContent: {
@@ -49,6 +55,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     display: 'inline-block',
     width: '100%',
+    '& textarea:focus': {
+      borderRadius: "5px",
+      boxShadow: "0 0 5px #00b38e",
+      backgroundColor: "#ffffff",
+    },
+
   },
   vitalLeft: {
     width: '45%',
@@ -122,6 +134,8 @@ export const Vital: React.FC = () => {
     setTemperature,
     setHeight,
     caseSheetEdit,
+    vitalError,
+    setVitalError,
   } = useContext(CaseSheetContext);
 
   const moveCursorToEnd = (element: any) => {
@@ -152,20 +166,36 @@ export const Vital: React.FC = () => {
   return loading && !patientDetails ? (
     <div></div>
   ) : (
-    <Typography component="div" className={classes.mainContainer}>
-      {patientDetails && patientDetails!.patientMedicalHistory ? (
+      <Typography component="div" className={classes.mainContainer}>
         <div>
           <Typography className={classes.vitalLeft} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
               Height
-            </Typography>
+          </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
+                required
                 multiline
+                error={
+                  getDefaultValue('height') === '' ||
+                  getDefaultValue('height') === null ||
+                  getDefaultValue('height') === undefined
+                }
+                helperText={vitalError.height}
                 defaultValue={getDefaultValue('height')}
                 onBlur={(e) => {
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      height: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      height: 'This field is required',
+                    });
                   const storageItem = getLocalStorageItem(params.id);
                   if (storageItem) {
                     storageItem.height = e.target.value;
@@ -180,14 +210,31 @@ export const Vital: React.FC = () => {
           <Typography component="div" className={classes.vitalRight}>
             <Typography component="h5" variant="h5" className={classes.header}>
               Weight
-            </Typography>
+          </Typography>
             <Typography component="div" className={classes.content}>
               <AphTextField
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
+                required
                 multiline
+                error={
+                  getDefaultValue('weight') === '' ||
+                  getDefaultValue('weight') === null ||
+                  getDefaultValue('weight') === undefined
+                }
+                helperText={vitalError.weight}
                 defaultValue={getDefaultValue('weight')}
                 onBlur={(e) => {
+                  if (e.target.value !== '' && e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      weight: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      weight: 'This field is required',
+                    });
                   const storageItem = getLocalStorageItem(params.id);
                   if (storageItem) {
                     storageItem.weight = e.target.value;
@@ -203,7 +250,7 @@ export const Vital: React.FC = () => {
             <Typography component="div" className={classes.vitalLeft}>
               <Typography component="h5" variant="h5" className={classes.header}>
                 BP
-              </Typography>
+            </Typography>
               <Typography component="div" className={classes.content}>
                 <AphTextField
                   onFocus={(e) => moveCursorToEnd(e.currentTarget)}
@@ -225,7 +272,7 @@ export const Vital: React.FC = () => {
             <Typography component="div" className={classes.vitalRight}>
               <Typography component="h5" variant="h5" className={classes.header}>
                 Temperature
-              </Typography>
+            </Typography>
               <Typography component="div" className={classes.content}>
                 <AphTextField
                   onFocus={(e) => moveCursorToEnd(e.currentTarget)}
@@ -246,9 +293,6 @@ export const Vital: React.FC = () => {
             </Typography>
           </div>
         </div>
-      ) : (
-        <span>No data Found</span>
-      )}
-    </Typography>
-  );
+      </Typography>
+    );
 };

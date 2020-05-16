@@ -19,6 +19,7 @@ export enum WebEngageEventName {
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
+  PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
@@ -53,7 +54,7 @@ export enum WebEngageEventName {
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
   PHARMACY_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Add New Address Click', // (Once user clicks on Save)
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
-  PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS = 'Phamracy Cart Address Selected Success',
+  PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -177,6 +178,10 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
   };
+  [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
+    keyword: string;
+    Source: 'Pharmacy Home' | 'Pharmacy Search';
+  };
   [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -208,7 +213,7 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic' | 'Pharmacy Partial Search' | 'Pharmacy Full Search';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -555,8 +560,8 @@ export interface WebEngageEvents {
     'Delivery address': string;
     Pincode: string;
   };
-  [WebEngageEventName.PHAMRACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed': Date;
+  [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
+    'TAT Displayed'?: Date;
     'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;

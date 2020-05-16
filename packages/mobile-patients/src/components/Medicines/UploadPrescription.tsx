@@ -18,18 +18,18 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_PRESCRIPTION_MEDICINE_ORDER,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MEDICINE_DELIVERY_TYPE,
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
-  NonCartOrderCity,
+  NonCartOrderOMSCity,
   BOOKING_SOURCE,
   DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   g,
   postWebEngageEvent,
@@ -150,10 +150,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     } catch (error) {}
   };
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     client
       .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -216,8 +218,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         (i) => i
       );
 
-      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-        prescriptionMedicineInput: {
+      const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+        prescriptionMedicineOMSInput: {
           patientId: (currentPatient && currentPatient.id) || '',
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
@@ -230,16 +232,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           // Values for chennai order
           email: isChennaiOrder && email ? email.trim() : null,
-          NonCartOrderCity: isChennaiOrder ? NonCartOrderCity.CHENNAI : null,
+          NonCartOrderCity: isChennaiOrder ? NonCartOrderOMSCity.CHENNAI : null,
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         },
       };
-      console.log({ prescriptionMedicineInput });
-      console.log(JSON.stringify(prescriptionMedicineInput));
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
-      console.log({ error });
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
       renderErrorAlert('Error occurred while uploading physical prescription(s).');

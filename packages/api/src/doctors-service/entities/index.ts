@@ -34,6 +34,12 @@ export enum DoctorType {
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
   JUNIOR = 'JUNIOR',
+  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
+  CRADLE = 'CRADLE',
+  CLINIC = 'CLINIC',
+  SPECTRA = 'SPECTRA',
+  FERTILITY = 'FERTILITY',
+  SUGAR = 'SUGAR',
 }
 
 export enum FacilityType {
@@ -56,6 +62,7 @@ export enum Salutation {
   MR = 'MR',
   MRS = 'MRS',
   DR = 'DR',
+  MS = 'MS',
 }
 
 export enum WeekDay {
@@ -103,6 +110,7 @@ export enum MEDICINE_FREQUENCY {
   TWICE_A_WEEK = 'TWICE_A_WEEK',
   ONCE_IN_15_DAYS = 'ONCE_IN_15_DAYS',
   ONCE_A_MONTH = 'ONCE_IN_15_DAYS',
+  STAT = 'STAT',
 }
 export enum MEDICINE_TIMINGS {
   AS_NEEDED = 'AS_NEEDED',
@@ -130,6 +138,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   NASAL_DROPS = 'NASAL_DROPS',
   EYE_DROPS = 'EYE_DROPS',
   EAR_DROPS = 'EAR_DROPS',
+  INTRAVAGINAL = 'INTRAVAGINAL',
 }
 
 export type ConsultHoursData = {

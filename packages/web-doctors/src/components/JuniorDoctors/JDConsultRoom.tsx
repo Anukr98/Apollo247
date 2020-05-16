@@ -46,7 +46,7 @@ import {
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { CaseSheetContextJrd, VitalErrorProps } from 'context/CaseSheetContextJrd';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -71,7 +71,7 @@ import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
-import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { GET_DOCTOR_DETAILS_BY_ID_DOCTOR } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -388,7 +388,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const JDConsultRoom: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
@@ -474,7 +474,13 @@ export const JDConsultRoom: React.FC = () => {
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
   const [chatRecordId, setChatRecordId] = useState<string>('');
-  const [documentArray, setDocumentArray] = useState();
+  const [documentArray, setDocumentArray] = useState<any>();
+  const [medicationHistory, setMedicationHistory] = useState<string>('');
+  const [occupationHistory, setOccupationHistory] = useState<string>('');
+  const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
+  const [referralDescription, setReferralDescription] = useState<string>('');
+  const [referralError, setReferralError] = useState<boolean>(false);
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -491,7 +497,7 @@ export const JDConsultRoom: React.FC = () => {
     data: assignedDoctorDetailsData,
     loading: assignedDoctorDetailsLoading,
   } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
-    GET_DOCTOR_DETAILS_BY_ID,
+    GET_DOCTOR_DETAILS_BY_ID_DOCTOR,
     {
       variables: { id: assignedDoctorId || '' },
     }
@@ -647,6 +653,12 @@ export const JDConsultRoom: React.FC = () => {
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
 
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
+          );
+
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
@@ -758,6 +770,29 @@ export const JDConsultRoom: React.FC = () => {
             setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
           }
 
+          // Refferal
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getJuniorDoctorCaseSheet &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
+          )
+            setReferralSpecialtyName(
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+            );
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getJuniorDoctorCaseSheet &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
+          )
+            setReferralDescription(
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription || ''
+            );
+
           // patient medical and family history
           if (
             _data &&
@@ -787,6 +822,10 @@ export const JDConsultRoom: React.FC = () => {
             setPastMedicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                 .pastMedicalHistory || ''
+            );
+            setMedicationHistory(
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .medicationHistory || ''
             );
             setPastSurgicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
@@ -973,6 +1012,10 @@ export const JDConsultRoom: React.FC = () => {
       temperature: temperature,
       weight: weight,
       bp: bp,
+      medicationHistory: medicationHistory,
+      occupationHistory: occupationHistory,
+      referralSpecialtyName: referralSpecialtyName,
+      referralDescription: referralDescription,
     };
     setSaving(true);
     client
@@ -1278,6 +1321,7 @@ export const JDConsultRoom: React.FC = () => {
             autoCloseCaseSheet,
             height,
             weight,
+            vitalError,
             bp,
             temperature,
             pastMedicalHistory,
@@ -1296,10 +1340,21 @@ export const JDConsultRoom: React.FC = () => {
             setFamilyHistory,
             setMenstrualHistory,
             setHeight,
+            setVitalError,
             setWeight,
             setBp,
             setTemperature,
             setGender,
+            medicationHistory,
+            setMedicationHistory,
+            occupationHistory,
+            setOccupationHistory,
+            referralSpecialtyName,
+            referralDescription,
+            referralError,
+            setReferralError,
+            setReferralSpecialtyName,
+            setReferralDescription,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

@@ -110,7 +110,7 @@ export interface ActiveConsultCardProps {
   };
 }
 export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { patient, appointment } = props;
   const appointmentDateIST = format(
     new Date(appointment.appointmentDateTime).getTime(),

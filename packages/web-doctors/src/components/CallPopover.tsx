@@ -24,6 +24,7 @@ import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
+import { TestCall } from './TestCall';
 
 import {
   EndAppointmentSession,
@@ -49,6 +50,7 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
+import { getLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -398,6 +400,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 88,
       backgroundColor: '#fff',
       position: 'relative',
+      outline: 0,
     },
     modalBoxCancel: {
       maxWidth: 480,
@@ -744,6 +747,22 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
     },
+    testCallWrappper: {
+      borderTop: '1px solid rgba(2, 71, 91, 0.15)',
+      marginTop: 20,
+      textAlign: 'center',
+      paddingTop: 15,
+    },
+    okButtonWrapper: {
+      textAlign: 'right',
+    },
+    okButton: {
+      fontWeight: 700,
+      color: '#fc9916',
+    },
+    modalBoxVital: {
+      minHeight: 'auto',
+    },
   };
 });
 
@@ -823,6 +842,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     followUpAfterInDays,
     followUp,
     patientDetails,
+    height,
+    weight,
+    setVitalError,
+    referralSpecialtyName,
+    referralDescription,
+    setReferralError,
+    medicationHistory,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -852,6 +878,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
   const [showAbandonment, setShowAbandonment] = React.useState(false);
+  const [showVital, setShowVital] = React.useState<boolean>(false);
+  const [showReferral, setShowReferral] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
 
@@ -921,10 +949,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         missedCallCounter++;
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
-        if (missedCallCounter >= 3) {
-          setIscallAbandonment(true);
-          setShowAbandonment(true);
-        }
+        // if (missedCallCounter >= 3) {
+        //   setIscallAbandonment(true);
+        //   setShowAbandonment(true);
+        // }
       }
     }, 1000);
   };
@@ -1468,8 +1496,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       } else {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
-            abondmentStarted = true;
-            callAbundantIntervalTimer(620);
+            //abondmentStarted = true;
+            //callAbundantIntervalTimer(620);
           }
         }
       }
@@ -1782,6 +1810,94 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [timeSelected, setTimeSelected] = useState<string>('');
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.id);
+    switch (type) {
+      case 'height':
+        return localStorageItem ? localStorageItem.height : height;
+      case 'weight':
+        return localStorageItem ? localStorageItem.weight : weight;
+      case 'referralSpecialtyName':
+        return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
+      case 'referralDescription':
+        return localStorageItem ? localStorageItem.referralDescription : referralDescription;
+      case 'medicationHistory':
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
+    }
+  };
+
+  const checkForEmptyFields = () => {
+    const heightValue = getDefaultValue('height') || '';
+    const weightValue = getDefaultValue('weight') || '';
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
+    const referralDescription = getDefaultValue('referralDescription') || '';
+    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
+      if (vitalIgnored) {
+        setVitalError({
+          height: '',
+          weight: '',
+        });
+        return false;
+      } else {
+        if (heightValue.trim() === '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: 'This field is required',
+          });
+          return true;
+        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: '',
+          });
+          return true;
+        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: '',
+            weight: 'This field is required',
+          });
+          return true;
+        }
+      }
+    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+      setShowVital(false);
+      setVitalError({
+        height: '',
+        weight: '',
+      });
+      setReferralError(true);
+      setShowReferral(true);
+      return true;
+    } else {
+      setReferralError(false);
+      setShowReferral(false);
+      return false;
+    }
+  };
+
+  const onEndConuslt = () => {
+    setVitalIgnored(true);
+    setShowVital(false);
+
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
+    const referralDescription = getDefaultValue('referralDescription');
+
+    const isEmptyFields = referralSpecialtyName && referralDescription.trim() === '';
+
+    if (!isEmptyFields) {
+      stopInterval();
+      if (showVideo) {
+        stopAudioVideoCall();
+      }
+      props.endConsultAction();
+      isConsultStarted = false;
+    }
+  };
+  const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1906,12 +2022,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      stopInterval();
-                      if (showVideo) {
-                        stopAudioVideoCall();
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
+                        stopInterval();
+                        if (showVideo) {
+                          stopAudioVideoCall();
+                        }
+                        props.endConsultAction();
+                        isConsultStarted = false;
                       }
-                      props.endConsultAction();
-                      isConsultStarted = false;
                     }}
                   >
                     <svg
@@ -2144,6 +2263,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <img src={require('images/video_popup.svg')} alt="" />
                     VIDEO CALL
                   </Button>
+                  <div className={classes.testCallWrappper}>
+                    <TestCall />
+                  </div>
                 </div>
               </Paper>
             </Popover>
@@ -2740,6 +2862,76 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* Call abandonment Confirmation modal end */}
+      {/* Vital field required popup start */}
+      <Modal
+        open={showVital}
+        onClose={() => setShowVital(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowVital(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems some of the vital info is empty. Please fill the vital section's field under
+              the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button
+                className={classes.okButton}
+                onClick={() => {
+                  onEndConuslt();
+                }}
+              >
+                Continue
+              </Button>
+              <Button className={classes.okButton} onClick={() => setShowVital(false)}>
+                Edit
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* Vital field required popup end */}
+      {/* referral field required popup start */}
+      <Modal
+        open={showReferral}
+        onClose={() => setShowReferral(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowReferral(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems referral description field is empty. Please fill the referral section's
+              description field under the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowReferral(false)}>
+                Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* referral field required popup end */}
     </div>
   );
 };

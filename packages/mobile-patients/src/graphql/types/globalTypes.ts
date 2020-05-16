@@ -63,8 +63,20 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
+export enum CustomerType {
+  FIRST = "FIRST",
+  RECURRING = "RECURRING",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -105,9 +117,15 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  CLINIC = "CLINIC",
+  CRADLE = "CRADLE",
+  DOCTOR_CONNECT = "DOCTOR_CONNECT",
+  FERTILITY = "FERTILITY",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
+  SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
+  SUGAR = "SUGAR",
 }
 
 export enum FEEDBACKTYPE {
@@ -155,6 +173,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -213,7 +232,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -254,7 +273,7 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
-export enum NonCartOrderCity {
+export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
@@ -276,6 +295,11 @@ export enum PRISM_DOCUMENT_CATEGORY {
   OpSummary = "OpSummary",
 }
 
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -288,6 +312,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
   NASAL_DROPS = "NASAL_DROPS",
@@ -332,7 +357,9 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
@@ -341,6 +368,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -373,6 +401,19 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum notificationEventName {
+  APPOINTMENT = "APPOINTMENT",
+}
+
+export enum notificationStatus {
+  READ = "READ",
+  UNREAD = "UNREAD",
+}
+
+export enum notificationType {
+  CHAT = "CHAT",
 }
 
 export interface AddMedicalRecordInput {
@@ -476,6 +517,8 @@ export interface ConsultQueueInput {
   familyHistory?: string | null;
   dietAllergies?: string | null;
   drugAllergies?: string | null;
+  age?: number | null;
+  gender?: Gender | null;
 }
 
 export interface DiagnosticLineItem {
@@ -593,6 +636,7 @@ export interface MedicineCartInput {
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
   items?: (MedicineCartItem | null)[] | null;
+  coupon?: string | null;
 }
 
 export interface MedicineCartItem {
@@ -627,6 +671,26 @@ export interface MedicinePaymentMqInput {
   bankTxnId?: string | null;
   email?: string | null;
   CODCity?: CODCity | null;
+  orderId?: string | null;
+}
+
+export interface MessageInput {
+  fromId: string;
+  toId: string;
+  eventName: notificationEventName;
+  eventId: string;
+  message: string;
+  status: notificationStatus;
+  type: notificationType;
+}
+
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
 }
 
 export interface OtpVerificationInput {
@@ -667,6 +731,7 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
+  orderId?: string | null;
 }
 
 export interface PatientProfileInput {
@@ -680,7 +745,13 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
-export interface PrescriptionMedicineInput {
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
+export interface PrescriptionMedicineOrderOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
@@ -692,13 +763,13 @@ export interface PrescriptionMedicineInput {
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
   isEprescription?: number | null;
-  payment?: PrescriptionMedicinePaymentDetails | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
   email?: string | null;
-  NonCartOrderCity?: NonCartOrderCity | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
 }
 
-export interface PrescriptionMedicinePaymentDetails {
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;

@@ -1,11 +1,13 @@
-const consultsOrderQuery = (payload, isWebhook) => {
-    let txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
-    if (isWebhook) {
+const consultsOrderQuery = (payload) => {
+    let txnDate = new Date(new Date().toUTCString()).toISOString();
+    if (payload.TXNDATETIME) {
         txnDate = new Date(new Date(payload.TXNDATETIME).toUTCString()).toISOString();
+    } else if (payload.TXNDATE) {
+        txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
     }
 
     let params = `orderId: "${payload.ORDERID}", amountPaid: ${payload.TXNAMOUNT},
-    paymentRefId: "${payload.TXNID}", paymentStatus: "${payload.STATUS}", paymentDateTime: "${txnDate}", responseCode: "${payload.RESPCODE}", responseMessage: "${payload.RESPMSG}", bankTxnId: "${payload.BANKTXNID}"`
+    paymentRefId: "${payload.TXNID}", paymentStatus: "${payload.STATUS}", paymentDateTime: "${txnDate}", responseCode: "${payload.RESPCODE}", responseMessage: "${payload.RESPMSG}", bankTxnId: "${payload.BANKTXNID}"`;
     // if (payload.REFUNDAMT) {
     //     params += `, refundAmount: ${payload.REFUNDAMT}`
     // }
@@ -14,10 +16,10 @@ const consultsOrderQuery = (payload, isWebhook) => {
     //     params += `, bankName: "${payload.BANKNAME}"`
     // }
 
-    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){appointment { id appointment{ id } } }}';
-}
+    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){ appointment{ id }}}';
+};
 
 module.exports = {
     consultsOrderQuery
-}
+};
 

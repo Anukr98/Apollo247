@@ -264,7 +264,7 @@ interface FeesProps {
   onBack: () => void;
 }
 export const FeesTab: React.FC<FeesProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const data = props.values;
 
   return (

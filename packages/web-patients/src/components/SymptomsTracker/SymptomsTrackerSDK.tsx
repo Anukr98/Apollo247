@@ -6,7 +6,6 @@ import { useAuth } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Header } from 'components/Header';
-import { NavigationBottom } from 'components/NavigationBottom';
 import { NavigatorSDK, $Generator } from '@praktice/navigator-react-web-sdk';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
@@ -20,6 +19,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -31,12 +31,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      borderRadius: '0 0 10px 10px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: 0,
-      },
     },
     pageHeader: {
       marginLeft: 20,
@@ -272,6 +268,11 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'center',
       },
     },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -386,7 +387,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [loggedOutUserDetailPopover, setLoggedOutUserDetailPopover] = useState<boolean>(false);
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isRedirect, setIsRedirect] = useState(false);
+  const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
   const getAge = (dob: string) =>
     moment()
@@ -395,14 +396,21 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
-  const setUserGender = (gender: string) => gender.toLowerCase();
+  const convertUserGenderToLowercase = (gender: string) => gender.toLowerCase();
 
-  useEffect(()=>{
-    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+  useEffect(() => {
+    if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
+    } else if (
+      isSignedIn &&
+      currentPatient &&
+      (!currentPatient.dateOfBirth || !currentPatient.gender)
+    ) {
+      setUserAge('2000-12-20');
+      setPatientGender(convertUserGenderToLowercase('MALE'));
     }
-  }, [isSignedIn, currentPatient])
+  }, [isSignedIn, currentPatient]);
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
@@ -415,9 +423,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
-      setPatientGender(setUserGender(currentPatient.gender));
+      setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
     } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
-      setPatientGender(setUserGender(loggedOutPatientGender));
+      setPatientGender(convertUserGenderToLowercase(loggedOutPatientGender));
     }
   }, [loggedOutPatientGender]);
 
@@ -708,6 +716,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
         </Popover>
       )}
       {!onePrimaryUser && <ManageProfile />}
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
     </div>
   );
 };

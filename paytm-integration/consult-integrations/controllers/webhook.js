@@ -1,7 +1,7 @@
 const axios = require('axios');
-const logger = require('../../winston-logger')('Pharma-logs');
+const logger = require('../../winston-logger')('Consults-logs');
 const { verifychecksum } = require('../../paytm/lib/checksum');
-const { medicineOrderQuery } = require('../helpers/make-graphql-query');
+const { consultsOrderQuery } = require('../helpers/make-graphql-query');
 
 
 module.exports = async (req, res, next) => {
@@ -10,21 +10,21 @@ module.exports = async (req, res, next) => {
     try {
         const payload = req.body;
         orderId = payload.ORDERID;
+
+        logger.info(`${orderId} - consult-response-webhook - ${JSON.stringify(payload)}`);
+
         const checksum = payload.CHECKSUMHASH;
         delete payload.CHECKSUMHASH;
         if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_CONSULTS, checksum)) {
-            logger.error(`${orderId} - paymed-response: checksum did not match - ${JSON.stringify(payload)}`);
+            logger.error(`${orderId} - consult-response-webhook: checksum did not match - ${JSON.stringify(payload)}`);
             return next(new Error(`checkSum did not match for order - ${orderId}`));
         }
 
-        logger.info(`${orderId} - paymed-response-webhook - ${JSON.stringify(payload)}`);
-
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
-        const txnDate = new Date(new Date(payload.TXNDATETIME).toUTCString()).toISOString();
 
         // this needs to be altered later.
         const requestJSON = {
-            query: medicineOrderQuery(payload, true),
+            query: consultsOrderQuery(payload),
         };
 
         /// write medicineoirder
@@ -32,17 +32,17 @@ module.exports = async (req, res, next) => {
         logger.info(`${payload.ORDERID} - makeAppointmentPayment -  ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(response.data.errors)}`)
-            throw new Error(`Error Occured in makeAppointmentPayment for order id: ${orderId}`);
+            logger.info(`${orderId} - consult-payment-webhook - ${JSON.stringify(response.data.errors)}`);
+            //throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
         }
-
+        res.send("webhook consumed successfully!");
 
     } catch (e) {
         if (e.response && e.response.data) {
-            logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
+            logger.error(`${orderId} - consult-payment-webhook - ${JSON.stringify(e.response.data)}`);
         } else {
-            logger.error(`${orderId} - paymed-response -  ${e.stack}`);
+            logger.error(`${orderId} - consult-payment-webhook -  ${e.stack}`);
         }
         next(e);
     }
-}
+};

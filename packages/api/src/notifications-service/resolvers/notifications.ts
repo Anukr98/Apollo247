@@ -129,6 +129,9 @@ export enum NotificationType {
   VIRTUAL_REMINDER_15 = 'VIRTUAL_REMINDER_15',
   APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL = 'APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL',
   DOCTOR_NO_SHOW_INITIATE_RESCHEDULE = 'DOCTOR_NO_SHOW_INITIATE_RESCHEDULE',
+  PAYMENT_PENDING_SUCCESS = 'PAYMENT_PENDING_SUCCESS',
+  PAYMENT_PENDING_FAILURE = 'PAYMENT_PENDING_FAILURE',
+  APPOINTMENT_PAYMENT_REFUND = 'APPOINTMENT_PAYMENT_REFUND',
 }
 
 export enum APPT_CALL_TYPE {
@@ -405,7 +408,7 @@ export async function sendNotification(
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' +
+      ? ' Click here ' +
         process.env.SMS_LINK_BOOK_APOINTMENT +
         ' ' +
         ApiConstants.PATIENT_CANCEL_APPT_BODY_END
@@ -478,7 +481,7 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
       : '';
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
@@ -585,6 +588,7 @@ export async function sendNotification(
     console.log('mobileNumber===============', patientDetails.mobileNumber);
     console.log('message==========================', notificationBody);
     //send sms
+    console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
     //send sms to doctor
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
@@ -592,6 +596,58 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+  } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
+    let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
+      '{0}',
+      appointment.discountedAmount.toString()
+    );
+    content = content.replace('{1}', appointment.displayId.toString());
+    content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    content = content.replace('{3}', apptDate.toString());
+
+    let smsLink = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_SMS.replace(
+      '{0}',
+      appointment.discountedAmount.toString()
+    );
+    smsLink = smsLink.replace('{1}', appointment.displayId.toString());
+    smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    smsLink = smsLink.replace('{3}', apptDate.toString());
+    smsLink = smsLink.replace(
+      '{5}',
+      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
+    );
+    notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE;
+    notificationBody = content;
+    console.log('mobileNumber===============', patientDetails.mobileNumber);
+    console.log('message==========================', notificationBody);
+    //send sms
+    sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
+  } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_FAILURE) {
+    let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_BODY.replace(
+      '{0}',
+      appointment.discountedAmount.toString()
+    );
+    content = content.replace('{1}', appointment.displayId.toString());
+    content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    content = content.replace('{3}', apptDate.toString());
+
+    let smsLink = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_SMS.replace(
+      '{0}',
+      appointment.discountedAmount.toString()
+    );
+    smsLink = smsLink.replace('{1}', appointment.displayId.toString());
+    smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    smsLink = smsLink.replace('{3}', apptDate.toString());
+    smsLink = smsLink.replace(
+      '{5}',
+      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
+    );
+    notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_TITLE;
+    notificationBody = content;
+    console.log('mobileNumber===============', patientDetails.mobileNumber);
+    console.log('message==========================', notificationBody);
+    //send sms
+    sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);

@@ -15,6 +15,7 @@ import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
@@ -26,6 +27,10 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
+import { useLocationDetails } from 'components/LocationProvider';
+import { gtmTracking } from '../../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,12 +40,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(900)]: {
-        marginBottom: 20,
-      },
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         marginTop: 82,
@@ -336,11 +337,14 @@ export const MedicineLanding: React.FC = (props) => {
     setCartItems,
     ePrescriptionData,
     prescriptions,
+    cartTotal,
   } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
+
+  // const { city } = useLocationDetails()
 
   if (params.orderStatus === 'success') {
     if (cartItems.length > 0 && params.orderAutoId !== 'prescription') {
@@ -377,6 +381,19 @@ export const MedicineLanding: React.FC = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
+  /* Gtm code Start */
+  useEffect(() => {
+    if (params.orderStatus === 'success' && cartTotal > 0) {
+      gtmTracking({
+        category: 'Pharmacy',
+        action: 'Order',
+        label: 'Order Success',
+        value: cartTotal,
+      });
+    }
+  }, [showOrderPopup, cartTotal]);
+  /* Gtm code End */
+
   const getMedicinePageProducts = async () => {
     await axios
       .post(
@@ -392,7 +409,7 @@ export const MedicineLanding: React.FC = (props) => {
       .then((res: any) => {
         setData(res.data);
         /**Gtm code start  */
-        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
         /**Gtm code End  */
         setLoading(false);
       })
@@ -519,8 +536,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
@@ -529,28 +546,13 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      <Popover
-        open={showOrderPopup}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
-          </div>
-        </div>
-      </Popover>
+      {showOrderPopup &&
+        <Route
+          render={({ history }) => {
+            return <PaymentStatusModal history={history} />
+          }}
+        />
+      }
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}
@@ -606,8 +608,9 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
-      <NavigationBottom />
       {!onePrimaryUser && <ManageProfile />}
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

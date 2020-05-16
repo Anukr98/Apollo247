@@ -1,7 +1,9 @@
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DropDown } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   AddAttachmentIcon,
@@ -10,9 +12,11 @@ import {
   ChatIcon,
   ChatSend,
   ChatWithNotification,
-  DoctorCall,
+  CrossPopup,
   DoctorImage,
+  DoctorPlaceholderImage,
   EndCallIcon,
+  FileBig,
   FrontCameraIcon,
   FullScreenIcon,
   Loader,
@@ -23,66 +27,83 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  FileBig,
-  Remove,
-  CrossPopup,
-  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
-  DeviceHelper,
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
+  DeviceHelper,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  UPDATE_APPOINTMENT_SESSION,
-  UPLOAD_CHAT_FILE,
-  UPLOAD_CHAT_FILE_PRISM,
-  DOWNLOAD_DOCUMENT,
   CANCEL_APPOINTMENT,
+  UPDATE_APPOINTMENT_SESSION,
+  UPLOAD_CHAT_FILE_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
-  BookTransferAppointmentInput,
-  TRANSFER_INITIATED_TYPE,
-  UPLOAD_FILE_TYPES,
-  STATUS,
-  ConsultQueueInput,
-  FEEDBACKTYPE,
-  REQUEST_ROLES,
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
+  BookTransferAppointmentInput,
+  ConsultQueueInput,
+  FEEDBACKTYPE,
+  MessageInput,
+  notificationEventName,
+  notificationStatus,
+  notificationType,
+  REQUEST_ROLES,
+  STATUS,
+  TRANSFER_INITIATED_TYPE,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
   updateAppointmentSessionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointmentSession';
+import {
+  addToConsultQueue,
+  addToConsultQueueWithAutomatedQuestions,
+  checkIfRescheduleAppointment,
+  endCallSessionAppointment,
+  getAppointmentDataDetails,
+  getNextAvailableSlots,
+  getPrismUrls,
+  insertMessage,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import Pubnub, {
-  SignalEvent,
-  UserEvent,
-  SpaceEvent,
-  MembershipEvent,
-  MessageActionEvent,
-  FetchTimeResponse,
-  HereNowResponse,
-} from 'pubnub';
+import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  AppState,
+  AppStateStatus,
+  BackHandler,
   Dimensions,
   FlatList,
+  Image as ImageReact,
   Keyboard,
-  KeyboardAvoidingView,
   KeyboardEvent,
   Linking,
   NativeModules,
@@ -90,69 +111,31 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  BackHandler,
-  StyleSheet,
-  AppState,
-  AppStateStatus,
-  Image as ImageReact,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import ImagePicker from 'react-native-image-picker';
+import CryptoJS from 'crypto-js';
+import { Image } from 'react-native-elements';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
+import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
-import {
-  uploadChatDocument,
-  uploadChatDocumentVariables,
-} from '@aph/mobile-patients/src/graphql/types/uploadChatDocument';
-import {
-  addToConsultQueue,
-  checkIfRescheduleAppointment,
-  getNextAvailableSlots,
-  addToConsultQueueWithAutomatedQuestions,
-  endCallSessionAppointment,
-  getAppointmentDataDetails,
-  getPrismUrls,
-  sendNotificationToDoctor,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
-import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
-import { ChatQuestions } from './ChatQuestions';
-import { FeedbackPopup } from '../FeedbackPopup';
-import { g, callPermissions, postWebEngageEvent } from '../../helpers/helperFunctions';
-import { useUIElements } from '../UIElementsProvider';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '../../graphql/types/cancelAppointment';
+import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
+import { callPermissions, g, postWebEngageEvent } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
-import { Image } from 'react-native-elements';
+import { FeedbackPopup } from '../FeedbackPopup';
 import { RenderPdf } from '../ui/RenderPdf';
-import { colors } from '../../theme/colors';
-import AsyncStorage from '@react-native-community/async-storage';
-
-import { WebView } from 'react-native-webview';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
-import { ApolloLogo } from '../ApolloLogo';
+import { useUIElements } from '../UIElementsProvider';
+import { ChatQuestions } from './ChatQuestions';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -281,7 +264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  let appointmentData = props.navigation.state.params!.data;
+  let appointmentData: any = props.navigation.state.params!.data;
 
   // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
@@ -404,10 +387,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     false,
     false,
     false,
+    false,
+    false,
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [textChange, setTextChange] = useState(false);
+  const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -580,72 +566,41 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   }, []);
 
-  const SendNotificationToDoctorAPI = async () => {
-    try {
-      console.log('appointmentData.status', appointmentData.status);
+  const client = useApolloClient();
 
-      if (appointmentData.status !== STATUS.COMPLETED) return;
-      const saveAppointment = [
-        {
-          appointmentId: appointmentData.id,
-          date: moment().format('YYYY-MM-DD'),
-        },
-      ];
-      console.log('saveAppointment', saveAppointment);
+  const InsertMessageToDoctor = (message: string) => {
+    console.log('sendMessageToDoctor', sendMessageToDoctor);
+    console.log('appointmentData', appointmentData, status);
 
-      const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
-      const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
-      console.log('saveAppointmentDataAsyncStorage', saveAppointmentData);
+    if (status !== STATUS.COMPLETED) return;
+    if (!sendMessageToDoctor) return;
 
-      if (saveAppointmentData) {
-        const result = saveAppointmentData.filter((obj: any) => {
-          return obj.appointmentId === appointmentData.id;
-        });
-        console.log('saveAppointmentDataresult', saveAppointmentData);
+    const ciphertext = CryptoJS.AES.encrypt(
+      message,
+      AppConfig.Configuration.CRYPTO_SECRET_KEY
+    ).toString();
 
-        if (result.length > 0) {
-          if (result[0].appointmentId === appointmentData.id) {
-            if (result[0].date !== saveAppointment[0].date) {
-              sendDcotorChatNotification();
-              const index = saveAppointmentData.findIndex(
-                (project: any) => project.appointmentId === appointmentData.id
-              );
-              saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
-              // saveAppointmentData[index].date = moment()
-              //   .startOf('day')
-              //   .add(1, 'd')
-              //   .format('YYYY-MM-DD');
-              AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
-            }
-          }
-        } else {
-          sendDcotorChatNotification();
-          saveAppointmentData.push(saveAppointment[0]);
-          AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
-        }
-      } else {
-        sendDcotorChatNotification();
-        AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
-      }
-    } catch (error) {}
-  };
+    const messageInput: MessageInput = {
+      fromId: patientId,
+      toId: doctorId,
+      eventName: notificationEventName.APPOINTMENT,
+      eventId: channel,
+      message: ciphertext,
+      status: notificationStatus.UNREAD,
+      type: notificationType.CHAT,
+    };
 
-  const sendDcotorChatNotification = () => {
-    console.log('sendNotificationToDoctor api called');
-
-    sendNotificationToDoctor(client, appointmentData.id)
+    insertMessage(client, messageInput)
       .then((data) => {
-        console.log('sendNotificationToDoctordata', data);
+        console.log('InsertMessageToDoctor', data);
       })
       .catch((error) => {
-        console.log('sendNotificationToDoctorerror', error);
+        console.log('InsertMessageToDoctor_error', error);
       });
   };
 
-  const client = useApolloClient();
-
   const setSendAnswers = (val: number) => {
-    let s = isSendAnswers;
+    const s = isSendAnswers;
     s[val] = true;
     setisSendAnswers(s);
   };
@@ -662,9 +617,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
   const setAnswerData = (value: { k: string; v: string[] }[]) => {
-    let data = userAnswers || ({} as ConsultQueueInput);
+    const data = userAnswers || ({} as ConsultQueueInput);
     value.forEach((item) => {
       switch (item.k) {
+        case 'gender':
+          data.gender = (item.v[0] as Gender) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Gender:\n' + (data.gender || 'Unspecified'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[9] && sendAnswerMessage(text);
+            setSendAnswers(9);
+            console.log('isSendAnswers[2]', isSendAnswers[2]);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers11_try', error);
+          }
+          break;
+        case 'age':
+          data.age = Number(item.v[0]) || null;
+          try {
+            const text = {
+              id: patientId,
+              message: 'Age:\n' + (data.age || 'No Idea'),
+              messageDate: new Date(),
+            };
+            setMessageText('');
+            !isSendAnswers[10] && sendAnswerMessage(text);
+            setSendAnswers(10);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers12_try', error);
+          }
+          break;
         case 'height':
           data.height = item.v[0] !== '' ? item.v.join(' ') : 'No Idea';
           console.log('data.height:', 'data.height:' + data.height);
@@ -677,7 +663,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
-            setSendAnswers(6);
+            setSendAnswers(6); // this is added here since family history is hidded in questions
           } catch (error) {
             CommonBugFender('ChatRoom_Answers0_try', error);
           }
@@ -949,18 +935,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
       if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+      if (status !== STATUS.COMPLETED) return;
 
       console.log('API Called');
-      endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+      // endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
+      endCallAppointmentSessionAPI(STATUS.NO_SHOW);
     }
   };
 
-  const endCallAppointmentSessionAPI = (status: STATUS) => {
+  const endCallAppointmentSessionAPI = async (status: STATUS) => {
     console.log('endCallAppointmentSessionAPI called');
+
+    const APICalled = await AsyncStorage.getItem('endAPICalled');
+    console.log(APICalled, 'APICalled endCallAppointmentSessionAPI');
+
+    if (APICalled === 'true') {
+      setBugFenderLog('Chat_Room_APICalled', APICalled);
+      stopCallAbondmentTimer();
+      return;
+    }
+
+    console.log(APICalled, 'afterAPICalled endCallAppointmentSessionAPI');
 
     endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
+        AsyncStorage.setItem('endAPICalled', 'true');
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_endCallSessionAppointment', e);
@@ -1286,12 +1286,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
-    const isAppointmentCompleted: STATUS = appointmentData.status;
-    // console.log('isAppointmentCompleted', isAppointmentCompleted === STATUS.COMPLETED);
+    AsyncStorage.removeItem('endAPICalled');
 
     pubnub.subscribe({
       channels: [channel],
-      withPresence: isAppointmentCompleted === STATUS.COMPLETED ? false : true,
+      withPresence: true,
     });
 
     getHistory(0);
@@ -1340,7 +1339,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+        // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
         // console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
@@ -1368,6 +1367,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             });
             // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
             if (response.totalOccupancy >= 2) {
+              setSendMessageToDoctor(false);
+
               if (callAbandonmentStoppedTimer == 620) return;
               if (callAbandonmentStoppedTimer < 620) {
                 // console.log('calljoined');
@@ -1376,20 +1377,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             } else {
               if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                 // console.log('abondmentStarted -------> ', abondmentStarted);
+                setSendMessageToDoctor(true);
 
                 if (abondmentStarted == false) {
-                  if (startConsultResult.length > 0) {
-                    // console.log('callAbondmentMethod', abondmentStarted);
-                    abondmentStarted = true;
-                    APIForUpdateAppointmentData(false);
-                  } else {
-                    if (diffInMins < 15) {
-                      // console.log('doctorNoshow', abondmentStarted);
-                      if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-                        callAbondmentMethod(false);
-                      }
+                  // if (startConsultResult.length > 0) {
+                  //   // console.log('callAbondmentMethod', abondmentStarted);
+                  //   abondmentStarted = true;
+                  //   APIForUpdateAppointmentData(false);
+                  // } else {
+                  if (diffInMins < 15) {
+                    // console.log('doctorNoshow', abondmentStarted);
+                    if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+                      callAbondmentMethod(false);
                     }
                   }
+                  // }
                   eventsAfterConnectionDestroyed();
                 }
               }
@@ -1449,9 +1451,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CALL_ABANDON) return;
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+      if (status !== STATUS.COMPLETED) return;
 
-      abondmentStarted = true;
-      startCallAbondmentTimer(620, true);
+      // abondmentStarted = true;
+      // startCallAbondmentTimer(620, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1472,6 +1475,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.CALL_ABANDON) return;
         if (appointmentData.status === STATUS.CANCELLED) return;
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+        if (status !== STATUS.COMPLETED) return;
 
         abondmentStarted = true;
         startCallAbondmentTimer(620, false);
@@ -1483,37 +1487,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startCallAbondmentTimer = (timer: number, isCallAbandment: boolean) => {
     try {
-      setTransferData(appointmentData);
-      callAbandonmentTimer = setInterval(() => {
-        try {
-          timer = timer - 1;
-          callAbandonmentStoppedTimer = timer;
+      startNoShow(timer, () => {
+        console.log('Trigger no ShowAPi');
+        setTransferData(appointmentData);
 
-          // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
-
-          if (timer < 1) {
-            // console.log('call Abundant', appointmentData);
-            endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
-
-            if (isCallAbandment) {
-              setIsDoctorNoShow(true);
-            } else {
-              setShowDoctorNoShowAlert(true);
-            }
-            callAbandonmentStoppedTimer = 620;
-            callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-          }
-        } catch (error) {
-          // console.log('app crashed', error);
-          CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
-          callAbandonmentStoppedTimer = 620;
-          callAbandonmentTimer && clearInterval(callAbandonmentTimer);
+        if (isCallAbandment) {
+          // setIsDoctorNoShow(true);
+        } else {
+          setShowDoctorNoShowAlert(true);
+          endCallAppointmentSessionAPI(STATUS.NO_SHOW);
+          // endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
         }
-      }, 1000);
+        // throw Error;
+      });
     } catch (error) {
       CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
       console.log('error in call abandoment', error);
     }
+  };
+
+  const startNoShow = (timer: number, callback?: () => void) => {
+    stopCallAbondmentTimer();
+    setTransferData(appointmentData);
+    callAbandonmentTimer = setInterval(() => {
+      try {
+        timer = timer - 1;
+        callAbandonmentStoppedTimer = timer;
+
+        console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+        if (timer < 1) {
+          stopCallAbondmentTimer();
+          callback && callback();
+        }
+      } catch (error) {
+        CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
+        stopCallAbondmentTimer();
+      }
+    }, 1000);
   };
 
   const stopCallAbondmentTimer = () => {
@@ -1530,13 +1540,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(data, 'data APIForUpdateAppointmentData');
           const appointmentSeniorDoctorStarted =
             data.data.getAppointmentData.appointmentsHistory[0].isSeniorConsultStarted;
-          console.log(
-            appointmentSeniorDoctorStarted,
-            data.data.getAppointmentData.appointmentsHistory[0],
-            'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
-          );
+          // console.log(
+          //   appointmentSeniorDoctorStarted,
+          //   data.data.getAppointmentData.appointmentsHistory[0],
+          //   'appointmentSeniorDoctorStarted APIForUpdateAppointmentData'
+          // );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
+          console.log(appointmentData, 'appointmentData APIForUpdateAppointmentData');
           setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
           if (toStopTimer) {
             if (appointmentSeniorDoctorStarted) {
@@ -1702,8 +1713,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
-    '4. Avail 1 free follow-up (Within 7 days after your first consultation.)\n',
-    '5. Chat with your doctor\n\n',
+    '4. Chat with your doctor for 7 days\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -2033,6 +2043,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === appointmentComplete) {
         setTextChange(false);
         setStatus(STATUS.COMPLETED);
+        APIForUpdateAppointmentData(true);
       }
     } else {
       console.log('succss');
@@ -2043,8 +2054,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const addMessages = (message: Pubnub.MessageEvent) => {
     console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
-
-    SendNotificationToDoctorAPI();
 
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
@@ -2130,6 +2139,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       };
 
       setMessageText('');
+      InsertMessageToDoctor(textMessage);
 
       pubnub.publish(
         {
@@ -5762,7 +5772,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
-
+        {renderChatHeader()}
         {doctorJoined ? (
           <View
             style={{
@@ -5774,7 +5784,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               borderRadius: 0,
               shadowOffset: { width: 0, height: 0 },
               shadowRadius: 2,
-              elevation: 2,
+              elevation: 17,
               zIndex: 100,
               backgroundColor: '#ff748e',
               position: 'absolute',
@@ -5794,7 +5804,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </Text>
           </View>
         ) : null}
-        {renderChatHeader()}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <View
@@ -5886,7 +5895,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {displayChatQuestions && Platform.OS === 'ios' && (
               <ChatQuestions
                 onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and', value);
+                  console.log('and....', value);
                   setAnswerData([value]);
                 }}
                 onDonePress={(values: { k: string; v: string[] }[]) => {

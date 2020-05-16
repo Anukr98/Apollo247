@@ -139,7 +139,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -201,7 +201,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     let bufferTime = 5;
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
-      bufferTime = consultHour["consultBuffer"];
+      bufferTime = consultHour['consultBuffer'];
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
@@ -228,9 +228,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
-        if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
+        if (
+          slot.status == 'OPEN' &&
+          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+        ) {
           if (doctor['activeSlotCount'] === 0) {
-            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
+            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
+              new Date(slot.slot),
+              new Date()
+            );
             finalDoctorNextAvailSlots.push({
               availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
@@ -255,8 +261,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
   searchLogger(`API_CALL___END`);
   return {
-    doctors: docs
-      .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
+    doctors: docs.sort(
+      (a, b) =>
+        parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
+    ),
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,

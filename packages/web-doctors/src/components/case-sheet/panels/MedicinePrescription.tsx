@@ -35,7 +35,7 @@ import { isEmpty, trim } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
-import { GET_DOCTOR_FAVOURITE_MEDICINE } from 'graphql/doctors';
+import { GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR } from 'graphql/doctors';
 import {
   GetDoctorFavouriteMedicineList,
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
@@ -55,29 +55,6 @@ interface OptionType {
   sku: string;
 }
 let suggestions: OptionType[] = [];
-
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      className={classes.inputField}
-      autoFocus
-      placeholder="Search"
-      fullWidth
-      InputProps={{
-        inputRef: (node: any) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -707,7 +684,7 @@ export const MedicinePrescription: React.FC = () => {
   useEffect(() => {
     client
       .query<GetDoctorFavouriteMedicineList>({
-        query: GET_DOCTOR_FAVOURITE_MEDICINE,
+        query: GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR,
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -843,6 +820,11 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
     {
+      id: MEDICINE_FREQUENCY.STAT,
+      value: 'STAT (Immediately)',
+      selected: false,
+    },
+    {
       id: MEDICINE_FREQUENCY.ONCE_A_MONTH,
       value: 'Once a month',
       selected: false,
@@ -882,6 +864,11 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.INTRAMUSCULAR,
       value: 'Intramuscular',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRAVAGINAL,
+      value: 'Intravaginal',
       selected: false,
     },
     {
@@ -1039,6 +1026,8 @@ export const MedicinePrescription: React.FC = () => {
     MG: { value: 'mg' },
     GM: { value: 'gm' },
     TABLET: { value: 'tablet(s)' },
+    CAPSULE: { value: 'capsule(s)' },
+    DROP: { value: 'drop(s)' },
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
@@ -1549,10 +1538,10 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' &&
-        customDosageNoon.trim() === '' &&
-        customDosageEvening.trim() === '' &&
-        customDosageNight.trim() === '')
+      customDosageMorning.trim() === '' &&
+      customDosageNoon.trim() === '' &&
+      customDosageEvening.trim() === '' &&
+      customDosageNight.trim() === ''
     ) {
       setErrorState({
         ...errorState,
@@ -1755,6 +1744,29 @@ export const MedicinePrescription: React.FC = () => {
     });
   };
 
+  function renderInputComponent(inputProps: any) {
+    const { inputRef = () => {}, ref, ...other } = inputProps;
+
+    return (
+      <AphTextField
+        className={classes.inputField}
+        autoFocus
+        placeholder="Search"
+        fullWidth
+        InputProps={{
+          inputRef: (node: any) => {
+            ref(node);
+            inputRef(node);
+          },
+          classes: {
+            root: classes.inputRoot,
+          },
+        }}
+        {...other}
+      />
+    );
+  }
+
   const autosuggestProps = {
     renderInputComponent,
     suggestions: stateSuggestions,
@@ -1872,7 +1884,7 @@ export const MedicinePrescription: React.FC = () => {
             const medicine = _medicine!;
             const duration =
               medicine.medicineConsumptionDurationInDays &&
-              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
                 medicine.medicineConsumptionDurationUnit
                   ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                   : 'day(s)'
@@ -1940,10 +1952,12 @@ export const MedicinePrescription: React.FC = () => {
                       medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
                         ? ''
                         : medicine.medicineFrequency
-                        ? medicine.medicineFrequency
-                            .split('_')
-                            .join(' ')
-                            .toLowerCase()
+                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                          ? 'STAT (Immediately)'
+                          : medicine.medicineFrequency
+                              .split('_')
+                              .join(' ')
+                              .toLowerCase()
                         : dosageFrequency[0].id
                             .split('_')
                             .join(' ')
@@ -2008,7 +2022,7 @@ export const MedicinePrescription: React.FC = () => {
                 const favMedicine = _favMedicine!;
                 const favDurations =
                   favMedicine.medicineConsumptionDurationInDays &&
-                  ` for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
+                  `for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
                     favMedicine.medicineConsumptionDurationUnit
                       ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
                       : 'day(s)'
@@ -2071,15 +2085,17 @@ export const MedicinePrescription: React.FC = () => {
                           favMedicine.medicineCustomDosage !== ''
                             ? ' (' + favTimesString + ') '
                             : ' '
-                        } ${
+                        } ${
                           favMedicine.medicineCustomDosage &&
                           favMedicine.medicineCustomDosage !== ''
                             ? ''
                             : favMedicine.medicineFrequency
-                            ? favMedicine.medicineFrequency
-                                .split('_')
-                                .join(' ')
-                                .toLowerCase()
+                            ? favMedicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                              ? 'STAT (Immediately)'
+                              : favMedicine.medicineFrequency
+                                  .split('_')
+                                  .join(' ')
+                                  .toLowerCase()
                             : dosageFrequency[0].id
                                 .split('_')
                                 .join(' ')
@@ -2155,8 +2171,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
@@ -2618,7 +2635,7 @@ export const MedicinePrescription: React.FC = () => {
                   }}
                   {...autosuggestProps}
                   inputProps={{
-                    classes,
+                    //classes,
                     color: 'primary',
                     id: 'react-autosuggest-simple',
                     placeholder: 'Search',
@@ -2689,8 +2706,9 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm((e.target as HTMLInputElement)
-                                .value as MEDICINE_FORM_TYPES);
+                              setMedicineForm(
+                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                              );
                             }}
                             row
                           >

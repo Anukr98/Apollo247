@@ -29,12 +29,18 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: 12,
     color: '#02475b',
     position: 'relative',
+    marginBottom: 15,
     '& textarea': {
       border: 'none',
       padding: 0,
       fontSize: 15,
       fontWeight: 500,
       borderRadius: 0,
+    },
+    '& p': {
+      position: 'absolute',
+      bottom: -20,
+      color: '#890000 !important',
     },
   },
   noDataFound: {
@@ -67,9 +73,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
   inputFieldEdit: {
-    border: '1px solid #00b38e',
-    borderEadius: 10,
-    backgroundColor: '#fff',
+    borderRadius: 10,
     padding: 0,
     '& textarea': {
       color: '#01475b',
@@ -78,11 +82,16 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontWeight: 500,
       paddingRight: 40,
     },
+    '& textarea:focus': {
+      borderRadius: "5px",
+      boxShadow: "0 0 5px #00b38e",
+      backgroundColor: "#ffffff"
+    },
   },
 }));
 
 export const Vitals: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const {
     height,
     setHeight,
@@ -93,6 +102,8 @@ export const Vitals: React.FC = () => {
     temperature,
     setTemperature,
     caseSheetEdit,
+    vitalError,
+    setVitalError,
   } = useContext(CaseSheetContextJrd);
 
   return (
@@ -106,9 +117,24 @@ export const Vitals: React.FC = () => {
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
+                required
                 value={height}
+                error={height.trim() === '' || height === null || height === undefined}
+                helperText={vitalError.height}
                 onChange={(e) => {
                   setHeight(e.target.value);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      height: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      height: 'This field is required',
+                    });
                 }}
               />
             </div>
@@ -123,8 +149,23 @@ export const Vitals: React.FC = () => {
                 fullWidth
                 multiline
                 value={weight}
+                required
+                error={weight.trim() === '' || weight === null || weight === undefined}
+                helperText={vitalError.weight}
                 onChange={(e) => {
                   setWeight(e.target.value);
+                }}
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== '')
+                    setVitalError({
+                      ...vitalError,
+                      weight: '',
+                    });
+                  else
+                    setVitalError({
+                      ...vitalError,
+                      weight: 'This field is required',
+                    });
                 }}
               />
             </div>

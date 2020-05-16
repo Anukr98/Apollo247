@@ -99,6 +99,7 @@ export enum BOOKINGSOURCE {
 export enum DEVICETYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 export enum PATIENT_TYPE {
   NEW = 'NEW',
@@ -505,6 +506,7 @@ export enum MEDICINE_FREQUENCY {
   TWICE_A_WEEK = 'TWICE_A_WEEK',
   ONCE_IN_15_DAYS = 'ONCE_IN_15_DAYS',
   ONCE_A_MONTH = 'ONCE_IN_15_DAYS',
+  STAT = 'STAT',
 }
 export enum MEDICINE_TIMINGS {
   AS_NEEDED = 'AS_NEEDED',
@@ -528,7 +530,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
-  DROPS = 'DROPS',
+  DROPS = 'DROP',
   GEL = 'GEL',
   GM = 'GM',
   INJECTION = 'INJECTION',
@@ -650,6 +652,12 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ default: () => 0, type: 'float' })
   preperationTimeInSeconds: number;
+
+  @Column({ nullable: true })
+  referralSpecialtyName: string;
+
+  @Column({ nullable: true })
+  referralDescription: string;
 
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
@@ -1394,8 +1402,102 @@ export class UtilizationCapacity extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 }
-
 //CurrentAvailabilityStatus end
+
+//notification related tables starts
+export enum notificationStatus {
+  READ = 'READ',
+  UNREAD = 'UNREAD',
+}
+
+export enum notificationEventName {
+  APPOINTMENT = 'APPOINTMENT',
+}
+
+export enum notificationType {
+  CHAT = 'CHAT',
+}
+
+@Entity()
+export class NotificationBin extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('NotificationBin_fromId')
+  @Column()
+  fromId: string;
+
+  @Index('NotificationBin_toId')
+  @Column()
+  toId: string;
+
+  @Index('NotificationBin_eventId')
+  @Column()
+  eventId: string;
+
+  @Column()
+  eventName: notificationEventName;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  message: string;
+
+  @Index('NotificationBin_status')
+  @Column()
+  status: notificationStatus;
+
+  @Column()
+  type: notificationType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class NotificationBinArchive extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('NotificationBinArchive_fromId')
+  @Column()
+  fromId: string;
+
+  @Index('NotificationBinArchive_toId')
+  @Column()
+  toId: string;
+
+  @Index('NotificationBinArchive_eventId')
+  @Column()
+  eventId: string;
+
+  @Column()
+  eventName: notificationEventName;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  message: string;
+
+  @Index('NotificationBinArchive_status')
+  @Column()
+  status: notificationStatus;
+
+  @Column()
+  type: notificationType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+//notification related tables end
 
 ///////////////////////////////////////////////////////////
 // RxPdf
@@ -1434,11 +1536,15 @@ export interface RxPdfData {
     gender: string;
     uhid: string;
     age: string;
+    email: string;
+    phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
+  referralSpecialtyName: string;
+  referralSpecialtyDescription: string;
 }
 ///////////////////////////////////////////////////////////

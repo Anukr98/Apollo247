@@ -49,9 +49,17 @@ import {
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
+  saveMedicineOrderOMSTypeDefs,
+  saveMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrdersOMS';
+import {
   savePrescriptionMedicineOrderTypeDefs,
   savePrescriptionMedicineOrderResolvers,
 } from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
+import {
+  savePrescriptionMedicineOrderOMSTypeDefs,
+  savePrescriptionMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/savePrescriptionMedicineOrdersOMS';
 import {
   saveMedicineOrderPaymentTypeDefs,
   saveMedicineOrderPaymentResolvers,
@@ -97,7 +105,15 @@ import {
 import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
-} from 'profiles-service/resolvers/updateOrderStatusPharma';
+} from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
+import {
+  saveOrderShipmentInvoiceTypeDefs,
+  saveOrderShipmentInvoiceResolvers,
+} from 'profiles-service/resolvers/pharmaOrderBilled';
+import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
   pharmaOrderConfirmationResolvers,
@@ -241,8 +257,16 @@ import {
         resolvers: saveMedicineOrderResolvers,
       },
       {
+        typeDefs: saveMedicineOrderOMSTypeDefs,
+        resolvers: saveMedicineOrderOMSResolvers,
+      },
+      {
         typeDefs: savePrescriptionMedicineOrderTypeDefs,
         resolvers: savePrescriptionMedicineOrderResolvers,
+      },
+      {
+        typeDefs: savePrescriptionMedicineOrderOMSTypeDefs,
+        resolvers: savePrescriptionMedicineOrderOMSResolvers,
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
@@ -295,6 +319,14 @@ import {
       {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentInvoiceTypeDefs,
+        resolvers: saveOrderShipmentInvoiceResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentsTypeDefs,
+        resolvers: saveOrderShipmentsResolvers,
       },
       {
         typeDefs: pharmaOrderConfirmationTypeDefs,

@@ -15,6 +15,7 @@ import {
   MedicinePrescription,
   DiagnosticPrescription,
   OtherInstructions,
+  RefferalCode,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
 import { Vitals } from 'components/JuniorDoctors/JDCaseSheet/panels/Vitals';
 import { HistoryAndLifeStyle } from 'components/JuniorDoctors/JDCaseSheet/panels/HistoryAndLifeStyle';
@@ -150,7 +151,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const CaseSheet: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
 
   const [symptoms, setSymptoms] = useState<boolean>(true);
@@ -161,6 +162,7 @@ export const CaseSheet: React.FC = () => {
   const [otherInstructions, setOtherInstructions] = useState<boolean>(true);
   const [patientHistory, setPatientHistory] = useState<boolean>(true);
   const [vitals, setVitals] = useState<boolean>(true);
+  const [refferalState, setRefferalState] = useState<boolean>(true);
 
   useEffect(() => {
     if (caseSheetEdit) {
@@ -172,6 +174,7 @@ export const CaseSheet: React.FC = () => {
       setOtherInstructions(true);
       setPatientHistory(true);
       setVitals(true);
+      setRefferalState(true);
     }
   }, [caseSheetEdit]);
 
@@ -179,7 +182,7 @@ export const CaseSheet: React.FC = () => {
     { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
       key: 'patientHistory&Lifestyle',
-      value: 'Patient’s Medical and Family History',
+      value: "Patient's Medical and Family History",
       state: patientHistory,
       component: <HistoryAndLifeStyle />,
     },
@@ -219,6 +222,12 @@ export const CaseSheet: React.FC = () => {
       state: otherInstructions,
       component: <OtherInstructions />,
     },
+    {
+      key: 'refferal',
+      value: 'Referral (Optional)',
+      state: refferalState,
+      component: <RefferalCode />,
+    },
   ];
 
   const handlePanelExpansion = (panelName: string) => (
@@ -249,6 +258,9 @@ export const CaseSheet: React.FC = () => {
         break;
       case 'vitals':
         setVitals(isExpanded);
+        break;
+      case 'refferal':
+        setRefferalState(isExpanded);
         break;
     }
   };

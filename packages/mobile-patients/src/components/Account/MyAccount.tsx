@@ -427,7 +427,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       <View>
         <ListCard
           container={{ marginTop: 14 }}
-          title={'Manage Profiles'}
+          title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
           onPress={() =>
             props.navigation.navigate(AppRoutes.ManageProfile, {

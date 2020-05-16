@@ -16,6 +16,19 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
+export const GET_ALL_SPECIALTIES = gql`
+  query GetAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+      specialistSingularTerm
+      specialistPluralTerm
+      userFriendlyNomenclature
+      displayOrder
+    }
+  }
+`;
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
     makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
@@ -474,6 +487,8 @@ export const GET_CASESHEET_JRD = gql`
         id
         doctorId
         status
+        referralSpecialtyName
+        referralDescription
         appointment {
           id
           appointmentDateTime
@@ -550,6 +565,7 @@ export const GET_CASESHEET_JRD = gql`
         lastName
         lifeStyle {
           description
+          occupationHistory
         }
         mobileNumber
         patientAddress {
@@ -565,6 +581,7 @@ export const GET_CASESHEET_JRD = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         photoUrl
         uhid
@@ -716,6 +733,7 @@ export const GET_CASESHEET = gql`
         allergies
         lifeStyle {
           description
+          occupationHistory
         }
         patientMedicalHistory {
           bp
@@ -727,6 +745,7 @@ export const GET_CASESHEET = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         familyHistory {
           description
@@ -754,6 +773,8 @@ export const GET_CASESHEET = gql`
         blobName
         doctorId
         sentToPatient
+        referralSpecialtyName
+        referralDescription
         appointment {
           id
           sdConsultationDate
@@ -849,6 +870,7 @@ export const GET_CASESHEET = gql`
         patientId
         parentId
         status
+        unreadMessagesCount
         caseSheet {
           consultType
           doctorType
@@ -1153,8 +1175,20 @@ export const END_APPOINTMENT_SESSION = gql`
 `;
 
 export const GET_PATIENT_LOG = gql`
-  query GetPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
-    getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
+  query GetPatientLog(
+    $limit: Int
+    $offset: Int
+    $sortBy: patientLogSort
+    $type: patientLogType
+    $patientName: String
+  ) {
+    getPatientLog(
+      limit: $limit
+      offset: $offset
+      sortBy: $sortBy
+      type: $type
+      patientName: $patientName
+    ) {
       patientLog {
         patientid
         consultscount
@@ -1170,6 +1204,10 @@ export const GET_PATIENT_LOG = gql`
           gender
           uhid
           photoUrl
+        }
+        unreadMessagesCount {
+          appointmentId
+          count
         }
       }
       totalResultCount
@@ -1256,6 +1294,38 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
       blobName
+    }
+  }
+`;
+export const GET_NOTIFICATION = gql`
+  query GetNotifications($toId: String!, $startDate: Date, $endDate: Date) {
+    getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
+    }
+  }
+`;
+export const MARK_MESSAGE_TO_UNREAD = gql`
+  mutation MarkMessageToUnread($eventId: String) {
+    markMessageToUnread(eventId: $eventId) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
     }
   }
 `;

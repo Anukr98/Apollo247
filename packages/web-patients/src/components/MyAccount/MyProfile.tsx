@@ -135,7 +135,7 @@ const defaultMaterialTheme = createMuiTheme({
 });
 
 export const MyProfile: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { signOut } = useAuth();
   const [state, setState] = React.useState({
@@ -175,6 +175,10 @@ export const MyProfile: React.FC = (props) => {
             ? 'Address Book'
             : currentPath === clientRoutes.healthRecords()
             ? 'Health Records'
+            : currentPath === clientRoutes.needHelp()
+            ? 'Need Help'
+            : currentPath === clientRoutes.myPayments()
+            ? 'My Payments'
             : 'Manage Profiles'}
         </div>
       </div>
@@ -194,6 +198,25 @@ export const MyProfile: React.FC = (props) => {
                 </span>
                 <span className={classes.linkText} title={'Manage Profiles'}>
                   Manage Profiles
+                </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.myPayments()}
+                title={'My Payments'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/ic_manageprofile.svg')} alt="" />
+                </span>
+                <span className={classes.linkText} title={'My Payments'}>
+                  My Payments
                 </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
@@ -230,6 +253,25 @@ export const MyProfile: React.FC = (props) => {
                 </span>
                 <span className={classes.linkText} title={'Address Book'}>
                   Address Book
+                </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.needHelp()}
+                title={'Need Help'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/ic_location.svg')} alt="" />
+                </span>
+                <span className={classes.linkText} title={'Need Help'}>
+                  Need Help
                 </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
@@ -306,6 +348,25 @@ export const MyProfile: React.FC = (props) => {
                 <div className={classes.sectionGroup}>
                   <Link
                     className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.myPayments()}
+                    title={'My Payments'}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/ic_manageprofile.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText} title={'My Payments'}>
+                      My Payments
+                    </span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
                       currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
                     }`}
                     to={clientRoutes.healthRecords()}
@@ -333,6 +394,25 @@ export const MyProfile: React.FC = (props) => {
                     </span>
                     <span className={classes.linkText} title={'Address Book'}>
                       Address Book
+                    </span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.needHelp()}
+                    title={'Need Help'}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/ic_location.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText} title={'Need Help'}>
+                      Need Help
                     </span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />

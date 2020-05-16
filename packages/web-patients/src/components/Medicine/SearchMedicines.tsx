@@ -163,7 +163,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const SearchMedicines: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [medicines, setMedicines] = useState<MedicineCartItem[]>([]);
   const [medicineCount, setMedicineCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);

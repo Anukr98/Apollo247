@@ -5,6 +5,8 @@ import {
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
+  PlacesApiResponse,
+  getDeliveryTime,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -47,6 +49,13 @@ import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
 import firebase from 'react-native-firebase';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  ShoppingCartItem,
+  ShoppingCartContextProps,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -398,11 +407,7 @@ export const isEmptyObject = (object: Object) => {
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
-  addrComponents: {
-    long_name: string;
-    short_name: string;
-    types: GooglePlacesType[];
-  }[]
+  addrComponents: PlacesApiResponse['results'][0]['address_components']
 ) => {
   return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
     .long_name;
@@ -614,7 +619,7 @@ export const getUserCurrentPosition = async () => {
 
 const { height } = Dimensions.get('window');
 
-export const isIphone5s = () => height === 568;
+// export const isIphone5s = () => height === 568;
 export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
 
@@ -1079,3 +1084,89 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
     value: formatedValue,
   };
 });
+
+export const getFormattedLocation = (
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  latLang: PlacesApiResponse['results'][0]['geometry']['location']
+) => {
+  const { lat, lng } = latLang || {};
+
+  const area = [
+    findAddrComponents('route', addrComponents),
+    findAddrComponents('sublocality_level_2', addrComponents),
+    findAddrComponents('sublocality_level_1', addrComponents),
+  ].filter((i) => i);
+
+  return {
+    displayName:
+      (area || []).pop() ||
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    latitude: lat,
+    longitude: lng,
+    lng,
+    area: area.join(', '),
+    city:
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    state: findAddrComponents('administrative_area_level_1', addrComponents),
+    country: findAddrComponents('country', addrComponents),
+    pincode: findAddrComponents('postal_code', addrComponents),
+    lastUpdated: new Date().getTime(),
+  } as LocationData;
+};
+
+export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
+  return (
+    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
+    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+  );
+};
+
+export const addPharmaItemToCart = (
+  cartItem: ShoppingCartItem,
+  pincode: string,
+  addCartItem: ShoppingCartContextProps['addCartItem'],
+  setLoading: UIElementsContextProps['setLoading'],
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  onComplete?: () => void
+) => {
+  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const navigate = () =>
+    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      deliveryError: unServiceableMsg,
+    });
+  setLoading && setLoading(true);
+  getDeliveryTime({
+    postalcode: pincode,
+    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
+    lookup: [
+      {
+        sku: cartItem.id,
+        qty: cartItem.quantity,
+      },
+    ],
+  })
+    .then((res) => {
+      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      if (deliveryDate && isDeliveryDateWithInXDays(deliveryDate)) {
+        addCartItem!(cartItem);
+      } else {
+        navigate();
+      }
+    })
+    .catch((err) => {
+      CommonBugFender('helperFunctions_fetchDeliveryTime', err);
+      navigate();
+    })
+    .finally(() => {
+      setLoading && setLoading(false);
+      onComplete && onComplete();
+    });
+};
+
+export const dataSavedUserID = async (key: string) => {
+  let userId: any = await AsyncStorage.getItem(key);
+  userId = JSON.parse(userId);
+  return userId;
+};

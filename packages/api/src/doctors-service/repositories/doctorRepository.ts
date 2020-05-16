@@ -243,6 +243,10 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { delegateNumber });
   }
 
+  updateDoctorSignature(id: string, signature: string) {
+    return this.update(id, { signature });
+  }
+
   findById(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
@@ -259,6 +263,12 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital',
         'starTeam.associatedDoctor.doctorHospital.facility',
       ],
+    });
+  }
+
+  findDoctorByIdWithoutRelations(id: string) {
+    return this.findOne({
+      where: [{ id, isActive: true }],
     });
   }
 
@@ -962,6 +972,16 @@ export class DoctorRepository extends Repository<Doctor> {
         order: { createdDate: 'ASC' },
       });
     }
+  }
+
+  getAllSeniorDoctors() {
+    return this.find({
+      select: ['id', 'mobileNumber', 'displayName'],
+      where: {
+        doctorType: Not('JUNIOR'),
+        isActive: true,
+      },
+    });
   }
   getSeniorDoctorCount() {
     return this.count({

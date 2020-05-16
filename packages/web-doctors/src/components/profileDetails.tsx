@@ -228,13 +228,13 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MyAccount: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { currentPatient, signOut } = useAuth();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();
   const client = useApolloClient();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [userDetails, setUserDetails] = React.useState();
+  const [userDetails, setUserDetails] = React.useState<any>();
   const [selectedNavTab, setselectedNavTab] = React.useState(1);
 
   const getDoctorDetailsById = () => {

@@ -31,32 +31,33 @@ module.exports = [{
     paymentMode: 'NB',
     seq: 5,
     enabled: true,
+    imageUrl: "https://prodaphstorage.blob.core.windows.net/paymentlogos/NetBanking.png",
     banksList: [
         {
             name: 'SBI',
             bankCode: 'ASBI',
-            enabled: true,
+            enabled: false,
             imageUrl: 'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png',
             seq: 1
         },
         {
             name: 'HDFC',
             bankCode: 'HDFC',
-            enabled: true,
+            enabled: false,
             imageUrl: 'https://prodaphstorage.blob.core.windows.net/paymentlogos/hdfc.png',
             seq: 2
         },
         {
             name: 'ICICI',
             bankCode: 'ICICI',
-            enabled: true,
+            enabled: false,
             imageUrl: 'https://prodaphstorage.blob.core.windows.net/paymentlogos/icici.png',
             seq: 3
         },
         {
             name: 'AXIS',
             bankCode: 'AXIS',
-            enabled: true,
+            enabled: false,
             imageUrl: 'https://prodaphstorage.blob.core.windows.net/paymentlogos/axis.png',
             seq: 4
         },

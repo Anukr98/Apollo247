@@ -160,6 +160,7 @@ export const getSpecialityDetails = async (
             const plannedDoctorsAttrs: Partial<PlannedDoctors> = {
               availabilityDate: availabilityDate,
               specialityId: doctor.specialty.id,
+              updatedDate: new Date(),
               ...specialityDetails,
             };
             await plannedDoctorsRepo.saveDetails(plannedDoctorsAttrs);

@@ -5,8 +5,18 @@ import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import _each from 'lodash';
 import { useMutation } from 'react-apollo-hooks';
-import { GET_COUPONS } from '../../graphql/profiles';
-import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { PHRAMA_COUPONS_LIST, VALIDATE_PHARMA_COUPONS } from '../../graphql/medicines';
+import {
+  getPharmaCouponList,
+  getPharmaCouponList_getPharmaCouponList_coupons,
+} from 'graphql/types/getPharmaCouponList';
+import {
+  validatePharmaCoupon_validatePharmaCoupon,
+  validatePharmaCoupon,
+} from 'graphql/types/validatePharmaCoupon';
+import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,8 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sectionHeader: {
       marginBottom: 20,
-      paddingTop: 20,
       paddingBottom: 4,
+      paddingTop: 20,
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
@@ -116,10 +126,17 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    noCoupons: {
+      textAlign: 'center',
+      paddingBottom: 10,
+    },
   };
 });
 
 interface ApplyCouponProps {
+  setValidateCouponResult: (
+    validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null
+  ) => void;
   setCouponCode: (couponCode: string) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
@@ -128,13 +145,45 @@ interface ApplyCouponProps {
 
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
-
+  const { currentPatient } = useAllCurrentPatients();
+  const { cartItems, medicineCartType } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
-    (getCoupons_getCoupons_coupons | null)[]
+    (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
   >([]);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
-  const getCouponMutation = useMutation<getCoupons>(GET_COUPONS, {
+  const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
+    fetchPolicy: 'no-cache',
+  });
+
+  const getTypeOfProduct = (type: string | null) => {
+    switch (type) {
+      case 'Pharma':
+        return CouponCategoryApplicable.PHARMA;
+      case 'Fmcg':
+        return CouponCategoryApplicable.FMCG;
+    }
+  };
+
+  const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
+    variables: {
+      pharmaCouponInput: {
+        code: selectCouponCode,
+        patientId: currentPatient.id,
+        orderLineItems: cartItems.map((item) => {
+          return {
+            mrp: item.price,
+            productName: item.name,
+            productType: getTypeOfProduct(item.type_id),
+            quantity: item.quantity,
+            specialPrice: item.special_price ? item.special_price : item.price,
+            itemId: item.id.toString(),
+          };
+        }),
+      },
+    },
     fetchPolicy: 'no-cache',
   });
 
@@ -144,15 +193,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     if (availableCoupons.length === 0) {
       setIsLoading(true);
       getCouponMutation()
-        .then((res) => {
+        .then(({ data }) => {
           if (
-            res &&
-            res.data &&
-            res.data.getCoupons &&
-            res.data.getCoupons.coupons &&
-            res.data.getCoupons.coupons.length > 0
+            data &&
+            data.getPharmaCouponList &&
+            data.getPharmaCouponList.coupons &&
+            data.getPharmaCouponList.coupons.length > 0
           ) {
-            setAvailableCoupons(res.data.getCoupons.coupons);
+            setAvailableCoupons(data.getPharmaCouponList.coupons);
             setIsLoading(false);
           }
         })
@@ -161,6 +209,30 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   }, [availableCoupons]);
+
+  const verifyCoupon = () => {
+    if (currentPatient && currentPatient.id) {
+      setMuationLoading(true);
+      validateCoupon()
+        .then((res) => {
+          if (res && res.data && res.data.validatePharmaCoupon) {
+            const couponValidateResult = res.data.validatePharmaCoupon;
+            if (couponValidateResult.validityStatus) {
+              props.setCouponCode(selectCouponCode);
+              props.close(false);
+              props.setValidateCouponResult(couponValidateResult);
+              setMuationLoading(false);
+            } else {
+              setMuationLoading(false);
+              setErrorMessage(couponValidateResult.reasonForInvalidStatus);
+            }
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
 
   return (
     <div className={classes.shadowHide}>
@@ -177,19 +249,26 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       placeholder="CouponCode"
                     />
                     <div className={classes.pinActions}>
-                      {props.couponCode.length > 0 ? (
+                      {/* {selectCouponCode.length > 0 ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn}>
+                        <AphButton className={classes.searchBtn} onClick>
+                          <img src={require('images/ic_send.svg')} alt="" />
+                        </AphButton>
+                      )} */}
+                      {selectCouponCode.length > 0 && (
+                        <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
                       )}
                     </div>
                   </div>
                 )}
-                {/* <div className={classes.pinErrorMsg}>Invalid Coupon Code</div> */}
+                {errorMessage.length > 0 && (
+                  <div className={classes.pinErrorMsg}>{errorMessage}</div>
+                )}
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
                   {availableCoupons.length > 0 ? (
@@ -199,7 +278,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
-                              checked={couponDetails.code === props.couponCode}
+                              checked={couponDetails.code === selectCouponCode}
                               value={couponDetails.code}
                               control={<AphRadio color="primary" />}
                               label={
@@ -211,8 +290,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 </span>
                               }
                               onChange={() => {
+                                setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
-                                props.setCouponCode(couponDetails.code);
                               }}
                               disabled={props.cartValue < 200}
                             />
@@ -222,7 +301,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                    'No available Coupons'
+                    <div className={classes.noCoupons}>No available Coupons</div>
                   )}
                 </ul>
               </div>
@@ -234,11 +313,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
+          disabled={!selectCouponCode}
           onClick={() => {
-            props.close(false);
+            verifyCoupon();
           }}
         >
-          Done
+          {muationLoading ? <CircularProgress size={22} color="secondary" /> : 'Apply Coupon'}
         </AphButton>
       </div>
     </div>
