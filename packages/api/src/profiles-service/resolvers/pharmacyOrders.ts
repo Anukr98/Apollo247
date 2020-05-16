@@ -70,8 +70,12 @@ const pharmacyOrders: Resolver<
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(args.patientId);
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2))
   if (medicineOrders && medicineOrders.length > 0) {
-    const excludeNullPayments = _.filter(medicineOrders, (o) => { return o.medicineOrderPayments !== [] });
-    const result = _.filter(excludeNullPayments, (o) => { return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE' })
+    const excludeNullPayments = _.filter(medicineOrders, (o) => {
+      return o.medicineOrderPayments !== [];
+    });
+    const result = _.filter(excludeNullPayments, (o) => {
+      return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE';
+    });
     return { pharmaOrders: result };
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
