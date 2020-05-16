@@ -17,7 +17,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType } from 'helpers/commonHelpers'
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT, SAVE_MEDICINE_ORDER_OMS} from 'graphql/medicines';
-import { saveMedicineOrderOMS, saveMedicineOrderOMSVariables } from 'graphql/types/saveMedicineOrderOMS'
+import { saveMedicineOrderOMS, saveMedicineOrderOMSVariables } from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -27,6 +27,7 @@ import {
   NonCartOrderCity,
   BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  CODCity
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -636,7 +637,7 @@ export const MedicineCart: React.FC = (props) => {
             quantity: cartItemDetails.quantity,
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
+            // prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -676,7 +677,8 @@ export const MedicineCart: React.FC = (props) => {
           coupon: couponCode,
           deviceType: getDeviceType(),
           productDiscount,
-          couponDiscount: Number(validateCouponResult.discountedTotals.couponDiscount)
+          couponDiscount: validateCouponResult && validateCouponResult.discountedTotals ?
+            Number(validateCouponResult.discountedTotals.couponDiscount) : 0
         },
       },
     }
@@ -692,10 +694,13 @@ export const MedicineCart: React.FC = (props) => {
   ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
-      chennaiOrderVariables = {
+      chennaiOrderVariables = nonCartFlow?  {
         NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
-      };
+      }: {
+        CODCity: CODCity.CHENNAI,
+        email: userEmail,
+      }
     }
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
