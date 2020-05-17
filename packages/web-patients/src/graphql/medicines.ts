@@ -11,17 +11,6 @@ export const SAVE_MEDICINE_ORDER = gql`
   }
 `;
 
-export const SAVE_MEDICINE_ORDER_OMS = gql`
-mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput) {
-  saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
-    errorCode
-    errorMessage
-    orderId
-    orderAutoId
-  }
-}
-`;
-
 export const SAVE_MEDICINE_ORDER_PAYMENT_RESULT = gql`
   mutation SaveMedicineOrderPayment($medicinePaymentInput: MedicinePaymentInput) {
     SaveMedicineOrderPayment(medicinePaymentInput: $medicinePaymentInput) {
