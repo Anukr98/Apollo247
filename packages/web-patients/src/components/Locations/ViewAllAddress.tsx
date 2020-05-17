@@ -169,16 +169,13 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongAvailability = (addressDetails: Address) => {
-    
+    const googleMapApi = `${process.env.GOOGLE_MAP_API}?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
     if (!addressDetails.latitude || !addressDetails.longitude) {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
         setIsLoading(true);
         axios
-          .get(
-            `${process.env.GOOGLE_MAP_API}?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`
-            // `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`
-          )
+          .get(googleMapApi)
           .then(({ data }) => {
             try {
               if (data && data.results[0] && data.results[0].geometry && data.results[0].geometry.location) {
