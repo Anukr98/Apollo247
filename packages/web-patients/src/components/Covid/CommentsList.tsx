@@ -38,6 +38,8 @@ const useStyles = makeStyles((theme: Theme) => {
     postContent: {
       paddingTop: 8,
       opacity: 0.6,
+      wordWrap: 'break-word',
+      whiteSpace: 'pre-wrap',
     },
     bottomActions: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -108,7 +110,8 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
                   {item.name && item.name.length ? item.name : item.email} wrote
                 </div>
                 <div className={classes.postDate}>
-                  {item.createdAt && moment.unix(parseInt(item.createdAt)).format('ddd, ll')}
+                  {item.createdAt &&
+                    moment.unix(parseInt(item.createdAt)).format('ddd[,] DD MMMM YYYY')}
                 </div>
               </div>
               <div className={classes.postContent}>{item.content}</div>

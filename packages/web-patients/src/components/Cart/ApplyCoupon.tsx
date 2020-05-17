@@ -95,8 +95,19 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
       '& button': {
+        padding: '9px 13px 9px 13px',
+        fontSize: 13,
         borderRadius: 10,
+        backgroundColor: '#fcb716',
+        color: '#fff',
+        '&:hover': {
+          backgroundColor: '#fcb716',
+          color: '#fff',  
+        },
       },
+    },
+    buttonDisabled: {
+      opacity: 0.6,
     },
     customScrollBar: {
       paddingRight: 20,
@@ -159,7 +170,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   });
 
   const getTypeOfProduct = (type: string | null) => {
-    return medicineCartType === 'BOTH' ? CouponCategoryApplicable.PHARMA_FMCG : medicineCartType;
+    switch (type) {
+      case 'Pharma':
+        return CouponCategoryApplicable.PHARMA;
+      case 'Fmcg':
+        return CouponCategoryApplicable.FMCG;
+    }
   };
 
   const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
@@ -173,7 +189,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             productName: item.name,
             productType: getTypeOfProduct(item.type_id),
             quantity: item.quantity,
-            specialPrice: item.special_price,
+            specialPrice: item.special_price ? item.special_price : item.price,
+            itemId: item.id.toString(),
           };
         }),
       },
@@ -214,6 +231,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             if (couponValidateResult.validityStatus) {
               props.setCouponCode(selectCouponCode);
               props.close(false);
+              props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
             } else {
               setMuationLoading(false);
@@ -307,6 +325,9 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           color="primary"
           fullWidth
           disabled={!selectCouponCode}
+          classes={{
+            disabled: classes.buttonDisabled,
+          }}
           onClick={() => {
             verifyCoupon();
           }}

@@ -96,6 +96,11 @@ export interface CaseSheetContextPropsJrd {
   menstrualHistory: string;
   dosageList: any;
   vitalError: VitalErrorProps;
+  medicationHistory: string;
+  occupationHistory: string;
+  referralDescription: string;
+  referralSpecialtyName: string;
+  referralError: boolean;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -109,6 +114,11 @@ export interface CaseSheetContextPropsJrd {
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
   setVitalError: (vitalError: VitalErrorProps) => void;
+  setMedicationHistory: (medicationHistory: string) => void;
+  setOccupationHistory: (occupationHistory: string) => void;
+  setReferralSpecialtyName: (referralSpecialtyName: string) => void;
+  setReferralDescription: (referralDescription: string) => void;
+  setReferralError: (referralError: boolean) => void;
 
   gender: string;
   setGender: (gender: string) => void;
@@ -167,6 +177,11 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
     height: '',
     weight: '',
   },
+  medicationHistory: '',
+  occupationHistory: '',
+  referralSpecialtyName: '',
+  referralDescription: '',
+  referralError: false,
 
   setBp: () => {},
   setHeight: () => {},
@@ -180,6 +195,11 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
   setVitalError: () => {},
+  setMedicationHistory: () => {},
+  setOccupationHistory: () => {},
+  setReferralSpecialtyName: () => {},
+  setReferralDescription: () => {},
+  setReferralError: () => {},
 
   gender: '',
   setGender: () => {},

@@ -659,9 +659,17 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<JDConsultRoomParams>();
 
-  const { appointmentInfo, patientDetails, height, weight, setVitalError } = useContext(
-    CaseSheetContextJrd
-  );
+  const {
+    appointmentInfo,
+    patientDetails,
+    height,
+    weight,
+    setVitalError,
+    referralDescription,
+    referralSpecialtyName,
+    medicationHistory,
+    setReferralError,
+  } = useContext(CaseSheetContextJrd);
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -686,6 +694,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [showVital, setShowVital] = React.useState<boolean>(false);
+  const [showReferral, setShowReferral] = React.useState<boolean>(false);
   // const startConsultDisableReason =
   //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
   //     ? 'This appointment is under reschedule and waiting for the patient to accept the new slot.'
@@ -1293,6 +1302,45 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
+
+  const checkForEmptyFields = () => {
+    if (height.trim() === '' && weight.trim() === '') {
+      setShowVital(true);
+      setVitalError({
+        height: 'This field is required',
+        weight: 'This field is required',
+      });
+      return true;
+    } else if (height.trim() === '' && weight.trim() !== '') {
+      setShowVital(true);
+      setVitalError({
+        height: 'This field is required',
+        weight: '',
+      });
+      return true;
+    } else if (height.trim() !== '' && weight.trim() === '') {
+      setShowVital(true);
+      setVitalError({
+        height: '',
+        weight: 'This field is required',
+      });
+      return true;
+    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+      setShowVital(false);
+      setVitalError({
+        height: '',
+        weight: '',
+      });
+      setReferralError(true);
+      setShowReferral(true);
+      return true;
+    } else {
+      setReferralError(false);
+      setShowReferral(false);
+      return false;
+    }
+  };
+
   return (
     <div>
       <div className={classes.pageSubHeader}>
@@ -1347,30 +1395,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.submitBtn}
                 disabled={props.saving}
                 onClick={() => {
-                  if (height.trim() === '' && weight.trim() === '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: 'This field is required',
-                      weight: 'This field is required',
-                    });
-                  } else if (height.trim() === '' && weight.trim() !== '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: 'This field is required',
-                      weight: '',
-                    });
-                  } else if (height.trim() !== '' && weight.trim() === '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: '',
-                      weight: 'This field is required',
-                    });
-                  } else {
-                    setShowVital(false);
-                    setVitalError({
-                      height: '',
-                      weight: '',
-                    });
+                  const isEmptyFields = checkForEmptyFields();
+                  if (!isEmptyFields) {
                     unSubscribeBrowserButtonsListener();
                     stopInterval();
                     onStopConsult();
@@ -1403,30 +1429,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               }
               onClick={() => {
                 if (startAppointment) {
-                  if (height.trim() === '' && weight.trim() === '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: 'This field is required',
-                      weight: 'This field is required',
-                    });
-                  } else if (height.trim() === '' && weight.trim() !== '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: 'This field is required',
-                      weight: '',
-                    });
-                  } else if (height.trim() !== '' && weight.trim() === '') {
-                    setShowVital(true);
-                    setVitalError({
-                      height: '',
-                      weight: 'This field is required',
-                    });
-                  } else {
-                    setShowVital(false);
-                    setVitalError({
-                      height: '',
-                      weight: '',
-                    });
+                  const isEmptyFields = checkForEmptyFields();
+                  if (!isEmptyFields) {
                     onStopConsult();
                     stopInterval();
                   }
@@ -1893,7 +1897,39 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Paper>
       </Modal>
-      {/* Vital field required popup start */}
+      {/* Vital field required popup end */}
+      {/* referral field required popup start */}
+      <Modal
+        open={showReferral}
+        onClose={() => setShowReferral(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxCancel} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setShowReferral(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+            <h3>
+              It seems referral description field is empty. Please fill the referral section's
+              description field under the Case Sheet tab.
+            </h3>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.okButton} onClick={() => setShowReferral(false)}>
+                Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* referral field required popup end */}
+
       {/* audio/video start*/}
       <div className={classes.posRelative}>
         <div className={showVideo ? '' : classes.audioVideoContainer}>

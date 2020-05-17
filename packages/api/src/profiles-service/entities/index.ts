@@ -47,6 +47,18 @@ export enum PATIENT_ADDRESS_TYPE {
   OFFICE = 'OFFICE',
   OTHER = 'OTHER',
 }
+export enum PAYMENT_STATUS_MAP {
+  TXN_SUCCESS = 'PAYMENT_SUCCESS',
+  PENDING = 'PAYMENT_PENDING_PG',
+  TXN_FAILURE = 'PAYMENT_FAILED',
+  UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN'
+}
+
+export enum STATUS_PAYMENT_MAP {
+  PAYMENT_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_PENDING_PG = 'PENDING',
+  PAYMENT_FAILED = 'TXN_FAILURE'
+}
 
 export enum Relation {
   ME = 'ME',
@@ -143,6 +155,7 @@ export enum BOOKING_SOURCE {
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum PHARMA_CART_TYPE {
@@ -285,6 +298,15 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   shopId: string;
 
+  @Column({ type: 'float8', nullable: true })
+  couponDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  productDiscount: number;
+
+  @Column({ nullable: true })
+  isOmsOrder: boolean;
+
   @Column({ nullable: true })
   updatedDate: Date;
 
@@ -371,6 +393,12 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemValue: number;
 
   @Column()
   quantity: number;
@@ -814,6 +842,12 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   landmark: string;
+
+  @Column({ type: 'float8', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float8', nullable: true })
+  longitude: number;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
@@ -1988,9 +2022,6 @@ export class MedicineOrderShipments extends BaseEntity {
 
   @Column({ nullable: true, type: 'json' })
   itemDetails: string;
-
-  @Column()
-  isPrimary: boolean;
 
   @OneToMany(
     (type) => MedicineOrdersStatus,

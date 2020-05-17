@@ -91,6 +91,42 @@ exports.noShowReminder = (req, res) => {
       console.log('error', error);
     });
 };
+exports.noShowReminder30Min = (req, res) => {
+  const requestJSON = {
+    query: Constants.NO_SHOW_REMINDER_30,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      const fileName =
+        process.env.PHARMA_LOGS_PATH +
+        new Date().getFullYear() +
+        '-' +
+        (new Date().getMonth() + 1) +
+        '-' +
+        new Date().getDate() +
+        '-apptNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.noShowReminderNotification.noCaseSheetCount +
+        ' - ' +
+        response.data.data.noShowReminderNotification.apptsListCount;
+      ('\n-------------------\n');
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
 
 exports.FollowUpNotification = (req, res) => {
   const requestJSON = {

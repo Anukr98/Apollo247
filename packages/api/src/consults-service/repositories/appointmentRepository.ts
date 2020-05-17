@@ -22,6 +22,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -969,6 +970,20 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointmentNoShowStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { status, isSeniorConsultStarted, appointmentState, noShowReason }).catch(
+      (createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      }
+    );
+  }
+
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
@@ -1051,6 +1066,14 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
     //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
     this.update(id, { appointmentState, isSeniorConsultStarted: false });
+  }
+
+  updateTransferStateAndNoshow(
+    id: string,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { appointmentState, isSeniorConsultStarted: false, noShowReason });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1162,6 +1185,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  getAllAppointmentsByPatientId(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
   }

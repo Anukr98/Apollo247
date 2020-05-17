@@ -25,6 +25,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
+
+  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders["orderAutoId"]) {
+    return this.createQueryBuilder()
+      .from(MedicineOrders, 'mo')
+      .leftJoinAndSelect(MedicineOrderPayments, 'mp', 'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"')
+      .select([
+        'mp."paymentDateTime"',
+        'mp."paymentRefId"',
+        'mp."amountPaid"',
+        'mp."paymentStatus"',
+        'mp."bankTxnId"',
+        'mo."orderAutoId"'
+      ])
+      .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
+      .getRawOne()
+  }
+
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
     return MedicineOrderLineItems.create(lineItemAttrs)
       .save()
@@ -72,7 +89,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
         'medicineOrderLineItems',
         'patient.patientAddress',
+        'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
       ],
     });
   }
@@ -145,6 +164,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -159,6 +180,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -173,6 +196,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -187,6 +212,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -201,6 +228,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
