@@ -176,7 +176,8 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
         setIsLoading(true);
         axios
           .get(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`
+            `${process.env.GOOGLE_MAP_API}?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`
+            // `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`
           )
           .then(({ data }) => {
             try {

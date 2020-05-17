@@ -18,7 +18,6 @@ mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput) {
     errorMessage
     orderId
     orderAutoId
-    __typename
   }
 }
 `;
