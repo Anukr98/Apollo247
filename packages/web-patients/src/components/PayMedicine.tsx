@@ -13,10 +13,9 @@ import { useParams } from 'hooks/routerHooks';
 import { AphButton } from '@aph/web-ui-components';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { saveMedicineOrderOMS, saveMedicineOrderOMSVariables } from 'graphql/types/saveMedicineOrderOMS';
-// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import {  SAVE_MEDICINE_ORDER_OMS,  SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -284,7 +283,7 @@ export const PayMedicine: React.FC = (props) => {
             quantity: cartItemDetails.quantity,
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            // prescriptionImageUrl: '',
+            prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -296,11 +295,11 @@ export const PayMedicine: React.FC = (props) => {
         })
       : [];
 
-  const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
-    SAVE_MEDICINE_ORDER_OMS,
+  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
+    SAVE_MEDICINE_ORDER,
     {
       variables: {
-        medicineCartOMSInput: {
+        medicineCartInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
           shopId: '',
@@ -319,8 +318,6 @@ export const PayMedicine: React.FC = (props) => {
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
           coupon: couponCode ? couponCode : null,
-          couponDiscount: 12,
-          productDiscount
         },
       },
     }
@@ -397,8 +394,8 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
-        if (res && res.data && res.data.saveMedicineOrderOMS) {
-          const { orderId, orderAutoId } = res.data.saveMedicineOrderOMS;
+        if (res && res.data && res.data.SaveMedicineOrder) {
+          const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;

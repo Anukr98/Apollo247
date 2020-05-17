@@ -16,8 +16,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType } from 'helpers/commonHelpers'
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT, SAVE_MEDICINE_ORDER_OMS} from 'graphql/medicines';
-import { saveMedicineOrderOMS, saveMedicineOrderOMSVariables } from 'graphql/types/saveMedicineOrderOMS';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
+import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -27,7 +27,6 @@ import {
   NonCartOrderCity,
   BOOKING_SOURCE,
   NonCartOrderOMSCity,
-  CODCity
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -637,7 +636,7 @@ export const MedicineCart: React.FC = (props) => {
             quantity: cartItemDetails.quantity,
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            // prescriptionImageUrl: '',
+            prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -649,11 +648,11 @@ export const MedicineCart: React.FC = (props) => {
         })
       : [];
 
-  const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
-    SAVE_MEDICINE_ORDER_OMS,
+  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
+    SAVE_MEDICINE_ORDER,
     {
       variables: {
-        medicineCartOMSInput: {
+        medicineCartInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
           shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
@@ -675,10 +674,7 @@ export const MedicineCart: React.FC = (props) => {
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
           coupon: couponCode,
-          deviceType: getDeviceType(),
-          productDiscount,
-          couponDiscount: validateCouponResult && validateCouponResult.discountedTotals ?
-            Number(validateCouponResult.discountedTotals.couponDiscount) : 0
+          deviceType: getDeviceType()
         },
       },
     }
@@ -694,13 +690,10 @@ export const MedicineCart: React.FC = (props) => {
   ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
-      chennaiOrderVariables = nonCartFlow?  {
+      chennaiOrderVariables = {
         NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
         email: userEmail,
-      }: {
-        CODCity: CODCity.CHENNAI,
-        email: userEmail,
-      }
+      };
     }
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
@@ -871,8 +864,8 @@ export const MedicineCart: React.FC = (props) => {
       return;
     }
     paymentMutation().then((res) => {
-      if (res && res.data && res.data.saveMedicineOrderOMS) {
-        const { orderId, orderAutoId } = res.data.saveMedicineOrderOMS;
+      if (res && res.data && res.data.SaveMedicineOrder) {
+        const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
         placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
       }
     });
