@@ -12,14 +12,14 @@ export const SAVE_MEDICINE_ORDER = gql`
 `;
 
 export const SAVE_MEDICINE_ORDER_OMS = gql`
-mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput) {
-  saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
-    errorCode
-    errorMessage
-    orderId
-    orderAutoId
+  mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
+      errorCode
+      errorMessage
+      orderId
+      orderAutoId
+    }
   }
-}
 `;
 
 export const SAVE_MEDICINE_ORDER_PAYMENT_RESULT = gql`
@@ -75,6 +75,7 @@ export const VALIDATE_PHARMA_COUPONS = gql`
       pharmaLineItemsWithDiscountedPrice {
         applicablePrice
         discountedPrice
+        itemId
         mrp
         productName
         productType
