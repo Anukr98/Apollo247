@@ -4,8 +4,10 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  Platform,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
   BackHandler,
   NavState,
 } from 'react-native';
@@ -43,6 +45,10 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_YELLOW,
     lineHeight: 24,
   },
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f1ec',
+  },
 });
 
 export interface PaymentSceneProps
@@ -52,6 +58,8 @@ export interface PaymentSceneProps
     token: string;
     amount: number;
     deliveryTime: string;
+    paymentTypeID: string;
+    bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
   }> {}
 
@@ -62,6 +70,8 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
   const deliveryTime = props.navigation.getParam('deliveryTime');
+  const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const bankCode = props.navigation.getParam('bankCode');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
@@ -71,7 +81,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const [loading, setLoading] = useState(true);
 
   const handleBack = async () => {
-    Alert.alert('Alert', 'Do you want to go back?', [
+    Alert.alert('Alert', 'Are you sure you want to change your payment mode?', [
       { text: 'No' },
       { text: 'Yes', onPress: () => props.navigation.goBack() },
     ]);
@@ -112,6 +122,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     try {
       if (checkoutEventAttributes) {
+        const paymentEventAttributes = {
+          order_Id: orderId,
+          order_AutoId: orderAutoId,
+          Type: 'Pharmacy',
+          Payment_Status: 'PAYMENT_SUCCESS',
+        };
+        postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
         postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
       }
@@ -251,38 +268,57 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
     console.log({ redirectedUrl, data });
-    const isMatchesSuccessUrl =
-      (redirectedUrl &&
-        redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1) ||
-      false;
-    const isMatchesFailUrl =
-      (redirectedUrl &&
-        redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1) ||
-      false;
-
-    if (isMatchesSuccessUrl) {
-      const tk = getParameterByName('tk', redirectedUrl!);
-      const status = getParameterByName('status', redirectedUrl!);
-      console.log('Consult PG isMatchesSuccessUrl:\n', { tk, status });
+    if (
+      redirectedUrl &&
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
+    ) {
       handleOrderSuccess();
       clearCartInfo && clearCartInfo();
+    } else if (
+      redirectedUrl &&
+      redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
+    ) {
+      props.navigation.navigate(AppRoutes.PaymentStatus, {
+        orderId: orderId,
+        orderAutoId: orderAutoId,
+        amount: totalAmount,
+        paymentTypeID: paymentTypeID,
+      });
     }
-    if (isMatchesFailUrl) {
-      const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
-      const responseCode = getParameterByName('responseCode', redirectedUrl!);
-      console.log({ responseMessage, responseCode });
-      if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
-        // To handle Paytm PG page back button
-        props.navigation.goBack();
-      } else {
-        handleOrderFailure();
-      }
-    }
+    // const isMatchesSuccessUrl =
+    //   (redirectedUrl &&
+    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1) ||
+    //   false;
+    // const isMatchesFailUrl =
+    //   (redirectedUrl &&
+    //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1) ||
+    //   false;
+
+    // if (isMatchesSuccessUrl) {
+    //   const tk = getParameterByName('tk', redirectedUrl!);
+    //   const status = getParameterByName('status', redirectedUrl!);
+    //   console.log('Consult PG isMatchesSuccessUrl:\n', { tk, status });
+    //   handleOrderSuccess();
+    //   clearCartInfo && clearCartInfo();
+    // }
+    // if (isMatchesFailUrl) {
+    //   const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
+    //   const responseCode = getParameterByName('responseCode', redirectedUrl!);
+    //   console.log({ responseMessage, responseCode });
+    //   if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
+    //     // To handle Paytm PG page back button
+    //     props.navigation.goBack();
+    //   } else {
+    //     handleOrderFailure();
+    //   }
+    // }
   };
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile`;
+    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+      bankCode ? '&bankCode=' + bankCode : ''
+    }`;
 
     // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
     // SUCCESS_PATH: /mob?tk=<>&status=<>
@@ -304,15 +340,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <Header
-          title="PAYMENT"
-          leftText={{
-            isBack: false,
-            title: 'Cancel',
-            onPress: handleBack,
-          }}
-        />
-        {renderWebView()}
+        <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
+        >
+          {renderWebView()}
+        </KeyboardAvoidingView>
       </SafeAreaView>
       {loading && <Spinner />}
     </View>

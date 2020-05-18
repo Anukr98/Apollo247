@@ -1355,9 +1355,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       (addr) => addr == Number(zipcode)
     );
     if (isChennaiAddress) {
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime, isChennaiOrder: true });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime, isChennaiOrder: true });
     } else {
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime });
     }
   };
 

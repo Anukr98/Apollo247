@@ -1085,9 +1085,9 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
-export const SAVE_MEDICINE_ORDER = gql`
-  mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
-    SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
+export const SAVE_MEDICINE_ORDER_OMS = gql`
+  mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
       errorCode
       errorMessage
       orderId
@@ -1331,6 +1331,14 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           isMedicine
           mou
         }
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentStatus
+          paymentDateTime
+          bankTxnId
+        }
+        
       }
     }
   }
@@ -2235,6 +2243,18 @@ export const INSERT_MESSAGE = gql`
         type
         id
       }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS = gql`
+  query pharmaPaymentStatus($orderId: Int!) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
     }
   }
 `;
