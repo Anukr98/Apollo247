@@ -66,6 +66,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
+import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
@@ -139,6 +140,7 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
+  LinkUHID = 'LinkUHID',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -359,6 +361,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
   },
+  [AppRoutes.LinkUHID]: {
+    screen: LinkUHID
+  },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
@@ -389,7 +394,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.NotificationScreen]: {
     screen: NotificationScreen,
   },
-  
+
 };
 
 const logTabEvents = (routing: any) => {
