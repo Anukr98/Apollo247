@@ -377,6 +377,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        noShowReason
         doctorInfo {
           awards
           city
@@ -1114,6 +1115,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
         id
         orderAutoId
         deliveryType
+        currentStatus
         medicineOrdersStatus {
           id
           orderStatus
@@ -1316,6 +1318,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         orderType
         currentStatus
         patientAddressId
+        currentStatus
         medicineOrdersStatus {
           id
           orderStatus

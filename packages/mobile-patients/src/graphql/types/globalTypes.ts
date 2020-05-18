@@ -191,6 +191,7 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = "CANCEL_REQUEST",
   DELIVERED = "DELIVERED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_BILLED = "ORDER_BILLED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
@@ -271,6 +272,12 @@ export enum MedicalTestUnit {
   GM_SLASH_DL = "GM_SLASH_DL",
   NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
+}
+
+export enum NOSHOW_REASON {
+  NOSHOW_30MIN = "NOSHOW_30MIN",
+  NOSHOW_DOCTOR = "NOSHOW_DOCTOR",
+  NOSHOW_PATIENT = "NOSHOW_PATIENT",
 }
 
 export enum NonCartOrderOMSCity {
@@ -710,6 +717,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -731,7 +740,6 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
-  orderId?: string | null;
 }
 
 export interface PatientProfileInput {
@@ -837,6 +845,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {

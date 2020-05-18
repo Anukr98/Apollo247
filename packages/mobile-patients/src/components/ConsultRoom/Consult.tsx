@@ -44,8 +44,16 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
-import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
-import { APPOINTMENT_STATE, STATUS, APPOINTMENT_TYPE } from '../../graphql/types/globalTypes';
+import {
+  getPatientAllAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '../../graphql/types/getPatientAllAppointments';
+import {
+  APPOINTMENT_STATE,
+  STATUS,
+  APPOINTMENT_TYPE,
+  NOSHOW_REASON,
+} from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
 import { ProfileList } from '../ui/ProfileList';
 import { Spinner } from '../ui/Spinner';
@@ -167,7 +175,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const { analytics } = useAuth();
 
   const [consultations, setconsultations] = useState<
-    getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
 
   const { loading, setLoading } = useUIElements();
@@ -612,41 +620,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       )}
 
                       <View style={styles.separatorStyle} />
-                      {item.isFollowUp == 'true' ? (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <Text style={styles.consultTextStyles}>
-                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                          </Text>
-                          {item.appointmentType === 'ONLINE' ? (
-                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          ) : (
-                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          )}
-                        </View>
-                      ) : (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <Text style={styles.consultTextStyles}>
-                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                          </Text>
-                          {item.appointmentType === 'ONLINE' ? (
-                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          ) : (
-                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          )}
-                        </View>
-                      )}
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <Text style={styles.consultTextStyles}>
+                          {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                        </Text>
+                        {item.appointmentType === 'ONLINE' ? (
+                          <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        ) : (
+                          <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        )}
+                      </View>
                       {/* 
                       <View style={styles.separatorStyle} />
                       {item.symptoms == null ? (
