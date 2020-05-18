@@ -144,7 +144,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Expected Order Delivery';
       break;
     default:
-      statusString = status
+      statusString = (status || '')
         .split('_')
         .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
         .join(' ');

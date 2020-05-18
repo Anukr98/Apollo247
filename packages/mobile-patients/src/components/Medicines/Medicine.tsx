@@ -35,13 +35,11 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+  SAVE_SEARCH,
+  GET_MEDICINE_ORDERS_OMS__LIST,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
@@ -94,6 +92,11 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+} from '../../graphql/types/getMedicineOrdersOMSList';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -144,7 +147,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   );
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [ordersFetched, setOrdersFetched] = useState<
-    (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
+    (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList | null)[]
   >([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
 
@@ -232,7 +235,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setProfile(currentPatient);
       ordersRefetch()
         .then(({ data }) => {
-          const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+          const ordersData = (
+            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
+          ).filter(
             (item) =>
               !(
                 (item!.medicineOrdersStatus || []).length == 1 &&
@@ -296,7 +301,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (ordersFetched.length === 0) {
       ordersRefetch()
         .then(({ data }) => {
-          const ordersData = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+          const ordersData = (
+            g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
+          ).filter(
             (item) =>
               !(
                 (item!.medicineOrdersStatus || []).length == 1 &&
@@ -327,10 +334,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     error: ordersError,
     loading: ordersLoading,
     refetch: ordersRefetch,
-  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'cache-first',
-  });
+  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
+    GET_MEDICINE_ORDERS_OMS__LIST,
+    {
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'cache-first',
+    }
+  );
 
   // Note: if hideStatus = true means display it, false measn hide it
   // let _orders = (
@@ -346,7 +356,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     if (!ordersLoading) {
-      const data = (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+      const data = (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
         (item) =>
           !(
             (item!.medicineOrdersStatus || []).length == 1 &&

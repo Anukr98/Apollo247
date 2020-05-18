@@ -13,7 +13,7 @@ import { colors } from '../theme/colors';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { NavigationScreenProps } from 'react-navigation';
-
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 const styles = StyleSheet.create({
   horizontalline: {
     borderBottomColor: '#02475b',
@@ -191,6 +191,15 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   );
   const discount = orderDetails!.devliveryCharges! + subtotal - orderDetails.estimatedAmount!;
   const { currentPatient } = useAllCurrentPatients();
+  const { addresses } = useShoppingCart();
+
+  const selectedAddressIndex = addresses.find(
+    (address) => address.id == orderDetails.patientAddressId
+  );
+  console.log('selectedAddressIndex', selectedAddressIndex);
+  const addressData = selectedAddressIndex
+    ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+    : '';
 
   const renderMedicineRow = (
     item: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems
@@ -253,16 +262,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     const statusDate = g(medicineOrdersStatus[0], 'statusDate');
     return moment(statusDate).format('ddd, D MMMM, hh:mm A');
   };
-
-  const DeliveryAdress = (
-    addr: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_patient_addressList
-  ) => {
-    console.log('DeliveryAdress', addr.addressLine1, addr.addressLine2);
-
-    const addressData = `${addr.addressLine1}${addr.addressLine2}${addr.city}${addr.state}${addr.zipcode}`;
-    return <Text style={styles.nameStyle}>{addressData}</Text>;
-  };
-
   return (
     <View>
       <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
@@ -299,14 +298,13 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             <View style={{ flexDirection: 'row', marginBottom: 6 }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.name}</Text>
               <Text style={styles.nameStyle}>
-                {''}
-                {''}
+                {orderDetails.patient?.firstName}
+                {orderDetails.patient?.lastName}
               </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.address} </Text>
-              {/* {'DeliveryAdress'} */}
-              <Text style={[styles.nameStyle, { paddingRight: 31 }]}>{''}</Text>
+              <Text style={[styles.nameStyle, { paddingRight: 31 }]}>{addressData}</Text>
             </View>
           </View>
         </View>
