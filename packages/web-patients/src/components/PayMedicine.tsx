@@ -273,6 +273,23 @@ export const PayMedicine: React.FC = (props) => {
     );
   }, []);
 
+  useEffect(() => {
+    if (params.payType === 'pharmacy') {
+      if (sessionStorage.getItem('cartValues') && sessionStorage.getItem('cartValues') === '') {
+        window.location.href = clientRoutes.welcome();
+      }
+    } else {
+      if (
+        !(
+          localStorage.getItem('consultBookDetails') ||
+          localStorage.getItem('consultBookDetails') === ''
+        )
+      ) {
+        window.location.href = clientRoutes.welcome();
+      }
+    }
+  }, []);
+
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
@@ -404,6 +421,7 @@ export const PayMedicine: React.FC = (props) => {
             placeOrder(orderId, orderAutoId, false, '');
           }
           setIsLoading(false);
+          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -417,6 +435,7 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
+        sessionStorage.setItem('cartValues', '');
       });
   };
 
@@ -487,13 +506,14 @@ export const PayMedicine: React.FC = (props) => {
           // setIsDialogOpen(true);
         }
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       })
       .catch((errorResponse) => {
-        console.log('enterrr');
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         setMutationLoading(false);
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       });
   };
 

@@ -563,7 +563,6 @@ export const OnlineCheckout: React.FC = () => {
                               validateCouponResult.revisedAmount,
                           };
                           localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
-                          console.log('updatedValues', updatedValues);
                           history.push(clientRoutes.payMedicine('consults'));
                         }}
                       >
