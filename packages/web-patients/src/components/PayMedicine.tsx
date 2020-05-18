@@ -271,22 +271,13 @@ export const PayMedicine: React.FC = (props) => {
         }
       }
     );
-  }, []);
-
-  useEffect(() => {
-    if (params.payType === 'pharmacy') {
-      if (sessionStorage.getItem('cartValues') && sessionStorage.getItem('cartValues') === '') {
-        window.location.href = clientRoutes.welcome();
-      }
-    } else {
-      if (
-        !(
-          localStorage.getItem('consultBookDetails') ||
-          localStorage.getItem('consultBookDetails') === ''
-        )
-      ) {
-        window.location.href = clientRoutes.welcome();
-      }
+    if (
+      (params.payType === 'pharmacy' && !sessionStorage.getItem('cartValues')) ||
+      sessionStorage.getItem('cartValues') === '' ||
+      (params.payType === 'consults' && !localStorage.getItem('consultBookDetails')) ||
+        localStorage.getItem('consultBookDetails') === ''
+    ) {
+      window.location.href = clientRoutes.welcome();
     }
   }, []);
 
