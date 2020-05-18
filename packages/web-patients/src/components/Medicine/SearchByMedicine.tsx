@@ -17,7 +17,6 @@ import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { Help } from 'components/Help/Help';
 import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -418,8 +417,8 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <div className={classes.footerLinks}>
-        {onePrimaryUser ? <Help /> : <ManageProfile />}
         <BottomLinks />
       </div>
       <NavigationBottom />

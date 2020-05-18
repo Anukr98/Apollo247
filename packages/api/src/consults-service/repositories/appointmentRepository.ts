@@ -22,6 +22,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -117,6 +118,19 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime,
         status: STATUS.PENDING,
         appointmentType: APPOINTMENT_TYPE.ONLINE,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
+  getAllAppointmentsWithDate(appointmentDateTime: Date) {
+    return this.find({
+      where: {
+        appointmentDateTime,
+        status: STATUS.PENDING,
       },
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
@@ -956,6 +970,20 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointmentNoShowStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { status, isSeniorConsultStarted, appointmentState, noShowReason }).catch(
+      (createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      }
+    );
+  }
+
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
@@ -994,22 +1022,22 @@ export class AppointmentRepository extends Repository<Appointment> {
     const results = this.createQueryBuilder('appointment')
       .select([
         'appointment.patientId as patientId',
-        'max("appointmentDateTime") as appointmentDateTime',
-        'ARRAY_AGG("id" order by appointment.appointmentDateTime desc ) as appointmentids',
+        'max("sdConsultationDate") as appointmentDateTime',
+        'ARRAY_AGG("id" order by appointment.sdConsultationDate desc ) as appointmentids',
       ])
       .addSelect('COUNT(*) AS consultsCount')
       .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment.status = :status', { status: STATUS.COMPLETED });
 
     if (type == patientLogType.FOLLOW_UP) {
-      results.andWhere('appointment.appointmentDateTime > :tenDays', {
+      results.andWhere('appointment.sdConsultationDate > :tenDays', {
         tenDays: subDays(new Date(), 10),
       });
-      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+      results.andWhere('appointment.sdConsultationDate < :beforeNow', { beforeNow: new Date() });
     } else if (type == patientLogType.REGULAR) {
       results.having('count(*) > 2');
     } else {
-      results.andWhere('appointment.appointmentDateTime < :beforeNow', { beforeNow: new Date() });
+      results.andWhere('appointment.sdConsultationDate < :beforeNow', { beforeNow: new Date() });
     }
 
     if (patientName && patientName.length > 0) {
@@ -1029,7 +1057,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     } else if (sortBy == patientLogSort.NUMBER_OF_CONSULTS) {
       results.orderBy('count(*)', 'DESC');
     } else {
-      results.orderBy('max("appointmentDateTime")', 'DESC');
+      results.orderBy('max("sdConsultationDate")', 'DESC');
     }
 
     return results.getRawMany();
@@ -1038,6 +1066,14 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateTransferState(id: string, appointmentState: APPOINTMENT_STATE) {
     //this.update(id, { appointmentState, isConsultStarted: false, isSeniorConsultStarted: false });
     this.update(id, { appointmentState, isSeniorConsultStarted: false });
+  }
+
+  updateTransferStateAndNoshow(
+    id: string,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { appointmentState, isSeniorConsultStarted: false, noShowReason });
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1149,6 +1185,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  getAllAppointmentsByPatientId(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
   }

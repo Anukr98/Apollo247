@@ -66,6 +66,7 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
   MedicineOrdersStatus,
+  MedicineOrderShipments,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -80,6 +81,7 @@ import {
   RegistrationCodes,
   ReferralCodesMaster,
   ReferalCouponMapping,
+  CouponPharmaRules,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -160,6 +162,7 @@ export const connect = async () => {
         Coupon,
         CouponConsultRules,
         CouponGenericRules,
+        CouponPharmaRules,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
@@ -176,6 +179,7 @@ export const connect = async () => {
         MedicineOrderPayments,
         MedicineOrders,
         MedicineOrdersStatus,
+        MedicineOrderShipments,
         Patient,
         PatientAddress,
         PatientDeviceTokens,

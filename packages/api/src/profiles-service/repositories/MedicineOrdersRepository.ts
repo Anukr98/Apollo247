@@ -7,6 +7,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrderInvoice,
   MEDICINE_ORDER_TYPE,
+  MedicineOrderShipments,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -22,6 +23,26 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
+    return this.createQueryBuilder()
+      .from(MedicineOrders, 'mo')
+      .leftJoinAndSelect(
+        MedicineOrderPayments,
+        'mp',
+        'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"'
+      )
+      .select([
+        'mp."paymentDateTime"',
+        'mp."paymentRefId"',
+        'mp."amountPaid"',
+        'mp."paymentStatus"',
+        'mp."bankTxnId"',
+        'mo."orderAutoId"',
+      ])
+      .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
+      .getRawOne();
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
@@ -67,7 +88,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetails(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
-      relations: ['patient', 'medicineOrderLineItems', 'patient.patientAddress'],
+      relations: [
+        'patient',
+        'medicineOrderLineItems',
+        'patient.patientAddress',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+      ],
     });
   }
 
@@ -83,6 +111,32 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .save()
       .catch((medicineOrderError) => {
         throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_STATUS_ERROR, undefined, {
+          medicineOrderError,
+        });
+      });
+  }
+
+  saveMedicineOrderShipment(orderShipmentsAttrs: Partial<MedicineOrderShipments>) {
+    return MedicineOrderShipments.create(orderShipmentsAttrs)
+      .save()
+      .catch((medicineOrderError) => {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, {
+          medicineOrderError,
+        });
+      });
+  }
+
+  updateMedicineOrderShipment(
+    orderShipmentsAttrs: Partial<MedicineOrderShipments>,
+    apOrderNo?: string
+  ) {
+    return this.createQueryBuilder()
+      .update(MedicineOrderShipments)
+      .set(orderShipmentsAttrs)
+      .where('"apOrderNo" = :apOrderNo', { apOrderNo })
+      .execute()
+      .catch((medicineOrderError) => {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, {
           medicineOrderError,
         });
       });
@@ -112,6 +166,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -125,6 +182,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -138,6 +198,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -151,6 +214,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -164,6 +230,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -209,11 +278,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .leftJoinAndSelect('medicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
       .leftJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
       .leftJoinAndSelect('medicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .leftJoinAndSelect('medicineOrders.medicineOrderShipments', 'medicineOrderShipments')
       .getRawMany();
   }
 
   updateOrderFullfillment(orderAutoId: number, id: string, apOrderNo: string) {
     this.update({ id, orderAutoId }, { apOrderNo });
+  }
+
+  updateOrderReferenceNo(orderAutoId: number, id: string, referenceNo: string) {
+    this.update({ id, orderAutoId }, { referenceNo });
   }
 
   saveMedicineOrderInvoice(orderInvoiceAttrs: Partial<MedicineOrderInvoice>) {
@@ -315,5 +389,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return [totalCount, deliveryCount, vdcCount, vdcDeliveryCount];
+  }
+
+  getMedicineOrdersCountByPatient(patient: string) {
+    return this.count({
+      where: { patient, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrdersCountByCoupon(coupon: string) {
+    return this.count({
+      where: { coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
+    return this.count({
+      where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
   }
 }

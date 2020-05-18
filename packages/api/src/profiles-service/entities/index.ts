@@ -15,6 +15,22 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 
+export enum CouponApplicability {
+  CONSULT = 'CONSULT',
+  PHARMACY = 'PHARMACY',
+}
+
+export enum CouponCategoryApplicable {
+  PHARMA = 'PHARMA',
+  FMCG = 'FMCG',
+  PHARMA_FMCG = 'PHARMA_FMCG',
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = 'MRP',
+  SPECIAL_PRICE = 'SPECIAL_PRICE',
+}
+
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
@@ -30,6 +46,18 @@ export enum PATIENT_ADDRESS_TYPE {
   HOME = 'HOME',
   OFFICE = 'OFFICE',
   OTHER = 'OTHER',
+}
+export enum PAYMENT_STATUS_MAP {
+  TXN_SUCCESS = 'PAYMENT_SUCCESS',
+  PENDING = 'PAYMENT_PENDING_PG',
+  TXN_FAILURE = 'PAYMENT_FAILED',
+  UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN',
+}
+
+export enum STATUS_PAYMENT_MAP {
+  PAYMENT_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_PENDING_PG = 'PENDING',
+  PAYMENT_FAILED = 'TXN_FAILURE',
 }
 
 export enum Relation {
@@ -78,6 +106,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
+  ORDER_BILLED = 'ORDER_BILLED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -126,6 +155,7 @@ export enum BOOKING_SOURCE {
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum PHARMA_CART_TYPE {
@@ -199,7 +229,13 @@ export class MedicineOrders extends BaseEntity {
   apOrderNo: string;
 
   @Column({ nullable: true })
+  referenceNo: string;
+
+  @Column({ nullable: true })
   appointmentId: string;
+
+  @Column({ nullable: true })
+  coupon: string;
 
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
@@ -262,6 +298,15 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   shopId: string;
 
+  @Column({ type: 'float8', nullable: true })
+  couponDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  productDiscount: number;
+
+  @Column({ nullable: true })
+  isOmsOrder: boolean;
+
   @Column({ nullable: true })
   updatedDate: Date;
 
@@ -285,6 +330,7 @@ export class MedicineOrders extends BaseEntity {
   )
   medicineOrderLineItems: MedicineOrderLineItems[];
 
+  // to be removed with oms
   @OneToMany(
     (type) => MedicineOrderInvoice,
     (medicineOrderInvoice) => medicineOrderInvoice.medicineOrders
@@ -297,11 +343,18 @@ export class MedicineOrders extends BaseEntity {
   )
   medicineOrderPayments: MedicineOrderPayments[];
 
+  // to be removed with oms
   @OneToMany(
     (type) => MedicineOrdersStatus,
     (medicineOrdersStatus) => medicineOrdersStatus.medicineOrders
   )
   medicineOrdersStatus: MedicineOrdersStatus[];
+
+  @OneToMany(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrders
+  )
+  medicineOrderShipments: MedicineOrderShipments[];
 }
 //medicine orders ends
 
@@ -340,6 +393,12 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemValue: number;
 
   @Column()
   quantity: number;
@@ -428,6 +487,12 @@ export class MedicineOrdersStatus extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrdersStatus)
   medicineOrders: MedicineOrders;
 
+  @ManyToOne(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrdersStatus
+  )
+  medicineOrderShipments: MedicineOrderShipments;
+
   @Column()
   orderStatus: MEDICINE_ORDER_STATUS;
 
@@ -437,7 +502,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ nullable: true, type: 'timestamp' })
   statusDate: Date;
 
   @Column({ nullable: true })
@@ -467,8 +532,17 @@ export class MedicineOrderInvoice extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderInvoice)
   medicineOrders: MedicineOrders;
 
+  @ManyToOne(
+    (type) => MedicineOrderShipments,
+    (medicineOrderShipments) => medicineOrderShipments.medicineOrderInvoice
+  )
+  medicineOrderShipments: MedicineOrderShipments;
+
   @Column()
   orderNo: number;
+
+  @Column()
+  apOrderNo: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -588,6 +662,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -637,6 +717,12 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
+
+  @Column({ nullable: true })
+  primaryUhid: string;
+
+  @Column({ nullable: true })
+  primaryPatientId: string;
 
   @Column({ nullable: true })
   uhid: string;
@@ -768,6 +854,12 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   landmark: string;
+
+  @Column({ type: 'float8', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float8', nullable: true })
+  longitude: number;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
@@ -1049,14 +1141,21 @@ export class Coupon extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('Coupon_code')
   @Column({ type: 'text' })
   code: string;
+
+  @Column({ default: CouponApplicability.CONSULT })
+  couponApplicability: CouponApplicability;
 
   @ManyToOne((type) => CouponConsultRules, (couponConsultRule) => couponConsultRule.coupon)
   couponConsultRule: CouponConsultRules;
 
   @ManyToOne((type) => CouponGenericRules, (couponGenericRule) => couponGenericRule.coupon)
   couponGenericRule: CouponGenericRules;
+
+  @ManyToOne((type) => CouponPharmaRules, (couponPharmaRule) => couponPharmaRule.coupon)
+  couponPharmaRule: CouponPharmaRules;
 
   @OneToMany((type) => ReferalCouponMapping, (referalCouponMapping) => referalCouponMapping.coupon)
   referalCouponMapping: ReferalCouponMapping[];
@@ -1165,6 +1264,43 @@ export class CouponConsultRules extends BaseEntity {
   }
 }
 //Consult Coupon Rules ends
+
+//Pharma Coupon Rules starts
+@Entity()
+export class CouponPharmaRules extends BaseEntity {
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponPharmaRule)
+  coupon: Coupon[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column()
+  couponCategoryApplicable: CouponCategoryApplicable;
+
+  @Column()
+  discountApplicableOn: PharmaDiscountApplicableOn;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text', nullable: true })
+  messageOnCouponScreen: string;
+
+  @Column({ type: 'text', nullable: true })
+  successMessage: string;
+
+  @Column({ default: false })
+  isActive: Boolean;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Pharma Coupon Rules ends
 
 //patientMedicalHistory starts
 @Entity()
@@ -1859,4 +1995,68 @@ export class ReferalCouponMapping extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+}
+
+@Entity()
+export class MedicineOrderShipments extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  apOrderNo: string;
+
+  @Column({ nullable: true })
+  siteId: string;
+
+  @Column({ nullable: true })
+  siteName: string;
+
+  @Column({ nullable: true })
+  trackingNo: string;
+
+  @Column({ nullable: true })
+  trackingUrl: string;
+
+  @Column({ nullable: true })
+  trackingProvider: string;
+
+  @Column({ nullable: true })
+  cancelReasonCode: string;
+
+  @Column({ nullable: true })
+  currentStatus: MEDICINE_ORDER_STATUS;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @Column({ nullable: true, type: 'json' })
+  itemDetails: string;
+
+  @OneToMany(
+    (type) => MedicineOrdersStatus,
+    (medicineOrdersStatus) => medicineOrdersStatus.medicineOrderShipments
+  )
+  medicineOrdersStatus: MedicineOrdersStatus[];
+
+  @OneToMany(
+    (type) => MedicineOrderInvoice,
+    (medicineOrderInvoice) => medicineOrderInvoice.medicineOrderShipments
+  )
+  medicineOrderInvoice: MedicineOrderInvoice[];
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderShipments)
+  medicineOrders: MedicineOrders;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }

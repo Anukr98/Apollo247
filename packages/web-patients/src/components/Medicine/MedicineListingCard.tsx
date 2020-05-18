@@ -6,6 +6,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
+import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
     },
     medicineIcon: {
       paddingRight: 10,
@@ -70,33 +74,41 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       paddingTop: 2,
     },
+    lineThrough: {
+      fontWeight: 500,
+      opacity: 0.6,
+      paddingRight: 5,
+      textDecoration: 'line-through',
+    },
     medicinePrice: {
-      borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
       fontSize: 12,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 12,
       paddingBottom: 11,
       minWidth: 90,
-      textAlign: 'center',
+      textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 2,
+        paddingTop: 12,
+        paddingBottom: 5,
         marginLeft: 'auto',
         borderRight: 'none',
         flexGrow: 1,
-        textAlign: 'right',
-        paddingRight: 12,
-        borderTop: '1px solid rgba(2,71,91,0.2)',
+        paddingRight: 2,
+        minHeight: 45,
+        minWidth: 75,
       },
       '& span': {
         fontWeight: 500,
       },
     },
     addToCart: {
-      paddingLeft: 20,
+      paddingLeft: 10,
       paddingTop: 8,
       paddingBottom: 8,
       display: 'flex',
@@ -118,22 +130,25 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       letterSpacing: 0.33,
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
-      paddingLeft: 20,
-      paddingRight: 20,
+      borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 4,
       paddingBottom: 4,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 0,  
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
-        borderTop: '1px solid rgba(2,71,91,0.2)',
         justifyContent: 'left',
+        minHeight: 45,
       },
       [theme.breakpoints.up('xs')]: {
-        minWidth: 130,
+        minWidth: 110,
       },
     },
     selectMenuItem: {
@@ -163,19 +178,36 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e',
       fontWeight: 600,
     },
+    mrpPrice: {
+      paddingTop: 5,
+      paddingBottom: 5,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
+    },
+    mrpText: {
+      fontSize: 10,
+    },
   };
 });
 
-export const MedicineListingCard: React.FC = (props) => {
+type MedicineListingCardProps = {
+  validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
+  validateCoupon: () => void;
+};
+
+export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x + 1);
+  const { validateCouponResult } = props;
 
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item) => (
+        cartItems.map((item, idx) => (
           <div
             key={item.id}
             className={`${classes.medicineStrip} ${
@@ -218,27 +250,28 @@ export const MedicineListingCard: React.FC = (props) => {
                         selectMenu: classes.selectMenuItem,
                       }}
                       value={item.quantity}
-                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                      onChange={(e: React.ChangeEvent<{ value: any }>) => {
                         updateCartItemQty &&
-                        updateCartItemQty({
-                          description: item.description,
-                          id: item.id,
-                          image: item.image,
-                          is_in_stock: item.is_in_stock,
-                          is_prescription_required: item.is_prescription_required,
-                          name: item.name,
-                          price: item.price,
-                          sku: item.sku,
-                          small_image: item.small_image,
-                          status: item.status,
-                          thumbnail: item.thumbnail,
-                          type_id: item.type_id,
-                          quantity: parseInt(e.target.value),
-                          special_price: item.special_price,
-                          mou: item.mou,
-                          isShippable: true,
-                        })
-                      }
+                          updateCartItemQty({
+                            description: item.description,
+                            id: item.id,
+                            image: item.image,
+                            is_in_stock: item.is_in_stock,
+                            is_prescription_required: item.is_prescription_required,
+                            name: item.name,
+                            price: item.price,
+                            sku: item.sku,
+                            small_image: item.small_image,
+                            status: item.status,
+                            thumbnail: item.thumbnail,
+                            type_id: item.type_id,
+                            quantity: parseInt(e.target.value),
+                            special_price: item.special_price,
+                            mou: item.mou,
+                            isShippable: true,
+                          });
+                        props.validateCoupon();
+                      }}
                     >
                       {options.map((option, index) => (
                         <MenuItem
@@ -254,9 +287,38 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>
-                    Rs. {item.special_price || item.price}
-                  </div>
+                  {validateCouponResult &&
+                  validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
+                    <>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                        <span className={classes.lineThrough}>
+                          Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                        </span>
+                        <div className={classes.mrpText}>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs.{' '}
+                        {
+                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                            .applicablePrice
+                        }
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                        {item.special_price ? (
+                          <span className={classes.lineThrough}>Rs. {item.price}</span>
+                        ) : null}
+                        <div className={classes.mrpText}>(MRP)</div>
+                      </div>
+
+                      <div className={classes.medicinePrice}>
+                        Rs. {item.special_price || item.price}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : null}
               <div className={classes.addToCart}>

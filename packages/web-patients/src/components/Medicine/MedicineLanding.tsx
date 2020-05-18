@@ -15,6 +15,7 @@ import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
@@ -29,7 +30,7 @@ import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
-import { Help } from 'components/Help/Help';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -346,25 +347,6 @@ export const MedicineLanding: React.FC = (props) => {
   // const { city } = useLocationDetails()
 
   if (params.orderStatus === 'success') {
-    gtmTracking({
-      category: 'Pharmacy',
-      action: 'Order',
-      label: 'Order Success',
-      value: cartTotal,
-    });
-    // _obTracking(
-    //   {
-    //     mobileNumber: currentPatient && currentPatient.mobileNumber
-    //       ? currentPatient.mobileNumber
-    //       : null,
-    //     userLocation: city,
-    //     paymentType: paymentMethod === 'COD' ? 'COD' : 'Prepaid',
-    //     itemCount: cartItems ? cartItems.length : 0,
-    //     couponCode: couponCode == '' ? null : couponCode,
-    //     couponValue: discountAmount,
-    //     finalBookingValue: grossValue
-    //   }
-    // );
     if (cartItems.length > 0 && params.orderAutoId !== 'prescription') {
       // the length condition check is mandatory else it will execute it infinity times
       localStorage.removeItem(`${currentPatient && currentPatient.id}`);
@@ -398,6 +380,19 @@ export const MedicineLanding: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+
+  /* Gtm code Start */
+  useEffect(() => {
+    if (params.orderStatus === 'success' && cartTotal > 0) {
+      gtmTracking({
+        category: 'Pharmacy',
+        action: 'Order',
+        label: 'Order Success',
+        value: cartTotal,
+      });
+    }
+  }, [showOrderPopup, cartTotal]);
+  /* Gtm code End */
 
   const getMedicinePageProducts = async () => {
     await axios
@@ -541,8 +536,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
@@ -551,28 +546,13 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      <Popover
-        open={showOrderPopup}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
-          </div>
-        </div>
-      </Popover>
+      {showOrderPopup &&
+        <Route
+          render={({ history }) => {
+            return <PaymentStatusModal history={history} />
+          }}
+        />
+      }
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}
@@ -628,7 +608,7 @@ export const MedicineLanding: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
-      {onePrimaryUser ? <Help /> : <ManageProfile />}
+      {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
       <NavigationBottom />
     </div>

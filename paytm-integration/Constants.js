@@ -6,6 +6,7 @@ module.exports = Object.freeze({
   SEND_UNREAD_MESSAGES_NOTIFICATION: `query { sendUnreadMessagesNotification }`,
   ARCHIVE_MESSAGES: `query { archiveMessages }`,
   NO_SHOW_REMINDER: `query {noShowReminderNotification {status apptsListCount noCaseSheetCount}}`,
+  NO_SHOW_REMINDER_30: `query {noShowReminder30Min {status apptsListCount noCaseSheetCount}}`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
   DAILY_APPOINTMENT_SUMMARY: `query { sendDailyAppointmentSummary }`,
@@ -16,4 +17,9 @@ module.exports = Object.freeze({
   DOCTOR_COUNT_SENIOR: `query {seniorDoctorCount}`,
   DOCTOR_COUNT_JUNIOR: `query {juniorDoctorCount}`,
   UPDATE_DOC_SLOTS_ES: `mutation{ addAllDoctorSlotsElastic(id: "0",fromSlotDate:"{0}",toSlotDate:"{1}",limit: {2} ,offset: {3} ) }`,
+  POSSIBLE_PAYMENT_TYPES: ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'],
+  PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS: 'Invalid parameters',
+  PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON: 'Something went wrong, please try again!',
+  PAYMENT_MODE_ONLY_TRUE: 'YES',
+  INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.',
 });

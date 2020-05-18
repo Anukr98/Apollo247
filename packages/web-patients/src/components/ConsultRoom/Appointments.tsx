@@ -1,6 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import React, { useEffect } from 'react';
+import Modal from '@material-ui/core/Modal';
+import { History } from 'history';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
@@ -9,6 +11,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -35,12 +38,13 @@ import moment from 'moment';
 import _find from 'lodash/find';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
-// import { GET_APPOINTMENT_DATA } from 'graphql/consult';
-
+import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking';
+import { OrderStatusContent } from 'components/OrderStatusContent';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -335,17 +339,24 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    modal: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   };
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-
-export const Appointments: React.FC = (props) => {
+interface AppointmentProps {
+  history: History;
+}
+export const Appointments: React.FC<AppointmentProps> = (props) => {
   const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
-  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
+  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';
   // const client = useApolloClient();
   // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
 
@@ -354,7 +365,7 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -363,18 +374,15 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
-  useEffect(() => {
-    if (isFailurePayment) {
-      /**Gtm code start start */
-      gtmTracking({
-        category: 'Consultations',
-        action: specialtyName,
-        label: 'Failed / Cancelled',
-      });
-      /**Gtm code start end */
-    }
-  }, [isFailurePayment]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [appointmentDateTime, setAppointmentDateTime] = React.useState<string>('');
+  const [appointmentType, setAppointmentType] = React.useState<string>('');
+  const [doctorDetail, setDoctorDetail] = React.useState<any>({});
+  const [paymentStatus, setPaymentStatus] = React.useState<string>('');
+  const [bankTxnId, setBankTxnId] = React.useState<string>('');
+  const [displayId, setDisplayId] = React.useState<number>(0);
+  const [amountPaid, setAmountPaid] = React.useState<number>(0);
+  const [doctorId, setDoctorId] = React.useState<string>('');
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -391,6 +399,50 @@ export const Appointments: React.FC = (props) => {
   //   },
   //   fetchPolicy: 'no-cache',
   // });
+
+  const getPaymentData = useQueryWithSkip(PAYMENT_TRANSACTION_STATUS, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  const appointmentDetail = useQueryWithSkip(GET_APPOINTMENT_DATA, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  useEffect(() => {
+    if (!successApptId) {
+      setIsLoading(false);
+    }
+    const paymentData =
+      getPaymentData &&
+      getPaymentData.data &&
+      getPaymentData.data.paymentTransactionStatus &&
+      getPaymentData.data.paymentTransactionStatus.appointment;
+    const appointmentData =
+      appointmentDetail &&
+      appointmentDetail.data &&
+      appointmentDetail.data.getAppointmentData &&
+      appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
+    if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
+      const { paymentStatus, bankTxnId, displayId, amountPaid } = paymentData;
+      setAppointmentDateTime(appointmentDateTime);
+      setAppointmentType(appointmentType);
+      setDoctorDetail(doctorInfo);
+      setPaymentStatus(paymentStatus);
+      setBankTxnId(bankTxnId);
+      setDoctorId(doctorId);
+
+      setDisplayId(displayId);
+      setAmountPaid(amountPaid);
+      setIsLoading(false);
+    }
+  }, [getPaymentData, appointmentDetail]);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAllAppointments,
@@ -424,6 +476,39 @@ export const Appointments: React.FC = (props) => {
   //     return appointmentDetails;
   //   }
   // });
+  interface statusActionInterface {
+    ctaText: string;
+    info: string;
+    callbackFunction: () => void;
+  }
+  interface statusMap {
+    [name: string]: statusActionInterface;
+  }
+  const statusActions: statusMap = {
+    PAYMENT_PENDING: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
+    PAYMENT_SUCCESS: {
+      ctaText: 'DOWNLOAD APP',
+      info: '',
+      callbackFunction: () => {
+        window.open(getAppStoreLink(), '_blank');
+      },
+    },
+    PAYMENT_FAILED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
+  };
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
     return moment(new Date(appointmentDetails.appointmentDateTime))
@@ -496,6 +581,24 @@ export const Appointments: React.FC = (props) => {
       }
     }
   }, [availableAppointments, successApptId, isConfirmPopupLoaded]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    if (pageUrl.includes('failed')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Failed / Cancelled',
+      });
+    } else if (pageUrl.includes('success')) {
+      gtmTracking({
+        category: 'Consultations',
+        action: specialtyName,
+        label: 'Order Success',
+      });
+    }
+    /**Gtm code start end */
+  }, [specialtyName]);
 
   // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
@@ -693,7 +796,7 @@ export const Appointments: React.FC = (props) => {
         </div>
       </div>
 
-      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <Route
           render={({ history }) => (
             <AphDialogClose
@@ -735,8 +838,51 @@ export const Appointments: React.FC = (props) => {
             Download Apollo247 App
           </a>
         </div>
-      </AphDialog>
-
+      </AphDialog> */}
+      {successApptId && (
+        <Modal
+          open={isConfirmedPopoverOpen}
+          onClose={() => {
+            setIsConfirmedPopoverOpen(false);
+            // history.push(clientRoutes.appointments());
+          }}
+          className={classes.modal}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          {isLoading ? (
+            <div className={classes.loader}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <>
+              <OrderStatusContent
+                paymentStatus={
+                  paymentStatus === 'PAYMENT_FAILED'
+                    ? 'failed'
+                    : paymentStatus === 'PAYMENT_PENDING'
+                    ? 'pending'
+                    : 'success'
+                }
+                paymentInfo={statusActions[paymentStatus].info}
+                orderId={displayId}
+                amountPaid={amountPaid}
+                doctorDetail={doctorDetail}
+                paymentRefId={bankTxnId}
+                bookingDateTime={moment(appointmentDateTime)
+                  .format('DD MMMM YYYY[,] LT')
+                  .toString()}
+                type={'consult'}
+                consultMode={appointmentType}
+                onClose={() => setIsConfirmedPopoverOpen(false)}
+                ctaText={statusActions[paymentStatus].ctaText}
+                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
+              />
+            </>
+          )}
+        </Modal>
+      )}
+      {/* 
       <Popover
         open={isFailurePayment}
         anchorEl={anchorEl}
@@ -776,7 +922,7 @@ export const Appointments: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
+      </Popover> */}
 
       {/* <Popover
         open={isPopoverOpen}

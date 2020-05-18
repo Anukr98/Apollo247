@@ -43,7 +43,6 @@ import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
 import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
-import { Help } from 'components/Help/Help';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { OrderSummary } from 'components/Tests/OrderSummary';
 import { Helmet } from 'react-helmet';
@@ -55,6 +54,11 @@ import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
 import { AboutUs } from 'components/AboutUs';
+import { Help } from 'components/Help/Help';
+import { MyPayments } from 'components/MyAccount/MyPayments';
+import { PayMedicine } from 'components/PayMedicine';
+import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
+import { ClinicCheckout } from './Checkout/ClinicCheckout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,9 +75,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     helpIcon: {
       display: 'none',
-      [theme.breakpoints.up(1134)]: {
-        display: 'block',
-      },
     },
     noHeaders: {
       [theme.breakpoints.down('xs')]: {
@@ -119,6 +120,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
+          <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
@@ -152,6 +154,8 @@ const App: React.FC = () => {
           />
           <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
           <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
+          <AuthRouted exact path={clientRoutes.needHelp()} component={Help} />
+          <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
           <AuthRouted
             exact
             path={clientRoutes.notificationSettings()}
@@ -174,18 +178,14 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.payOnlineConsult()} component={OnlineCheckout} />
+          <AuthRouted
+            exact
+            path={clientRoutes.payOnlineClinicConsult()}
+            component={ClinicCheckout}
+          />
         </Switch>
-        {/* {isSignedIn &&
-          pageName !== '/terms' &&
-          pageName !== '/privacy' &&
-          pageName !== '/faq' &&
-          pageName !== '/contact' &&
-          pageName !== '/partners/sbi' && (
-            <div className={classes.helpIcon}>
-              <Help />
-            </div>
-          )} */}
       </div>
     </Scrollbars>
   );

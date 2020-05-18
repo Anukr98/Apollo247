@@ -13,6 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
   enum patientLogSort {
@@ -75,12 +76,18 @@ export const getAppointmentHistoryTypeDefs = gql`
     newPatientsList: [String]
   }
 
+  type AppointmentCount {
+    appointmentId: String
+    count: Int
+  }
+
   type PatientLog {
     patientid: ID
     consultscount: String
     appointmentids: [String]
     appointmentdatetime: DateTime
     patientInfo: Patient @provides(fields: "id")
+    unreadMessagesCount: [AppointmentCount]
   }
 
   type PatientLogData {
@@ -221,11 +228,17 @@ const getAppointmentData: Resolver<
   return { appointmentsHistory };
 };
 
+type AppointmentCount = {
+  appointmentId: string;
+  count: number;
+};
+
 type PatientLog = {
   patientid: string;
   consultscount: string;
   appointmentids: string[];
   appointmentdatetime: Date;
+  unreadMessagesCount: AppointmentCount[];
 };
 
 type PatientLogData = {
@@ -271,8 +284,60 @@ const getPatientLog: Resolver<
     args.offset,
     args.limit
   );
+  let patientLog = [];
+  if (appointmentsHistory.length) {
+    const appointmentIds: string[] = [];
+    const patientAppointmentsMapper: { [key: string]: string[] } = {};
+    const appointmentMessagesCount: { [key: string]: number } = {};
 
-  return { patientLog: appointmentsHistory, totalResultCount: totalResultCount.length };
+    appointmentsHistory.map((appointmentsHistory) => {
+      patientAppointmentsMapper[appointmentsHistory.patientid] = appointmentsHistory.appointmentids;
+      appointmentsHistory.appointmentids.map((appointmentId: string) => {
+        appointmentMessagesCount[appointmentId] = 0;
+        appointmentIds.push(appointmentId);
+      });
+    });
+
+    //Getting all the notifications with appointment ids
+    const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+    const notifications = await notificationBinRepo.getRequiredFieldsByAppointmentIds(
+      appointmentIds,
+      ['notificationBin.eventId']
+    );
+
+    //Mapping the count of messages with appointment ids
+    notifications.map((notification) => {
+      if (appointmentMessagesCount[notification.eventId] != undefined) {
+        appointmentMessagesCount[notification.eventId]++;
+      }
+    });
+
+    //Mapping the patient id with object containing his appointment id and count of unread messages
+    const patientMessagesMapper: { [key: string]: AppointmentCount[] } = {};
+    Object.keys(patientAppointmentsMapper).map((patientId) => {
+      const appointmentsCount = patientAppointmentsMapper[patientId].map((appointmentId) => {
+        return {
+          appointmentId,
+          count: appointmentMessagesCount[appointmentId],
+        };
+      });
+
+      patientMessagesMapper[patientId] = appointmentsCount;
+    });
+
+    //Appending the appointments and count object to the response
+    patientLog = appointmentsHistory.map((appointmentsHistoryItem) => {
+      const patientDetails = {
+        ...appointmentsHistoryItem,
+        unreadMessagesCount: patientMessagesMapper[appointmentsHistoryItem.patientid],
+      };
+      return patientDetails;
+    });
+  }
+  return {
+    patientLog,
+    totalResultCount: totalResultCount.length,
+  };
 };
 
 export const getAppointmentHistoryResolvers = {

@@ -117,6 +117,10 @@ import {
   getOrderInvoiceTypeDefs,
   getOrderInvoiceResolvers,
 } from 'consults-service/resolvers/getOrderInvoice';
+import {
+  consultOrdersTypeDefs,
+  consultOrdersResolvers,
+} from 'consults-service/resolvers/consultOrders';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
@@ -264,6 +268,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: getOrderInvoiceTypeDefs,
         resolvers: getOrderInvoiceResolvers,
+      },
+      {
+        typeDefs: consultOrdersTypeDefs,
+        resolvers: consultOrdersResolvers,
       },
     ]),
     plugins: [

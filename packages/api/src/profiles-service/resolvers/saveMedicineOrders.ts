@@ -21,6 +21,7 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
+    ORDER_BILLED
     PAYMENT_SUCCESS
     PAYMENT_PENDING
     PAYMENT_FAILED
@@ -66,6 +67,7 @@ export const saveMedicineOrderTypeDefs = gql`
     prismPrescriptionFileId: String
     orderTat: String
     items: [MedicineCartItem]
+    coupon: String
   }
 
   input MedicineCartItem {
@@ -107,6 +109,7 @@ type MedicineCartInput = {
   bookingSource: BOOKING_SOURCE;
   deviceType: DEVICE_TYPE;
   items: MedicineCartItem[];
+  coupon: string;
 };
 
 type MedicineCartItem = {
@@ -174,6 +177,7 @@ const SaveMedicineOrder: Resolver<
     bookingSource: MedicineCartInput.bookingSource,
     deviceType: MedicineCartInput.deviceType,
     patientAddressId: MedicineCartInput.patientAddressId,
+    coupon: MedicineCartInput.coupon,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
@@ -188,7 +192,6 @@ const SaveMedicineOrder: Resolver<
       console.log(lineItemOrder);
     });
 
-    //save in order status table
     const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
       medicineOrders: saveOrder,
       orderStatus: MEDICINE_ORDER_STATUS.QUOTE,

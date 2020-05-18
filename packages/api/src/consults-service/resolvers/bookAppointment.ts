@@ -47,9 +47,11 @@ export const bookAppointmentTypeDefs = gql`
     MOBILE
     WEB
   }
+
   enum DEVICETYPE {
     IOS
     ANDROID
+    DESKTOP
   }
 
   type AppointmentBooking {
@@ -182,9 +184,21 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
   // check if hospital id is linked to doctor
-  if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
+  let facilityFlag = 0;
+  docDetails.doctorHospital.forEach((facility) => {
+    if (facility.facility.id == appointmentInput.hospitalId) {
+      facilityFlag = 1;
+    }
+  });
+
+  if (facilityFlag == 0) {
     throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
   }
+
+  // if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
+  //   throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
+  // }
+
   //check if doctor and hospital are matched
   const facilityId = appointmentInput.hospitalId;
   if (facilityId) {

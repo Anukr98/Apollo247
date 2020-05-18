@@ -269,7 +269,7 @@ const makeAppointmentPayment: Resolver<
       false
     );
   }
-
+  paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo };
 };
 

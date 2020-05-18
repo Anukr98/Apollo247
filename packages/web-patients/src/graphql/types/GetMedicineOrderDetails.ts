@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE } from "./globalTypes";

@@ -93,6 +93,8 @@ export interface MedicineCartContextProps {
   updateItemShippingStatus: ((item: any) => void) | null;
   cartTat: boolean | null;
   changeCartTatStatus: ((status: boolean) => void) | null;
+  setCouponCode: ((couponCode: string) => void) | null;
+  couponCode: string;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -127,7 +129,9 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   medicineCartType: '',
   updateItemShippingStatus: null,
   cartTat: false,
-  changeCartTatStatus: null
+  changeCartTatStatus: null,
+  couponCode: null,
+  setCouponCode: null,
 });
 
 enum CartTypes {
@@ -137,6 +141,7 @@ enum CartTypes {
 }
 
 export const MedicinesCartProvider: React.FC = (props) => {
+  const [couponCode, setCouponCode] = React.useState<string>('');
   const defPresObject = {
     name: '',
     imageUrl: '',
@@ -149,7 +154,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     MedicineCartContextProps['storePickupPincode']
   >(null);
 
-  const [cartTat, setCartTat] = useState<boolean>(false)
+  const [cartTat, setCartTat] = useState<boolean>(false);
 
   const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
   const [deliveryAddressId, setDeliveryAddressId] = useState<
@@ -321,13 +326,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setStorePickupPincode('');
     setPrescriptions([]);
     setEPrescriptionData([]);
+    setCouponCode('');
     // setCartItems([]);
   };
 
-
   const changeCartTatStatus = (status: boolean) => {
-    setCartTat(status)
-  }
+    setCartTat(status);
+  };
+
   return (
     <MedicinesCartContext.Provider
       value={{
@@ -362,7 +368,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setUploadedEPrescription,
         updateItemShippingStatus,
         cartTat,
-        changeCartTatStatus
+        changeCartTatStatus,
+        setCouponCode,
+        couponCode,
       }}
     >
       {props.children}
@@ -404,4 +412,6 @@ export const useShoppingCart = () => ({
   updateItemShippingStatus: useShoppingCartContext().updateItemShippingStatus,
   cartTat: useShoppingCartContext().cartTat,
   changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
+  setCouponCode: useShoppingCartContext().setCouponCode,
+  couponCode: useShoppingCartContext().couponCode,
 });
