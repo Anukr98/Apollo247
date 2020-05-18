@@ -50,7 +50,7 @@ import {
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
   paymentStatusTypeDefs,
-  paymentStatusResolvers
+  paymentStatusResolvers,
 } from 'profiles-service/resolvers/pharmaPaymentStatus';
 import {
   saveMedicineOrderOMSTypeDefs,
@@ -236,7 +236,7 @@ import {
       },
       {
         typeDefs: paymentStatusTypeDefs,
-        resolvers: paymentStatusResolvers
+        resolvers: paymentStatusResolvers,
       },
       {
         typeDefs: getPastSearchesTypeDefs,
