@@ -349,7 +349,7 @@ export const PayMedicine: React.FC = (props) => {
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           bookingSource: BOOKINGSOURCE.WEB,
           estimatedAmount: totalWithCouponDiscount ? Number(totalWithCouponDiscount.toFixed(2)) : 0,
-          couponDiscount: Number(couponValue || 0),
+          couponDiscount: couponValue ? Number(couponValue) : 0,
           productDiscount: productDiscount ? Number(productDiscount.toFixed(2)) : 0,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
