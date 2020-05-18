@@ -127,8 +127,8 @@ export const CONSULT_COUPONS_LIST = gql`
 `;
 
 export const GET_CONSULT_PAYMENTS = gql`
-  query ConsultOrders {
-    consultOrders {
+  query ConsultOrders($patientId: String) {
+    consultOrders(patientId: $patientId) {
       appointments {
         displayId
         id
@@ -144,6 +144,12 @@ export const GET_CONSULT_PAYMENTS = gql`
           paymentStatus
           paymentType
           responseMessage
+        }
+        status
+        doctorId
+        doctor {
+          typeId
+          name
         }
       }
     }
