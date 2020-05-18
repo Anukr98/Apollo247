@@ -852,6 +852,9 @@ export const SAVE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        mobileNumber
+        latitude
+        longitude
       }
     }
   }
@@ -871,6 +874,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
       }
     }
   }
@@ -980,6 +985,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
       }
     }
   }

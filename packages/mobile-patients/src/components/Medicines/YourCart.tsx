@@ -31,6 +31,7 @@ import {
   UPLOAD_DOCUMENT,
   GET_PATIENT_ADDRESS_LIST,
   VALIDATE_PHARMA_COUPON,
+  UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -40,6 +41,7 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
+  getPlaceInfoByPincode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -83,6 +85,11 @@ import {
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
 import { CouponCategoryApplicable, OrderLineItems } from '../../graphql/types/globalTypes';
+import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -175,6 +182,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     deliveryType,
     setAddresses,
   } = useShoppingCart();
+  const { setAddresses: setTestAddresses } = useDiagnosticsCart();
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
@@ -1416,18 +1424,70 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 
+  const updateAddressLatLong = async (
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    onComplete: () => void
+  ) => {
+    try {
+      const data = await getPlaceInfoByPincode(address.zipcode!);
+      const { lat, lng } = data.data.results[0].geometry.location;
+      await client.mutate<updatePatientAddress, updatePatientAddressVariables>({
+        mutation: UPDATE_PATIENT_ADDRESS,
+        variables: {
+          UpdatePatientAddressInput: {
+            id: address.id,
+            addressLine1: address.addressLine1!,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            zipcode: address.zipcode!,
+            landmark: address.landmark,
+            mobileNumber: address.mobileNumber,
+            addressType: address.addressType,
+            otherAddressType: address.otherAddressType,
+            latitude: lat,
+            longitude: lng,
+          },
+        },
+      });
+      const newAddrList = [
+        { ...address, latitude: lat, longitude: lng },
+        ...addresses.filter((item) => item.id != address.id),
+      ];
+      setAddresses!(newAddrList);
+      setTestAddresses!(newAddrList);
+      onComplete();
+    } catch (error) {
+      // Let the user order journey continue, even if no lat-lang.
+      onComplete();
+    }
+  };
+
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-    const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      forwardToCheckout();
+
+    const proceed = () => {
+      const prescriptions = physicalPrescriptions;
+      if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+        setLoading!(false);
+        forwardToCheckout();
+      } else {
+        if (prescriptions.length > 0) {
+          physicalPrescriptionUpload();
+        }
+        if (ePrescriptions.length > 0) {
+          ePrescriptionUpload();
+        }
+      }
+    };
+
+    const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
+
+    if (g(selectedAddress, 'latitude') && g(selectedAddress, 'longitude')) {
+      proceed();
     } else {
-      if (prescriptions.length > 0) {
-        physicalPrescriptionUpload();
-      }
-      if (ePrescriptions.length > 0) {
-        ePrescriptionUpload();
-      }
+      setLoading!(true);
+      updateAddressLatLong(selectedAddress!, proceed);
     }
   };
 

@@ -651,7 +651,7 @@ export interface MedicineCartOMSItem {
   itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
   mou?: number | null;
-  isMedicine?: string;
+  isMedicine: string;
 }
 
 export interface MedicineOrderCancelInput {
@@ -714,6 +714,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -735,7 +737,6 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
-  orderId?: string | null;
 }
 
 export interface PatientProfileInput {
@@ -841,6 +842,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {
