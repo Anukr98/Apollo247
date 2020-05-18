@@ -5,6 +5,7 @@ import {
   Invoice,
   Location,
   ManageProfileIcon,
+  CurrencyIcon,
   NotificaitonAccounts,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -457,6 +458,26 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               refetch: ordersRefetch,
               error: ordersError,
               loading: ordersLoading,
+            });
+          }}
+        />
+        <ListCard
+          title={'My Payments'}
+          leftIcon={<CurrencyIcon />}
+          onPress={() => {
+            // postMyOrdersClicked('My Account', currentPatient);
+            props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+              // orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+              //   (item) =>
+              //     !(
+              //       (item!.medicineOrdersStatus || []).length == 1 &&
+              //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+              //     )
+              // ),
+              // refetch: ordersRefetch,
+              // error: ordersError,
+              // loading: ordersLoading,
+              patientId: currentPatient,
             });
           }}
         />

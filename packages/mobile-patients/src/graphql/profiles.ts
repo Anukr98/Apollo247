@@ -1345,7 +1345,6 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           paymentDateTime
           bankTxnId
         }
-        
       }
     }
   }
@@ -2262,6 +2261,55 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       amountPaid
       paymentStatus
       paymentDateTime
+    }
+  }
+`;
+
+export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
+  query consultOrders($patientId: String!) {
+    consultOrders(patientId: $patientId) {
+      appointments {
+        id
+        doctorId
+        displayId
+        appointmentDateTime
+        actualAmount
+        status
+        appointmentType
+        discountedAmount
+        appointmentPayments {
+          paymentRefId
+          paymentStatus
+        }
+        doctor {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
+  query pharmacyOrders($patientId: String!) {
+    pharmacyOrders(patientId: $patientId) {
+      pharmaOrders {
+        id
+        estimatedAmount
+        devliveryCharges
+        bookingSource
+        orderAutoId
+        appointmentId
+        currentStatus
+        orderType
+        orderDateTime
+        quoteDateTime
+        medicineOrderPayments {
+          paymentType
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+        }
+      }
     }
   }
 `;
