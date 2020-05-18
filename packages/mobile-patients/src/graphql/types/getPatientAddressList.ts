@@ -21,6 +21,8 @@ export interface getPatientAddressList_getPatientAddressList_addressList {
   updatedDate: any | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
   otherAddressType: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface getPatientAddressList_getPatientAddressList {
