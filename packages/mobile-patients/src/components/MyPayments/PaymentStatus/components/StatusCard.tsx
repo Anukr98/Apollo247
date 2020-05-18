@@ -11,6 +11,7 @@ import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { textComponent } from './GenericText';
+import ViewInvoice from './ViewInvoice';
 import PaymentStatusConstants from '../../constants';
 
 interface StatusCardProps {
@@ -121,6 +122,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
         {textComponent(orderID, undefined, theme.colors.SHADE_GREY, false)}
       </View>
+      <ViewInvoice item={props.item} paymentFor={props.paymentFor} />
     </View>
   );
 };
