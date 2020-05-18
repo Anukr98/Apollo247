@@ -70,7 +70,7 @@ const unlinkUhids: Resolver<
   Boolean
 > = async (parent, { primaryUhid, unlinkUhids }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientsRepo.findByMobileNumber(mobileNumber);
+  const patients = await patientsRepo.findByMobileNumber('+919533077359');
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
@@ -78,18 +78,24 @@ const unlinkUhids: Resolver<
 
   let primaryPatientId = '';
   const linkedPatientIds: string[] = [];
+  const unLinkedPatientIds: string[] = [];
 
   patients.forEach((patient) => {
     if (patient.uhid == primaryUhid) {
       primaryPatientId = patient.id;
     } else if (unlinkUhids.includes(patient.uhid)) {
       linkedPatientIds.push(patient.id);
+    } else {
+      unLinkedPatientIds.push(patient.id);
     }
   });
 
   if (primaryPatientId && linkedPatientIds.length) {
     // patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
     patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', false, 'null');
+    if (unLinkedPatientIds.length == 0) {
+      //make isprimary to false
+    }
   }
 
   return true;

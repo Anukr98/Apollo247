@@ -645,7 +645,7 @@ export class PatientRepository extends Repository<Patient> {
     const fieldToUpdate: UhidFileds = { [column]: flag };
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.linkedUhid = null;
+        fieldToUpdate.linkedUhid = undefined;
       } else {
         fieldToUpdate.linkedUhid = primaryUhid;
       }
