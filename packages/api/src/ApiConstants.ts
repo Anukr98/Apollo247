@@ -144,8 +144,7 @@ export enum ApiConstants {
 
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
-  //sendgrid key
-  SENDGRID_API_KEY = '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',
+
   //medicine COD email configuration starts
   MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
   MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',

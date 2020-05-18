@@ -13,8 +13,8 @@ export const emailTypeDefs = gql`
 export async function sendMail(emailContent: EmailMessage) {
   let ccEmailList = [];
   ccEmailList = emailContent.ccEmail.split(',');
-  var sendgrid = require('@sendgrid/mail');
-  sendgrid.setApiKey(ApiConstants.SENDGRID_API_KEY);
+  let sendgrid = require('@sendgrid/mail');
+  sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
   sendgrid.send(
     {
       to: emailContent.toEmail,
