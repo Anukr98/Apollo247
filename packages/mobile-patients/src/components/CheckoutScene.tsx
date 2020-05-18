@@ -296,6 +296,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
+        AllowWhatsAppMessage: true,
       };
       return eventAttributes;
     } catch (error) {
@@ -324,6 +325,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Payment status': 1,
       'Payment Type': isCashOnDelivery ? 'COD' : 'Prepaid',
       'Service Area': 'Pharmacy',
+      AllowWhatsAppMessage: true,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);

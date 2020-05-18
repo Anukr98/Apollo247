@@ -90,6 +90,7 @@ import {
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -197,6 +198,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -1363,9 +1365,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       (addr) => addr == Number(zipcode)
     );
     if (isChennaiAddress) {
-      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime, isChennaiOrder: true });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+        deliveryTime,
+        isChennaiOrder: true,
+        whatsAppUpdate: whatsAppUpdate,
+      });
     } else {
-      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+        deliveryTime,
+        whatsAppUpdate: whatsAppUpdate,
+      });
     }
   };
 
@@ -1508,6 +1517,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
+          <WhatsAppStatus
+            // style={{ marginTop: 6 }}
+            onPress={() => {
+              whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+            }}
+            isSelected={whatsAppUpdate}
+          />
           <View style={{ height: 70 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>

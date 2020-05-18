@@ -55,6 +55,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
+  const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
 
   type bankOptions = {
     name: string;
@@ -164,6 +165,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Doctor ID': g(doctor, 'id')!,
       'Doctor Name': g(doctor, 'fullName')!,
       'Net Amount': price,
+      AllowWhatsAppMessage: whatsAppUpdate,
     };
     return eventAttributes;
   };
