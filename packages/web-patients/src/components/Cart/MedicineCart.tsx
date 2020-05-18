@@ -16,11 +16,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import {
-  SAVE_MEDICINE_ORDER,
-  SAVE_MEDICINE_ORDER_PAYMENT,
-  SAVE_MEDICINE_ORDER_OMS,
-} from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER_PAYMENT, SAVE_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
@@ -45,7 +41,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
+import { UPLOAD_DOCUMENT } from '../../graphql/profiles';
 import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/savePrescriptionMedicineOrderOMS';
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
@@ -732,7 +728,7 @@ export const MedicineCart: React.FC = (props) => {
   }, [validateCouponResult]);
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
-    SAVE_MEDICINE_ORDER,
+    SAVE_MEDICINE_ORDER_OMS,
     {
       variables: {
         medicineCartOMSInput: {
@@ -957,8 +953,13 @@ export const MedicineCart: React.FC = (props) => {
     }
     paymentMutation().then(({ data }: any) => {
       if (data && data.saveMedicineOrderOMS) {
-        const { orderId, orderAutoId } = data.saveMedicineOrderOMS;
-        placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
+        const { orderId, orderAutoId, errorMessage } = data.saveMedicineOrderOMS;
+        if (orderAutoId && orderAutoId > 0) {
+          placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
+        } else if (errorMessage) {
+          setIsAlertOpen(true);
+          setAlertMessage('Something went wrong, please try later.');
+        }
       }
     });
   };
@@ -1314,6 +1315,7 @@ export const MedicineCart: React.FC = (props) => {
                               : 0,
                           totalWithCouponDiscount: totalWithCouponDiscount,
                           deliveryTime: deliveryTime,
+                          validateCouponResult: validateCouponResult,
                         })
                       );
                       // window.location.href = clientRoutes.payMedicine('pharmacy');
