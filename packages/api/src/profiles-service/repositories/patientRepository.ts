@@ -25,13 +25,6 @@ type DeviceCount = {
   mobilecount: number;
 };
 
-type UhidFileds = {
-  isUhidPrimary?: boolean;
-  isLinked?: boolean;
-  primaryUhid?: string;
-  primaryPatientId?: string;
-};
-
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   findById(id: string) {
@@ -649,7 +642,7 @@ export class PatientRepository extends Repository<Patient> {
     primaryUhid?: string,
     primaryPatientId?: string
   ) {
-    const fieldToUpdate: UhidFileds = { [column]: flag };
+    const fieldToUpdate: Partial<Patient> = { [column]: flag };
     if (primaryUhid) {
       if (primaryUhid == 'null') {
         fieldToUpdate.primaryUhid = undefined;
