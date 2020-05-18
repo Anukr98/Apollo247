@@ -493,6 +493,14 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       marginTop: 16,
     },
+    totalPriceRow: {
+      fontWeight: 'bold',
+    },
+    totalPriceBorder: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 5,
+      marginTop: 5,
+    },
   };
 });
 
@@ -1243,8 +1251,8 @@ export const MedicineCart: React.FC = (props) => {
                           </div>{' '}
                         </>
                       )}
-                      <div className={classes.priceRow}>
-                        <span>To Pay</span>
+                      <div className={`${classes.priceRow} ${classes.totalPriceRow} ${validateCouponResult ? classes.totalPriceBorder : ''}`}>
+                        <span>TO PAY</span>
                         <span className={classes.totalPrice}>
                           {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
                           Rs. {totalWithCouponDiscount.toFixed(2)}
