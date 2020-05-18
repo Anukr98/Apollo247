@@ -38,7 +38,7 @@ const linkUhids: Resolver<
   if (!AreLinkedUhidsPresent)
     throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
 
-  //checking if given primaryUhid is already marked as primary
+  //checking if primary uhid is already exists and not equal to the give one
   const primaryUhidExists = patients.some(
     (patient) => patient.isUhidPrimary && patient.uhid != primaryUhid
   );
