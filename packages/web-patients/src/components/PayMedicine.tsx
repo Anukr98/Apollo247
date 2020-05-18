@@ -271,7 +271,6 @@ export const PayMedicine: React.FC = (props) => {
     specialty,
   } = consultBookDetails;
   const revisedAmount = Number(amount) - Number(consultCouponValue);
-
   const { city } = useLocationDetails();
   const { authToken } = useAuth();
 
@@ -488,8 +487,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
-          productDiscount,
-          couponDiscount: couponValue,
+          // couponDiscount: couponValue,
         },
       },
     })
@@ -513,7 +511,7 @@ export const PayMedicine: React.FC = (props) => {
                   paymentRefId: '',
                   paymentStatus: 'TXN_SUCCESS',
                   paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
-                  responseCode: couponCode ? couponCode : null,
+                  responseCode: couponCode ? couponCode : '',
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
                   orderId: res.data.bookAppointment.appointment.id,
