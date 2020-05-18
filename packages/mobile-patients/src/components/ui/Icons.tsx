@@ -839,3 +839,11 @@ export const NotificationBellIcon: React.FC<IconProps> = (props) => (
 export const NotificationCartIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_notification_b.png')} />
 );
+
+export const CheckBox: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/checkbox.png')} />
+);
+
+export const CheckBoxFilled: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
+);

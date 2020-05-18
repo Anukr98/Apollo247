@@ -84,6 +84,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const { width, height } = Dimensions.get('window');
 
@@ -116,6 +117,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -243,6 +245,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
+      AllowWhatsAppMessage: whatsAppUpdate,
     };
     return eventAttributes;
   };
@@ -423,6 +426,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         doctorName: `${g(props.doctor, 'fullName')}`,
         price: coupon ? doctorDiscountedFees : Number(doctorFees),
         appointmentInput: appointmentInput,
+        whatsAppUpdate: whatsAppUpdate,
       });
     }
   };
@@ -942,6 +946,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {renderApplyCoupon()}
               {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
+              <WhatsAppStatus
+                // style={{ marginTop: 6 }}
+                onPress={() => {
+                  whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+                }}
+                isSelected={whatsAppUpdate}
+              />
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
