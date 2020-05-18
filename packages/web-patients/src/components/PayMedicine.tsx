@@ -39,6 +39,7 @@ import {
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -208,7 +209,6 @@ export const PayMedicine: React.FC = (props) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
   };
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
@@ -283,6 +283,14 @@ export const PayMedicine: React.FC = (props) => {
         }
       }
     );
+    if (
+      (params.payType === 'pharmacy' && !sessionStorage.getItem('cartValues')) ||
+      sessionStorage.getItem('cartValues') === '' ||
+      (params.payType === 'consults' && !localStorage.getItem('consultBookDetails')) ||
+      localStorage.getItem('consultBookDetails') === ''
+    ) {
+      <Redirect to={clientRoutes.welcome()} />;
+    }
   }, []);
 
   const getDiscountedLineItemPrice = (id: number) => {
@@ -446,6 +454,7 @@ export const PayMedicine: React.FC = (props) => {
             setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
+          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -459,6 +468,7 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
+        sessionStorage.setItem('cartValues', '');
       });
   };
 
@@ -531,13 +541,14 @@ export const PayMedicine: React.FC = (props) => {
           // setIsDialogOpen(true);
         }
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       })
       .catch((errorResponse) => {
-        console.log('enterrr');
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         setMutationLoading(false);
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       });
   };
 
