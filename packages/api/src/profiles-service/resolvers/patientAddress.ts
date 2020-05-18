@@ -21,6 +21,7 @@ export const addPatientAddressTypeDefs = gql`
     otherAddressType: String
     latitude: Float
     longitude: Float
+    stateCode: String
   }
 
   enum PATIENT_ADDRESS_TYPE {
@@ -42,6 +43,7 @@ export const addPatientAddressTypeDefs = gql`
     otherAddressType: String
     latitude: Float
     longitude: Float
+    stateCode: String
   }
 
   type PatientAddress {
@@ -59,6 +61,7 @@ export const addPatientAddressTypeDefs = gql`
     otherAddressType: String
     latitude: Float
     longitude: Float
+    stateCode: String
   }
 
   type AddPatientAddressResult {
@@ -99,6 +102,7 @@ type PatientAddressInput = {
   otherAddressType: string;
   latitude: number;
   longitude: number;
+  stateCode: string;
 };
 
 type UpdatePatientAddressInput = {
@@ -114,6 +118,7 @@ type UpdatePatientAddressInput = {
   otherAddressType: string;
   latitude: number;
   longitude: number;
+  stateCode: string;
 };
 
 type PatientAddressInputArgs = { PatientAddressInput: PatientAddressInput };

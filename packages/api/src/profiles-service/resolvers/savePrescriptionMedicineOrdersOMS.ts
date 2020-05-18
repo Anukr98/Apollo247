@@ -178,6 +178,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       landmark = '',
       deliveryAddress = 'Kakinada',
       deliveryState = 'Telangana',
+      stateCode = 'TS',
       lat = 0,
       long = 0;
     if (patientAddressDetails) {
@@ -187,6 +188,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       landmark = patientAddressDetails.landmark || landmark;
       lat = patientAddressDetails.latitude || lat;
       long = patientAddressDetails.longitude || long;
+      stateCode = patientAddressDetails.stateCode || stateCode;
       deliveryAddress =
         patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
       deliveryCity = patientAddressDetails.city || deliveryCity;
@@ -240,11 +242,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         billingaddress: deliveryAddress.trim(),
         billingpincode: deliveryZipcode,
         billingcity: deliveryCity,
-        billingstateid: 'TS',
+        billingstateid: stateCode,
         shippingaddress: deliveryAddress.trim(),
         shippingpincode: deliveryZipcode,
         shippingcity: deliveryCity,
-        shippingstateid: 'TS',
+        shippingstateid: stateCode,
         customerid: '',
         patiendname: patientDetails.firstName,
         customername:

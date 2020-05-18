@@ -99,6 +99,7 @@ const updateOrderStatus: Resolver<
       orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
       medicineOrders: orderDetails,
       statusDate: new Date(updateOrderStatusInput.updatedDate),
+      statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   }
@@ -111,6 +112,7 @@ const updateOrderStatus: Resolver<
       orderStatus: status,
       medicineOrderShipments: shipmentDetails,
       statusDate: new Date(updateOrderStatusInput.updatedDate),
+      statusMessage: updateOrderStatusInput.reasonCode,
     };
     try {
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
@@ -151,6 +153,7 @@ const updateOrderStatus: Resolver<
         orderStatus: status,
         medicineOrders: orderDetails,
         statusDate: new Date(updateOrderStatusInput.updatedDate),
+        statusMessage: updateOrderStatusInput.reasonCode,
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {

@@ -145,6 +145,10 @@ import {
   medicineOrderCancelResolvers,
 } from 'profiles-service/resolvers/cancelMedicineOrder';
 import {
+  medicineOrderCancelOMSTypeDefs,
+  medicineOrderCancelOMSResolvers,
+} from 'profiles-service/resolvers/cancelMedicineOrderOMS';
+import {
   patientLifeStyleTypeDefs,
   patientLifeStyleResolvers,
 } from 'profiles-service/resolvers/patientLifeStyle';
@@ -174,7 +178,10 @@ import {
   verifyLoginOtpTypeDefs,
   verifyLoginOtpResolvers,
 } from 'profiles-service/resolvers/verifyLoginOtp';
-
+import {
+  getMedicineOrderCancelReasonsTypeDefs,
+  getMedicineOrderCancelReasonsResolvers,
+} from 'profiles-service/resolvers/getMedicineOrderCancelReasons';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -375,6 +382,10 @@ import {
         resolvers: medicineOrderCancelResolvers,
       },
       {
+        typeDefs: medicineOrderCancelOMSTypeDefs,
+        resolvers: medicineOrderCancelOMSResolvers,
+      },
+      {
         typeDefs: helpTypeDefs,
         resolvers: helpResolvers,
       },
@@ -421,6 +432,10 @@ import {
       {
         typeDefs: pharmaOrdersTypeDefs,
         resolvers: pharmacyOrdersResolvers,
+      },
+      {
+        typeDefs: getMedicineOrderCancelReasonsTypeDefs,
+        resolvers: getMedicineOrderCancelReasonsResolvers,
       },
     ]),
     plugins: [
