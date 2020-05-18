@@ -199,10 +199,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    !checked && setPaymentMethod('COD');
   };
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -379,18 +377,17 @@ export const PayMedicine: React.FC = (props) => {
     gtmTracking({
       category: 'Pharmacy',
       action: 'Order',
-      label: `Payment-${paymentMethod === 'COD' ? 'COD' : 'Prepaid'}`,
+      label: `Payment-${value === 'COD' ? 'COD' : 'Prepaid'}`,
       value: totalWithCouponDiscount,
     });
     /**Gtm code End  */
     setMutationLoading(true);
-    setPaymentMethod(value);
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
         _obTracking({
           userLocation: city,
-          paymentType: paymentMethod || value === 'COD' ? 'COD' : 'Prepaid',
+          paymentType: value === 'COD' ? 'COD' : 'Prepaid',
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
@@ -400,13 +397,10 @@ export const PayMedicine: React.FC = (props) => {
         if (res && res.data && res.data.SaveMedicineOrder) {
           const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
-          if (orderAutoId && orderAutoId > 0 && paymentMethod !== 'COD') {
-            const pgUrl = `${
-              process.env.PHARMACY_PG_URL
-            }/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${paymentMethod ||
-              value}&paymentModeOnly=YES`;
+          if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
+            const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
-          } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+          } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
           }
           setIsLoading(false);

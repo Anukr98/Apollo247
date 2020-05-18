@@ -210,7 +210,7 @@ export const SbiLandingPage: React.FC = (props) => {
             <div>
               <h1>India, let’s take care of your biggest asset: Your Health</h1>
               <p>
-                Avail these offers from <span>05 May – 14 May</span>
+              Avail these offers till <span>19th May</span>
               </p>
               <Link to={`${homePageUrl}${urlParams}`}>
                 <button className={classes.primaryButton}>Get Started</button>
@@ -233,8 +233,7 @@ export const SbiLandingPage: React.FC = (props) => {
               </div>
               <div className={classes.cardExt}>
                 <p>
-                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span> if you
-                  book between <span>5pm – 8am</span>
+                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span> 
                 </p>
               </div>
             </div>
@@ -259,7 +258,7 @@ export const SbiLandingPage: React.FC = (props) => {
                   Get <span>10% off</span> on all chronic medicines
                 </p>
                 <p>
-                  *Pharmacy offer is available between 7th- 14th May in selected cities- Hyderabad,
+                  *Pharmacy offer is available till 19th May in selected cities- Hyderabad,
                   Chennai, Bengaluru, Kolkata, Delhi, Gurugram, Noida, Jaipur & Vizag
                 </p>
               </div>
