@@ -9,7 +9,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
-import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
+import { getDate, localDateFormat } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
 interface DetailsCardProps {
@@ -29,15 +29,15 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
     let doctorNameOrTime = '';
     let modeOfConsultOrPmt = '';
     if (paymentFor === 'pharmacy') {
-      const { appointmentDateTime, medicineOrderPayments } = item;
+      const { orderDateTime, medicineOrderPayments } = item;
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
         status = medicineOrderPayments[0].paymentStatus;
         modeOfConsultOrPmt = medicineOrderPayments[0].paymentType;
       }
+      doctorNameOrTime = getDate(orderDateTime);
       rightHeaderText = 'Mode of Payment';
-      doctorNameOrTime = appointmentDateTime;
 
       if (status === 'TXN_REFUND') {
         leftHeaderText = 'Date of Refund';

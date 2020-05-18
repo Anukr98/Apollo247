@@ -61,11 +61,11 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
       })
       .then((res) => {
         const { data } = res;
-        const { getMedicineOrdersList } = data;
-        const { MedicineOrdersList } = getMedicineOrdersList;
-        setPayments(MedicineOrdersList.reverse());
+        const { pharmacyOrders } = data;
+        const { pharmaOrders } = pharmacyOrders;
+        setPayments(pharmaOrders);
         setLoading(false);
-        console.log('payments-->', res);
+        // console.log('paymentsPharma-->', pharmaOrders);
       })
       .catch((error) => {
         setLoading(false);

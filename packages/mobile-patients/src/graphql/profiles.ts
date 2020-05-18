@@ -2183,20 +2183,21 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-  query getMedicineOrdersList($patientId: String!) {
-    getMedicineOrdersList(patientId: $patientId) {
-      MedicineOrdersList {
+  query pharmacyOrders($patientId: String!) {
+    pharmacyOrders(patientId: $patientId) {
+      pharmaOrders {
         id
-        orderAutoId
         estimatedAmount
         devliveryCharges
         bookingSource
-        orderType
-        deliveryType
+        orderAutoId
+        appointmentId
         currentStatus
+        orderType
+        orderDateTime
+        quoteDateTime
         medicineOrderPayments {
           paymentType
-          amountPaid
           paymentRefId
           paymentStatus
           paymentDateTime

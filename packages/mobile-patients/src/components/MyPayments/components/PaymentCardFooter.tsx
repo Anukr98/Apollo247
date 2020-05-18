@@ -56,8 +56,9 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       }
     } else {
-      const { medicineOrderPayments, orderAutoId } = item;
+      const { medicineOrderPayments, orderAutoId, orderDateTime } = item;
       orderID = orderAutoId;
+      dateAndTime = orderDateTime;
       if (!medicineOrderPayments || !medicineOrderPayments.length) {
         type = '';
         status = 'PENDING';
@@ -71,11 +72,11 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       } else {
         type = medicineOrderPayments[0].paymentType;
-        dateAndTime = medicineOrderPayments[0].paymentDateTime;
+
         status = medicineOrderPayments[0].paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
-          dateAndTime: dateAndTime,
+          dateAndTime: getDate(dateAndTime),
           type: type,
           status: status,
           orderID: orderID,
