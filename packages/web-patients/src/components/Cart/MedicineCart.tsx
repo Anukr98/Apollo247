@@ -537,9 +537,7 @@ export const MedicineCart: React.FC = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-  // const [couponCode, setCouponCode] = React.useState<string>('');
-  const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
-  const [updatedUserEmail, setUpdatedUserEmail] = React.useState<string>('');
+  // const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
 
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -779,7 +777,7 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          setCheckoutDialogOpen(false);
+          // setCheckoutDialogOpen(false);
           setIsLoading(false);
           window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
@@ -1395,7 +1393,6 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
-          // setCouponCode={setCouponCode}
           couponCode={couponCode}
           setValidateCouponResult={setValidateCouponResult}
           close={(isApplyCouponDialogOpen: boolean) => {
