@@ -19,7 +19,7 @@ const linkUhids: Resolver<
   Boolean
 > = async (parent, { primaryUhid, linkedUhids }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientsRepo.findByMobileNumber('+919533077359');
+  const patients = await patientsRepo.findByMobileNumber(mobileNumber);
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
@@ -76,7 +76,7 @@ const unlinkUhids: Resolver<
   Boolean
 > = async (parent, { primaryUhid, unlinkUhids }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientsRepo.findByMobileNumber('+919533077359');
+  const patients = await patientsRepo.findByMobileNumber(mobileNumber);
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
