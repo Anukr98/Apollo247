@@ -135,18 +135,18 @@ const saveMedicineOrderOMS: Resolver<
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
   }
-
-  const couponValidity = await validateCoupon(profilesDb, medicineCartOMSInput);
-  if (!couponValidity.validityStatus) {
-    throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
-  }
-
-  if (
-    !couponValidity.estimatedAmount ||
-    medicineCartOMSInput.estimatedAmount !=
-      couponValidity.estimatedAmount + (medicineCartOMSInput.devliveryCharges || 0)
-  ) {
-    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+  if (medicineCartOMSInput.coupon) {
+    const couponValidity = await validateCoupon(profilesDb, medicineCartOMSInput);
+    if (!couponValidity.validityStatus) {
+      throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
+    }
+    if (
+      !couponValidity.estimatedAmount ||
+      medicineCartOMSInput.estimatedAmount !=
+        couponValidity.estimatedAmount + (medicineCartOMSInput.devliveryCharges || 0)
+    ) {
+      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+    }
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
