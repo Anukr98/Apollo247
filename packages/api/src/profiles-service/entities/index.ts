@@ -445,7 +445,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column()
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, unique: true })
   paymentRefId: string;
 
   @Column({ nullable: true })
