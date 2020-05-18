@@ -269,8 +269,6 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     ctaText,
   } = props;
 
-  const statusImage = require(`images/${paymentStatus}.svg`) || '';
-
   interface statusMap {
     [name: string]: string;
   }
@@ -306,7 +304,9 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               : ''
           }`}
         >
-          <img src={statusImage} />
+          {paymentStatus && paymentStatus.length > 0 && (
+            <img src={require(`images/${paymentStatus}.svg`)} />
+          )}
           <Typography component="h5">{status[paymentStatus]}</Typography>
           <Typography component="p">Rs. {amountPaid}</Typography>
           <Typography component="p">Order ID : {orderId}</Typography>
