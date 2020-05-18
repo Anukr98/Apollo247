@@ -93,13 +93,15 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 90,
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 2,
         paddingTop: 12,
         paddingBottom: 5,
         marginLeft: 'auto',
         borderRight: 'none',
         flexGrow: 1,
-        paddingRight: 12,
+        paddingRight: 2,
         minHeight: 45,
+        minWidth: 75,
       },
       '& span': {
         fontWeight: 500,
@@ -137,6 +139,8 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 0,  
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
