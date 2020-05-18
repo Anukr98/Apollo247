@@ -40,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
     },
     medicineIcon: {
       paddingRight: 10,
@@ -78,32 +81,32 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
     },
     medicinePrice: {
-      borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
       fontSize: 12,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 12,
       paddingBottom: 11,
       minWidth: 90,
-      textAlign: 'center',
+      textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
+        paddingTop: 12,
+        paddingBottom: 5,  
         marginLeft: 'auto',
         borderRight: 'none',
         flexGrow: 1,
-        textAlign: 'right',
         paddingRight: 12,
-        borderTop: '1px solid rgba(2,71,91,0.2)',
+        minHeight: 45,
       },
       '& span': {
         fontWeight: 500,
       },
     },
     addToCart: {
-      paddingLeft: 20,
+      paddingLeft: 10,
       paddingTop: 8,
       paddingBottom: 8,
       display: 'flex',
@@ -125,8 +128,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       letterSpacing: 0.33,
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
-      paddingLeft: 20,
-      paddingRight: 20,
+      borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 4,
       paddingBottom: 4,
       display: 'flex',
@@ -136,11 +140,11 @@ const useStyles = makeStyles((theme: Theme) => {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
-        borderTop: '1px solid rgba(2,71,91,0.2)',
         justifyContent: 'left',
+        minHeight: 45,
       },
       [theme.breakpoints.up('xs')]: {
-        minWidth: 130,
+        minWidth: 110,
       },
     },
     selectMenuItem: {
@@ -169,6 +173,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e',
       fontWeight: 600,
+    },
+    mrpPrice: {
+      paddingTop: 5,
+      paddingBottom: 5,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
+    },
+    mrpText: {
+      fontSize: 10,
     },
   };
 });
@@ -269,11 +284,11 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                   {validateCouponResult &&
                   validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
                     <>
-                      <div className={classes.medicinePrice}>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                         <span className={classes.lineThrough}>
                           Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
                         </span>
-                        <div>(MRP)</div>
+                        <div className={classes.mrpText}>(MRP)</div>
                       </div>
 
                       <div className={classes.medicinePrice}>
@@ -286,11 +301,11 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                     </>
                   ) : (
                     <>
-                      <div className={classes.medicinePrice}>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                         {item.special_price ? (
                           <span className={classes.lineThrough}>Rs. {item.price}</span>
                         ) : null}
-                        <div>(MRP)</div>
+                        <div className={classes.mrpText}>(MRP)</div>
                       </div>
 
                       <div className={classes.medicinePrice}>
