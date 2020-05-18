@@ -73,9 +73,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
   inputFieldEdit: {
-    border: '1px solid #00b38e',
     borderRadius: 10,
-    backgroundColor: '#fff',
     padding: 0,
     '& textarea': {
       color: '#01475b',
@@ -83,6 +81,11 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontSize: 16,
       fontWeight: 500,
       paddingRight: 40,
+    },
+    '& textarea:focus': {
+      borderRadius: "5px",
+      boxShadow: "0 0 5px #00b38e",
+      backgroundColor: "#ffffff"
     },
   },
 }));
