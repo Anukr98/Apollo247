@@ -96,7 +96,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
-      padding: '10px 10px 16px 16px',
+      padding: '16px 10px 16px 16px',
       paddingbottom: 8,
       width: '100%',
       color: '#02475b',
