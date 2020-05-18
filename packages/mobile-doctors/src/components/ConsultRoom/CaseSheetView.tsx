@@ -107,6 +107,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
 
 const { width } = Dimensions.get('window');
 
@@ -581,7 +582,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 title={strings.buttons.end_consult}
                 buttonIcon={<End />}
                 onPress={() => {
-                  setyesorno(true);
+                  if (
+                    selectedReferral.key === '-1' ||
+                    (selectedReferral.key !== '-1' && referralReason)
+                  ) {
+                    setyesorno(true);
+                  } else {
+                    showAphAlert &&
+                      showAphAlert({
+                        title: strings.common.alert,
+                        description: strings.alerts.missing_referral_description,
+                      });
+                  }
                 }}
                 style={styles.buttonendStyle}
               />
@@ -652,11 +664,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             title={caseSheetEdit ? 'SAVE' : 'EDIT CASE SHEET'}
             onPress={() => {
               if (caseSheetEdit) {
-                setShowButtons(true);
-                saveDetails(true, undefined, () => {
-                  props.setCaseSheetEdit(false);
-                  setLoading && setLoading(false);
-                });
+                if (
+                  selectedReferral.key === '-1' ||
+                  (selectedReferral.key !== '-1' && referralReason)
+                ) {
+                  setShowButtons(true);
+                  saveDetails(true, undefined, () => {
+                    props.setCaseSheetEdit(false);
+                    setLoading && setLoading(false);
+                  });
+                } else {
+                  showAphAlert &&
+                    showAphAlert({
+                      title: strings.common.alert,
+                      description: strings.alerts.missing_referral_description,
+                    });
+                }
               } else {
                 props.setCaseSheetEdit(true);
                 setShowEditPreviewButtons(true);
@@ -669,9 +692,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'PREVIEW PRESCRIPTION'}
             onPress={() => {
-              setShowButtons(true);
-              saveDetails(false);
-              prescriptionView();
+              if (
+                selectedReferral.key === '-1' ||
+                (selectedReferral.key !== '-1' && referralReason)
+              ) {
+                setShowButtons(true);
+                saveDetails(false);
+                prescriptionView();
+              } else {
+                showAphAlert &&
+                  showAphAlert({
+                    title: strings.common.alert,
+                    description: strings.alerts.missing_referral_description,
+                  });
+              }
             }}
             style={styles.buttonendStyle}
           />
@@ -919,6 +953,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 setMedicalHistory({
                   ...medicalHistory,
                   medicationHistory: text,
+                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+              },
+              true
+            )}
+            {renderFields(
+              strings.case_sheet.surgical_history,
+              (medicalHistory && medicalHistory.pastSurgicalHistory) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  pastSurgicalHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
               true
@@ -2515,7 +2560,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         ...specialties.map((i) => {
           return { key: i.id, value: i.name };
         }),
-        { key: '-1', value: strings.case_sheet.select_Speciality },
       ]);
     }
   }, [specialties]);
@@ -2530,7 +2574,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
             {renderHeaderText(strings.case_sheet.referral_drop_selection_header)}
-            <MaterialMenu
+            {/* <MaterialMenu
               options={specialtiesData}
               selectedText={selectedReferral ? selectedReferral.key : ''}
               menuContainerStyle={styles.materialContainer}
@@ -2542,8 +2586,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               itemContainer={styles.itemContainerStyle}
               bottomPadding={{ paddingBottom: 10 }}
               disable={!caseSheetEdit}
-            >
-              <View style={styles.menuContainer}>
+            > */}
+            <View style={styles.menuContainer}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  caseSheetEdit &&
+                    props.overlayDisplay(
+                      <ReferralSelectPopup
+                        data={specialtiesData}
+                        selected={selectedReferral}
+                        onSelect={(item) => setSelectedReferral(item)}
+                        onClose={() => props.overlayDisplay(null)}
+                      />
+                    );
+                }}
+              >
                 <View style={styles.MtextView}>
                   <Text style={styles.dropValueText}>
                     {selectedReferral && selectedReferral.value}
@@ -2552,8 +2610,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <DropdownGreen />
                   </View>
                 </View>
-              </View>
-            </MaterialMenu>
+              </TouchableOpacity>
+            </View>
+            {/* </MaterialMenu> */}
             {renderFields(
               'Reason',
               referralReason,
