@@ -211,15 +211,14 @@ const SaveMedicineOrderPaymentMq: Resolver<
       orderStatus = currentStatus;
       statusMsg = 'order payment done successfully';
     }
-    if (!orderDetails.isOmsOrder) {
-      const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-        orderStatus: currentStatus,
-        medicineOrders: orderDetails,
-        statusDate: new Date(),
-        statusMessage: statusMsg,
-      };
-      await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-    }
+
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: currentStatus,
+      medicineOrders: orderDetails,
+      statusDate: new Date(),
+      statusMessage: statusMsg,
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,

@@ -75,6 +75,8 @@ import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan';
 import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
 import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
+import { CheckoutSceneNew } from '@aph/mobile-patients/src/components/CheckoutScenenew';
+import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus'
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
@@ -150,6 +152,8 @@ export enum AppRoutes {
   ConsultCheckout = 'ConsultCheckout',
   ConsultPaymentnew = 'ConsultPaymentnew',
   ConsultPaymentStatus = 'ConsultPaymentStatus',
+  CheckoutSceneNew = 'CheckoutSceneNew',
+  PaymentStatus = 'PaymentStatus',
   // ConsultDetailsById = 'ConsultDetailsById',
   NotificationScreen = 'NotificationScreen',
   MyPaymentsScreen = 'MyPaymentsScreen',
@@ -386,6 +390,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultPaymentStatus]: {
     screen: ConsultPaymentStatus,
+  },
+  [AppRoutes.CheckoutSceneNew]: {
+    screen: CheckoutSceneNew,
+  },
+  [AppRoutes.PaymentStatus]: {
+    screen: PaymentStatus,
   },
   // [AppRoutes.ConsultDetailsById]: {
   //   screen: ConsultDetailsById,

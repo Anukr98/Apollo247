@@ -275,6 +275,11 @@
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND"
   },
+  "PharmaPayment": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PAYMENT_PENDING_PG"
+  },
   "muiltdosages": [
     {
       "single": "tablet",

@@ -38,6 +38,8 @@ const useStyles = makeStyles((theme: Theme) => {
     postContent: {
       paddingTop: 8,
       opacity: 0.6,
+      wordWrap: 'break-word',
+      whiteSpace: 'pre-wrap',
     },
     bottomActions: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
