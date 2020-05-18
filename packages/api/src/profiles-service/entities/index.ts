@@ -662,6 +662,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -711,6 +717,12 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
+
+  @Column({ nullable: true })
+  primaryUhid: string;
+
+  @Column({ nullable: true })
+  primaryPatientId: string;
 
   @Column({ nullable: true })
   uhid: string;

@@ -635,6 +635,31 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, { uhid, uhidCreatedDate: new Date() });
   }
 
+  updateLinkedUhidAccount(
+    ids: string[],
+    column: string,
+    flag: boolean,
+    primaryUhid?: string,
+    primaryPatientId?: string
+  ) {
+    const fieldToUpdate: Partial<Patient> = { [column]: flag };
+    if (primaryUhid) {
+      if (primaryUhid == 'null') {
+        fieldToUpdate.primaryUhid = undefined;
+        fieldToUpdate.primaryPatientId = undefined;
+      } else {
+        fieldToUpdate.primaryUhid = primaryUhid;
+        fieldToUpdate.primaryPatientId = primaryPatientId;
+      }
+    }
+
+    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+        updatePatientError,
+      });
+    });
+  }
+
   updateToken(id: string, athsToken: string) {
     return this.update(id, { athsToken });
   }
