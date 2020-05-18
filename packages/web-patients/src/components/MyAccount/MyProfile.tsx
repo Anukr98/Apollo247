@@ -268,7 +268,7 @@ export const MyProfile: React.FC = (props) => {
                 title={'Need Help'}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_location.svg')} alt="" />
+                  <img src={require('images/ic_round_live_help.svg')} alt="" />
                 </span>
                 <span className={classes.linkText} title={'Need Help'}>
                   Need Help
@@ -409,7 +409,7 @@ export const MyProfile: React.FC = (props) => {
                     title={'Need Help'}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_location.svg')} alt="" />
+                      <img src={require('images/ic_round_live_help.svg')} alt="" />
                     </span>
                     <span className={classes.linkText} title={'Need Help'}>
                       Need Help
