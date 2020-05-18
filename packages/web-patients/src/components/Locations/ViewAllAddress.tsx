@@ -7,7 +7,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import axios,  { AxiosPromise, AxiosResponse , AxiosError} from 'axios';
+import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
 
@@ -169,7 +169,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongAvailability = (addressDetails: Address) => {
-    const googleMapApi = `${process.env.GOOGLE_MAP_API}?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
     if (!addressDetails.latitude || !addressDetails.longitude) {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
@@ -178,16 +178,22 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           .get(googleMapApi)
           .then(({ data }) => {
             try {
-              if (data && data.results[0] && data.results[0].geometry && data.results[0].geometry.location) {
+              if (
+                data &&
+                data.results[0] &&
+                data.results[0].geometry &&
+                data.results[0].geometry.location
+              ) {
                 const { lat, lng } = data.results[0].geometry.location;
-                const { id,
+                const {
+                  id,
                   addressLine1,
                   city,
                   mobileNumber,
                   state,
                   zipcode,
                   addressType,
-                  otherAddressType
+                  otherAddressType,
                 } = addressDetails;
                 updateAddressMutation({
                   variables: {
@@ -201,15 +207,14 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                       addressType,
                       otherAddressType,
                       latitude: lat,
-                      longitude: lng
+                      longitude: lng,
                     },
                   },
-                })
-                  .then(() => {
-                    setLocalDeliveryAddressId(addressDetails.id);
-                    setLocalZipCode(addressDetails.zipcode || '');
-                    setIsLoading(false);
-                  })
+                }).then(() => {
+                  setLocalDeliveryAddressId(addressDetails.id);
+                  setLocalZipCode(addressDetails.zipcode || '');
+                  setIsLoading(false);
+                });
               }
             } catch {
               (e: AxiosError) => console.log(e);
@@ -226,8 +231,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
       setLocalDeliveryAddressId(addressDetails.id);
       setLocalZipCode(addressDetails.zipcode || '');
     }
-  }
-
+  };
 
   return (
     <div className={classes.shadowHide}>
@@ -237,29 +241,29 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {
-                    isLoading ? (<CircularProgress className={classes.loader} />) : (
-                      deliveryAddresses.map((addressDetails, index) => {
-                        const addressId = addressDetails.id;
-                        return (
-                          <li key={index}>
-                            <FormControlLabel
-                              checked={localDeliveryAddressId === addressId}
-                              className={classes.radioLabel}
-                              value={addressId}
-                              control={<AphRadio color="primary" />}
-                              label={props.formatAddress(addressDetails)}
-                              onChange={() => {
-                                // setLocalDeliveryAddressId(addressId);
-                                // setLocalZipCode(addressDetails.zipcode || '');
-                                checkLatLongAvailability(addressDetails)
-                              }}
-                            />
-                          </li>
-                        );
-                      })
-                    )
-                  }
+                  {isLoading ? (
+                    <CircularProgress className={classes.loader} />
+                  ) : (
+                    deliveryAddresses.map((addressDetails, index) => {
+                      const addressId = addressDetails.id;
+                      return (
+                        <li key={index}>
+                          <FormControlLabel
+                            checked={localDeliveryAddressId === addressId}
+                            className={classes.radioLabel}
+                            value={addressId}
+                            control={<AphRadio color="primary" />}
+                            label={props.formatAddress(addressDetails)}
+                            onChange={() => {
+                              // setLocalDeliveryAddressId(addressId);
+                              // setLocalZipCode(addressDetails.zipcode || '');
+                              checkLatLongAvailability(addressDetails);
+                            }}
+                          />
+                        </li>
+                      );
+                    })
+                  )}
                 </ul>
               </div>
             </div>

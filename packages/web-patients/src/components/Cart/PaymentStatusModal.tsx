@@ -17,11 +17,12 @@ const useStyles = makeStyles(() => {
     modal: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
-    }, loader: {
+      justifyContent: 'center',
+    },
+    loader: {
       textAlign: 'center',
       padding: '20px 0',
-    }
+    },
   };
 });
 
@@ -35,7 +36,7 @@ const status: paymentStatusMap = {
 };
 
 interface PaymentStatusProps {
-  history: History
+  history: History;
 }
 
 export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
@@ -49,53 +50,76 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
   const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
   const currentPatient = useCurrentPatient();
-  const orderPaymentData = orderData &&
-    orderData.medicineOrderPayments &&
-    orderData.medicineOrderPayments.length ? orderData.medicineOrderPayments[0] : null;
-  const paymentStatus = orderPaymentData && orderPaymentData.paymentStatus ?
-    orderPaymentData.paymentStatus === 'TXN_SUCCESS' || orderPaymentData.paymentStatus === 'success' ? 'success' :
-      orderPaymentData.paymentStatus === 'PENDING' ? 'pending' :
-        orderPaymentData.paymentStatus === 'TXN_FAILURE' ? 'failed' : '' : '';
-  const paymentFailedInfo = 'In case your account has been debited,you should get the refund in 10-14 business days.';
-  const paymentSuccessInfo = 'Your order has been placed successfully. We will confirm the order in a few minutes.';
-  const paymentPendingInfo = 'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
+  const orderPaymentData =
+    orderData && orderData.medicineOrderPayments && orderData.medicineOrderPayments.length
+      ? orderData.medicineOrderPayments[0]
+      : null;
+  const paymentStatus =
+    orderPaymentData && orderPaymentData.paymentStatus
+      ? orderPaymentData.paymentStatus === 'TXN_SUCCESS' ||
+        orderPaymentData.paymentStatus === 'success'
+        ? 'success'
+        : orderPaymentData.paymentStatus === 'PENDING'
+        ? 'pending'
+        : orderPaymentData.paymentStatus === 'TXN_FAILURE'
+        ? 'failed'
+        : ''
+      : '';
+  const paymentFailedInfo =
+    'In case your account has been debited,you should get the refund in 10-14 business days.';
+  const paymentSuccessInfo =
+    'Your order has been placed successfully. We will confirm the order in a few minutes.';
+  const paymentPendingInfo =
+    'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
   const getPaymentStatusInfo = () => {
     switch (paymentStatus) {
-      case status.success: return paymentSuccessInfo;
-      case status.pending: return paymentPendingInfo
-      case status.failed: return paymentFailedInfo;
-      default: return ''
+      case status.success:
+        return paymentSuccessInfo;
+      case status.pending:
+        return paymentPendingInfo;
+      case status.failed:
+        return paymentFailedInfo;
+      default:
+        return '';
     }
-  }
+  };
   const getCtaTxt = () => {
     switch (paymentStatus) {
-      case status.success: return 'VIEW ORDERS';
-      case status.pending: return 'GO TO HOME'
-      case status.failed: return 'TRY AGAIN';
-      default: return ''
+      case status.success:
+        return 'VIEW ORDERS';
+      case status.pending:
+        return 'GO TO HOME';
+      case status.failed:
+        return 'TRY AGAIN';
+      default:
+        return '';
     }
-  }
+  };
   const paymentStatusCallback = () => {
     let redirectUrl = '';
     switch (paymentStatus) {
-      case status.success: redirectUrl = clientRoutes.yourOrders();
+      case status.success:
+        redirectUrl = clientRoutes.yourOrders();
         break;
-      case status.pending: redirectUrl = clientRoutes.welcome();
+      case status.pending:
+        redirectUrl = clientRoutes.welcome();
         break;
-      case status.failed: redirectUrl = clientRoutes.medicinesCart();
+      case status.failed:
+        redirectUrl = clientRoutes.medicinesCart();
         window.location.href = redirectUrl;
         break;
-      default: redirectUrl = clientRoutes.welcome();
+      default:
+        redirectUrl = clientRoutes.welcome();
     }
     paymentStatusRedirect(redirectUrl);
     // window.location.href = redirectUrl;
-  }
+  };
   const handleOnClose = () => {
     paymentStatusRedirect(clientRoutes.medicines());
-  }
+  };
   const paymentStatusRedirect = (url: string) => {
-    props.history && props.history.push && props.history.push(url)
-  }
+    props.history && props.history.push && props.history.push(url);
+  };
 
   useEffect(() => {
     if (params.orderAutoId) {
@@ -103,7 +127,9 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         variables: {
           patientId: currentPatient && currentPatient.id,
           orderAutoId:
-            typeof params.orderAutoId === 'string' ? parseInt(params.orderAutoId) : params.orderAutoId,
+            typeof params.orderAutoId === 'string'
+              ? parseInt(params.orderAutoId)
+              : params.orderAutoId,
         },
       })
         .then((res: any) => {
@@ -114,10 +140,14 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             res.data.getMedicineOrderDetails.MedicineOrderDetails
           ) {
             const medicineOrderDetails = res.data.getMedicineOrderDetails.MedicineOrderDetails;
-            if (medicineOrderDetails && medicineOrderDetails.medicineOrderPayments && medicineOrderDetails.medicineOrderPayments.length) {
+            if (
+              medicineOrderDetails &&
+              medicineOrderDetails.medicineOrderPayments &&
+              medicineOrderDetails.medicineOrderPayments.length
+            ) {
               setOrderData(medicineOrderDetails);
             } else {
-              // redirect to medicine 
+              // redirect to medicine
               paymentStatusRedirect(clientRoutes.medicines());
             }
           }
@@ -142,20 +172,25 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             <CircularProgress />
           </div>
         ) : (
-            <OrderStatusContent
-              paymentStatus={paymentStatus}
-              paymentInfo={getPaymentStatusInfo()}
-              orderStatusCallback={paymentStatusCallback}
-              orderId={orderData.orderAutoId}
-              amountPaid={orderPaymentData.amountPaid}
-              paymentType={MEDICINE_ORDER_PAYMENT_TYPE[orderPaymentData.paymentType]}
-              paymentRefId={orderPaymentData.paymentRefId}
-              paymentDateTime={moment(orderPaymentData.paymentDateTime).format('DD MMMM YYYY[,] LT')}
-              type='ORDER'
-              onClose={() => { handleOnClose() }}
-              ctaText={getCtaTxt()}
-            />
-          )}
+          <OrderStatusContent
+            paymentStatus={paymentStatus}
+            paymentInfo={getPaymentStatusInfo()}
+            orderStatusCallback={paymentStatusCallback}
+            orderId={orderData.orderAutoId}
+            amountPaid={orderPaymentData.amountPaid}
+            paymentType={MEDICINE_ORDER_PAYMENT_TYPE[orderPaymentData.paymentType]}
+            paymentRefId={orderPaymentData.paymentRefId}
+            paymentDateTime={moment(orderPaymentData.paymentDateTime)
+              .format('DD MMMM YYYY[,] LT')
+              .replace(/(A|P)(M)/, '$1.$2.')
+              .toString()}
+            type="ORDER"
+            onClose={() => {
+              handleOnClose();
+            }}
+            ctaText={getCtaTxt()}
+          />
+        )}
       </>
     </Modal>
   );
