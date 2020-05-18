@@ -302,7 +302,7 @@ export const PayMedicine: React.FC = (props) => {
       const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
         (item: pharmaCouponItem) => item.itemId === id.toString()
       );
-      return item.applicablePrice;
+      return item.applicablePrice.toFixed(2);
     }
   };
 
@@ -313,15 +313,15 @@ export const PayMedicine: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode.length > 0
-                ? getDiscountedLineItemPrice(cartItemDetails.id)
+              couponCode && couponCode.length > 0
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : Number(cartItemDetails.special_price),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode.length > 0
-                ? cartItemDetails.price - getDiscountedLineItemPrice(cartItemDetails.id)
+              (couponCode && couponCode.length > 0
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : cartItemDetails.price - Number(cartItemDetails.special_price)),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
@@ -348,9 +348,9 @@ export const PayMedicine: React.FC = (props) => {
           patientAddressId: deliveryAddressId,
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           bookingSource: BOOKINGSOURCE.WEB,
-          estimatedAmount: totalWithCouponDiscount,
-          couponDiscount: Number(couponValue),
-          productDiscount,
+          estimatedAmount: totalWithCouponDiscount ? Number(totalWithCouponDiscount.toFixed(2)) : 0,
+          couponDiscount: Number(couponValue || 0),
+          productDiscount: productDiscount ? Number(productDiscount.toFixed(2)) : 0,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
             ...prescriptions!.map((item) => item.imageUrl),
