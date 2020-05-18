@@ -125,3 +125,27 @@ export const CONSULT_COUPONS_LIST = gql`
     }
   }
 `;
+
+export const GET_CONSULT_PAYMENTS = gql`
+  query ConsultOrders {
+    consultOrders {
+      appointments {
+        displayId
+        id
+        appointmentDateTime
+        actualAmount
+        discountedAmount
+        appointmentType
+        appointmentPayments {
+          amountPaid
+          bankTxnId
+          id
+          paymentRefId
+          paymentStatus
+          paymentType
+          responseMessage
+        }
+      }
+    }
+  }
+`;
