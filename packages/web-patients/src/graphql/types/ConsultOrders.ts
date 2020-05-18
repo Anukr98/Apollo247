@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { STATUS } from "./globalTypes";
@@ -21,6 +22,7 @@ export interface ConsultOrders_consultOrders_appointments_appointmentPayments {
 
 export interface ConsultOrders_consultOrders_appointments_doctor {
   __typename: "DoctorResponse";
+  typeId: string | null;
   name: string | null;
 }
 
