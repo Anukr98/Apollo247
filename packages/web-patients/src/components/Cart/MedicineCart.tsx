@@ -669,11 +669,10 @@ export const MedicineCart: React.FC = (props) => {
             itemDiscount:
               cartItemDetails.quantity *
               (couponCode.length > 0
-                ? getDiscountedLineItemPrice(cartItemDetails.id)
-                : Number(cartItemDetails.special_price)),
+                ? cartItemDetails.price - getDiscountedLineItemPrice(cartItemDetails.id)
+                : cartItemDetails.price - Number(cartItemDetails.special_price)),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            // prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -681,7 +680,7 @@ export const MedicineCart: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-            specialPrice: Number(cartItemDetails.special_price) || 0,
+            // specialPrice: Number(cartItemDetails.special_price) || 0,
           };
         })
       : [];
@@ -1293,7 +1292,11 @@ export const MedicineCart: React.FC = (props) => {
                           </div>{' '}
                         </>
                       )}
-                      <div className={`${classes.priceRow} ${classes.totalPriceRow} ${validateCouponResult ? classes.totalPriceBorder : ''}`}>
+                      <div
+                        className={`${classes.priceRow} ${classes.totalPriceRow} ${
+                          validateCouponResult ? classes.totalPriceBorder : ''
+                        }`}
+                      >
                         <span>TO PAY</span>
                         <span className={classes.totalPrice}>
                           {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
