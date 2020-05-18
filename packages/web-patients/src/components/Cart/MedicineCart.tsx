@@ -740,7 +740,7 @@ export const MedicineCart: React.FC = (props) => {
     if (!nonCartFlow) {
       validateCoupon();
     }
-  }, [validateCouponResult]);
+  }, [couponCode]);
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
     SAVE_MEDICINE_ORDER_OMS,
@@ -756,12 +756,12 @@ export const MedicineCart: React.FC = (props) => {
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
           bookingSource: BOOKINGSOURCE.WEB,
-          estimatedAmount: totalWithCouponDiscount,
+          estimatedAmount: totalWithCouponDiscount ? Number(totalWithCouponDiscount.toFixed(2)) : 0,
           couponDiscount:
             validateCouponResult && validateCouponResult.discountedTotals
               ? Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2))
               : 0,
-          productDiscount,
+          productDiscount: productDiscount ? Number(productDiscount.toFixed(2)) : 0,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
             ...prescriptions!.map((item) => item.imageUrl),
@@ -1034,15 +1034,14 @@ export const MedicineCart: React.FC = (props) => {
                 <span className={classes.count}>
                   ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
                 </span>
-                <AphButton
+                <Link
                   className={classes.addItemBtn}
-                  onClick={() => {
-                    window.location.href = clientRoutes.medicines();
-                  }}
+                  to={clientRoutes.medicines()}
                   title={'Add items to cart'}
                 >
+                  {/* <AphButton className={classes.addItemBtn}>Add Items</AphButton> */}
                   Add Items
-                </AphButton>
+                </Link>
               </div>
             )}
             {cartItems.length > 0 ||
