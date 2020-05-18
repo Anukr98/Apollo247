@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
         paddingTop: 12,
-        paddingBottom: 5,  
+        paddingBottom: 5,
         marginLeft: 'auto',
         borderRight: 'none',
         flexGrow: 1,
@@ -190,6 +190,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineListingCardProps = {
   validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
+  validateCoupon: () => void;
 };
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
@@ -245,27 +246,28 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         selectMenu: classes.selectMenuItem,
                       }}
                       value={item.quantity}
-                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                      onChange={(e: React.ChangeEvent<{ value: any }>) => {
                         updateCartItemQty &&
-                        updateCartItemQty({
-                          description: item.description,
-                          id: item.id,
-                          image: item.image,
-                          is_in_stock: item.is_in_stock,
-                          is_prescription_required: item.is_prescription_required,
-                          name: item.name,
-                          price: item.price,
-                          sku: item.sku,
-                          small_image: item.small_image,
-                          status: item.status,
-                          thumbnail: item.thumbnail,
-                          type_id: item.type_id,
-                          quantity: parseInt(e.target.value),
-                          special_price: item.special_price,
-                          mou: item.mou,
-                          isShippable: true,
-                        })
-                      }
+                          updateCartItemQty({
+                            description: item.description,
+                            id: item.id,
+                            image: item.image,
+                            is_in_stock: item.is_in_stock,
+                            is_prescription_required: item.is_prescription_required,
+                            name: item.name,
+                            price: item.price,
+                            sku: item.sku,
+                            small_image: item.small_image,
+                            status: item.status,
+                            thumbnail: item.thumbnail,
+                            type_id: item.type_id,
+                            quantity: parseInt(e.target.value),
+                            special_price: item.special_price,
+                            mou: item.mou,
+                            isShippable: true,
+                          });
+                        props.validateCoupon();
+                      }}
                     >
                       {options.map((option, index) => (
                         <MenuItem
