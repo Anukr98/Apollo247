@@ -131,60 +131,23 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.DELIVERED:
       statusString = 'Order Delivered';
       break;
-    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-      statusString = 'Items Returned';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-      statusString = 'Order Confirmed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-      statusString = 'Order Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-      statusString = 'Order Placed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-      statusString = 'Order Verified';
-      break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-      statusString = 'Prescription Cart Ready';
-      break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-      statusString = 'Prescription Uploaded';
-      break;
-    case MEDICINE_ORDER_STATUS.QUOTE:
-      statusString = 'Quote';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Return Accepted';
-      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-      statusString = 'Payment Success';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      statusString = 'Order Initiated';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
-      statusString = 'Payment Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
-      statusString = 'Ready At Store';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment Pending';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;
+    default:
+      statusString = status
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
   }
   return statusString;
 };
