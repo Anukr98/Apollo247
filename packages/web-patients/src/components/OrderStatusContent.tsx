@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
-import { CircularProgress, Link, Theme, Typography } from '@material-ui/core';
+
+import { Link, Theme, Typography } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
 import { AphButton } from '@aph/web-ui-components';
@@ -284,10 +285,10 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     <div className={classes.modalContent}>
       <div className={classes.modalHeader}>
         <Typography component="h5">Payment Status</Typography>
-        <Link onClick={onClose} className={classes.closePopup}>
+        <Link onClick={() => onClose()} className={classes.closePopup}>
           <img src={require('images/ic_cross_popup.svg')} />
         </Link>
-        <Link href="javascript:void(0);" className={`${classes.closePopup} ${classes.mobileBack}`}>
+        <Link onClick={() => onClose()} className={`${classes.closePopup} ${classes.mobileBack}`}>
           <img src={require('images/ic_back.svg')} />
         </Link>
       </div>
@@ -362,7 +363,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               </div>
               <div className={classes.details}>
                 <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType === "COD" ? "COD" : "PREPAID"}</Typography>
+                <Typography component="p">{paymentType === 'COD' ? 'COD' : 'PREPAID'}</Typography>
               </div>
             </Paper>
           )}

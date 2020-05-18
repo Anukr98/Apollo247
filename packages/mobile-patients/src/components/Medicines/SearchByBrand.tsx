@@ -652,7 +652,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         resetSearchState();
       }
     };
-    const enableSearchEnterBtn = searchText.length > 0 && medicineList.length > 0;
+    const enableSearchEnterBtn = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}
@@ -976,6 +976,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
     const overlayStyle = {
       flex: 1,
       position: 'absolute',
@@ -987,7 +989,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     } as ViewStyle;
 
     return (
-      (medicineList.length || searchSate == 'load') && (
+      (medicineList.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={overlayStyle}>
           <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={resetSearchState} />
         </View>

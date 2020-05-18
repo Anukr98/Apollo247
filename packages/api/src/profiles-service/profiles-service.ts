@@ -49,9 +49,14 @@ import {
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
+  paymentStatusTypeDefs,
+  paymentStatusResolvers,
+} from 'profiles-service/resolvers/pharmaPaymentStatus';
+import {
   saveMedicineOrderOMSTypeDefs,
   saveMedicineOrderOMSResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrdersOMS';
+
 import {
   savePrescriptionMedicineOrderTypeDefs,
   savePrescriptionMedicineOrderResolvers,
@@ -68,6 +73,10 @@ import {
   saveMedicineOrderPaymentMqTypeDefs,
   saveMedicineOrderPaymentMqResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPaymentmq';
+import {
+  getMedicineOrdersOMSListTypeDefs,
+  getMedicineOrdersOMSListResolvers,
+} from 'profiles-service/resolvers/getMedicineOrdersOMSList';
 import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
@@ -174,6 +183,10 @@ import {
   registerPatientsTypeDefs,
   registerPatientsResolvers,
 } from 'profiles-service/resolvers/registerPatients';
+import {
+  pharmaOrdersTypeDefs,
+  pharmacyOrdersResolvers,
+} from 'profiles-service/resolvers/pharmacyOrders';
 
 (async () => {
   await connect();
@@ -221,6 +234,10 @@ import {
         resolvers: getPatientResolvers,
       },
       {
+        typeDefs: paymentStatusTypeDefs,
+        resolvers: paymentStatusResolvers,
+      },
+      {
         typeDefs: getPastSearchesTypeDefs,
         resolvers: getPastSearchesResolvers,
       },
@@ -255,6 +272,10 @@ import {
       {
         typeDefs: saveMedicineOrderTypeDefs,
         resolvers: saveMedicineOrderResolvers,
+      },
+      {
+        typeDefs: getMedicineOrdersOMSListTypeDefs,
+        resolvers: getMedicineOrdersOMSListResolvers,
       },
       {
         typeDefs: saveMedicineOrderOMSTypeDefs,
@@ -391,6 +412,10 @@ import {
       {
         typeDefs: registerPatientsTypeDefs,
         resolvers: registerPatientsResolvers,
+      },
+      {
+        typeDefs: pharmaOrdersTypeDefs,
+        resolvers: pharmacyOrdersResolvers,
       },
     ]),
     plugins: [

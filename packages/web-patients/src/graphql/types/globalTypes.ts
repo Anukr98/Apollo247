@@ -628,6 +628,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -739,6 +741,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {

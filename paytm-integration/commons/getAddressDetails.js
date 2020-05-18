@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 function getAddressDetails(addressId) {
   return new Promise(async (resolve, reject) => {
     axios({
@@ -15,6 +17,8 @@ function getAddressDetails(addressId) {
                 addressLine1
                 addressLine2
                 landmark
+                latitude
+                longitude
               }
           }
         }
@@ -22,11 +26,7 @@ function getAddressDetails(addressId) {
       },
     })
       .then((response) => {
-        console.log(
-          response,
-          response.data.data.getPatientAddressById.patientAddress.state,
-          'address resp'
-        );
+        console.log(response.data.data.getPatientAddressById.patientAddress, 'address resp');
         resolve(response.data.data.getPatientAddressById.patientAddress);
       })
       .catch((error) => {

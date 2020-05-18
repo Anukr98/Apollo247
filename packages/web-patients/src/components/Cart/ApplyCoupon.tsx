@@ -95,8 +95,19 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
       '& button': {
+        padding: '9px 13px 9px 13px',
+        fontSize: 13,
         borderRadius: 10,
+        backgroundColor: '#fcb716',
+        color: '#fff',
+        '&:hover': {
+          backgroundColor: '#fcb716',
+          color: '#fff',  
+        },
       },
+    },
+    buttonDisabled: {
+      opacity: 0.6,
     },
     customScrollBar: {
       paddingRight: 20,
@@ -314,6 +325,9 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           color="primary"
           fullWidth
           disabled={!selectCouponCode}
+          classes={{
+            disabled: classes.buttonDisabled,
+          }}
           onClick={() => {
             verifyCoupon();
           }}

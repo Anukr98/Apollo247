@@ -76,6 +76,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
+        try {
+          const paymentEventAttributes = {
+            Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
+            Type: 'Consultation',
+            Appointment_Id: orderId,
+          };
+          postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        } catch (error) {}
         console.log(res.data.paymentTransactionStatus.appointment);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           try {
@@ -159,7 +167,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderStatusCard = () => {
-    const refNumberText = '     Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
+    const refNumberText = 'Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
     const priceText = 'Rs. ' + String(price);
     return (

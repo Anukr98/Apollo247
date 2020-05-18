@@ -2881,8 +2881,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              It seems some of the vital info is empty. Please fill the vital section's field under
-              the Case Sheet tab.
+              {
+                "It seems some of the Vital info is empty. Please fill the vital section's field under the Case Sheet tab. Please click on “Edit” to edit details or “Continue” to submit the case sheet"
+              }
             </h3>
             <div className={classes.okButtonWrapper}>
               <Button

@@ -493,15 +493,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
     if (doctorInfo.qualifications) {
       doc
+        .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
-        .text(`${doctorInfo.qualifications}`, margin + 15)
-        .moveDown(0.5);
+        .text(`${doctorInfo.qualifications}`);
     }
 
     doc
-      .moveDown(0.3)
       .fontSize(9)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
@@ -513,7 +512,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
-      .moveDown(1)
+      .moveDown(0.3)
       .fontSize(8)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#000000')
