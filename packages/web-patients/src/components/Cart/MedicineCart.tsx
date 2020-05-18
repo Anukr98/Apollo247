@@ -537,7 +537,6 @@ export const MedicineCart: React.FC = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-  // const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
 
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -777,7 +776,6 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          // setCheckoutDialogOpen(false);
           setIsLoading(false);
           window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
@@ -1272,7 +1270,6 @@ export const MedicineCart: React.FC = (props) => {
                         setIsChennaiCheckoutDialogOpen(true);
                         return;
                       }
-                      // setCheckoutDialogOpen(true);
                       sessionStorage.setItem(
                         'cartValues',
                         JSON.stringify({

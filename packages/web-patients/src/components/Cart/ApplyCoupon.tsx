@@ -148,7 +148,6 @@ interface ApplyCouponProps {
   setValidateCouponResult: (
     validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null
   ) => void;
-  // setCouponCode: (couponCode: string) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
@@ -229,7 +228,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
             if (couponValidateResult.validityStatus) {
-              // props.setCouponCode(selectCouponCode);
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
