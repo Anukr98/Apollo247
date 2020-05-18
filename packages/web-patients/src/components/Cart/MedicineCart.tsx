@@ -657,6 +657,12 @@ export const MedicineCart: React.FC = (props) => {
                 ? getDiscountedLineItemPrice(cartItemDetails.id)
                 : Number(cartItemDetails.special_price),
             quantity: cartItemDetails.quantity,
+            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemDiscount:
+              cartItemDetails.quantity *
+              (couponCode.length > 0
+                ? getDiscountedLineItemPrice(cartItemDetails.id)
+                : Number(cartItemDetails.special_price)),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             // prescriptionImageUrl: '',
@@ -667,6 +673,7 @@ export const MedicineCart: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
+            specialPrice: Number(cartItemDetails.special_price) || 0,
           };
         })
       : [];
