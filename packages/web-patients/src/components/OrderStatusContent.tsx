@@ -310,7 +310,9 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           <Typography component="h5">{status[paymentStatus]}</Typography>
           <Typography component="p">Rs. {amountPaid}</Typography>
           <Typography component="p">Order ID : {orderId}</Typography>
-          <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          {paymentRefId && paymentRefId.length > 1 && (
+            <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          )}
         </div>
         <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
           <Typography component="h4">{type === 'consult' ? 'Booking' : 'Order'} Details</Typography>
