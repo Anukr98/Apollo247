@@ -33,7 +33,7 @@ type ApptResponse = {
   appointmentDateTime: Date;
   actualAmount: Number;
   discountedAmount: Number;
-  appointmentType: string
+  appointmentType: string;
   appointmentPayments: AppointmentPayment[];
   status: String;
 };
@@ -41,9 +41,9 @@ type ApptResponse = {
 type AppointmentsResult = {
   appointments: ApptResponse[];
   doctor: DoctorResponse;
-  patient: PatientResponse
-  hospitalAddress: HospitalDetails
-}
+  patient: PatientResponse;
+  hospitalAddress: HospitalDetails;
+};
 type HospitalDetails = {
   name: string;
   city: string;
@@ -52,21 +52,21 @@ type HospitalDetails = {
   state: string;
   streetLine2: string;
   country: string;
-}
+};
 type PatientResponse = {
-  uhid: string
-  mobileNumber: string
-  emailAddress: string
-  firstName: string
-  lastName: string
-}
+  uhid: string;
+  mobileNumber: string;
+  emailAddress: string;
+  firstName: string;
+  lastName: string;
+};
 type DoctorResponse = {
-  firstName: string
-  lastName: string
-  specialization: string
+  firstName: string;
+  lastName: string;
+  specialization: string;
   salutation: string;
   registrationNumber: string;
-}
+};
 type AppointmentPayment = {
   amountPaid: Number;
   bankTxnId: string;
@@ -75,15 +75,15 @@ type AppointmentPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
-}
+};
 
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
-console.log('assets', assetsDir);
+// console.log('assets', assetsDir);
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
 const getOrderInvoice: Resolver<
   null,
-  { patientId: string, appointmentId: string },
+  { patientId: string; appointmentId: string },
   ConsultServiceContext,
   string
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -91,19 +91,24 @@ const getOrderInvoice: Resolver<
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientsRep = patientsDb.getCustomRepository(PatientRepository);
   const response = await apptsRepo.findByAppointmentId(args.appointmentId);
-  console.log('orders Response', JSON.stringify(response, null, 2));
+  // console.log('orders Response', JSON.stringify(response, null, 2));
 
   const patientDetails = await patientsRep.findById(args.patientId);
-  console.log('orders Response', JSON.stringify(patientDetails, null, 2));
+  // console.log('orders Response', JSON.stringify(patientDetails, null, 2));
 
   const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(response[0].doctorId);
-  console.log('doc Response', JSON.stringify(docResponse, null, 2));
+  // console.log('doc Response', JSON.stringify(docResponse, null, 2));
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   let hospitalDetails;
   if (response && response.length > 0)
     hospitalDetails = await facilityRepo.getfacilityDetails(response[0].hospitalId);
 
-  const AppointmentsResult = { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails };
+  const AppointmentsResult = {
+    appointments: response,
+    doctor: docResponse,
+    patient: patientDetails,
+    hospitalAddress: hospitalDetails,
+  };
 
   const margin = 35;
   const doc = new PDFDocument({ margin, bufferPages: true });
@@ -193,12 +198,11 @@ const getOrderInvoice: Resolver<
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(1)
       .fontSize(8)
-      // .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#000000')
       .text(hospitalAddress.name);
 
@@ -211,7 +215,7 @@ const getOrderInvoice: Resolver<
 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
-    const disclaimerText = 'This is a computer generated Receipt. No signature required.'
+    const disclaimerText = 'This is a computer generated Receipt. No signature required.';
     doc
       .fontSize(10)
       .fillColor('#000000')
@@ -234,7 +238,7 @@ const getOrderInvoice: Resolver<
       else patientName = patientInfo.lastName;
     }
     if (patientName) textArray.push(`${patientName}`);
-    console.log('text Array ', textArray);
+    // console.log('text Array ', textArray);
     if (textArray.length > 0) {
       renderDetailsRow('Patient Name', `${textArray.join('   |   ')}`, doc.y);
     }
@@ -253,30 +257,55 @@ const getOrderInvoice: Resolver<
     }
 
     if (appointmentData[0].appointmentDateTime) {
-      renderDetailsRow('Consult Date', `${moment(appointmentData[0].appointmentDateTime).format('DD MMM YYYY hh:mm A')}`, doc.y);
+      renderDetailsRow(
+        'Consult Date',
+        `${moment(appointmentData[0].appointmentDateTime).format('DD MMM YYYY hh:mm A')}`,
+        doc.y
+      );
     }
 
     if (appointmentData[0].appointmentType) {
       renderDetailsRow('Consult Type', `${appointmentData[0].appointmentType}`, doc.y);
-    };
-    if (appointmentData[0].appointmentPayments && appointmentData[0].appointmentPayments.length > 0) {
-      renderDetailsRow('Payment Reference Number', `${appointmentData[0].appointmentPayments[0].paymentRefId}`, doc.y);
-    };
-    if (appointmentData[0].appointmentPayments && appointmentData[0].appointmentPayments.length > 0) {
-      renderDetailsRow('Payment Status', `${appointmentData[0].appointmentPayments[0].paymentStatus}`, doc.y);
-    };
+    }
+    if (
+      appointmentData[0].appointmentPayments &&
+      appointmentData[0].appointmentPayments.length > 0
+    ) {
+      renderDetailsRow(
+        'Payment Reference Number',
+        `${appointmentData[0].appointmentPayments[0].paymentRefId}`,
+        doc.y
+      );
+    }
+    if (
+      appointmentData[0].appointmentPayments &&
+      appointmentData[0].appointmentPayments.length > 0
+    ) {
+      renderDetailsRow(
+        'Payment Status',
+        `${appointmentData[0].appointmentPayments[0].paymentStatus}`,
+        doc.y
+      );
+    }
     if (appointmentData[0].actualAmount) {
-      renderDetailsRow(appointmentData[0].appointmentType + ' Consultation Fees', `${appointmentData[0].actualAmount}`, doc.y);
-    };
+      renderDetailsRow(
+        appointmentData[0].appointmentType + ' Consultation Fees',
+        `${appointmentData[0].actualAmount}`,
+        doc.y
+      );
+    }
     if (appointmentData[0].discountedAmount) {
       renderDetailsRow('Discount Applied', ` - ${appointmentData[0].discountedAmount}`, doc.y);
-    };
+    }
     if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
-      const totalAmount: number = (appointmentData[0].actualAmount as number) - (appointmentData[0].discountedAmount as number)
+      const totalAmount: number =
+        (appointmentData[0].actualAmount as number) -
+        (appointmentData[0].discountedAmount as number);
       renderDetailsRow('Total Amount', `${totalAmount}`, doc.y);
-    };
+    }
   };
-  if (AppointmentsResult.doctor && AppointmentsResult.doctor == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  if (AppointmentsResult.doctor && AppointmentsResult.doctor == null)
+    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
   doc.on('pageAdded', () => {
     renderFooter();
     if (AppointmentsResult.doctor && AppointmentsResult.hospitalAddress) {
@@ -319,7 +348,7 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
   util.promisify(pdf2base64);
   try {
     const base64pdf = await pdf2base64(pdfUrl);
-    console.log('pdfData:', base64pdf);
+    // console.log('pdfData:', base64pdf);
     return base64pdf;
   } catch (e) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -338,13 +367,12 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  console.log('blobUrl===', blobUrl);
+  // console.log('blobUrl===', blobUrl);
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
   // return uploadData;
   return blobUrl;
-
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
