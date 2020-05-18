@@ -111,6 +111,7 @@ import {
   submitPrescriptionOrderTypeDefs,
   submitPrescriptionOrderResolvers,
 } from 'profiles-service/resolvers/submitPrescriptionOrder';
+import { uhidTypeDefs, uhidResolvers } from 'profiles-service/resolvers/uhid';
 import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
@@ -336,6 +337,10 @@ import {
       {
         typeDefs: submitPrescriptionOrderTypeDefs,
         resolvers: submitPrescriptionOrderResolvers,
+      },
+      {
+        typeDefs: uhidTypeDefs,
+        resolvers: uhidResolvers,
       },
       {
         typeDefs: updateOrderStatusTypeDefs,

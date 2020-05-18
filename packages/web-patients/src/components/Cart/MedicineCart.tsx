@@ -55,8 +55,13 @@ import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking } from '../../gtmTracking';
-import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
+import {
+  validatePharmaCoupon_validatePharmaCoupon,
+  validatePharmaCoupon,
+} from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
+import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
+import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -517,6 +522,7 @@ export const MedicineCart: React.FC = (props) => {
     setEPrescriptionData,
     setUploadedEPrescription,
     cartTat,
+    couponCode,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -539,9 +545,6 @@ export const MedicineCart: React.FC = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-  const [couponCode, setCouponCode] = React.useState<string>('');
-  const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
-  const [updatedUserEmail, setUpdatedUserEmail] = React.useState<string>('');
 
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -672,8 +675,64 @@ export const MedicineCart: React.FC = (props) => {
         })
       : [];
 
+  // coupon related code
+
+  const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
+
+  const getTypeOfProduct = (type: string | null) => {
+    switch (type) {
+      case 'Pharma':
+        return CouponCategoryApplicable.PHARMA;
+      case 'Fmcg':
+        return CouponCategoryApplicable.FMCG;
+    }
+  };
+
+  const validateCoupon = () => {
+    if (couponCode.length > 0 && currentPatient && currentPatient.id) {
+      couponMutation({
+        variables: {
+          pharmaCouponInput: {
+            code: couponCode,
+            patientId: currentPatient.id,
+            orderLineItems: cartItems.map((item) => {
+              return {
+                mrp: item.price,
+                productName: item.name,
+                productType: getTypeOfProduct(item.type_id),
+                quantity: item.quantity,
+                specialPrice: item.special_price ? item.special_price : item.price,
+                itemId: item.id.toString(),
+              };
+            }),
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((res: any) => {
+          if (res && res.data && res.data.validatePharmaCoupon) {
+            const couponValidateResult = res.data.validatePharmaCoupon;
+            if (couponValidateResult.validityStatus) {
+              setValidateCouponResult(couponValidateResult);
+            }
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          setIsAlertOpen(true);
+          setAlertMessage('Something went wrong, please try later.');
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (!nonCartFlow) {
+      validateCoupon();
+    }
+  }, [validateCouponResult]);
+
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
-    SAVE_MEDICINE_ORDER_OMS,
+    SAVE_MEDICINE_ORDER,
     {
       variables: {
         medicineCartOMSInput: {
@@ -751,7 +810,6 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          setCheckoutDialogOpen(false);
           setIsLoading(false);
           window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
@@ -932,12 +990,14 @@ export const MedicineCart: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start  */
-    gtmTracking({
-      category: 'Pharmacy',
-      action: 'Order',
-      label: 'View Cart',
-      value: totalWithCouponDiscount,
-    });
+    if (!nonCartFlow) {
+      gtmTracking({
+        category: 'Pharmacy',
+        action: 'Order',
+        label: 'View Cart',
+        value: totalWithCouponDiscount,
+      });
+    }
     /**Gtm code  End */
   }, [cartTotal]);
 
@@ -974,7 +1034,10 @@ export const MedicineCart: React.FC = (props) => {
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
                 {!nonCartFlow && (
-                  <MedicineListingCard validateCouponResult={validateCouponResult} />
+                  <MedicineListingCard
+                    validateCouponResult={validateCouponResult}
+                    validateCoupon={validateCoupon}
+                  />
                 )}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
@@ -1160,7 +1223,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount
+                          ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
                           : 0}{' '}
                         on the bill
                       </div>
@@ -1209,7 +1272,7 @@ export const MedicineCart: React.FC = (props) => {
                           <div className={classes.priceRow}>
                             <span>Discount({couponCode})</span>
                             <span className={classes.priceCol}>
-                              -Rs. {validateCouponResult.discountedTotals.couponDiscount}
+                              -Rs. {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
                             </span>
                           </div>{' '}
                         </>
@@ -1241,14 +1304,13 @@ export const MedicineCart: React.FC = (props) => {
                         setIsChennaiCheckoutDialogOpen(true);
                         return;
                       }
-                      // setCheckoutDialogOpen(true);
                       sessionStorage.setItem(
                         'cartValues',
                         JSON.stringify({
                           couponCode: couponCode == '' ? null : couponCode,
                           couponValue:
                             validateCouponResult && validateCouponResult.discountedTotals
-                              ? validateCouponResult.discountedTotals.couponDiscount
+                              ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
                               : 0,
                           totalWithCouponDiscount: totalWithCouponDiscount,
                           deliveryTime: deliveryTime,
@@ -1362,7 +1424,6 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
-          setCouponCode={setCouponCode}
           couponCode={couponCode}
           setValidateCouponResult={setValidateCouponResult}
           close={(isApplyCouponDialogOpen: boolean) => {

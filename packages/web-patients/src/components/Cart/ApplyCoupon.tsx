@@ -15,7 +15,7 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
-import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -102,7 +102,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
         '&:hover': {
           backgroundColor: '#fcb716',
-          color: '#fff',  
+          color: '#fff',
         },
       },
     },
@@ -148,7 +148,6 @@ interface ApplyCouponProps {
   setValidateCouponResult: (
     validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null
   ) => void;
-  setCouponCode: (couponCode: string) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
@@ -157,7 +156,7 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, medicineCartType } = useShoppingCart();
+  const { cartItems, setCouponCode } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
@@ -229,10 +228,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
             if (couponValidateResult.validityStatus) {
-              props.setCouponCode(selectCouponCode);
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
+              setCouponCode && setCouponCode(selectCouponCode);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
@@ -304,7 +303,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
                               }}
-                              disabled={props.cartValue < 200}
                             />
                           </li>
                         )
