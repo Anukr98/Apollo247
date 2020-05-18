@@ -25,21 +25,24 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
-
-  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders["orderAutoId"]) {
+  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
     return this.createQueryBuilder()
       .from(MedicineOrders, 'mo')
-      .leftJoinAndSelect(MedicineOrderPayments, 'mp', 'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"')
+      .leftJoinAndSelect(
+        MedicineOrderPayments,
+        'mp',
+        'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"'
+      )
       .select([
         'mp."paymentDateTime"',
         'mp."paymentRefId"',
         'mp."amountPaid"',
         'mp."paymentStatus"',
         'mp."bankTxnId"',
-        'mo."orderAutoId"'
+        'mo."orderAutoId"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
-      .getRawOne()
+      .getRawOne();
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {

@@ -71,7 +71,7 @@ const pharmacyOrders: Resolver<
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2))
   if (medicineOrders && medicineOrders.length > 0) {
     const excludeNullPayments = _.filter(medicineOrders, (o) => {
-      return o.medicineOrderPayments !== [];
+      return o.medicineOrderPayments.length > 0;
     });
     const result = _.filter(excludeNullPayments, (o) => {
       return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE';
