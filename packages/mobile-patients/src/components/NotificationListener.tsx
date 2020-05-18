@@ -355,7 +355,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Order_Placed':
         {
-          showMedOrderStatusAlert(data, 'Order_Placed');
+          // showMedOrderStatusAlert(data, 'Order_Placed');
         }
         break;
       case 'Order_Confirmed':

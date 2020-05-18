@@ -274,6 +274,11 @@
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG"
   },
+  "PharmaPayment": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PAYMENT_PENDING_PG"
+  },
   "muiltdosages": [
     {
       "single": "tablet",

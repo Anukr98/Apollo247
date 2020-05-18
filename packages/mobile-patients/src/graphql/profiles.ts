@@ -1338,6 +1338,14 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           isMedicine
           mou
         }
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentStatus
+          paymentDateTime
+          bankTxnId
+        }
+        
       }
     }
   }
@@ -2242,6 +2250,18 @@ export const INSERT_MESSAGE = gql`
         type
         id
       }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS = gql`
+  query pharmaPaymentStatus($orderId: Int!) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
     }
   }
 `;
