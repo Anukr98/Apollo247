@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { AphButton, AphSelect, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -597,10 +598,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               </div>
             </Grid>
           </Grid>
-          <CouponCode
+          {/* <CouponCode
             disableSubmit={disableCoupon}
             setCouponCodeFxn={() => {
-              /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
               gtmTracking({
@@ -609,7 +609,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 label: `Coupon Applied - ${couponCode}`,
                 value: couponValue,
               });
-              /* Gtm code end */
               setCouponCode(couponCode);
             }}
             setCouponCode={setCouponCode}
@@ -620,7 +619,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             appointmentDateTime={appointmentDateTime}
             appointmentType={AppointmentType.PHYSICAL}
             removeCouponCode={() => {
-              /**Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
               gtmTracking({
@@ -629,9 +627,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 label: `Coupon Removed - ${couponCode}`,
                 value: couponValue,
               });
-              /**Gtm code  end  */
             }}
-          />
+          /> */}
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -644,34 +641,50 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton
-          color="primary"
-          disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
-          onClick={(e) => {
-            setMutationLoading(true);
-            // console.log(
-            //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),
-            //   'visit clinic.......'
-            // );
+        <Link to={clientRoutes.payOnlineClinicConsult()}>
+          <AphButton
+            color="primary"
+            disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
+            onClick={() => {
+              localStorage.setItem(
+                'consultBookDetails',
+                JSON.stringify({
+                  patientId: currentPatient ? currentPatient.id : '',
+                  doctorId: doctorId,
+                  appointmentDateTime: appointmentDateTime,
+                  appointmentType: AppointmentType.PHYSICAL,
+                  hospitalId: defaultClinicId,
+                  couponCode: couponCode ? couponCode : null,
+                  amount: revisedAmount,
+                })
+              );
+            }}
+            // onClick={(e) => {
+            //   setMutationLoading(true);
+            //   // console.log(
+            //   //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),
+            //   //   'visit clinic.......'
+            //   // );
 
-            if (couponCode) {
-              checkCouponValidity();
-            } else {
-              bookAppointment();
+            //   if (couponCode) {
+            //     checkCouponValidity();
+            //   } else {
+            //     bookAppointment();
+            //   }
+            // }}
+            className={
+              disableSubmit || mutationLoading || isDialogOpen || !timeSelected
+                ? classes.buttonDisable
+                : ''
             }
-          }}
-          className={
-            disableSubmit || mutationLoading || isDialogOpen || !timeSelected
-              ? classes.buttonDisable
-              : ''
-          }
-        >
-          {mutationLoading ? (
-            <CircularProgress size={22} color="secondary" />
-          ) : (
-            `PAY Rs. ${revisedAmount}`
-          )}
-        </AphButton>
+          >
+            {mutationLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              `PAY Rs. ${revisedAmount}`
+            )}
+          </AphButton>
+        </Link>
       </div>
       <AphDialog
         open={isDialogOpen}

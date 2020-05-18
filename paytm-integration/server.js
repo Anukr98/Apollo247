@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const azure = require('azure-sb');
 const fs = require('fs');
 const deeplink = require('node-deeplink');
-const { format, differenceInYears } = require('date-fns');
+const { parseISO, format, differenceInYears, addMinutes } = require('date-fns');
 const logger = require('./winston-logger')('Universal-Error-Logs');
 const {
   paymedRequest,
@@ -69,6 +69,7 @@ app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeNoShowReminder', cronTabs.noShowReminder);
+app.get('/invokeNoShowReminder30Min', cronTabs.noShowReminder30Min);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
@@ -543,6 +544,49 @@ app.get('/processOrders', (req, res) => {
     deliveryZipcode = '500045',
     deliveryAddress = 'Kakinada';
   let queueMessage = '';
+  function getAddressDetails(addressId) {
+    return new Promise(async (resolve, reject) => {
+      axios({
+        url: process.env.API_URL,
+        method: 'post',
+        data: {
+          query: `
+        query {
+          getPatientAddressById(id:"${addressId}") {
+            patientAddress{
+                id
+                city
+                state
+                zipcode
+                addressLine1
+                addressLine2
+                landmark
+              }
+          }
+        }
+      `,
+        },
+      })
+        .then((response) => {
+          deliveryCity = response.data.data.getPatientAddressById.patientAddress.city;
+          deliveryZipcode = response.data.data.getPatientAddressById.patientAddress.zipcode;
+          deliveryAddress =
+            response.data.data.getPatientAddressById.patientAddress.addressLine1 +
+            ' ' +
+            response.data.data.getPatientAddressById.patientAddress.addressLine2;
+          console.log(
+            response,
+            response.data.data.getPatientAddressById.patientAddress.state,
+            'address resp'
+          );
+          resolve(deliveryAddress);
+        })
+        .catch((error) => {
+          logger.error(`processOrders()-> ${error.stack}`);
+          console.log(error, 'address error');
+        });
+    });
+  }
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
@@ -561,15 +605,55 @@ app.get('/processOrders', (req, res) => {
         logger.info(`message from topic - processOrders()-> ${JSON.stringify(result.body)}`);
         console.log('message from topic', result.body);
         queueMessage = result.body;
-        const [prefix, orderAutoId, patientId] = queueMessage.split(':');
+        const queueDetails = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-        console.log(queueDetails, 'order details');
-        //logger.info(`OrderID and PatientID - ${JSON.stringify(queueDetails)}`);
         axios({
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery(getMedicineOrderDetails, patientId, orderAutoId),
+            query: `
+            query {
+              getMedicineOrderDetails(patientId:"${queueDetails[2]}", orderAutoId:${queueDetails[1]}) {
+                MedicineOrderDetails {
+                  id
+                  shopId
+                  orderAutoId
+                  estimatedAmount
+                  pharmaRequest
+                  devliveryCharges
+                  deliveryType
+                  patientAddressId
+                  prescriptionImageUrl
+                  orderType
+                  currentStatus
+                  patient{
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth
+                  }
+                  medicineOrderLineItems{
+                    medicineSKU
+                    medicineName
+                    mrp
+                    mou
+                    price
+                    quantity        
+                    isMedicine
+                  }
+                  medicineOrderPayments{
+                    id
+                    bankTxnId
+                    paymentType
+                    amountPaid
+                    paymentRefId
+                    paymentStatus
+                  }
+                }
+              }
+            }
+          `,
           },
         })
           .then(async (response) => {
@@ -595,15 +679,9 @@ app.get('/processOrders', (req, res) => {
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
                     .patientAddressId != null
                 ) {
-                  const patientAddressDetails = await getAddressDetails(
+                  await getAddressDetails(
                     response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId
                   );
-                  if (patientAddressDetails) {
-                    deliveryCity = patientAddressDetails.city;
-                    deliveryZipcode = patientAddressDetails.deliveryZipcode;
-                    deliveryAddress =
-                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                  }
                 }
                 const responseOrderId =
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
@@ -848,6 +926,11 @@ app.get('/processOrders', (req, res) => {
       }
     }
   );
+});
+
+app.get('/processOmsOrders', (req, res) => {
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
+  const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
     process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME,
     process.env.AZURE_SERVICE_BUS_SUBSCRIBER,
@@ -871,227 +954,248 @@ app.get('/processOrders', (req, res) => {
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery(getMedicineOrderDetails, patientId, orderAutoId),
+            query: getMedicineOrderQuery('getMedicineOrderOMSDetails', patientId, orderAutoId),
           },
-        }).then(async (response) => {
-          const orderDetails =
-            response &&
-            response.data &&
-            response.data.data &&
-            response.data.data.getMedicineOrderDetails &&
-            response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
-          if (orderDetails) {
-            console.log(orderDetails.currentStatus, 'order details233');
-            if (orderDetails.currentStatus != 'CANCELLED') {
-              let deliveryCity = 'Kakinada',
-                deliveryZipcode = '500034',
-                deliveryAddress1 = '',
-                deliveryAddress2 = '',
-                landmark = '',
-                deliveryAddress = 'Kakinada',
-                deliveryState = 'Telangana',
-                lat = 0,
-                long = 0;
-              if (orderDetails.patientAddressId) {
-                const patientAddressDetails = await getAddressDetails(
-                  orderDetails.patientAddressId
-                );
-                if (patientAddressDetails) {
-                  deliveryState = patientAddressDetails.state;
-                  deliveryAddress1 = patientAddressDetails.addressLine1;
-                  deliveryAddress2 = patientAddressDetails.addressLine2;
-                  landmark = patientAddressDetails.landmark || landmark;
-                  lat = patientAddressDetails.latitude || lat;
-                  long = patientAddressDetails.longitude || long;
-                  deliveryAddress =
-                    patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                  deliveryCity = patientAddressDetails.city || deliveryCity;
-                  deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
-                }
-              }
-              const orderLineItems = [];
-              let requestType = 'NONCART';
-              let orderType = 'fmcg';
-              if (orderDetails.orderType == 'CART_ORDER') {
-                requestType = 'CART';
-                orderDetails.medicineOrderLineItems.forEach((item) => {
-                  const lineItem = {
-                    itemid: item.medicineSKU,
-                    itemname: item.medicineName,
-                    quantity: item.quantity * item.mou,
-                    packsize: item.mou,
-                    discpercent: (item.mrp - item.price / item.mrp) * 100,
-                    discamount: item.mrp - item.price,
-                    mrp: item.mrp / item.mou, // per unit
-                    splmrp: item.price / item.mou,
-                    totalAmount: item.price * item.quantity,
-                    comment: '',
-                  };
-                  orderLineItems.push(lineItem);
-                });
-                const pharmaItems = orderDetails.medicineOrderLineItems.find((item) => {
-                  return item.isMedicine == '1';
-                });
-                if (pharmaItems.length > 0) {
-                  orderType = 'Pharma';
-                }
-                if (medicineOrderDetails.devliveryCharges > 0) {
-                  orderLineItems.push({
-                    itemid: 'ESH0002',
-                    itemname: 'E SHOP SHIPPING CHARGE',
-                    packsize: 1,
-                    quantity: 1,
-                    discpercent: '',
-                    discamount: '',
-                    mrp: medicineOrderDetails.devliveryCharges,
-                    totalamount: medicineOrderDetails.devliveryCharges,
-                    comment: '',
-                  });
-                }
-              }
-              const paymentDetails = orderDetails.medicineOrderPayments;
-              const patientDetails = orderDetails.patient;
-              let patientAge = 30;
-              if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
-                patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
-              }
-              const orderPrescriptionUrl = [];
-              let prescriptionImages = [];
-              if (orderDetails.prescriptionImageUrl) {
-                prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
-              }
-              if (prescriptionImages.length > 0) {
-                prescriptionImages.map((imageUrl) => {
-                  const url = {
-                    url: imageUrl,
-                  };
-                  orderPrescriptionUrl.push(url);
-                });
-              }
-              const medicineOrderPharma = {
-                orderid: orderDetails.orderAutoId,
-                orderdate: format(
-                  addMinutes(orderDetails.quoteDateTime, 330),
-                  'MM-dd-yyyy HH:mm:ss'
-                ),
-                couponcode: orderDetails.coupon,
-                drname: '',
-                VendorName: 'Apollo247',
-                shippingmethod:
-                  orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
-                paymentmethod: paymentDetails[0].paymentType,
-                prefferedsite: '',
-                ordertype: requestType,
-                orderamount: medicineOrderDetails.estimatedAmount || 0,
-                deliverydate: medicineOrderDetails.orderTat || '',
-                timeslot: '',
-                shippingcharges: medicineOrderDetails.devliveryCharges || 0,
-                categorytype: orderType,
-                customercomment: '',
-                landmark: landmark,
-                issubscribe: false,
-                customerdetails: {
-                  billingaddress: deliveryAddress.trim(),
-                  billingpincode: deliveryZipcode,
-                  billingcity: deliveryCity,
-                  billingstateid: 'TS',
-                  shippingaddress: deliveryAddress.trim(),
-                  shippingpincode: deliveryZipcode,
-                  shippingcity: deliveryCity,
-                  shippingstateid: 'TS',
-                  customerid: '',
-                  patiendname: patientDetails.firstName,
-                  customername:
-                    patientDetails.firstName +
-                    (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                  primarycontactno: patientDetails.mobileNumber.substr(3),
-                  secondarycontactno: '',
-                  age: patientAge,
-                  emailid: patientDetails.emailAddress || '',
-                  cardno: '0',
-                  latitude: lat,
-                  longitude: long,
-                },
-                paymentdetails:
-                  paymentDetails[0].paymentType === 'CASHLESS'
-                    ? [
-                        {
-                          paymentsource: 'paytm',
-                          transactionstatus: 'TRUE',
-                          paymenttransactionid: paymentDetails[0].paymentRefId,
-                          amount: paymentDetails[0].amountPaid,
-                        },
-                      ]
-                    : [],
-                itemdetails: orderLineItems || [],
-                imageurl: orderPrescriptionUrl,
-              };
-              axios
-                .post(
-                  process.env.PHARMACY_MED_PLACE_OMS_ORDERS,
-                  JSON.stringify(medicineOrderPharma),
-                  {
-                    headers: {
-                      'Auth-Token': process.env.PHARMACY_OMS_ORDER_TOKEN,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                )
-                .then((resp) => {
-                  logger.info(
-                    `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
-                      resp.data
-                    )}`
+        })
+          .then(async (response) => {
+            const orderDetails =
+              response &&
+              response.data &&
+              response.data.data &&
+              response.data.data.getMedicineOrderOMSDetails &&
+              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+            if (orderDetails) {
+              console.log(orderDetails.currentStatus, 'order details');
+              if (orderDetails.currentStatus != 'CANCELLED') {
+                let deliveryCity = 'Kakinada',
+                  deliveryZipcode = '500034',
+                  deliveryAddress1 = '',
+                  deliveryAddress2 = '',
+                  landmark = '',
+                  deliveryAddress = 'Kakinada',
+                  deliveryState = 'Telangana',
+                  lat = 0,
+                  long = 0;
+                if (orderDetails.patientAddressId) {
+                  const patientAddressDetails = await getAddressDetails(
+                    orderDetails.patientAddressId
                   );
-                  console.log('pharma resp', resp, resp.data);
-                  if (resp.data.Status == true) {
-                    const requestJSON = {
-                      query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: ${resp.data.ReferenceNo}}){ message }}`,
+                  if (patientAddressDetails) {
+                    deliveryState = patientAddressDetails.state;
+                    deliveryAddress1 = patientAddressDetails.addressLine1;
+                    deliveryAddress2 = patientAddressDetails.addressLine2;
+                    landmark = patientAddressDetails.landmark || landmark;
+                    lat = patientAddressDetails.latitude || lat;
+                    long = patientAddressDetails.longitude || long;
+                    deliveryAddress =
+                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
+                    deliveryCity = patientAddressDetails.city || deliveryCity;
+                    deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
+                  }
+                }
+                const orderLineItems = [];
+                let requestType = 'NONCART';
+                let orderType = 'fmcg';
+                if (orderDetails.orderType == 'CART_ORDER') {
+                  requestType = 'CART';
+                  orderDetails.medicineOrderLineItems.forEach((item) => {
+                    const lineItem = {
+                      itemid: item.medicineSKU,
+                      itemname: item.medicineName,
+                      quantity: item.quantity * item.mou,
+                      packsize: item.mou,
+                      discpercent: ((item.mrp - item.price) / item.mrp) * 100,
+                      discamount: item.mrp - item.price,
+                      mrp: item.mrp / item.mou, // per unit
+                      splmrp: item.price / item.mou,
+                      totalAmount: item.price * item.quantity,
+                      comment: '',
                     };
-                    axios
-                      .post(process.env.API_URL, requestJSON)
-                      .then((placedResponse) => {
-                        console.log(placedResponse, 'placed respose');
-                        azureServiceBus.deleteMessage(result, (deleteError) => {
-                          if (deleteError) {
-                            console.log('delete error', deleteError);
-                          }
-                          console.log('message deleted');
-                        });
-                      })
-                      .catch((placedError) => {
-                        logger.error(
-                          `${orderAutoId} -> processOrders()->orderPlaced from OMS -> ${placedError.stack}`
-                        );
-                        console.log(placedError, 'placed error');
-                        azureServiceBus.deleteMessage(result, (deleteError) => {
-                          if (deleteError) {
-                            console.log('delete error', deleteError);
-                          }
-                          console.log('message deleted');
-                        });
-                      });
+                    orderLineItems.push(lineItem);
+                  });
+                  const pharmaItems = orderDetails.medicineOrderLineItems.find((item) => {
+                    return item.isMedicine == '1';
+                  });
+                  if (pharmaItems.length > 0) {
+                    orderType = 'Pharma';
                   }
-                  res.send({
-                    status: 'success',
-                    reason: '',
-                    code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
-                  });
-                })
-                .catch((pharmaerror) => {
-                  logger.error(
-                    `${orderAutoId} -> processOrders()->PharamaOrderPlaced from OMS -> ${pharmaerror.stack}`
+                  if (orderDetails.devliveryCharges > 0) {
+                    orderLineItems.push({
+                      itemid: 'ESH0002',
+                      itemname: 'E SHOP SHIPPING CHARGE',
+                      packsize: 1,
+                      quantity: 1,
+                      discpercent: '',
+                      discamount: '',
+                      mrp: orderDetails.devliveryCharges,
+                      totalamount: orderDetails.devliveryCharges,
+                      comment: '',
+                    });
+                  }
+                }
+                const paymentDetails = orderDetails.medicineOrderPayments;
+                const patientDetails = orderDetails.patient;
+                let patientAge = 30;
+                if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
+                  patientAge = Math.abs(
+                    differenceInYears(new Date(), parseISO(patientDetails.dateOfBirth))
                   );
-                  console.log('pharma error from OMS', pharmaerror);
-                  res.send({
-                    status: 'Failed',
-                    reason: '',
-                    code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
+                }
+                const orderPrescriptionUrl = [];
+                let prescriptionImages = [];
+                if (orderDetails.prescriptionImageUrl) {
+                  prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
+                }
+                if (prescriptionImages.length > 0) {
+                  prescriptionImages.map((imageUrl) => {
+                    const url = {
+                      url: imageUrl,
+                    };
+                    orderPrescriptionUrl.push(url);
                   });
-                });
+                }
+                if (!orderDetails.orderTat) {
+                  orderDetails.orderTat = '';
+                }
+                const [tatDate, timeslot] = orderDetails.orderTat.split(' ');
+                const medicineOrderPharma = {
+                  orderid: orderDetails.orderAutoId,
+                  orderdate: format(
+                    addMinutes(parseISO(orderDetails.quoteDateTime), 330),
+                    'MM-dd-yyyy HH:mm:ss'
+                  ),
+                  couponcode: orderDetails.coupon,
+                  drname: '',
+                  VendorName: 'Apollo247',
+                  shippingmethod:
+                    orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
+                  paymentmethod: paymentDetails[0].paymentType,
+                  prefferedsite: '',
+                  ordertype: requestType,
+                  orderamount: orderDetails.estimatedAmount || 0,
+                  deliverydate: tatDate ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss') : '',
+                  timeslot: timeslot,
+                  shippingcharges: orderDetails.devliveryCharges || 0,
+                  categorytype: orderType,
+                  customercomment: '',
+                  landmark: landmark,
+                  issubscribe: false,
+                  customerdetails: {
+                    billingaddress: deliveryAddress.trim(),
+                    billingpincode: deliveryZipcode,
+                    billingcity: deliveryCity,
+                    billingstateid: 'TS',
+                    shippingaddress: deliveryAddress.trim(),
+                    shippingpincode: deliveryZipcode,
+                    shippingcity: deliveryCity,
+                    shippingstateid: 'TS',
+                    customerid: '',
+                    patiendname: patientDetails.firstName,
+                    customername:
+                      patientDetails.firstName +
+                      (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
+                    primarycontactno: patientDetails.mobileNumber.substr(3),
+                    secondarycontactno: '',
+                    age: patientAge,
+                    emailid: patientDetails.emailAddress || '',
+                    cardno: '0',
+                    latitude: lat,
+                    longitude: long,
+                  },
+                  paymentdetails:
+                    paymentDetails[0].paymentType === 'CASHLESS'
+                      ? [
+                          {
+                            paymentsource: 'paytm',
+                            transactionstatus: 'TRUE',
+                            paymenttransactionid: paymentDetails[0].paymentRefId,
+                            amount: paymentDetails[0].amountPaid,
+                          },
+                        ]
+                      : [],
+                  itemdetails: orderLineItems || [],
+                  imageurl: orderPrescriptionUrl,
+                };
+                axios
+                  .post(
+                    process.env.PHARMACY_MED_PLACE_OMS_ORDERS,
+                    JSON.stringify(medicineOrderPharma),
+                    {
+                      headers: {
+                        'Auth-Token': process.env.PHARMACY_OMS_ORDER_TOKEN,
+                        'Content-Type': 'application/json',
+                      },
+                    }
+                  )
+                  .then((resp) => {
+                    logger.info(
+                      `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
+                        resp.data
+                      )}`
+                    );
+                    console.log('pharma resp', resp.data);
+                    if (resp.data.Status == true) {
+                      const requestJSON = {
+                        query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: "${resp.data.ReferenceNo}" }){ message }}`,
+                      };
+                      axios
+                        .post(process.env.API_URL, requestJSON)
+                        .then((placedResponse) => {
+                          console.log('placed order in apollo 247', placedResponse.data);
+                          azureServiceBus.deleteMessage(result, (deleteError) => {
+                            if (deleteError) {
+                              console.log('delete error', deleteError);
+                            }
+                            console.log('message deleted');
+                          });
+                        })
+                        .catch((placedError) => {
+                          logger.error(
+                            `${orderAutoId} -> processOrders()->orderPlaced from OMS -> ${placedError.stack}`
+                          );
+                          console.log(placedError, 'placed error');
+                          azureServiceBus.deleteMessage(result, (deleteError) => {
+                            if (deleteError) {
+                              console.log('delete error', deleteError);
+                            }
+                            console.log('message deleted');
+                          });
+                        });
+                    }
+                    res.send({
+                      status: 'success',
+                      reason: '',
+                      code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
+                    });
+                  })
+                  .catch((pharmaerror) => {
+                    logger.error(
+                      `${orderAutoId} -> processOrders()->PharamaOrderPlaced from OMS -> ${pharmaerror.stack}`
+                    );
+                    console.log('pharma error from OMS', pharmaerror);
+                    res.send({
+                      status: 'Failed',
+                      reason: '',
+                      code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
+                    });
+                  });
+              }
             }
-          }
-        });
+          })
+          .catch((error) => {
+            logger.error(
+              `${orderAutoId} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
+            );
+
+            // no need to explicitly saying details about error for clients.
+            console.log(error);
+            //res.statusCode = 401;
+            return res.send({
+              status: 'failed',
+              reason: 'Invalid parameters',
+              code: '10001',
+            });
+          });
       }
     }
   );

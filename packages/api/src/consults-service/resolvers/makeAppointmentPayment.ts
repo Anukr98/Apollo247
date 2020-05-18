@@ -54,11 +54,11 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseMessage: String!
     bankTxnId: String!
     orderId: String!
+    appointment: Appointment
   }
 
   type AppointmentPaymentResult {
-    appointmentPayment: AppointmentPayment
-    appointment: Appointment
+    appointment: AppointmentPayment
   }
 
   extend type Mutation {
@@ -67,8 +67,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
 `;
 
 type AppointmentPaymentResult = {
-  appointmentPayment: AppointmentPayment;
-  appointment: Appointment;
+  appointment: AppointmentPayment;
 };
 
 type AppointmentPayment = {
@@ -81,6 +80,7 @@ type AppointmentPayment = {
   responseMessage: string;
   bankTxnId: string;
   orderId: string;
+  appointment: Appointment;
 };
 
 type AppointmentPaymentInput = {
@@ -269,8 +269,8 @@ const makeAppointmentPayment: Resolver<
       false
     );
   }
-
-  return { appointmentPayment: paymentInfo, appointment: processingAppointment };
+  paymentInfo.appointment = processingAppointment;
+  return { appointment: paymentInfo };
 };
 
 const sendPatientAcknowledgements = async (

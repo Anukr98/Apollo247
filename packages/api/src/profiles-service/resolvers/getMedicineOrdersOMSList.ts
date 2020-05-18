@@ -7,31 +7,26 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
-export const getMedicineOrdersListTypeDefs = gql`
-  type MedicineOrdersListResult {
-    MedicineOrdersList: [MedicineOrders]
+export const getMedicineOrdersOMSListTypeDefs = gql`
+  type MedicineOrdersOMSListResult {
+    medicineOrdersList: [MedicineOrdersOMS]
   }
 
-  type MedicineOrderDetailsResult {
-    MedicineOrderDetails: MedicineOrders
+  type MedicineOrderOMSDetailsResult {
+    medicineOrderDetails: MedicineOrdersOMS
   }
 
-  enum BOOKING_SOURCE {
-    WEB
-    MOBILE
-  }
-
-  type MedicineOrders {
+  type MedicineOrdersOMS {
     id: ID!
     orderAutoId: Int
     quoteId: String
     shopId: String
     estimatedAmount: Float
     patientId: ID!
-    quoteDateTime: String
-    coupon: String
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
+    quoteDateTime: String
+    coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
@@ -40,24 +35,14 @@ export const getMedicineOrdersListTypeDefs = gql`
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
-    medicineOrderLineItems: [MedicineOrderLineItems]
-    medicineOrdersStatus: [MedicineOrdersStatus]
-    medicineOrderPayments: [MedicineOrderPayments]
-    medicineOrderInvoice: [MedicineOrderInvoice]
+    medicineOrderLineItems: [MedicineOrderOMSLineItems]
+    medicineOrderPayments: [MedicineOrderOMSPayments]
+    medicineOrdersStatus: [MedicineOrdersOMSStatus]
+    medicineOrderShipments: [MedicineOrderOMSShipment]
     patient: Patient
   }
 
-  type MedicineOrderInvoice {
-    id: ID!
-    siteId: String
-    remarks: String
-    requestType: String
-    vendorName: String
-    billDetails: String
-    itemDetails: String
-  }
-
-  type MedicineOrderLineItems {
+  type MedicineOrderOMSLineItems {
     medicineSKU: String
     medicineName: String
     price: Float
@@ -70,14 +55,36 @@ export const getMedicineOrdersListTypeDefs = gql`
     isMedicine: String
   }
 
-  type MedicineOrdersStatus {
+  type MedicineOrderOMSShipment {
+    id: ID!
+    siteId: String
+    siteName: String
+    apOrderNo: String
+    updatedDate: String
+    currentStatus: MEDICINE_ORDER_STATUS
+    itemDetails: String
+    medicineOrdersStatus: [MedicineOrdersOMSStatus]
+    medicineOrderInvoice: [MedicineOrderOMSInvoice]
+  }
+
+  type MedicineOrderOMSInvoice {
+    id: ID!
+    siteId: String
+    remarks: String
+    requestType: String
+    vendorName: String
+    billDetails: String
+    itemDetails: String
+  }
+
+  type MedicineOrdersOMSStatus {
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
     statusDate: DateTime
     hideStatus: Boolean
   }
 
-  type MedicineOrderPayments {
+  type MedicineOrderOMSPayments {
     id: ID!
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE
     amountPaid: Float
@@ -90,25 +97,25 @@ export const getMedicineOrdersListTypeDefs = gql`
   }
 
   extend type Query {
-    getMedicineOrdersList(patientId: String): MedicineOrdersListResult!
-    getMedicineOrderDetails(patientId: String, orderAutoId: Int): MedicineOrderDetailsResult!
-    getMedicinePaymentOrder: MedicineOrdersListResult!
+    getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
+    getMedicineOrderOMSDetails(patientId: String, orderAutoId: Int): MedicineOrderOMSDetailsResult!
+    getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
   }
 `;
 
-type MedicineOrdersListResult = {
-  MedicineOrdersList: MedicineOrders[];
+type MedicineOrdersOMSListResult = {
+  medicineOrdersList: MedicineOrders[];
 };
 
-type MedicineOrderDetailsResult = {
-  MedicineOrderDetails: MedicineOrders;
+type MedicineOrderOMSDetailsResult = {
+  medicineOrderDetails: MedicineOrders;
 };
 
-const getMedicineOrdersList: Resolver<
+const getMedicineOrdersOMSList: Resolver<
   null,
   { patientId: string; orderAutoId?: number },
   ProfilesServiceContext,
-  MedicineOrdersListResult
+  MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(args.patientId);
@@ -117,15 +124,15 @@ const getMedicineOrdersList: Resolver<
   }
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(args.patientId);
-  return { MedicineOrdersList };
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(args.patientId);
+  return { medicineOrdersList };
 };
 
-const getMedicineOrderDetails: Resolver<
+const getMedicineOrderOMSDetails: Resolver<
   null,
   { patientId: string; orderAutoId: number },
   ProfilesServiceContext,
-  MedicineOrderDetailsResult
+  MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
@@ -135,39 +142,39 @@ const getMedicineOrderDetails: Resolver<
     }
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  let MedicineOrderDetails;
+  let medicineOrderDetails;
   if (!args.patientId) {
-    MedicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOderId(
+    medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOderId(
       args.orderAutoId
     );
   } else {
-    MedicineOrderDetails = await medicineOrdersRepo.getMedicineOrderById(
+    medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderById(
       args.patientId,
       args.orderAutoId
     );
   }
-  console.log(MedicineOrderDetails, 'medicineOrderDetails');
-  if (!MedicineOrderDetails) {
+  console.log(medicineOrderDetails, 'medicineOrderDetails');
+  if (!medicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  return { MedicineOrderDetails };
+  return { medicineOrderDetails };
 };
 
-const getMedicinePaymentOrder: Resolver<
+const getMedicineOMSPaymentOrder: Resolver<
   null,
   {},
   ProfilesServiceContext,
-  MedicineOrdersListResult
+  MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { MedicineOrdersList };
+  const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
+  return { medicineOrdersList };
 };
 
-export const getMedicineOrdersListResolvers = {
+export const getMedicineOrdersOMSListResolvers = {
   Query: {
-    getMedicineOrdersList,
-    getMedicineOrderDetails,
-    getMedicinePaymentOrder,
+    getMedicineOrdersOMSList,
+    getMedicineOrderOMSDetails,
+    getMedicineOMSPaymentOrder,
   },
 };

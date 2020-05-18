@@ -131,7 +131,10 @@ export const RefferalCode: React.FC = () => {
           onChange={(newValue: any) => {
             const updatedValue = newValue ? newValue.value : '';
             setReferralSpecialtyName(updatedValue);
-            if (updatedValue === '') setReferralDescription('');
+            if (updatedValue === '') {
+              setReferralDescription('');
+              setReferralError(false);
+            }
           }}
           noOptionsMessage={() => 'No speciality matching your search'}
           options={options}
@@ -242,7 +245,7 @@ export const RefferalCode: React.FC = () => {
           variant="outlined"
           placeholder="Enter reason for referral"
           multiline
-          disabled={!caseSheetEdit}
+          disabled={!caseSheetEdit || buildOption(referralSpecialtyName) === ''}
           required
           onFocus={(e) => moveCursorToEnd(e.currentTarget)}
           error={referralError}

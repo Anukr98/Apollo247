@@ -1,11 +1,12 @@
 const getMedicineOrderQuery = (method, patientId, orderId) => {
   return `query {
-        "${method}"(patientId:"${patientId}", orderAutoId:${orderId}) {
+        ${method}(patientId:"${patientId}", orderAutoId:${orderId}) {
           MedicineOrderDetails {
             id
             shopId
             orderAutoId
             estimatedAmount
+            orderTat
             pharmaRequest
             devliveryCharges
             deliveryType
@@ -13,6 +14,8 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             prescriptionImageUrl
             orderType
             currentStatus
+            quoteDateTime
+            coupon
             patient{
               mobileNumber
               firstName

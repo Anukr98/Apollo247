@@ -6,6 +6,7 @@ module.exports = Object.freeze({
   SEND_UNREAD_MESSAGES_NOTIFICATION: `query { sendUnreadMessagesNotification }`,
   ARCHIVE_MESSAGES: `query { archiveMessages }`,
   NO_SHOW_REMINDER: `query {noShowReminderNotification {status apptsListCount noCaseSheetCount}}`,
+  NO_SHOW_REMINDER_30: `query {noShowReminder30Min {status apptsListCount noCaseSheetCount}}`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
   DAILY_APPOINTMENT_SUMMARY: `query { sendDailyAppointmentSummary }`,
@@ -20,6 +21,5 @@ module.exports = Object.freeze({
   PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS: 'Invalid parameters',
   PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON: 'Something went wrong, please try again!',
   PAYMENT_MODE_ONLY_TRUE: 'YES',
-  INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.'
-
+  INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.',
 });
