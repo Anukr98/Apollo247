@@ -63,8 +63,20 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
+export enum CustomerType {
+  FIRST = "FIRST",
+  RECURRING = "RECURRING",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -261,7 +273,7 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
-export enum NonCartOrderCity {
+export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
@@ -281,6 +293,11 @@ export enum PATIENT_ADDRESS_TYPE {
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
 export enum REQUEST_ROLES {
@@ -351,6 +368,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -604,7 +622,7 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
-export interface MedicineCartInput {
+export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   estimatedAmount?: number | null;
@@ -617,26 +635,30 @@ export interface MedicineCartInput {
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
-  items?: (MedicineCartItem | null)[] | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
   coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
 }
 
-export interface MedicineCartItem {
+export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
   mou?: number | null;
-  isMedicine?: string | null;
+  isMedicine: string;
 }
 
 export interface MedicineOrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
+  latitude?: number | null;
+   longitude?: number | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -666,6 +688,15 @@ export interface MessageInput {
   type: notificationType;
 }
 
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
+}
+
 export interface OtpVerificationInput {
   id: string;
   otp: string;
@@ -683,6 +714,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -717,7 +750,13 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
-export interface PrescriptionMedicineInput {
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
+export interface PrescriptionMedicineOrderOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
@@ -729,13 +768,13 @@ export interface PrescriptionMedicineInput {
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
   isEprescription?: number | null;
-  payment?: PrescriptionMedicinePaymentDetails | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
   email?: string | null;
-  NonCartOrderCity?: NonCartOrderCity | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
 }
 
-export interface PrescriptionMedicinePaymentDetails {
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;
@@ -803,6 +842,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {

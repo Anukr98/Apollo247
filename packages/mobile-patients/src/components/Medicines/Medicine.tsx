@@ -1,4 +1,3 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   useAppCommonData,
   LocationData,
@@ -25,6 +24,7 @@ import {
   PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
+  HomeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -396,7 +396,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         paddingBottom: serviceabilityMsg ? 0 : 10,
         backgroundColor: '#fff',
       },
-      apolloLogo: { width: 57, height: 37 },
       menuItemContainer: {
         marginHorizontal: 0,
         padding: 0,
@@ -424,7 +423,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       serviceabilityMsg: { ...theme.viewStyles.text('R', 10, '#890000') },
     });
 
-    const renderApolloLogo = () => (
+    const renderIcon = () => (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
@@ -437,7 +436,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           );
         }}
       >
-        <ApolloLogo style={localStyles.apolloLogo} resizeMode="contain" />
+        <HomeIcon />
       </TouchableOpacity>
     );
 
@@ -468,16 +467,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
     };
 
+    const formatText = (text: string, count: number) =>
+      text.length > count ? `${text.slice(0, count)}...` : text;
+
     const renderDeliverToLocationCTA = () => {
       const location = pharmacyLocation
-        ? `${g(pharmacyLocation, 'city')} ${g(pharmacyLocation, 'pincode')}`
-        : `${g(locationDetails, 'city')} ${g(locationDetails, 'pincode')}`;
+        ? `${formatText(g(pharmacyLocation, 'city') || '', 18)} ${g(pharmacyLocation, 'pincode')}`
+        : `${formatText(g(locationDetails, 'city') || '', 18)} ${g(locationDetails, 'pincode')}`;
+
       return (
-        <View style={{ paddingLeft: 10 }}>
+        <View style={{ paddingLeft: 15 }}>
           <View style={{ flexDirection: 'row' }}>
             <View>
-              <Text style={localStyles.deliverToText}>
-                Deliver to {g(currentPatient, 'firstName') || ''}
+              <Text numberOfLines={1} style={localStyles.deliverToText}>
+                Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
               </Text>
               <View>
                 <Text style={localStyles.locationText}>{location}</Text>
@@ -516,7 +519,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <View style={localStyles.headerContainer}>
-        {renderApolloLogo()}
+        {renderIcon()}
         {renderDeliverToLocationMenuAndCTA()}
         {renderCartIcon()}
       </View>
@@ -1373,10 +1376,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) - 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingRight: 12,
+                paddingLeft: 3,
+              }}
+            >
+              {'-'}
+            </Text>
           </TouchableOpacity>
           <Text
-            style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal: 12 }}
+            style={{
+              ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0),
+            }}
           >
             {getItemQuantity(data.sku)}
           </Text>
@@ -1389,7 +1402,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingLeft: 12,
+              }}
+            >
+              {'+'}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -1410,6 +1430,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             {renderIconOrImage()}
             <View style={{ width: 16 }} />
             {renderNamePriceAndInStockStatus()}
+            <View style={{ width: 24 }} />
             {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
           </View>
           {data.showSeparator ? <Spearator /> : null}

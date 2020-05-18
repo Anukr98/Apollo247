@@ -2,6 +2,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useContext, useState } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { useCurrentPatient } from 'hooks/authHooks';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import _startCase from 'lodash/startCase';
@@ -17,6 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+      paddingBottom: 1,
     },
     previewHeader: {
       backgroundColor: theme.palette.common.white,
@@ -34,7 +36,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     prescriptionPreview: {
       backgroundColor: '#fff',
-      display: 'inline-block',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
       width: 'calc(100% - 40px)',
       color: 'rgba(0, 0, 0, 0.6)',
       margin: 20,
@@ -42,33 +46,37 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageHeader: {
       display: 'flex',
+      justifyContent: 'space-between',
     },
     doctorInformation: {
       marginLeft: 'auto',
-      width: 198,
+      maxWidth: 250,
       '& h3': {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 'bold',
         color: '#02475b',
         margin: 0,
-        '& span': {
-          fontWeight: 'normal',
-          fontSize: 10,
-        },
+        lineHeight: 1.5,
       },
+    },
+    specialty: {
+      fontSize: 9,
+      color: '#02475b',
+      margin: 0,
+      lineHeight: 1.5,
+    },
+    qualification: {
+      fontWeight: 500,
     },
     signInformation: {
       marginRight: 'auto',
-      width: 198,
+      maxWidth: 250,
       '& h3': {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 'bold',
         color: '#02475b',
         margin: 0,
-        '& span': {
-          fontWeight: 'normal',
-          fontSize: 10,
-        },
+        padding: 0,
       },
     },
     address: {
@@ -85,52 +93,64 @@ const useStyles = makeStyles((theme: Theme) => {
     sectionHeader: {
       fontSize: 11,
       fontWeight: 500,
-      color: 'rgba(0, 0, 0, 0.7)',
-      backgroundColor: '#f7f7f7',
-      padding: '8px 12px',
+      color: '#02475b',
+      textTransform: 'uppercase',
+      padding: '8px 5px',
+      borderBottom: '1px solid #02475b',
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        marginRight: 10,
+      },
+    },
+    prescriptionSection: {
+      marginBottom: 10,
     },
     accountDetails: {
       fontSize: 10,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12,
+      padding: '20px 12px',
     },
     infoRow: {
       display: 'flex',
-      paddingBottom: 5,
+      paddingBottom: 10,
+      alignItems: 'center',
     },
     label: {
       width: 80,
       paddingRight: 10,
+      fontSize: 10,
     },
     patientName: {
-      fontSize: 12,
-      color: '#02475b',
+      fontSize: 11,
       fontWeight: 500,
+      color: 'rgba(0, 0, 0, 0.8)',
     },
     chiefComplaints: {
       fontSize: 12,
       color: 'rgba(0, 0, 0, 0.6)',
-      padding: 12,
+      padding: '20px 12px',
     },
     complaintsInfoRow: {
-      paddingBottom: 5,
+      paddingBottom: 15,
     },
     complaintsLabel: {
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: 500,
-      color: '#01475b',
+      color: 'rgba(0, 0, 0, 0.8)',
+      paddingBottom: 3,
     },
     diagnosis: {
       fontSize: 12,
-      color: '#02475b',
+      color: 'rgba(0, 0, 0, 0.8)',
       fontWeight: 500,
-      padding: 12,
+      padding: '20px 12px',
     },
     medicationList: {
       fontSize: 12,
       fontWeight: 600,
-      padding: 12,
-      color: '#02475b',
+      padding: '20px 12px',
+      color: 'rgba(0, 0, 0, 0.8)',
       '& ol': {
         padding: 0,
         paddingLeft: 18,
@@ -147,21 +167,39 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     advice: {
-      fontSize: 12,
-      padding: 12,
+      display: 'flex',
+      '& span': {
+        marginRight: 15,
+        fontSize: 10,
+        color: 'rgba(0, 0, 0, 0.5)',
+        width: 100,
+        flex: '0 0 100px',
+        lineHeight: 1.5,
+      },
+    },
+    adviceInstruction: {
+      padding: '20px 12px',
     },
     disclaimer: {
-      fontSize: 10,
+      fontSize: 9,
       borderTop: 'solid 1px rgba(2, 71, 91, 0.15)',
       color: 'rgba(0, 0, 0, 0.5)',
       paddingTop: 10,
+      display: 'flex',
+      '& span': {
+        '&:first-child': {
+          color: 'rgba(0, 0, 0, 0.6)',
+          fontWeight: 'bold',
+          marginRight: 10,
+        },
+      },
     },
     pageNumbers: {
-      textAlign: 'center',
-      color: '#02475b',
+      textAlign: 'right',
+      color: 'rgba(0, 0, 0, 0.66)',
       fontSize: 8,
       fontWeight: 500,
-      paddingBottom: 15,
+      paddingBottom: 8,
     },
     labelContent: {
       width: '100%',
@@ -177,7 +215,57 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     labelBlue: {
+      color: 'rgba(0, 0, 0, 0.8)',
+      fontWeight: 500,
+      fontSize: 11,
+    },
+    prescriptionHeader: {
+      marginBottom: 10,
+      marginTop: 30,
+      borderTop: '1px solid #02475b',
+      padding: '20px 12px',
+      '& h6': {
+        fontSize: 11,
+        color: 'rgba(0, 0, 0, 0.6)',
+        lineHeight: 1.5,
+        margin: '20px 0 10px',
+        fontWeight: 400,
+      },
+    },
+    gerenalInfo: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+    },
+    consultInfo: {
+      display: 'flex',
+      justifyContent: 'space-between',
+    },
+    labelRight: {
+      width: 120,
+    },
+    subInfo: {
+      fontSize: 8,
+      color: 'rgba(0, 0, 0, 0.5)',
+      fontWeight: 400,
+    },
+    vitalLabel: {
       color: '#02475b',
+      marginBottom: 5,
+    },
+    instruction: {
+      whiteSpace: 'pre-wrap',
+      marginBottom: 10,
+      color: 'rgba(0, 0, 0, 0.6)',
+      fontSize: 11,
+    },
+
+    followContent: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: 'rgba(0, 0, 0, 0.8)',
+      lineHeight: 1.5,
     },
   };
 });
@@ -186,6 +274,7 @@ interface savingProps {
 }
 export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles({});
+  const currentDoctor = useCurrentPatient();
   const {
     patientDetails,
     sdConsultationDate,
@@ -205,7 +294,32 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptoms,
     diagnosticPrescription,
     medicinePrescription,
+    referralDescription,
+    referralSpecialtyName,
   } = useContext(CaseSheetContext);
+
+  /*console.log({
+    patientDetails,
+    sdConsultationDate,
+    height,
+    weight,
+    bp,
+    temperature,
+    appointmentInfo,
+    consultType,
+    createdDoctorProfile,
+    followUp,
+    followUpAfterInDays,
+    followUpDate,
+    followUpConsultType,
+    diagnosis,
+    otherInstructions,
+    symptoms,
+    diagnosticPrescription,
+    medicinePrescription,
+  });
+
+  console.log({ currentDoctor });*/
 
   const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
@@ -438,13 +552,18 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             <div className={classes.doctorInformation}>
               <h3>
                 {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                <br />
-                <span>{`${
-                  createdDoctorProfile.specialty.specialistSingularTerm
-                    ? createdDoctorProfile.specialty.specialistSingularTerm
-                    : ''
-                } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
               </h3>
+              {/* {currentDoctor.qualification && (
+                <p className={`${classes.specialty} ${classes.qualification}`}>
+                  {currentDoctor.qualification}
+                </p>
+              )} */}
+
+              <p className={classes.specialty}>{`${
+                createdDoctorProfile.specialty.specialistSingularTerm
+                  ? createdDoctorProfile.specialty.specialistSingularTerm
+                  : ''
+              } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
               {doctorFacilityDetails ? (
                 <>
                   <p className={classes.address}>
@@ -468,72 +587,88 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           ) : null}
         </div>
         <div className={classes.pageContent}>
-          <div className={classes.sectionHeader}>Appointment Details</div>
-          <div className={classes.accountDetails}>
-            <div className={classes.infoRow}>
-              <div className={classes.label}>Patient</div>
-              <div className={classes.labelContent}>
-                {patientDetails ? (
-                  <div className={classes.patientName}>
-                    {`${patientDetails.firstName}  ${patientDetails.lastName}`} |{' '}
-                    {patientDetails.gender} | {getAge(patientDetails.dateOfBirth)}
+          <div className={classes.prescriptionSection}>
+            <div className={classes.sectionHeader}>Appointment Details</div>
+            <div className={classes.consultInfo}>
+              <div className={classes.accountDetails}>
+                {patientDetails && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Patient</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.patientName}>
+                        {`${patientDetails.firstName}  ${patientDetails.lastName} | ${
+                          patientDetails.gender
+                        } | ${getAge(patientDetails.dateOfBirth)}yrs`}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {patientDetails && (patientDetails.emailAddress || patientDetails.mobileNumber) && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Contact</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{`${
+                        patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
+                      } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
+                    </div>
+                  </div>
+                )}
+                {patientDetails && patientDetails.uhid && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>UHID</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{patientDetails.uhid}</div>
+                    </div>
+                  </div>
+                )}
+                {appointmentInfo && appointmentInfo.displayId && (
+                  <div className={classes.infoRow}>
+                    <div className={classes.label}>Appt Id</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className={classes.accountDetails}>
+                {appointmentInfo && appointmentInfo.appointmentDateTime ? (
+                  <div className={classes.infoRow}>
+                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Date</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>
+                        {sdConsultationDate && sdConsultationDate !== ''
+                          ? `${moment(sdConsultationDate).format('DD/MM/YYYY')} at ${moment(
+                              sdConsultationDate
+                            ).format('h:mm a')}`
+                          : `${moment(appointmentInfo.appointmentDateTime).format(
+                              'DD/MM/YYYY'
+                            )} at ${moment(appointmentInfo.appointmentDateTime).format('h:mm a')}`}
+                      </div>
+                    </div>
                   </div>
                 ) : null}
+                {consultType ? (
+                  <div className={classes.infoRow}>
+                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Type</div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue}>
+                        {_startCase(_toLower(consultType[0]))}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+                {/* <div className={classes.infoRow}>
+                  <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
+                  <div className={classes.labelContent}>
+                    <div className={classes.labelBlue}>2</div>
+                  </div>
+                </div> */}
               </div>
             </div>
-            {weight || height || bp || temperature ? (
-              <div className={classes.infoRow}>
-                <div className={classes.label}>Vitals</div>
-                <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>
-                    {`${weight ? `Weight : ${weight}` : ''} ${
-                      height ? `| Height: ${height}` : ''
-                    } ${bp ? `| BP: ${bp}` : ''}  ${
-                      temperature ? `| Temperature: ${temperature}` : ''
-                    }`}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-            {patientDetails && patientDetails.uhid ? (
-              <div className={classes.infoRow}>
-                <div className={classes.label}>UHID</div>
-                <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>{patientDetails.uhid}</div>
-                </div>
-              </div>
-            ) : null}
-            {appointmentInfo && appointmentInfo.displayId ? (
-              <div className={classes.infoRow}>
-                <div className={classes.label}>Appt Id</div>
-                <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
-                </div>
-              </div>
-            ) : null}
-            {appointmentInfo && appointmentInfo.appointmentDateTime ? (
-              <div className={classes.infoRow}>
-                <div className={classes.label}>Consult Date</div>
-                <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>
-                    {sdConsultationDate && sdConsultationDate !== ''
-                      ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                      : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-            {consultType ? (
-              <div className={classes.infoRow}>
-                <div className={classes.label}>Consult Type</div>
-                <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>{_startCase(_toLower(consultType[0]))}</div>
-                </div>
-              </div>
-            ) : null}
           </div>
-          {!loader && symptoms && symptoms.length > 0 ? (
-            <>
+          {!loader &&
+          ((symptoms && symptoms.length > 0) || weight || height || bp || temperature) ? (
+            <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>Chief Complaints</div>
               <div className={classes.chiefComplaints}>
                 {symptoms.map((symptom) => (
@@ -542,11 +677,27 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
+                {weight || height || bp || temperature ? (
+                  <div className={classes.complaintsInfoRow}>
+                    <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
+                      VITALS <span className={classes.subInfo}>(as declared by patient)</span>
+                    </div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
+                        {`${weight ? `Weight : ${weight}` : ''} ${
+                          height ? `| Height: ${height}` : ''
+                        } ${bp ? `| BP: ${bp}` : ''}  ${
+                          temperature ? `| Temperature: ${temperature}` : ''
+                        }`}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
-            </>
+            </div>
           ) : null}
           {!loader && diagnosis && diagnosis.length > 0 ? (
-            <>
+            <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>Diagnosis</div>
               <div className={classes.diagnosis}>
                 {diagnosis.map((diagnos) => (
@@ -555,19 +706,23 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   </div>
                 ))}
               </div>
-            </>
+            </div>
           ) : null}
           {!loader && medicinePrescription && medicinePrescription.length > 0 ? (
-            <>
-              <div className={classes.sectionHeader}>Medication Prescribed</div>
+            <div className={classes.prescriptionSection}>
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
+              </div>
               <div className={classes.medicationList}>
                 <ol>{medicineHtml}</ol>
               </div>
-            </>
+            </div>
           ) : null}
           {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
-            <>
-              <div className={classes.sectionHeader}>Diagnostic Tests</div>
+            <div className={classes.prescriptionSection}>
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-microscope-solid.svg')} /> Diagnostic Tests
+              </div>
               <div className={classes.medicationList}>
                 <ol>
                   {diagnosticPrescription.map(
@@ -578,62 +733,128 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   )}
                 </ol>
               </div>
-            </>
+            </div>
           ) : null}
           {isPageContentFull() ? null : (
             <>
-              {!loader && otherInstructions && otherInstructions.length > 0 ? (
-                <>
-                  <div className={classes.sectionHeader}>Advice Given</div>
-                  <div className={classes.advice}>
-                    {otherInstructions.map((instruction, index) => (
-                      <span>
-                        {`${instruction.instruction}`}
-                        {index < otherInstructions.length - 1 && ','}
-                      </span>
-                    ))}
+              {!loader &&
+              ((otherInstructions && otherInstructions.length > 0) ||
+                (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
+                !isEmpty(referralSpecialtyName) ||
+                !isEmpty(referralDescription)) ? (
+                <div className={classes.prescriptionSection}>
+                  <div className={classes.sectionHeader}>
+                    <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
                   </div>
-                </>
-              ) : null}
-              {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-                <>
-                  <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUpContent}>{getFollowUpData()}</div>
-                </>
+                  <div className={classes.adviceInstruction}>
+                    {otherInstructions && otherInstructions.length > 0 && (
+                      <div className={classes.advice}>
+                        <span>Doctor’s Advise</span>
+                        <div>
+                          {otherInstructions.map((instruction) => (
+                            <div className={classes.instruction}>{instruction.instruction}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                      <div className={classes.advice}>
+                        <span>Follow Up</span>
+                        <div className={classes.followContent}>{getFollowUpData()}</div>
+                      </div>
+                    ) : null}
+                    {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                      <div className={classes.advice}>
+                        <span>Referral</span>
+                        <div>
+                          {!isEmpty(referralSpecialtyName) && (
+                            <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                              {referralSpecialtyName}
+                            </div>
+                          )}
+                          {!isEmpty(referralDescription) && (
+                            <div className={classes.instruction}>{referralDescription}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : null}
             </>
           )}
           {isPageContentFull() ? null : (
             <>
-              {createdDoctorProfile && createdDoctorProfile.signature && (
-                <>
-                  <div className={classes.sectionHeader}>Prescribed by</div>
-                  <div className={classes.followUpContent}>
-                    <img src={createdDoctorProfile.signature} />
-                  </div>
-                  <div className={classes.signInformation}>
-                    <h3 className={classes.followUpContent}>
-                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                      <br />
-                      <span>{`${
-                        createdDoctorProfile.specialty.specialistSingularTerm
-                      } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
-                    </h3>
-                  </div>
-                </>
+              {createdDoctorProfile && (
+                <div className={classes.prescriptionHeader}>
+                  {((sdConsultationDate && sdConsultationDate !== '') ||
+                    (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+                    <h6>
+                      Prescribed on{' '}
+                      {sdConsultationDate && sdConsultationDate !== ''
+                        ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                        : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                      by
+                    </h6>
+                  )}
+                  {createdDoctorProfile!.signature && (
+                    <div className={classes.followUpContent}>
+                      <img src={createdDoctorProfile.signature} />
+                    </div>
+                  )}
+                  {(createdDoctorProfile!.salutation ||
+                    createdDoctorProfile!.firstName ||
+                    createdDoctorProfile!.lastName ||
+                    createdDoctorProfile!.registrationNumber ||
+                    (createdDoctorProfile!.specialty &&
+                      createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+                    <div className={classes.signInformation}>
+                      {(createdDoctorProfile.salutation ||
+                        createdDoctorProfile.firstName ||
+                        createdDoctorProfile.lastName) && (
+                        <h3 className={classes.followUpContent}>
+                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                        </h3>
+                      )}
+
+                      {/* {currentDoctor.qualification && (
+                      <p className={`${classes.specialty} ${classes.qualification}`}>
+                        {currentDoctor.qualification}
+                      </p>
+                    )} */}
+                      {((createdDoctorProfile.specialty &&
+                        createdDoctorProfile.specialty.specialistSingularTerm) ||
+                        createdDoctorProfile.registrationNumber) && (
+                        <p className={classes.specialty}>
+                          {createdDoctorProfile.specialty.specialistSingularTerm
+                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                            : ''}
+                          {createdDoctorProfile.registrationNumber
+                            ? `MCI Reg. No. ${createdDoctorProfile.registrationNumber}`
+                            : ''}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </>
           )}
         </div>
-        {isPageContentFull() &&
-        ((followUp.length > 0 && followUp[0]) ||
-          (otherInstructions && otherInstructions.length > 0)) ? (
-          <div className={classes.pageNumbers}>Page 1 of 2</div>
-        ) : null}
-        <div className={classes.disclaimer}>
-          Disclaimer: The prescription has been issued based on your inputs during chat/call with
-          the doctor. In case of emergency please visit a nearby hospital. This is an electronically
-          generated prescription and will not require a doctor signature.
+        <div className={classes.gerenalInfo}>
+          {isPageContentFull() &&
+          ((followUp.length > 0 && followUp[0]) ||
+            (otherInstructions && otherInstructions.length > 0)) ? (
+            <div className={classes.pageNumbers}>Page 1 of 2</div>
+          ) : null}
+          <div className={classes.disclaimer}>
+            <span>Disclaimer:</span>
+            <span>
+              This prescription is issued on the basis of your teleconsultation. It is valid from
+              the date of issue for upto 90 days (for the specific period/dosage of each medicine as
+              advised).
+            </span>
+          </div>
         </div>
       </div>
       {isPageContentFull() &&

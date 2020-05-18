@@ -211,6 +211,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
       orderStatus = currentStatus;
       statusMsg = 'order payment done successfully';
     }
+
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: currentStatus,
       medicineOrders: orderDetails,
@@ -218,6 +219,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusMessage: statusMsg,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
@@ -230,9 +232,9 @@ const SaveMedicineOrderPaymentMq: Resolver<
     ) {
       const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
       const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
-      const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME
-        ? process.env.AZURE_SERVICE_BUS_QUEUE_NAME
-        : '';
+      const queueName = orderDetails.isOmsOrder
+        ? process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME || ''
+        : process.env.AZURE_SERVICE_BUS_QUEUE_NAME || '';
       azureServiceBus.createTopicIfNotExists(queueName, (topicError) => {
         if (topicError) {
           log(

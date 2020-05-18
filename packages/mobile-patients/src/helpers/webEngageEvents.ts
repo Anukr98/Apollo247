@@ -104,6 +104,11 @@ export enum WebEngageEventName {
   CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked', // In appointment details screen
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
+
+  // Payments Events
+  PAYMENT_INSTRUMENT = 'Payment Instrument',
+  PAYMENT_STATUS = 'Payment Status'
+
 }
 
 export interface PatientInfo {

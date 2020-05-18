@@ -140,6 +140,7 @@ export enum ApiConstants {
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
   PATIENT_INITIATE_REASON = 'initiated by patient',
   PATIENT_NOSHOW_REASON = 'Patient did not initiate the appointment, no casesheet',
+  NOSHOW_REASON = 'Both Doctor & the Patient have not joined the consultation',
 
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
@@ -303,4 +304,6 @@ export enum ApiConstants {
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
   AUTO_SUBMIT_CASESHEET_TIME = 10,
+  STAT_LOWECASE = 'stat',
+  STAT_UPPERCASE = 'STAT(Immediately)',
 }

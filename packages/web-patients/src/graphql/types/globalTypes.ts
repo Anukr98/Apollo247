@@ -267,6 +267,10 @@ export enum NonCartOrderCity {
   CHENNAI = "CHENNAI",
 }
 
+export enum NonCartOrderOMSCity {
+  CHENNAI = "CHENNAI",
+}
+
 export enum PATIENT_ADDRESS_TYPE {
   HOME = "HOME",
   OFFICE = "OFFICE",
@@ -624,6 +628,8 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -673,7 +679,33 @@ export interface PrescriptionMedicineInput {
   orderAutoId?: number | null;
 }
 
+export interface PrescriptionMedicineOrderOMSInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
+  appointmentId?: string | null;
+  isEprescription?: number | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
+  email?: string | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
+  orderAutoId?: number | null;
+}
+
 export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+}
+
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;
@@ -709,6 +741,8 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface UpdatePatientInput {

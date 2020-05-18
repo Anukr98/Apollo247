@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const azure = require('azure-sb');
 const fs = require('fs');
 const deeplink = require('node-deeplink');
-const format = require('date-fns/format');
+const { parseISO, format, differenceInYears, addMinutes } = require('date-fns');
 const logger = require('./winston-logger')('Universal-Error-Logs');
 const {
   paymedRequest,
@@ -30,6 +30,9 @@ const {
 } = require('./consult-integrations/controllers');
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
+
+const { getAddressDetails } = require('./commons/getAddressDetails');
+const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 
 require('dotenv').config();
 
@@ -66,6 +69,7 @@ app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 app.get('/invokeNoShowReminder', cronTabs.noShowReminder);
+app.get('/invokeNoShowReminder30Min', cronTabs.noShowReminder30Min);
 app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
@@ -133,7 +137,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -154,7 +158,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -175,7 +179,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -197,7 +201,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -219,7 +223,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -257,7 +261,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -389,10 +393,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -542,6 +543,7 @@ app.get('/processOrders', (req, res) => {
   let deliveryCity = 'Kakinada',
     deliveryZipcode = '500045',
     deliveryAddress = 'Kakinada';
+  let queueMessage = '';
   function getAddressDetails(addressId) {
     return new Promise(async (resolve, reject) => {
       axios({
@@ -585,7 +587,6 @@ app.get('/processOrders', (req, res) => {
         });
     });
   }
-  let queueMessage = '';
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
@@ -606,8 +607,6 @@ app.get('/processOrders', (req, res) => {
         queueMessage = result.body;
         const queueDetails = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-        console.log(queueDetails, 'order details');
-        //logger.info(`OrderID and PatientID - ${JSON.stringify(queueDetails)}`);
         axios({
           url: process.env.API_URL,
           method: 'post',
@@ -832,7 +831,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -852,7 +851,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -913,6 +912,279 @@ app.get('/processOrders', (req, res) => {
           .catch((error) => {
             logger.error(
               `${queueDetails[1]} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
+            );
+
+            // no need to explicitly saying details about error for clients.
+            console.log(error);
+            //res.statusCode = 401;
+            return res.send({
+              status: 'failed',
+              reason: 'Invalid parameters',
+              code: '10001',
+            });
+          });
+      }
+    }
+  );
+});
+
+app.get('/processOmsOrders', (req, res) => {
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
+  const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
+  azureServiceBus.receiveSubscriptionMessage(
+    process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME,
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER,
+    { isPeekLock: false },
+    (subscriptionError, result) => {
+      if (subscriptionError) {
+        console.log('read error', subscriptionError);
+        res.send({
+          status: 'failed',
+          reason: subscriptionError,
+          code: '10001',
+        });
+      } else {
+        logger.info(
+          `message from topic for OMS - processOrders()-> ${JSON.stringify(result.body)}`
+        );
+        queueMessage = result.body;
+        const [prefix, orderAutoId, patientId] = queueMessage.split(':');
+        axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+        axios({
+          url: process.env.API_URL,
+          method: 'post',
+          data: {
+            query: getMedicineOrderQuery('getMedicineOrderOMSDetails', patientId, orderAutoId),
+          },
+        })
+          .then(async (response) => {
+            const orderDetails =
+              response &&
+              response.data &&
+              response.data.data &&
+              response.data.data.getMedicineOrderOMSDetails &&
+              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+            if (orderDetails) {
+              console.log(orderDetails.currentStatus, 'order details');
+              if (orderDetails.currentStatus != 'CANCELLED') {
+                let deliveryCity = 'Kakinada',
+                  deliveryZipcode = '500034',
+                  deliveryAddress1 = '',
+                  deliveryAddress2 = '',
+                  landmark = '',
+                  deliveryAddress = 'Kakinada',
+                  deliveryState = 'Telangana',
+                  lat = 0,
+                  long = 0;
+                if (orderDetails.patientAddressId) {
+                  const patientAddressDetails = await getAddressDetails(
+                    orderDetails.patientAddressId
+                  );
+                  if (patientAddressDetails) {
+                    deliveryState = patientAddressDetails.state;
+                    deliveryAddress1 = patientAddressDetails.addressLine1;
+                    deliveryAddress2 = patientAddressDetails.addressLine2;
+                    landmark = patientAddressDetails.landmark || landmark;
+                    lat = patientAddressDetails.latitude || lat;
+                    long = patientAddressDetails.longitude || long;
+                    deliveryAddress =
+                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
+                    deliveryCity = patientAddressDetails.city || deliveryCity;
+                    deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
+                  }
+                }
+                const orderLineItems = [];
+                let requestType = 'NONCART';
+                let orderType = 'fmcg';
+                if (orderDetails.orderType == 'CART_ORDER') {
+                  requestType = 'CART';
+                  orderDetails.medicineOrderLineItems.forEach((item) => {
+                    const lineItem = {
+                      itemid: item.medicineSKU,
+                      itemname: item.medicineName,
+                      quantity: item.quantity * item.mou,
+                      packsize: item.mou,
+                      discpercent: ((item.mrp - item.price) / item.mrp) * 100,
+                      discamount: item.mrp - item.price,
+                      mrp: item.mrp / item.mou, // per unit
+                      splmrp: item.price / item.mou,
+                      totalAmount: item.price * item.quantity,
+                      comment: '',
+                    };
+                    orderLineItems.push(lineItem);
+                  });
+                  const pharmaItems = orderDetails.medicineOrderLineItems.find((item) => {
+                    return item.isMedicine == '1';
+                  });
+                  if (pharmaItems.length > 0) {
+                    orderType = 'Pharma';
+                  }
+                  if (orderDetails.devliveryCharges > 0) {
+                    orderLineItems.push({
+                      itemid: 'ESH0002',
+                      itemname: 'E SHOP SHIPPING CHARGE',
+                      packsize: 1,
+                      quantity: 1,
+                      discpercent: '',
+                      discamount: '',
+                      mrp: orderDetails.devliveryCharges,
+                      totalamount: orderDetails.devliveryCharges,
+                      comment: '',
+                    });
+                  }
+                }
+                const paymentDetails = orderDetails.medicineOrderPayments;
+                const patientDetails = orderDetails.patient;
+                let patientAge = 30;
+                if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
+                  patientAge = Math.abs(
+                    differenceInYears(new Date(), parseISO(patientDetails.dateOfBirth))
+                  );
+                }
+                const orderPrescriptionUrl = [];
+                let prescriptionImages = [];
+                if (orderDetails.prescriptionImageUrl) {
+                  prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
+                }
+                if (prescriptionImages.length > 0) {
+                  prescriptionImages.map((imageUrl) => {
+                    const url = {
+                      url: imageUrl,
+                    };
+                    orderPrescriptionUrl.push(url);
+                  });
+                }
+                if (!orderDetails.orderTat) {
+                  orderDetails.orderTat = '';
+                }
+                const [tatDate, timeslot] = orderDetails.orderTat.split(' ');
+                const medicineOrderPharma = {
+                  orderid: orderDetails.orderAutoId,
+                  orderdate: format(
+                    addMinutes(parseISO(orderDetails.quoteDateTime), 330),
+                    'MM-dd-yyyy HH:mm:ss'
+                  ),
+                  couponcode: orderDetails.coupon,
+                  drname: '',
+                  VendorName: 'Apollo247',
+                  shippingmethod:
+                    orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
+                  paymentmethod: paymentDetails[0].paymentType,
+                  prefferedsite: '',
+                  ordertype: requestType,
+                  orderamount: orderDetails.estimatedAmount || 0,
+                  deliverydate: tatDate ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss') : '',
+                  timeslot: timeslot,
+                  shippingcharges: orderDetails.devliveryCharges || 0,
+                  categorytype: orderType,
+                  customercomment: '',
+                  landmark: landmark,
+                  issubscribe: false,
+                  customerdetails: {
+                    billingaddress: deliveryAddress.trim(),
+                    billingpincode: deliveryZipcode,
+                    billingcity: deliveryCity,
+                    billingstateid: 'TS',
+                    shippingaddress: deliveryAddress.trim(),
+                    shippingpincode: deliveryZipcode,
+                    shippingcity: deliveryCity,
+                    shippingstateid: 'TS',
+                    customerid: '',
+                    patiendname: patientDetails.firstName,
+                    customername:
+                      patientDetails.firstName +
+                      (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
+                    primarycontactno: patientDetails.mobileNumber.substr(3),
+                    secondarycontactno: '',
+                    age: patientAge,
+                    emailid: patientDetails.emailAddress || '',
+                    cardno: '0',
+                    latitude: lat,
+                    longitude: long,
+                  },
+                  paymentdetails:
+                    paymentDetails[0].paymentType === 'CASHLESS'
+                      ? [
+                          {
+                            paymentsource: 'paytm',
+                            transactionstatus: 'TRUE',
+                            paymenttransactionid: paymentDetails[0].paymentRefId,
+                            amount: paymentDetails[0].amountPaid,
+                          },
+                        ]
+                      : [],
+                  itemdetails: orderLineItems || [],
+                  imageurl: orderPrescriptionUrl,
+                };
+                axios
+                  .post(
+                    process.env.PHARMACY_MED_PLACE_OMS_ORDERS,
+                    JSON.stringify(medicineOrderPharma),
+                    {
+                      headers: {
+                        'Auth-Token': process.env.PHARMACY_OMS_ORDER_TOKEN,
+                        'Content-Type': 'application/json',
+                      },
+                    }
+                  )
+                  .then((resp) => {
+                    logger.info(
+                      `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
+                        resp.data
+                      )}`
+                    );
+                    console.log('pharma resp', resp.data);
+                    if (resp.data.Status == true) {
+                      const requestJSON = {
+                        query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: "${resp.data.ReferenceNo}" }){ message }}`,
+                      };
+                      axios
+                        .post(process.env.API_URL, requestJSON)
+                        .then((placedResponse) => {
+                          console.log('placed order in apollo 247', placedResponse.data);
+                          azureServiceBus.deleteMessage(result, (deleteError) => {
+                            if (deleteError) {
+                              console.log('delete error', deleteError);
+                            }
+                            console.log('message deleted');
+                          });
+                        })
+                        .catch((placedError) => {
+                          logger.error(
+                            `${orderAutoId} -> processOrders()->orderPlaced from OMS -> ${placedError.stack}`
+                          );
+                          console.log(placedError, 'placed error');
+                          azureServiceBus.deleteMessage(result, (deleteError) => {
+                            if (deleteError) {
+                              console.log('delete error', deleteError);
+                            }
+                            console.log('message deleted');
+                          });
+                        });
+                    }
+                    res.send({
+                      status: 'success',
+                      reason: '',
+                      code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
+                    });
+                  })
+                  .catch((pharmaerror) => {
+                    logger.error(
+                      `${orderAutoId} -> processOrders()->PharamaOrderPlaced from OMS -> ${pharmaerror.stack}`
+                    );
+                    console.log('pharma error from OMS', pharmaerror);
+                    res.send({
+                      status: 'Failed',
+                      reason: '',
+                      code: orderDetails.orderAutoId + ', ' + orderDetails.pharmaRequest,
+                    });
+                  });
+              }
+            }
+          })
+          .catch((error) => {
+            logger.error(
+              `${orderAutoId} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`
             );
 
             // no need to explicitly saying details about error for clients.
@@ -1239,7 +1511,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1254,7 +1526,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

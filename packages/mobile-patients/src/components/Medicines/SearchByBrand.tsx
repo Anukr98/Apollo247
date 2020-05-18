@@ -519,11 +519,17 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) - 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'-'}</Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
+                paddingRight: 12,
+                paddingLeft: 3,
+              }}
+            >
+              {'-'}
+            </Text>
           </TouchableOpacity>
-          <Text
-            style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0), marginHorizontal: 12 }}
-          >
+          <Text style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0) }}>
             {getItemQuantity(data.sku)}
           </Text>
           <TouchableOpacity
@@ -535,7 +541,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 : onUpdateCartItem(data.sku, getItemQuantity(data.sku) + 1)
             }
           >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0) }}>{'+'}</Text>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0), paddingLeft: 12 }}
+            >
+              {'+'}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -560,6 +570,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               }}
             />
             {renderNamePriceAndInStockStatus()}
+            <View
+              style={{
+                width: 24,
+              }}
+            />
             {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
           </View>
           {data.showSeparator ? <Spearator /> : null}
@@ -637,7 +652,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         resetSearchState();
       }
     };
-    const enableSearchEnterBtn = searchText.length > 0 && medicineList.length > 0;
+    const enableSearchEnterBtn = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}
@@ -961,6 +976,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
     const overlayStyle = {
       flex: 1,
       position: 'absolute',
@@ -972,7 +989,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     } as ViewStyle;
 
     return (
-      (medicineList.length || searchSate == 'load') && (
+      (medicineList.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={overlayStyle}>
           <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={resetSearchState} />
         </View>
@@ -1044,7 +1061,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
                 maxHeight: 266,
                 backgroundColor: '#f7f8f5',
               }}

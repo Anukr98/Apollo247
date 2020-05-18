@@ -19,20 +19,20 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_MEDICINE_ORDER,
+  SAVE_MEDICINE_ORDER_OMS,
   SAVE_MEDICINE_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  MedicineCartItem,
+  MedicineCartOMSItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
   CODCity,
   BOOKINGSOURCE,
   DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  SaveMedicineOrder,
-  SaveMedicineOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import {
   aphConsole,
   g,
@@ -258,6 +258,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     ePrescriptions,
     uploadPrescriptionRequired,
     couponDiscount,
+    productDiscount,
     cartTotal,
     addresses,
     stores,
@@ -314,8 +315,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Shipping information': shippingInformation, // (Home/Store address)
       'Total items in cart': cartItems.length,
       'Grand Total': cartTotal + deliveryCharges,
-      'Total Discount %': coupon ? Number(((couponDiscount / cartTotal) * 100).toFixed(2)) : 0,
-      'Discount Amount': couponDiscount,
+      'Total Discount %': coupon
+        ? Number((((couponDiscount + productDiscount) / cartTotal) * 100).toFixed(2))
+        : 0,
+      'Discount Amount': couponDiscount + productDiscount,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
       'Payment status': 1,
@@ -333,9 +336,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     } catch (error) {}
   };
 
-  const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
-    client.mutate<SaveMedicineOrder, SaveMedicineOrderVariables>({
-      mutation: SAVE_MEDICINE_ORDER,
+  const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
+    client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS,
       variables: orderInfo,
     });
 
@@ -423,18 +426,16 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const initiateOrder = async () => {
     setShowSpinner(true);
-    console.log(
-      'ePrescriptions',
-      ePrescriptions,
-      [...ePrescriptions.map((item) => item.prismPrescriptionFileId)].join(',')
-    );
 
-    const orderInfo: SaveMedicineOrderVariables = {
-      MedicineCartInput: {
+    const orderInfo: saveMedicineOrderOMSVariables = {
+      medicineCartOMSInput: {
+        coupon: coupon ? coupon.code : null,
+        couponDiscount: coupon ? couponDiscount : null,
+        productDiscount: productDiscount || null,
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
-        patientAddressId: deliveryAddressId!,
+        patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         estimatedAmount: grandTotal,
@@ -447,20 +448,21 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
         orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
-        items: cartItems.map(
-          (item) =>
-            ({
-              medicineSKU: item.id,
-              price: item.price, // APP-1181
-              medicineName: item.name,
-              quantity: item.quantity,
-              mrp: item.price,
-              // isPrescriptionNeeded: item.prescriptionRequired,
-              prescriptionImageUrl: null,
-              mou: parseInt(item.mou),
-              isMedicine: item.isMedicine ? '1' : '0',
-            } as MedicineCartItem)
-        ),
+        items: cartItems.map((item) => {
+          const discountedPrice = (coupon && item.couponPrice) || item.specialPrice || item.price; // since couponPrice & specialPrice can be undefined
+          return {
+            medicineSKU: item.id,
+            medicineName: item.name,
+            quantity: item.quantity,
+            mrp: item.price,
+            price: discountedPrice,
+            itemValue: discountedPrice * item.quantity, // (multiply discountedPrice with quantity)
+            itemDiscount: item.price * item.quantity - discountedPrice * item.quantity, // (diff of (MRP - discountedPrice) * quantity)
+            isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
+            mou: Number(item.mou),
+            isMedicine: item.isMedicine ? '1' : '0',
+          } as MedicineCartOMSItem;
+        }),
         bookingSource: BOOKINGSOURCE.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       },
@@ -478,7 +480,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     saveOrder(orderInfo)
       .then(({ data }) => {
         const { orderId, orderAutoId, errorCode, errorMessage } =
-          g(data, 'SaveMedicineOrder')! || {};
+          g(data, 'saveMedicineOrderOMS')! || {};
         console.log({ orderAutoId, orderId, errorCode, errorMessage });
 
         if (errorCode || errorMessage) {
