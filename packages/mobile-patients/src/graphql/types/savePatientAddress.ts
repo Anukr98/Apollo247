@@ -21,6 +21,9 @@ export interface savePatientAddress_savePatientAddress_patientAddress {
   updatedDate: any | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
   otherAddressType: string | null;
+  mobileNumber: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface savePatientAddress_savePatientAddress {

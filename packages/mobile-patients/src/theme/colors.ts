@@ -61,7 +61,8 @@ const Common = {
   SHADE_CYAN_BLUE: shadeCyanBlue,
   SUCCESS_TEXT: '#4aa54a',
   FAILURE_TEXT: '#e02020',
-  PENDING_TEXT: '#e87e38'
+  PENDING_TEXT: '#e87e38',
+  COD_TEXT: '#084c60'
 };
 
 const Header = {

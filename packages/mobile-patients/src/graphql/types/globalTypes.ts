@@ -629,7 +629,7 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
-export interface MedicineCartInput {
+export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   estimatedAmount?: number | null;
@@ -642,26 +642,30 @@ export interface MedicineCartInput {
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
-  items?: (MedicineCartItem | null)[] | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
   coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
 }
 
-export interface MedicineCartItem {
+export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
   mou?: number | null;
-  isMedicine?: string | null;
+  isMedicine: string;
 }
 
 export interface MedicineOrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
+  latitude?: number | null;
+   longitude?: number | null;
 }
 
 export interface MedicinePaymentMqInput {

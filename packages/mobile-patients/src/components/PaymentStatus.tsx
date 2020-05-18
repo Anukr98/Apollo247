@@ -21,44 +21,49 @@ import {
   makeAppointmentPayment,
   makeAppointmentPaymentVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import { GET_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_MEDICINE_ORDER_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  getParameterByName,
-  postWebEngageEvent,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
+export interface PaymentStatusProps extends NavigationScreenProps {}
 
-export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
+export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
-  const [displayId, setdisplayId] = useState<String>('');
-  const price = props.navigation.getParam('price');
-  const orderId = props.navigation.getParam('orderId');
-  const doctorName = props.navigation.getParam('doctorName');
-  const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
-  const appointmentType = props.navigation.getParam('appointmentType');
-  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const [orderDateTime, setorderDateTime] = useState('');
+  // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+
   const client = useApolloClient();
   const { success, failure, pending } = Payment;
   const { showAphAlert } = useUIElements();
+  const totalAmount = props.navigation.getParam('amount');
+  const orderId = props.navigation.getParam('orderId');
+  const orderAutoId = props.navigation.getParam('orderAutoId');
+  const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const { currentPatient } = useAllCurrentPatients();
 
+  const PaymentModes: any = {
+    DC: 'Debit Card',
+    CC: 'Credit Card',
+    NB: 'Net Banking',
+    UPI: 'UPI',
+    PPI: 'PayTm',
+  };
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -69,38 +74,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     // getTxnStatus(orderId)
     client
       .query({
-        query: GET_TRANSACTION_STATUS,
+        query: GET_PHARMA_TRANSACTION_STATUS,
         variables: {
-          appointmentId: orderId,
+          orderId: orderAutoId,
         },
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        try {
-          const paymentEventAttributes = {
-            Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            Type: 'Consultation',
-            Appointment_Id: orderId,
-          };
-          postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-        } catch (error) {}
-        console.log(res.data.paymentTransactionStatus.appointment);
-        if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
-          try {
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
-          } catch (error) {}
-        }
-        setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
-        setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
-        setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
+        console.log(res.data.pharmaPaymentStatus);
+        const paymentEventAttributes = {
+          order_Id: orderId,
+          order_AutoId: orderAutoId,
+          Type: 'Pharmacy',
+          Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
+        };
+        postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        setorderDateTime(res.data.pharmaPaymentStatus.paymentDateTime);
+        setrefNo(res.data.pharmaPaymentStatus.bankTxnId);
+        setStatus(res.data.pharmaPaymentStatus.paymentStatus);
+
         setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        props.navigation.navigate(AppRoutes.ConsultRoom);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -168,8 +166,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const renderStatusCard = () => {
     const refNumberText = 'Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
-    const orderIdText = 'Order ID: ' + String(displayId);
-    const priceText = 'Rs. ' + String(price);
+    const orderIdText = 'Order ID: ' + String(orderAutoId);
+    const priceText = 'Rs. ' + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
@@ -210,48 +208,41 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentHeader = () => {
     return (
       <View style={styles.appointmentHeaderStyle}>
-        {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE, false)}
+        {textComponent('ORDER DETAILS', undefined, theme.colors.ASTRONAUT_BLUE, false)}
       </View>
     );
   };
 
-  const appointmentCard = () => {
+  const getdate = () => {
+    const newdate = new Date(orderDateTime);
+    newdate.setHours(newdate.getHours() - 5);
+    newdate.setMinutes(newdate.getMinutes() - 30);
+    return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
+  };
+  const orderCard = () => {
+    const date = String(orderDateTime != '' && orderDateTime != null ? getdate() : '--');
+
     return (
-      <View style={styles.appointmentCardStyle}>
-        <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
+      <View style={styles.orderCardStyle}>
+        <View style={{ flex: 0.6, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
-            {textComponent(
-              'Date & Time of Appointment',
-              undefined,
-              theme.colors.ASTRONAUT_BLUE,
-              false
-            )}
+            {textComponent('Order Date & Time', undefined, theme.colors.ASTRONAUT_BLUE, false)}
+          </View>
+          <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            {textComponent(date, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
+          </View>
+        </View>
+        <View style={{ flex: 0.4, paddingTop: 0.05 * windowWidth }}>
+          <View style={{ flex: 0.4, justifyContent: 'center' }}>
+            {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
             {textComponent(
-              appointmentDateTime.toDateString() + '  ' + appointmentDateTime.toLocaleTimeString(),
+              PaymentModes[paymentTypeID],
               undefined,
               theme.colors.SHADE_CYAN_BLUE,
               false
             )}
-          </View>
-        </View>
-        <View style={{ flex: 0.5, flexDirection: 'row' }}>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-            </View>
-          </View>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-            </View>
           </View>
         </View>
       </View>
@@ -272,7 +263,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getButtonText = () => {
     if (status == success) {
-      return 'START CONSULTATION';
+      return 'TRSCK ORDER';
     } else if (status == failure) {
       return 'TRY AGAIN';
     } else {
@@ -284,9 +275,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const { navigation } = props;
     const { navigate } = navigation;
     if (status == success) {
-      navigate('APPOINTMENTS');
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
+        showOrderSummaryTab: false,
+        orderAutoId,
+      });
     } else if (status == failure) {
-      navigate(AppRoutes.DoctorSearch);
+      navigate(AppRoutes.YourCart);
     } else {
       navigate(AppRoutes.ConsultRoom);
     }
@@ -316,7 +311,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <ScrollView style={styles.container}>
           {renderStatusCard()}
           {appointmentHeader()}
-          {appointmentCard()}
+          {orderCard()}
           {renderNote()}
           {renderButton()}
         </ScrollView>
@@ -361,11 +356,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  appointmentCardStyle: {
-    height: 0.23 * windowHeight,
+  orderCardStyle: {
+    height: 0.15 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
     marginHorizontal: 0.06 * windowWidth,
+    flexDirection: 'row',
     backgroundColor: '#fff',
     flex: 1,
     borderRadius: 10,
