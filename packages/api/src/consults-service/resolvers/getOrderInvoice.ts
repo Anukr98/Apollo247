@@ -198,7 +198,7 @@ const getOrderInvoice: Resolver<
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(1)
@@ -334,10 +334,10 @@ const getOrderInvoice: Resolver<
       .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
   }
   doc.end();
-  if (response && response.length > 0) {
+  if (response && response.length > 0 && process.env.AZURE_STORAGE_MYPAYMENTS_CONTAINER_NAME) {
     const client = new AphStorageClient(
       process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-      process.env.AZURE_STORAGE_CONTAINER_NAME
+      process.env.AZURE_STORAGE_MYPAYMENTS_CONTAINER_NAME,
     );
     return await uploadRxPdf(client, response[0].id, doc);
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
