@@ -24,16 +24,27 @@ const linkUhids: Resolver<
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
-  console.log('patients==', patients);
 
+  //Getting all the uhids related to patient
+  const patientUhids = patients.map((patient) => patient.uhid);
+
+  //Checking if given primaryUhid is related to patient
+  const isPrimaryUhidPresent = patientUhids.includes(primaryUhid);
+  if (!isPrimaryUhidPresent)
+    throw new AphError(AphErrorMessages.INVALID_PRIMARY_UHID, undefined, {});
+
+  //Checking if given linkedUhids are related to patient
+  const AreLinkedUhidsPresent = linkedUhids.every((id) => patientUhids.includes(id));
+  if (!AreLinkedUhidsPresent)
+    throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
+
+  //checking if given primaryUhid is already marked as primary
   const primaryUhidExists = patients.some((patient) => patient.isUhidPrimary);
   if (primaryUhidExists) throw new AphError(AphErrorMessages.PRIMARY_UHID_EXISTS, undefined, {});
 
-  verifyUhids(patients, primaryUhid, linkedUhids);
-
+  //Getting the ids of primary and linked patients
   let primaryPatientId = '';
   const linkedPatientIds: string[] = [];
-
   patients.forEach((patient) => {
     if (patient.uhid == primaryUhid) {
       primaryPatientId = patient.id;
@@ -42,25 +53,13 @@ const linkUhids: Resolver<
     }
   });
 
+  //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
     patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
     patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', true, primaryUhid);
   }
 
   return true;
-};
-
-const verifyUhids = (patients: Patient[], primaryUhid: string, linkedUhids: string[]) => {
-  const patientUhids = patients.map((patient) => patient.uhid);
-  console.log('patientUhids==', patientUhids);
-
-  const isPrimaryUhidPresent = patientUhids.includes(primaryUhid);
-  if (!isPrimaryUhidPresent)
-    throw new AphError(AphErrorMessages.INVALID_PRIMARY_UHID, undefined, {});
-
-  const AreLinkedUhidsPresent = linkedUhids.every((id) => patientUhids.includes(id));
-  if (!AreLinkedUhidsPresent)
-    throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
 };
 
 const unlinkUhids: Resolver<
@@ -74,27 +73,42 @@ const unlinkUhids: Resolver<
   if (patients == null || patients.length == 0) {
     throw new AphError(AphErrorMessages.INSUFFICIENT_PRIVILEGES, undefined, {});
   }
-  verifyUhids(patients, primaryUhid, unlinkUhids);
 
+  //Checking if given primaryUhid is related to patient and is marked as primary
+  const isPrimaryUhidPresent = patients.filter(
+    (patient) => patient.uhid == primaryUhid && patient.isUhidPrimary
+  );
+  if (!isPrimaryUhidPresent.length)
+    throw new AphError(AphErrorMessages.INVALID_PRIMARY_UHID, undefined, {});
+
+  //Checking if all the given unlinkUhids are related to patient and are marked as linked
+  const AreLinkedUhidsPresent = patients.filter(
+    (patient) => unlinkUhids.includes(patient.uhid) && patient.isLinked
+  );
+  if (AreLinkedUhidsPresent.length != unlinkUhids.length)
+    throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
+
+  //Getting the ids of primary and linked patients
   let primaryPatientId = '';
   const linkedPatientIds: string[] = [];
-  const unLinkedPatientIds: string[] = [];
-
+  const notUnLinkedPatientIds: string[] = [];
   patients.forEach((patient) => {
     if (patient.uhid == primaryUhid) {
       primaryPatientId = patient.id;
     } else if (unlinkUhids.includes(patient.uhid)) {
       linkedPatientIds.push(patient.id);
-    } else {
-      unLinkedPatientIds.push(patient.id);
+    } else if (patient.isLinked && patient.linkedUhid == primaryUhid) {
+      notUnLinkedPatientIds.push(patient.id);
     }
   });
 
+  //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
-    // patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
     patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', false, 'null');
-    if (unLinkedPatientIds.length == 0) {
-      //make isprimary to false
+
+    //If no uhid is linked to primary uhid, marking its isUhidPrimary column as false
+    if (notUnLinkedPatientIds.length == 0) {
+      patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', false);
     }
   }
 
