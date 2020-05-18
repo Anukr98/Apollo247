@@ -852,6 +852,9 @@ export const SAVE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        mobileNumber
+        latitude
+        longitude
       }
     }
   }
@@ -871,6 +874,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
       }
     }
   }
@@ -980,6 +985,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
       }
     }
   }
@@ -1085,9 +1092,9 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
-export const SAVE_MEDICINE_ORDER = gql`
-  mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
-    SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
+export const SAVE_MEDICINE_ORDER_OMS = gql`
+  mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
       errorCode
       errorMessage
       orderId
@@ -1331,6 +1338,13 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           isMedicine
           mou
         }
+        medicineOrderPayments {
+          paymentType
+          amountPaid
+          paymentStatus
+          paymentDateTime
+          bankTxnId
+        }
       }
     }
   }
@@ -1344,9 +1358,11 @@ export const UPLOAD_FILE = gql`
   }
 `;
 
-export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
-  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
-    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
       status
       orderId
       orderAutoId
@@ -1375,6 +1391,68 @@ export const GET_COUPONS = gql`
         expirationDate
         isActive
       }
+    }
+  }
+`;
+
+export const GET_PHARMA_COUPON_LIST = gql`
+  query getPharmaCouponList {
+    getPharmaCouponList {
+      coupons {
+        code
+        couponConsultRule {
+          couponApplicability
+          id
+        }
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        couponGenericRule {
+          id
+          minimumCartValue
+          maximumCartValue
+          couponDueDate
+          couponEndDate
+          couponStartDate
+          couponReuseCount
+          couponReuseCountPerCustomer
+          couponApplicableCustomerType
+          discountType
+          discountValue
+        }
+        createdDate
+        description
+        id
+        isActive
+      }
+    }
+  }
+`;
+
+export const VALIDATE_PHARMA_COUPON = gql`
+  query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
+    validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
+      discountedTotals {
+        couponDiscount
+        mrpPriceTotal
+        productDiscount
+      }
+      pharmaLineItemsWithDiscountedPrice {
+        applicablePrice
+        discountedPrice
+        itemId
+        mrp
+        productName
+        productType
+        quantity
+        specialPrice
+      }
+      successMessage
+      reasonForInvalidStatus
+      validityStatus
     }
   }
 `;
@@ -2068,8 +2146,8 @@ export const AUTOMATED_QUESTIONS = gql`
 `;
 
 export const LOGIN = gql`
-  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
-    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, $hashCode: String) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType, hashCode: $hashCode) {
       status
       message
       loginId
@@ -2158,6 +2236,35 @@ export const GET_TRANSACTION_STATUS = gql`
   }
 `;
 
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS = gql`
+  query pharmaPaymentStatus($orderId: Int!) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
+    }
+  }
+`;
+
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
   query consultOrders($patientId: String!) {
     consultOrders(patientId: $patientId) {
@@ -2202,23 +2309,6 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentStatus
           paymentDateTime
         }
-      }
-    }
-  }
-`;
-
-export const INSERT_MESSAGE = gql`
-  mutation insertMessage($messageInput: MessageInput) {
-    insertMessage(messageInput: $messageInput) {
-      notificationData {
-        fromId
-        toId
-        eventName
-        eventId
-        message
-        status
-        type
-        id
       }
     }
   }

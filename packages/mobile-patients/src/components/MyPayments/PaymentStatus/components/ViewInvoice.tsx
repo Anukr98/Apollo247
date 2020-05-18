@@ -4,7 +4,10 @@
  */
 
 import React, { FC } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import PaymentConstants from '../../constants';
@@ -35,13 +38,52 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
     }
   };
 
-  const navigateTo = () => {
-    const { status } = statusItemValues();
-    const { paymentFor } = props;
-    if (paymentFor === 'consult') {
-      if (status === SUCCESS) {
-        // props.navigationProps.navigate(AppRoutes.Consult, {});
-      }
+  const downloadInvoice = () => {
+    const item = { blobName: 'f3f269a8-0f8f-4257-b50a-a84d79c3c560_1589438393681.pdf' };
+    // const { item } = props;
+    if (item.blobName == null) {
+      Alert.alert('No Image');
+    } else {
+      let dirs = RNFetchBlob.fs.dirs;
+
+      let fileName: string = item.blobName.substring(0, item.blobName.indexOf('.pdf')) + '.pdf';
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) +
+            '/' +
+            (fileName || 'Apollo_Consult_Invoice.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
+      //   setLoading(true);
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName), {
+          //some headers ..
+        })
+        .then((res) => {
+          //   setLoading(false);
+          if (Platform.OS === 'android') {
+            Alert.alert('Download Complete');
+          }
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          //   CommonBugFender('HealthConsultView_downloadPrescription', err);
+          console.log('error ', err);
+          //   setLoading(false);
+          // ...
+        });
     }
   };
   const { paymentFor } = props;
@@ -49,7 +91,7 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
   return status === SUCCESS && paymentFor === 'consult' ? (
     <TouchableOpacity
       onPress={() => {
-        navigateTo();
+        downloadInvoice();
       }}
       style={styles.mainContainer}
     >
