@@ -21,57 +21,8 @@ import { format, getTime } from 'date-fns';
 import { StatusEvent } from 'pubnub';
 
 export const getOrderInvoiceTypeDefs = gql`
-type AppointmentsResult {
-  appointments : [ApptResponse]
-  doctor: DoctorResponse
-  patient: PatientResponse
-  hospitalAddress: HospitalDetails
-}
-type HospitalDetails = {
-  name: String
-  city: String
-  streetLine1: String
-  zipcode: String
-  state: String
-  streetLine2: String
-  country: String
-}
-type PatientResponse {
-  uhid: String
-  mobileNumber: String
-  emailAddress: String
-  firstName: String
-  lastName: String
-}
-type DoctorResponse {
-  firstName: String
-  lastName: String
-  specialization: String
-  saluation: String
-  registrationNumber: String
-}
-type ApptResponse {
-    displayId: Int
-    id: String
-    patientName: String
-    appointmentType: String
-    appointmentDateTime: DateTime
-    actualAmount: Float
-    discountedAmount: Float
-    appointmentPayments: [AppointmentPayment]
-    status: String
-  }
-type AppointmentPayment {
-  amountPaid: Float
-  bankTxnId: String
-  id: String
-  paymentRefId: String
-  paymentStatus: String
-  paymentType: String
-  responseMessage: String
-}
   extend type Query {
-    getOrderInvoice(patientId: String, appointmentId: String): AppointmentsResult
+    getOrderInvoice(patientId: String, appointmentId: String): String
   }
 `;
 
@@ -134,7 +85,7 @@ const getOrderInvoice: Resolver<
   null,
   { patientId: string, appointmentId: string },
   ConsultServiceContext,
-  AppointmentsResult
+  string
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
@@ -154,7 +105,6 @@ const getOrderInvoice: Resolver<
 
   const AppointmentsResult = { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails };
 
-  // export const generateRxPdfDocument = (AppointmentsResult: RxPdfData): typeof PDFDocument => {
   const margin = 35;
   const doc = new PDFDocument({ margin, bufferPages: true });
 
@@ -206,7 +156,6 @@ const getOrderInvoice: Resolver<
   const renderDetailsRow = (labelText: string, labelValue: string, y?: number) => {
     doc
       .fontSize(9)
-      // .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#000000')
       .text(labelText, margin + 10, y, { lineBreak: false });
     return doc
@@ -223,7 +172,7 @@ const getOrderInvoice: Resolver<
     doctorInfo: AppointmentsResult['doctor'],
     hospitalAddress: AppointmentsResult['hospitalAddress']
   ) => {
-    // doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
+    doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
@@ -290,15 +239,15 @@ const getOrderInvoice: Resolver<
       renderDetailsRow('Patient Name', `${textArray.join('   |   ')}`, doc.y);
     }
 
-    // if (patientInfo.uhid) {
-    renderDetailsRow('Patient UHID', `${patientInfo.uhid}`, doc.y);
-    // }
+    if (patientInfo.uhid) {
+      renderDetailsRow('Patient UHID', `${patientInfo.uhid}`, doc.y);
+    }
     if (patientInfo.mobileNumber) {
       renderDetailsRow('Mobile Number', `${patientInfo.mobileNumber}`, doc.y);
     }
-    // if (patientInfo.emailAddress) {
-    renderDetailsRow('Email Address', `${patientInfo.emailAddress}`, doc.y);
-    // }
+    if (patientInfo.emailAddress) {
+      renderDetailsRow('Email Address', `${patientInfo.emailAddress}`, doc.y);
+    }
     if (appointmentData[0].displayId) {
       renderDetailsRow('Appointment ID', `${appointmentData[0].displayId}`, doc.y);
     }
@@ -355,23 +304,14 @@ const getOrderInvoice: Resolver<
       .fillColor('#02475b')
       .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
   }
-  doc.pipe(fs.createWriteStream('./file.pdf'));
   doc.end();
-  // if (response && response.length > 0) {
-
   if (response && response.length > 0) {
     const client = new AphStorageClient(
       process.env.AZURE_STORAGE_CONNECTION_STRING_API,
       process.env.AZURE_STORAGE_CONTAINER_NAME
     );
-    // return await uploadRxPdf(client, response[0].id, doc);
-    // const uploadedPdfData = await uploadRxPdf(client, response[0].id, doc);
-    // if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-    // console.log('final res =>', uploadedPdfData);
-    return AppointmentsResult;
-    // return { appointments: response, doctor: docResponse, patient: patientDetails, hospitalAddress: hospitalDetails }
+    return await uploadRxPdf(client, response[0].id, doc);
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  // }
 };
 
 const convertPdfUrlToBase64 = async (pdfUrl: string) => {
@@ -402,7 +342,8 @@ export const uploadRxPdf = async (
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
-  return uploadData;
+  // return uploadData;
+  return blobUrl;
 
 
   function delay(ms: number) {
