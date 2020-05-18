@@ -40,9 +40,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       color: '#01475b',
-      alignItems: 'start',
+      alignItems: 'center',
+      '& >span:first-child': {
+        paddingRight: 16,
+      },
       '& span:last-child': {
         fontSize: 14,
+        lineHeight: '14px',
         fontWeight: 500,
         color: '#01475b',
       },
@@ -80,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
     sectionHeader: {
       marginBottom: 20,
       paddingBottom: 4,
-      paddingTop: 20,
+      paddingTop: 16,
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
@@ -139,6 +143,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     noCoupons: {
       textAlign: 'center',
+      paddingBottom: 10,
+    },
+    couponText: {
+      fontSize: 12,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      lineHeight: '16px',
+      color: '#02475b',
+      opacity: 0.6,
+      paddingTop: 2,
+      marginLeft: 40,
       paddingBottom: 10,
     },
   };
@@ -256,7 +270,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                     <AphTextField
                       value={selectCouponCode}
                       onChange={(e) => setSelectCouponCode(e.target.value)}
-                      placeholder="CouponCode"
+                      placeholder="Enter coupon code"
+                      error={errorMessage.length > 0 && (true)}
                     />
                     <div className={classes.pinActions}>
                       {/* {selectCouponCode.length > 0 ? (
@@ -304,6 +319,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 setSelectCouponCode(couponDetails.code);
                               }}
                             />
+                            <div className={classes.couponText}>Get 5% off on total bill by shopping for Rs. 500 or more</div>
                           </li>
                         )
                     )
