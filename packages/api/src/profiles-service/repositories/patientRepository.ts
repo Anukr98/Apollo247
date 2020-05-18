@@ -28,7 +28,8 @@ type DeviceCount = {
 type UhidFileds = {
   isUhidPrimary?: boolean;
   isLinked?: boolean;
-  linkedUhid?: string;
+  primaryUhid?: string;
+  primaryPatientId?: string;
 };
 
 @EntityRepository(Patient)
@@ -641,13 +642,21 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, { uhid, uhidCreatedDate: new Date() });
   }
 
-  updateLinkedUhidAccount(ids: string[], column: string, flag: boolean, primaryUhid?: string) {
+  updateLinkedUhidAccount(
+    ids: string[],
+    column: string,
+    flag: boolean,
+    primaryUhid?: string,
+    primaryPatientId?: string
+  ) {
     const fieldToUpdate: UhidFileds = { [column]: flag };
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.linkedUhid = undefined;
+        fieldToUpdate.primaryUhid = undefined;
+        fieldToUpdate.primaryPatientId = undefined;
       } else {
-        fieldToUpdate.linkedUhid = primaryUhid;
+        fieldToUpdate.primaryUhid = primaryUhid;
+        fieldToUpdate.primaryPatientId = primaryPatientId;
       }
     }
 

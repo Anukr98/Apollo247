@@ -58,7 +58,13 @@ const linkUhids: Resolver<
   //Updating the primary and linked patients
   if (primaryPatientId && linkedPatientIds.length) {
     patientsRepo.updateLinkedUhidAccount([primaryPatientId], 'isUhidPrimary', true);
-    patientsRepo.updateLinkedUhidAccount(linkedPatientIds, 'isLinked', true, primaryUhid);
+    patientsRepo.updateLinkedUhidAccount(
+      linkedPatientIds,
+      'isLinked',
+      true,
+      primaryUhid,
+      primaryPatientId
+    );
   }
 
   return true;
@@ -99,7 +105,7 @@ const unlinkUhids: Resolver<
       primaryPatientId = patient.id;
     } else if (unlinkUhids.includes(patient.uhid)) {
       linkedPatientIds.push(patient.id);
-    } else if (patient.isLinked && patient.linkedUhid == primaryUhid) {
+    } else if (patient.isLinked && patient.primaryUhid == primaryUhid) {
       notUnLinkedPatientIds.push(patient.id);
     }
   });
