@@ -16,8 +16,11 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
-import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { SAVE_MEDICINE_ORDER_PAYMENT, SAVE_MEDICINE_ORDER_OMS } from 'graphql/medicines';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -27,6 +30,7 @@ import {
   NonCartOrderCity,
   BOOKING_SOURCE,
   NonCartOrderOMSCity,
+  CODCity,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -37,7 +41,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
+import { UPLOAD_DOCUMENT } from '../../graphql/profiles';
 import { savePrescriptionMedicineOrderOMSVariables } from '../../graphql/types/savePrescriptionMedicineOrderOMS';
 import { SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS } from 'graphql/medicines';
 import moment from 'moment';
@@ -637,17 +641,38 @@ export const MedicineCart: React.FC = (props) => {
     (v) => Number(v.is_prescription_required) === 1
   );
 
+  const getDiscountedLineItemPrice = (id: number) => {
+    if (
+      couponCode.length > 0 &&
+      validateCouponResult &&
+      validateCouponResult.pharmaLineItemsWithDiscountedPrice
+    ) {
+      const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
+        (item) => item.itemId === id.toString()
+      );
+      return item.applicablePrice;
+    }
+  };
+
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
           return {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
-            price: cartItemDetails.price,
+            price:
+              couponCode.length > 0
+                ? getDiscountedLineItemPrice(cartItemDetails.id)
+                : Number(cartItemDetails.special_price),
             quantity: cartItemDetails.quantity,
+            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemDiscount:
+              cartItemDetails.quantity *
+              (couponCode.length > 0
+                ? cartItemDetails.price - getDiscountedLineItemPrice(cartItemDetails.id)
+                : cartItemDetails.price - Number(cartItemDetails.special_price)),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -655,6 +680,7 @@ export const MedicineCart: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
+            // specialPrice: Number(cartItemDetails.special_price) || 0,
           };
         })
       : [];
@@ -715,11 +741,11 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [validateCouponResult]);
 
-  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
-    SAVE_MEDICINE_ORDER,
+  const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
+    SAVE_MEDICINE_ORDER_OMS,
     {
       variables: {
-        medicineCartInput: {
+        medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
           shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
@@ -730,6 +756,11 @@ export const MedicineCart: React.FC = (props) => {
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
           bookingSource: BOOKINGSOURCE.WEB,
           estimatedAmount: totalWithCouponDiscount,
+          couponDiscount:
+            validateCouponResult && validateCouponResult.discountedTotals
+              ? Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2))
+              : 0,
+          productDiscount,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
             ...prescriptions!.map((item) => item.imageUrl),
@@ -757,10 +788,15 @@ export const MedicineCart: React.FC = (props) => {
   ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
-      chennaiOrderVariables = {
-        NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
-        email: userEmail,
-      };
+      chennaiOrderVariables = nonCartFlow
+        ? {
+            NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
+            email: userEmail,
+          }
+        : {
+            CODCity: CODCity.CHENNAI,
+            email: userEmail,
+          };
     }
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
@@ -929,10 +965,15 @@ export const MedicineCart: React.FC = (props) => {
       onPressSubmit(dataObj.userEmail);
       return;
     }
-    paymentMutation().then((res) => {
-      if (res && res.data && res.data.SaveMedicineOrder) {
-        const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-        placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
+    paymentMutation().then(({ data }: any) => {
+      if (data && data.saveMedicineOrderOMS) {
+        const { orderId, orderAutoId, errorMessage } = data.saveMedicineOrderOMS;
+        if (orderAutoId && orderAutoId > 0) {
+          placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
+        } else if (errorMessage) {
+          setIsAlertOpen(true);
+          setAlertMessage('Something went wrong, please try later.');
+        }
       }
     });
   };
@@ -1251,7 +1292,11 @@ export const MedicineCart: React.FC = (props) => {
                           </div>{' '}
                         </>
                       )}
-                      <div className={`${classes.priceRow} ${classes.totalPriceRow} ${validateCouponResult ? classes.totalPriceBorder : ''}`}>
+                      <div
+                        className={`${classes.priceRow} ${classes.totalPriceRow} ${
+                          validateCouponResult ? classes.totalPriceBorder : ''
+                        }`}
+                      >
                         <span>TO PAY</span>
                         <span className={classes.totalPrice}>
                           {/* {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount} */}
@@ -1288,6 +1333,7 @@ export const MedicineCart: React.FC = (props) => {
                               : 0,
                           totalWithCouponDiscount: totalWithCouponDiscount,
                           deliveryTime: deliveryTime,
+                          validateCouponResult: validateCouponResult,
                         })
                       );
                       // window.location.href = clientRoutes.payMedicine('pharmacy');
