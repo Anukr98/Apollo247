@@ -83,6 +83,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       case status.pending: redirectUrl = clientRoutes.welcome();
         break;
       case status.failed: redirectUrl = clientRoutes.medicinesCart();
+        window.location.href = redirectUrl;
         break;
       default: redirectUrl = clientRoutes.welcome();
     }

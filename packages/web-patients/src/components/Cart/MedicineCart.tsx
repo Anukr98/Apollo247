@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
@@ -1399,7 +1400,7 @@ export const MedicineCart: React.FC = (props) => {
         </div>
       </div>
 
-      <Popover
+      {/* <Popover
         open={showOrderPopup}
         anchorEl={addToCartRef.current}
         anchorOrigin={{
@@ -1420,7 +1421,14 @@ export const MedicineCart: React.FC = (props) => {
             <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
           </div>
         </div>
-      </Popover>
+      </Popover> */}
+      {showOrderPopup &&
+        <Route
+          render={({ history }) => {
+            return <PaymentStatusModal history={history} />
+          }}
+        />
+      }
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
