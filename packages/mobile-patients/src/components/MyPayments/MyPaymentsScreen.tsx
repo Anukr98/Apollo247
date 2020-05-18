@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
   headerContainerStyle: {
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
+    borderBottomWidth: 0,
   },
   tabsStyle: {
     borderRadius: 0,
