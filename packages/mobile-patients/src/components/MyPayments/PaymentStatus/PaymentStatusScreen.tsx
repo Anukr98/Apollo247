@@ -3,8 +3,17 @@
  * @email vishnu.r@apollo247.org
  */
 
-import { StyleSheet, Text, View, ScrollView, StatusBar, Dimensions } from 'react-native';
-import React, { FC } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  StatusBar,
+  Dimensions,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+import React, { FC, useEffect } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -12,6 +21,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import StatusCard from './components/StatusCard';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import DetailsCard from './components/DetailsCard';
@@ -29,11 +39,36 @@ const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
   const paymentStatus = props.navigation.getParam('status');
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
 
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
   const handleBack = () => {
     props.navigation.goBack();
     return true;
   };
-
+  const requestReadSmsPermission = async () => {
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (resuts) {
+      }
+    } catch (error) {
+      CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
+      console.log('error', error);
+    }
+  };
   const textComponent = (
     message: string,
     numOfLines: number | undefined,
