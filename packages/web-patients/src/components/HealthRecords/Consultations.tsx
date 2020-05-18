@@ -370,13 +370,25 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       activeConsult.caseSheet.find(
         (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
       );
-    const a = document.createElement('a');
+
     if (filterCaseSheet && filterCaseSheet.blobName) {
+      const a = document.createElement('a');
       a.href = storageClient.getBlobUrl(filterCaseSheet.blobName);
+      a.click();
     } else {
-      a.href = activeConsult && activeConsult.prescriptionImageUrl;
+      const imageList = activeConsult.prescriptionImageUrl.split(',');
+      const download = (imageList: any) => {
+        const url = imageList.pop();
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', '');
+        a.click();
+        if (imageList.length === 0) {
+          clearInterval(interval);
+        }
+      };
+      const interval = setInterval(download, 300, imageList);
     }
-    a.click();
   };
   // const patient = useCurrentPatient();
   // const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
@@ -524,15 +536,24 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                   </>
                 ) : (
                   activeConsult &&
-                  activeConsult.prescriptionImageUrl && (
+                  activeConsult.prescriptionImageUrl &&
+                  (activeConsult.prescriptionImageUrl.includes('.pdf') ? (
                     <div className={classes.prescriptionImage}>
-                      {activeConsult.prescriptionImageUrl.includes('.pdf') ? (
-                        <a href={activeConsult.prescriptionImageUrl}>Download File</a>
-                      ) : (
-                        <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
-                      )}
+                      <a href={activeConsult.prescriptionImageUrl}>Download File</a>
                     </div>
-                  )
+                  ) : activeConsult.prescriptionImageUrl.includes(',') ? (
+                    activeConsult.prescriptionImageUrl.split(',').map((imageUrl: any) => {
+                      return (
+                        <div className={classes.prescriptionImage}>
+                          <img src={imageUrl} alt="Prescription Preview" />
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className={classes.prescriptionImage}>
+                      <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                    </div>
+                  ))
                 )}
               </div>
             </Scrollbars>
