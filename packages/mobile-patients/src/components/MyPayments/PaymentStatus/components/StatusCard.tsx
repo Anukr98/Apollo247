@@ -122,7 +122,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
         {textComponent(orderID, undefined, theme.colors.SHADE_GREY, false)}
       </View>
-      <ViewInvoice item={props.item} paymentFor={props.paymentFor} />
+      {/* <ViewInvoice item={props.item} paymentFor={props.paymentFor} /> */}
     </View>
   );
 };
