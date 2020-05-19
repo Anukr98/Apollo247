@@ -102,3 +102,14 @@ export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
     }
   }
 `;
+
+export const PHRAMA_PAYMENT_STATUS = gql`
+  query PharmaPaymentStatus($orderId: Int) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      amountPaid
+      paymentStatus
+      paymentDateTime
+    }
+  }
+`;

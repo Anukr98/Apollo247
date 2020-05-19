@@ -239,7 +239,7 @@ interface OrderStatusDetail {
   orderStatusCallback: () => void;
   orderId: number;
   amountPaid: number;
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
+  paymentType?: string;
   paymentRefId: string;
   paymentDateTime?: string;
   type: string;
