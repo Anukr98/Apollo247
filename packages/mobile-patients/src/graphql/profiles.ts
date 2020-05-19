@@ -2109,6 +2109,27 @@ export const CANCEL_MEDICINE_ORDER = gql`
   }
 `;
 
+export const CANCEL_MEDICINE_ORDER_OMS = gql`
+  mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
+    cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
+      orderStatus
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
+  query GetMedicineOrderCancelReasons {
+    getMedicineOrderCancelReasons {
+      cancellationReasons {
+        reasonCode
+        description
+        displayMessage
+        isUserReason
+      }
+    }
+  }
+`;
+
 export const GET_CALL_DETAILS = gql`
   query getCallDetails($appointmentCallId: String) {
     getCallDetails(appointmentCallId: $appointmentCallId) {

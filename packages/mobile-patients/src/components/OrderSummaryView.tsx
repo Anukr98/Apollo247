@@ -196,7 +196,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   const selectedAddressIndex = addresses.find(
     (address) => address.id == orderDetails.patientAddressId
   );
-  console.log('selectedAddressIndex', selectedAddressIndex);
   const addressData = selectedAddressIndex
     ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
     : '';

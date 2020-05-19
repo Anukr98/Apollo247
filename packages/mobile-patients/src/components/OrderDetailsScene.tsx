@@ -23,9 +23,10 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CANCEL_MEDICINE_ORDER,
+  GET_MEDICINE_ORDER_CANCEL_REASONS,
   GET_MEDICINE_ORDER_OMS_DETAILS,
   GET_MEDICINE_ORDERS_OMS__LIST,
+  CANCEL_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -80,15 +81,19 @@ import {
   getMedicineOrdersOMSListVariables,
 } from '../graphql/types/getMedicineOrdersOMSList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  cancelMedicineOrder,
-  cancelMedicineOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelMedicineOrder';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CancelMedicineOrderOMS,
+  CancelMedicineOrderOMSVariables,
+} from '../graphql/types/CancelMedicineOrderOMS';
+import {
+  GetMedicineOrderCancelReasons,
+  GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
+} from '../graphql/types/GetMedicineOrderCancelReasons';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -142,7 +147,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
-
+  const [cancellationReasons, setCancellationReasons] = useState<
+    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[] | null
+  >([]);
   const client = useApolloClient();
 
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -183,7 +190,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   });
   const order = g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails');
   console.log({ order });
-  console.log('adressess', addresses);
 
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
@@ -265,7 +271,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const selectedAddressIndex = addresses.find((address) => address.id == order?.patientAddressId);
-  console.log('selectedAddressIndex', selectedAddressIndex);
   const addressData = selectedAddressIndex
     ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
     : '';
@@ -451,6 +456,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
           '',
           `Your order #${orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`,
+        ],
+        [MEDICINE_ORDER_STATUS.CANCELLED]: [
+          '',
+          `Your order #${orderAutoId} has been cancelled as per your request.`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           'Out for delivery: ',
@@ -802,14 +811,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           cardContainer={{
             margin: 0,
           }}
-          options={cancelOptions.map(
-            (item, i) =>
+          options={cancellationReasons.map(
+            (cancellationReasons, i) =>
               ({
                 onPress: () => {
-                  setSelectedReason(item[1]);
+                  setSelectedReason(cancellationReasons.description);
                   setOverlayDropdown(false);
                 },
-                optionText: item[1],
+                optionText: cancellationReasons.description,
               } as Option)
           )}
         />
@@ -968,18 +977,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const onPressConfirmCancelOrder = () => {
     setShowSpinner(true);
-    const variables: cancelMedicineOrderVariables = {
-      medicineOrderCancelInput: {
+    const variables: CancelMedicineOrderOMSVariables = {
+      medicineOrderCancelOMSInput: {
         orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
-        remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0],
+        cancelReasonCode:
+          cancellationReasons &&
+          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
       },
     };
 
     console.log(JSON.stringify(variables));
 
     client
-      .mutate<cancelMedicineOrder, cancelMedicineOrderVariables>({
-        mutation: CANCEL_MEDICINE_ORDER,
+      .mutate<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>({
+        mutation: CANCEL_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -992,14 +1003,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setComment('');
           setSelectedReason('');
         };
-        const requestStatus = g(data, 'cancelMedicineOrder', 'orderStatus');
+        const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
         if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
           showAphAlert &&
             showAphAlert({
-              title: 'Hi :),',
+              title: 'Hi :)',
               description:
-                'Cancel order has been initiated for order ' +
-                g(variables, 'medicineOrderCancelInput', 'orderNo'),
+                'Your cancellation request has been accepted and order is cancelled. If prepaid, the amount paid will be refunded automatically.',
             });
           refetch()
             .then(() => {
@@ -1028,7 +1038,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
               });
         } else {
-          Alert.alert('Error', g(data, 'cancelMedicineOrder', 'orderStatus')!);
+          Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
         }
       })
       .catch((e) => {
@@ -1062,6 +1072,35 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   // setCancelVisible(true);
   // };
 
+  const getCancellationReasons = () => {
+    client
+      .query<GetMedicineOrderCancelReasons>({
+        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
+        variables: {},
+      })
+      .then((data) => {
+        if (
+          data.data.getMedicineOrderCancelReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
+        ) {
+          let cancellationArray: any = [];
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
+            (cancellationReasons, index) => {
+              if (cancellationReasons && cancellationReasons.isUserReason) {
+                cancellationArray.push(cancellationReasons);
+              }
+            }
+          );
+          setShowSpinner(false);
+          setCancellationReasons(cancellationArray);
+        }
+      })
+      .catch((error) => {
+        console.log('error getCancellationReasons', error);
+      });
+  };
+
   const [showSpinner, setShowSpinner] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -1071,7 +1110,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
     );
     const isCancelOrderAllowed = orderStatusList.find(
       (item) =>
@@ -1095,6 +1135,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
             setCancelVisible(true);
+            setShowSpinner(true);
+            getCancellationReasons();
           }
         }}
       >
@@ -1112,7 +1154,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={'ORDER DETAILS'}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={renderMoreMenu()}
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
