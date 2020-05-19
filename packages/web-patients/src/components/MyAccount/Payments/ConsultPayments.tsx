@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const ConsultPayments: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data, loading } = useQueryWithSkip<ConsultOrders, ConsultOrdersVariables>(
+  const { data, loading, error } = useQueryWithSkip<ConsultOrders, ConsultOrdersVariables>(
     GET_CONSULT_PAYMENTS,
     {
       variables: { patientId: currentPatient && currentPatient.id },
@@ -42,6 +42,8 @@ export const ConsultPayments: React.FC = (props) => {
         <CircularProgress />
       </div>
     );
+
+  if (error) return <div className={classes.circlularProgress}>No data is available</div>;
 
   return data && data.consultOrders && data.consultOrders.appointments ? (
     <div className={classes.root}>
