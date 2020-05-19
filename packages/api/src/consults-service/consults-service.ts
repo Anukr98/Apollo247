@@ -114,6 +114,10 @@ import {
   appointmentNotificationResolvers,
 } from 'consults-service/resolvers/appointmentNotifications';
 import {
+  getOrderInvoiceTypeDefs,
+  getOrderInvoiceResolvers,
+} from 'consults-service/resolvers/getOrderInvoice';
+import {
   consultOrdersTypeDefs,
   consultOrdersResolvers,
 } from 'consults-service/resolvers/consultOrders';
@@ -260,6 +264,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: appointmentNotificationTypeDefs,
         resolvers: appointmentNotificationResolvers,
+      },
+      {
+        typeDefs: getOrderInvoiceTypeDefs,
+        resolvers: getOrderInvoiceResolvers,
       },
       {
         typeDefs: consultOrdersTypeDefs,
