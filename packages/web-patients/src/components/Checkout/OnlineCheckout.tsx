@@ -157,6 +157,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       fontWeight: 600,
       display: 'flex',
+      '& span': {
+        '& span': {
+          textTransform: 'none',
+        },
+      },
     },
     moreBtn: {
       cursor: 'pointer',
@@ -269,15 +274,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     serviceTypeCoupon: {
       backgroundColor: '#fff',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 10,
-      padding: '10px 10px 16px 16px',
-      paddingbottom: 8,
+      padding: '16px 10px 16px 16px',
       width: '100%',
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
       cursor: 'pointer',
+      marginBottom: 16,
     },
     couponTopGroup: {
       display: 'flex',
@@ -336,6 +341,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     discountRow: {
       color: '#0187ba',
+    },
+    couponIcon: {
+      width: 25,
+      marginRight: 10,
+      textAlign: 'center',
+      '& img': {
+        verticalAlign: 'middle',
+        marginTop: 3,
+      },
     },
   };
 });
@@ -433,7 +447,7 @@ export const OnlineCheckout: React.FC = () => {
                     <div className={classes.doctorName}>{fullName}</div>
                     <div className={classes.doctorType}>
                       <span>
-                        {speciality} | {experience} Exp
+                        {speciality} | <span>{experience} Exp</span>
                       </span>
                       {/* <div className={classes.moreBtn}>More</div> */}
                     </div>
@@ -480,7 +494,7 @@ export const OnlineCheckout: React.FC = () => {
                     className={`${classes.serviceTypeCoupon}`}
                   >
                     <div className={classes.couponTopGroup}>
-                      <span className={classes.serviceIcon}>
+                      <span className={classes.couponIcon}>
                         <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
                       </span>
                       <div className={classes.couponRight}>
