@@ -29,6 +29,7 @@ export const pharmaOrdersTypeDefs = gql`
     paymentRefId: String
     paymentType: String
     paymentMode: String
+    bankTxnId: String
     amountPaid: Float
     paymentDateTime: DateTime
   }
@@ -58,6 +59,7 @@ type PharmacyPayment = {
   paymentRefId: string;
   paymentType: string;
   paymentMode: string;
+  bankTxnId: string;
   amountPaid: number;
   paymentDateTime: Date;
 };
