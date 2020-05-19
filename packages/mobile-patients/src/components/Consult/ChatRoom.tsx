@@ -1391,18 +1391,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 setSendMessageToDoctor(true);
 
                 if (abondmentStarted == false) {
-                  // if (startConsultResult.length > 0) {
-                  //   // console.log('callAbondmentMethod', abondmentStarted);
-                  //   abondmentStarted = true;
-                  //   APIForUpdateAppointmentData(false);
-                  // } else {
-                  if (diffInMins < 15) {
-                    // console.log('doctorNoshow', abondmentStarted);
-                    if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
-                      callAbondmentMethod(false);
+                  if (startConsultResult.length > 0) {
+                    console.log('callAbondmentMethod', abondmentStarted);
+                    //   abondmentStarted = true;
+                    //   APIForUpdateAppointmentData(false);
+                  } else {
+                    if (diffInMins < 15) {
+                      // console.log('doctorNoshow', abondmentStarted);
+                      if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+                        callAbondmentMethod(false);
+                      }
                     }
                   }
-                  // }
                   eventsAfterConnectionDestroyed();
                 }
               }
