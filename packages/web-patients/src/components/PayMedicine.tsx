@@ -378,6 +378,7 @@ export const PayMedicine: React.FC = (props) => {
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
 
+  const [consult, setConsult] = useState<boolean>(false);
   const {
     cartTotal,
     deliveryAddressId,
@@ -431,7 +432,7 @@ export const PayMedicine: React.FC = (props) => {
     doctorId,
     hospitalId,
     patientId,
-    specialty,
+    speciality,
   } = consultBookDetails;
 
   const { city } = useLocationDetails();
@@ -679,7 +680,7 @@ export const PayMedicine: React.FC = (props) => {
       .then((res: any) => {
         /* Gtm code start */
         _cbTracking({
-          specialty: specialty,
+          specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
           couponCode: couponCode ? couponCode : null,
@@ -726,8 +727,9 @@ export const PayMedicine: React.FC = (props) => {
         setIsLoading(false);
       })
       .catch((errorResponse) => {
+        setConsult(true);
         setIsAlertOpen(true);
-        setAlertMessage(errorResponse);
+        setAlertMessage('Selected time slot is no longer availble.');
         setMutationLoading(false);
         setIsLoading(false);
       });
@@ -954,6 +956,7 @@ export const PayMedicine: React.FC = (props) => {
         alertMessage={alertMessage}
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
+        consult={consult}
       />
     </div>
   );
