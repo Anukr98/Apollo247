@@ -974,6 +974,7 @@ app.get('/processOmsOrders', (req, res) => {
                   landmark = '',
                   deliveryAddress = 'Kakinada',
                   deliveryState = 'Telangana',
+                  deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
                 if (orderDetails.patientAddressId) {
@@ -987,6 +988,7 @@ app.get('/processOmsOrders', (req, res) => {
                     landmark = patientAddressDetails.landmark || landmark;
                     lat = patientAddressDetails.latitude || lat;
                     long = patientAddressDetails.longitude || long;
+                    deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
                     deliveryAddress =
                       patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
                     deliveryCity = patientAddressDetails.city || deliveryCity;
@@ -1084,11 +1086,11 @@ app.get('/processOmsOrders', (req, res) => {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,
                     billingcity: deliveryCity,
-                    billingstateid: 'TS',
+                    billingstateid: deliveryStateCode,
                     shippingaddress: deliveryAddress.trim(),
                     shippingpincode: deliveryZipcode,
                     shippingcity: deliveryCity,
-                    shippingstateid: 'TS',
+                    shippingstateid: deliveryStateCode,
                     customerid: '',
                     patiendname: patientDetails.firstName,
                     customername:

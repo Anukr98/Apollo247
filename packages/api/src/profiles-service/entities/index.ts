@@ -861,6 +861,9 @@ export class PatientAddress extends BaseEntity {
   @Column({ type: 'float8', nullable: true })
   longitude: number;
 
+  @Column({ nullable: true })
+  stateCode: string;
+
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
 
@@ -2059,4 +2062,25 @@ export class MedicineOrderShipments extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class MedicineOrderCancelReason extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  displayMessage: string;
+
+  @Column({ nullable: true })
+  isUserReason: boolean;
 }
