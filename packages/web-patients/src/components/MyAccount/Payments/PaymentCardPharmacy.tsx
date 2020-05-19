@@ -213,63 +213,61 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
   const buttonText =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE' ? 'TRY AGAIN' : 'VIEW ORDERS';
   return (
-    <>
-      <div
-        className={`${classes.root} ${
-          paymentStatus === 'PENDING'
-            ? classes.pendingCard
-            : paymentStatus === 'TXN_FAILURE'
-            ? classes.failedCard
-            : ''
-        }`}
-      >
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img
-              src={
-                paymentStatus === 'TXN_SUCCESS'
-                  ? require('images/ic_tick.svg')
-                  : paymentStatus === 'TXN_FAILURE'
-                  ? require('images/ic_failed.svg')
-                  : require('images/ic_exclamation.svg')
-              }
-              alt="PaymentStatus"
-            />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>{getPaymentStatusText(paymentStatus)}</h3>
-              <div className={classes.price}>Rs. {amountPaid}</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - {bankTxnId}</span>
-              <span className={classes.rightArrow}>
-                <Link to={clientRoutes.yourOrders()}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
-                </Link>
-              </span>
-            </div>
-          </div>
+    <div
+      className={`${classes.root} ${
+        paymentStatus === 'PENDING'
+          ? classes.pendingCard
+          : paymentStatus === 'TXN_FAILURE'
+          ? classes.failedCard
+          : ''
+      }`}
+    >
+      <div className={classes.boxHeader}>
+        <div className={classes.headerIcon}>
+          <img
+            src={
+              paymentStatus === 'TXN_SUCCESS'
+                ? require('images/ic_tick.svg')
+                : paymentStatus === 'TXN_FAILURE'
+                ? require('images/ic_failed.svg')
+                : require('images/ic_exclamation.svg')
+            }
+            alt="PaymentStatus"
+          />
         </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Order No. - {cardDetails.orderAutoId}</div>
-          <div className={classes.consultDate}>
-            <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mma')}</span>
-            <span className={classes.consultType}> (Debit card)</span>
+        <div className={classes.headerContent}>
+          <div className={classes.topText}>
+            <h3>{getPaymentStatusText(paymentStatus)}</h3>
+            <div className={classes.price}>Rs. {amountPaid}</div>
           </div>
-          <div className={classes.bottomActions}>
-            <AphButton
-              color="primary"
-              onClick={() => {
-                window.open(buttonUrl);
-              }}
-            >
-              {buttonText}
-            </AphButton>
+          <div className={classes.infoText}>
+            <span>Payment Ref Number - {bankTxnId}</span>
+            <span className={classes.rightArrow}>
+              <Link to={clientRoutes.yourOrders()}>
+                <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
+              </Link>
+            </span>
           </div>
         </div>
       </div>
-    </>
+      <div className={classes.boxContent}>
+        <div className={classes.doctorName}>Order No. - {cardDetails.orderAutoId}</div>
+        <div className={classes.consultDate}>
+          <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mma')}</span>
+          <span className={classes.consultType}> (Debit card)</span>
+        </div>
+        <div className={classes.bottomActions}>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              window.open(buttonUrl);
+            }}
+          >
+            {buttonText}
+          </AphButton>
+        </div>
+      </div>
+    </div>
   );
 };
 
