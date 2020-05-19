@@ -139,6 +139,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
     client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
       mutation: SAVE_MEDICINE_ORDER_OMS,
@@ -216,11 +218,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Total items in cart': cartItems.length,
         'Grand Total': cartTotal + deliveryCharges,
         'Total Discount %': coupon
-          ? Number((((couponDiscount + productDiscount) / cartTotal) * 100).toFixed(2))
+          ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
           : 0,
-        'Discount Amount': couponDiscount + productDiscount,
+        'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
         'Delivery charge': deliveryCharges,
-        'Net after discount': grandTotal,
+        'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
@@ -245,7 +247,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       medicinePaymentMqInput: {
         // orderId: orderId,
         orderAutoId: orderAutoId,
-        amountPaid: grandTotal,
+        amountPaid: getFormattedAmount(grandTotal),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
         paymentStatus: 'success',
         responseCode: '',
@@ -315,7 +317,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       orderId,
       orderAutoId,
       token,
-      amount: grandTotal,
+      amount: getFormattedAmount(grandTotal),
       deliveryTime,
       checkoutEventAttributes,
       paymentTypeID: paymentMode,
@@ -325,19 +327,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
 
   const initiateOrder = async (paymentMode: any, bankCode: any, isCOD: boolean) => {
     setLoading && setLoading(true);
-
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
-        coupon: coupon ? coupon.code : null,
-        couponDiscount: coupon ? couponDiscount : null,
-        productDiscount: productDiscount || null,
+        coupon: coupon ? coupon.code : '',
+        couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
+        productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
-        estimatedAmount: grandTotal,
+        estimatedAmount: getFormattedAmount(grandTotal),
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -348,15 +349,20 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         ].join(','),
         orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
         items: cartItems.map((item) => {
-          const discountedPrice = (coupon && item.couponPrice) || item.specialPrice || item.price; // since couponPrice & specialPrice can be undefined
+          const discountedPrice = getFormattedAmount(
+            (coupon && item.couponPrice) || item.specialPrice || item.price
+          ); // since couponPrice & specialPrice can be undefined
           return {
             medicineSKU: item.id,
             medicineName: item.name,
             quantity: item.quantity,
-            mrp: item.price,
+            mrp: getFormattedAmount(item.price),
             price: discountedPrice,
-            itemValue: item.price * item.quantity, // (multiply MRP with quantity)
-            itemDiscount: item.price * item.quantity - discountedPrice * item.quantity, // (diff of (MRP - discountedPrice) * quantity)
+            specialPrice: Number(item.price || item.specialPrice),
+            itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
+            itemDiscount: getFormattedAmount(
+              item.price * item.quantity - discountedPrice * item.quantity
+            ), // (diff of (MRP - discountedPrice) * quantity)
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
             isMedicine: item.isMedicine ? '1' : '0',
@@ -669,7 +675,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            Rs. {grandTotal}
+            Rs. {getFormattedAmount(grandTotal)}
           </Text>
         </View>
       </View>
