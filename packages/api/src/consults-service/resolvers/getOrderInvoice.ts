@@ -253,7 +253,7 @@ const getOrderInvoice: Resolver<
     }
 
     if (appointmentData[0].appointmentDateTime) {
-      const formattedDate = format(appointmentData[0].appointmentDateTime, 'dd MMM yyyy hh:mm A');
+      const formattedDate = format(appointmentData[0].appointmentDateTime, 'dd MMM yyyy hh:mm a');
       renderDetailsRow('Consult Date', `${formattedDate}`, doc.y);
     }
 
