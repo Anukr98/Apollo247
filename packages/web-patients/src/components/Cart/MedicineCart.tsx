@@ -1395,7 +1395,7 @@ export const MedicineCart: React.FC = (props) => {
         </div>
       </div>
 
-      {/* <Popover
+      <Popover
         open={showOrderPopup}
         anchorEl={addToCartRef.current}
         anchorOrigin={{
@@ -1416,14 +1416,14 @@ export const MedicineCart: React.FC = (props) => {
             <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
           </div>
         </div>
-      </Popover> */}
-      {showOrderPopup && (
+      </Popover>
+      {/* {showOrderPopup && (
         <Route
           render={({ history }) => {
             return <PaymentStatusModal history={history} />;
           }}
         />
-      )}
+      )} */}
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
