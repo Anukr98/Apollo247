@@ -194,7 +194,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineListingCardProps = {
   validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
-  validateCoupon: () => void;
 };
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
@@ -270,7 +269,6 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                             mou: item.mou,
                             isShippable: true,
                           });
-                        props.validateCoupon();
                       }}
                     >
                       {options.map((option, index) => (

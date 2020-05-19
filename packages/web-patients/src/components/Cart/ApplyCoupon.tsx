@@ -271,19 +271,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       value={selectCouponCode}
                       onChange={(e) => setSelectCouponCode(e.target.value)}
                       placeholder="Enter coupon code"
-                      error={errorMessage.length > 0 && (true)}
+                      error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {/* {selectCouponCode.length > 0 ? (
+                      {selectCouponCode.length > 0 ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick>
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )} */}
-                      {selectCouponCode.length > 0 && (
                         <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
@@ -319,7 +314,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 setSelectCouponCode(couponDetails.code);
                               }}
                             />
-                            <div className={classes.couponText}>Get 5% off on total bill by shopping for Rs. 500 or more</div>
+
+                            {couponDetails.couponPharmaRule &&
+                              couponDetails.couponPharmaRule.messageOnCouponScreen && (
+                                <div className={classes.couponText}>
+                                  {couponDetails.couponPharmaRule.messageOnCouponScreen}
+                                </div>
+                              )}
                           </li>
                         )
                     )

@@ -128,3 +128,14 @@ export const GET_PHARMACY_PAYMENTS = gql`
     }
   }
 `;
+
+export const PHRAMA_PAYMENT_STATUS = gql`
+  query PharmaPaymentStatus($orderId: Int) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      amountPaid
+      paymentStatus
+      paymentDateTime
+    }
+  }
+`;

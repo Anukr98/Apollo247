@@ -12,9 +12,7 @@ const timeout = setTimeout(() => {
   controller.abort();
 }, prismTimeoutMillSeconds); //TODO: change this to env variable
 
-const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
 const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
-const prismBaseUrl = prismUrl + '/data';
 
 export async function prismAuthenticationAsync(
   mobileNumber: string
@@ -24,8 +22,8 @@ export async function prismAuthenticationAsync(
     headers: { Host: prismHost },
     signal: controller.signal,
   };
+  const apiUrl = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
 
-  const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -73,8 +71,8 @@ export async function prismGetUsersAsync(
     headers: { Host: prismHost },
     signal: controller.signal,
   };
+  const apiUrl = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
 
-  const apiUrl = `${prismBaseUrl}/getusers?authToken=${authToken}&mobile=${mobileNumber}`;
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -120,8 +118,8 @@ export async function prismAuthentication(
     method: 'GET',
     headers: { Host: prismHost },
   };
+  const apiUrl = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
 
-  const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -163,7 +161,8 @@ export async function prismGetUsers(
     headers: { Host: prismHost },
   };
 
-  const apiUrl = `${prismBaseUrl}/getusers?authToken=${authToken}&mobile=${mobileNumber}`;
+  const apiUrl = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
+
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -271,7 +270,8 @@ export async function prismGetUserDetails(
     headers: { Host: prismHost },
   };
 
-  const apiUrl = `${prismBaseUrl}/userdetails?authToken=${authToken}&uhid=${uhid}`;
+  const apiUrl = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
+
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -314,7 +314,8 @@ export async function linkUhid(
     headers: { Host: prismHost },
   };
 
-  const apiUrl = `${prismBaseUrl}/linkuhids?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
+  const apiUrl = `${process.env.PRISM_LINK_UHID_API}?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
+
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
@@ -357,7 +358,8 @@ export async function delinkUhid(
     headers: { Host: prismHost },
   };
 
-  const apiUrl = `${prismBaseUrl}/delinkuhids?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
+  const apiUrl = `${process.env.PRISM_DELINK_UHID_API}?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
+
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
