@@ -152,6 +152,42 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
   return statusString;
 };
 
+export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
+  let statusString = '';
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      statusString = 'Cancel Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      statusString = 'Order Dispatched';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      statusString = 'Order Billed and Packed';
+      break;
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      statusString = 'Order Picked Up';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      statusString = 'Return Requested';
+      break;
+    case 'TO_BE_DELIVERED' as any:
+      statusString = 'Expected Order Delivery';
+      break;
+    default:
+      statusString = (status || '')
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+  }
+  return statusString;
+};
+
 export const getParameterByName = (name: string, url: string) => {
   name = name.replace(/[\[\]]/g, '\\$&');
   var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),

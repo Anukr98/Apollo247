@@ -42,7 +42,7 @@ import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls
 import {
   aphConsole,
   g,
-  getOrderStatusText,
+  getNewOrderStatusText,
   handleGraphQlError,
   postWEGNeedHelpEvent,
   postWebEngageEvent,
@@ -479,17 +479,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       .filter(
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
-      .concat(
-        showExpectedDelivery
-          ? [
-              {
-                statusDate: tatInfo,
-                id: 'idToBeDelivered',
-                orderStatus: 'TO_BE_DELIVERED' as any,
-              } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-            ]
-          : []
-      );
+      .concat([]);
 
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -500,17 +490,39 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
-        .concat(
-          showExpectedDelivery
-            ? [
-                {
-                  statusDate: tatInfo,
-                  id: 'idToBeDelivered',
-                  orderStatus: 'TO_BE_DELIVERED' as any,
-                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-              ]
-            : []
-        );
+        .concat([]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED as any,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED as any,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED as any,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY as any,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
@@ -701,7 +713,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 }
                 showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
                 getOrderDescription={getOrderDescription(orderDetails.currentStatus!)}
-                status={getOrderStatusText(order!.orderStatus!)}
+                status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={order!.id != 'idToBeDelivered'}

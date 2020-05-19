@@ -1132,6 +1132,36 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
+  query getMedicineOrdersOMSList($patientId: String) {
+    getMedicineOrdersOMSList(patientId: $patientId) {
+      medicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        currentStatus
+        medicineOrdersStatus {
+          id
+          statusDate
+          orderStatus
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          currentStatus
+          medicineOrdersStatus {
+            statusDate
+            hideStatus
+            orderStatus
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_SLOTS = gql`
   query getDiagnosticSlots(
     $patientId: String
@@ -1338,14 +1368,98 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           isMedicine
           mou
         }
+        patient {
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      medicineOrderDetails {
+        id
+        orderAutoId
+        devliveryCharges
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
+        orderType
+        currentStatus
+        patientAddressId
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+          isMedicine
+          mou
+        }
         medicineOrderPayments {
+          id
           paymentType
           amountPaid
+          paymentRefId
           paymentStatus
           paymentDateTime
+          responseCode
+          responseMessage
           bankTxnId
         }
-        
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          updatedDate
+          currentStatus
+          itemDetails
+          medicineOrdersStatus {
+            id
+            orderStatus
+            statusDate
+            hideStatus
+          }
+          medicineOrderInvoice {
+            id
+            siteId
+            remarks
+            requestType
+            vendorName
+            billDetails
+            itemDetails
+          }
+        }
+        patient {
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
       }
     }
   }
