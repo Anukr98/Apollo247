@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const ConsultPayments: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { data, loading, error } = useQueryWithSkip<ConsultOrders, ConsultOrdersVariables>(
+  const { data, loading } = useQueryWithSkip<ConsultOrders, ConsultOrdersVariables>(
     GET_CONSULT_PAYMENTS,
     {
       variables: { patientId: currentPatient && currentPatient.id },
