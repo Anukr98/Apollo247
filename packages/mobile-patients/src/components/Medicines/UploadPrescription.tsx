@@ -20,6 +20,7 @@ import {
 import {
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPLOAD_DOCUMENT,
+  UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -59,6 +60,13 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -99,7 +107,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { deliveryAddressId, storeId, pinCode, addresses, stores } = useShoppingCart();
+  const {
+    deliveryAddressId,
+    storeId,
+    pinCode,
+    addresses,
+    stores,
+    setAddresses,
+  } = useShoppingCart();
+  const { setAddresses: setTestAddresses } = useDiagnosticsCart();
 
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
@@ -179,16 +195,69 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       });
   };
 
+  const updateAddressLatLong = async (
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    onComplete: () => void
+  ) => {
+    try {
+      const data = await getPlaceInfoByPincode(address.zipcode!);
+      const { lat, lng } = data.data.results[0].geometry.location;
+      await client.mutate<updatePatientAddress, updatePatientAddressVariables>({
+        mutation: UPDATE_PATIENT_ADDRESS,
+        variables: {
+          UpdatePatientAddressInput: {
+            id: address.id,
+            addressLine1: address.addressLine1!,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            zipcode: address.zipcode!,
+            landmark: address.landmark,
+            mobileNumber: address.mobileNumber,
+            addressType: address.addressType,
+            otherAddressType: address.otherAddressType,
+            latitude: lat,
+            longitude: lng,
+          },
+        },
+      });
+      const newAddrList = [
+        { ...address, latitude: lat, longitude: lng },
+        ...addresses.filter((item) => item.id != address.id),
+      ];
+      setAddresses!(newAddrList);
+      setTestAddresses!(newAddrList);
+      onComplete();
+    } catch (error) {
+      // Let the user order journey continue, even if no lat-lang.
+      onComplete();
+    }
+  };
+
   const onPressSubmit = () => {
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
       (addr) => addr == Number(zipcode)
     );
-    if (isChennaiAddress) {
-      props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
+    const proceed = () => {
+      if (isChennaiAddress) {
+        setLoading!(false);
+        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
+      } else {
+        onSubmitOrder(false);
+      }
+    };
+
+    if (
+      g(selectedAddress, 'latitude') &&
+      g(selectedAddress, 'longitude') &&
+      g(selectedAddress, 'stateCode')
+    ) {
+      proceed();
     } else {
-      onSubmitOrder(false);
+      setLoading!(true);
+      updateAddressLatLong(selectedAddress!, proceed);
     }
   };
 
