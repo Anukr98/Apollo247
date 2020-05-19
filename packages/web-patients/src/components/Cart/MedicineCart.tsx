@@ -737,10 +737,10 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!nonCartFlow) {
+    if (!nonCartFlow && couponCode.length > 0 && cartItems.length > 0) {
       validateCoupon();
     }
-  }, [couponCode]);
+  }, [couponCode, cartItems]);
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
     SAVE_MEDICINE_ORDER_OMS,
@@ -1049,10 +1049,7 @@ export const MedicineCart: React.FC = (props) => {
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
                 {!nonCartFlow && (
-                  <MedicineListingCard
-                    validateCouponResult={validateCouponResult}
-                    validateCoupon={validateCoupon}
-                  />
+                  <MedicineListingCard validateCouponResult={validateCouponResult} />
                 )}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
@@ -1421,13 +1418,13 @@ export const MedicineCart: React.FC = (props) => {
           </div>
         </div>
       </Popover> */}
-      {showOrderPopup &&
+      {showOrderPopup && (
         <Route
           render={({ history }) => {
-            return <PaymentStatusModal history={history} />
+            return <PaymentStatusModal history={history} />;
           }}
         />
-      }
+      )}
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
