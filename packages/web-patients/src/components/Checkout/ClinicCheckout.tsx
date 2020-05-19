@@ -411,9 +411,10 @@ export const ClinicCheckout: React.FC = () => {
   }, [validateCouponResult]);
 
   useEffect(() => {
+    setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
+
     if (!couponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
       setCouponCode(consultCouponCodeInitial || '');
-      setRevisedAmount(Number(amount) - Number(consultCouponValue));
     }
   });
 
@@ -542,9 +543,11 @@ export const ClinicCheckout: React.FC = () => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? parseFloat(physicalConsultationFees) -
-                            parseFloat(validateCouponResult.revisedAmount)
-                          : consultCouponValue}{' '}
+                          ? (
+                              parseFloat(physicalConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : Number(consultCouponValue).toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -554,7 +557,9 @@ export const ClinicCheckout: React.FC = () => {
                 <div className={classes.priceSection}>
                   <div className={classes.priceRow}>
                     <span>Subtotal</span>
-                    <span className={classes.price}>Rs. {physicalConsultationFees}</span>
+                    <span className={classes.price}>
+                      Rs. {Number(physicalConsultationFees).toFixed(2)}
+                    </span>
                   </div>
                   {(validateCouponResult && validateCouponResult.revisedAmount) ||
                   (consultCouponCodeInitial && consultCouponCodeInitial.length) ? (
@@ -565,9 +570,11 @@ export const ClinicCheckout: React.FC = () => {
                       <span className={classes.price}>
                         - Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? parseFloat(physicalConsultationFees) -
-                            parseFloat(validateCouponResult.revisedAmount)
-                          : consultCouponValue}
+                          ? (
+                              parseFloat(physicalConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : Number(consultCouponValue).toFixed(2)}
                       </span>
                     </div>
                   ) : (
@@ -578,8 +585,8 @@ export const ClinicCheckout: React.FC = () => {
                     <span className={classes.price}>
                       Rs.{' '}
                       {validateCouponResult && validateCouponResult.revisedAmount
-                        ? validateCouponResult.revisedAmount
-                        : revisedAmount}
+                        ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                        : revisedAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -604,8 +611,8 @@ export const ClinicCheckout: React.FC = () => {
                       >
                         Pay Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? validateCouponResult.revisedAmount
-                          : revisedAmount}
+                          ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                          : revisedAmount.toFixed(2)}
                       </AphButton>
                     )}
                   />

@@ -455,7 +455,7 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (params.payType === 'consults') {
-      setRevisedAmount(Number(amount) - Number(consultCouponValue));
+      setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
       if (!consultCouponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
         setConsultCouponCode(consultCouponCodeInitial || '');
       }
