@@ -17,9 +17,9 @@ export const paymentStatusTypeDefs = gql`
         paymentMode: String
     }
 
-    extend type Query {
-        pharmaPaymentStatus(orderId: Int): PharmaPaymentDetails
-    }
+  extend type Query {
+    pharmaPaymentStatus(orderId: Int): PharmaPaymentDetails
+  }
 `;
 
 type PharmaPaymentResponse = {
@@ -37,7 +37,6 @@ const pharmaPaymentStatus: Resolver<
     ProfilesServiceContext,
     PharmaPaymentResponse
 > = async (parent, args, { profilesDb }) => {
-
     const pharmaRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
     const response = await pharmaRepo.findPharamaOrdersByOrderId(args.orderId);
     if (!response) {
@@ -65,13 +64,13 @@ const pharmaPaymentStatus: Resolver<
             response.paymentStatus = PAYMENT_STATUS_MAP.UNKNOWN;
     }
     const returnResponse: PharmaPaymentResponse = {
-        ...response
-    }
+        ...response,
+    };
     return returnResponse;
-}
+};
 
 export const paymentStatusResolvers = {
     Query: {
         pharmaPaymentStatus,
-    }
+    },
 };

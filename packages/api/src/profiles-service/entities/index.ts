@@ -51,13 +51,13 @@ export enum PAYMENT_STATUS_MAP {
   TXN_SUCCESS = 'PAYMENT_SUCCESS',
   PENDING = 'PAYMENT_PENDING_PG',
   TXN_FAILURE = 'PAYMENT_FAILED',
-  UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN'
+  UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN',
 }
 
 export enum STATUS_PAYMENT_MAP {
   PAYMENT_SUCCESS = 'TXN_SUCCESS',
   PAYMENT_PENDING_PG = 'PENDING',
-  PAYMENT_FAILED = 'TXN_FAILURE'
+  PAYMENT_FAILED = 'TXN_FAILURE',
 }
 
 export enum Relation {
@@ -690,6 +690,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -739,6 +745,12 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
+
+  @Column({ nullable: true })
+  primaryUhid: string;
+
+  @Column({ nullable: true })
+  primaryPatientId: string;
 
   @Column({ nullable: true })
   uhid: string;
@@ -876,6 +888,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ type: 'float8', nullable: true })
   longitude: number;
+
+  @Column({ nullable: true })
+  stateCode: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
@@ -2075,4 +2090,25 @@ export class MedicineOrderShipments extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class MedicineOrderCancelReason extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  displayMessage: string;
+
+  @Column({ nullable: true })
+  isUserReason: boolean;
 }

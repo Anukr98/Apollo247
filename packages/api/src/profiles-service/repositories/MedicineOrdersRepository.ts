@@ -8,6 +8,7 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -25,11 +26,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
-
-  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders["orderAutoId"]) {
+  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
     return this.createQueryBuilder()
       .from(MedicineOrders, 'mo')
-      .leftJoinAndSelect(MedicineOrderPayments, 'mp', 'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"')
+      .leftJoinAndSelect(
+        MedicineOrderPayments,
+        'mp',
+        'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"'
+      )
       .select([
         'mp."paymentDateTime"',
         'mp."paymentRefId"',
@@ -40,7 +44,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mp."paymentMode"'
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
-      .getRawOne()
+      .getRawOne();
   }
 
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
@@ -423,6 +427,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
     return this.count({
       where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrderCancelReasons() {
+    return MedicineOrderCancelReason.find({}).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
     });
   }
 }

@@ -344,7 +344,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPatientAppointments(doctorId: string, patientId: string) {
+  getPatientAppointments(doctorId: string, patientIds: string[]) {
     const curDate = new Date();
     let curMin = curDate.getUTCMinutes();
     if (curMin >= 0 && curMin < 15) {
@@ -362,7 +362,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({
       where: {
         doctorId,
-        patientId,
+        patientId: In(patientIds),
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },

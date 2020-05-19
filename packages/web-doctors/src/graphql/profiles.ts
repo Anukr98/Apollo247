@@ -499,6 +499,17 @@ export const GET_CASESHEET_JRD = gql`
           status
           appointmentState
           displayId
+          doctorInfo {
+            firstName
+            lastName
+            displayName
+            mobileNumber
+            specialty {
+              name
+            }
+            photoUrl
+            salutation
+          }
         }
         medicinePrescription {
           id

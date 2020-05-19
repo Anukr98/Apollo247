@@ -871,6 +871,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 paymentRefId={bankTxnId}
                 bookingDateTime={moment(appointmentDateTime)
                   .format('DD MMMM YYYY[,] LT')
+                  .replace(/(A|P)(M)/, '$1.$2.')
                   .toString()}
                 type={'consult'}
                 consultMode={appointmentType}

@@ -14,6 +14,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const getAppointmentHistoryTypeDefs = gql`
   enum patientLogSort {
@@ -162,11 +163,16 @@ const getAppointmentHistory: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
+    appointmentHistoryInput.patientId
+  );
+  console.log(primaryPatientIds, 'primary patient ids');
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
-    appointmentHistoryInput.patientId
+    primaryPatientIds
   );
   return { appointmentsHistory };
 };

@@ -52,7 +52,6 @@ const paymentTransactionStatus: Resolver<
 
   const response = await apptsRepo.findAppointmentPaymentById(args.appointmentId);
 
-
   if (!response) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
