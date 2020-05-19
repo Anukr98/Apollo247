@@ -441,6 +441,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       setDisplayId(displayId);
       setAmountPaid(amountPaid);
       setIsLoading(false);
+      localStorage.setItem('consultBookDetails', '');
     }
   }, [getPaymentData, appointmentDetail]);
 
