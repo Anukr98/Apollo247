@@ -25,7 +25,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
-    quoteDateTime: String
+    quoteDateTime: DateTime
     coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
@@ -153,7 +153,6 @@ const getMedicineOrderOMSDetails: Resolver<
       args.orderAutoId
     );
   }
-  console.log(medicineOrderDetails, 'medicineOrderDetails');
   if (!medicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }

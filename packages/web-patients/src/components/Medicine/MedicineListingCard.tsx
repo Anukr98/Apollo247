@@ -40,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
     },
     medicineIcon: {
       paddingRight: 10,
@@ -78,32 +81,34 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
     },
     medicinePrice: {
-      borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
       fontSize: 12,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 12,
       paddingBottom: 11,
       minWidth: 90,
-      textAlign: 'center',
+      textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 2,
+        paddingTop: 12,
+        paddingBottom: 5,
         marginLeft: 'auto',
         borderRight: 'none',
         flexGrow: 1,
-        textAlign: 'right',
-        paddingRight: 12,
-        borderTop: '1px solid rgba(2,71,91,0.2)',
+        paddingRight: 2,
+        minHeight: 45,
+        minWidth: 75,
       },
       '& span': {
         fontWeight: 500,
       },
     },
     addToCart: {
-      paddingLeft: 20,
+      paddingLeft: 10,
       paddingTop: 8,
       paddingBottom: 8,
       display: 'flex',
@@ -125,22 +130,25 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       letterSpacing: 0.33,
       borderLeft: 'solid 0.5px rgba(2,71,91,0.2)',
-      paddingLeft: 20,
-      paddingRight: 20,
+      borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      paddingLeft: 10,
+      paddingRight: 10,
       paddingTop: 4,
       paddingBottom: 4,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 0,
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
-        borderTop: '1px solid rgba(2,71,91,0.2)',
         justifyContent: 'left',
+        minHeight: 45,
       },
       [theme.breakpoints.up('xs')]: {
-        minWidth: 130,
+        minWidth: 110,
       },
     },
     selectMenuItem: {
@@ -169,6 +177,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e',
       fontWeight: 600,
+    },
+    mrpPrice: {
+      paddingTop: 5,
+      paddingBottom: 5,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+      },
+    },
+    mrpText: {
+      fontSize: 10,
     },
   };
 });
@@ -230,27 +249,27 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         selectMenu: classes.selectMenuItem,
                       }}
                       value={item.quantity}
-                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                      onChange={(e: React.ChangeEvent<{ value: any }>) => {
                         updateCartItemQty &&
-                        updateCartItemQty({
-                          description: item.description,
-                          id: item.id,
-                          image: item.image,
-                          is_in_stock: item.is_in_stock,
-                          is_prescription_required: item.is_prescription_required,
-                          name: item.name,
-                          price: item.price,
-                          sku: item.sku,
-                          small_image: item.small_image,
-                          status: item.status,
-                          thumbnail: item.thumbnail,
-                          type_id: item.type_id,
-                          quantity: parseInt(e.target.value),
-                          special_price: item.special_price,
-                          mou: item.mou,
-                          isShippable: true,
-                        })
-                      }
+                          updateCartItemQty({
+                            description: item.description,
+                            id: item.id,
+                            image: item.image,
+                            is_in_stock: item.is_in_stock,
+                            is_prescription_required: item.is_prescription_required,
+                            name: item.name,
+                            price: item.price,
+                            sku: item.sku,
+                            small_image: item.small_image,
+                            status: item.status,
+                            thumbnail: item.thumbnail,
+                            type_id: item.type_id,
+                            quantity: parseInt(e.target.value),
+                            special_price: item.special_price,
+                            mou: item.mou,
+                            isShippable: true,
+                          });
+                      }}
                     >
                       {options.map((option, index) => (
                         <MenuItem
@@ -269,11 +288,15 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                   {validateCouponResult &&
                   validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
                     <>
-                      <div className={classes.medicinePrice}>
-                        <span className={classes.lineThrough}>
-                          Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
-                        </span>
-                        <div>(MRP)</div>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                        {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                          .applicablePrice !==
+                        validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp ? (
+                          <span className={classes.lineThrough}>
+                            Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                          </span>
+                        ) : null}
+                        <div className={classes.mrpText}>(MRP)</div>
                       </div>
 
                       <div className={classes.medicinePrice}>
@@ -286,11 +309,11 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                     </>
                   ) : (
                     <>
-                      <div className={classes.medicinePrice}>
+                      <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                         {item.special_price ? (
                           <span className={classes.lineThrough}>Rs. {item.price}</span>
                         ) : null}
-                        <div>(MRP)</div>
+                        <div className={classes.mrpText}>(MRP)</div>
                       </div>
 
                       <div className={classes.medicinePrice}>

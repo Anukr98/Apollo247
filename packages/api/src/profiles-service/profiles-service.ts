@@ -111,6 +111,7 @@ import {
   submitPrescriptionOrderTypeDefs,
   submitPrescriptionOrderResolvers,
 } from 'profiles-service/resolvers/submitPrescriptionOrder';
+import { uhidTypeDefs, uhidResolvers } from 'profiles-service/resolvers/uhid';
 import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
@@ -144,6 +145,10 @@ import {
   medicineOrderCancelResolvers,
 } from 'profiles-service/resolvers/cancelMedicineOrder';
 import {
+  medicineOrderCancelOMSTypeDefs,
+  medicineOrderCancelOMSResolvers,
+} from 'profiles-service/resolvers/cancelMedicineOrderOMS';
+import {
   patientLifeStyleTypeDefs,
   patientLifeStyleResolvers,
 } from 'profiles-service/resolvers/patientLifeStyle';
@@ -173,7 +178,10 @@ import {
   verifyLoginOtpTypeDefs,
   verifyLoginOtpResolvers,
 } from 'profiles-service/resolvers/verifyLoginOtp';
-
+import {
+  getMedicineOrderCancelReasonsTypeDefs,
+  getMedicineOrderCancelReasonsResolvers,
+} from 'profiles-service/resolvers/getMedicineOrderCancelReasons';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -338,6 +346,10 @@ import {
         resolvers: submitPrescriptionOrderResolvers,
       },
       {
+        typeDefs: uhidTypeDefs,
+        resolvers: uhidResolvers,
+      },
+      {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
       },
@@ -368,6 +380,10 @@ import {
       {
         typeDefs: medicineOrderCancelTypeDefs,
         resolvers: medicineOrderCancelResolvers,
+      },
+      {
+        typeDefs: medicineOrderCancelOMSTypeDefs,
+        resolvers: medicineOrderCancelOMSResolvers,
       },
       {
         typeDefs: helpTypeDefs,
@@ -416,6 +432,10 @@ import {
       {
         typeDefs: pharmaOrdersTypeDefs,
         resolvers: pharmacyOrdersResolvers,
+      },
+      {
+        typeDefs: getMedicineOrderCancelReasonsTypeDefs,
+        resolvers: getMedicineOrderCancelReasonsResolvers,
       },
     ]),
     plugins: [

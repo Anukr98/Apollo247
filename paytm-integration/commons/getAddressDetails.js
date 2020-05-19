@@ -19,6 +19,7 @@ function getAddressDetails(addressId) {
                 landmark
                 latitude
                 longitude
+                stateCode
               }
           }
         }

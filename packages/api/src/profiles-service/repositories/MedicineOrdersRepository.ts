@@ -8,6 +8,7 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -406,6 +407,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
     return this.count({
       where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrderCancelReasons() {
+    return MedicineOrderCancelReason.find({}).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
     });
   }
 }
