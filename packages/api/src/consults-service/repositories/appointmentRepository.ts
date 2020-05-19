@@ -301,6 +301,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
+    return this.update(id, appointmentInfo).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   findAppointmentPayment(id: string) {
     return AppointmentPayments.findOne({ where: { appointment: id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
@@ -336,7 +344,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPatientAppointments(doctorId: string, patientId: string) {
+  getPatientAppointments(doctorId: string, patientIds: string[]) {
     const curDate = new Date();
     let curMin = curDate.getUTCMinutes();
     if (curMin >= 0 && curMin < 15) {
@@ -354,7 +362,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({
       where: {
         doctorId,
-        patientId,
+        patientId: In(patientIds),
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },

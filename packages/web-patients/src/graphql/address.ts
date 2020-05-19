@@ -16,6 +16,8 @@ export const GET_PATIENT_ADDRESSES_LIST = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
       }
     }
   }
