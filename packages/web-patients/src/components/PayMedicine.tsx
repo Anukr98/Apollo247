@@ -328,7 +328,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'rgba(0, 135, 186, 0.07)',
       padding: '4px 10px',
       fontSize: 16,
-      marginTop: 16,
+      marginTop: 10,
     },
     linkText: {
       letterSpacing: 'normal',
@@ -806,7 +806,6 @@ export const PayMedicine: React.FC = (props) => {
                           <img src={require('images/ic_arrow_right.svg')} alt="" />
                         </span>
                       </div>
-                      <div className={classes.couponText}>Coupon succefully applied</div>
                     </div>
                   </div>
                   <div className={classes.discountTotal}>Savings of Rs.50 on the bill</div>
