@@ -558,9 +558,10 @@ export const ClinicCheckout: React.FC = () => {
                             ...pageData,
                             consultCouponCode: couponCode,
                             consultCouponValue:
-                              validateCouponResult &&
-                              validateCouponResult.revisedAmount &&
-                              validateCouponResult.revisedAmount,
+                              validateCouponResult && validateCouponResult.revisedAmount
+                                ? parseFloat(physicalConsultationFees) -
+                                  parseFloat(validateCouponResult.revisedAmount)
+                                : '0',
                           };
                           localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
                           history.push(clientRoutes.payMedicine('consults'));
