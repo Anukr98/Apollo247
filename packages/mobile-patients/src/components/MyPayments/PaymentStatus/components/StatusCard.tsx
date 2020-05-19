@@ -106,7 +106,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
 
   const { icon, cardColor, statusText, textColor } = getStatusItems();
   const { refId, price, orderID } = statusItemValues();
-  const payRefId = 'Payment Ref. Number - ' + refId.slice(0, 6);
+  const payRefId = 'Payment Ref. Number - ';
   return (
     <View style={[styles.statusCardStyle, { backgroundColor: cardColor }]}>
       <View style={styles.statusCardSubContainerStyle}>{icon}</View>
@@ -116,11 +116,12 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       <View style={styles.orderStyles}>
         {textComponent(price, undefined, theme.colors.SHADE_GREY, false)}
       </View>
-      <View style={styles.orderStyles}>
-        {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
-      </View>
-      <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
+      <View style={{ flex: 0.18, justifyContent: 'flex-start', alignItems: 'center' }}>
         {textComponent(orderID, undefined, theme.colors.SHADE_GREY, false)}
+      </View>
+      <View style={{ justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column' }}>
+        {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
+        {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
       </View>
       {/* <ViewInvoice item={props.item} paymentFor={props.paymentFor} /> */}
     </View>

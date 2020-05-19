@@ -101,9 +101,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
             style={{ ...theme.viewStyles.text('M', 13, colors.SHADE_GREY, 1, 20, 0.5) }}
             numberOfLines={1}
             ellipsizeMode="tail"
-          >
-            Payment Ref Number - {!refId ? null : refId.slice(0, 6)}
-          </Text>
+          ></Text>
         </View>
         <View>
           <ArrowRight />
