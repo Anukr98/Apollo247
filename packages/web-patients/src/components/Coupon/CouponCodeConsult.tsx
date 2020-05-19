@@ -15,8 +15,6 @@ import {
   ValidateConsultCoupon_validateConsultCoupon,
   ValidateConsultCoupon,
 } from 'graphql/types/ValidateConsultCoupon';
-// import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -307,9 +305,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }}
                               // disabled={props.cartValue < 200}
                             />
-                            <div className={classes.couponText}>
+                            {/* <div className={classes.couponText}>
                               Get 5% off on total bill by shopping for Rs. 500 or more
-                            </div>
+                            </div> */}
+
                           </li>
                         )
                     )
