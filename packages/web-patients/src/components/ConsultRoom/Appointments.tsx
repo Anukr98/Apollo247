@@ -495,7 +495,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       },
     },
     PAYMENT_SUCCESS: {
-      ctaText: 'DOWNLOAD APP',
+      ctaText: 'DOWNLOAD APOLLO 247 APP',
       info: '',
       callbackFunction: () => {
         window.open(getAppStoreLink(), '_blank');
@@ -875,7 +875,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   .replace(/(A|P)(M)/, '$1.$2.')
                   .toString()}
                 type={'consult'}
-                consultMode={appointmentType}
+                consultMode={appointmentType.charAt(0).toUpperCase() + appointmentType.slice(1)}
                 onClose={() => setIsConfirmedPopoverOpen(false)}
                 ctaText={statusActions[paymentStatus].ctaText}
                 orderStatusCallback={statusActions[paymentStatus].callbackFunction}

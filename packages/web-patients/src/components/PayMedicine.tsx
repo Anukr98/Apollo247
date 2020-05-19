@@ -359,7 +359,6 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
 };
 
 export const PayMedicine: React.FC = (props) => {
-  console.log(4444, props);
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -465,8 +464,16 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.revisedAmount) {
-      console.log('6666', validateConsultCouponResult.revisedAmount);
       setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
+      localStorage.setItem(
+        'consultBookDetails',
+        JSON.stringify({
+          ...consultBookDetails,
+          consultCouponValue:
+            parseFloat(amount) - parseFloat(validateConsultCouponResult.revisedAmount),
+          consultCouponCodeInitial: consultCouponCode,
+        })
+      );
     }
   }, [validateConsultCouponResult]);
 
