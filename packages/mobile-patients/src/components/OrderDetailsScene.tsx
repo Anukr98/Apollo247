@@ -450,11 +450,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
           '',
-          'Your order #{{orderId}} has been packed. Soon would be dispatched from our pharmacy.',
+          `Your order #${orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           'Out for delivery: ',
-          'Your order #A2472707936 would be reaching your doorstep soon.',
+          `Your order #${orderAutoId} would be reaching your doorstep soon.`,
         ],
         [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
           '',
