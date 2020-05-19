@@ -356,8 +356,13 @@ export const ClinicCheckout: React.FC = () => {
   const apolloClient = useApolloClient();
 
   const pageData: any = JSON.parse(localStorage.getItem('consultBookDetails'));
-  const { consultCouponCodeInitial, consultCouponValue } = pageData;
-  const { doctorId, appointmentDateTime, amount } = pageData;
+  const {
+    consultCouponCodeInitial,
+    consultCouponValue,
+    doctorId,
+    appointmentDateTime,
+    amount,
+  } = pageData;
 
   let newAppointmentDateTime = moment(appointmentDateTime)
     .format('DD MMMM[,] LT')
