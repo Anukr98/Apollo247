@@ -1230,15 +1230,16 @@ export const MedicineCart: React.FC = (props) => {
                         )}
                       </div>
                     </div>
-                    {couponCode.length > 0 && (
-                      <div className={classes.discountTotal}>
-                        Savings of Rs.{' '}
-                        {validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
-                          : 0}{' '}
-                        on the bill
-                      </div>
-                    )}
+                    {couponCode.length > 0 &&
+                      validateCouponResult &&
+                      validateCouponResult.discountedTotals &&
+                      validateCouponResult.discountedTotals.couponDiscount > 0 && (
+                        <div className={classes.discountTotal}>
+                          Savings of Rs.
+                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                          on the bill
+                        </div>
+                      )}
                   </div>
                 </div>
                 <div className={`${classes.sectionGroup}`}>
