@@ -58,7 +58,6 @@ export const makeAppointmentPaymentTypeDefs = gql`
     bankName: String
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
-
   }
 
   type AppointmentPayment {
@@ -168,10 +167,12 @@ const makeAppointmentPayment: Resolver<
       ''
     );
 
-    if (processingAppointment.status !== STATUS.PAYMENT_PENDING
-      && processingAppointment.status !== STATUS.PAYMENT_PENDING_PG) {
+    if (
+      processingAppointment.status !== STATUS.PAYMENT_PENDING &&
+      processingAppointment.status !== STATUS.PAYMENT_PENDING_PG
+    ) {
       paymentInfo.appointment = processingAppointment;
-      return { appointment: paymentInfo }
+      return { appointment: paymentInfo };
     }
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
     paymentInputUpdates.responseCode = paymentInfo.responseCode;
@@ -247,7 +248,10 @@ const makeAppointmentPayment: Resolver<
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
-    await apptsRepo.updateAppointment(processingAppointment.id, { status: STATUS.PENDING, paymentInfo });
+    await apptsRepo.updateAppointment(processingAppointment.id, {
+      status: STATUS.PENDING,
+      paymentInfo,
+    });
 
     //autosubmit case sheet code starts
     const currentTime = new Date();
@@ -293,12 +297,15 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
-    await apptsRepo.updateAppointment(processingAppointment.id, { status: STATUS.PAYMENT_FAILED, paymentInfo });
+    await apptsRepo.updateAppointment(processingAppointment.id, {
+      status: STATUS.PAYMENT_FAILED,
+      paymentInfo,
+    });
   } else if (paymentInput.paymentStatus == 'PENDING') {
-    await apptsRepo.updateAppointment(
-      processingAppointment.id,
-      { status: STATUS.PAYMENT_PENDING_PG, paymentInfo }
-    );
+    await apptsRepo.updateAppointment(processingAppointment.id, {
+      status: STATUS.PAYMENT_PENDING_PG,
+      paymentInfo,
+    });
   }
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo };

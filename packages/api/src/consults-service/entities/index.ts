@@ -9,7 +9,7 @@ import {
   JoinColumn,
   OneToMany,
   ManyToOne,
-  Index
+  Index,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
@@ -72,7 +72,7 @@ export enum PAYMENT_METHODS {
   EMI = 'CREDIT_CARD_EMI',
   UPI = 'UPI',
   PAYTMCC = 'PAYTM_POSTPAID',
-  COD = 'COD'
+  COD = 'COD',
 }
 
 export enum PAYMENT_METHODS_REVERSE {
@@ -83,9 +83,8 @@ export enum PAYMENT_METHODS_REVERSE {
   CREDIT_CARD_EMI = 'EMI',
   UPI = 'UPI',
   PAYTM_POSTPAID = 'PAYTMCC',
-  COD = 'COD'
+  COD = 'COD',
 }
-
 
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
@@ -265,7 +264,13 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   deviceType: DEVICETYPE;
 
-  @Column({ nullable: true, type: 'jsonb', array: false, name: 'paymentInfo', default: () => "'{}'", })
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
   paymentInfo: Partial<AppointmentPayments>;
 
   @BeforeUpdate()

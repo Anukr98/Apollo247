@@ -8,7 +8,6 @@ import {
   PAYMENT_METHODS_REVERSE,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
-
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -147,7 +146,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
   }
   const paymentMode: string = PAYMENT_METHODS[medicinePaymentMqInput.paymentMode];
 
-
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
     paymentDateTime: medicinePaymentMqInput.paymentDateTime,
@@ -173,11 +171,12 @@ const SaveMedicineOrderPaymentMq: Resolver<
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
   ) {
     let savePaymentDetails: MedicineOrderPayments | undefined;
-    if (savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id)) {
-      await medicineOrdersRepo.updateMedicineOrderPayment(orderDetails.id,
+    if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+      await medicineOrdersRepo.updateMedicineOrderPayment(
+        orderDetails.id,
         orderDetails.orderAutoId,
         paymentAttrs
-      )
+      );
     } else {
       savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
       if (!savePaymentDetails) {
@@ -250,11 +249,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-    await medicineOrdersRepo.updateMedicineOrder(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      { orderDateTime: new Date(), currentStatus, paymentInfo: savePaymentDetails }
-    );
+    await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
+      orderDateTime: new Date(),
+      currentStatus,
+      paymentInfo: savePaymentDetails,
+    });
     if (
       medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
       medicinePaymentMqInput.paymentStatus != 'PENDING'
@@ -349,15 +348,15 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
