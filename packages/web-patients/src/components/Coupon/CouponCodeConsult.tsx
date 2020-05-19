@@ -305,10 +305,9 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }}
                               // disabled={props.cartValue < 200}
                             />
-                            {/* <div className={classes.couponText}>
-                              Get 5% off on total bill by shopping for Rs. 500 or more
-                            </div> */}
-
+                            {couponDetails && couponDetails.description && (
+                              <div className={classes.couponText}>{couponDetails.description}</div>
+                            )}
                           </li>
                         )
                     )
