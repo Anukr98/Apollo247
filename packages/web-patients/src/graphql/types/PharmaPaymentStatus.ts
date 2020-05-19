@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -10,9 +9,11 @@
 export interface PharmaPaymentStatus_pharmaPaymentStatus {
   __typename: "PharmaPaymentDetails";
   paymentRefId: string | null;
+  bankTxnId: string | null;
   amountPaid: number | null;
   paymentStatus: string;
   paymentDateTime: any | null;
+  paymentMode: string | null;
 }
 
 export interface PharmaPaymentStatus {

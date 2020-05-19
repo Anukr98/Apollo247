@@ -549,7 +549,7 @@ export const MedicineLanding: React.FC = (props) => {
       {showOrderPopup &&
         <Route
           render={({ history }) => {
-            return <PaymentStatusModal history={history} />
+            return <PaymentStatusModal history={history} addToCartRef={addToCartRef}/>
           }}
         />
       }

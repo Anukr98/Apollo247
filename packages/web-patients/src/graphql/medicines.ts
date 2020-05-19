@@ -133,9 +133,11 @@ export const PHRAMA_PAYMENT_STATUS = gql`
   query PharmaPaymentStatus($orderId: Int) {
     pharmaPaymentStatus(orderId: $orderId) {
       paymentRefId
+      bankTxnId
       amountPaid
       paymentStatus
       paymentDateTime
+      paymentMode
     }
   }
 `;
