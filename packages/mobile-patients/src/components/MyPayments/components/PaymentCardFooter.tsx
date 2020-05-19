@@ -148,15 +148,20 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         props.navigationProps.navigate(AppRoutes.DoctorSearch, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.Consult, {});
+      } else {
+        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
       }
     } else {
       if (status === FAILED) {
         props.navigationProps.navigate(AppRoutes.YourCart, {});
+      } else if (status === SUCCESS) {
+        props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
+          goToHomeOnBack: true,
+          orderAutoId: orderID,
+        });
+      } else {
+        props.navigationProps.navigate(AppRoutes.ConsultRoom, {});
       }
-      props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
-        goToHomeOnBack: true,
-        orderAutoId: orderID,
-      });
     }
   };
   const renderButton = () => {
