@@ -177,6 +177,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   >([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
+  const [couponEnable, setCouponEnable] = useState<boolean>(false);
 
   const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
     fetchPolicy: 'no-cache',
@@ -268,8 +269,18 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 {availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
+                      inputProps={{
+                        maxLength: 10,
+                      }}
                       value={selectCouponCode}
-                      onChange={(e) => setSelectCouponCode(e.target.value)}
+                      onChange={(e) => {
+                        setCouponEnable(false);
+                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        setSelectCouponCode(value);
+                        if (value.length <= 10 && value.length >= 5) {
+                          setCouponEnable(true);
+                        }
+                      }}
                       placeholder="Enter coupon code"
                       error={errorMessage.length > 0 && true}
                     />
@@ -339,7 +350,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode}
+          disabled={!selectCouponCode || !couponEnable}
           classes={{
             disabled: classes.buttonDisabled,
           }}
