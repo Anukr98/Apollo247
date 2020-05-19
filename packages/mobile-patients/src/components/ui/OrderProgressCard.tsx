@@ -5,11 +5,18 @@ import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
+    marginBottom: 8,
+    flex: 1,
+  },
+  containerStyle1: {
+    // ...theme.viewStyles.cardViewStyle,
+    // padding: 16,
     marginBottom: 8,
     flex: 1,
   },
@@ -55,9 +62,16 @@ const styles = StyleSheet.create({
   verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
 });
 
+interface OrderDescription {
+  heading?: string;
+  description?: string;
+}
+
 export interface OrderProgressCardProps {
   status: string;
   isStatusDone: boolean;
+  showCurrentStatusDesc?: boolean | null;
+  getOrderDescription?: OrderDescription | null;
   nextItemStatus: 'DONE' | 'NOT_DONE' | 'NOT_EXIST';
   date?: string;
   time?: string;
@@ -79,11 +93,11 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
             styles.verticalProgressLine,
             {
               backgroundColor:
-                props.nextItemStatus == 'DONE'
-                  ? theme.colors.SKY_BLUE
-                  : props.nextItemStatus == 'NOT_DONE'
-                  ? 'rgba(0, 179, 142, 0.2)'
-                  : 'transparent',
+                props.nextItemStatus == 'NOT_EXIST'
+                  ? 'transparent'
+                  : !props.isStatusDone
+                  ? 'rgba(0,135,186,0.3)'
+                  : theme.colors.SKY_BLUE,
             },
           ]}
         />
@@ -92,12 +106,6 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
   };
 
   const renderCustomDescriptionOrDateAndTime = () => {
-    if (props.description)
-      return (
-        <View style={styles.viewRowStyle}>
-          <Text style={[styles.dateTimeStyle, { opacity: 0.6 }]}>{props.description}</Text>
-        </View>
-      );
     return (
       <View style={styles.viewRowStyle}>
         <Text style={styles.dateTimeStyle}>{props.date}</Text>
@@ -109,20 +117,42 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
   return (
     <View style={{ flexDirection: 'row' }}>
       {renderGraphicalStatus()}
-      <View
-        style={[
-          styles.containerStyle,
-          props.style,
-          !props.isStatusDone ? { backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR } : {},
-        ]}
-      >
-        <Text style={styles.statusStyle}>{props.status}</Text>
-        {(props.date && props.time) || props.description ? (
-          <>
-            <View style={styles.separator} />
-            {renderCustomDescriptionOrDateAndTime()}
-          </>
-        ) : null}
+      <View style={[styles.containerStyle1]}>
+        <View
+          style={[
+            styles.containerStyle,
+            props.style,
+            !props.isStatusDone ? { backgroundColor: '#f7f8f5' } : {},
+          ]}
+        >
+          {!props.isStatusDone ? (
+            <>
+              <Text style={[styles.statusStyle, { color: 'rgba(1,71,91,0.35)' }]}>
+                {props.status}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.statusStyle}>{props.status}</Text>
+              {(props.date && props.time) || props.description ? (
+                <>
+                  <View style={styles.separator} />
+                  {renderCustomDescriptionOrDateAndTime()}
+                </>
+              ) : null}
+            </>
+          )}
+        </View>
+        {props.showCurrentStatusDesc && (
+          <View style={{ paddingHorizontal: 16, flexDirection: 'row' }}>
+            <Text style={{ ...theme.viewStyles.text('SB', 10, '#00b38e', 1, 13, 0.03) }}>
+              {props.getOrderDescription && props.getOrderDescription.heading}
+              <Text style={{ ...theme.viewStyles.text('R', 10, '#02475b', 1, 13, 0.03) }}>
+                {props.getOrderDescription && props.getOrderDescription.description!}
+              </Text>
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
