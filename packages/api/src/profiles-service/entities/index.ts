@@ -662,6 +662,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -711,6 +717,12 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
+
+  @Column({ nullable: true })
+  primaryUhid: string;
+
+  @Column({ nullable: true })
+  primaryPatientId: string;
 
   @Column({ nullable: true })
   uhid: string;
@@ -848,6 +860,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ type: 'float8', nullable: true })
   longitude: number;
+
+  @Column({ nullable: true })
+  stateCode: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
@@ -2047,4 +2062,25 @@ export class MedicineOrderShipments extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class MedicineOrderCancelReason extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  displayMessage: string;
+
+  @Column({ nullable: true })
+  isUserReason: boolean;
 }

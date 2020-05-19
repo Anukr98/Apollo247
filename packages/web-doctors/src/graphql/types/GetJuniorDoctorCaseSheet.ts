@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, Gender, Relation, DoctorType } from "./globalTypes";
+import { STATUS, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, Gender, Relation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorCaseSheet
@@ -14,6 +14,22 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   prismFileId: string | null;
 }
 
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  name: string;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_doctorInfo {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  mobileNumber: string;
+  specialty: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty;
+  photoUrl: string | null;
+  salutation: Salutation | null;
+}
+
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
@@ -22,6 +38,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   status: STATUS;
   appointmentState: string | null;
   displayId: string;
+  doctorInfo: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription {

@@ -632,7 +632,37 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateUhid(id: string, uhid: string) {
-    return this.update(id, { uhid, uhidCreatedDate: new Date() });
+    return this.update(id, {
+      uhid,
+      uhidCreatedDate: new Date(),
+      primaryUhid: uhid,
+      primaryPatientId: id,
+    });
+  }
+
+  updateLinkedUhidAccount(
+    ids: string[],
+    column: string,
+    flag: boolean,
+    primaryUhid?: string,
+    primaryPatientId?: string
+  ) {
+    const fieldToUpdate: Partial<Patient> = { [column]: flag };
+    if (primaryUhid) {
+      if (primaryUhid == 'null') {
+        fieldToUpdate.primaryUhid = undefined;
+        fieldToUpdate.primaryPatientId = undefined;
+      } else {
+        fieldToUpdate.primaryUhid = primaryUhid;
+        fieldToUpdate.primaryPatientId = primaryPatientId;
+      }
+    }
+
+    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+        updatePatientError,
+      });
+    });
   }
 
   updateToken(id: string, athsToken: string) {
@@ -922,5 +952,21 @@ export class PatientRepository extends Repository<Patient> {
     return this.find({
       where: { mobileNumber, isActive: true },
     });
+  }
+
+  async getLinkedPatientIds(patientId: string) {
+    const linkedPatient = await this.findOne({ where: { id: patientId } });
+    const primaryPatientIds: string[] = [];
+    if (linkedPatient) {
+      const patientsList = await this.find({
+        where: { primaryPatientId: linkedPatient.primaryPatientId },
+      });
+      if (patientsList.length > 0) {
+        patientsList.forEach((patientDetails) => {
+          primaryPatientIds.push(patientDetails.id);
+        });
+      }
+    }
+    return primaryPatientIds;
   }
 }
