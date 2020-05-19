@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
         '&:hover': {
           backgroundColor: '#fcb716',
-          color: '#fff',  
+          color: '#fff',
         },
       },
     },
@@ -241,6 +241,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   };
+  const disableCoupon =
+    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
 
   return (
     <div className={classes.shadowHide}>
@@ -252,10 +254,16 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 {availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
+                      inputProps={{
+                        maxLength: 10,
+                      }}
                       value={selectCouponCode}
-                      onChange={(e) => setSelectCouponCode(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        setSelectCouponCode(value);
+                      }}
                       placeholder="Enter coupon code"
-                      error={errorMessage.length > 0 && (true)}
+                      error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
                       {selectCouponCode.length > 0 ? (
@@ -299,7 +307,9 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }}
                               // disabled={props.cartValue < 200}
                             />
-                            <div className={classes.couponText}>Get 5% off on total bill by shopping for Rs. 500 or more</div>
+                            <div className={classes.couponText}>
+                              Get 5% off on total bill by shopping for Rs. 500 or more
+                            </div>
                           </li>
                         )
                     )
@@ -318,7 +328,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode}
+          disabled={disableCoupon}
           onClick={() => {
             verifyCoupon();
           }}

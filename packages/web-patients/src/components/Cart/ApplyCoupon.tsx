@@ -257,6 +257,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   };
+  const disableCoupon =
+    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
 
   return (
     <div className={classes.shadowHide}>
@@ -268,8 +270,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 {availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
+                      inputProps={{
+                        maxLength: 10,
+                      }}
                       value={selectCouponCode}
-                      onChange={(e) => setSelectCouponCode(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        setSelectCouponCode(value);
+                      }}
                       placeholder="Enter coupon code"
                       error={errorMessage.length > 0 && true}
                     />
@@ -339,7 +347,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode}
+          disabled={disableCoupon}
           classes={{
             disabled: classes.buttonDisabled,
           }}
