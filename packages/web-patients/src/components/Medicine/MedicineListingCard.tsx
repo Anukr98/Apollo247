@@ -140,7 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
-        paddingRight: 0,  
+        paddingRight: 0,
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
@@ -291,9 +291,13 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                   validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
                     <>
                       <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                        <span className={classes.lineThrough}>
-                          Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
-                        </span>
+                        {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
+                          .applicablePrice !==
+                        validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp ? (
+                          <span className={classes.lineThrough}>
+                            Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                          </span>
+                        ) : null}
                         <div className={classes.mrpText}>(MRP)</div>
                       </div>
 
