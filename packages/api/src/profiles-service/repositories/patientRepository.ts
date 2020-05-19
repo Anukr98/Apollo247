@@ -632,7 +632,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateUhid(id: string, uhid: string) {
-    return this.update(id, { uhid, uhidCreatedDate: new Date() });
+    return this.update(id, {
+      uhid,
+      uhidCreatedDate: new Date(),
+      primaryUhid: uhid,
+      primaryPatientId: id,
+    });
   }
 
   updateLinkedUhidAccount(
@@ -947,5 +952,21 @@ export class PatientRepository extends Repository<Patient> {
     return this.find({
       where: { mobileNumber, isActive: true },
     });
+  }
+
+  async getLinkedPatientIds(patientId: string) {
+    const linkedPatient = await this.findOne({ where: { id: patientId } });
+    const primaryPatientIds: string[] = [];
+    if (linkedPatient) {
+      const patientsList = await this.find({
+        where: { primaryPatientId: linkedPatient.primaryPatientId },
+      });
+      if (patientsList.length > 0) {
+        patientsList.forEach((patientDetails) => {
+          primaryPatientIds.push(patientDetails.id);
+        });
+      }
+    }
+    return primaryPatientIds;
   }
 }
