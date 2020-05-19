@@ -13,9 +13,14 @@ import { useParams } from 'hooks/routerHooks';
 import { AphButton } from '@aph/web-ui-components';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import { getDeviceType } from 'helpers/commonHelpers';
+// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER_OMS, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -33,6 +38,8 @@ import {
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
+import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -202,7 +209,6 @@ export const PayMedicine: React.FC = (props) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
   };
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
@@ -242,7 +248,13 @@ export const PayMedicine: React.FC = (props) => {
   const cartValues = sessionStorage.getItem('cartValues')
     ? JSON.parse(sessionStorage.getItem('cartValues'))
     : {};
-  const { couponCode, couponValue, deliveryTime, totalWithCouponDiscount } = cartValues;
+  const {
+    couponCode,
+    couponValue,
+    deliveryTime,
+    totalWithCouponDiscount,
+    validateCouponResult,
+  } = cartValues;
 
   const consultBookDetails = localStorage.getItem('consultBookDetails')
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
@@ -259,7 +271,6 @@ export const PayMedicine: React.FC = (props) => {
     specialty,
   } = consultBookDetails;
   const revisedAmount = Number(amount) - Number(consultCouponValue);
-
   const { city } = useLocationDetails();
   const { authToken } = useAuth();
 
@@ -271,7 +282,28 @@ export const PayMedicine: React.FC = (props) => {
         }
       }
     );
+    if (
+      (params.payType === 'pharmacy' && !sessionStorage.getItem('cartValues')) ||
+      sessionStorage.getItem('cartValues') === '' ||
+      (params.payType === 'consults' && !localStorage.getItem('consultBookDetails')) ||
+      localStorage.getItem('consultBookDetails') === ''
+    ) {
+      <Redirect to={clientRoutes.welcome()} />;
+    }
   }, []);
+
+  const getDiscountedLineItemPrice = (id: number) => {
+    if (
+      couponCode.length > 0 &&
+      validateCouponResult &&
+      validateCouponResult.pharmaLineItemsWithDiscountedPrice
+    ) {
+      const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
+        (item: pharmaCouponItem) => item.itemId === id.toString()
+      );
+      return item.applicablePrice.toFixed(2);
+    }
+  };
 
   const cartItemsForApi =
     cartItems.length > 0
@@ -279,11 +311,19 @@ export const PayMedicine: React.FC = (props) => {
           return {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
-            price: cartItemDetails.price,
+            price:
+              couponCode && couponCode.length > 0
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : Number(cartItemDetails.special_price),
             quantity: cartItemDetails.quantity,
+            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemDiscount:
+              cartItemDetails.quantity *
+              (couponCode && couponCode.length > 0
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : cartItemDetails.price - Number(cartItemDetails.special_price)),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
               cartItemDetails.type_id === 'Pharma'
@@ -291,22 +331,25 @@ export const PayMedicine: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
+            // specialPrice: Number(cartItemDetails.special_price) || 0,
           };
         })
       : [];
 
-  const paymentMutation = useMutation<SaveMedicineOrder, SaveMedicineOrderVariables>(
-    SAVE_MEDICINE_ORDER,
+  const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
+    SAVE_MEDICINE_ORDER_OMS,
     {
       variables: {
-        medicineCartInput: {
+        medicineCartOMSInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
           shopId: '',
           patientAddressId: deliveryAddressId,
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           bookingSource: BOOKINGSOURCE.WEB,
-          estimatedAmount: totalWithCouponDiscount,
+          estimatedAmount: totalWithCouponDiscount ? Number(totalWithCouponDiscount.toFixed(2)) : 0,
+          couponDiscount: couponValue ? Number(couponValue) : 0,
+          productDiscount: productDiscount ? Number(productDiscount.toFixed(2)) : 0,
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
             ...prescriptions!.map((item) => item.imageUrl),
@@ -318,6 +361,7 @@ export const PayMedicine: React.FC = (props) => {
           orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
           coupon: couponCode ? couponCode : null,
+          deviceType: getDeviceType(),
         },
       },
     }
@@ -394,16 +438,21 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
-        if (res && res.data && res.data.SaveMedicineOrder) {
-          const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+        if (res && res.data && res.data.saveMedicineOrderOMS) {
+          const { orderId, orderAutoId, errorMessage } = res.data.saveMedicineOrderOMS;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+          } else if (errorMessage.length > 0) {
+            setMutationLoading(false);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
+          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -417,6 +466,7 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
+        sessionStorage.setItem('cartValues', '');
       });
   };
 
@@ -437,6 +487,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
+          // couponDiscount: couponValue,
         },
       },
     })
@@ -460,7 +511,7 @@ export const PayMedicine: React.FC = (props) => {
                   paymentRefId: '',
                   paymentStatus: 'TXN_SUCCESS',
                   paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
-                  responseCode: couponCode ? couponCode : null,
+                  responseCode: couponCode ? couponCode : '',
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
                   orderId: res.data.bookAppointment.appointment.id,
@@ -487,13 +538,14 @@ export const PayMedicine: React.FC = (props) => {
           // setIsDialogOpen(true);
         }
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       })
       .catch((errorResponse) => {
-        console.log('enterrr');
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         setMutationLoading(false);
         setIsLoading(false);
+        localStorage.setItem('consultBookDetails', '');
       });
   };
 
@@ -568,7 +620,7 @@ export const PayMedicine: React.FC = (props) => {
                     {mutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
                     ) : (
-                      `Pay RS. ${totalAmount} On delivery`
+                      `Pay RS. ${totalWithCouponDiscount.toFixed(2)} On delivery`
                     )}
                   </AphButton>
                 )}

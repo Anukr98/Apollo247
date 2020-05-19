@@ -568,6 +568,38 @@ export interface MedicineCartItem {
   isMedicine?: string | null;
 }
 
+export interface MedicineCartOMSInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  patientAddressId: string;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  orderTat?: string | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
+  coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
+}
+
+export interface MedicineCartOMSItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
+  isPrescriptionNeeded?: number | null;
+  mou?: number | null;
+  isMedicine: string;
+}
+
 export interface MedicinePaymentInput {
   orderId: string;
   orderAutoId: number;
