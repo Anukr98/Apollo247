@@ -226,7 +226,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
-        AllowWhatsAppMessage: whatsAppUpdate,
       };
       return eventAttributes;
     } catch (error) {
