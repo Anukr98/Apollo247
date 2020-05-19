@@ -39,6 +39,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   APPOINTMENT_TYPE,
+  NOSHOW_REASON,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -69,6 +70,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -140,7 +142,7 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
 
@@ -492,7 +494,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const showCancel = isAwaitingReschedule
+      ? true
+      : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
     return (
       <View
         style={{
@@ -617,7 +621,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule ? 1 : 0.5,
+                opacity:
+                  isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    ? 1
+                    : 0.5,
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -632,7 +639,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    isAwaitingReschedule ? NextAvailableSlotAPI() : null;
+                    isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                      ? NextAvailableSlotAPI()
+                      : null;
                   } catch (error) {
                     CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
                   }

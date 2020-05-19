@@ -274,6 +274,12 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
+export enum NOSHOW_REASON {
+  NOSHOW_30MIN = "NOSHOW_30MIN",
+  NOSHOW_DOCTOR = "NOSHOW_DOCTOR",
+  NOSHOW_PATIENT = "NOSHOW_PATIENT",
+}
+
 export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
@@ -658,8 +664,6 @@ export interface MedicineCartOMSItem {
 export interface MedicineOrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
-  latitude?: number | null;
-   longitude?: number | null;
 }
 
 export interface MedicinePaymentMqInput {

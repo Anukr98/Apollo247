@@ -262,7 +262,8 @@
   "Payment": {
     "success": "PAYMENT_SUCCESS",
     "failure": "PAYMENT_FAILED",
-    "pending": "PAYMENT_PENDING_PG"
+    "pending": "PAYMENT_PENDING_PG",
+    "refund": "PAYMENT_REFUND"
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",

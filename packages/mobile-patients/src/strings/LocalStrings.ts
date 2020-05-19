@@ -60,6 +60,24 @@ const AddFile = {
   mb: 'File should not be of more than 5mb.',
 };
 
+const MyPayments = {
+  pendingToFail: 'Your pending payment has failed!',
+  pendingToSuccess: 'Your pending payment is successful!',
+  refundInitiated:
+    'Your refund has been initiated. The amount should be credited in your account in 7-14 business days.',
+  successNoSlt:
+    'We regret to inform you that while your payment is successful, the appointment slot you selected is not available. Kindly book another slot to continue with your consult.',
+  paymentSuccessful: 'PAYMENT SUCCESSFUL',
+  paymentFailed: 'PAYMENT FAILED',
+  paymentPending: 'PAYMENT PENDING',
+  paymentRefund: 'REFUND INITIATED',
+  noPayments: 'You have no payment history!',
+  failureNote:
+    'Note : In case your account has been debited, you should get the refund in 1-7 working days.',
+  pendingNote:
+    'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.',
+  refundNote: 'Note : The amount should be credited in your account in 10-14 business days.',
+};
 
 export const LocalStrings = {
   ...common,
@@ -67,4 +85,5 @@ export const LocalStrings = {
   ...Appointment,
   ...Notification,
   ...AddFile,
+  ...MyPayments,
 };

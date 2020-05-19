@@ -199,11 +199,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
-        setServiceabilityMsg(Availability ? '' : 'Sorry, not serviceable here.');
+        setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
         !Availability &&
           showAphAlert!({
             title: 'We’re sorry!',
-            description: 'We are not serviceable in your area. Please change your location.',
+            description:
+              'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
             titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
             ctaContainerStyle: { justifyContent: 'flex-end' },
             CTAs: [

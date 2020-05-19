@@ -669,6 +669,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
             setSendAnswers(6); // this is added here since family history is hidded in questions
+            if (currentPatient && currentPatient.gender) {
+              setSendAnswers(9);
+            }
+            if (currentPatient && currentPatient.dateOfBirth) {
+              setSendAnswers(10);
+            }
           } catch (error) {
             CommonBugFender('ChatRoom_Answers0_try', error);
           }
@@ -940,7 +946,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
       if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-      if (status !== STATUS.COMPLETED) return;
+      if (status === STATUS.COMPLETED) return;
 
       console.log('API Called');
       // endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
@@ -1456,7 +1462,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CALL_ABANDON) return;
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-      if (status !== STATUS.COMPLETED) return;
+      if (status === STATUS.COMPLETED) return;
 
       // abondmentStarted = true;
       // startCallAbondmentTimer(620, true);
@@ -1470,8 +1476,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
 
       if (
-        startConsultJRResult.length > 0 &&
-        stopConsultJRResult.length > 0 &&
+        startConsultJRResult.length >= 0 &&
+        stopConsultJRResult.length >= 0 &&
         dateIsAfter &&
         !isSeniorConsultStarted
       ) {
@@ -1480,7 +1486,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.CALL_ABANDON) return;
         if (appointmentData.status === STATUS.CANCELLED) return;
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
-        if (status !== STATUS.COMPLETED) return;
+        if (status === STATUS.COMPLETED) return;
 
         abondmentStarted = true;
         startCallAbondmentTimer(620, false);

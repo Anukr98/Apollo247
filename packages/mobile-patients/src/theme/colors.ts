@@ -5,7 +5,7 @@ const semiDarkClear = 'rgba(0, 0, 0, 0.3)';
 const lightColor = 'rgb(216, 216, 216)';
 const darkColor = 'rgb(115, 118, 131)';
 
-const hexWhite='#ffffff'
+const hexWhite = '#ffffff';
 const app_green = '#00b38e';
 const APP_Sherpa_Blue = '#01475b';
 const app_light_blue = '#02475b';
@@ -17,9 +17,13 @@ const success_text = '#4aa54a';
 const lightShadeRed = '#edc6c2';
 const lightShadeGreen = '#edf7ed';
 const almond = '#eed9c6';
-const darkShadeGrey ='#666666';
-const astronautBlue ='#01475b';
-const shadeCyanBlue ='#6d7278';
+const darkShadeGrey = '#666666';
+const astronautBlue = '#01475b';
+const shadeCyanBlue = '#6d7278';
+const lightGray = '#d8d8d8';
+const deepRed = '#a30808';
+const lightPaleRed = '#EDC6C2';
+const paleLightGray = '#F1F1F1';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -46,7 +50,7 @@ const Common = {
   INPUT_CURSOR_COLOR: app_green,
   APP_GREEN: app_green,
   WHITE: white,
-  HEX_WHITE:hexWhite,
+  HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
   APP_YELLOW_COLOR: '#fcb716',
   APP_YELLOW: tangerine_yellow,
@@ -62,6 +66,9 @@ const Common = {
   SUCCESS_TEXT: '#4aa54a',
   FAILURE_TEXT: '#e02020',
   PENDING_TEXT: '#e87e38',
+  REFUND_TEXT: '#a30808',
+  LIGHT_GRAY: lightGray,
+  PALE_LIGHT_GRAY: paleLightGray,
   COD_TEXT: '#084c60'
 };
 
@@ -120,11 +127,12 @@ const Capsule = {
   CAPSULE_INACTIVE_TEXT: app_light_blue,
 };
 
-const StatusColors={
-  SUCCESS:lightShadeGreen,
-  FAILURE:lightShadeRed,
-  PENDING:almond
-}
+const StatusColors = {
+  SUCCESS: lightShadeGreen,
+  FAILURE: lightShadeRed,
+  PENDING: almond,
+  REFUND: lightPaleRed,
+};
 
 export const colors = {
   ...Buttons,
@@ -137,5 +145,5 @@ export const colors = {
   ...Search,
   ...TabBar,
   ...Capsule,
-...StatusColors
+  ...StatusColors,
 };

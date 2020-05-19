@@ -377,6 +377,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        noShowReason
         doctorInfo {
           awards
           city
@@ -1121,6 +1122,7 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
         id
         orderAutoId
         deliveryType
+        currentStatus
         medicineOrdersStatus {
           id
           orderStatus
@@ -1353,6 +1355,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         orderType
         currentStatus
         patientAddressId
+        currentStatus
         medicineOrdersStatus {
           id
           orderStatus
@@ -2376,6 +2379,55 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       amountPaid
       paymentStatus
       paymentDateTime
+    }
+  }
+`;
+
+export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
+  query consultOrders($patientId: String!) {
+    consultOrders(patientId: $patientId) {
+      appointments {
+        id
+        doctorId
+        displayId
+        appointmentDateTime
+        actualAmount
+        status
+        appointmentType
+        discountedAmount
+        appointmentPayments {
+          paymentRefId
+          paymentStatus
+        }
+        doctor {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
+  query pharmacyOrders($patientId: String!) {
+    pharmacyOrders(patientId: $patientId) {
+      pharmaOrders {
+        id
+        estimatedAmount
+        devliveryCharges
+        bookingSource
+        orderAutoId
+        appointmentId
+        currentStatus
+        orderType
+        orderDateTime
+        quoteDateTime
+        medicineOrderPayments {
+          paymentType
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+        }
+      }
     }
   }
 `;

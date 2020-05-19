@@ -1133,6 +1133,7 @@ export const addPharmaItemToCart = (
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
   const navigate = () =>
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   setLoading && setLoading(true);
