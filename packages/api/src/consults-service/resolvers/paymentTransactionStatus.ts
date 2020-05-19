@@ -18,8 +18,8 @@ export const paymentTransactionStatusTypeDefs = gql`
     responseCode: Int
     responseMessage: String
     paymentDateTime: DateTime
-    displayId: Int,
-    paymentMode:String
+    displayId: Int
+    paymentMode: String
   }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse

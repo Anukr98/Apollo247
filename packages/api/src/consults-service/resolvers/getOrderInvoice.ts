@@ -7,18 +7,14 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { log } from 'customWinstonLogger';
-import _ from 'lodash';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-import util from 'util';
-import moment from 'moment';
+
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { format, getTime } from 'date-fns';
-import { StatusEvent } from 'pubnub';
+import { getTime, format } from 'date-fns';
 
 export const getOrderInvoiceTypeDefs = gql`
   extend type Query {
@@ -173,8 +169,6 @@ const getOrderInvoice: Resolver<
       .moveDown(0.5);
   };
 
-  const headerEndY = 120;
-
   const renderHeader = (
     doctorInfo: AppointmentsResult['doctor'],
     hospitalAddress: AppointmentsResult['hospitalAddress']
@@ -259,11 +253,8 @@ const getOrderInvoice: Resolver<
     }
 
     if (appointmentData[0].appointmentDateTime) {
-      renderDetailsRow(
-        'Consult Date',
-        `${moment(appointmentData[0].appointmentDateTime).format('DD MMM YYYY hh:mm A')}`,
-        doc.y
-      );
+      const formattedDate = format(appointmentData[0].appointmentDateTime, 'dd MMM yyyy hh:mm A');
+      renderDetailsRow('Consult Date', `${formattedDate}`, doc.y);
     }
 
     if (appointmentData[0].appointmentType) {
@@ -349,18 +340,6 @@ const getOrderInvoice: Resolver<
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
-const convertPdfUrlToBase64 = async (pdfUrl: string) => {
-  const pdf2base64 = require('pdf-to-base64');
-  util.promisify(pdf2base64);
-  try {
-    const base64pdf = await pdf2base64(pdfUrl);
-    // console.log('pdfData:', base64pdf);
-    return base64pdf;
-  } catch (e) {
-    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-  }
-};
-
 export const uploadRxPdf = async (
   client: AphStorageClient,
   appointmentId: String,
@@ -374,9 +353,9 @@ export const uploadRxPdf = async (
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
   // console.log('blobUrl===', blobUrl);
-  const base64pdf = await convertPdfUrlToBase64(blobUrl);
+  // const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
-  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+  //const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
   // return uploadData;
   return blobUrl;
 

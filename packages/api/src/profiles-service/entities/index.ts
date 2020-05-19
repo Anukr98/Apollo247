@@ -207,7 +207,7 @@ export enum PAYMENT_METHODS {
   EMI = 'CREDIT_CARD_EMI',
   UPI = 'UPI',
   PAYTMCC = 'PAYTM_POSTPAID',
-  COD = 'COD'
+  COD = 'COD',
 }
 
 export enum PAYMENT_METHODS_REVERSE {
@@ -218,7 +218,7 @@ export enum PAYMENT_METHODS_REVERSE {
   CREDIT_CARD_EMI = 'EMI',
   UPI = 'UPI',
   PAYTM_POSTPAID = 'PAYTMCC',
-  COD = 'COD'
+  COD = 'COD',
 }
 
 export enum FEEDBACKTYPE {
@@ -326,7 +326,13 @@ export class MedicineOrders extends BaseEntity {
   @Column({ type: 'float8', nullable: true })
   productDiscount: number;
 
-  @Column({ nullable: true, type: 'jsonb', array: false, name: 'paymentInfo', default: () => "'{}'", })
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
   paymentInfo: Partial<MedicineOrderPayments>;
 
   @Column({ nullable: true })
@@ -471,7 +477,7 @@ export class MedicineOrderPayments extends BaseEntity {
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
 
   @Column({ nullable: true })
-  paymentMode: PAYMENT_METHODS_REVERSE
+  paymentMode: PAYMENT_METHODS_REVERSE;
 
   @Column({ nullable: true })
   paymentRefId: string;
