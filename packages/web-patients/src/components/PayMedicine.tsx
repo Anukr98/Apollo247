@@ -9,7 +9,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import fetchUtil from 'helpers/fetch';
 import { Link } from 'react-router-dom';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { AphButton } from '@aph/web-ui-components';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
@@ -349,6 +349,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
+  return cartItemDetails.special_price || cartItemDetails.price;
+};
+
 export const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
@@ -458,14 +462,14 @@ export const PayMedicine: React.FC = (props) => {
             price:
               couponCode && couponCode.length > 0
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : Number(cartItemDetails.special_price),
+                : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
               (couponCode && couponCode.length > 0
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(cartItemDetails.special_price)),
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
@@ -475,7 +479,7 @@ export const PayMedicine: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-            // specialPrice: Number(cartItemDetails.special_price) || 0,
+            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];
