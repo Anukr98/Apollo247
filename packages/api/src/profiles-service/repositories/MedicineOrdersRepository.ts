@@ -41,6 +41,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mp."paymentStatus"',
         'mp."bankTxnId"',
         'mo."orderAutoId"',
+        'mp."paymentMode"'
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
@@ -55,6 +56,17 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         });
       });
   }
+
+  findMedicineOrderPayment(id: string) {
+    return MedicineOrderPayments.findOne({
+      where: { medicineOrders: id }
+    }).catch((medicinePaymentError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
+        medicinePaymentError,
+      });
+    });
+  }
+
 
   saveMedicineOrderPayment(paymentAttrs: Partial<MedicineOrderPayments>) {
     return MedicineOrderPayments.create(paymentAttrs)
@@ -251,6 +263,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  updateMedicineOrder(
+    id: string,
+    orderAutoId: number,
+    orderObj: Partial<MedicineOrders>
+  ) {
+    return this.update({ id, orderAutoId }, orderObj);
   }
 
   getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
