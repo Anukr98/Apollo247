@@ -59,6 +59,7 @@ import {
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import { getItemSpecialPrice } from '../PayMedicine';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -594,11 +595,9 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const { currentPatient } = useAllCurrentPatients();
-  const { authToken } = useAuth();
   const pharmacyMinDeliveryValue = process.env.PHARMACY_MIN_DELIVERY_VALUE;
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const disablePayButton = paymentMethod === '';
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
@@ -651,7 +650,7 @@ export const MedicineCart: React.FC = (props) => {
       const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
         (item) => item.itemId === id.toString()
       );
-      return item.applicablePrice;
+      return item.applicablePrice.toFixed(2);
     }
   };
 
@@ -663,15 +662,15 @@ export const MedicineCart: React.FC = (props) => {
             medicineName: cartItemDetails.name,
             price:
               couponCode.length > 0
-                ? getDiscountedLineItemPrice(cartItemDetails.id)
-                : Number(cartItemDetails.special_price),
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
               (couponCode.length > 0
-                ? cartItemDetails.price - getDiscountedLineItemPrice(cartItemDetails.id)
-                : cartItemDetails.price - Number(cartItemDetails.special_price)),
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
@@ -681,7 +680,7 @@ export const MedicineCart: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-            // specialPrice: Number(cartItemDetails.special_price) || 0,
+            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];

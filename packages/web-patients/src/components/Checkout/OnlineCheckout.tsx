@@ -333,7 +333,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'rgba(0, 135, 186, 0.07)',
       padding: '4px 10px',
       fontSize: 16,
-      marginTop: 16,
+      marginTop: 10,
     },
     linkText: {
       letterSpacing: 'normal',
@@ -514,9 +514,6 @@ export const OnlineCheckout: React.FC = () => {
                               <span className={classes.rightArrow}>
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </span>
-                            </div>
-                            <div className={classes.couponText}>
-                              {validateCouponResult ? 'Coupon succefully applied' : ''}
                             </div>
                           </>
                         )}
