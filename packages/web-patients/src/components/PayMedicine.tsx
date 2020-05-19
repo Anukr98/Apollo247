@@ -433,10 +433,8 @@ export const PayMedicine: React.FC = (props) => {
       }
     );
     if (
-      (params.payType === 'pharmacy' && !sessionStorage.getItem('cartValues')) ||
-      sessionStorage.getItem('cartValues') === '' ||
-      (params.payType === 'consults' && !localStorage.getItem('consultBookDetails')) ||
-      localStorage.getItem('consultBookDetails') === ''
+      params.payType === 'pharmacy' &&
+      (!sessionStorage.getItem('cartValues') || sessionStorage.getItem('cartValues') === '')
     ) {
       <Redirect to={clientRoutes.welcome()} />;
     }
