@@ -415,7 +415,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>{subtotal}</Text>
+              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                {subtotal.toFixed(2)}
+              </Text>
             </View>
             {discount > 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -433,7 +435,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>+ Rs.20</Text>
+              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>+ Rs.0.00</Text>
             </View>
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
