@@ -307,6 +307,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               onChange={() => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
+                                setCouponEnable(true);
                               }}
                               // disabled={props.cartValue < 200}
                             />

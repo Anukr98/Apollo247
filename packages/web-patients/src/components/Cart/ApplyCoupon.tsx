@@ -323,6 +323,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                               onChange={() => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
+                                setCouponEnable(true);
                               }}
                             />
 
