@@ -611,15 +611,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             });
           }
 
-          // console.log('arrayNotification.......', arrayNotification);
-          const selectedCount = arrayNotification.filter((item: any) => {
+          const tempArray: any[] = [];
+          const filteredNotifications = arrayNotification.filter((el: any) => {
+            // If it is not a duplicate, return true
+            if (tempArray.indexOf(el.notificatio_details.id) == -1) {
+              tempArray.push(el.notificatio_details.id);
+              return true;
+            }
+            return false;
+          });
+
+          const selectedCount = filteredNotifications.filter((item: any) => {
             return item.isActive === true;
           });
 
           setNotificationCount && setNotificationCount(selectedCount.length);
-          setAllNotifications && setAllNotifications(arrayNotification);
+          setAllNotifications && setAllNotifications(filteredNotifications);
 
-          AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
+          AsyncStorage.setItem('allNotification', JSON.stringify(filteredNotifications));
         } catch (error) {}
       })
       .catch((error: Error) => {
