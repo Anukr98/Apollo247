@@ -144,8 +144,10 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
           )}
         </View>
         {props.showCurrentStatusDesc &&
-          props.getOrderDescription?.heading != '' &&
-          props.getOrderDescription?.description != '' && (
+          props.getOrderDescription &&
+          props.getOrderDescription.heading != '' &&
+          props.getOrderDescription &&
+          props.getOrderDescription.description != '' && (
             <View style={{ paddingHorizontal: 16, flexDirection: 'row' }}>
               <Text style={{ ...theme.viewStyles.text('SB', 10, '#00b38e', 1, 13, 0.03) }}>
                 {props.getOrderDescription && props.getOrderDescription.heading}
