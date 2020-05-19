@@ -6,11 +6,9 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useParams } from 'hooks/routerHooks';
 import { useMutation } from 'react-apollo-hooks';
 import moment from 'moment';
-import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orderPaymentDetail } from 'graphql/types/GetMedicineOrderDetails';
-import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
-import { useCurrentPatient } from 'hooks/authHooks';
+import { PharmaPaymentStatus_pharmaPaymentStatus as PharmaPaymentDetails } from 'graphql/types/PharmaPaymentStatus';
+import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
 import { OrderStatusContent } from '../OrderStatusContent';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles(() => {
   return {
@@ -26,14 +24,19 @@ const useStyles = makeStyles(() => {
   };
 });
 
-interface paymentStatusMap {
+interface PaymentMethods {
   [name: string]: string;
+  }
+
+const paymentMethodMap: PaymentMethods = {
+  DC : 'DEBIT_CARD',
+  CC : 'CREDIT_CARD',
+  NB : 'NET_BANKING',
+  PPI : 'PAYTM_WALLET',
+  EMI : 'CREDIT_CARD_EMI',
+  UPI : 'UPI',
+  PAYTMCC : 'PAYTM_POSTPAID'
 }
-const status: paymentStatusMap = {
-  success: 'success',
-  failed: 'failed',
-  pending: 'pending',
-};
 
 interface PaymentStatusProps {
   history: History;
@@ -46,73 +49,45 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
     orderStatus: string;
   }>();
 
-  const [orderData, setOrderData] = useState<orderPaymentDetail>(null);
+  const [paymentStatusData, setPaymentStatusData] = useState<PharmaPaymentDetails>(null)
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
-  const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
-  const currentPatient = useCurrentPatient();
-  const orderPaymentData =
-    orderData && orderData.medicineOrderPayments && orderData.medicineOrderPayments.length
-      ? orderData.medicineOrderPayments[0]
-      : null;
-  const paymentStatus =
-    orderPaymentData && orderPaymentData.paymentStatus
-      ? orderPaymentData.paymentStatus === 'TXN_SUCCESS' ||
-        orderPaymentData.paymentStatus === 'success'
-        ? 'success'
-        : orderPaymentData.paymentStatus === 'PENDING'
-        ? 'pending'
-        : orderPaymentData.paymentStatus === 'TXN_FAILURE'
-        ? 'failed'
-        : ''
-      : '';
-  const paymentFailedInfo =
-    'In case your account has been debited,you should get the refund in 10-14 business days.';
-  const paymentSuccessInfo =
-    'Your order has been placed successfully. We will confirm the order in a few minutes.';
-  const paymentPendingInfo =
-    'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
-  const getPaymentStatusInfo = () => {
-    switch (paymentStatus) {
-      case status.success:
-        return paymentSuccessInfo;
-      case status.pending:
-        return paymentPendingInfo;
-      case status.failed:
-        return paymentFailedInfo;
-      default:
-        return '';
-    }
-  };
-  const getCtaTxt = () => {
-    switch (paymentStatus) {
-      case status.success:
-        return 'VIEW ORDERS';
-      case status.pending:
-        return 'GO TO HOME';
-      case status.failed:
-        return 'TRY AGAIN';
-      default:
-        return '';
-    }
-  };
-  const paymentStatusCallback = () => {
-    let redirectUrl = '';
-    switch (paymentStatus) {
-      case status.success:
-        redirectUrl = clientRoutes.yourOrders();
-        break;
-      case status.pending:
-        redirectUrl = clientRoutes.welcome();
-        break;
-      case status.failed:
-        redirectUrl = clientRoutes.medicinesCart();
-        window.location.href = redirectUrl;
-        break;
-      default:
-        redirectUrl = clientRoutes.welcome();
-    }
-    paymentStatusRedirect(redirectUrl);
-    // window.location.href = redirectUrl;
+  const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
+
+  interface PaymentStatusInterface {
+    ctaText: string;
+    info: string;
+    callbackFunction: () => void;
+  }
+  interface PaymentStatusType {
+    [name: string]: PaymentStatusInterface;
+  }
+      
+  const paymentStatusObj: PaymentStatusType = {
+    PAYMENT_PENDING: {
+      ctaText: 'GO TO HOME',
+      info:
+        'Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.',
+      callbackFunction: () => {
+        paymentStatusRedirect(clientRoutes.welcome());
+      },
+    },
+    PAYMENT_SUCCESS: {
+      ctaText: 'VIEW ORDERS',
+      info:
+        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      callbackFunction: () => {
+        paymentStatusRedirect(clientRoutes.yourOrders());
+      },
+    },
+    PAYMENT_FAILED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited,you should get the refund in 10-14 business days.',
+      callbackFunction: () => {
+        // paymentStatusRedirect(redirectUrl)
+        window && (window.location.href = clientRoutes.yourOrders());
+      },
+    },
   };
   const handleOnClose = () => {
     paymentStatusRedirect(clientRoutes.medicines());
@@ -123,42 +98,27 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
 
   useEffect(() => {
     if (params.orderAutoId) {
-      orderDetails({
+      pharmaPayments({
         variables: {
-          patientId: currentPatient && currentPatient.id,
-          orderAutoId:
-            typeof params.orderAutoId === 'string'
-              ? parseInt(params.orderAutoId)
-              : params.orderAutoId,
-        },
+          orderId: typeof params.orderAutoId === 'string' ? parseInt(params.orderAutoId) : params.orderAutoId
+        }
       })
-        .then((res: any) => {
-          if (
-            res &&
-            res.data &&
-            res.data.getMedicineOrderDetails &&
-            res.data.getMedicineOrderDetails.MedicineOrderDetails
-          ) {
-            const medicineOrderDetails = res.data.getMedicineOrderDetails.MedicineOrderDetails;
-            if (
-              medicineOrderDetails &&
-              medicineOrderDetails.medicineOrderPayments &&
-              medicineOrderDetails.medicineOrderPayments.length
-            ) {
-              setOrderData(medicineOrderDetails);
-            } else {
-              // redirect to medicine
-              paymentStatusRedirect(clientRoutes.medicines());
-            }
+        .then((resp: any) => {
+          if (resp && resp.data && resp.data.pharmaPaymentStatus) {
+            setPaymentStatusData(resp.data.pharmaPaymentStatus)
+          } else {
+            // redirect to medicine 
+            paymentStatusRedirect(clientRoutes.medicines());
           }
         })
-        .catch((e) => {
-          // Redirect to medicine
+        .catch(() => {
           paymentStatusRedirect(clientRoutes.medicines());
-        });
+        })
     }
   }, []);
 
+ 
+  const paymentDetail = paymentStatusData && paymentStatusObj[paymentStatusData.paymentStatus] ? paymentStatusObj[paymentStatusData.paymentStatus] : null;
   return (
     <Modal
       open={showPaymentStatusModal}
@@ -167,30 +127,32 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       disableEscapeKeyDown
     >
       <>
-        {!orderData ? (
+        {!paymentStatusData ? (
           <div className={classes.loader}>
             <CircularProgress />
           </div>
         ) : (
-          <OrderStatusContent
-            paymentStatus={paymentStatus}
-            paymentInfo={getPaymentStatusInfo()}
-            orderStatusCallback={paymentStatusCallback}
-            orderId={orderData.orderAutoId}
-            amountPaid={orderPaymentData.amountPaid}
-            paymentType={MEDICINE_ORDER_PAYMENT_TYPE[orderPaymentData.paymentType]}
-            paymentRefId={orderPaymentData.paymentRefId}
-            paymentDateTime={moment(orderPaymentData.paymentDateTime)
-              .format('DD MMMM YYYY[,] LT')
-              .replace(/(A|P)(M)/, '$1.$2.')
+            <OrderStatusContent
+              paymentStatus={paymentStatusData.paymentStatus === 'PAYMENT_FAILED'
+                ? 'failed'
+                : paymentStatusData.paymentStatus === 'PAYMENT_PENDING'
+                  ? 'pending'
+                  : 'success'}
+              paymentInfo={ paymentDetail ? paymentDetail.info : ''}
+              orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : ()=>{}}
+              orderId={Number(params.orderAutoId)}
+              amountPaid={paymentStatusData.amountPaid}
+              paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
+              // paymentType={paymentMethodMap[paymentStatusData.paymentType] ?
+              //   paymentMethodMap[paymentStatusData.paymentType] : 'PREPAID'}
+              paymentRefId={paymentStatusData.paymentRefId}
+              paymentDateTime={moment(paymentStatusData.paymentDateTime).format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
               .toString()}
-            type="ORDER"
-            onClose={() => {
-              handleOnClose();
-            }}
-            ctaText={getCtaTxt()}
-          />
-        )}
+              type='ORDER'
+              onClose={() => { handleOnClose() }}
+              ctaText={paymentDetail ? paymentDetail.ctaText: ''}
+            />
+          )}
       </>
     </Modal>
   );
