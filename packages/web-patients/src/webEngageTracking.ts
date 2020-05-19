@@ -157,3 +157,30 @@ export const phrConsultCardClickTracking = (data: any) => {
     }
   }
 };
+// Payment Instrument Click
+interface PaymentDetail {
+  "paymentMode": string;
+  "type": string;
+  "orderAutoId": string,
+  "orderId": string
+}
+export const paymentInstrumentClickTracking = (data:PaymentDetail) => {
+  if (window && window.webengage) {
+    const { paymentMode, type, orderAutoId, orderId } = data;
+    try {
+      window.webengage.track('Payment Instrument', {
+        // "Payment_Mode": "NB",
+        // "Type": "Pharmacy",
+        // "order_AutoId": 13174,
+        // "order_Id": "37220b69-dd83-47b4-a1e3-7850aae77cac"
+
+        "Payment_Mode": paymentMode,
+        "Type": "Pharmacy",
+        "order_AutoId": orderAutoId,
+        "order_Id": orderId
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+}
