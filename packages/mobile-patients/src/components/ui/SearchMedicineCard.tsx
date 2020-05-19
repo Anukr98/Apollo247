@@ -9,6 +9,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
+import { QuantityButton } from '@aph/mobile-patients/src/components/ui/QuantityButton';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -137,30 +138,10 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
 
   const renderQuantityView = () => {
     return (
-      <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
-        <TouchableOpacity activeOpacity={1} onPress={onPressSubtractQuantity}>
-          <Text
-            style={{
-              ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0),
-              paddingRight: 12,
-              paddingLeft: 3,
-            }}
-          >
-            {'-'}
-          </Text>
-        </TouchableOpacity>
-        <Text style={{ ...theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0) }}>{quantity}</Text>
-        <TouchableOpacity
-          style={{ marginRight: 16 }}
-          activeOpacity={1}
-          onPress={onPressAddQuantity}
-        >
-          <Text
-            style={{ ...theme.viewStyles.text('SB', 14, '#fc9916', 1, 24, 0), paddingLeft: 12 }}
-          >
-            {'+'}
-          </Text>
-        </TouchableOpacity>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <QuantityButton text={'-'} onPress={onPressSubtractQuantity} />
+        <Text style={theme.viewStyles.text('B', 14, '#fc9916', 1, 24, 0)}>{props.quantity}</Text>
+        <QuantityButton text={'+'} onPress={onPressAddQuantity} />
       </View>
     );
   };
@@ -225,16 +206,10 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     );
   };
 
-  const outOfStockContainerStyle: ViewStyle =
-    !isInStock && !props.showRemoveWhenOutOfStock
-      ? {
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-        }
-      : {};
   return (
     <TouchableOpacity
       activeOpacity={1}
-      style={[styles.containerStyle, containerStyle, outOfStockContainerStyle, { zIndex: -1 }]}
+      style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
       {renderPersonSelectionView()}

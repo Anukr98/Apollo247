@@ -155,7 +155,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchText, setSearchText] = useState<string>('');
   const [searchHeading, setSearchHeading] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [pinCode, setPinCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -174,7 +173,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const getSpecialPrice = (special_price?: string | number) =>
     special_price
       ? typeof special_price == 'string'
-        ? parseInt(special_price)
+        ? Number(special_price)
         : special_price
       : undefined;
 
@@ -313,7 +312,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price: price,
         specialPrice: special_price
           ? typeof special_price == 'string'
-            ? parseInt(special_price)
+            ? Number(special_price)
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
@@ -617,7 +616,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     const price = medicine.price;
     const specialPrice = medicine.special_price
       ? typeof medicine.special_price == 'string'
-        ? parseInt(medicine.special_price)
+        ? Number(medicine.special_price)
         : medicine.special_price
       : undefined;
 
@@ -684,7 +683,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         isMedicineAddedToCart={isMedicineAddedToCart}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={medicine.is_in_stock}
-        packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}
+        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={'unsubscribed'}
         onChangeSubscription={() => {}}
@@ -816,7 +815,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                         </Text>
                         {search_heading_text[4]}
                       </Text>
-                      <View style={{ backgroundColor:'#02475b', marginTop:5, opacity:0.2, height:1 }} />
+                      <View
+                        style={{
+                          backgroundColor: '#02475b',
+                          marginTop: 5,
+                          opacity: 0.2,
+                          height: 1,
+                        }}
+                      />
                     </View>
                   ) : (
                     <SectionHeaderComponent
