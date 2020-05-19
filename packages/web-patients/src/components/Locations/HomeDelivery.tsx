@@ -580,7 +580,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       {errorDeliveryTimeMsg.length > 0 && (
         <span>{deliveryLoading ? <CircularProgress size={22} /> : errorDeliveryTimeMsg}</span>
       )}
-      {deliveryTime.length > 0 && (
+      {deliveryTime && deliveryTime.length > 0 && (
         <div className={classes.deliveryTimeGroup}>
           <div className={classes.deliveryTimeGroupWrap}>
             <span className={classes.deliveryTime}>Delivery Time</span>

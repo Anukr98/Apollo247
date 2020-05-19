@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+
 import Grid from '@material-ui/core/Grid';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -11,10 +13,13 @@ import fetchUtil from 'helpers/fetch';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
-import { AphButton } from '@aph/web-ui-components';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
+import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
+
+import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
+
 // import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
   saveMedicineOrderOMS,
@@ -354,6 +359,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
 };
 
 export const PayMedicine: React.FC = (props) => {
+  console.log(4444, props);
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -365,6 +371,14 @@ export const PayMedicine: React.FC = (props) => {
   const [mutationLoading, setMutationLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
+  const [
+    validateConsultCouponResult,
+    setValidateConsultCouponResult,
+  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
+  const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
+  const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
+
   const {
     cartTotal,
     deliveryAddressId,
@@ -413,17 +427,17 @@ export const PayMedicine: React.FC = (props) => {
     amount,
     appointmentDateTime,
     appointmentType,
-    consultCouponCode,
+    consultCouponCodeInitial,
     consultCouponValue,
     doctorId,
     hospitalId,
     patientId,
     specialty,
   } = consultBookDetails;
-  const revisedAmount = Number(amount) - Number(consultCouponValue);
+
   const { city } = useLocationDetails();
   const { authToken } = useAuth();
-
+  const onlineConsultationFees = amount;
   useEffect(() => {
     fetchUtil(`${process.env.PHARMACY_PG_URL}/list-of-payment-methods`, 'GET', {}, '', true).then(
       (res: any) => {
@@ -439,6 +453,22 @@ export const PayMedicine: React.FC = (props) => {
       <Redirect to={clientRoutes.welcome()} />;
     }
   }, []);
+
+  useEffect(() => {
+    if (params.payType === 'consults') {
+      setRevisedAmount(Number(amount) - Number(consultCouponValue));
+      if (!consultCouponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
+        setConsultCouponCode(consultCouponCodeInitial || '');
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (validateConsultCouponResult && validateConsultCouponResult.revisedAmount) {
+      console.log('6666', validateConsultCouponResult.revisedAmount);
+      setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
+    }
+  }, [validateConsultCouponResult]);
 
   const getDiscountedLineItemPrice = (id: number) => {
     if (
@@ -702,7 +732,15 @@ export const PayMedicine: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.pageHeader}>
-            <Link to={clientRoutes.payOnlineConsult()}>
+            <Link
+              to={
+                params.payType === 'pharmacy'
+                  ? clientRoutes.medicinesCart()
+                  : appointmentType.toLowerCase() === 'online'
+                  ? clientRoutes.payOnlineConsult()
+                  : clientRoutes.payOnlineClinicConsult()
+              }
+            >
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -784,32 +822,53 @@ export const PayMedicine: React.FC = (props) => {
                   )}
                 </Paper>
               </Grid>
-
               <Grid item xs={12} sm={4} className={classes.chargesContainer}>
-                <div className={`${classes.serviceTypeCoupon}`}>
-                  <div className={classes.couponTopGroup}>
-                    <span className={classes.couponIcon}>
-                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                    </span>
-                    <div className={classes.couponRight}>
-                      <div className={classes.applyCoupon}>
-                        <span className={classes.linkText}>Apply Coupon</span>
-                        <span className={classes.rightArrow}>
-                          <img src={require('images/ic_arrow_right.svg')} alt="" />
-                        </span>
-                      </div>
-                      <div className={classes.appliedCoupon}>
-                        <span className={classes.linkText}>
-                          <span>APOLLO</span> applied
-                        </span>
-                        <span className={classes.rightArrow}>
-                          <img src={require('images/ic_arrow_right.svg')} alt="" />
-                        </span>
+                {params.payType === 'consults' && (
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceTypeCoupon}`}
+                  >
+                    <div className={classes.couponTopGroup}>
+                      <span className={classes.couponIcon}>
+                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                      </span>
+                      <div className={classes.couponRight}>
+                        {consultCouponCode === '' ? (
+                          <div className={classes.applyCoupon}>
+                            <span className={classes.linkText}>Apply Coupon</span>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{consultCouponCode}</span> applied
+                              </span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                            <div className={classes.couponText}>
+                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
+                    {consultCouponCode.length > 0 && (
+                      <div className={classes.discountTotal}>
+                        Savings of Rs.{' '}
+                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
+                          ? parseFloat(onlineConsultationFees) -
+                            parseFloat(validateConsultCouponResult.revisedAmount)
+                          : parseFloat(consultCouponValue)}{' '}
+                        on the bill
+                      </div>
+                    )}
                   </div>
-                  <div className={classes.discountTotal}>Savings of Rs.50 on the bill</div>
-                </div>
+                )}
                 <div className={classes.paperHeading}>
                   <Typography component="h3">Total Charges</Typography>
                 </div>
@@ -840,18 +899,49 @@ export const PayMedicine: React.FC = (props) => {
                       <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
                     </div>
                     <div className={`${classes.charges} ${classes.discount}`}>
-                      <p>Coupon Applied</p> <p>- Rs.{consultCouponValue || 0}</p>
+                      <p>Coupon Applied</p>{' '}
+                      <p>
+                        - Rs.
+                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
+                          ? parseFloat(amount) -
+                            parseFloat(validateConsultCouponResult.revisedAmount)
+                          : consultCouponValue || 0}
+                      </p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
-                      <p>To Pay</p> <p>Rs.{revisedAmount && revisedAmount.toFixed(2)}</p>
+                      <p>To Pay</p>{' '}
+                      <p>
+                        Rs.
+                        {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
+                          ? validateConsultCouponResult.revisedAmount
+                          : revisedAmount && revisedAmount.toFixed(2)}
+                      </p>
                     </div>
                   </Paper>
                 )}
               </Grid>
             </Grid>
           </div>
+          <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle>Apply Coupon</AphDialogTitle>
+            <CouponCodeConsult
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+              consultType={appointmentType}
+              setCouponCode={setConsultCouponCode}
+              couponCode={consultCouponCode}
+              setValidateCouponResult={setValidateConsultCouponResult}
+              close={(isApplyCouponDialogOpen: boolean) => {
+                setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
+                // setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
+              }}
+              cartValue={onlineConsultationFees}
+            />
+          </AphDialog>
         </div>
       </div>
+
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

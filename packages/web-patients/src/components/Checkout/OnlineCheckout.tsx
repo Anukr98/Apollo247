@@ -567,7 +567,7 @@ export const OnlineCheckout: React.FC = () => {
                         onClick={() => {
                           const updatedValues = {
                             ...pageData,
-                            consultCouponCode: couponCode,
+                            consultCouponCodeInitial: couponCode,
                             consultCouponValue:
                               validateCouponResult && validateCouponResult.revisedAmount
                                 ? parseFloat(onlineConsultationFees) -

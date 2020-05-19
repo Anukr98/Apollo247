@@ -556,7 +556,7 @@ export const ClinicCheckout: React.FC = () => {
                         onClick={() => {
                           const updatedValues = {
                             ...pageData,
-                            consultCouponCode: couponCode,
+                            consultCouponCodeInitial: couponCode,
                             consultCouponValue:
                               validateCouponResult && validateCouponResult.revisedAmount
                                 ? parseFloat(physicalConsultationFees) -

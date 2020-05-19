@@ -15,8 +15,6 @@ import {
   ValidateConsultCoupon_validateConsultCoupon,
   ValidateConsultCoupon,
 } from 'graphql/types/ValidateConsultCoupon';
-// import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -105,7 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
         '&:hover': {
           backgroundColor: '#fcb716',
-          color: '#fff',  
+          color: '#fff',
         },
       },
     },
@@ -255,7 +253,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       value={selectCouponCode}
                       onChange={(e) => setSelectCouponCode(e.target.value)}
                       placeholder="Enter coupon code"
-                      error={errorMessage.length > 0 && (true)}
+                      error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
                       {selectCouponCode.length > 0 ? (
@@ -299,7 +297,9 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }}
                               // disabled={props.cartValue < 200}
                             />
-                            <div className={classes.couponText}>Get 5% off on total bill by shopping for Rs. 500 or more</div>
+                            {/* <div className={classes.couponText}>
+                              Get 5% off on total bill by shopping for Rs. 500 or more
+                            </div> */}
                           </li>
                         )
                     )
