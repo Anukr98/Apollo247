@@ -274,16 +274,11 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       error={errorMessage.length > 0 && (true)}
                     />
                     <div className={classes.pinActions}>
-                      {/* {selectCouponCode.length > 0 ? (
+                      {selectCouponCode.length > 0 ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick>
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )} */}
-                      {selectCouponCode.length > 0 && (
                         <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
