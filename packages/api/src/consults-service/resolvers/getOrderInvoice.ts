@@ -31,11 +31,11 @@ type ApptResponse = {
   id: string;
   patientName: string;
   appointmentDateTime: Date;
-  actualAmount: Number;
-  discountedAmount: Number;
+  actualAmount: number;
+  discountedAmount: number;
   appointmentType: string;
   appointmentPayments: AppointmentPayment[];
-  status: String;
+  status: string;
 };
 
 type AppointmentsResult = {
@@ -68,7 +68,7 @@ type DoctorResponse = {
   registrationNumber: string;
 };
 type AppointmentPayment = {
-  amountPaid: Number;
+  amountPaid: number;
   bankTxnId: string;
   id: string;
   paymentRefId: string;
@@ -90,21 +90,23 @@ const getOrderInvoice: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientsRep = patientsDb.getCustomRepository(PatientRepository);
-  const response = await apptsRepo.findByAppointmentId(args.appointmentId);
+  const patientResponse = await apptsRepo.findByAppointmentId(args.appointmentId);
   // console.log('orders Response', JSON.stringify(response, null, 2));
 
   const patientDetails = await patientsRep.findById(args.patientId);
   // console.log('orders Response', JSON.stringify(patientDetails, null, 2));
 
-  const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(response[0].doctorId);
+  const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(
+    patientResponse[0].doctorId
+  );
   // console.log('doc Response', JSON.stringify(docResponse, null, 2));
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   let hospitalDetails;
-  if (response && response.length > 0)
-    hospitalDetails = await facilityRepo.getfacilityDetails(response[0].hospitalId);
+  if (patientResponse && patientResponse.length > 0)
+    hospitalDetails = await facilityRepo.getfacilityDetails(patientResponse[0].hospitalId);
 
   const AppointmentsResult = {
-    appointments: response,
+    appointments: patientResponse,
     doctor: docResponse,
     patient: patientDetails,
     hospitalAddress: hospitalDetails,
@@ -334,12 +336,16 @@ const getOrderInvoice: Resolver<
       .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
   }
   doc.end();
-  if (response && response.length > 0 && process.env.AZURE_STORAGE_MYPAYMENTS_CONTAINER_NAME) {
+  if (
+    patientResponse &&
+    patientResponse.length > 0 &&
+    process.env.AZURE_STORAGE_MYPAYMENTS_CONTAINER_NAME
+  ) {
     const client = new AphStorageClient(
       process.env.AZURE_STORAGE_CONNECTION_STRING_API,
       process.env.AZURE_STORAGE_MYPAYMENTS_CONTAINER_NAME
     );
-    return await uploadRxPdf(client, response[0].id, doc);
+    return await uploadRxPdf(client, patientResponse[0].id, doc);
   } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
