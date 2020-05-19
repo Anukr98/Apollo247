@@ -659,6 +659,7 @@ export interface MedicineCartOMSItem {
   isPrescriptionNeeded?: number | null;
   mou?: number | null;
   isMedicine: string;
+  specialPrice: number;
 }
 
 export interface MedicineOrderCancelInput {
