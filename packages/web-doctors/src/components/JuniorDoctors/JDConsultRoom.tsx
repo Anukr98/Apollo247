@@ -723,7 +723,7 @@ export const JDConsultRoom: React.FC = () => {
             ? setAssignedDoctorId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId)
             : setAssignedDoctorId(null);
           // set seniorDoctorDetails start
-          let assignDoctorData = {
+          const assignDoctorData = {
             assignedDoctorSalutation: '',
             assignedDoctorFirstName: '',
             assignedDoctorLastName: '',
@@ -909,12 +909,10 @@ export const JDConsultRoom: React.FC = () => {
           navigator.mediaDevices
             .getUserMedia({ audio: true, video: false })
             .then(function(stream) {
-              console.log('Got stream', stream);
               setCameraMicPermission(true);
             })
             .catch(function(err) {
               setCameraMicPermission(false);
-              console.log('GUM failed with error', err);
             });
           // -------------------------------------------------------------- //
         })
