@@ -70,7 +70,7 @@ const pharmacyOrders: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(args.patientId);
-  console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
+  // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
   if (medicineOrders && medicineOrders.length > 0) {
     const excludeNullPayments = _.filter(medicineOrders, (o) => {
       return o.medicineOrderPayments.length > 0;
