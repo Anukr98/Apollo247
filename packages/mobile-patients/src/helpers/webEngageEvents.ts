@@ -359,7 +359,6 @@ export interface WebEngageEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
-    AllowWhatsAppMessage: boolean;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -521,7 +520,6 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Doctor Name': string;
     'Net Amount': number;
-    AllowWhatsAppMessage: boolean;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

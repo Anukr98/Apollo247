@@ -6,6 +6,7 @@ import {
   g,
   dataSavedUserID,
   findAddrComponents,
+  postWEGWhatsAppEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
@@ -306,6 +307,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    postWEGWhatsAppEvent(true);
     getUserAddress();
   }, []);
 
@@ -1540,7 +1542,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <WhatsAppStatus
             // style={{ marginTop: 6 }}
             onPress={() => {
-              whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+              whatsAppUpdate
+                ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
+                : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
             }}
             isSelected={whatsAppUpdate}
           />

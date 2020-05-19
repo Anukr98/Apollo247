@@ -852,6 +852,10 @@ export const postWEGNeedHelpEvent = (
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };
 
+export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
+  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,

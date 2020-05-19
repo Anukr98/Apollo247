@@ -43,6 +43,7 @@ import {
   callPermissions,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGWhatsAppEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -150,6 +151,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   useEffect(() => {
+    postWEGWhatsAppEvent(true);
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -245,7 +247,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      AllowWhatsAppMessage: whatsAppUpdate,
     };
     return eventAttributes;
   };
@@ -949,7 +950,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               <WhatsAppStatus
                 // style={{ marginTop: 6 }}
                 onPress={() => {
-                  whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+                  whatsAppUpdate
+                    ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
+                    : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
                 }}
                 isSelected={whatsAppUpdate}
               />
