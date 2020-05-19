@@ -177,7 +177,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   >([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
-  const [couponEnable, setCouponEnable] = useState<boolean>(false);
 
   const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
     fetchPolicy: 'no-cache',
@@ -258,6 +257,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   };
+  const disableCoupon =
+    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
 
   return (
     <div className={classes.shadowHide}>
@@ -274,12 +275,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       }}
                       value={selectCouponCode}
                       onChange={(e) => {
-                        setCouponEnable(false);
                         const value = e.target.value.replace(/[^a-z0-9]/gi, '');
                         setSelectCouponCode(value);
-                        if (value.length <= 10 && value.length >= 5) {
-                          setCouponEnable(true);
-                        }
                       }}
                       placeholder="Enter coupon code"
                       error={errorMessage.length > 0 && true}
@@ -323,7 +320,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                               onChange={() => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
-                                setCouponEnable(true);
                               }}
                             />
 
@@ -351,7 +347,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode || !couponEnable}
+          disabled={disableCoupon}
           classes={{
             disabled: classes.buttonDisabled,
           }}
