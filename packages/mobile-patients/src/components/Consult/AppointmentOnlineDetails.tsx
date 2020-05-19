@@ -35,6 +35,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   APPOINTMENT_TYPE,
+  NOSHOW_REASON,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -65,6 +66,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -182,7 +184,7 @@ type rescheduleType = {
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
-  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
@@ -532,7 +534,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const showCancel = isAwaitingReschedule
+      ? true
+      : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -634,7 +638,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
+                opacity:
+                  isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    ? 1
+                    : 0.5,
               }}
               onPress={() => {
                 console.log(data.status, 'statis');
@@ -650,7 +657,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     'Reschdule_Appointment_Online_Details_Clicked'
                   );
                   try {
-                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                    isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                      ? NextAvailableSlotAPI()
+                      : null;
                   } catch (error) {
                     CommonBugFender('AppointmentOnlineDetails_RESCHEDULE_try', error);
                   }

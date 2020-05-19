@@ -355,7 +355,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             quantity: item.quantity,
             mrp: item.price,
             price: discountedPrice,
-            itemValue: discountedPrice * item.quantity, // (multiply discountedPrice with quantity)
+            itemValue: item.price * item.quantity, // (multiply MRP with quantity)
             itemDiscount: item.price * item.quantity - discountedPrice * item.quantity, // (diff of (MRP - discountedPrice) * quantity)
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),

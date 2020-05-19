@@ -8,6 +8,10 @@ const getIconStyle = (size?: IconProps['size']) => {
   return { width: 48, height: 48 };
 };
 
+const getCustomIconSize = (wt: number, ht: number) => {
+  return { width: wt, height: ht };
+};
+
 interface IconProps extends Partial<ImageProps> {
   size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
@@ -594,6 +598,10 @@ export const Invoice: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
 );
 
+export const CurrencyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/rupee.png')} />
+);
+
 export const AddFileIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
 );
@@ -604,6 +612,19 @@ export const Minus: React.FC<IconProps> = (props) => (
 
 export const Plus: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
+);
+
+export const SuccessIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_success.png')} />
+);
+export const FailedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_failed.png')} />
+);
+export const RefundIcon: React.FC<IconProps> = (props) => (
+  <Image style={[getCustomIconSize(21, 24)]} source={require('./icons/ic_refund.png')} />
+);
+export const PendingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.png')} />
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (
@@ -777,6 +798,13 @@ export const Failure: React.FC<IconProps> = (props) => (
 
 export const Pending: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Pending.png')} />
+);
+export const Refund: React.FC<IconProps> = (props) => (
+  <Image
+    style={[getCustomIconSize(47, 53)]}
+    source={require('./icons/Refund.png')}
+    resizeMode="cover"
+  />
 );
 
 export const Diabetes: React.FC<IconProps> = (props) => (
