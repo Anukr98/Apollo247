@@ -57,19 +57,6 @@ const styles = StyleSheet.create({
     right: 10,
     top: 10,
   },
-  readMoreBanner: {
-    ...viewStyles.cardViewStyle,
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-  },
-  readMoreText: {
-    color: colors.LIGHT_BLUE,
-    ...fonts.IBMPlexSansMedium(11),
-    padding: 6,
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
   bannerText: {
     color: colors.WHITE,
     ...fonts.IBMPlexSansMedium(15),
@@ -414,6 +401,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
       </View>
     );
   };
+
   const renderProfilesDetails = () => {
     return (
       <View>

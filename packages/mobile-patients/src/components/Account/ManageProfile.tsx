@@ -30,7 +30,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { PatientDefaultImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { PatientDefaultImage, PrimaryUHIDIconWhite, PrimaryUHIDIconBlue, } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -263,23 +263,42 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
             ]}
             key={index}
           >
-            <View style={styles.imageView}>
-              {profile!.photoUrl &&
-              profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-                <Image
-                  style={styles.profileImageStyle}
-                  source={{
-                    uri: profile!.photoUrl,
-                  }}
-                  // resizeMode={'contain'}
-                />
-              ) : (
-                <PatientDefaultImage style={styles.profileImageStyle} />
-              )}
-              {/* {profile.photoUrl &&
-       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-              {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-              {/* )} */}
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+              }}
+            >
+              <View style={styles.imageView}>
+                {profile!.photoUrl &&
+                profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+                  <Image
+                    style={styles.profileImageStyle}
+                    source={{
+                      uri: profile!.photoUrl,
+                    }}
+                    // resizeMode={'contain'}
+                  />
+                ) : (
+                  <PatientDefaultImage style={styles.profileImageStyle} />
+                )}
+                {/* {profile.photoUrl &&
+        profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
+                {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
+                {/* )} */}
+              </View>
+              {
+                isPrimaryUHID && (
+                  <PrimaryUHIDIconBlue style={{
+                    width: 20,
+                    height: 20,
+                    marginRight: 16,
+                    marginTop: 16,
+                    alignSelf: 'center'
+                  }} />
+                )
+              }
             </View>
 
             <View style={{ flex: 1, justifyContent: 'space-between' }}>
@@ -376,7 +395,10 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         {
           showLinkButtons ? (
             <Text style={styles.bannerText}>
-              Your UHID are linked.Click on           icon to view them.
+              Your UHID are linked.Click on <PrimaryUHIDIconWhite style={{
+                width: 20,
+                height: 20,
+              }} /> icon to view them.
             </Text>
           ) : (
             <>
@@ -387,7 +409,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 activeOpacity={1}
                 style={styles.readMoreBanner}
                 onPress={() => {
-                  console.log('read more');
+                  props.navigation.navigate(AppRoutes.ReadMoreLinkUHID);
                 }}>
                   <Text style={styles.readMoreText}>
                     Read More

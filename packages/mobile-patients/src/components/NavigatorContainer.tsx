@@ -67,6 +67,7 @@ import {
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
+import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
@@ -141,6 +142,7 @@ export enum AppRoutes {
   EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
   LinkUHID = 'LinkUHID',
+  ReadMoreLinkUHID = 'ReadMoreLinkUHID',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -363,6 +365,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.LinkUHID]: {
     screen: LinkUHID
+  },
+  [AppRoutes.ReadMoreLinkUHID]: {
+    screen: ReadMoreLinkUHID
   },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
