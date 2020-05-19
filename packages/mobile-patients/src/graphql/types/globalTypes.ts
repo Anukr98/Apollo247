@@ -664,8 +664,6 @@ export interface MedicineCartOMSItem {
 export interface MedicineOrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
-  latitude?: number | null;
-   longitude?: number | null;
 }
 
 export interface MedicinePaymentMqInput {
