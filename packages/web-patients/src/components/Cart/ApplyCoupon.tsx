@@ -319,12 +319,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 setSelectCouponCode(couponDetails.code);
                               }}
                             />
-                            <div className={classes.couponText}>
-                              {couponDetails.couponPharmaRule &&
-                              couponDetails.couponPharmaRule.messageOnCouponScreen
-                                ? couponDetails.couponPharmaRule.messageOnCouponScreen
-                                : ''}
-                            </div>
+
+                            {couponDetails.couponPharmaRule &&
+                              couponDetails.couponPharmaRule.messageOnCouponScreen && (
+                                <div className={classes.couponText}>
+                                  {couponDetails.couponPharmaRule.messageOnCouponScreen}
+                                </div>
+                              )}
                           </li>
                         )
                     )
