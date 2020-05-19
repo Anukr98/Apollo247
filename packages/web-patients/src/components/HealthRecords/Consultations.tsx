@@ -377,7 +377,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       a.click();
     } else {
       const imageList = activeConsult.prescriptionImageUrl.split(',');
-      const download = (imageList: any) => {
+      const download = (imageList: string[]) => {
         const url = imageList.pop();
         const a = document.createElement('a');
         a.setAttribute('href', url);
