@@ -365,6 +365,7 @@ export const PayMedicine: React.FC = (props) => {
   const [mutationLoading, setMutationLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [consult, setConsult] = useState<boolean>(false);
   const {
     cartTotal,
     deliveryAddressId,
@@ -689,8 +690,9 @@ export const PayMedicine: React.FC = (props) => {
         setIsLoading(false);
       })
       .catch((errorResponse) => {
+        setConsult(true);
         setIsAlertOpen(true);
-        setAlertMessage(errorResponse);
+        setAlertMessage('Selected time slot is no longer availble.');
         setMutationLoading(false);
         setIsLoading(false);
       });
@@ -857,6 +859,7 @@ export const PayMedicine: React.FC = (props) => {
         alertMessage={alertMessage}
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
+        consult={consult}
       />
     </div>
   );
