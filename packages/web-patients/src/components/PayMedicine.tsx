@@ -419,7 +419,7 @@ export const PayMedicine: React.FC = (props) => {
     doctorId,
     hospitalId,
     patientId,
-    specialty,
+    speciality,
   } = consultBookDetails;
   const revisedAmount = Number(amount) - Number(consultCouponValue);
   const { city } = useLocationDetails();
@@ -643,7 +643,7 @@ export const PayMedicine: React.FC = (props) => {
       .then((res: any) => {
         /* Gtm code start */
         _cbTracking({
-          specialty: specialty,
+          specialty: speciality,
           bookingType: appointmentType,
           scheduledDate: `${appointmentDateTime}`,
           couponCode: couponCode ? couponCode : null,
