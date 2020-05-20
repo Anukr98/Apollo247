@@ -304,9 +304,9 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
 
   let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
   message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
-
+  console.log(encodeURIComponent(hashCode), 'hashcode encoded');
   if (hashCode) {
-    message = message + ' ' + hashCode;
+    message = message + ' ' + encodeURIComponent(hashCode);
   }
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
 

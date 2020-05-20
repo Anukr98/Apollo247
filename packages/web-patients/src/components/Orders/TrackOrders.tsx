@@ -192,16 +192,17 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       ? 1
       : 0
   );
-  const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
+  const [moreActionsDialog, setMoreActionsDialog] = useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
   const [noOrderDetails, setNoOrderDetails] = useState<boolean>(false);
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const mascotRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [cancelOrderReasonText, setCancelOrderReasonText] = useState<string>('');
+  // const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
@@ -373,17 +374,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <Scrollbars
               autoHide={true}
               autoHeight
-              autoHeightMax={
-                isSmallScreen
-                  ? 'calc(100vh - 96px)'
-                  : 'auto'
-              }
+              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
             >
-                {noOrderDetails ? (
-                  'No Order is Found'
-                ) : (
-                  <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
-                )}
+              {noOrderDetails ? (
+                'No Order is Found'
+              ) : (
+                <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+              )}
             </Scrollbars>
           </TabContainer>
         )}
@@ -392,11 +389,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <Scrollbars
               autoHide={true}
               autoHeight
-              autoHeightMax={
-                isSmallScreen
-                  ? 'calc(100vh - 96px)'
-                  : 'auto'
-              }
+              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
             >
               <div className={classes.customScroll}>
                 {noOrderDetails ? (
@@ -413,9 +406,14 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
         <CancelOrder
-          setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
+          setIsCancelOrderDialogOpen={(isDialogOpened: boolean) =>
+            setIsCancelOrderDialogOpen(isDialogOpened)
+          }
           orderAutoId={props.orderAutoId}
-          setIsPopoverOpen={setIsPopoverOpen}
+          setIsPopoverOpen={(isPopoverOpened: boolean) => setIsPopoverOpen(isPopoverOpened)}
+          setCancelOrderReasonText={(reasonText: string) => {
+            setCancelOrderReasonText(reasonText);
+          }}
         />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
@@ -447,6 +445,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <CancelOrderNotification
               setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
               setIsPopoverOpen={setIsPopoverOpen}
+              cancelOrderText={cancelOrderReasonText}
             />
           </div>
         </div>
