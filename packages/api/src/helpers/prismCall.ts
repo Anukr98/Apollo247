@@ -2,7 +2,7 @@ import AbortController from 'abort-controller';
 import { PrismGetAuthTokenResponse, PrismGetUsersResponse } from 'types/prism';
 import { ServiceBusService } from 'azure-sb';
 import { Patient } from 'profiles-service/entities';
-import { log } from 'customWinstonLogger';
+import { debugLog } from 'customWinstonLogger';
 
 const prismTimeoutMillSeconds = process.env.PRISM_TIMEOUT_IN_MILLISECONDS
   ? Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS)
@@ -13,6 +13,12 @@ const timeout = setTimeout(() => {
 }, prismTimeoutMillSeconds); //TODO: change this to env variable
 
 const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
+// Curried method with static parameters being passed.
+const dLogger = debugLog(
+  'profileServiceLogger',
+  'prismCall',
+  Math.floor(Math.random() * 100000000)
+);
 
 export async function prismAuthenticationAsync(
   mobileNumber: string
@@ -24,33 +30,23 @@ export async function prismAuthenticationAsync(
   };
   const apiUrl = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'registerPatients-prismAuthenticationAsync()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'registerPatients-prismAuthenticationAsync()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'prismAuthenticationAsync PRISM_GET_AUTHTOKEN_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-prismAuthenticationAsync()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'prismAuthenticationAsync PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           return { response: 'AbortError' };
@@ -73,33 +69,23 @@ export async function prismGetUsersAsync(
   };
   const apiUrl = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'registerPatients-prismGetUsersAsync()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'registerPatients-prismGetUsersAsync()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'prismGetUsersAsync PRISM_GET_USERS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-prismGetUsersAsync()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'prismGetUsersAsync PRISM_GET_USERS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           return { response: { recoveryMessage: 'AbortError' } };
@@ -120,33 +106,23 @@ export async function prismAuthentication(
   };
   const apiUrl = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'registerPatients-prismAuthentication()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'registerPatients-prismAuthentication()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'prismAuthentication PRISM_GET_AUTHTOKEN_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-prismAuthentication()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'prismAuthentication PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
       }
     );
@@ -163,87 +139,63 @@ export async function prismGetUsers(
 
   const apiUrl = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'registerPatients-prismGetUser()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'registerPatients-prismGetUsers()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'prismGetUsers PRISM_GET_USERS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-prismGetUsersAsync()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'prismGetUsers PRISM_GET_USERS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
       }
     );
 }
 
 export async function addToPatientPrismQueue(patientDetails: Patient) {
-  log(
-    'profileServiceLogger',
-    `addedToPatientPrismQueue`,
-    'addedToPatientPrismQueue',
-    '',
-    JSON.stringify(patientDetails)
-  );
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
   const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS
     ? process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS
     : '';
+  let time = new Date();
   azureServiceBus.createTopicIfNotExists(queueName, (topicError) => {
     if (topicError) {
-      log(
-        'profileServiceLogger',
-        `topicError: ${JSON.stringify(topicError)}`,
-        'topic create error',
-        '',
-        JSON.stringify(patientDetails)
+      dLogger(
+        time,
+        'addToPatientPrismQueue azureServiceBus.createTopicIfNotExists ERROR',
+        `${JSON.stringify(patientDetails)} --- ${JSON.stringify(topicError)}`
       );
     }
-
-    log(
-      'profileServiceLogger',
-      `connected to topic: ${JSON.stringify(queueName)}`,
-      'topic create error',
-      '',
-      JSON.stringify(patientDetails)
+    dLogger(
+      time,
+      'addToPatientPrismQueue azureServiceBus.createTopicIfNotExists END',
+      `${JSON.stringify(patientDetails)} --- ${JSON.stringify(queueName)}`
     );
+
+    time = new Date();
     const message = 'PRISM_USER_DETAILS:' + patientDetails.mobileNumber;
     azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
       if (sendMsgError) {
-        log(
-          'profileServiceLogger',
-          `sendMsgError: ${JSON.stringify(sendMsgError)}`,
-          'send Azure Bus message errorr',
-          '',
-          JSON.stringify(patientDetails)
+        dLogger(
+          time,
+          'addToPatientPrismQueue azureServiceBus.sendTopicMessage ERROR',
+          `${JSON.stringify(queueName)} --- ${message} --- ${JSON.stringify(sendMsgError)}`
         );
       }
-      console.log('message sent to topic');
-      log(
-        'profileServiceLogger',
-        `message sent to topic`,
-        'message sent to topic',
-        '',
-        JSON.stringify(patientDetails)
+      dLogger(
+        time,
+        'addToPatientPrismQueue azureServiceBus.sendTopicMessage END',
+        `${JSON.stringify(queueName)} --- ${message}`
       );
     });
   });
@@ -272,33 +224,23 @@ export async function prismGetUserDetails(
 
   const apiUrl = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'getPrismUsersDetails-prismGetUserDetails()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'getPrismUsersDetails-prismGetUserDetails()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'prismGetUserDetails PRISM_GET_USER_DETAILS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-prismGetUserDetails()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'prismGetUserDetails PRISM_GET_USER_DETAILS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
       }
     );
@@ -316,33 +258,23 @@ export async function linkUhid(
 
   const apiUrl = `${process.env.PRISM_LINK_UHID_API}?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'getPrismUsersDetails-linkUhid()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'getPrismUsersDetails-linkUhid()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'linkUhid PRISM_LINK_UHID_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-linkUhid()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'linkUhid PRISM_LINK_UHID_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
       }
     );
@@ -360,33 +292,23 @@ export async function delinkUhid(
 
   const apiUrl = `${process.env.PRISM_DELINK_UHID_API}?authToken=${authToken}&primaryuhid=${primaryuhid}&uhids=${uhids}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'getPrismUsersDetails-linkUhid()->API_CALL_STARTING',
-    '',
-    ''
-  );
+  const time = new Date();
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
-        return data;
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-          'getPrismUsersDetails-delinkuhids()->RECIEVED_DATA',
-          '',
-          JSON.stringify(data)
+        dLogger(
+          time,
+          'delinkuhids PRISM_DELINK_UHID_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
         );
+        return data;
       },
       (err) => {
-        log(
-          'profileServiceLogger',
-          `API_CALL_ERROR: ${apiUrl}`,
-          'registerPatients-delinkuhids()->ERROR',
-          '',
-          JSON.stringify(err)
+        dLogger(
+          time,
+          'delinkuhids PRISM_DELINK_UHID_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
         );
       }
     );
