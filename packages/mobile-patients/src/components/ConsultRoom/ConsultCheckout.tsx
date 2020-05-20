@@ -55,7 +55,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
-  const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
 
   type bankOptions = {
     name: string;
