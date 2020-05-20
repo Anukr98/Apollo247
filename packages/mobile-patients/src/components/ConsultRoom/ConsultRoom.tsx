@@ -459,7 +459,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const menuOptions: menuOptions[] = [
     {
       id: 1,
-      title: 'Find a Doctor',
+      title: 'Book Doctor Appointment',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
