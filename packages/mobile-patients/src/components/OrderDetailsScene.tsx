@@ -1073,10 +1073,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   // };
 
   const getCancellationReasons = () => {
+    setShowSpinner(true);
     client
       .query<GetMedicineOrderCancelReasons>({
         query: GET_MEDICINE_ORDER_CANCEL_REASONS,
         variables: {},
+        fetchPolicy: 'no-cache',
       })
       .then((data) => {
         if (
@@ -1092,12 +1094,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               }
             }
           );
-          setShowSpinner(false);
           setCancellationReasons(cancellationArray);
+          setCancelVisible(true);
         }
       })
       .catch((error) => {
-        console.log('error getCancellationReasons', error);
+        handleGraphQlError(error);
+      })
+      .finally(() => {
+        setShowSpinner(false);
       });
   };
 
@@ -1105,20 +1110,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const renderMoreMenu = () => {
-    const cannotCancelOrder = orderStatusList.find(
+    const hideMenuIcon = !!orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+    );
+    const cannotCancelOrder = orderStatusList.find(
+      (item) =>
+        // item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        // item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+        // item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
+        // item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
     );
-    const isCancelOrderAllowed = orderStatusList.find(
-      (item) =>
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
-    );
-    if (!isCancelOrderAllowed || cannotCancelOrder || !orderStatusList.length) return null;
+    // const isCancelOrderAllowed = orderStatusList.find(
+    //   (item) =>
+    //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+    //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
+    // );
+    if (hideMenuIcon || !orderStatusList.length) return null;
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
@@ -1134,9 +1144,18 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            setCancelVisible(true);
-            setShowSpinner(true);
-            getCancellationReasons();
+            if (cannotCancelOrder) {
+              showAphAlert!({
+                title: string.common.uhOh,
+                description: orderStatusList.find(
+                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
+                )
+                  ? 'Sorry, we cannot cancel once the order is billed.'
+                  : 'Sorry, we cannot cancel the order now.',
+              });
+            } else {
+              getCancellationReasons();
+            }
           }
         }}
       >
