@@ -107,8 +107,7 @@ export enum WebEngageEventName {
 
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
-  PAYMENT_STATUS = 'Payment Status'
-
+  PAYMENT_STATUS = 'Payment Status',
 }
 
 export interface PatientInfo {
@@ -218,7 +217,13 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic' | 'Pharmacy Partial Search' | 'Pharmacy Full Search';
+    Source:
+      | 'Pharmacy Home'
+      | 'Pharmacy PDP'
+      | 'Pharmacy List'
+      | 'Diagnostic'
+      | 'Pharmacy Partial Search'
+      | 'Pharmacy Full Search';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
