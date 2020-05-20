@@ -36,23 +36,23 @@ module.exports = async (req, res, next) => {
         /*save response in apollo24x7*/
         axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-        logger.info(`consults query - ${consultsOrderQuery(payload)}`)
+        logger.info(`consults query - ${consultsOrderQuery(payload)}`);
 
-        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`)
+        logger.info(`${orderId} - makeAppointmentPayment - ${consultsOrderQuery(payload)}`);
         const requestJSON = {
             query: consultsOrderQuery(payload)
         };
 
         const response = await axios.post(process.env.API_URL, requestJSON);
 
-        logger.info(`${orderId} - consult-payment-response - ${JSON.stringify(response.data)}`)
+        logger.info(`${orderId} - consult-payment-response - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`)
-            throw new Error(`Error Occured in makeAppointmentPayment for orderId: ${orderId}`)
+            logger.error(`${orderId} - consult-payment-response - ${JSON.stringify(response.data.errors)}`);
+            throw new Error(`Error Occured in makeAppointmentPayment for orderId: ${orderId}`);
         }
 
-        const appointmentId = response.data.data.makeAppointmentPayment.appointment.id;
+        const appointmentId = response.data.data.makeAppointmentPayment.appointment.appointment.id;
 
         if (bookingSource == 'WEB') {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
@@ -70,9 +70,9 @@ module.exports = async (req, res, next) => {
         }
     } catch (e) {
         if (e.response && e.response.data) {
-            logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
+            logger.error(`${orderId} - consult-response - ${JSON.stringify(e.response.data)}`);
         } else {
-            logger.error(`${orderId} - paymed-response -  ${e.stack}`);
+            logger.error(`${orderId} - consult-response -  ${e.stack}`);
         }
         if (bookingSource == 'WEB') {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?status=${transactionStatus}`;
@@ -81,4 +81,4 @@ module.exports = async (req, res, next) => {
             res.redirect(`/consultpg-error?tk=${orderId}&status=${transactionStatus}`);
         }
     }
-}
+};

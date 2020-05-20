@@ -374,20 +374,16 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               autoHide={true}
               autoHeight
               autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 276px)'
-                  : isSmallScreen
+                isSmallScreen
                   ? 'calc(100vh - 96px)'
-                  : 'calc(100vh - 250px)'
+                  : 'auto'
               }
             >
-              <div className={classes.customScroll}>
                 {noOrderDetails ? (
                   'No Order is Found'
                 ) : (
                   <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
                 )}
-              </div>
             </Scrollbars>
           </TabContainer>
         )}
@@ -397,11 +393,9 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               autoHide={true}
               autoHeight
               autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 276px)'
-                  : isSmallScreen
+                isSmallScreen
                   ? 'calc(100vh - 96px)'
-                  : 'calc(100vh - 250px)'
+                  : 'auto'
               }
             >
               <div className={classes.customScroll}>

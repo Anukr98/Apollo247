@@ -15,7 +15,7 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
-import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -40,9 +40,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       color: '#01475b',
-      alignItems: 'start',
+      alignItems: 'center',
+      '& >span:first-child': {
+        paddingRight: 16,
+      },
       '& span:last-child': {
         fontSize: 14,
+        lineHeight: '14px',
         fontWeight: 500,
         color: '#01475b',
       },
@@ -80,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
     sectionHeader: {
       marginBottom: 20,
       paddingBottom: 4,
-      paddingTop: 20,
+      paddingTop: 16,
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
@@ -95,8 +99,19 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
       '& button': {
+        padding: '9px 13px 9px 13px',
+        fontSize: 13,
         borderRadius: 10,
+        backgroundColor: '#fcb716',
+        color: '#fff',
+        '&:hover': {
+          backgroundColor: '#fcb716',
+          color: '#fff',
+        },
       },
+    },
+    buttonDisabled: {
+      opacity: 0.6,
     },
     customScrollBar: {
       paddingRight: 20,
@@ -130,6 +145,16 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingBottom: 10,
     },
+    couponText: {
+      fontSize: 12,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      lineHeight: '16px',
+      color: '#02475b',
+      opacity: 0.6,
+      paddingTop: 2,
+      marginLeft: 40,
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -137,7 +162,6 @@ interface ApplyCouponProps {
   setValidateCouponResult: (
     validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null
   ) => void;
-  setCouponCode: (couponCode: string) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
@@ -146,7 +170,7 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, medicineCartType } = useShoppingCart();
+  const { cartItems, setCouponCode } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
@@ -159,7 +183,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   });
 
   const getTypeOfProduct = (type: string | null) => {
-    return medicineCartType === 'BOTH' ? CouponCategoryApplicable.PHARMA_FMCG : medicineCartType;
+    switch (type) {
+      case 'Pharma':
+        return CouponCategoryApplicable.PHARMA;
+      case 'Fmcg':
+        return CouponCategoryApplicable.FMCG;
+    }
   };
 
   const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
@@ -173,7 +202,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             productName: item.name,
             productType: getTypeOfProduct(item.type_id),
             quantity: item.quantity,
-            specialPrice: item.special_price,
+            specialPrice: item.special_price ? item.special_price : item.price,
+            itemId: item.id.toString(),
           };
         }),
       },
@@ -212,9 +242,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
             if (couponValidateResult.validityStatus) {
-              props.setCouponCode(selectCouponCode);
               props.close(false);
+              props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
+              setCouponCode && setCouponCode(selectCouponCode);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
@@ -226,6 +257,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   };
+  const disableCoupon =
+    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
 
   return (
     <div className={classes.shadowHide}>
@@ -237,21 +270,23 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 {availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
+                      inputProps={{
+                        maxLength: 10,
+                      }}
                       value={selectCouponCode}
-                      onChange={(e) => setSelectCouponCode(e.target.value)}
-                      placeholder="CouponCode"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        setSelectCouponCode(value);
+                      }}
+                      placeholder="Enter coupon code"
+                      error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {/* {selectCouponCode.length > 0 ? (
+                      {selectCouponCode.length > 0 ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick>
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )} */}
-                      {selectCouponCode.length > 0 && (
                         <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
@@ -286,8 +321,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 setErrorMessage('');
                                 setSelectCouponCode(couponDetails.code);
                               }}
-                              disabled={props.cartValue < 200}
                             />
+
+                            {couponDetails.couponPharmaRule &&
+                              couponDetails.couponPharmaRule.messageOnCouponScreen && (
+                                <div className={classes.couponText}>
+                                  {couponDetails.couponPharmaRule.messageOnCouponScreen}
+                                </div>
+                              )}
                           </li>
                         )
                     )
@@ -306,7 +347,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode}
+          disabled={disableCoupon}
+          classes={{
+            disabled: classes.buttonDisabled,
+          }}
           onClick={() => {
             verifyCoupon();
           }}

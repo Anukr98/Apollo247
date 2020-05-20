@@ -22,6 +22,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
+  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -300,6 +301,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
+    return this.update(id, appointmentInfo).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   findAppointmentPayment(id: string) {
     return AppointmentPayments.findOne({ where: { appointment: id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
@@ -335,7 +344,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPatientAppointments(doctorId: string, patientId: string) {
+  getPatientAppointments(doctorId: string, patientIds: string[]) {
     const curDate = new Date();
     let curMin = curDate.getUTCMinutes();
     if (curMin >= 0 && curMin < 15) {
@@ -353,7 +362,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({
       where: {
         doctorId,
-        patientId,
+        patientId: In(patientIds),
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },
@@ -969,6 +978,20 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointmentNoShowStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { status, isSeniorConsultStarted, appointmentState, noShowReason }).catch(
+      (createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      }
+    );
+  }
+
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
@@ -1053,6 +1076,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     this.update(id, { appointmentState, isSeniorConsultStarted: false });
   }
 
+  updateTransferStateAndNoshow(
+    id: string,
+    appointmentState: APPOINTMENT_STATE,
+    noShowReason: NOSHOW_REASON
+  ) {
+    this.update(id, { appointmentState, isSeniorConsultStarted: false, noShowReason });
+  }
+
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
     return this.count({ where: { doctorId, appointmentDateTime } });
   }
@@ -1068,6 +1099,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCount,
       appointmentState,
       status: STATUS.PENDING,
+      noShowReason: undefined,
     });
   }
 
@@ -1099,6 +1131,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCountByDoctor,
       appointmentState,
       status: STATUS.PENDING,
+      noShowReason: undefined,
     });
   }
 
@@ -1115,6 +1148,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         doctorCancelReason: cancelReason,
         cancelledDate: new Date(),
+        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -1125,6 +1159,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         patientCancelReason: cancelReason,
         cancelledDate: new Date(),
+        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -1164,9 +1199,9 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getAllAppointmentsByPatientId(patientId: string) {
     return this.createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
-      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
   }

@@ -64,6 +64,28 @@ export enum APPOINTMENT_STATE {
   AWAITING_RESCHEDULE = 'AWAITING_RESCHEDULE',
 }
 
+export enum PAYMENT_METHODS {
+  DC = 'DEBIT_CARD',
+  CC = 'CREDIT_CARD',
+  NB = 'NET_BANKING',
+  PPI = 'PAYTM_WALLET',
+  EMI = 'CREDIT_CARD_EMI',
+  UPI = 'UPI',
+  PAYTMCC = 'PAYTM_POSTPAID',
+  COD = 'COD',
+}
+
+export enum PAYMENT_METHODS_REVERSE {
+  DEBIT_CARD = 'DC',
+  CREDIT_CARD = 'CC',
+  NET_BANKING = 'NB',
+  PAYTM_WALLET = 'PPI',
+  CREDIT_CARD_EMI = 'EMI',
+  UPI = 'UPI',
+  PAYTM_POSTPAID = 'PAYTMCC',
+  COD = 'COD',
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -104,6 +126,11 @@ export enum DEVICETYPE {
 export enum PATIENT_TYPE {
   NEW = 'NEW',
   REPEAT = 'REPEAT',
+}
+export enum NOSHOW_REASON {
+  NOSHOW_PATIENT = 'NOSHOW_PATIENT',
+  NOSHOW_DOCTOR = 'NOSHOW_DOCTOR',
+  NOSHOW_30MIN = 'NOSHOW_30MIN',
 }
 
 //Appointment starts
@@ -191,6 +218,9 @@ export class Appointment extends BaseEntity {
   isSeniorConsultStarted: Boolean;
 
   @Column({ nullable: true })
+  noShowReason: NOSHOW_REASON;
+
+  @Column({ nullable: true })
   patientCancelReason: string;
 
   @Index('Appointment_patientId')
@@ -233,6 +263,15 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true })
   deviceType: DEVICETYPE;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
+  paymentInfo: Partial<AppointmentPayments>;
 
   @BeforeUpdate()
   updateDateUpdate() {
@@ -324,13 +363,22 @@ export class AppointmentPayments extends BaseEntity {
   @Column()
   paymentType: APPOINTMENT_PAYMENT_TYPE;
 
+  @Column({ nullable: true })
+  paymentMode: PAYMENT_METHODS_REVERSE;
+
+  @Column({ nullable: true })
+  bankName: string;
+
+  @Column({ nullable: true })
+  refundAmount: number;
+
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
 
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -1536,11 +1584,15 @@ export interface RxPdfData {
     gender: string;
     uhid: string;
     age: string;
+    email: string;
+    phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
+  referralSpecialtyName: string;
+  referralSpecialtyDescription: string;
 }
 ///////////////////////////////////////////////////////////

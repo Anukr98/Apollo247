@@ -213,7 +213,7 @@ export const MyProfile: React.FC = (props) => {
                 title={'My Payments'}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_manageprofile.svg')} alt="" />
+                  <img src={require('images/ic_fees.svg')} alt="" />
                 </span>
                 <span className={classes.linkText} title={'My Payments'}>
                   My Payments
@@ -268,7 +268,7 @@ export const MyProfile: React.FC = (props) => {
                 title={'Need Help'}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_location.svg')} alt="" />
+                  <img src={require('images/ic_round_live_help.svg')} alt="" />
                 </span>
                 <span className={classes.linkText} title={'Need Help'}>
                   Need Help
@@ -354,7 +354,7 @@ export const MyProfile: React.FC = (props) => {
                     title={'My Payments'}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_manageprofile.svg')} alt="" />
+                      <img src={require('images/ic_fees.svg')} alt="" />
                     </span>
                     <span className={classes.linkText} title={'My Payments'}>
                       My Payments
@@ -409,7 +409,7 @@ export const MyProfile: React.FC = (props) => {
                     title={'Need Help'}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_location.svg')} alt="" />
+                      <img src={require('images/ic_round_live_help.svg')} alt="" />
                     </span>
                     <span className={classes.linkText} title={'Need Help'}>
                       Need Help

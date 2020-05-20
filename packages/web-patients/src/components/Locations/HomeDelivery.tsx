@@ -580,7 +580,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       {errorDeliveryTimeMsg.length > 0 && (
         <span>{deliveryLoading ? <CircularProgress size={22} /> : errorDeliveryTimeMsg}</span>
       )}
-      {deliveryTime.length > 0 && (
+      {deliveryTime && deliveryTime.length > 0 && (
         <div className={classes.deliveryTimeGroup}>
           <div className={classes.deliveryTimeGroupWrap}>
             <span className={classes.deliveryTime}>Delivery Time</span>
@@ -636,6 +636,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                   Sorry! We’re working hard to get to this area! In the meantime, you can either
                   pick up from a nearby store, or change the pincode.
                 </p>
+                <p>You can also call 1860 500 0101 for Apollo Pharmacy retail customer care.</p>
               </div>
               <div className={classes.actions}>
                 <AphButton
@@ -676,6 +677,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 </Typography>
                 <p>Some items in your order are not deliverable to the selected address.</p>
                 <p>You may either change the address or delete the items from your cart.</p>
+                <p>You can also call 1860 500 0101 for Apollo Pharmacy retail customer care.</p>
               </div>
               <div className={classes.actions}>
                 <AphButton

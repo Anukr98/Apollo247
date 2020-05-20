@@ -1,14 +1,25 @@
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { Link } from 'react-router-dom';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import moment from 'moment';
 import { useAuth } from 'hooks/authHooks';
 import { BottomLinks } from 'components/BottomLinks';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
-import { AphButton } from '@aph/web-ui-components';
+import { AppointmentType } from 'graphql/types/globalTypes';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -16,6 +27,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
+    },
+    loader: {
+      top: -88,
+      zIndex: 999,
     },
     container: {
       maxWidth: 1064,
@@ -26,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         marginTop: 0,
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#f7f8f5',  
+        backgroundColor: '#f7f8f5',
       },
     },
     pageHeader: {
@@ -142,6 +157,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       fontWeight: 600,
       display: 'flex',
+      '& span': {
+        '& span': {
+          textTransform: 'none',
+        },
+      },
     },
     moreBtn: {
       cursor: 'pointer',
@@ -155,7 +175,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 30,
         borderRadius: 5,
         backgroundColor: '#f7f8f5',
-        padding: 10,  
+        padding: 10,
       },
     },
     blockHeader: {
@@ -249,96 +269,393 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    sectionGroup: {
+      marginBottom: 10,
+    },
+    serviceTypeCoupon: {
+      backgroundColor: '#fff',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+      borderRadius: 10,
+      padding: '16px 10px 16px 16px',
+      width: '100%',
+      color: '#02475b',
+      fontSize: 14,
+      fontWeight: 500,
+      cursor: 'pointer',
+      marginBottom: 16,
+    },
+    couponTopGroup: {
+      display: 'flex',
+    },
+    textVCenter: {
+      alignItems: 'center',
+      minHeight: 44,
+      paddingbottom: 10,
+    },
+    serviceImg: {
+      marginRight: 20,
+      '& img': {
+        maxWidth: 49,
+        verticalAlign: 'middle',
+      },
+    },
+    rightArrow: {
+      width: 24,
+      marginLeft: 'auto',
+    },
+    couponRight: {
+      width: 'calc(100% - 34px)',
+    },
+    applyCoupon: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    appliedCoupon: {
+      display: 'flex',
+      alignItems: 'center',
+      fontWeight: 600,
+      '& $linkText': {
+        '& span': {
+          color: '#00b38e',
+          textTransform: 'uppercase',
+        },
+      },
+    },
+    couponText: {
+      color: '#01475b',
+      fontSize: 12,
+      lineHeight: '18px',
+    },
+    discountTotal: {
+      color: '#0087ba',
+      borderRadius: 3,
+      border: 'solid 1px #0087ba',
+      backgroundColor: 'rgba(0, 135, 186, 0.07)',
+      padding: '4px 10px',
+      fontSize: 16,
+      marginTop: 10,
+    },
+    linkText: {
+      letterSpacing: 'normal',
+      paddingRight: 10,
+    },
+    discountRow: {
+      color: '#0187ba',
+    },
+    couponIcon: {
+      width: 25,
+      marginRight: 10,
+      textAlign: 'center',
+      '& img': {
+        verticalAlign: 'middle',
+        marginTop: 3,
+      },
+    },
   };
 });
 
 export const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
+  const [couponCode, setCouponCode] = React.useState<string>('');
+  const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
 
-  return (
-    <div>
-      <div className={classes.pageTopHeader}>
-        <Header />
-      </div>
-      <div className={classes.container}>
-        <div className={classes.pageContainer}>
-          <div className={classes.pageHeader}>
-            <Link to={clientRoutes.welcome()}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </Link>
-            Checkout
-          </div>
-          <div className={classes.pageContent}>
-            <div className={classes.leftGroup}>
-              <div className={classes.doctorProfile}>
-                <div className={classes.doctorImg}>
-                  <img src="https://via.placeholder.com/328X138" alt="" />
+  const [
+    validateCouponResult,
+    setValidateCouponResult,
+  ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
+
+  const apolloClient = useApolloClient();
+
+  const pageData: any = JSON.parse(localStorage.getItem('consultBookDetails'));
+  const {
+    consultCouponCodeInitial,
+    consultCouponValue,
+    doctorId,
+    appointmentDateTime,
+    amount,
+  } = pageData;
+  let newAppointmentDateTime = moment(appointmentDateTime)
+    .format('DD MMMM[,] LT')
+    .toString();
+  const today = moment().endOf('day');
+  const tomorrow = moment()
+    .add(1, 'day')
+    .endOf('day');
+  const bookingTime = moment(appointmentDateTime);
+  if (bookingTime < tomorrow) {
+    newAppointmentDateTime = `Tomorrow, ${moment(appointmentDateTime)
+      .format('LT')
+      .toString()}`;
+  }
+  if (bookingTime < today) {
+    newAppointmentDateTime = `Today, ${moment(appointmentDateTime)
+      .format('LT')
+      .toString()}`;
+  }
+
+  useEffect(() => {
+    setLoading(true);
+    apolloClient
+      .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        variables: { id: doctorId },
+      })
+      .then((response) => {
+        setData(response.data);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (validateCouponResult && validateCouponResult.revisedAmount) {
+      localStorage.setItem(
+        'consultBookDetails',
+        JSON.stringify({
+          ...pageData,
+          consultCouponValue:
+            parseFloat(pageData.amount) - parseFloat(validateCouponResult.revisedAmount),
+          consultCouponCodeInitial: couponCode,
+        })
+      );
+    }
+  }, [validateCouponResult]);
+
+  useEffect(() => {
+    setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
+
+    if (!couponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
+      setCouponCode(consultCouponCodeInitial || '');
+    }
+  });
+
+  const doctorDetails = data && data.getDoctorDetailsById ? data : null;
+  if (doctorDetails) {
+    const {
+      experience,
+      fullName,
+      photoUrl,
+      onlineConsultationFees,
+    } = doctorDetails.getDoctorDetailsById;
+    const speciality =
+      (doctorDetails &&
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.specialty &&
+        doctorDetails.getDoctorDetailsById.specialty.name) ||
+      null;
+    // const facilityAddress =
+    //   (doctorDetails &&
+    //     doctorDetails.getDoctorDetailsById &&
+    //     doctorDetails.getDoctorDetailsById.doctorHospital &&
+    //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
+    //   null;
+
+    return (
+      <div>
+        <div className={classes.pageTopHeader}>
+          <Header />
+        </div>
+        <div className={classes.container}>
+          <div className={classes.pageContainer}>
+            <div className={classes.pageHeader}>
+              <Link to={clientRoutes.doctorsLanding()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-                <div className={classes.doctorInfo}>
-                  <div className={classes.doctorName}>Dr. Jayanth Reddy</div>
-                  <div className={classes.doctorType}><span>General Physician | 5YRS Exp</span><div className={classes.moreBtn}>More</div></div>
-                  <div className={classes.appointmentDetails}>
-                    <div className={classes.blockHeader}>Appointment Details</div>
-                    <div className={classes.consultServices}>
-                      <div className={classes.serviceType}>
+              </Link>
+              Checkout
+            </div>
+            <div className={classes.pageContent}>
+              <div className={classes.leftGroup}>
+                <div className={classes.doctorProfile}>
+                  <div className={classes.doctorImg}>
+                    <img src={photoUrl} alt="" />
+                  </div>
+                  <div className={classes.doctorInfo}>
+                    <div className={classes.doctorName}>{fullName}</div>
+                    <div className={classes.doctorType}>
+                      <span>
+                        {speciality} | <span>{experience} Yrs. Exp</span>
+                      </span>
+                      {/* <div className={classes.moreBtn}>More</div> */}
+                    </div>
+                    <div className={classes.appointmentDetails}>
+                      <div className={classes.blockHeader}>Appointment Details</div>
+                      <div className={classes.consultServices}>
+                        {/* <div className={classes.serviceType}>
                         <span className={classes.serviceIcon}>
                           <img src={require('images/ic_clinic.svg')} alt="" />
                         </span>
                         <span>Clinic Visit</span>
-                      </div>
-                      <div className={classes.serviceType}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_round_video.svg')} alt="" />
-                        </span>
-                        <span>Online Consultation</span>
-                      </div>
-                      <div className={classes.serviceType}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_calendar_show.svg')} alt="" />
-                        </span>
-                        <span>Today, 6:30 pm</span>
-                      </div>
-                      <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
-                        <span className={classes.serviceIcon}>
-                          <img src={require('images/ic_location.svg')} alt="" />
-                        </span>
-                        <span>Apollo Hospital <br/>Road No 72, Film Nagar <br/>Jubilee Hills, Hyderabad</span>
+                      </div> */}
+                        <div className={classes.serviceType}>
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_round_video.svg')} alt="" />
+                          </span>
+                          <span>Online Consultation</span>
+                        </div>
+                        <div className={classes.serviceType}>
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_calendar_show.svg')} alt="" />
+                          </span>
+                          <span>{newAppointmentDateTime}</span>
+                        </div>
+                        {/* <div className={`${classes.serviceType} ${classes.textTopAlign}`}>
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_location.svg')} alt="" />
+                          </span>
+                          <span>
+                            {facilityAddress.name} <br />
+                            {facilityAddress.streetLine1}, {facilityAddress.streetLine2} <br />
+                            {facilityAddress.city}, {facilityAddress.state}
+                          </span>
+                        </div> */}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className={classes.rightGroup}>
-              <CouponCodeConsult />
-              <div className={classes.sectionHeader}>
-                Total Charges
-              </div>
-              <div className={classes.priceSection}>
-                <div className={classes.priceRow}>
-                  <span>Subtotal</span>
-                  <span className={classes.price}>Rs. 499.00</span>
+              <div className={classes.rightGroup}>
+                <div className={`${classes.sectionGroup}`}>
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceTypeCoupon}`}
+                  >
+                    <div className={classes.couponTopGroup}>
+                      <span className={classes.couponIcon}>
+                        <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                      </span>
+                      <div className={classes.couponRight}>
+                        {couponCode === '' ? (
+                          <div className={classes.applyCoupon}>
+                            <span className={classes.linkText}>Apply Coupon</span>
+                            <span className={classes.rightArrow}>
+                              <img src={require('images/ic_arrow_right.svg')} alt="" />
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{couponCode}</span> applied
+                              </span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {couponCode.length > 0 && (
+                      <div className={classes.discountTotal}>
+                        Savings of Rs.{' '}
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? (
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
+                        on the bill
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className={`${classes.priceRow} ${classes.totalPrice}`}>
-                  <span>To Pay</span>
-                  <span className={classes.price}>Rs. 499.00</span>
+                <div className={classes.sectionHeader}>Total Charges</div>
+                <div className={classes.priceSection}>
+                  <div className={classes.priceRow}>
+                    <span>Subtotal</span>
+                    <span className={classes.price}>
+                      Rs. {Number(onlineConsultationFees).toFixed(2)}
+                    </span>
+                  </div>
+                  {(validateCouponResult && validateCouponResult.revisedAmount) ||
+                  (consultCouponCodeInitial && consultCouponCodeInitial.length) ? (
+                    <div className={`${classes.priceRow} ${classes.discountRow}`}>
+                      <span>
+                        Coupon Applied <br /> ({couponCode})
+                      </span>
+                      <span className={classes.price}>
+                        - Rs.{' '}
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? (
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : consultCouponValue.toFixed(2)}
+                      </span>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                  <div className={`${classes.priceRow} ${classes.totalPrice}`}>
+                    <span>To Pay</span>
+                    <span className={classes.price}>
+                      Rs.{' '}
+                      {validateCouponResult && validateCouponResult.revisedAmount
+                        ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                        : revisedAmount.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className={classes.bottomActions}>
-                <AphButton color="primary">Pay Rs. 499</AphButton>
+                <div className={classes.bottomActions}>
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        color="primary"
+                        onClick={() => {
+                          // const updatedValues = {
+                          //   ...pageData,
+                          //   consultCouponCodeInitial: couponCode,
+                          //   consultCouponValue:
+                          //     validateCouponResult && validateCouponResult.revisedAmount
+                          //       ? parseFloat(onlineConsultationFees) -
+                          //         parseFloat(validateCouponResult.revisedAmount)
+                          //       : '0',
+                          // };
+                          // localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
+                          history.push(clientRoutes.payMedicine('consults'));
+                        }}
+                      >
+                        Pay Rs.{' '}
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                          : revisedAmount.toFixed(2)}
+                      </AphButton>
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>
+          <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle>Apply Coupon</AphDialogTitle>
+            <CouponCodeConsult
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+              consultType={AppointmentType.ONLINE}
+              setCouponCode={setCouponCode}
+              couponCode={couponCode}
+              setValidateCouponResult={setValidateCouponResult}
+              close={(isApplyCouponDialogOpen: boolean) => {
+                setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
+              }}
+              cartValue={onlineConsultationFees}
+            />
+          </AphDialog>
         </div>
+        <div className={classes.footerLinks}>
+          <BottomLinks />
+        </div>
+        {isSignedIn && <NavigationBottom />}
       </div>
-      <div className={classes.footerLinks}>
-        <BottomLinks />
-      </div>
-      {isSignedIn && <NavigationBottom />}
-    </div>
-  );
+    );
+  } else {
+    return <LinearProgress className={classes.loader} />;
+  }
 };

@@ -88,6 +88,7 @@ export const VALIDATE_CONSULT_COUPON = gql`
     }
   }
 `;
+
 export const MAKE_APPOINTMENT_PAYMENT = gql`
   mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
     makeAppointmentPayment(paymentInput: $paymentInput) {
@@ -102,5 +103,61 @@ export const MAKE_APPOINTMENT_PAYMENT = gql`
         orderId
       }
     }
+  }
+`;
+
+export const CONSULT_COUPONS_LIST = gql`
+  query getConsultCouponList {
+    getConsultCouponList {
+      coupons {
+        code
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        createdDate
+        description
+        id
+        isActive
+      }
+    }
+  }
+`;
+
+export const GET_CONSULT_PAYMENTS = gql`
+  query ConsultOrders($patientId: String) {
+    consultOrders(patientId: $patientId) {
+      appointments {
+        displayId
+        id
+        appointmentDateTime
+        actualAmount
+        discountedAmount
+        appointmentType
+        appointmentPayments {
+          amountPaid
+          bankTxnId
+          id
+          paymentRefId
+          paymentStatus
+          paymentType
+          responseMessage
+        }
+        status
+        doctorId
+        doctor {
+          typeId
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const GET_CONSULT_INVOICE = gql`
+  query GetOrderInvoice($patientId: String!, $appointmentId: String!) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
   }
 `;

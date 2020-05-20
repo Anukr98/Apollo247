@@ -47,6 +47,18 @@ export enum PATIENT_ADDRESS_TYPE {
   OFFICE = 'OFFICE',
   OTHER = 'OTHER',
 }
+export enum PAYMENT_STATUS_MAP {
+  TXN_SUCCESS = 'PAYMENT_SUCCESS',
+  PENDING = 'PAYMENT_PENDING_PG',
+  TXN_FAILURE = 'PAYMENT_FAILED',
+  UNKNOWN = 'PAYMENT_STATUS_NOT_KNOWN',
+}
+
+export enum STATUS_PAYMENT_MAP {
+  PAYMENT_SUCCESS = 'TXN_SUCCESS',
+  PAYMENT_PENDING_PG = 'PENDING',
+  PAYMENT_FAILED = 'TXN_FAILURE',
+}
 
 export enum Relation {
   ME = 'ME',
@@ -143,6 +155,7 @@ export enum BOOKING_SOURCE {
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum PHARMA_CART_TYPE {
@@ -184,6 +197,28 @@ export enum DIAGNOSTIC_ORDER_STATUS {
 export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
   COD = 'COD',
   ONLINE_PAYMENT = 'ONLINE_PAYMENT',
+}
+
+export enum PAYMENT_METHODS {
+  DC = 'DEBIT_CARD',
+  CC = 'CREDIT_CARD',
+  NB = 'NET_BANKING',
+  PPI = 'PAYTM_WALLET',
+  EMI = 'CREDIT_CARD_EMI',
+  UPI = 'UPI',
+  PAYTMCC = 'PAYTM_POSTPAID',
+  COD = 'COD',
+}
+
+export enum PAYMENT_METHODS_REVERSE {
+  DEBIT_CARD = 'DC',
+  CREDIT_CARD = 'CC',
+  NET_BANKING = 'NB',
+  PAYTM_WALLET = 'PPI',
+  CREDIT_CARD_EMI = 'EMI',
+  UPI = 'UPI',
+  PAYTM_POSTPAID = 'PAYTMCC',
+  COD = 'COD',
 }
 
 export enum FEEDBACKTYPE {
@@ -285,6 +320,24 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   shopId: string;
 
+  @Column({ type: 'float8', nullable: true })
+  couponDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  productDiscount: number;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
+  paymentInfo: Partial<MedicineOrderPayments>;
+
+  @Column({ nullable: true })
+  isOmsOrder: boolean;
+
   @Column({ nullable: true })
   updatedDate: Date;
 
@@ -372,6 +425,12 @@ export class MedicineOrderLineItems extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
+  @Column({ type: 'float8', nullable: true })
+  itemDiscount: number;
+
+  @Column({ type: 'float8', nullable: true })
+  itemValue: number;
+
   @Column()
   quantity: number;
 
@@ -416,6 +475,9 @@ export class MedicineOrderPayments extends BaseEntity {
 
   @Column()
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+
+  @Column({ nullable: true })
+  paymentMode: PAYMENT_METHODS_REVERSE;
 
   @Column({ nullable: true })
   paymentRefId: string;
@@ -634,6 +696,12 @@ export class Patient extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ default: false, nullable: true })
+  isLinked: Boolean;
+
+  @Column({ default: false, nullable: true })
+  isUhidPrimary: Boolean;
+
   @Column()
   lastName: string;
 
@@ -683,6 +751,12 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
+
+  @Column({ nullable: true })
+  primaryUhid: string;
+
+  @Column({ nullable: true })
+  primaryPatientId: string;
 
   @Column({ nullable: true })
   uhid: string;
@@ -814,6 +888,15 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   landmark: string;
+
+  @Column({ type: 'float8', nullable: true })
+  latitude: number;
+
+  @Column({ type: 'float8', nullable: true })
+  longitude: number;
+
+  @Column({ nullable: true })
+  stateCode: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
   patient: Patient;
@@ -1989,9 +2072,6 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true, type: 'json' })
   itemDetails: string;
 
-  @Column()
-  isPrimary: boolean;
-
   @OneToMany(
     (type) => MedicineOrdersStatus,
     (medicineOrdersStatus) => medicineOrdersStatus.medicineOrderShipments
@@ -2016,4 +2096,25 @@ export class MedicineOrderShipments extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class MedicineOrderCancelReason extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  displayMessage: string;
+
+  @Column({ nullable: true })
+  isUserReason: boolean;
 }

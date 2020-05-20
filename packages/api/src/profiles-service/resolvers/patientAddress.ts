@@ -19,6 +19,9 @@ export const addPatientAddressTypeDefs = gql`
     landmark: String
     addressType: PATIENT_ADDRESS_TYPE
     otherAddressType: String
+    latitude: Float
+    longitude: Float
+    stateCode: String
   }
 
   enum PATIENT_ADDRESS_TYPE {
@@ -38,6 +41,9 @@ export const addPatientAddressTypeDefs = gql`
     landmark: String
     addressType: PATIENT_ADDRESS_TYPE
     otherAddressType: String
+    latitude: Float
+    longitude: Float
+    stateCode: String
   }
 
   type PatientAddress {
@@ -53,6 +59,9 @@ export const addPatientAddressTypeDefs = gql`
     updatedDate: Date
     addressType: PATIENT_ADDRESS_TYPE
     otherAddressType: String
+    latitude: Float
+    longitude: Float
+    stateCode: String
   }
 
   type AddPatientAddressResult {
@@ -91,6 +100,9 @@ type PatientAddressInput = {
   landmark: string;
   addressType: PATIENT_ADDRESS_TYPE;
   otherAddressType: string;
+  latitude: number;
+  longitude: number;
+  stateCode: string;
 };
 
 type UpdatePatientAddressInput = {
@@ -104,6 +116,9 @@ type UpdatePatientAddressInput = {
   landmark: string;
   addressType: PATIENT_ADDRESS_TYPE;
   otherAddressType: string;
+  latitude: number;
+  longitude: number;
+  stateCode: string;
 };
 
 type PatientAddressInputArgs = { PatientAddressInput: PatientAddressInput };
