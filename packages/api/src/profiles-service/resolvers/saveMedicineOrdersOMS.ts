@@ -172,8 +172,7 @@ const saveMedicineOrderOMS: Resolver<
       pharmaCouponInput,
       context
     )) as PharmaOutput;
-    console.log(couponValidity);
-    if (couponValidity.validityStatus) {
+    if (!couponValidity.validityStatus) {
       throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
     }
     if (couponValidity.discountedTotals) {
@@ -183,9 +182,8 @@ const saveMedicineOrderOMS: Resolver<
         discountedTotals.mrpPriceTotal -
         discountedTotals.couponDiscount -
         discountedTotals.productDiscount;
-      console.log(finalAmount);
       if (medicineCartOMSInput.estimatedAmount != finalAmount) {
-        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, couponValidity);
+        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
       }
     }
   }
