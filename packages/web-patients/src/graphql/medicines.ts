@@ -142,3 +142,24 @@ export const PHRAMA_PAYMENT_STATUS = gql`
     }
   }
 `;
+
+export const CANCEL_MEDICINE_ORDER = gql`
+  mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
+    cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
+      orderStatus
+    }
+  }
+`;
+
+export const MEDICINE_ORDER_CANCEL_REASONS = gql`
+  query GetMedicineOrderCancelReasons {
+    getMedicineOrderCancelReasons {
+      cancellationReasons {
+        reasonCode
+        description
+        displayMessage
+        isUserReason
+      }
+    }
+  }
+`;
