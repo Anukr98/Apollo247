@@ -3,6 +3,7 @@ import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { CancelOrder } from 'components/Orders/CancelOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -38,10 +39,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type CancelOrderNotificationProps = {
+interface CancelOrderNotificationProps {
   setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-};
+  cancelOrderText?: string;
+}
 
 export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (props) => {
   const classes = useStyles({});
@@ -50,9 +52,7 @@ export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Hi! :)</Typography>
-        <p>
-          Your cancelation request has been submitted. Someone from our team will call you soon.
-        </p>
+        <p>{props.cancelOrderText}</p>
       </div>
       <div className={classes.actions}>
         <AphButton

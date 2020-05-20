@@ -1,11 +1,16 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { ReactEventHandler } from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
-import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
-import { useMutation } from 'react-apollo-hooks';
+import { useMutation, useQuery } from 'react-apollo-hooks';
+import { CANCEL_MEDICINE_ORDER, MEDICINE_ORDER_CANCEL_REASONS } from 'graphql/medicines';
+import { GetMedicineOrderCancelReasons } from 'graphql/types/GetMedicineOrderCancelReasons';
+import {
+  CancelMedicineOrderOMS,
+  CancelMedicineOrderOMSVariables,
+} from 'graphql/types/CancelMedicineOrderOMS';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,31 +83,48 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   };
 });
 
-type CancelOrderProps = {
+interface CancelOrderProps {
   orderAutoId: number;
   setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-};
+  setCancelOrderReasonText?: (cancelOrderReason: string) => void;
+}
 
 export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
   const classes = useStyles({});
 
-  const [selectedReason, setSelectedReason] = React.useState<string>('placeholder');
+  const [selectedReasonCode, setSelectedReasonCode] = React.useState<string>('placeholder');
   const [showLoader, setShowLoader] = React.useState<boolean>(false);
 
-  const cancelOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
+  const cancelOrderMutation = useMutation<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>(
+    CANCEL_MEDICINE_ORDER
+  );
+  const { data: cancelOrderReasons, loading, error } = useQuery<GetMedicineOrderCancelReasons>(
+    MEDICINE_ORDER_CANCEL_REASONS
+  );
 
-  const cancelReasonList = [
-    'Placed order by mistake',
-    'Higher discounts available on other app',
-    'Delay in delivery',
-    'Delay in order confirmation',
-    'Do not require medicines any longer',
-    'Already purchased',
-  ];
+  if (loading)
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress size={20} color="secondary" />
+      </div>
+    );
+
+  if (error) return <div className={classes.circlularProgress}>No data is available</div>;
+
+  const cancelReasonList = cancelOrderReasons.getMedicineOrderCancelReasons.cancellationReasons.filter(
+    (reasonDetails) => {
+      return reasonDetails.isUserReason;
+    }
+  );
 
   return (
     <div className={classes.shadowHide}>
@@ -114,8 +136,15 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                 <div className={classes.formGroup}>
                   <label>Why are you cancelling this order?</label>
                   <AphSelect
-                    value={selectedReason}
-                    onChange={(e) => setSelectedReason(e.target.value as string)}
+                    value={selectedReasonCode}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const reasonCode = e.target.value as string;
+                      const reasonCodeDetails = cancelReasonList.find(
+                        (reasonDetails) => reasonDetails.reasonCode === reasonCode
+                      );
+                      setSelectedReasonCode(reasonCode);
+                      props.setCancelOrderReasonText(reasonCodeDetails.displayMessage);
+                    }}
                     MenuProps={{
                       classes: { paper: classes.menuPopover },
                       anchorOrigin: {
@@ -135,9 +164,13 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                     >
                       Select reason for cancelling
                     </MenuItem>
-                    {cancelReasonList.map((reason) => (
-                      <MenuItem value={reason} classes={{ selected: classes.menuSelected }}>
-                        {reason}
+                    {cancelReasonList.map((reasonDetails) => (
+                      <MenuItem
+                        value={reasonDetails.reasonCode}
+                        classes={{ selected: classes.menuSelected }}
+                        key={reasonDetails.reasonCode}
+                      >
+                        {reasonDetails.description}
                       </MenuItem>
                     ))}
                   </AphSelect>
@@ -153,30 +186,34 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
       </div>
       <div className={classes.dialogActions}>
         <AphButton
-          disabled={selectedReason.length === 0 || selectedReason === 'placeholder'}
-          className={selectedReason.length === 0 ? classes.buttonDisable : ''}
+          disabled={
+            selectedReasonCode.length === 0 || selectedReasonCode === 'placeholder' || showLoader
+          }
+          className={selectedReasonCode.length === 0 ? classes.buttonDisable : ''}
           onClick={() => {
             setShowLoader(true);
-            cancelOrder({
+            cancelOrderMutation({
               variables: {
-                orderCancelInput: {
-                  orderNo:
-                    typeof props.orderAutoId === 'string'
-                      ? parseInt(props.orderAutoId)
-                      : props.orderAutoId,
-                  remarksCode: selectedReason,
+                medicineOrderCancelOMSInput: {
+                  orderNo: props.orderAutoId,
+                  cancelReasonCode: selectedReasonCode,
                 },
               },
             })
-              .then(({ data }: any) => {
+              .then((response) => {
                 if (
-                  data &&
-                  data.saveOrderCancelStatus &&
-                  data.saveOrderCancelStatus.requestStatus === 'true'
+                  response &&
+                  response.data &&
+                  response.data.cancelMedicineOrderOMS &&
+                  response.data.cancelMedicineOrderOMS.orderStatus
                 ) {
-                  props.setIsCancelOrderDialogOpen(false);
                   setShowLoader(false);
-                  props.setIsPopoverOpen(true);
+                  const cancellationResponse = response.data.cancelMedicineOrderOMS.orderStatus;
+                  if (cancellationResponse === 'CANCEL_REQUEST') {
+                    props.setIsCancelOrderDialogOpen(false);
+                    setShowLoader(false);
+                    props.setIsPopoverOpen(true);
+                  }
                 }
               })
               .catch((e) => console.log(e));
