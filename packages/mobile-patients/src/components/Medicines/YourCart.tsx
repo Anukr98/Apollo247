@@ -1370,12 +1370,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         isChennaiOrder: true,
-        whatsAppUpdate: whatsAppUpdate,
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
-        whatsAppUpdate: whatsAppUpdate,
       });
     }
   };
