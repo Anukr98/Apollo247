@@ -491,6 +491,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         try {
           setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PAST_DOCTOR_SEARCH] = {
+              'Patient UHID': g(currentPatient, 'uhid'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+              'Customer ID': g(currentPatient, 'id'),
+              'Past Searches': data.getPatientPastSearches,
+            };
+            postWebEngageEvent(WebEngageEventName.PAST_DOCTOR_SEARCH, eventAttributes);
             console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }

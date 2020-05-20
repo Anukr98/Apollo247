@@ -15,6 +15,12 @@ import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFun
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -66,6 +72,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [error, setError] = useState<string>('');
   const { setLoading: globalLoading } = useUIElements();
   const { setPharmacyLocation } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
 
   const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
     CommonBugFender('AddAddress_updateCityStateByPincode', e);
@@ -76,6 +83,18 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
+          'Patient UHID': currentPatient.uhid,
+          'Mobile Number': currentPatient.mobileNumber,
+          'Customer ID': currentPatient.id,
+          Serviceable: Availability ? 'Yes' : 'No',
+          Keyword: pincode,
+          Source: 'Pharmacy Home',
+        };
+        postWebEngageEvent(
+          WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
+          eventAttributes
+        );
         if (!Availability) {
           globalLoading!(false);
           setError(

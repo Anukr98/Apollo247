@@ -61,6 +61,7 @@ import {
   Linking,
   Platform,
   Image,
+  Alert,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -100,6 +101,8 @@ import {
   getDiagnosticsCitesVariables,
   getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -285,6 +288,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
+  const [serviceable, setserviceable] = useState<String>('');
   const webengage = new WebEngage();
 
   const updateLocation = () => {
@@ -298,6 +302,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
       return;
@@ -366,8 +371,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
+  async function isserviceable() {
+    if (locationDetails && locationDetails.pincode) {
+      await pinCodeServiceabilityApi(locationDetails.pincode!)
+        .then(({ data: { Availability } }) => {
+          if (Availability) {
+            setserviceable('Yes');
+          } else {
+            setserviceable('No');
+          }
+        })
+        .catch((e) => {
+          setserviceable('No');
+          console.log('pincode_checkServicability', e);
+        });
+    }
+  }
+
   useEffect(() => {
     if (locationDetails && locationDetails.pincode) {
+      isserviceable();
       if (!isCurrentLocationFetched) {
         setCurrentLocationFetched!(true);
         updateLocation();
@@ -418,6 +441,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         eventName == WebEngageEventName.NEED_HELP)
     ) {
       (eventAttributes as PatientInfoWithSource)['Source'] = source;
+      if (locationDetails && locationDetails.pincode) {
+        (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
+        (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      }
     }
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -456,7 +483,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
-  const menuOptions: menuOptions[] = [
+  const listValues: menuOptions[] = [
     {
       id: 1,
       title: 'Find a Doctor',
@@ -514,7 +541,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
   ];
 
-  const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
+  // const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
 
   useEffect(() => {
     if (enableCM) {
@@ -878,7 +905,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
+                  postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
@@ -1256,12 +1284,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressReadArticle = () => {
+    postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
     });
   };
 
   const onPressRiskLevel = () => {
+    postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
     });
@@ -1455,7 +1485,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
+            onPress={() => {
+              postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
+              props.navigation.navigate(AppRoutes.NotificationScreen);
+            }}
           >
             <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
             {notificationCount > 0 && renderBadge(notificationCount, {})}
