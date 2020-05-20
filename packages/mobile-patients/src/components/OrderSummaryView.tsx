@@ -14,6 +14,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 const styles = StyleSheet.create({
   horizontalline: {
     borderBottomColor: '#02475b',
@@ -185,11 +186,19 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   } else {
     item_quantity = medicineOrderLineItems.length + ' item(s) ';
   }
-  const subtotal = medicineOrderLineItems.reduce(
+  const mrpTotal = medicineOrderLineItems.reduce(
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
-  const discount = orderDetails!.devliveryCharges! + subtotal - orderDetails.estimatedAmount!;
+  const discount = orderDetails!.devliveryCharges! + mrpTotal - orderDetails.estimatedAmount!;
+  const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
+  const paymentMethodToDisplay =
+    paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
+      ? 'COD'
+      : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
+      ? 'Prepaid'
+      : 'No Payment';
+
   const { currentPatient } = useAllCurrentPatients();
   const { addresses } = useShoppingCart();
 
@@ -287,7 +296,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           </View>
           <View>
             <Text style={styles.totalTextStyle}>{string.OrderSummery.paymentMethod}</Text>
-            <Text style={[styles.orderDate, { textAlign: 'right' }]}> Prepaid</Text>
+            <Text style={[styles.orderDate, { textAlign: 'right' }]}>
+              {' '}
+              {paymentMethodToDisplay}
+            </Text>
           </View>
         </View>
         <View style={{ marginTop: 25 }}>
@@ -415,7 +427,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                {subtotal.toFixed(2)}
+                {mrpTotal.toFixed(2)}
               </Text>
             </View>
             {discount > 0 && (
@@ -445,7 +457,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-              <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>Prepaid</Text>
+              <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
+                {paymentMethodToDisplay}
+              </Text>
             </View>
           </View>
         </View>
