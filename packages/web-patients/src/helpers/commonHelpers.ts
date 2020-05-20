@@ -11,6 +11,10 @@ interface paymentMethodInterface {
   [key: string]: string;
 }
 
+interface PharmaStateCodeMappingType {
+  [key: string]: string;
+}
+
 const paymentMethodStrings: paymentMethodInterface = {
   DEBIT_CARD: 'Debit Card',
   CREDIT_CARD: 'Credit Card',
@@ -62,4 +66,49 @@ const getPaymentMethodFullName = (paymentMethodName: string) => {
   return paymentMethodName;
 };
 
-export { sortByProperty, locationRoutesBlackList, getDeviceType, getPaymentMethodFullName };
+const PharmaStateCodeMapping: PharmaStateCodeMappingType = {
+  'Andaman and Nicobar Islands': 'AN',
+  'Andhra Pradesh': 'AP',
+  'Arunachal Pradesh': 'AR',
+  Assam: 'AS',
+  Bihar: 'BR',
+  Chandigarh: 'CH',
+  Chhattisgarh: 'CT',
+  'Daman and Diu': 'DD',
+  Delhi: 'DL',
+  'Dadra and Nagar Haveli': 'DN',
+  Goa: 'GA',
+  Gujarat: 'GJ',
+  'Himachal Pradesh': 'HP',
+  Haryana: 'HR',
+  Jharkhand: 'JH',
+  'Jammu and Kashmir': 'JK',
+  Karnataka: 'KA',
+  Kerala: 'KL',
+  Lakshadweep: 'LD',
+  Maharashtra: 'MH',
+  Meghalaya: 'ML',
+  Manipur: 'MN',
+  'Madhya Pradesh': 'MP',
+  Mizoram: 'MZ',
+  Nagaland: 'NL',
+  Odisha: 'OR',
+  Punjab: 'PB',
+  Puducherry: 'PY',
+  Rajasthan: 'RJ',
+  Sikkim: 'SK',
+  'Tamil Nadu': 'TN',
+  Tripura: 'TR',
+  Telangana: 'TS',
+  'Uttar Pradesh': 'UP',
+  Uttarakhand: 'UT',
+  'West Bengal': 'WB',
+};
+
+export {
+  sortByProperty,
+  locationRoutesBlackList,
+  getDeviceType,
+  getPaymentMethodFullName,
+  PharmaStateCodeMapping,
+};

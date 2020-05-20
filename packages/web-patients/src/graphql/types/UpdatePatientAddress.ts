@@ -15,6 +15,7 @@ export interface UpdatePatientAddress_updatePatientAddress_patientAddress {
   addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
+  mobileNumber: string | null;
   state: string | null;
   zipcode: string | null;
   landmark: string | null;
@@ -22,6 +23,9 @@ export interface UpdatePatientAddress_updatePatientAddress_patientAddress {
   updatedDate: any | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
   otherAddressType: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  stateCode: string | null;
 }
 
 export interface UpdatePatientAddress_updatePatientAddress {

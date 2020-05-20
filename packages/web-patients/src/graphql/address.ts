@@ -18,6 +18,7 @@ export const GET_PATIENT_ADDRESSES_LIST = gql`
         otherAddressType
         latitude
         longitude
+        stateCode
       }
     }
   }
@@ -30,10 +31,17 @@ export const SAVE_PATIENT_ADDRESS = gql`
         id
         addressLine1
         addressLine2
-        zipcode
+        city
         mobileNumber
+        state
+        zipcode
+        landmark
+        createdDate
         addressType
         otherAddressType
+        latitude
+        longitude
+        stateCode
       }
     }
   }
@@ -47,6 +55,7 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         addressLine1
         addressLine2
         city
+        mobileNumber
         state
         zipcode
         landmark
@@ -54,6 +63,9 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
+        stateCode
       }
     }
   }
