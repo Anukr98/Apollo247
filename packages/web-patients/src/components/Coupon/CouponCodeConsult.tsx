@@ -272,9 +272,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {selectCouponCode.length > 2 &&
-                      errorMessage.length === 0 &&
-                      props.validityStatus ? (
+                      {errorMessage.length === 0 && props.validityStatus ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>

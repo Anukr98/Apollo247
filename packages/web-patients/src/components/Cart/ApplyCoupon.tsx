@@ -216,6 +216,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    localStorage.getItem('pharmaCoupon') && props.setValidityStatus(true);
+  }, []);
+
+  useEffect(() => {
     if (availableCoupons.length === 0) {
       setIsLoading(true);
       getCouponMutation()
@@ -261,7 +265,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     }
   };
   const disableCoupon =
-    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
+    !selectCouponCode ||
+    selectCouponCode.length < 5 ||
+    selectCouponCode.length > 10 ||
+    errorMessage.length > 0;
 
   return (
     <div className={classes.shadowHide}>
@@ -287,9 +294,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {selectCouponCode.length > 4 &&
-                      errorMessage.length === 0 &&
-                      props.validityStatus ? (
+                      {errorMessage.length === 0 && props.validityStatus ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
