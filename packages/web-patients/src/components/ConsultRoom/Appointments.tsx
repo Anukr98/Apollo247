@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import Modal from '@material-ui/core/Modal';
 import { History } from 'history';
 import { Header } from 'components/Header';
+import { useApolloClient } from 'react-apollo-hooks';
+
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
@@ -12,6 +14,7 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import { GetOrderInvoiceVariables, GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -39,7 +42,7 @@ import moment from 'moment';
 import _find from 'lodash/find';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
-import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
 import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
@@ -368,6 +371,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -385,6 +390,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [displayId, setDisplayId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const [doctorId, setDoctorId] = React.useState<string>('');
+  const client = useApolloClient();
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -415,6 +421,31 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     },
     fetchPolicy: 'no-cache',
   });
+
+  useEffect(() => {
+    if (triggerInvoice) {
+      setIsLoading(true);
+      client
+        .query<GetOrderInvoice>({
+          query: GET_CONSULT_INVOICE,
+          variables: {
+            appointmentId: successApptId,
+            patientId: currentPatient && currentPatient.id,
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          setIsLoading(false);
+          if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
+            window.open(data.getOrderInvoice, '_blank');
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
+    }
+  }, [triggerInvoice]);
 
   useEffect(() => {
     if (!successApptId) {
@@ -479,6 +510,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   //     return appointmentDetails;
   //   }
   // });
+
   interface statusActionInterface {
     ctaText: string;
     info: string;
@@ -511,6 +543,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
       },
     },
+  };
+
+  const handlePaymentModalClose = () => {
+    setIsConfirmedPopoverOpen(false);
+    props && props.history && props.history.push(clientRoutes.appointments());
   };
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
@@ -878,9 +915,10 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   .toString()}
                 type={'consult'}
                 consultMode={_capitalize(appointmentType)}
-                onClose={() => setIsConfirmedPopoverOpen(false)}
+                onClose={() => handlePaymentModalClose()}
                 ctaText={statusActions[paymentStatus].ctaText}
                 orderStatusCallback={statusActions[paymentStatus].callbackFunction}
+                fetchConsultInvoice={setTriggerInvoice}
               />
             </>
           )}
