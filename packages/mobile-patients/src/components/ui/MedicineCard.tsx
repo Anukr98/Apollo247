@@ -265,11 +265,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                 }}
                 onPress={(selectedQuantity) => onChangeUnit(selectedQuantity.value as number)}
               >
-                <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-                  <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
+                <View style={[styles.unitDropdownContainer, { marginRight: 0 }]}>
+                  <View style={[{ flex: 1.4, alignItems: 'flex-start' }]}>
                     <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
                   </View>
-                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                  <View style={[{ flex: 0.6, alignItems: 'flex-end' }]}>
                     <DropdownGreen />
                   </View>
                 </View>
@@ -283,7 +283,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             styles.flexStyle,
             {
               alignItems: 'flex-end',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               flexDirection: 'row',
               marginLeft: 6,
             },
@@ -291,16 +291,37 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         >
           {specialPrice ? (
             <>
-              <Text style={[styles.unitAndRupeeOfferText, { flex: 1, marginRight: 4 }]}>
-                <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-                <Text>{'\n'}(MRP)</Text>
-              </Text>
+              <View
+                style={[
+                  {
+                    flex: 0,
+                    marginRight: 4,
+                    alignSelf: 'flex-start',
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
+                    textDecorationLine: 'line-through',
+                  }}
+                >{`Rs. ${price}`}</Text>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 10, '#02475b', 0.7, undefined, 0.25),
+                    textAlign: 'center',
+                  }}
+                >
+                  (MRP)
+                </Text>
+              </View>
             </>
           ) : (
             <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
-          <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>{`Rs. ${specialPrice ||
-            price}`}</Text>
+          <Text
+            style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'flex-start' }]}
+          >{`Rs. ${specialPrice || price}`}</Text>
         </View>
       </View>
     );
