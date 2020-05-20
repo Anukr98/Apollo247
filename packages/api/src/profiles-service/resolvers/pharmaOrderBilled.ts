@@ -32,7 +32,7 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
   input BillingDetails {
     invoiceTime: String
     invoiceNo: String
-    invoiceValue: String
+    invoiceValue: Float
   }
 
   type SaveOrderShipmentInvoiceResult {

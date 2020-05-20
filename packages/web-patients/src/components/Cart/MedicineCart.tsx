@@ -568,6 +568,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult,
     setValidateCouponResult,
   ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
+  const [validityStatus, setValidityStatus] = useState<boolean>(false);
 
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -909,7 +910,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1454,6 +1455,8 @@ export const MedicineCart: React.FC = (props) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
           cartValue={cartTotal}
+          validityStatus={validityStatus}
+          setValidityStatus={setValidityStatus}
         />
       </AphDialog>
 

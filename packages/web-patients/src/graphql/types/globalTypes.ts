@@ -292,6 +292,7 @@ export enum PAYMENT_METHODS {
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+  TestReports = "TestReports",
 }
 
 export enum PharmaDiscountApplicableOn {
@@ -613,6 +614,11 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
+}
+
+export interface MedicineOrderCancelOMSInput {
+  orderNo?: number | null;
+  cancelReasonCode?: string | null;
 }
 
 export interface MedicinePaymentInput {

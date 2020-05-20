@@ -10,6 +10,7 @@ import { PharmaPaymentStatus_pharmaPaymentStatus as PharmaPaymentDetails } from 
 import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { getPaymentMethodFullName } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,21 +51,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface PaymentMethods {
-  [name: string]: string;
-  }
-
-const paymentMethodMap: PaymentMethods = {
-  'DEBIT_CARD': 'Debit Card',
-  'CREDIT_CARD': 'Credit Card',
-  'NET_BANKING': 'Net Banking',
-  'PAYTM_WALLET': 'Paytm Wallet',
-  'CREDIT_CARD_EMI': 'Credit Card EMI',
-  'UPI': 'UPI',
-  'PAYTM_POSTPAID': 'Paytm Postpaid',
-  'COD': 'COD'
-}
-
 interface PaymentStatusProps {
   history: History;
   addToCartRef:any;
@@ -82,12 +68,10 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
 
-  const paymentMode = paymentStatusData && paymentStatusData.paymentMode ? paymentStatusData.paymentMode: '';
+  
   const getPaymentStatus = () => {
     if (!paymentStatusData)
       return '';
-    // if (paymentMode == 'COD')
-    //   return params.orderStatus
     else {
       switch (paymentStatusData.paymentStatus) {
         case 'PAYMENT_FAILED':
@@ -189,7 +173,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                   orderId={Number(params.orderAutoId)}
                   amountPaid={paymentStatusData.amountPaid}
                   // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
-                  paymentType={paymentMethodMap[paymentStatusData.paymentMode]}
+                  paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode)}
                   paymentRefId={paymentStatusData.paymentRefId}
                   paymentDateTime={moment(paymentStatusData.paymentDateTime).utc().format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
                     .toString()}

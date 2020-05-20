@@ -102,7 +102,6 @@ export const Help: React.FC = (props) => {
               <Popover
                 open={isHelpSuccessPopoverOpen}
                 anchorEl={mascotRef.current}
-                onClose={() => setIsHelpSuccessPopoverOpen(false)}
                 anchorOrigin={{
                   vertical: 'bottom',
                   horizontal: 'right',
