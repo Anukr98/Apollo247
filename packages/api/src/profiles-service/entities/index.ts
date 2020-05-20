@@ -117,8 +117,9 @@ export enum UPLOAD_FILE_TYPES {
 }
 
 export enum PRISM_DOCUMENT_CATEGORY {
-  HealthChecks = 'HealthChecks',
+  HealthChecks = 'HealthChecks', //not using now
   OpSummary = 'OpSummary',
+  TestReports = 'TestReports',
 }
 
 export enum DIAGNOSTICS_TYPE {

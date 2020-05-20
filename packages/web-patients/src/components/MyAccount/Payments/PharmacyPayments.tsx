@@ -48,7 +48,7 @@ export const PharmacyPayments: React.FC = (props) => {
   return (
     <div className={classes.root}>
       {data.pharmacyOrders.pharmaOrders.map((orderDetails) => {
-        return <PaymentCardPharmacy cardDetails={orderDetails} />;
+        return <PaymentCardPharmacy cardDetails={orderDetails} key={orderDetails.orderAutoId} />;
       })}
     </div>
   );

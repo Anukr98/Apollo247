@@ -14,6 +14,7 @@ export interface PharmacyOrders_pharmacyOrders_pharmaOrders_medicineOrderPayment
   paymentType: string | null;
   amountPaid: number | null;
   paymentDateTime: any | null;
+  paymentMode: string | null;
 }
 
 export interface PharmacyOrders_pharmacyOrders_pharmaOrders {

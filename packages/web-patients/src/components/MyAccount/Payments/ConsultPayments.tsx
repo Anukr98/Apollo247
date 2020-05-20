@@ -48,7 +48,7 @@ export const ConsultPayments: React.FC = (props) => {
   return data && data.consultOrders && data.consultOrders.appointments ? (
     <div className={classes.root}>
       {data.consultOrders.appointments.map((appointmentDetails) => (
-        <PaymentCard cardDetails={appointmentDetails} />
+        <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
       ))}
     </div>
   ) : (
