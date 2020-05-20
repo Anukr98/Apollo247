@@ -165,6 +165,8 @@ interface ApplyCouponProps {
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
+  validityStatus?: boolean;
+  setValidityStatus?: (validityStatus: boolean) => void;
 }
 
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
@@ -214,6 +216,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    localStorage.getItem('pharmaCoupon') && props.setValidityStatus(true);
+  }, []);
+
+  useEffect(() => {
     if (availableCoupons.length === 0) {
       setIsLoading(true);
       getCouponMutation()
@@ -241,6 +247,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         .then((res) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
+            props.setValidityStatus(couponValidateResult.validityStatus);
             if (couponValidateResult.validityStatus) {
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
@@ -258,7 +265,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     }
   };
   const disableCoupon =
-    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
+    !selectCouponCode ||
+    selectCouponCode.length < 5 ||
+    selectCouponCode.length > 10 ||
+    errorMessage.length > 0;
 
   return (
     <div className={classes.shadowHide}>
@@ -275,6 +285,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       }}
                       value={selectCouponCode}
                       onChange={(e) => {
+                        setErrorMessage('');
+                        props.setValidityStatus(false);
                         const value = e.target.value.replace(/[^a-z0-9]/gi, '');
                         setSelectCouponCode(value);
                       }}
@@ -282,12 +294,19 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {selectCouponCode.length > 0 ? (
+                      {errorMessage.length === 0 && props.validityStatus ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
+                        <AphButton
+                          classes={{
+                            disabled: classes.buttonDisabled,
+                          }}
+                          className={classes.searchBtn}
+                          disabled={disableCoupon}
+                          onClick={() => verifyCoupon()}
+                        >
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
                       )}
@@ -319,6 +338,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                               }
                               onChange={() => {
                                 setErrorMessage('');
+                                props.setValidityStatus(false);
                                 setSelectCouponCode(couponDetails.code);
                               }}
                             />

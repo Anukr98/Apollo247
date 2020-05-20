@@ -166,6 +166,8 @@ interface ApplyCouponProps {
   doctorId: string;
   consultType: string;
   appointmentDateTime: string;
+  validityStatus: boolean;
+  setValidityStatus: (validityStatus: boolean) => void;
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
@@ -223,6 +225,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         .then((res) => {
           if (res && res.data && res.data.validateConsultCoupon) {
             const couponValidateResult = res.data.validateConsultCoupon;
+            props.setValidityStatus(couponValidateResult.validityStatus);
             if (couponValidateResult.validityStatus) {
               props.setCouponCode(selectCouponCode);
               props.close(false);
@@ -240,7 +243,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
     }
   };
   const disableCoupon =
-    !selectCouponCode || selectCouponCode.length < 5 || selectCouponCode.length > 10;
+    !selectCouponCode ||
+    selectCouponCode.length < 3 ||
+    selectCouponCode.length > 20 ||
+    errorMessage.length > 0;
 
   return (
     <div className={classes.shadowHide}>
@@ -253,10 +259,12 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   <div className={classes.pinSearch}>
                     <AphTextField
                       inputProps={{
-                        maxLength: 10,
+                        maxLength: 20,
                       }}
                       value={selectCouponCode}
                       onChange={(e) => {
+                        setErrorMessage('');
+                        props.setValidityStatus(false);
                         const value = e.target.value.replace(/[^a-z0-9]/gi, '');
                         setSelectCouponCode(value);
                       }}
@@ -264,12 +272,19 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {selectCouponCode.length > 0 ? (
+                      {errorMessage.length === 0 && props.validityStatus ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
+                        <AphButton
+                          classes={{
+                            disabled: classes.buttonDisabled,
+                          }}
+                          className={classes.searchBtn}
+                          disabled={disableCoupon}
+                          onClick={() => verifyCoupon()}
+                        >
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
                       )}
@@ -301,6 +316,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }
                               onChange={() => {
                                 setErrorMessage('');
+                                props.setValidityStatus(false);
                                 setSelectCouponCode(couponDetails.code);
                               }}
                               // disabled={props.cartValue < 200}

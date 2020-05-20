@@ -377,8 +377,8 @@ export const PayMedicine: React.FC = (props) => {
   ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
-
   const [consult, setConsult] = useState<boolean>(false);
+  const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const {
     cartTotal,
     deliveryAddressId,
@@ -459,6 +459,7 @@ export const PayMedicine: React.FC = (props) => {
       setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
       if (!consultCouponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
         setConsultCouponCode(consultCouponCodeInitial || '');
+        setValidityStatus(true);
       }
     }
   });
@@ -946,6 +947,8 @@ export const PayMedicine: React.FC = (props) => {
                 // setRevisedAmount(parseFloat(validateConsultCouponResult.revisedAmount));
               }}
               cartValue={onlineConsultationFees}
+              validityStatus={validityStatus}
+              setValidityStatus={setValidityStatus}
             />
           </AphDialog>
         </div>
