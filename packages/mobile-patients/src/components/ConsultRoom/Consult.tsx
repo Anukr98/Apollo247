@@ -690,7 +690,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             },
                           ]}
                         >
-                          CANCEL/RESCHEDULE
+                          RESCHEDULE
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -700,11 +700,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           postConsultCardEvents('Chat with Doctor', item);
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
                           if (item.doctorInfo && selectedTab === tabs[0].title) {
-                            props.navigation.navigate(AppRoutes.ChatRoom, {
-                              data: item,
-                              callType: '',
-                              prescription: '',
-                            });
+                            item.appointmentType === 'ONLINE'
+                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                  data: item,
+                                  from: 'cancel',
+                                })
+                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                  data: item,
+                                  from: 'cancel',
+                                });
                           }
                         }}
                       >
@@ -716,7 +720,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             },
                           ]}
                         >
-                          CHAT WITH DOCTOR
+                          CANCEL
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -762,6 +766,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                   ) : item.status == STATUS.PENDING ||
                     dateIsAfterconsult ||
+                    item.status == STATUS.IN_PROGRESS ||
                     item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
                     item.status == STATUS.NO_SHOW ||
                     item.status == STATUS.CALL_ABANDON ? (

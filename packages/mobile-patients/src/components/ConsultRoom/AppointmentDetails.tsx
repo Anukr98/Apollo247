@@ -184,6 +184,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     if (movedFrom === 'notification') {
       NextAvailableSlotAPI();
     }
+
+    if (movedFrom === 'cancel') {
+      setShowCancelPopup(true);
+    }
   }, [currentPatient]);
 
   const client = useApolloClient();
@@ -494,9 +498,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = isAwaitingReschedule
-      ? true
-      : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
+    const showCancel =
+      dateIsAfter || isAwaitingReschedule ? true : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
     return (
       <View
         style={{
@@ -622,7 +625,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               titleTextStyle={{
                 color: '#fc9916',
                 opacity:
-                  isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                  isAwaitingReschedule ||
+                  dateIsAfter ||
+                  data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
                     ? 1
                     : 0.5,
               }}
@@ -639,7 +644,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    isAwaitingReschedule || data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    isAwaitingReschedule ||
+                    dateIsAfter ||
+                    data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
                       ? NextAvailableSlotAPI()
                       : null;
                   } catch (error) {
@@ -766,7 +773,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+              'Since you could not complete the appointment. we’ll issue you a full refund!'
             }
           >
             <View
