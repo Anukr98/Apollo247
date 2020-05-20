@@ -292,6 +292,7 @@ export enum PAYMENT_METHODS {
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+  TestReports = "TestReports",
 }
 
 export enum PharmaDiscountApplicableOn {
