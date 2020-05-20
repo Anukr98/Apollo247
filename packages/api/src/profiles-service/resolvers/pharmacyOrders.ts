@@ -74,7 +74,7 @@ const pharmacyOrders: Resolver<
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-  console.log('primaryPatientIds==', primaryPatientIds);
+
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(primaryPatientIds);
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
   if (medicineOrders && medicineOrders.length > 0) {
