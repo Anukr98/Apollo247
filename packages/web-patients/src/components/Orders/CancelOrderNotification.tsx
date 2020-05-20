@@ -3,7 +3,6 @@ import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { CancelOrder } from 'components/Orders/CancelOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
