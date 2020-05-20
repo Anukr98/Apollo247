@@ -349,13 +349,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         /> */}
         <ScrollView bounces={false}>
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-          <NeedHelpAssistant
+          {/* <NeedHelpAssistant
             containerStyle={{ marginTop: 20, marginBottom: 30 }}
             navigation={props.navigation}
             onNeedHelpPress={() => {
               postWEGNeedHelpEvent(currentPatient, 'Tests');
             }}
-          />
+          /> */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner style={{ zIndex: 200 }} />}

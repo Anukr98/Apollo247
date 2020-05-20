@@ -1290,7 +1290,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 doctorsList.length === 1 &&
                 otherDoctors &&
                 renderOtherSUggestedDoctors()}
-              {!showSpinner && renderHelpView()}
+              {/* {!showSpinner && renderHelpView()} */}
             </ScrollView>
           )
         ) : null}
