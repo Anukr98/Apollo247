@@ -1,7 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, StyleProp, ViewStyle, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { theme } from '../../theme/theme';
-import { CheckBoxFilled, CheckBox } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CheckBoxFilled,
+  CheckBox,
+  WhatsAppIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   headerView: {
@@ -17,8 +29,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(13),
     letterSpacing: 0,
     paddingLeft: 0,
-    paddingRight: 6,
-    paddingTop: -2,
+    paddingRight: 5,
+    marginTop: Platform.OS === 'ios' ? -1 : -3,
   },
 });
 
@@ -46,8 +58,8 @@ export const WhatsAppStatus: React.FC<WhatsAppStatusProps> = (props) => {
         )}
       </TouchableOpacity>
       <Text style={styles.titleStyles}>Receive status updates on</Text>
-      <CheckBoxFilled
-        style={{ width: 10, height: 10, marginTop: 5, marginRight: 5 }}
+      <WhatsAppIcon
+        style={{ width: 10, height: 10, marginTop: Platform.OS === 'ios' ? 3 : 3, marginRight: 5 }}
         resizeMode={'contain'}
       />
       <Text style={styles.titleStyles}>Whatsapp</Text>

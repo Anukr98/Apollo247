@@ -1540,7 +1540,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {/* {renderMedicineSuggestions()} */}
           </View>
           <WhatsAppStatus
-            // style={{ marginTop: 6 }}
+            style={{ marginTop: 6 }}
             onPress={() => {
               whatsAppUpdate
                 ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
