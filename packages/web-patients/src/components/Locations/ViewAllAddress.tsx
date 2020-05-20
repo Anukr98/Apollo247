@@ -10,7 +10,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList as Address } fr
 import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
-import { PharmaStateCodeMapping } from 'helpers/commonHelpers';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,7 +228,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                       otherAddressType,
                       latitude: lat,
                       longitude: lng,
-                      stateCode: PharmaStateCodeMapping[state] || '',
+                      stateCode: pharmaStateCodeMapping[state] || '',
                     },
                   },
                 }).then(() => {

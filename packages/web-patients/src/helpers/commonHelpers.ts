@@ -66,7 +66,7 @@ const getPaymentMethodFullName = (paymentMethodName: string) => {
   return paymentMethodName;
 };
 
-const PharmaStateCodeMapping: PharmaStateCodeMappingType = {
+const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
   'Andaman and Nicobar Islands': 'AN',
   'Andhra Pradesh': 'AP',
   'Arunachal Pradesh': 'AR',
@@ -110,5 +110,5 @@ export {
   locationRoutesBlackList,
   getDeviceType,
   getPaymentMethodFullName,
-  PharmaStateCodeMapping,
+  pharmaStateCodeMapping,
 };

@@ -15,7 +15,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking } from '../../gtmTracking';
-import { PharmaStateCodeMapping } from 'helpers/commonHelpers';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -310,7 +310,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               setPincode(pincode || '');
               setAddress2(location);
 
-              const stateShortCode = PharmaStateCodeMapping[state] || '';
+              const stateShortCode = pharmaStateCodeMapping[state] || '';
               if (stateShortCode) {
                 setStateCode(stateShortCode);
               }
