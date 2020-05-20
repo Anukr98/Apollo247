@@ -3,9 +3,10 @@ import { DEVICETYPE } from 'graphql/types/globalTypes';
 declare global {
   interface Window {
     opera: any;
-    vendor:any;
+    vendor: any;
   }
 }
+
 const locationRoutesBlackList: string[] = [
   '/covid19',
   '/track-symptoms',
@@ -19,6 +20,7 @@ const locationRoutesBlackList: string[] = [
   '/appointments',
   '/faq',
   '/needHelp',
+  '/my-payments',
 ];
 
 const sortByProperty = (arr: any[], property: string) =>
@@ -26,13 +28,24 @@ const sortByProperty = (arr: any[], property: string) =>
 
 const getDeviceType = (): DEVICETYPE => {
   var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-  if (!navigator || !navigator.userAgent) return
+  if (!navigator || !navigator.userAgent) return;
   if (screen.width < 768) {
     //mobile
-    return /Android/i.test(userAgent) ? DEVICETYPE.ANDROID : (/iPhone/i.test(userAgent) ? DEVICETYPE.IOS : null);
+    return /Android/i.test(userAgent)
+      ? DEVICETYPE.ANDROID
+      : /iPhone/i.test(userAgent)
+      ? DEVICETYPE.IOS
+      : null;
   } else {
-    return DEVICETYPE.DESKTOP
+    return DEVICETYPE.DESKTOP;
   }
-}
+};
 
-export { sortByProperty, locationRoutesBlackList, getDeviceType };
+const getPaymentMethodFullName = (paymentMethodName: string) => {
+  if (paymentMethodName === 'CREDIT_CARD') return 'Credit Card';
+  if (paymentMethodName === 'DEBIT_CARD') return 'Debit Card';
+  if (paymentMethodName === 'NET_BANKING') return 'Net Banking';
+  return paymentMethodName;
+};
+
+export { sortByProperty, locationRoutesBlackList, getDeviceType, getPaymentMethodFullName };

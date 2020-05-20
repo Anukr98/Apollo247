@@ -123,6 +123,7 @@ export const GET_PHARMACY_PAYMENTS = gql`
           paymentType
           amountPaid
           paymentDateTime
+          paymentMode
         }
       }
     }

@@ -4,9 +4,9 @@ import { makeStyles } from '@material-ui/styles';
 import { PharmacyOrders_pharmacyOrders_pharmaOrders as CardDetails } from 'graphql/types/PharmacyOrders';
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
-import { getAppStoreLink } from 'helpers/dateHelpers';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+import { getPaymentMethodFullName } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -181,10 +181,9 @@ interface PaymentCardProps {
 export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
   const { cardDetails } = props;
-  // console.log(cardDetails);
-  // return <></>;
 
   let paymentStatus,
+    paymentMode,
     bankTxnId = '';
   let amountPaid = 0;
 
@@ -201,11 +200,18 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
 
   if (typeof paymentInfo[0] === 'undefined') {
     paymentStatus = bankTxnId = 'Invalid';
+    paymentMode = null;
   } else {
     paymentStatus = paymentInfo[0].paymentStatus;
     bankTxnId = paymentInfo[0].paymentRefId;
     amountPaid = paymentInfo[0].amountPaid;
+    paymentMode = paymentInfo[0].paymentMode
+      ? getPaymentMethodFullName(paymentInfo[0].paymentMode)
+      : '';
   }
+
+  console.log(paymentInfo);
+
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
       ? clientRoutes.medicinesCart()
@@ -254,7 +260,9 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
         <div className={classes.doctorName}>Order No. - {cardDetails.orderAutoId}</div>
         <div className={classes.consultDate}>
           <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mma')}</span>
-          <span className={classes.consultType}> (Debit card)</span>
+          {paymentMode && paymentMode.length > 0 && (
+            <span className={classes.consultType}> ({paymentMode})</span>
+          )}
         </div>
         <div className={classes.bottomActions}>
           <AphButton
