@@ -1203,6 +1203,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return (
       <ProfileList
         showList={showList}
+        menuHidden={() => setShowList(false)}
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}

@@ -55,6 +55,7 @@ export interface MaterialMenuProps {
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
   bottomPadding?: StyleProp<ViewStyle> | undefined;
   showMenu?: boolean;
+  menuHidden?: () => void;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
@@ -84,6 +85,9 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
         </TouchableOpacity>
       }
       style={[styles.menuContainer, props.menuContainerStyle]}
+      onHidden={() => {
+        props.menuHidden && props.menuHidden();
+      }}
     >
       <ScrollView bounces={false} style={[{ paddingVertical: 8 }, props.scrollViewContainerStyle]}>
         {optionsObject.map((item, index) => (
