@@ -804,13 +804,13 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                         backgroundColor: 'transparent',
                       }}
                     >
-                      <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 14) }}>
+                      <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
                         {search_heading_text[0]}
-                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 14) }}>
+                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
                           {"'" + search_heading_text[1] + "'"}
                         </Text>
                         {search_heading_text[2] && search_heading_text[2]}
-                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 14) }}>
+                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
                           {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
                         </Text>
                         {search_heading_text[4]}
