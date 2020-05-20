@@ -667,6 +667,11 @@ export interface MedicineOrderCancelInput {
   remarksCode?: string | null;
 }
 
+export interface MedicineOrderCancelOMSInput {
+  orderNo?: number | null;
+  cancelReasonCode?: string | null;
+}
+
 export interface MedicinePaymentMqInput {
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
@@ -722,6 +727,7 @@ export interface PatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -850,6 +856,7 @@ export interface UpdatePatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface UpdatePatientInput {
