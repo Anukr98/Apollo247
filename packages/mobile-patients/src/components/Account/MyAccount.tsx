@@ -1,17 +1,17 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Afternoon,
+  CurrencyIcon,
   EditIconNew,
   Invoice,
   Location,
   ManageProfileIcon,
-  CurrencyIcon,
-  NotificaitonAccounts,
+  NeedHelpIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_DEVICE_TOKEN,
   GET_MEDICINE_ORDERS_OMS__LIST,
@@ -22,14 +22,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import {
-  g,
-  getNetStatus,
-  statusBarHeight,
-  postWEGNeedHelpEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -38,30 +35,27 @@ import {
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
+import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { TabHeader } from '../ui/TabHeader';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppConfig } from '../../strings/AppConfig';
-import WebEngage from 'react-native-webengage';
-import AsyncStorage from '@react-native-community/async-storage';
-import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSListVariables,
 } from '../../graphql/types/getMedicineOrdersOMSList';
+import { AppConfig } from '../../strings/AppConfig';
+import { TabHeader } from '../ui/TabHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -484,6 +478,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             });
           }}
         />
+        <ListCard
+          title={'Need Help'}
+          leftIcon={<NeedHelpIcon />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MobileHelp);
+          }}
+        />
         {/* <ListCard
           // container={{ marginBottom: 32 }}
           container={{ marginTop: 4 }}
@@ -518,12 +519,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          <NeedHelpAssistant
+          {/* <NeedHelpAssistant
             navigation={props.navigation}
             onNeedHelpPress={() => {
               postWEGNeedHelpEvent(currentPatient, 'My Account');
             }}
-          />
+          /> */}
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
               style={{

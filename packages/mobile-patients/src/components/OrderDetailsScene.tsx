@@ -791,13 +791,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             />
           </View>
         ) : null}
-        <NeedHelpAssistant
+        {/* <NeedHelpAssistant
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
-        />
+        /> */}
       </View>
     );
   };
@@ -969,13 +969,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} />
-        <NeedHelpAssistant
+        <View style={{ marginTop: 30 }} />
+        {/* <NeedHelpAssistant
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
           containerStyle={{ marginTop: 30, marginBottom: 30 }}
           navigation={props.navigation}
-        />
+        /> */}
       </View>
     );
   };
