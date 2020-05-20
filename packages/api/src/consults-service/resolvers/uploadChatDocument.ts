@@ -19,6 +19,7 @@ export const uploadChatDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
     HealthChecks
     OpSummary
+    TestReports
   }
 
   enum UPLOAD_FILE_TYPES {
