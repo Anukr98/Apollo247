@@ -189,6 +189,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails');
+  const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
+    (item) => item!.isPrescriptionNeeded
+  );
+
   console.log({ order });
 
   const orderDetails = ((!loading && order) ||
@@ -721,7 +725,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     : ''
                 }
                 showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
-                getOrderDescription={getOrderDescription(orderDetails.currentStatus!)}
+                getOrderDescription={getOrderDescription(
+                  orderDetails.currentStatus!,
+                  prescriptionRequired
+                )}
                 status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
@@ -1150,7 +1157,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 description: orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
                 )
-                  ? 'Sorry, we cannot cancel once the order is billed.'
+                  ? 'Once your order is billed, you cannot cancel your order.'
                   : 'Sorry, we cannot cancel the order now.',
               });
             } else {

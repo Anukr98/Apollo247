@@ -1429,6 +1429,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           quantity
           isMedicine
           mou
+          isPrescriptionNeeded
         }
         medicineOrderPayments {
           id
