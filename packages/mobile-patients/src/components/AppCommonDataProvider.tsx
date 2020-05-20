@@ -12,6 +12,7 @@ export interface LocationData {
   area: string;
   city: string;
   state: string;
+  stateCode?: string; // two letter code
   country: string;
   pincode: string;
   lastUpdated?: number; //timestamp

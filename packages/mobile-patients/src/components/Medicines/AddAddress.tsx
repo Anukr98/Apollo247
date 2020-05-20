@@ -128,6 +128,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [state, setstate] = useState<string>('');
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
+  const [stateCode, setStateCode] = useState<string>('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
@@ -172,6 +173,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setOptionalAddress(addressData.otherAddressType!);
       setLatitude(addressData.latitude!);
       setLongitude(addressData.longitude!);
+      setStateCode(addressData.stateCode || '');
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
         doRequestAndAccessLocationModified()
@@ -180,6 +182,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setstate(response.state || '');
               setcity(`${response.city}, ${response.state}` || '');
               setpincode(response.pincode || '');
+              setLatitude(response.latitude || 0);
+              setLongitude(response.longitude || 0);
+              setStateCode(response.stateCode || '');
             }
           })
           .catch((e) => {
@@ -191,6 +196,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setpincode(locationDetails.pincode || '');
         setLatitude(locationDetails.latitude || 0);
         setLongitude(locationDetails.longitude || 0);
+        setStateCode(locationDetails.stateCode || '');
       }
     }
   }, []);
@@ -221,6 +227,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       if (!isChanged) {
+        const finalStateCode =
+          AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+            state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+          ] || stateCode;
         const cityState = city.split(',').map((item) => (item || '').trim());
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
@@ -235,6 +245,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           otherAddressType: optionalAddress,
           latitude: latitude,
           longitude: longitude,
+          stateCode: finalStateCode,
         };
         console.log(updateaddressInput, 'updateaddressInput');
         setshowSpinner(true);
@@ -263,6 +274,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         props.navigation.goBack();
       }
     } else {
+      const finalStateCode =
+        AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+          state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+        ] || stateCode;
       const cityState = city.split(',').map((item) => (item || '').trim());
       const addressInput: PatientAddressInput = {
         patientId: userId,
@@ -277,6 +292,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         otherAddressType: optionalAddress,
         latitude: latitude,
         longitude: longitude,
+        stateCode: finalStateCode,
       };
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
@@ -378,6 +394,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     const resetValues = (e: Error) => {
       setcity('');
       setstate('');
+      setStateCode('');
       setLatitude(0);
       setLongitude(0);
       CommonBugFender('AddAddress_updateCityStateByPincode', e);
@@ -390,8 +407,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           const response = getFormattedLocation(addrComponents, latLang);
           const city = response.city;
           const state = response.state;
+          const finalStateCode =
+            AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+              state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+            ] || stateCode;
+
           setcity((city && `${city}${state ? `, ${state}` : ''}`) || '');
           setstate(state || '');
+          setStateCode(finalStateCode);
           setLatitude(response.latitude!);
           setLongitude(response.longitude!);
         } catch (e) {
