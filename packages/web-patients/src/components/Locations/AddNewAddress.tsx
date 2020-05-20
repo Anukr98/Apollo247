@@ -205,10 +205,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const addToCartRef = useRef(null);
 
   const disableSubmit =
-    address1.length === 0 ||
-    address2.length === 0 ||
-    addressType.length <= 0 ||
-    pincode.length < 6 ||
+    (address1 && address1.length === 0) ||
+    (address2 && address2.length === 0) ||
+    (addressType && addressType.length <= 0) ||
+    (pincode && pincode.length < 6) ||
     !isPincodevalid ||
     addressType === PATIENT_ADDRESS_TYPE.OTHER
       ? !otherTextbox
