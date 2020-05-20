@@ -101,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',
+      cursor: 'pointer',
       top: 0,
       right: '-50px',
       [theme.breakpoints.down('sm')]: {
