@@ -35,8 +35,8 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     let refId = '';
     let price = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount } = item;
-      price = actualAmount;
+      const { appointmentPayments, actualAmount, discountedAmount } = item;
+      price = actualAmount - discountedAmount;
       if (!appointmentPayments.length) {
         status = 'PENDING';
       } else {
