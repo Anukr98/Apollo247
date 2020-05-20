@@ -311,6 +311,7 @@ export const convertCaseSheetToRxPdfData = async (
     displayId: '',
     consultDate: '',
     consultType: '',
+    consultTime: '',
   };
 
   if (caseSheet.appointment) {
@@ -320,6 +321,7 @@ export const convertCaseSheetToRxPdfData = async (
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
       consultDate: format(consultDate, 'dd/MM/yyyy'),
+      consultTime: format(consultDate, 'hh:mm a'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
@@ -465,12 +467,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#7f7f7f')
-      .text(labelText2, margin + 350, y, { lineBreak: false })
+      .text(labelText2, margin + 340, y, { lineBreak: false })
 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#333333')
-      .text(`${labelValue2}`, 475, y)
+      .text(`${labelValue2}`, 450, y)
 
       .moveDown(0.5);
   };
@@ -488,7 +490,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
     const specialty = doctorInfo.specialty;
-    const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+    const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
       .fontSize(11)
@@ -791,7 +793,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         'Patient',
         `${textArray.join('   |   ')}`,
         'Consult Date',
-        `${appointmentData.consultDate}`,
+        `${appointmentData.consultDate + ' at ' + appointmentData.consultTime}`,
         doc.y
       );
     }

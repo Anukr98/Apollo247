@@ -1588,7 +1588,12 @@ export interface RxPdfData {
     phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
-  appointmentDetails: { displayId: string; consultDate: string; consultType: string };
+  appointmentDetails: {
+    displayId: string;
+    consultDate: string;
+    consultTime: string;
+    consultType: string;
+  };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
