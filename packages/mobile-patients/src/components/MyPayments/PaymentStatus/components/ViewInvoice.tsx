@@ -123,10 +123,8 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
 
 const styles = StyleSheet.create({
   mainContainer: {
-    // display: 'flex',
     alignItems: 'center',
     paddingBottom: 15,
-    flex: 0.18,
     justifyContent: 'flex-start',
   },
 });
