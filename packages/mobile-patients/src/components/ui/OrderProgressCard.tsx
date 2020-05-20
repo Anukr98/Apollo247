@@ -50,8 +50,8 @@ const styles = StyleSheet.create({
     width: 28,
   },
   statusIconSmallStyle: {
-    height: 8,
-    width: 8,
+    height: 15,
+    width: 15,
   },
   graphicalStatusViewStyle: {
     justifyContent: 'center',
