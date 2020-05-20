@@ -814,3 +814,7 @@ export const CheckBox: React.FC<IconProps> = (props) => (
 export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
 );
+
+export const WhatsAppIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/whatsapp.png')} />
+);
