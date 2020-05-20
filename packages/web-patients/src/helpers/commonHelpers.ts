@@ -7,6 +7,22 @@ declare global {
   }
 }
 
+interface paymentMethodInterface {
+  [key: string]: string;
+}
+
+const paymentMethodStrings: paymentMethodInterface = {
+  DEBIT_CARD: 'Debit Card',
+  CREDIT_CARD: 'Credit Card',
+  NET_BANKING: 'Net Banking',
+  PAYTM_WALLET: 'Paytm Wallet',
+  CREDIT_CARD_EMI: 'Credit Card EMI',
+  UPI: 'UPI',
+  PAYTM_POSTPAID: 'Paytm Postpaid',
+  COD: 'COD',
+  EMI: 'EMI',
+};
+
 const locationRoutesBlackList: string[] = [
   '/covid19',
   '/track-symptoms',
@@ -42,9 +58,7 @@ const getDeviceType = (): DEVICETYPE => {
 };
 
 const getPaymentMethodFullName = (paymentMethodName: string) => {
-  if (paymentMethodName === 'CREDIT_CARD') return 'Credit Card';
-  if (paymentMethodName === 'DEBIT_CARD') return 'Debit Card';
-  if (paymentMethodName === 'NET_BANKING') return 'Net Banking';
+  if (paymentMethodStrings[paymentMethodName]) return paymentMethodStrings[paymentMethodName];
   return paymentMethodName;
 };
 
