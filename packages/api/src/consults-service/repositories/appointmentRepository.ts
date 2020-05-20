@@ -258,9 +258,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
   async getBookedSlots(doctorIds: string[]) {
     const appointmentDate = new Date();
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     //const inputDate = format(appointmentDate, 'yyyy-MM-dd');
-    const inputStartDate = format(appointmentDate, 'yyyy-MM-dd');
-    const inputEndDate = format(addDays(appointmentDate, +1), 'yyyy-MM-dd');
+    const inputEndDate = format(appointmentDate, 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const fromDate = new Date(inputStartDate + 'T18:30');
     const toDate = new Date(inputEndDate + 'T18:29');
