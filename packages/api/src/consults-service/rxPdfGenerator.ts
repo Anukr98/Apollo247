@@ -533,7 +533,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderFooter = () => {
-    drawHorizontalDivider(doc.page.height - 80);
+    doc
+      .moveTo(margin, doc.page.height - 80)
+      .lineTo(doc.page.width - margin, doc.page.height - 80)
+      .lineWidth(1)
+      .fill('#d9e3e6');
+
     const disclaimerText =
       'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue for upto 90 days(for the specific period / dosage of each medicine as advised).';
 
@@ -541,13 +546,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#666666')
-      .text('Disclaimer:', margin, doc.page.height - 80, { lineBreak: false });
+      .text('Disclaimer:', margin, doc.page.height - 75, { lineBreak: false });
 
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fontSize(9)
       .fillColor('#7f7f7f')
-      .text(disclaimerText, margin + 55, doc.page.height - 80, { align: 'left' });
+      .text(disclaimerText, margin + 55, doc.page.height - 75, { align: 'left' });
     return doc;
   };
 
@@ -938,7 +943,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc
       .fontSize(8)
       .fillColor('#02475b')
-      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
+      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'right' });
   }
 
   doc.end();
