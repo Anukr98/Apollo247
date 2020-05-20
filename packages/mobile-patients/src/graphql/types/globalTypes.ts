@@ -722,6 +722,7 @@ export interface PatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -850,6 +851,7 @@ export interface UpdatePatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface UpdatePatientInput {

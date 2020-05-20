@@ -12,7 +12,11 @@ import {
   getPlaceInfoByPlaceId,
   GooglePlacesType,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getNetStatus,
+  findAddrComponents,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -109,19 +113,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
       });
   };
 
-  const findAddrComponents = (
-    proptoFind: GooglePlacesType,
-    addrComponents: {
-      long_name: string;
-      short_name: string;
-      types: GooglePlacesType[];
-    }[]
-  ) => {
-    return (
-      (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || ''
-    );
-  };
-
   const saveLatlong = (item: { name: string; placeId: string }) => {
     // update address to context here
     getPlaceInfoByPlaceId(item.placeId)
@@ -151,6 +142,11 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
               .join(', '),
             city,
             state: findAddrComponents('administrative_area_level_1', addrComponents),
+            stateCode: findAddrComponents(
+              'administrative_area_level_1',
+              addrComponents,
+              'short_name'
+            ),
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
             lastUpdated: new Date().getTime(),

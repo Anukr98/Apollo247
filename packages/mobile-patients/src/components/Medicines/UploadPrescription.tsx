@@ -36,6 +36,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postFirebaseEvent,
+  findAddrComponents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -202,6 +203,20 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     try {
       const data = await getPlaceInfoByPincode(address.zipcode!);
       const { lat, lng } = data.data.results[0].geometry.location;
+      const state = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components
+      );
+      const stateCode = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components,
+        'short_name'
+      );
+      const finalStateCode =
+        AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+          state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+        ] || stateCode;
+
       await client.mutate<updatePatientAddress, updatePatientAddressVariables>({
         mutation: UPDATE_PATIENT_ADDRESS,
         variables: {
@@ -218,11 +233,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             otherAddressType: address.otherAddressType,
             latitude: lat,
             longitude: lng,
+            stateCode: finalStateCode,
           },
         },
       });
       const newAddrList = [
-        { ...address, latitude: lat, longitude: lng },
+        { ...address, latitude: lat, longitude: lng, stateCode: finalStateCode },
         ...addresses.filter((item) => item.id != address.id),
       ];
       setAddresses!(newAddrList);

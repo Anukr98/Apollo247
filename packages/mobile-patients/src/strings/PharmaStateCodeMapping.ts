@@ -1,0 +1,16 @@
+export const PharmaStateCodeMapping = {
+  Gujarat: 'GJ',
+  'Tamil Nadu': 'TN',
+  Chhattisgarh: 'CG',
+  Telangana: 'TS',
+  Delhi: 'DL',
+  'Andhra Pradesh': 'AP',
+  Maharashtra: 'MH',
+  'West Bengal': 'WB',
+  Goa: 'KA',
+  Odisha: 'OR',
+  'Uttar Pradesh': 'UP',
+  Karnataka: 'KA',
+  Punjab: 'PB',
+  Rajasthan: 'RJ',
+};
