@@ -161,7 +161,7 @@ export const phrConsultCardClickTracking = (data: any) => {
 interface PaymentDetail {
   "paymentMode": string;
   "type": string;
-  "orderAutoId": string,
+  "orderAutoId": number,
   "orderId": string
 }
 export const paymentInstrumentClickTracking = (data:PaymentDetail) => {
@@ -169,13 +169,30 @@ export const paymentInstrumentClickTracking = (data:PaymentDetail) => {
     const { paymentMode, type, orderAutoId, orderId } = data;
     try {
       window.webengage.track('Payment Instrument', {
-        // "Payment_Mode": "NB",
-        // "Type": "Pharmacy",
-        // "order_AutoId": 13174,
-        // "order_Id": "37220b69-dd83-47b4-a1e3-7850aae77cac"
-
         "Payment_Mode": paymentMode,
-        "Type": "Pharmacy",
+        "Type": type,
+        "order_AutoId": orderAutoId,
+        "order_Id": orderId
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+}
+
+interface PaymentStatusData {
+  paymentStatus: string;
+  type: string;
+  orderAutoId: number;
+  orderId: string
+}
+export const paymentStatusTracking = (data: PaymentStatusData) => {
+  if (window && window.webengage) {
+    const { paymentStatus, type, orderAutoId, orderId } = data;
+    try {
+      window.webengage.track('Payment Status', {
+        "Payment_Status": paymentStatus,
+        "Type": type,
         "order_AutoId": orderAutoId,
         "order_Id": orderId
       });
