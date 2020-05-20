@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid, CircularProgress } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, Typography, Link } from '@material-ui/core';
 import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus as statusDetails,
@@ -8,6 +8,9 @@ import {
 import moment from 'moment';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
+import Popover from '@material-ui/core/Popover';
+import Button from "@material-ui/core/Button";
+import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -197,6 +200,125 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    feedbackPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: '0 0 10px'
+      },
+      '& h4': {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#0087ba',
+      }
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      padding: 20,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    deliveryDetails:{
+      background: '#f7f8f5',
+      padding: 20,
+      display: 'flex',
+      alignItems: 'center',
+      margin: '20px 0',
+    },
+    iconContainer:{
+      width:40,
+      height:40,
+      background: '#fff',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems:'center',
+      justifyContent: 'center',
+      margin: '0 20px 0 0',
+    },
+    feedbackList: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '20px 0',
+      listStyle:'none',
+      padding:0,
+      '& li':{
+        fontSize: 12,
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+        textAlign: 'center'
+      },
+    },
+    suggestion:{
+      margin: '20px 0 0',
+      padding: '20px 0 0',
+      borderTop: "1px solid rgba(2, 71, 91, .2)",
+      '& h4':{
+        fontSize: 14,
+        fontWeight: 'bold',
+      },
+      "& button": {
+        display: 'block',
+        background: '#fc9916',
+        color: '#fff',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        padding:10,
+        borderRadius: 10,
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        width:160,
+        margin: '0px auto',
+        fontWeight: 'bold'
+      }
+    },
+    textInput: {
+      margin: '10px 0 30px',
+      width: '100%',
+    },
+    thankyou: {
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: '0 0 10px'
+      },
+      '& h4': {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#0087ba',
+        margin: '0 0 20px',
+      },
+      '& a':{
+        fontSize: 14,
+        textTransform: 'uppercase',
+        fontWeight: 'bold',
+        textAlign:'right'
+      }
+    },
   };
 });
 
@@ -295,7 +417,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   ];
 
   const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
-
+  const mascotRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   return (
     <div className={classes.orderStatusGroup}>
       <div className={classes.orderDetails}>
@@ -356,8 +479,71 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       <div className={classes.bottomNotification}>
         <p>Your order no.#A2472707936 is successfully delivered on 27 April 2020 at 13:57pm.</p>
         <h4>Thank You for choosing Apollo 24|7</h4>
-        <AphButton color="primary">Rate your delivery experience</AphButton>
+        <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>Rate your delivery experience</AphButton>
       </div>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.feedbackPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className="feedbackContent">
+            <Typography component="h3">We Value Your Feedback! :) </Typography>
+            <Typography component="h4">How was your overall experience with the following medicine delivery —</Typography>
+            <div className={classes.deliveryDetails}>
+              <div className={classes.iconContainer}>
+              <img src={require('images/ic_tablets.svg')} />
+              </div>
+              <div>
+                <Typography component="h4">Medicines — #A2472707936 </Typography>
+                <Typography component="p">Delivered On: 24 Oct 2019</Typography>
+              </div>
+            </div>
+            <ul className={classes.feedbackList}>
+              <li>
+                <img src={require('images/ic-poor.png')} />
+                Poor
+              </li>
+              <li>
+                <img src={require('images/ic-okay.png')} />
+                Okay
+              </li>
+              <li>
+                <img src={require('images/ic-good.png')} />
+                Good
+              </li>
+              <li>
+                <img src={require('images/ic-great.png')} />
+                Great
+              </li>
+            </ul>
+            <div className={classes.suggestion}>
+              <Typography component="h4">What can be improved?</Typography>
+              <TextField className={classes.textInput} label="Write your suggestion here.." />
+              <Button variant="contained">Submit Feedback</Button>
+            </div>
+            </div>
+            <div className={classes.thankyou}>
+              <Typography component="h3">We Value Your Feedback! :) </Typography>
+              <Typography component="h4">How was your overall experience with the following medicine delivery —</Typography>
+              <Link href="#">Ok, Got It</Link>
+            </div>
+          </div>
+        </div>
+      </Popover>
+    
     </div>
   );
 };
