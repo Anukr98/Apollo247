@@ -157,3 +157,47 @@ export const phrConsultCardClickTracking = (data: any) => {
     }
   }
 };
+// Payment Instrument Click
+interface PaymentDetail {
+  "paymentMode": string;
+  "type": string;
+  "orderAutoId": number,
+  "orderId": string
+}
+export const paymentInstrumentClickTracking = (data:PaymentDetail) => {
+  if (window && window.webengage) {
+    const { paymentMode, type, orderAutoId, orderId=null } = data;
+    try {
+      window.webengage.track('Payment Instrument', {
+        "Payment_Mode": paymentMode,
+        "Type": type,
+        "order_AutoId": orderAutoId,
+        "order_Id": orderId
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+}
+
+interface PaymentStatusData {
+  paymentStatus: string;
+  type: string;
+  orderAutoId: number;
+  orderId: string
+}
+export const paymentStatusTracking = (data: PaymentStatusData) => {
+  if (window && window.webengage) {
+    const { paymentStatus, type, orderAutoId, orderId = null } = data;
+    try {
+      window.webengage.track('Payment Status', {
+        "Payment_Status": paymentStatus,
+        "Type": type,
+        "order_AutoId": orderAutoId,
+        "order_Id": orderId
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+}

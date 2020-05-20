@@ -23,7 +23,9 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   type PharmaLineItems {
+    applicablePrice: Float!
     discountedPrice: Float!
+    itemId: String!
     mrp: Float!
     productName: String!
     productType: CouponCategoryApplicable!
@@ -32,8 +34,8 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   type DiscountedTotals {
-    applicableDiscount: Float!
     couponDiscount: Float!
+    mrpPriceTotal: Float!
     productDiscount: Float!
   }
 
@@ -46,6 +48,7 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 
   input OrderLineItems {
+    itemId: String!
     mrp: Float!
     productName: String!
     productType: CouponCategoryApplicable!
@@ -66,6 +69,7 @@ export const validatePharmaCouponTypeDefs = gql`
 `;
 
 type OrderLineItems = {
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;
@@ -79,10 +83,12 @@ type PharmaCouponInput = {
   orderLineItems: OrderLineItems[];
 };
 
-type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
+export type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
 
 type PharmaLineItems = {
+  applicablePrice: number;
   discountedPrice: number;
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;
@@ -91,12 +97,12 @@ type PharmaLineItems = {
 };
 
 type DiscountedTotals = {
-  applicableDiscount: number;
   couponDiscount: number;
+  mrpPriceTotal: number;
   productDiscount: number;
 };
 
-type PharmaOutput = {
+export type PharmaOutput = {
   discountedTotals: DiscountedTotals | undefined;
   pharmaLineItemsWithDiscountedPrice: PharmaLineItems[] | undefined;
   successMessage: string | undefined;
@@ -104,7 +110,7 @@ type PharmaOutput = {
   validityStatus: boolean;
 };
 
-const validatePharmaCoupon: Resolver<
+export const validatePharmaCoupon: Resolver<
   null,
   PharmaCouponInputArgs,
   CouponServiceContext,
@@ -233,6 +239,7 @@ const validatePharmaCoupon: Resolver<
     return {
       ...item,
       discountedPrice: 0,
+      applicablePrice: 0,
     };
   });
 
@@ -253,6 +260,9 @@ const validatePharmaCoupon: Resolver<
             ? lineItem.mrp * lineItem.quantity
             : lineItem.specialPrice * lineItem.quantity;
 
+        lineItem.applicablePrice =
+          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
+
         if (
           couponGenericRulesData.minimumCartValue &&
           itemPrice < couponGenericRulesData.minimumCartValue
@@ -270,21 +280,29 @@ const validatePharmaCoupon: Resolver<
           couponGenericRulesData.discountType,
           couponGenericRulesData.discountValue
         );
-        lineItem.discountedPrice = Number((itemPrice - discountedPrice).toFixed(2));
+        lineItem.discountedPrice = Number(discountedPrice.toFixed(2));
+        lineItem.applicablePrice =
+          lineItem.discountedPrice < lineItem.specialPrice * lineItem.quantity
+            ? lineItem.discountedPrice
+            : lineItem.specialPrice * lineItem.quantity;
+      } else {
+        lineItem.applicablePrice =
+          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
+        lineItem.applicablePrice = lineItem.applicablePrice * lineItem.quantity;
       }
     }
-
+    lineItem.applicablePrice = Number((lineItem.applicablePrice / lineItem.quantity).toFixed(2));
     specialPriceTotal = specialPriceTotal + lineItem.specialPrice * lineItem.quantity;
     mrpPriceTotal = mrpPriceTotal + lineItem.mrp * lineItem.quantity;
-    discountedPriceTotal = discountedPriceTotal + lineItem.discountedPrice;
+    discountedPriceTotal =
+      discountedPriceTotal + (lineItem.mrp - lineItem.applicablePrice) * lineItem.quantity;
   });
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
 
   const discountedTotals = {
-    applicableDiscount:
-      productDiscount < discountedPriceTotal ? productDiscount : discountedPriceTotal,
-    couponDiscount: Number(discountedPriceTotal.toFixed(2)),
+    couponDiscount: Number(discountedPriceTotal.toFixed(2)) - productDiscount,
+    mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };
 

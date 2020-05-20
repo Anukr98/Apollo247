@@ -62,6 +62,7 @@ export enum Salutation {
   MR = 'MR',
   MRS = 'MRS',
   DR = 'DR',
+  MS = 'MS',
 }
 
 export enum WeekDay {
@@ -77,6 +78,7 @@ export enum WeekDay {
 export enum DOCTOR_DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
+  DESKTOP = 'DESKTOP',
 }
 
 export enum DOCTOR_ONLINE_STATUS {

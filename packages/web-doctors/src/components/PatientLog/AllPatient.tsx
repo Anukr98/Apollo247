@@ -12,12 +12,25 @@ import { makeStyles } from '@material-ui/styles';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import MessageIcon from '@material-ui/icons/Message';
 import React from 'react';
+import { useAuth } from 'hooks/authHooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  MarkMessageToUnread,
+  MarkMessageToUnreadVariables,
+} from 'graphql/types/MarkMessageToUnread';
+import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { ApolloError } from 'apollo-client';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: '100%',
       backgroundColor: theme.palette.background.paper,
+    },
+    ChatStyle: {
+      cursor: 'pointer',
     },
     card: {
       width: '100%',
@@ -78,7 +91,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 700,
     },
     chatSpan: {
-      '& a': {
+      '& div': {
         width: 102,
         height: 32,
         paddingTop: 6,
@@ -119,6 +132,27 @@ interface PatientObject {
 export const AllPatient: React.FC<AllPatientProps> = (props) => {
   const classes = useStyles({});
   const patientsList = props.patientData;
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const mutationMarkMessageToUnread = useMutation<
+    MarkMessageToUnread,
+    MarkMessageToUnreadVariables
+  >(MARK_MESSAGE_TO_UNREAD);
+
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    mutationMarkMessageToUnread({
+      variables: {
+        eventId: appointmentId,
+      },
+    })
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
+      })
+      .catch((e: ApolloError) => {
+        console.log(e, 'erroe');
+      });
+  };
   const patientsHtml =
     patientsList.length > 0 ? (
       patientsList.map((_patient: any | [], index: number) => {
@@ -195,13 +229,36 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
-                        <Link
-                          to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
+                        <div
+                          className={classes.ChatStyle}
+                          onClick={() => {
+                            if (
+                              patient.appointmentids.length > 0 &&
+                              patient.unreadMessagesCount.length > 0 &&
+                              patient.appointmentids[0] ===
+                                patient.unreadMessagesCount[0].appointmentId &&
+                              patient.unreadMessagesCount[0].count > 0
+                            ) {
+                              callMessageReadAction(
+                                patient.appointmentids[0],
+                                currentPatient.id,
+                                patient.patientid
+                              );
+                            } else {
+                              window.location.href = clientRoutes.ConsultTabs(
+                                patient.appointmentids[0],
+                                patient.patientid,
+                                '1'
+                              );
+                            }
+                          }}
                         >
+                          {/* <Link
+                          to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
+                        > */}
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>
                             <MessageIcon />
                           </IconButton>
-                          {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
                           Chat
                           {patient.appointmentids.length > 0 &&
                           patient.unreadMessagesCount.length > 0 &&
@@ -210,7 +267,8 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           patient.unreadMessagesCount[0].count > 0
                             ? '(' + patient.unreadMessagesCount[0].count + ')'
                             : ''}
-                        </Link>
+                          {/* </Link> */}
+                        </div>
                       </span>
 
                       <div className={classes.section2}>

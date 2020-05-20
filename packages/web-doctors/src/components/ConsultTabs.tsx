@@ -347,7 +347,7 @@ export const ConsultTabs: React.FC = () => {
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
-  const [documentArray, setDocumentArray] = useState();
+  const [documentArray, setDocumentArray] = useState<any>();
   const [diagnosis, setDiagnosis] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
@@ -385,6 +385,11 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+  const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
+  const [referralDescription, setReferralDescription] = useState<string>('');
+  const [medicationHistory, setMedicationHistory] = useState<string>('');
+  const [occupationHistory, setOccupationHistory] = useState<string>('');
+  const [referralError, setReferralError] = useState<boolean>(false);
 
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
@@ -499,7 +504,7 @@ export const ConsultTabs: React.FC = () => {
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
         res.messages.forEach((element: any, index: number) => {
-          let item = element.entry;
+          const item = element.entry;
           if (item.prismId) {
             getPrismUrls(client, patientId, item.prismId).then((data: any) => {
               item.url = (data && data.urls[0]) || item.url;
@@ -631,6 +636,30 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
+
+          // Refferal
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName
+          )
+            setReferralSpecialtyName(
+              _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+            );
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.referralDescription
+          )
+            setReferralDescription(
+              _data.data.getCaseSheet.caseSheetDetails.referralDescription || ''
+            );
+
           // patient medical and family history
           if (
             _data &&
@@ -652,6 +681,9 @@ export const ConsultTabs: React.FC = () => {
             );
             setPastMedicalHistory(
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory || ''
+            );
+            setMedicationHistory(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.medicationHistory || ''
             );
             setPastSurgicalHistory(
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory || ''
@@ -682,6 +714,12 @@ export const ConsultTabs: React.FC = () => {
 
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
+
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
           );
 
           // set Jrd name and Jrd Casesheet submit date.
@@ -733,11 +771,11 @@ export const ConsultTabs: React.FC = () => {
           // -------------------------------------------------------------- //
           navigator.mediaDevices
             .getUserMedia({ audio: true, video: false })
-            .then(function(stream) {
+            .then((stream) => {
               console.log('Got stream', stream);
               setCameraMicPermission(true);
             })
-            .catch(function(err) {
+            .catch((err) => {
               setCameraMicPermission(false);
               console.log('GUM failed with error', err);
             });
@@ -827,6 +865,12 @@ export const ConsultTabs: React.FC = () => {
 
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
+
+          setOccupationHistory(
+            patientLifeStyle && patientLifeStyle!.occupationHistory
+              ? patientLifeStyle!.occupationHistory
+              : ''
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
@@ -962,6 +1006,10 @@ export const ConsultTabs: React.FC = () => {
             );
             setPastMedicalHistory(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+                .medicationHistory || ''
+            );
+            setMedicationHistory(
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
                 .pastMedicalHistory || ''
             );
             setPastSurgicalHistory(
@@ -975,6 +1023,29 @@ export const ConsultTabs: React.FC = () => {
             setWeight(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
+
+            // Refferal
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getJuniorDoctorCaseSheet &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
+            )
+              setReferralSpecialtyName(
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+              );
+
+            if (
+              _data &&
+              _data.data &&
+              _data.data.getJuniorDoctorCaseSheet &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
+            )
+              setReferralDescription(
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription || ''
+              );
 
             // set Jrd name and Jrd Casesheet submit date.
             let jrdFirstName = '',
@@ -1252,6 +1323,10 @@ export const ConsultTabs: React.FC = () => {
         temperature: temperature,
         weight: weight,
         bp: bp,
+        medicationHistory: medicationHistory,
+        occupationHistory: occupationHistory,
+        referralSpecialtyName: referralSpecialtyName,
+        referralDescription: referralDescription,
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -1581,6 +1656,16 @@ export const ConsultTabs: React.FC = () => {
             setGender,
             jrdName,
             jrdSubmitDate,
+            referralSpecialtyName,
+            referralDescription,
+            referralError,
+            setReferralSpecialtyName,
+            setReferralDescription,
+            setReferralError,
+            medicationHistory,
+            setMedicationHistory,
+            occupationHistory,
+            setOccupationHistory,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

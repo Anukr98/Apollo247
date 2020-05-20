@@ -19,6 +19,7 @@ export const paymentTransactionStatusTypeDefs = gql`
     responseMessage: String
     paymentDateTime: DateTime
     displayId: Int
+    paymentMode: String
   }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse
@@ -38,6 +39,7 @@ type AppointmentPaymentDetails = {
   responseMessage: string;
   paymentDateTime: Date | null;
   displayId: number;
+  paymentMode: string;
 };
 
 const paymentTransactionStatus: Resolver<
@@ -49,17 +51,17 @@ const paymentTransactionStatus: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const response = await apptsRepo.findAppointmentPaymentById(args.appointmentId);
-  log(
-    'consultServiceLogger',
-    'payload received',
-    'paymentTransactionStatus()',
-    `The response received: ${JSON.stringify(response)}`,
-    'true'
-  );
 
   if (!response) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+  log(
+    'consultServiceLogger',
+    'consult payment response',
+    'paymentTransactionStatus()',
+    `The response received: ${JSON.stringify(response)}`,
+    'true'
+  );
   const appointmentPaymentsResponse =
     response.appointmentPayments && response.appointmentPayments[0]
       ? response.appointmentPayments[0]
@@ -68,13 +70,14 @@ const paymentTransactionStatus: Resolver<
     displayId: response.displayId,
     paymentStatus: response.status,
     bankTxnId: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
-    paymentRefId: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
+    paymentRefId: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentRefId : '',
     responseMessage: appointmentPaymentsResponse ? appointmentPaymentsResponse.responseMessage : '',
     amountPaid: appointmentPaymentsResponse ? appointmentPaymentsResponse.amountPaid : 0,
-    responseCode: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
+    responseCode: appointmentPaymentsResponse ? appointmentPaymentsResponse.responseCode : '',
     paymentDateTime: appointmentPaymentsResponse
       ? appointmentPaymentsResponse.paymentDateTime
       : null,
+    paymentMode: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentMode : '',
   };
 
   if (appointmentPaymentsResponse) {

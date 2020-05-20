@@ -72,12 +72,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       textAlign: 'center',
       padding: '11px 32px',
-      color: '#02475b',
+      color: '#658f9b',
       opacity: 1,
       textTransform: 'none',
     },
     tabSelected: {
-      color: theme.palette.secondary.dark,
+      color: '#02475b',
     },
     tabsIndicator: {
       backgroundColor: '#00b38e',

@@ -7,6 +7,8 @@ import { MedicinePrescription } from './MedicinePrescription';
 import { DiagnosticPrescription } from './DiagnosticPrescription';
 import { FollowUp } from './FollowUp';
 import { OtherInstructions } from './OtherInstructions';
+import { RefferalCode } from './RefferalCode';
+
 export { LifeStyle };
 export { Symptoms };
 export { HealthVault };
@@ -16,3 +18,4 @@ export { MedicinePrescription };
 export { DiagnosticPrescription };
 export { FollowUp };
 export { OtherInstructions };
+export { RefferalCode };

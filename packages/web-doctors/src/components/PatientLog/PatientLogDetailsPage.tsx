@@ -342,7 +342,7 @@ export const PatientLogDetailsPage: React.FC = () => {
                   className={classes.expandIcon}
                 >
                   <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="h3">Patient’s Medical and Family History</Typography>
+                    <Typography variant="h3">Patient's Medical and Family History</Typography>
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails>
                     <PatientDetailLifeStyle patientDetails={patientDetails} />

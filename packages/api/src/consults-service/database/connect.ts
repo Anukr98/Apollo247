@@ -73,6 +73,7 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
   MedicineOrdersStatus,
+  MedicineOrderShipments,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -86,6 +87,7 @@ import {
   SearchHistory,
   RegistrationCodes,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -191,6 +193,7 @@ export const connect = async () => {
         MedicineOrderPayments,
         MedicineOrders,
         MedicineOrdersStatus,
+        MedicineOrderShipments,
         Patient,
         PatientAddress,
         PatientDeviceTokens,
@@ -203,6 +206,7 @@ export const connect = async () => {
         PatientNotificationSettings,
         SearchHistory,
         RegistrationCodes,
+        MedicineOrderCancelReason,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

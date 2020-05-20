@@ -49,9 +49,22 @@ import {
   saveMedicineOrderResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrders';
 import {
+  paymentStatusTypeDefs,
+  paymentStatusResolvers,
+} from 'profiles-service/resolvers/pharmaPaymentStatus';
+import {
+  saveMedicineOrderOMSTypeDefs,
+  saveMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/saveMedicineOrdersOMS';
+
+import {
   savePrescriptionMedicineOrderTypeDefs,
   savePrescriptionMedicineOrderResolvers,
 } from 'profiles-service/resolvers/savePrescriptionMedicineOrders';
+import {
+  savePrescriptionMedicineOrderOMSTypeDefs,
+  savePrescriptionMedicineOrderOMSResolvers,
+} from 'profiles-service/resolvers/savePrescriptionMedicineOrdersOMS';
 import {
   saveMedicineOrderPaymentTypeDefs,
   saveMedicineOrderPaymentResolvers,
@@ -60,6 +73,10 @@ import {
   saveMedicineOrderPaymentMqTypeDefs,
   saveMedicineOrderPaymentMqResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrderPaymentmq';
+import {
+  getMedicineOrdersOMSListTypeDefs,
+  getMedicineOrdersOMSListResolvers,
+} from 'profiles-service/resolvers/getMedicineOrdersOMSList';
 import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
@@ -94,10 +111,19 @@ import {
   submitPrescriptionOrderTypeDefs,
   submitPrescriptionOrderResolvers,
 } from 'profiles-service/resolvers/submitPrescriptionOrder';
+import { uhidTypeDefs, uhidResolvers } from 'profiles-service/resolvers/uhid';
 import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
-} from 'profiles-service/resolvers/updateOrderStatusPharma';
+} from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
+import {
+  saveOrderShipmentInvoiceTypeDefs,
+  saveOrderShipmentInvoiceResolvers,
+} from 'profiles-service/resolvers/pharmaOrderBilled';
+import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
   pharmaOrderConfirmationResolvers,
@@ -118,6 +144,10 @@ import {
   medicineOrderCancelTypeDefs,
   medicineOrderCancelResolvers,
 } from 'profiles-service/resolvers/cancelMedicineOrder';
+import {
+  medicineOrderCancelOMSTypeDefs,
+  medicineOrderCancelOMSResolvers,
+} from 'profiles-service/resolvers/cancelMedicineOrderOMS';
 import {
   patientLifeStyleTypeDefs,
   patientLifeStyleResolvers,
@@ -148,7 +178,10 @@ import {
   verifyLoginOtpTypeDefs,
   verifyLoginOtpResolvers,
 } from 'profiles-service/resolvers/verifyLoginOtp';
-
+import {
+  getMedicineOrderCancelReasonsTypeDefs,
+  getMedicineOrderCancelReasonsResolvers,
+} from 'profiles-service/resolvers/getMedicineOrderCancelReasons';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -158,6 +191,10 @@ import {
   registerPatientsTypeDefs,
   registerPatientsResolvers,
 } from 'profiles-service/resolvers/registerPatients';
+import {
+  pharmaOrdersTypeDefs,
+  pharmacyOrdersResolvers,
+} from 'profiles-service/resolvers/pharmacyOrders';
 
 (async () => {
   await connect();
@@ -205,6 +242,10 @@ import {
         resolvers: getPatientResolvers,
       },
       {
+        typeDefs: paymentStatusTypeDefs,
+        resolvers: paymentStatusResolvers,
+      },
+      {
         typeDefs: getPastSearchesTypeDefs,
         resolvers: getPastSearchesResolvers,
       },
@@ -241,8 +282,20 @@ import {
         resolvers: saveMedicineOrderResolvers,
       },
       {
+        typeDefs: getMedicineOrdersOMSListTypeDefs,
+        resolvers: getMedicineOrdersOMSListResolvers,
+      },
+      {
+        typeDefs: saveMedicineOrderOMSTypeDefs,
+        resolvers: saveMedicineOrderOMSResolvers,
+      },
+      {
         typeDefs: savePrescriptionMedicineOrderTypeDefs,
         resolvers: savePrescriptionMedicineOrderResolvers,
+      },
+      {
+        typeDefs: savePrescriptionMedicineOrderOMSTypeDefs,
+        resolvers: savePrescriptionMedicineOrderOMSResolvers,
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
@@ -293,8 +346,20 @@ import {
         resolvers: submitPrescriptionOrderResolvers,
       },
       {
+        typeDefs: uhidTypeDefs,
+        resolvers: uhidResolvers,
+      },
+      {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentInvoiceTypeDefs,
+        resolvers: saveOrderShipmentInvoiceResolvers,
+      },
+      {
+        typeDefs: saveOrderShipmentsTypeDefs,
+        resolvers: saveOrderShipmentsResolvers,
       },
       {
         typeDefs: pharmaOrderConfirmationTypeDefs,
@@ -315,6 +380,10 @@ import {
       {
         typeDefs: medicineOrderCancelTypeDefs,
         resolvers: medicineOrderCancelResolvers,
+      },
+      {
+        typeDefs: medicineOrderCancelOMSTypeDefs,
+        resolvers: medicineOrderCancelOMSResolvers,
       },
       {
         typeDefs: helpTypeDefs,
@@ -359,6 +428,14 @@ import {
       {
         typeDefs: registerPatientsTypeDefs,
         resolvers: registerPatientsResolvers,
+      },
+      {
+        typeDefs: pharmaOrdersTypeDefs,
+        resolvers: pharmacyOrdersResolvers,
+      },
+      {
+        typeDefs: getMedicineOrderCancelReasonsTypeDefs,
+        resolvers: getMedicineOrderCancelReasonsResolvers,
       },
     ]),
     plugins: [

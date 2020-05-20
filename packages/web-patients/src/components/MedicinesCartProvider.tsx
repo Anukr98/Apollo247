@@ -93,6 +93,8 @@ export interface MedicineCartContextProps {
   updateItemShippingStatus: ((item: any) => void) | null;
   cartTat: boolean | null;
   changeCartTatStatus: ((status: boolean) => void) | null;
+  setCouponCode: ((couponCode: string) => void) | null;
+  couponCode: string;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -127,7 +129,9 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   medicineCartType: '',
   updateItemShippingStatus: null,
   cartTat: false,
-  changeCartTatStatus: null
+  changeCartTatStatus: null,
+  couponCode: null,
+  setCouponCode: null,
 });
 
 enum CartTypes {
@@ -137,6 +141,9 @@ enum CartTypes {
 }
 
 export const MedicinesCartProvider: React.FC = (props) => {
+  const [couponCode, setCouponCode] = React.useState<string>(
+    localStorage.getItem('pharmaCoupon') || ''
+  );
   const defPresObject = {
     name: '',
     imageUrl: '',
@@ -149,7 +156,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     MedicineCartContextProps['storePickupPincode']
   >(null);
 
-  const [cartTat, setCartTat] = useState<boolean>(false)
+  const [cartTat, setCartTat] = useState<boolean>(false);
 
   const [stores, setStores] = useState<MedicineCartContextProps['stores']>([]);
   const [deliveryAddressId, setDeliveryAddressId] = useState<
@@ -200,10 +207,26 @@ export const MedicinesCartProvider: React.FC = (props) => {
       } else {
         localStorage.setItem('cartItems', items);
       }
+      if (cartItems.length === 0) {
+        removePharmaCoupon();
+      }
       setItemsStr(items);
       setIsCartUpdated(false);
     }
   }, [cartItems, isCartUpdated]);
+
+  useEffect(() => {
+    const existCouponCode = localStorage.getItem('pharmaCoupon');
+    if (couponCode.length > 0 && couponCode !== existCouponCode) {
+      localStorage.setItem('pharmaCoupon', couponCode);
+    }
+  }, [couponCode]);
+
+  const removePharmaCoupon = () => {
+    const existCouponCode = localStorage.getItem('pharmaCoupon');
+    existCouponCode && existCouponCode.length > 0 && localStorage.removeItem('pharmaCoupon');
+    setCouponCode('');
+  };
 
   useEffect(() => {
     if (currentPatient && currentPatient.id && currentPatient.id.length > 0) {
@@ -321,13 +344,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setStorePickupPincode('');
     setPrescriptions([]);
     setEPrescriptionData([]);
+    setCouponCode('');
     // setCartItems([]);
   };
 
-
   const changeCartTatStatus = (status: boolean) => {
-    setCartTat(status)
-  }
+    setCartTat(status);
+  };
+
   return (
     <MedicinesCartContext.Provider
       value={{
@@ -362,7 +386,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setUploadedEPrescription,
         updateItemShippingStatus,
         cartTat,
-        changeCartTatStatus
+        changeCartTatStatus,
+        setCouponCode,
+        couponCode,
       }}
     >
       {props.children}
@@ -404,4 +430,6 @@ export const useShoppingCart = () => ({
   updateItemShippingStatus: useShoppingCartContext().updateItemShippingStatus,
   cartTat: useShoppingCartContext().cartTat,
   changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
+  setCouponCode: useShoppingCartContext().setCouponCode,
+  couponCode: useShoppingCartContext().couponCode,
 });

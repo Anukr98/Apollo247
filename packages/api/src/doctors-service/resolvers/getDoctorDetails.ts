@@ -56,6 +56,7 @@ export const getDoctorDetailsTypeDefs = gql`
     MR
     MRS
     DR
+    MS
   }
 
   enum DOCTOR_ONLINE_STATUS {

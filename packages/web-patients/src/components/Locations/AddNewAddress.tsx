@@ -15,6 +15,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking } from '../../gtmTracking';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -189,6 +190,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [addressId, setAddressId] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [showTextbox, setShowText] = useState<boolean>(false);
+  const [latitude, setLatitude] = useState<Number>();
+  const [longitude, setLongitude] = useState<Number>();
+  const [stateCode, setStateCode] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const [state, setState] = useState<string>('');
@@ -201,10 +205,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const addToCartRef = useRef(null);
 
   const disableSubmit =
-    address1.length === 0 ||
-    address2.length === 0 ||
-    addressType.length <= 0 ||
-    pincode.length < 6 ||
+    (address1 && address1.length === 0) ||
+    (address2 && address2.length === 0) ||
+    (addressType && addressType.length <= 0) ||
+    (pincode && pincode.length < 6) ||
     !isPincodevalid ||
     addressType === PATIENT_ADDRESS_TYPE.OTHER
       ? !otherTextbox
@@ -267,54 +271,71 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
   // Auto-fetching the city and state using Pincode
   // ------------------------------------------------
-
-  if (pincode && pincode.length === 6) {
-    axios
-      .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
-      )
-      .then(({ data }) => {
-        if (data && data.results.length === 0) {
-          setAddress2(' ');
-        }
-        setIsPincodeValid(data && data.results && data.results.length > 0 ? true : false);
-        try {
-          if (data && data.results[0] && data.results[0].address_components) {
-            const addressComponents = data.results[0].address_components || [];
-            const pincode = (
-              addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
-              {}
-            ).long_name;
-            const city = (
-              addressComponents.find(
-                (item: any) =>
-                  item.types.indexOf('locality') > -1 ||
-                  item.types.indexOf('administrative_area_level_2') > -1
-              ) || {}
-            ).long_name;
-            const state = (
-              addressComponents.find(
-                (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-              ) || {}
-            ).long_name;
-
-            setState(state || '');
-            setCity(city || '');
-            setPincode(pincode || '');
-            const location = city ? city.concat(', ').concat(state) : state;
-
-            setPincode(pincode || '');
-            setAddress2(location);
+  useEffect(() => {
+    if (pincode && pincode.length === 6) {
+      axios
+        .get(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
+        )
+        .then(({ data }) => {
+          if (data && data.results.length === 0) {
+            setAddress2(' ');
           }
-        } catch {
-          (e: AxiosError) => console.log(e);
-          showError = true;
-        }
-      })
-      .catch((e: AxiosError) => {
-        console.log(e);
-      });
-  }
+          setIsPincodeValid(data && data.results && data.results.length > 0 ? true : false);
+          try {
+            if (data && data.results[0] && data.results[0].address_components) {
+              const addressComponents = data.results[0].address_components || [];
+              const pincode = (
+                addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
+                {}
+              ).long_name;
+              const city = (
+                addressComponents.find(
+                  (item: any) =>
+                    item.types.indexOf('locality') > -1 ||
+                    item.types.indexOf('administrative_area_level_2') > -1
+                ) || {}
+              ).long_name;
+              const state = (
+                addressComponents.find(
+                  (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                ) || {}
+              ).long_name;
+
+              setState(state || '');
+              setCity(city || '');
+              setPincode(pincode || '');
+              const location = city ? city.concat(', ').concat(state) : state;
+
+              setPincode(pincode || '');
+              setAddress2(location);
+
+              const stateShortCode = pharmaStateCodeMapping[state] || '';
+              if (stateShortCode) {
+                setStateCode(stateShortCode);
+              }
+
+              if (
+                data &&
+                data.results[0] &&
+                data.results[0].geometry &&
+                data.results[0].geometry.location
+              ) {
+                const { lat, lng } = data.results[0].geometry.location;
+                setLatitude(lat);
+                setLongitude(lng);
+              }
+            }
+          } catch {
+            (e: AxiosError) => console.log(e);
+            showError = true;
+          }
+        })
+        .catch((e: AxiosError) => {
+          console.log(e);
+        });
+    }
+  }, [pincode]);
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
   const saveAddressMutation = useMutation(SAVE_PATIENT_ADDRESS);
 
@@ -450,6 +471,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,
                       otherAddressType: otherTextbox,
+                      latitude,
+                      longitude,
+                      stateCode,
                     },
                   },
                 })
@@ -482,6 +506,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,
                       otherAddressType: otherTextbox,
+                      latitude,
+                      longitude,
+                      stateCode,
                     },
                   },
                 })
@@ -561,6 +588,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   Sorry! We’re working hard to get to this area! In the meantime, you can either
                   pick up from a nearby store, or change the pincode.
                 </p>
+                <p>You can also call 1860 500 0101 for Apollo Pharmacy retail customer care.</p>
               </div>
               <div className={classes.actions}>
                 <AphButton

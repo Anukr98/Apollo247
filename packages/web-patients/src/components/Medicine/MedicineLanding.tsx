@@ -15,6 +15,7 @@ import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
@@ -29,6 +30,9 @@ import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { Route } from 'react-router-dom';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -327,6 +331,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
@@ -358,6 +363,9 @@ export const MedicineLanding: React.FC = (props) => {
         (prescriptions && prescriptions.length > 0)) // the length condition check is mandatory else it will execute it infinity times
     ) {
       clearCartInfo && clearCartInfo();
+    }
+    if (localStorage.getItem('pharmaCoupon')) {
+      localStorage.removeItem('pharmaCoupon');
     }
   }
 
@@ -501,21 +509,28 @@ export const MedicineLanding: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                    <Link
-                      className={`${classes.serviceType} ${classes.textVCenter}`}
-                      to={clientRoutes.yourOrders()}
-                      title={'Open your orders'}
-                    >
-                      <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_tablets.svg')} alt="" />
-                      </span>
-                      <span className={classes.linkText}>Your Orders</span>
-                      <span className={classes.rightArrow}>
-                        <img src={require('images/ic_arrow_right.svg')} alt="" />
-                      </span>
-                    </Link>
-                  </div>
+                  <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <div
+                        className={`${classes.sectionGroup} ${classes.marginNone}`}
+                        onClick={() => !isSignedIn && protectWithLoginPopup()}
+                      >
+                        <Link
+                          className={`${classes.serviceType} ${classes.textVCenter}`}
+                          to={isSignedIn && clientRoutes.yourOrders()}
+                          title={'Open your orders'}
+                        >
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_tablets.svg')} alt="" />
+                          </span>
+                          <span className={classes.linkText}>Your Orders</span>
+                          <span className={classes.rightArrow}>
+                            <img src={require('images/ic_arrow_right.svg')} alt="" />
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                  </ProtectedWithLoginPopup>
                 </div>
               </div>
             </div>
@@ -544,28 +559,13 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      <Popover
-        open={showOrderPopup}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
-          </div>
-        </div>
-      </Popover>
+      {showOrderPopup && (
+        <Route
+          render={({ history }) => {
+            return <PaymentStatusModal history={history} addToCartRef={addToCartRef} />;
+          }}
+        />
+      )}
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}

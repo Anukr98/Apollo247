@@ -13,6 +13,16 @@ import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { useAuth } from 'hooks/authHooks';
+import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  MarkMessageToUnread,
+  MarkMessageToUnreadVariables,
+} from 'graphql/types/MarkMessageToUnread';
+import { MARK_MESSAGE_TO_UNREAD } from 'graphql/profiles';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { ApolloError } from 'apollo-client';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -62,6 +72,10 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
     top: -5,
   },
+  countStyle: {
+    paddingTop: 5,
+    paddingBottom: 10,
+  },
   videoIcon: {
     position: 'absolute',
     top: 7,
@@ -92,6 +106,9 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     borderLeft: 'none',
     paddingLeft: 0,
+  },
+  cursorStyle: {
+    cursor: 'pointer',
   },
 }));
 
@@ -154,10 +171,41 @@ interface AppointmentCardProps {
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   const classes = useStyles({});
+  const {
+    currentPatient,
+  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const mutationMarkMessageToUnread = useMutation<
+    MarkMessageToUnread,
+    MarkMessageToUnreadVariables
+  >(MARK_MESSAGE_TO_UNREAD);
+
+  const callMessageReadAction = (appointmentId: string, doctorId: string, patientId: string) => {
+    mutationMarkMessageToUnread({
+      variables: {
+        eventId: appointmentId,
+      },
+    })
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, '1');
+      })
+      .catch((e: ApolloError) => {
+        console.log(e, 'erroe');
+      });
+  };
   return (
-    <Card style={{ width: '100%', height: 45 }}>
+    <Card style={{ width: '100%', height: 55 }}>
       <CardContent>
-        <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank">
+        <div
+          className={classes.cursorStyle}
+          onClick={() => {
+            if (data.unreadMessagesCount && data.unreadMessagesCount > 0) {
+              callMessageReadAction(data.id, currentPatient.id, data.patientId);
+            } else {
+              window.location.href = clientRoutes.ConsultTabs(data.id, data.patientId, '1');
+            }
+          }}
+        >
+          {/* <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank"> */}
           <Grid item xs={12} style={{ width: '100%' }}>
             <Grid item container spacing={2}>
               <Grid item lg={5} sm={5} xs={4} key={1} container>
@@ -168,7 +216,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                       {`${format(
                         new Date(data.appointmentDateTime),
                         'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                      )}`}
+                      )} `}
+                      <div className={classes.countStyle}>
+                        {data.unreadMessagesCount && data.unreadMessagesCount > 0
+                          ? 'Unread messages (' + data.unreadMessagesCount + ')'
+                          : ''}
+                      </div>
                     </Typography>
                   </div>
                 </Grid>
@@ -253,7 +306,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
               )}
             </Grid>
           </Grid>
-        </Link>
+        </div>
+        {/* </Link> */}
       </CardContent>
     </Card>
   );
