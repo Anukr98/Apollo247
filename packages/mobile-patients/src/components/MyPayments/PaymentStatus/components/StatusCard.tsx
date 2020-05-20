@@ -17,6 +17,7 @@ import PaymentStatusConstants from '../../constants';
 interface StatusCardProps {
   item: any;
   paymentFor: string;
+  patientId?: string;
 }
 
 const windowWidth = Dimensions.get('window').width;
@@ -106,7 +107,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
 
   const { icon, cardColor, statusText, textColor } = getStatusItems();
   const { refId, price, orderID } = statusItemValues();
-  const payRefId = 'Payment Ref. Number - ' + refId.slice(0, 6);
+  const payRefId = 'Payment Ref. Number - ';
   return (
     <View style={[styles.statusCardStyle, { backgroundColor: cardColor }]}>
       <View style={styles.statusCardSubContainerStyle}>{icon}</View>
@@ -116,13 +117,14 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       <View style={styles.orderStyles}>
         {textComponent(price, undefined, theme.colors.SHADE_GREY, false)}
       </View>
-      <View style={styles.orderStyles}>
-        {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
-      </View>
-      <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
+      <View style={styles.orderIdStyles}>
         {textComponent(orderID, undefined, theme.colors.SHADE_GREY, false)}
       </View>
-      {/* <ViewInvoice item={props.item} paymentFor={props.paymentFor} /> */}
+      <View style={styles.refIdStyles}>
+        {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
+        {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
+      </View>
+      <ViewInvoice item={props.item} paymentFor={props.paymentFor} patientId={props.patientId} />
     </View>
   );
 };
@@ -136,9 +138,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   statusCardStyle: {
-    height: 0.27 * windowHeight,
     margin: 0.06 * windowWidth,
-    flex: 1,
+    display: 'flex',
     borderRadius: 10,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
@@ -147,20 +148,30 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   statusCardSubContainerStyle: {
-    flex: 0.22,
     marginVertical: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   orderStyles: {
-    flex: 0.18,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    marginBottom: 10,
   },
   statusStyles: {
-    flex: 0.15,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    marginBottom: 10,
+  },
+  refIdStyles: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'column',
+    marginBottom: 10,
+  },
+  orderIdStyles: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginBottom: 10,
   },
 });
 
