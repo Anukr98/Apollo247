@@ -34,6 +34,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getMany();
   }
 
+  getSDCompletedCaseSheetsByAppointmentId(appointmentId: string) {
+    return this.createQueryBuilder('case_sheet')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', {
+        juniorDoctorType: DoctorType.JUNIOR,
+      })
+      .getMany();
+  }
+
   getJuniorDoctorCaseSheet(appointmentId: string) {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')

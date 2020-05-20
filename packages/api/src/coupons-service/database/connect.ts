@@ -82,6 +82,7 @@ import {
   ReferralCodesMaster,
   ReferalCouponMapping,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -194,6 +195,7 @@ export const connect = async () => {
         RegistrationCodes,
         ReferralCodesMaster,
         ReferalCouponMapping,
+        MedicineOrderCancelReason,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

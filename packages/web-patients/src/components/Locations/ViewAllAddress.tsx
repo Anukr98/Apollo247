@@ -4,9 +4,13 @@ import React, { useRef } from 'react';
 import { AphRadio, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
+import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import { AxiosPromise, AxiosResponse } from 'axios';
+import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -127,6 +131,11 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 72,
       },
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
@@ -152,9 +161,103 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   );
   const [mutationLoading, setMutationLoading] = React.useState(false);
   const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const addToCartRef = useRef(null);
 
   const disableSubmit = localDeliveryAddressId === '';
+  const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
+
+  const checkLatLongStateCodeAvailability = (addressDetails: Address) => {
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    if (!addressDetails.latitude || !addressDetails.longitude || !addressDetails.stateCode) {
+      // get lat long
+      if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
+        setIsLoading(true);
+        axios
+          .get(googleMapApi)
+          .then(({ data }) => {
+            try {
+              if (
+                data &&
+                data.results[0] &&
+                data.results[0].geometry &&
+                data.results[0].geometry.location
+              ) {
+                const { lat, lng } = data.results[0].geometry.location;
+                let {
+                  id,
+                  addressLine1,
+                  addressLine2,
+                  mobileNumber,
+                  zipcode,
+                  addressType,
+                  city,
+                  state,
+                  otherAddressType,
+                } = addressDetails;
+                const addressComponents = data.results[0].address_components || [];
+                city =
+                  city ||
+                  (
+                    addressComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                state =
+                  state ||
+                  (
+                    addressComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
+                updateAddressMutation({
+                  variables: {
+                    UpdatePatientAddressInput: {
+                      id,
+                      addressLine1,
+                      addressLine2,
+                      city,
+                      state,
+                      zipcode,
+                      mobileNumber,
+                      addressType,
+                      otherAddressType,
+                      latitude: lat,
+                      longitude: lng,
+                      stateCode: pharmaStateCodeMapping[state] || '',
+                    },
+                  },
+                }).then(() => {
+                  setLocalDeliveryAddressId(addressDetails.id);
+                  setLocalZipCode(addressDetails.zipcode || '');
+                  setIsLoading(false);
+                });
+              }
+            } catch {
+              (e: AxiosError) => {
+                console.log(e);
+                setIsLoading(false);
+                setIsAlertOpen(true);
+                setAlertMessage(e.message);
+              };
+            }
+          })
+          .catch((e: AxiosError) => {
+            setIsLoading(false);
+            setIsAlertOpen(true);
+            setAlertMessage(e.message);
+            console.log(e);
+          });
+      }
+    } else {
+      setLocalDeliveryAddressId(addressDetails.id);
+      setLocalZipCode(addressDetails.zipcode || '');
+    }
+  };
 
   return (
     <div className={classes.shadowHide}>
@@ -164,25 +267,29 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {deliveryAddresses.map((addressDetails, index) => {
-                    const addressId = addressDetails.id;
-
-                    return (
-                      <li key={index}>
-                        <FormControlLabel
-                          checked={localDeliveryAddressId === addressId}
-                          className={classes.radioLabel}
-                          value={addressId}
-                          control={<AphRadio color="primary" />}
-                          label={props.formatAddress(addressDetails)}
-                          onChange={() => {
-                            setLocalDeliveryAddressId(addressId);
-                            setLocalZipCode(addressDetails.zipcode || '');
-                          }}
-                        />
-                      </li>
-                    );
-                  })}
+                  {isLoading ? (
+                    <CircularProgress className={classes.loader} />
+                  ) : (
+                    deliveryAddresses.map((addressDetails, index) => {
+                      const addressId = addressDetails.id;
+                      return (
+                        <li key={index}>
+                          <FormControlLabel
+                            checked={localDeliveryAddressId === addressId}
+                            className={classes.radioLabel}
+                            value={addressId}
+                            control={<AphRadio color="primary" />}
+                            label={props.formatAddress(addressDetails)}
+                            onChange={() => {
+                              // setLocalDeliveryAddressId(addressId);
+                              // setLocalZipCode(addressDetails.zipcode || '');
+                              checkLatLongStateCodeAvailability(addressDetails);
+                            }}
+                          />
+                        </li>
+                      );
+                    })
+                  )}
                 </ul>
               </div>
             </div>
@@ -256,6 +363,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                   Sorry! We’re working hard to get to this area! In the meantime, you can either
                   pick up from a nearby store, or change the pincode.
                 </p>
+                <p>You can also call 1860 500 0101 for Apollo Pharmacy retail customer care.</p>
               </div>
               <div className={classes.actions}>
                 <AphButton
@@ -271,6 +379,12 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

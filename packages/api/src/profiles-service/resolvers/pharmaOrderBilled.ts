@@ -26,13 +26,13 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     articleName: String
     quantity: Int
     batch: String
-    unitPrice: Int
+    unitPrice: Float
   }
 
   input BillingDetails {
     invoiceTime: String
     invoiceNo: String
-    invoiceValue: String
+    invoiceValue: Float
   }
 
   type SaveOrderShipmentInvoiceResult {
@@ -152,7 +152,19 @@ const saveOrderShipmentInvoice: Resolver<
     shipmentDetails.apOrderNo
   );
 
-  if (shipmentDetails.isPrimary) {
+  const unBilledShipments = orderDetails.medicineOrderShipments.find((shipment) => {
+    return (
+      shipment.apOrderNo != shipmentDetails.apOrderNo &&
+      shipment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+    );
+  });
+  if (!unBilledShipments) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      medicineOrders: orderDetails,
+      statusDate: new Date(saveOrderShipmentInvoiceInput.updatedDate),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,

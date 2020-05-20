@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
-import { CircularProgress, Link, Theme, Typography } from '@material-ui/core';
+
+import { Link, Theme, Typography } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
 import { AphButton } from '@aph/web-ui-components';
@@ -60,7 +61,6 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
     },
     modal: {
       display: 'flex',
@@ -101,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',
+      cursor: 'pointer',
       top: 0,
       right: '-50px',
       [theme.breakpoints.down('sm')]: {
@@ -225,8 +226,18 @@ const useStyles = makeStyles((theme: Theme) => {
     consultDetail: {
       display: 'flex !important',
     },
+    viewInvoice: {
+      color: '#fc9916 !important',
+      textTransform: 'uppercase',
+      cursor: 'pointer',
+    },
   };
 });
+
+type doctorDetail = {
+  fullName: string;
+  doctorHospital: Array<any>;
+};
 
 interface OrderStatusDetail {
   paymentStatus: string;
@@ -234,14 +245,16 @@ interface OrderStatusDetail {
   orderStatusCallback: () => void;
   orderId: number;
   amountPaid: number;
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
+  paymentType?: string;
   paymentRefId: string;
-  paymentDateTime?: any;
+  paymentDateTime?: string;
   type: string;
   bookingDateTime?: string;
-  doctorName?: string;
+  doctorDetail?: doctorDetail;
   consultMode?: string;
   onClose: () => void;
+  ctaText: string;
+  fetchConsultInvoice?: (fetchInvoice: boolean) => void;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
@@ -257,19 +270,33 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     paymentDateTime,
     type,
     bookingDateTime,
-    doctorName,
+    doctorDetail,
     consultMode,
     onClose,
+    ctaText,
+    fetchConsultInvoice,
   } = props;
 
+  interface statusMap {
+    [name: string]: string;
+  }
+  const status: statusMap = {
+    success: 'PAYMENT SUCCESSFUL',
+    failed: 'PAYMENT FAILED',
+    pending: 'PAYMENT PENDING',
+  };
+
+  const doctorAddressDetail =
+    (doctorDetail && doctorDetail.doctorHospital[0] && doctorDetail.doctorHospital[0].facility) ||
+    '';
   return (
     <div className={classes.modalContent}>
       <div className={classes.modalHeader}>
         <Typography component="h5">Payment Status</Typography>
-        <Link href="javascript:void(0);" className={classes.closePopup}>
+        <Link onClick={() => onClose()} className={classes.closePopup}>
           <img src={require('images/ic_cross_popup.svg')} />
         </Link>
-        <Link href="javascript:void(0);" className={`${classes.closePopup} ${classes.mobileBack}`}>
+        <Link onClick={() => onClose()} className={`${classes.closePopup} ${classes.mobileBack}`}>
           <img src={require('images/ic_back.svg')} />
         </Link>
       </div>
@@ -285,13 +312,24 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               : ''
           }`}
         >
-          <ErrorOutlineIcon></ErrorOutlineIcon>
-          <Typography component="h5">
-            PAYMENT {paymentStatus == 'success' ? 'SUCCESSFUL' : paymentStatus.toUpperCase()}
-          </Typography>
+          {paymentStatus && paymentStatus.length > 0 && (
+            <img src={require(`images/${paymentStatus}.svg`)} />
+          )}
+          <Typography component="h5">{status[paymentStatus]}</Typography>
           <Typography component="p">Rs. {amountPaid}</Typography>
           <Typography component="p">Order ID : {orderId}</Typography>
-          <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          {paymentRefId && paymentRefId.length > 1 && (
+            <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          )}
+          {type === 'consult' && paymentStatus == 'success' && (
+            <Typography
+              component="p"
+              className={classes.viewInvoice}
+              onClick={() => fetchConsultInvoice(true)}
+            >
+              View Invoice
+            </Typography>
+          )}
         </div>
         <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
           <Typography component="h4">{type === 'consult' ? 'Booking' : 'Order'} Details</Typography>
@@ -309,15 +347,33 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                 <Grid item xs>
                   <div className={classes.details}>
                     <Typography component="h6">Doctor Name</Typography>
-                    <Typography component="p">{doctorName}</Typography>
+                    <Typography component="p">{doctorDetail && doctorDetail.fullName}</Typography>
                   </div>
                 </Grid>
                 <Grid item xs>
                   <div className={classes.details}>
                     <Typography component="h6">Mode of Consult</Typography>
-                    <Typography component="p">{consultMode}</Typography>
+                    <Typography component="p">
+                      {consultMode.toLowerCase() === 'physical' ? 'Clinic Visit' : consultMode}
+                    </Typography>
                   </div>
                 </Grid>
+                {consultMode.toLowerCase() === 'physical' &&
+                  doctorAddressDetail &&
+                  Object.keys(doctorAddressDetail).length > 1 && (
+                    <Grid item xs={12} sm={12}>
+                      <div className={classes.details}>
+                        <Typography component="h6">Clinic Address</Typography>
+                        <Typography component="p">{`${doctorAddressDetail.name}, ${
+                          doctorAddressDetail.streetLine1
+                        },${
+                          doctorAddressDetail.streetLine2
+                            ? doctorAddressDetail.streetLine2 + ','
+                            : ''
+                        } ${doctorAddressDetail.city} `}</Typography>
+                      </div>
+                    </Grid>
+                  )}
               </Grid>
             </Paper>
           ) : (
@@ -334,10 +390,13 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           )}
         </>
         <div className={classes.note}>
-          <Typography component="p">{paymentInfo}</Typography>
+          {paymentInfo && paymentInfo.length > 1 && (
+            <Typography component="p">Note : {paymentInfo}</Typography>
+          )}
         </div>
+
         <AphButton className={classes.payBtn} onClick={() => orderStatusCallback()}>
-          Try Again
+          {ctaText}
         </AphButton>
       </div>
     </div>

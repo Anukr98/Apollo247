@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -16,6 +17,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getDeviceType } from 'helpers/commonHelpers'
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
   makeAppointmentPayment,
@@ -537,7 +539,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: appointmentDateTime,
-          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+          bookingSource: BOOKINGSOURCE.WEB,
+          deviceType: getDeviceType(),
           appointmentType: AppointmentType.ONLINE,
           hospitalId: hospitalId,
           couponCode: couponCode ? couponCode : null,
@@ -570,7 +573,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   responseCode: couponCode,
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
-                  orderId: res.data.bookAppointment.appointment.id,
+                  orderId: res.data.bookAppointment.appointment.id
                 },
               },
               fetchPolicy: 'no-cache',
@@ -731,7 +734,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </Grid>
             </>
           )}
-          <CouponCode
+          {/* <CouponCode
             disableSubmit={disableCoupon}
             setCouponCodeFxn={() => {
               setCouponCode(couponCode);
@@ -744,7 +747,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             appointmentDateTime={appointmentDateTime}
             appointmentType={consultType}
             removeCouponCode={() => {
-              /* Gtm code start */
               const speciality = getSpeciality();
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
               gtmTracking({
@@ -753,9 +755,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 label: `Coupon Removed - ${couponCode}`,
                 value: couponValue,
               });
-              /* Gtm code end */
             }}
-          />
+          /> */}
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -796,55 +797,49 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       ) : (
         <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            disabled={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-            }
-            onClick={() => {
-              // let appointmentDateTime = '';
-              if (scheduleLater || !consultNowAvailable) {
-                const dateForScheduleLater =
-                  dateSelected.length > 0
-                    ? dateSelected.replace(/\//g, '-')
-                    : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
-                appointmentDateTime = moment(
-                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
-                  'DD-MM-YYYY HH:mm:ss'
-                )
-                  .utc()
-                  .format();
-              } else {
-                appointmentDateTime = consultNowSlotTime;
+          <Link to={clientRoutes.payOnlineConsult()}>
+            <AphButton
+              color="primary"
+              disabled={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
               }
-              setMutationLoading(true);
-              if (couponCode) {
-                checkCouponValidity();
-              } else {
-                bookAppointment();
+              onClick={() => {
+                localStorage.setItem(
+                  'consultBookDetails',
+                  JSON.stringify({
+                    patientId: currentPatient ? currentPatient.id : '',
+                    doctorId: doctorId,
+                    appointmentDateTime: appointmentDateTime,
+                    appointmentType: AppointmentType.ONLINE,
+                    hospitalId: hospitalId,
+                    couponCode: couponCode ? couponCode : null,
+                    amount: revisedAmount,
+                    speciality: getSpeciality(),
+                  })
+                );
+              }}
+              className={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
+                  ? classes.buttonDisable
+                  : ''
               }
-            }}
-            className={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Pay'}
-          >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${revisedAmount}`
-            )}
-          </AphButton>
+              title={'Pay'}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `PAY Rs. ${revisedAmount}`
+              )}
+            </AphButton>
+          </Link>
         </div>
       )}
       <AphDialog

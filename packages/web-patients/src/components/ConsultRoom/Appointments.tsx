@@ -2,8 +2,10 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import React, { useEffect } from 'react';
 import Modal from '@material-ui/core/Modal';
-
+import { History } from 'history';
 import { Header } from 'components/Header';
+import { useApolloClient } from 'react-apollo-hooks';
+
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
@@ -12,6 +14,7 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import { GetOrderInvoiceVariables, GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -27,6 +30,7 @@ import { Route } from 'react-router-dom';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
+import _capitalize from 'lodash/capitalize';
 import { useAuth } from 'hooks/authHooks';
 // import { STATUS } from 'graphql/types/globalTypes';
 // import isToday from 'date-fns/isToday';
@@ -38,8 +42,8 @@ import moment from 'moment';
 import _find from 'lodash/find';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
-// import { GET_APPOINTMENT_DATA } from 'graphql/consult';
-
+import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
+import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -244,6 +248,7 @@ const useStyles = makeStyles((theme: Theme) => {
     loader: {
       textAlign: 'center',
       padding: '20px 0',
+      outline: 'none',
     },
     messageBox: {
       padding: '10px 20px 25px 20px',
@@ -348,13 +353,15 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-
-export const Appointments: React.FC = (props) => {
+interface AppointmentProps {
+  history: History;
+}
+export const Appointments: React.FC<AppointmentProps> = (props) => {
   const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
-  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
+  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';
   // const client = useApolloClient();
   // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
 
@@ -363,7 +370,9 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -372,6 +381,16 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [appointmentDateTime, setAppointmentDateTime] = React.useState<string>('');
+  const [appointmentType, setAppointmentType] = React.useState<string>('');
+  const [doctorDetail, setDoctorDetail] = React.useState<any>({});
+  const [paymentStatus, setPaymentStatus] = React.useState<string>('');
+  const [bankTxnId, setBankTxnId] = React.useState<string>('');
+  const [displayId, setDisplayId] = React.useState<number>(0);
+  const [amountPaid, setAmountPaid] = React.useState<number>(0);
+  const [doctorId, setDoctorId] = React.useState<string>('');
+  const client = useApolloClient();
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -388,6 +407,76 @@ export const Appointments: React.FC = (props) => {
   //   },
   //   fetchPolicy: 'no-cache',
   // });
+
+  const getPaymentData = useQueryWithSkip(PAYMENT_TRANSACTION_STATUS, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  const appointmentDetail = useQueryWithSkip(GET_APPOINTMENT_DATA, {
+    variables: {
+      appointmentId: successApptId || '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+
+  useEffect(() => {
+    if (triggerInvoice) {
+      setIsLoading(true);
+      client
+        .query<GetOrderInvoice>({
+          query: GET_CONSULT_INVOICE,
+          variables: {
+            appointmentId: successApptId,
+            patientId: currentPatient && currentPatient.id,
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          setIsLoading(false);
+          if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
+            window.open(data.getOrderInvoice, '_blank');
+          }
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log(e);
+        });
+    }
+  }, [triggerInvoice]);
+
+  useEffect(() => {
+    if (!successApptId) {
+      setIsLoading(false);
+    }
+    const paymentData =
+      getPaymentData &&
+      getPaymentData.data &&
+      getPaymentData.data.paymentTransactionStatus &&
+      getPaymentData.data.paymentTransactionStatus.appointment;
+    const appointmentData =
+      appointmentDetail &&
+      appointmentDetail.data &&
+      appointmentDetail.data.getAppointmentData &&
+      appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
+    if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
+      const { paymentStatus, bankTxnId, displayId, amountPaid } = paymentData;
+      setAppointmentDateTime(appointmentDateTime);
+      setAppointmentType(appointmentType);
+      setDoctorDetail(doctorInfo);
+      setPaymentStatus(paymentStatus);
+      setBankTxnId(bankTxnId);
+      setDoctorId(doctorId);
+
+      setDisplayId(displayId);
+      setAmountPaid(amountPaid);
+      setIsLoading(false);
+      localStorage.setItem('consultBookDetails', '');
+    }
+  }, [getPaymentData, appointmentDetail]);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAllAppointments,
@@ -421,6 +510,45 @@ export const Appointments: React.FC = (props) => {
   //     return appointmentDetails;
   //   }
   // });
+
+  interface statusActionInterface {
+    ctaText: string;
+    info: string;
+    callbackFunction: () => void;
+  }
+  interface statusMap {
+    [name: string]: statusActionInterface;
+  }
+  const statusActions: statusMap = {
+    PAYMENT_PENDING: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
+    PAYMENT_SUCCESS: {
+      ctaText: 'DOWNLOAD APOLLO 247 APP',
+      info: '',
+      callbackFunction: () => {
+        window.open(getAppStoreLink(), '_blank');
+      },
+    },
+    PAYMENT_FAILED: {
+      ctaText: 'TRY AGAIN',
+      info:
+        'In case your account has been debited, you should get the refund in 10-14 working days.',
+      callbackFunction: () => {
+        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+      },
+    },
+  };
+
+  const handlePaymentModalClose = () => {
+    setIsConfirmedPopoverOpen(false);
+    props && props.history && props.history.push(clientRoutes.appointments());
+  };
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
     return moment(new Date(appointmentDetails.appointmentDateTime))
@@ -708,7 +836,7 @@ export const Appointments: React.FC = (props) => {
         </div>
       </div>
 
-      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <Route
           render={({ history }) => (
             <AphDialogClose
@@ -750,27 +878,53 @@ export const Appointments: React.FC = (props) => {
             Download Apollo247 App
           </a>
         </div>
-      </AphDialog>
-      {/* <Modal
-        open={true}
-        onClose={() => setIsPopoverOpen(false)}
-        className={classes.modal}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <OrderStatusContent
-          paymentStatus={'failed'}
-          paymentInfo={'fdsafa'}
-          orderStatusCallback={() => {}}
-          orderId={323232}
-          amountPaid={3232}
-          doctorName={'Dr. therapist'}
-          paymentRefId={'fdsafda'}
-          bookingDateTime={'23 May'}
-          type={'consult'}
-          consultMode={'Online'}
-        />
-      </Modal> */}
+      </AphDialog> */}
+      {successApptId && (
+        <Modal
+          open={isConfirmedPopoverOpen}
+          onClose={() => {
+            setIsConfirmedPopoverOpen(false);
+            // history.push(clientRoutes.appointments());
+          }}
+          className={classes.modal}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          {isLoading ? (
+            <div className={classes.loader}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <>
+              <OrderStatusContent
+                paymentStatus={
+                  paymentStatus === 'PAYMENT_FAILED'
+                    ? 'failed'
+                    : paymentStatus === 'PAYMENT_PENDING'
+                    ? 'pending'
+                    : 'success'
+                }
+                paymentInfo={statusActions[paymentStatus].info}
+                orderId={displayId}
+                amountPaid={amountPaid}
+                doctorDetail={doctorDetail}
+                paymentRefId={bankTxnId}
+                bookingDateTime={moment(appointmentDateTime)
+                  .format('DD MMMM YYYY[,] LT')
+                  .replace(/(A|P)(M)/, '$1.$2.')
+                  .toString()}
+                type={'consult'}
+                consultMode={_capitalize(appointmentType)}
+                onClose={() => handlePaymentModalClose()}
+                ctaText={statusActions[paymentStatus].ctaText}
+                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
+                fetchConsultInvoice={setTriggerInvoice}
+              />
+            </>
+          )}
+        </Modal>
+      )}
+      {/* 
       <Popover
         open={isFailurePayment}
         anchorEl={anchorEl}
@@ -810,7 +964,7 @@ export const Appointments: React.FC = (props) => {
             </div>
           </div>
         </div>
-      </Popover>
+      </Popover> */}
 
       {/* <Popover
         open={isPopoverOpen}

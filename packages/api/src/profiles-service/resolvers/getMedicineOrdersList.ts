@@ -28,6 +28,8 @@ export const getMedicineOrdersListTypeDefs = gql`
     shopId: String
     estimatedAmount: Float
     patientId: ID!
+    quoteDateTime: String
+    coupon: String
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
