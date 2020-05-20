@@ -117,7 +117,8 @@ const consultOrders: Resolver<
     } else {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
-  } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  } else if (response.length == 0) return { appointments: [] };
+  else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
 export const consultOrdersResolvers = {

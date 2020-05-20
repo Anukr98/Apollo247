@@ -257,10 +257,16 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
       },
+      '& >div:first-child': {
+        paddingLeft: 0,
+      },
+      '& >div:last-child': {
+        paddingRight: 0,
+      },
     },
     reportsDetails: {
-      paddingLeft: 25,
-      paddingRight: 25,
+      paddingLeft: 10,
+      paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
         paddingRight: 5,
@@ -276,6 +282,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
+        wordBreak: 'break-word',
       },
     },
     headerBackArrow: {

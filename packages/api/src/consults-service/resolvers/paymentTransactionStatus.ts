@@ -19,6 +19,7 @@ export const paymentTransactionStatusTypeDefs = gql`
     responseMessage: String
     paymentDateTime: DateTime
     displayId: Int
+    paymentMode: String
   }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse
@@ -38,6 +39,7 @@ type AppointmentPaymentDetails = {
   responseMessage: string;
   paymentDateTime: Date | null;
   displayId: number;
+  paymentMode: string;
 };
 
 const paymentTransactionStatus: Resolver<
@@ -75,6 +77,7 @@ const paymentTransactionStatus: Resolver<
     paymentDateTime: appointmentPaymentsResponse
       ? appointmentPaymentsResponse.paymentDateTime
       : null,
+    paymentMode: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentMode : '',
   };
 
   if (appointmentPaymentsResponse) {

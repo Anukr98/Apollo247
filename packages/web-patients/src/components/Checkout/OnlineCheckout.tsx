@@ -333,7 +333,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'rgba(0, 135, 186, 0.07)',
       padding: '4px 10px',
       fontSize: 16,
-      marginTop: 16,
+      marginTop: 10,
     },
     linkText: {
       letterSpacing: 'normal',
@@ -361,6 +361,8 @@ export const OnlineCheckout: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
+  const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
+
   const [
     validateCouponResult,
     setValidateCouponResult,
@@ -369,7 +371,13 @@ export const OnlineCheckout: React.FC = () => {
   const apolloClient = useApolloClient();
 
   const pageData: any = JSON.parse(localStorage.getItem('consultBookDetails'));
-  const { doctorId, appointmentDateTime } = pageData;
+  const {
+    consultCouponCodeInitial,
+    consultCouponValue,
+    doctorId,
+    appointmentDateTime,
+    amount,
+  } = pageData;
   let newAppointmentDateTime = moment(appointmentDateTime)
     .format('DD MMMM[,] LT')
     .toString();
@@ -401,6 +409,29 @@ export const OnlineCheckout: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (validateCouponResult && validateCouponResult.revisedAmount) {
+      localStorage.setItem(
+        'consultBookDetails',
+        JSON.stringify({
+          ...pageData,
+          consultCouponValue:
+            parseFloat(pageData.amount) - parseFloat(validateCouponResult.revisedAmount),
+          consultCouponCodeInitial: couponCode,
+        })
+      );
+    }
+  }, [validateCouponResult]);
+
+  useEffect(() => {
+    setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
+
+    if (!couponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
+      setCouponCode(consultCouponCodeInitial || '');
+    }
+  });
+
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
   if (doctorDetails) {
     const {
@@ -421,6 +452,7 @@ export const OnlineCheckout: React.FC = () => {
     //     doctorDetails.getDoctorDetailsById.doctorHospital &&
     //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
     //   null;
+
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -447,7 +479,7 @@ export const OnlineCheckout: React.FC = () => {
                     <div className={classes.doctorName}>{fullName}</div>
                     <div className={classes.doctorType}>
                       <span>
-                        {speciality} | <span>{experience} Exp</span>
+                        {speciality} | <span>{experience} Yrs. Exp</span>
                       </span>
                       {/* <div className={classes.moreBtn}>More</div> */}
                     </div>
@@ -515,9 +547,6 @@ export const OnlineCheckout: React.FC = () => {
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </span>
                             </div>
-                            <div className={classes.couponText}>
-                              {validateCouponResult ? 'Coupon succefully applied' : ''}
-                            </div>
                           </>
                         )}
                       </div>
@@ -526,9 +555,11 @@ export const OnlineCheckout: React.FC = () => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? parseFloat(onlineConsultationFees) -
-                            parseFloat(validateCouponResult.revisedAmount)
-                          : 0}{' '}
+                          ? (
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -538,27 +569,36 @@ export const OnlineCheckout: React.FC = () => {
                 <div className={classes.priceSection}>
                   <div className={classes.priceRow}>
                     <span>Subtotal</span>
-                    <span className={classes.price}>Rs. {onlineConsultationFees}</span>
+                    <span className={classes.price}>
+                      Rs. {Number(onlineConsultationFees).toFixed(2)}
+                    </span>
                   </div>
-                  {validateCouponResult && validateCouponResult.revisedAmount && (
+                  {(validateCouponResult && validateCouponResult.revisedAmount) ||
+                  (consultCouponCodeInitial && consultCouponCodeInitial.length) ? (
                     <div className={`${classes.priceRow} ${classes.discountRow}`}>
                       <span>
                         Coupon Applied <br /> ({couponCode})
                       </span>
                       <span className={classes.price}>
                         - Rs.{' '}
-                        {parseFloat(onlineConsultationFees) -
-                          parseFloat(validateCouponResult.revisedAmount)}
+                        {validateCouponResult && validateCouponResult.revisedAmount
+                          ? (
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : consultCouponValue.toFixed(2)}
                       </span>
                     </div>
+                  ) : (
+                    <></>
                   )}
                   <div className={`${classes.priceRow} ${classes.totalPrice}`}>
                     <span>To Pay</span>
                     <span className={classes.price}>
                       Rs.{' '}
                       {validateCouponResult && validateCouponResult.revisedAmount
-                        ? validateCouponResult.revisedAmount
-                        : onlineConsultationFees}
+                        ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                        : revisedAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -568,23 +608,23 @@ export const OnlineCheckout: React.FC = () => {
                       <AphButton
                         color="primary"
                         onClick={() => {
-                          const updatedValues = {
-                            ...pageData,
-                            consultCouponCode: couponCode,
-                            consultCouponValue:
-                              validateCouponResult && validateCouponResult.revisedAmount
-                                ? parseFloat(onlineConsultationFees) -
-                                  parseFloat(validateCouponResult.revisedAmount)
-                                : '0',
-                          };
-                          localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
+                          // const updatedValues = {
+                          //   ...pageData,
+                          //   consultCouponCodeInitial: couponCode,
+                          //   consultCouponValue:
+                          //     validateCouponResult && validateCouponResult.revisedAmount
+                          //       ? parseFloat(onlineConsultationFees) -
+                          //         parseFloat(validateCouponResult.revisedAmount)
+                          //       : '0',
+                          // };
+                          // localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
                           history.push(clientRoutes.payMedicine('consults'));
                         }}
                       >
                         Pay Rs.{' '}
                         {validateCouponResult && validateCouponResult.revisedAmount
-                          ? validateCouponResult.revisedAmount
-                          : onlineConsultationFees}
+                          ? Number(validateCouponResult.revisedAmount).toFixed(2)
+                          : revisedAmount.toFixed(2)}
                       </AphButton>
                     )}
                   />

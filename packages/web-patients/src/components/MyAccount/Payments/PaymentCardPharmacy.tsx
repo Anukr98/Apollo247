@@ -1,12 +1,12 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { ConsultOrders_consultOrders_appointments as CardDetails } from 'graphql/types/ConsultOrders';
+import { PharmacyOrders_pharmacyOrders_pharmaOrders as CardDetails } from 'graphql/types/PharmacyOrders';
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
-import { getAppStoreLink } from 'helpers/dateHelpers';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+import { getPaymentMethodFullName } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -178,11 +178,13 @@ interface PaymentCardProps {
   cardDetails?: CardDetails;
 }
 
-export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
+export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
   const { cardDetails } = props;
+
   let paymentStatus,
-    paymentRefId = '';
+    paymentMode,
+    bankTxnId = '';
   let amountPaid = 0;
 
   const getPaymentStatusText = (paymentStatus: string) => {
@@ -192,22 +194,28 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
     return 'Payment Invalid';
   };
   const paymentInfo =
-    cardDetails && cardDetails.appointmentPayments ? cardDetails.appointmentPayments : [];
+    cardDetails && cardDetails.medicineOrderPayments && cardDetails.medicineOrderPayments.length > 0
+      ? cardDetails.medicineOrderPayments
+      : [];
+
   if (typeof paymentInfo[0] === 'undefined') {
-    paymentStatus = paymentRefId = 'Invalid';
+    paymentStatus = bankTxnId = 'Invalid';
+    paymentMode = null;
   } else {
     paymentStatus = paymentInfo[0].paymentStatus;
-    paymentRefId = paymentInfo[0].paymentRefId;
+    bankTxnId = paymentInfo[0].paymentRefId;
     amountPaid = paymentInfo[0].amountPaid;
+    paymentMode = paymentInfo[0].paymentMode
+      ? getPaymentMethodFullName(paymentInfo[0].paymentMode)
+      : '';
   }
+
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
-      ? clientRoutes.doctorDetails(cardDetails.doctorId)
-      : getAppStoreLink();
+      ? clientRoutes.medicinesCart()
+      : clientRoutes.yourOrders();
   const buttonText =
-    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
-      ? 'TRY AGAIN'
-      : 'Download Apollo 247 App';
+    paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE' ? 'TRY AGAIN' : 'VIEW ORDERS';
   return (
     <div
       className={`${classes.root} ${
@@ -237,9 +245,9 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
             <div className={classes.price}>Rs. {amountPaid}</div>
           </div>
           <div className={classes.infoText}>
-            <span>Payment Ref Number - {paymentRefId}</span>
+            <span>Payment Ref Number - {bankTxnId}</span>
             <span className={classes.rightArrow}>
-              <Link to={clientRoutes.doctorDetails(cardDetails.doctorId)}>
+              <Link to={clientRoutes.yourOrders()}>
                 <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
               </Link>
             </span>
@@ -247,13 +255,12 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
         </div>
       </div>
       <div className={classes.boxContent}>
-        <div className={classes.doctorName}>{cardDetails.doctor.name}</div>
+        <div className={classes.doctorName}>Order No. - {cardDetails.orderAutoId}</div>
         <div className={classes.consultDate}>
-          <span>{moment(cardDetails.appointmentDateTime).format('DD MMM YYYY, h:mma')}</span>
-          <span className={classes.consultType}>
-            {' '}
-            ({cardDetails.appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit'})
-          </span>
+          <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mma')}</span>
+          {paymentMode && paymentMode.length > 0 && (
+            <span className={classes.consultType}> ({paymentMode})</span>
+          )}
         </div>
         <div className={classes.bottomActions}>
           <AphButton

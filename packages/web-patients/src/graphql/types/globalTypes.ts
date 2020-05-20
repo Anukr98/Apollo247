@@ -278,6 +278,17 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PAYMENT_METHODS {
+  CC = "CC",
+  COD = "COD",
+  DC = "DC",
+  EMI = "EMI",
+  NB = "NB",
+  PAYTMCC = "PAYTMCC",
+  PPI = "PPI",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -412,6 +423,9 @@ export interface AppointmentPaymentInput {
   responseMessage: string;
   bankTxnId?: string | null;
   orderId?: string | null;
+  bankName?: string | null;
+  refundAmount?: number | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface BookAppointmentInput {
@@ -598,6 +612,7 @@ export interface MedicineCartOMSItem {
   isPrescriptionNeeded?: number | null;
   mou?: number | null;
   isMedicine: string;
+  specialPrice: number;
 }
 
 export interface MedicinePaymentInput {
@@ -628,6 +643,7 @@ export interface MedicinePaymentMqInput {
   email?: string | null;
   CODCity?: CODCity | null;
   orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface OrderCancelInput {
@@ -663,6 +679,7 @@ export interface PatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -776,6 +793,7 @@ export interface UpdatePatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface UpdatePatientInput {

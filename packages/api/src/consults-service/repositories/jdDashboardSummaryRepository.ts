@@ -203,6 +203,9 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         ])
         .where('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details."callType" = :callType', { callType })
+        .andWhere('appointment_call_details."doctorType" = :docType', {
+          docType: DoctorType.JUNIOR,
+        })
         .groupBy('appointment_call_details."appointmentId"')
         .getRawMany();
       if (callDetails && callDetails.length > 0) {

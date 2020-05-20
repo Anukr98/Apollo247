@@ -301,6 +301,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
+    return this.update(id, appointmentInfo).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   findAppointmentPayment(id: string) {
     return AppointmentPayments.findOne({ where: { appointment: id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
@@ -1091,6 +1099,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCount,
       appointmentState,
       status: STATUS.PENDING,
+      noShowReason: undefined,
     });
   }
 
@@ -1122,6 +1131,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCountByDoctor,
       appointmentState,
       status: STATUS.PENDING,
+      noShowReason: undefined,
     });
   }
 
@@ -1138,6 +1148,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         doctorCancelReason: cancelReason,
         cancelledDate: new Date(),
+        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -1148,6 +1159,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         patientCancelReason: cancelReason,
         cancelledDate: new Date(),
+        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
