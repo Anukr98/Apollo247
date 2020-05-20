@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
-import Scrollbars from 'react-custom-scrollbars';
 import { OrderCard } from 'components/Orders/OrderCard';
 import { OrdersMessage } from 'components/Orders/OrdersMessage';
 import { TrackOrders } from 'components/Orders/TrackOrders';
