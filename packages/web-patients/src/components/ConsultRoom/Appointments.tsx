@@ -27,6 +27,7 @@ import { Route } from 'react-router-dom';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
+import _capitalize from 'lodash/capitalize';
 import { useAuth } from 'hooks/authHooks';
 // import { STATUS } from 'graphql/types/globalTypes';
 // import isToday from 'date-fns/isToday';
@@ -244,6 +245,7 @@ const useStyles = makeStyles((theme: Theme) => {
     loader: {
       textAlign: 'center',
       padding: '20px 0',
+      outline: 'none',
     },
     messageBox: {
       padding: '10px 20px 25px 20px',
@@ -495,7 +497,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       },
     },
     PAYMENT_SUCCESS: {
-      ctaText: 'DOWNLOAD APP',
+      ctaText: 'DOWNLOAD APOLLO 247 APP',
       info: '',
       callbackFunction: () => {
         window.open(getAppStoreLink(), '_blank');
@@ -875,7 +877,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   .replace(/(A|P)(M)/, '$1.$2.')
                   .toString()}
                 type={'consult'}
-                consultMode={appointmentType}
+                consultMode={_capitalize(appointmentType)}
                 onClose={() => setIsConfirmedPopoverOpen(false)}
                 ctaText={statusActions[paymentStatus].ctaText}
                 orderStatusCallback={statusActions[paymentStatus].callbackFunction}
