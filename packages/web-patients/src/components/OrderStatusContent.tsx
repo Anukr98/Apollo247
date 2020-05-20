@@ -384,7 +384,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               </div>
               <div className={classes.details}>
                 <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType === 'COD' ? 'COD' : 'PREPAID'}</Typography>
+                <Typography component="p">{paymentType}</Typography>
               </div>
             </Paper>
           )}

@@ -55,14 +55,14 @@ interface PaymentMethods {
   }
 
 const paymentMethodMap: PaymentMethods = {
-  DC : 'DEBIT_CARD',
-  CC : 'CREDIT_CARD',
-  NB : 'NET_BANKING',
-  PPI : 'PAYTM_WALLET',
-  EMI : 'CREDIT_CARD_EMI',
-  UPI : 'UPI',
-  PAYTMCC : 'PAYTM_POSTPAID',
-  COD: 'COD'
+  'DEBIT_CARD': 'Debit Card',
+  'CREDIT_CARD': 'Credit Card',
+  'NET_BANKING': 'Net Banking',
+  'PAYTM_WALLET': 'Paytm Wallet',
+  'CREDIT_CARD_EMI': 'Credit Card EMI',
+  'UPI': 'UPI',
+  'PAYTM_POSTPAID': 'Paytm Postpaid',
+  'COD': 'COD'
 }
 
 interface PaymentStatusProps {
@@ -167,7 +167,6 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const paymentStatus = getPaymentStatus();
   const paymentDetail = paymentStatusData && paymentStatusObj[paymentStatus] ? paymentStatusObj[paymentStatus] : null;
 
- 
   return (
     <>
       {!paymentStatusData || paymentStatusData.paymentRefId ? (
@@ -192,7 +191,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                   // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
                   paymentType={paymentMethodMap[paymentStatusData.paymentMode]}
                   paymentRefId={paymentStatusData.paymentRefId}
-                  paymentDateTime={moment(paymentStatusData.paymentDateTime).format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
+                  paymentDateTime={moment(paymentStatusData.paymentDateTime).utc().format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
                     .toString()}
                   type='ORDER'
                   onClose={() => { handleOnClose() }}
