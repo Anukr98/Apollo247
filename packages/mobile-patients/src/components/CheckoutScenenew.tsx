@@ -358,8 +358,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             quantity: item.quantity,
             mrp: getFormattedAmount(item.price),
             price: discountedPrice,
-            itemValue: item.price * item.quantity, // (multiply discountedPrice with quantity)
-            itemDiscount: item.price * item.quantity - discountedPrice * item.quantity, // (diff of (MRP - discountedPrice) * quantity)
+            specialPrice: Number(item.price || item.specialPrice),
+            itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
+            itemDiscount: getFormattedAmount(
+              item.price * item.quantity - discountedPrice * item.quantity
+            ), // (diff of (MRP - discountedPrice) * quantity)
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
             isMedicine: item.isMedicine ? '1' : '0',
