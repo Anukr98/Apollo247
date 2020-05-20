@@ -188,7 +188,7 @@ interface PaymentStatusData {
 }
 export const paymentStatusTracking = (data: PaymentStatusData) => {
   if (window && window.webengage) {
-    const { paymentStatus, type, orderAutoId, orderId } = data;
+    const { paymentStatus, type, orderAutoId, orderId = null } = data;
     try {
       window.webengage.track('Payment Status', {
         "Payment_Status": paymentStatus,
