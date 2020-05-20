@@ -10,6 +10,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList as Address } fr
 import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,9 +169,9 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const disableSubmit = localDeliveryAddressId === '';
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
-  const checkLatLongAvailability = (addressDetails: Address) => {
+  const checkLatLongStateCodeAvailability = (addressDetails: Address) => {
     const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
-    if (!addressDetails.latitude || !addressDetails.longitude) {
+    if (!addressDetails.latitude || !addressDetails.longitude || !addressDetails.stateCode) {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
         setIsLoading(true);
@@ -185,21 +186,40 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 data.results[0].geometry.location
               ) {
                 const { lat, lng } = data.results[0].geometry.location;
-                const {
+                let {
                   id,
                   addressLine1,
-                  city,
+                  addressLine2,
                   mobileNumber,
-                  state,
                   zipcode,
                   addressType,
+                  city,
+                  state,
                   otherAddressType,
                 } = addressDetails;
+                const addressComponents = data.results[0].address_components || [];
+                city =
+                  city ||
+                  (
+                    addressComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                state =
+                  state ||
+                  (
+                    addressComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
                 updateAddressMutation({
                   variables: {
                     UpdatePatientAddressInput: {
                       id,
                       addressLine1,
+                      addressLine2,
                       city,
                       state,
                       zipcode,
@@ -208,6 +228,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                       otherAddressType,
                       latitude: lat,
                       longitude: lng,
+                      stateCode: pharmaStateCodeMapping[state] || '',
                     },
                   },
                 }).then(() => {
@@ -217,7 +238,12 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 });
               }
             } catch {
-              (e: AxiosError) => console.log(e);
+              (e: AxiosError) => {
+                console.log(e);
+                setIsLoading(false);
+                setIsAlertOpen(true);
+                setAlertMessage(e.message);
+              };
             }
           })
           .catch((e: AxiosError) => {
@@ -257,7 +283,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                             onChange={() => {
                               // setLocalDeliveryAddressId(addressId);
                               // setLocalZipCode(addressDetails.zipcode || '');
-                              checkLatLongAvailability(addressDetails);
+                              checkLatLongStateCodeAvailability(addressDetails);
                             }}
                           />
                         </li>

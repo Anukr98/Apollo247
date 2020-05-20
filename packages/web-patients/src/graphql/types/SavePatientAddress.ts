@@ -14,10 +14,17 @@ export interface SavePatientAddress_savePatientAddress_patientAddress {
   id: string;
   addressLine1: string | null;
   addressLine2: string | null;
-  zipcode: string | null;
+  city: string | null;
   mobileNumber: string | null;
+  state: string | null;
+  zipcode: string | null;
+  landmark: string | null;
+  createdDate: any | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
   otherAddressType: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  stateCode: string | null;
 }
 
 export interface SavePatientAddress_savePatientAddress {
