@@ -354,11 +354,11 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                   <div className={classes.details}>
                     <Typography component="h6">Mode of Consult</Typography>
                     <Typography component="p">
-                      {consultMode === 'PHYSICAL' ? 'Clinic Visit' : consultMode}
+                      {consultMode.toLowerCase() === 'physical' ? 'Clinic Visit' : consultMode}
                     </Typography>
                   </div>
                 </Grid>
-                {consultMode === 'PHYSICAL' &&
+                {consultMode.toLowerCase() === 'physical' &&
                   doctorAddressDetail &&
                   Object.keys(doctorAddressDetail).length > 1 && (
                     <Grid item xs={12} sm={12}>
