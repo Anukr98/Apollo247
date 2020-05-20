@@ -1356,6 +1356,17 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         currentStatus
         patientAddressId
         currentStatus
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+        }
         medicineOrdersStatus {
           id
           orderStatus
