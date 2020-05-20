@@ -1,24 +1,17 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, DoctorSpecialty, ConsultMode } from 'doctors-service/entities/';
+import { Doctor, DoctorSpecialty } from 'doctors-service/entities/';
 import {
   DoctorSlotAvailability,
   Geolocation,
   FacilityDistanceMap,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { ApiConstants } from 'ApiConstants';
 import { differenceInMinutes } from 'date-fns';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { Connection } from 'typeorm';
-import { debugLog, log } from 'customWinstonLogger';
-import fetch from 'node-fetch';
+import { debugLog } from 'customWinstonLogger';
 
 export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
   type PossibleSearchMatches {
@@ -113,7 +106,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let facilityDistances: FacilityDistanceMap = {};
+  const facilityDistances: FacilityDistanceMap = {};
 
   // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
@@ -130,10 +123,10 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             {
-              match_phrase_prefix: {
-                fullName: {
-                  query: searchTextLowerCase,
-                },
+              multi_match: {
+                fields: ['fullName', 'specialty.name'],
+                fuzziness: 'AUTO',
+                query: searchTextLowerCase,
               },
             },
           ],
@@ -489,148 +482,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     otherDoctors: otherDoctors,
     otherDoctorsNextAvailability: otherDoctorsNextAvailability,
   };
-};
-
-const getPossibleDoctorsAndSpecialties = async (
-  patientId: string,
-  doctorsDb: Connection,
-  consultsDb: Connection,
-  facilityDistances?: FacilityDistanceMap
-) => {
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-
-  let allPossibleDoctors: Doctor[] = [];
-  let allPossibleSpecialties: DoctorSpecialty[] = [];
-  let sortedPossibleDoctors: Doctor[] = [];
-  let sortedPossibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
-  const specialtyId = await specialtyRepository.findSpecialtyIdsByNames([generalPhysicianName]);
-
-  if (specialtyId.length === 1) {
-    allPossibleDoctors = await doctorRepository.searchBySpecialty(specialtyId[0].id);
-  } else {
-    allPossibleDoctors = await doctorRepository.searchByName('', '');
-  }
-  allPossibleSpecialties = await specialtyRepository.searchByName('');
-
-  //get Sorted Doctors List
-  const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
-    allPossibleDoctors,
-    patientId,
-    doctorsDb,
-    consultsDb,
-    facilityDistances
-  );
-
-  sortedPossibleDoctors = sortedDoctors;
-  sortedPossibleDoctorsNextAvailability = sortedDoctorsNextAvailability;
-
-  return { sortedPossibleDoctors, allPossibleSpecialties, sortedPossibleDoctorsNextAvailability };
-};
-
-const getSortedDoctors = async (
-  doctors: Doctor[],
-  patientId: string,
-  doctorsDb: Connection,
-  consultsDb: Connection,
-  facilityDistances?: FacilityDistanceMap
-) => {
-  //create first order curried method with first 4 static parameters being passed.
-  const searchLogger = debugLog(
-    'doctorSearchAPILogger',
-    'SearchDoctorAndSpecialtyByName',
-    apiCallId,
-    callStartTime,
-    identifier
-  );
-
-  let sortedDoctors: Doctor[] = doctors;
-  let sortedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const consultsRepository = consultsDb.getCustomRepository(AppointmentRepository);
-
-  //get patient and matched doctors previous appointments starts here
-  const matchedDoctorIds = doctors.map((doctor) => {
-    return doctor.id;
-  });
-
-  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___START`);
-  const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
-    matchedDoctorIds,
-    ConsultMode.BOTH,
-    doctorsDb,
-    consultsDb
-  );
-  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___END`);
-
-  sortedDoctorsNextAvailability = doctorNextAvailSlots.doctorAvailalbeSlots;
-  //apply sort algorithm
-  searchLogger(`APPLY_RANKING_ALGORITHM___START`);
-  if (doctors.length > 1) {
-    //get consult now and book now doctors by available time
-    const {
-      consultNowDoctors,
-      bookNowDoctors,
-    } = await doctorRepository.getConsultAndBookNowDoctors(
-      doctorNextAvailSlots.doctorAvailalbeSlots,
-      doctors
-    );
-    //apply sort algorithm on ConsultNow doctors
-    if (consultNowDoctors.length > 1) {
-      //get patient and matched doctors previous appointments starts here
-      const consultNowDocIds = consultNowDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        patientId,
-        consultNowDocIds
-      );
-
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
-      consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(
-          doctorA,
-          doctorB,
-          consultedDoctorIds,
-          facilityDistances
-        );
-      });
-    }
-
-    //apply sort algorithm on BookNow doctors
-    if (bookNowDoctors.length > 1) {
-      //get patient and matched doctors previous appointments starts here
-      const consultNowDocIds = bookNowDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        patientId,
-        consultNowDocIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
-      bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(
-          doctorA,
-          doctorB,
-          consultedDoctorIds,
-          facilityDistances
-        );
-      });
-    }
-
-    sortedDoctors = consultNowDoctors.concat(bookNowDoctors);
-  }
-  searchLogger(`APPLY_RANKING_ALGORITHM___END`);
-
-  return { sortedDoctors, sortedDoctorsNextAvailability };
 };
 
 export const searchDoctorAndSpecialtyByNameResolvers = {

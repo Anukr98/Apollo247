@@ -141,7 +141,9 @@ enum CartTypes {
 }
 
 export const MedicinesCartProvider: React.FC = (props) => {
-  const [couponCode, setCouponCode] = React.useState<string>('');
+  const [couponCode, setCouponCode] = React.useState<string>(
+    localStorage.getItem('pharmaCoupon') || ''
+  );
   const defPresObject = {
     name: '',
     imageUrl: '',
@@ -205,10 +207,26 @@ export const MedicinesCartProvider: React.FC = (props) => {
       } else {
         localStorage.setItem('cartItems', items);
       }
+      if (cartItems.length === 0) {
+        removePharmaCoupon();
+      }
       setItemsStr(items);
       setIsCartUpdated(false);
     }
   }, [cartItems, isCartUpdated]);
+
+  useEffect(() => {
+    const existCouponCode = localStorage.getItem('pharmaCoupon');
+    if (couponCode.length > 0 && couponCode !== existCouponCode) {
+      localStorage.setItem('pharmaCoupon', couponCode);
+    }
+  }, [couponCode]);
+
+  const removePharmaCoupon = () => {
+    const existCouponCode = localStorage.getItem('pharmaCoupon');
+    existCouponCode && existCouponCode.length > 0 && localStorage.removeItem('pharmaCoupon');
+    setCouponCode('');
+  };
 
   useEffect(() => {
     if (currentPatient && currentPatient.id && currentPatient.id.length > 0) {

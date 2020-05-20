@@ -6,20 +6,28 @@ const consultsOrderQuery = (payload) => {
         txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
     }
 
-    let params = `orderId: "${payload.ORDERID}", amountPaid: ${payload.TXNAMOUNT},
-    paymentRefId: "${payload.TXNID}", paymentStatus: "${payload.STATUS}", paymentDateTime: "${txnDate}", responseCode: "${payload.RESPCODE}", responseMessage: "${payload.RESPMSG}", bankTxnId: "${payload.BANKTXNID}"`
-    // if (payload.REFUNDAMT) {
-    //     params += `, refundAmount: ${payload.REFUNDAMT}`
-    // }
+    let params = `orderId: "${payload.ORDERID}",
+    amountPaid: ${payload.TXNAMOUNT},
+    paymentRefId: "${payload.TXNID}", 
+    paymentStatus: "${payload.STATUS}", 
+    paymentDateTime: "${txnDate}", 
+    responseCode: "${payload.RESPCODE}", 
+    responseMessage: "${payload.RESPMSG}", 
+    bankTxnId: "${payload.BANKTXNID}",
+    paymentMode: ${payload.PAYMENTMODE}`;
 
-    // if (payload.BANKNAME) {
-    //     params += `, bankName: "${payload.BANKNAME}"`
-    // }
+    if (payload.REFUNDAMT) {
+        params += `, refundAmount: ${payload.REFUNDAMT}`;
+    }
+
+    if (payload.BANKNAME) {
+        params += `, bankName: "${payload.BANKNAME}"`;
+    }
 
     return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){appointment { id appointment{ id } } }}';
-}
+};
 
 module.exports = {
     consultsOrderQuery
-}
+};
 

@@ -15,8 +15,6 @@ import {
   ValidateConsultCoupon_validateConsultCoupon,
   ValidateConsultCoupon,
 } from 'graphql/types/ValidateConsultCoupon';
-// import { PharmaCouponInput, CouponCategoryApplicable } from 'graphql/types/globalTypes';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -40,7 +38,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       color: '#01475b',
-      alignItems: 'start',
+      alignItems: 'center',
+      '& >span:first-child': {
+        marginTop: -2,
+      },
       '& span:last-child': {
         fontSize: 14,
         fontWeight: 500,
@@ -102,7 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
         '&:hover': {
           backgroundColor: '#fcb716',
-          color: '#fff',  
+          color: '#fff',
         },
       },
     },
@@ -141,6 +142,16 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       paddingBottom: 10,
     },
+    couponText: {
+      fontSize: 12,
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      lineHeight: '16px',
+      color: '#02475b',
+      opacity: 0.6,
+      paddingTop: 2,
+      marginLeft: 40,
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -155,6 +166,8 @@ interface ApplyCouponProps {
   doctorId: string;
   consultType: string;
   appointmentDateTime: string;
+  validityStatus: boolean;
+  setValidityStatus: (validityStatus: boolean) => void;
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
@@ -212,6 +225,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         .then((res) => {
           if (res && res.data && res.data.validateConsultCoupon) {
             const couponValidateResult = res.data.validateConsultCoupon;
+            props.setValidityStatus(couponValidateResult.validityStatus);
             if (couponValidateResult.validityStatus) {
               props.setCouponCode(selectCouponCode);
               props.close(false);
@@ -228,6 +242,11 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         });
     }
   };
+  const disableCoupon =
+    !selectCouponCode ||
+    selectCouponCode.length < 3 ||
+    selectCouponCode.length > 20 ||
+    errorMessage.length > 0;
 
   return (
     <div className={classes.shadowHide}>
@@ -239,22 +258,33 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 {availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
+                      inputProps={{
+                        maxLength: 20,
+                      }}
                       value={selectCouponCode}
-                      onChange={(e) => setSelectCouponCode(e.target.value)}
-                      placeholder="CouponCode"
+                      onChange={(e) => {
+                        setErrorMessage('');
+                        props.setValidityStatus(false);
+                        const value = e.target.value.replace(/[^a-z0-9]/gi, '');
+                        setSelectCouponCode(value);
+                      }}
+                      placeholder="Enter coupon code"
+                      error={errorMessage.length > 0 && true}
                     />
                     <div className={classes.pinActions}>
-                      {/* {selectCouponCode.length > 0 ? (
+                      {errorMessage.length === 0 && props.validityStatus ? (
                         <div className={classes.tickMark}>
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton className={classes.searchBtn} onClick>
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )} */}
-                      {selectCouponCode.length > 0 && (
-                        <AphButton className={classes.searchBtn} onClick={() => verifyCoupon()}>
+                        <AphButton
+                          classes={{
+                            disabled: classes.buttonDisabled,
+                          }}
+                          className={classes.searchBtn}
+                          disabled={disableCoupon}
+                          onClick={() => verifyCoupon()}
+                        >
                           <img src={require('images/ic_send.svg')} alt="" />
                         </AphButton>
                       )}
@@ -286,10 +316,14 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                               }
                               onChange={() => {
                                 setErrorMessage('');
+                                props.setValidityStatus(false);
                                 setSelectCouponCode(couponDetails.code);
                               }}
                               // disabled={props.cartValue < 200}
                             />
+                            {couponDetails && couponDetails.description && (
+                              <div className={classes.couponText}>{couponDetails.description}</div>
+                            )}
                           </li>
                         )
                     )
@@ -308,7 +342,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
         <AphButton
           color="primary"
           fullWidth
-          disabled={!selectCouponCode}
+          disabled={disableCoupon}
           onClick={() => {
             verifyCoupon();
           }}

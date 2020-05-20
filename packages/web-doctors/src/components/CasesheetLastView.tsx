@@ -205,7 +205,7 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
               </p>
               <p className={classes.specialty}>{`${
                 createdDoctorProfile.specialty.specialistSingularTerm
-              } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
+              } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
               {doctorFacilityDetails ? (
                 <>
                   <p className={classes.address}>
@@ -319,7 +319,7 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                         ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
                         : ''}
                       {createdDoctorProfile.registrationNumber
-                        ? `MCI Reg. No. ${createdDoctorProfile.registrationNumber}`
+                        ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
                         : ''}
                     </p>
                   )}
@@ -333,9 +333,9 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
           <div className={classes.disclaimer}>
             <span>Disclaimer:</span>
             <span>
-              This prescription is issued on the basis of your teleconsultation. It is valid from
-              the date of issue for upto 90 days (for the specific period/dosage of each medicine as
-              advised).
+              This prescription is issued on the basis of your inputs during teleconsultation. It is
+              valid from the date of issue for upto 90 days (for the specific period/dosage of each
+              medicine as advised).
             </span>
           </div>
         </div>

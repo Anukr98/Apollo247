@@ -615,6 +615,9 @@ interface assignedDoctorType {
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
   assignedDoctorDisplayName: string;
+  assignedDoctorMobile: string;
+  assignedDoctorSpecialty: string;
+  assignedDoctorPhoto: string;
 }
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;

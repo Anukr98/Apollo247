@@ -29,6 +29,8 @@ export const pharmaOrdersTypeDefs = gql`
     paymentStatus: String
     paymentRefId: String
     paymentType: String
+    paymentMode: String
+    bankTxnId: String
     amountPaid: Float
     paymentDateTime: DateTime
   }
@@ -57,6 +59,8 @@ type PharmacyPayment = {
   paymentStatus: string;
   paymentRefId: string;
   paymentType: string;
+  paymentMode: string;
+  bankTxnId: string;
   amountPaid: number;
   paymentDateTime: Date;
 };
@@ -70,8 +74,9 @@ const pharmacyOrders: Resolver<
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  console.log('primaryPatientIds==', primaryPatientIds);
   const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(primaryPatientIds);
-  // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2))
+  // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
   if (medicineOrders && medicineOrders.length > 0) {
     const excludeNullPayments = _.filter(medicineOrders, (o) => {
       return o.medicineOrderPayments.length > 0;
@@ -80,7 +85,8 @@ const pharmacyOrders: Resolver<
       return o.medicineOrderPayments[0].paymentType !== 'COD' && o.currentStatus !== 'QUOTE';
     });
     return { pharmaOrders: result };
-  } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  } else if (medicineOrders.length == 0) return { pharmaOrders: [] };
+  else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
 export const pharmacyOrdersResolvers = {
