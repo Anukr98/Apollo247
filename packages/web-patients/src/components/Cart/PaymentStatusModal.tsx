@@ -11,6 +11,7 @@ import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { getPaymentMethodFullName } from 'helpers/commonHelpers';
+import { paymentStatusTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -136,7 +137,16 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       })
         .then((resp: any) => {
           if (resp && resp.data && resp.data.pharmaPaymentStatus) {
+            const { paymentStatus,  paymentRefId  } = resp.data.pharmaPaymentStatus
             setPaymentStatusData(resp.data.pharmaPaymentStatus)
+            /* WebEngage Tracking Start*/
+            paymentRefId && paymentStatusTracking({
+              orderId: paymentRefId,
+              paymentStatus,
+              type: 'Pharmacy',
+              orderAutoId: typeof params.orderAutoId === 'string' ? parseInt(params.orderAutoId) : params.orderAutoId
+            })
+            /* WebEngage Tracking End*/
           } else {
             // redirect to medicine 
             paymentStatusRedirect(clientRoutes.medicines());

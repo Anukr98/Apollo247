@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { paymentInstrumentClickTracking } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
@@ -626,9 +627,18 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
+       
         if (res && res.data && res.data.saveMedicineOrderOMS) {
           const { orderId, orderAutoId, errorMessage } = res.data.saveMedicineOrderOMS;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
+           /* Webengage Code Start */
+          paymentInstrumentClickTracking({
+            paymentMode: value,
+            orderId,
+            orderAutoId,
+            type: "Pharmacy"
+          })
+        /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;

@@ -311,6 +311,7 @@ export const convertCaseSheetToRxPdfData = async (
     displayId: '',
     consultDate: '',
     consultType: '',
+    consultTime: '',
   };
 
   if (caseSheet.appointment) {
@@ -320,6 +321,7 @@ export const convertCaseSheetToRxPdfData = async (
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
       consultDate: format(consultDate, 'dd/MM/yyyy'),
+      consultTime: format(consultDate, 'hh:mm a'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
@@ -465,12 +467,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#7f7f7f')
-      .text(labelText2, margin + 350, y, { lineBreak: false })
+      .text(labelText2, margin + 340, y, { lineBreak: false })
 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#333333')
-      .text(`${labelValue2}`, 475, y)
+      .text(`${labelValue2}`, 450, y)
 
       .moveDown(0.5);
   };
@@ -488,7 +490,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
     const specialty = doctorInfo.specialty;
-    const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+    const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
       .fontSize(11)
@@ -531,7 +533,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderFooter = () => {
-    drawHorizontalDivider(doc.page.height - 80);
+    doc
+      .moveTo(margin, doc.page.height - 80)
+      .lineTo(doc.page.width - margin, doc.page.height - 80)
+      .lineWidth(1)
+      .fill('#d9e3e6');
+
     const disclaimerText =
       'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue for upto 90 days(for the specific period / dosage of each medicine as advised).';
 
@@ -539,13 +546,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#666666')
-      .text('Disclaimer:', margin, doc.page.height - 80, { lineBreak: false });
+      .text('Disclaimer:', margin, doc.page.height - 75, { lineBreak: false });
 
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fontSize(9)
       .fillColor('#7f7f7f')
-      .text(disclaimerText, margin + 55, doc.page.height - 80, { align: 'left' });
+      .text(disclaimerText, margin + 55, doc.page.height - 75, { align: 'left' });
     return doc;
   };
 
@@ -791,7 +798,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         'Patient',
         `${textArray.join('   |   ')}`,
         'Consult Date',
-        `${appointmentData.consultDate}`,
+        `${appointmentData.consultDate + ' at ' + appointmentData.consultTime}`,
         doc.y
       );
     }
@@ -936,7 +943,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc
       .fontSize(8)
       .fillColor('#02475b')
-      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
+      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'right' });
   }
 
   doc.end();
