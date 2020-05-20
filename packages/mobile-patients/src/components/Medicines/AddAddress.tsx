@@ -394,6 +394,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     const resetValues = (e: Error) => {
       setcity('');
       setstate('');
+      setStateCode('');
       setLatitude(0);
       setLongitude(0);
       CommonBugFender('AddAddress_updateCityStateByPincode', e);
@@ -406,8 +407,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           const response = getFormattedLocation(addrComponents, latLang);
           const city = response.city;
           const state = response.state;
+          const finalStateCode =
+            AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+              state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+            ] || stateCode;
+
           setcity((city && `${city}${state ? `, ${state}` : ''}`) || '');
           setstate(state || '');
+          setStateCode(finalStateCode);
           setLatitude(response.latitude!);
           setLongitude(response.longitude!);
         } catch (e) {
