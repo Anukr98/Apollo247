@@ -616,6 +616,11 @@ export interface MedicineCartOMSItem {
   specialPrice: number;
 }
 
+export interface MedicineOrderCancelOMSInput {
+  orderNo?: number | null;
+  cancelReasonCode?: string | null;
+}
+
 export interface MedicinePaymentInput {
   orderId: string;
   orderAutoId: number;
