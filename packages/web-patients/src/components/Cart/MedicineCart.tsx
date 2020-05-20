@@ -845,7 +845,7 @@ export const MedicineCart: React.FC = (props) => {
         if (
           data &&
           data.savePrescriptionMedicineOrderOMS &&
-          data.savePrescriptionMedicineOrderOMS.errorMessage === ''
+          data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
           window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
         } else {
