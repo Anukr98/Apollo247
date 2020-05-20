@@ -210,8 +210,6 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
       : '';
   }
 
-  console.log(paymentInfo);
-
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
       ? clientRoutes.medicinesCart()
