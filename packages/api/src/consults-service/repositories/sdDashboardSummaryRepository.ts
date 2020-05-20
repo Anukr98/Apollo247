@@ -293,10 +293,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('appointment_call_details."callType" = :callType', { callType })
       .andWhere('appointment."doctorId" = :doctorId', { doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-      })
+      .andWhere('appointment_call_details."doctorType"!= :docType', { docType: DoctorType.JUNIOR })
+      .andWhere('appointment.status in(:status)', { status: STATUS.COMPLETED })
       .groupBy('appointment_call_details."appointmentId"')
       .getRawMany();
     if (callDetails && callDetails.length > 0) {
