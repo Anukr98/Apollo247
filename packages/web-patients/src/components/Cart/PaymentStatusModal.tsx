@@ -167,7 +167,6 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const paymentStatus = getPaymentStatus();
   const paymentDetail = paymentStatusData && paymentStatusObj[paymentStatus] ? paymentStatusObj[paymentStatus] : null;
 
- 
   return (
     <>
       {!paymentStatusData || paymentStatusData.paymentRefId ? (
@@ -192,7 +191,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                   // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
                   paymentType={paymentMethodMap[paymentStatusData.paymentMode]}
                   paymentRefId={paymentStatusData.paymentRefId}
-                  paymentDateTime={moment(paymentStatusData.paymentDateTime).format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
+                  paymentDateTime={moment(paymentStatusData.paymentDateTime).utc().format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
                     .toString()}
                   type='ORDER'
                   onClose={() => { handleOnClose() }}
