@@ -245,6 +245,7 @@ const useStyles = makeStyles((theme: Theme) => {
     loader: {
       textAlign: 'center',
       padding: '20px 0',
+      outline: 'none',
     },
     messageBox: {
       padding: '10px 20px 25px 20px',
