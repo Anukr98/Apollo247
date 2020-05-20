@@ -464,7 +464,7 @@ export const ClinicCheckout: React.FC = () => {
                     <div className={classes.doctorName}>{fullName}</div>
                     <div className={classes.doctorType}>
                       <span>
-                        {speciality} | {experience} Exp
+                        {speciality} | {experience} Yrs. Exp
                       </span>
                       {/* <div className={classes.moreBtn}>More</div> */}
                     </div>
