@@ -33,8 +33,8 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     let price = 0;
     let orderID = '';
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount, displayId } = item;
-      price = actualAmount;
+      const { appointmentPayments, actualAmount, displayId, discountedAmount } = item;
+      price = actualAmount - discountedAmount;
       orderID = 'Order ID: ' + String(displayId);
       if (!appointmentPayments.length) {
         status = 'PENDING';

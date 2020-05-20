@@ -142,7 +142,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setDeliveryAddressId: setDiagnosticAddressId,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
 
   const isChanged =
     addressData &&
@@ -191,12 +191,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             CommonBugFender('AddAddress_doRequestAndAccessLocationModified', e);
           });
       } else {
-        setstate(locationDetails.state || '');
-        setcity(`${locationDetails.city}, ${locationDetails.state}` || '');
-        setpincode(locationDetails.pincode || '');
-        setLatitude(locationDetails.latitude || 0);
-        setLongitude(locationDetails.longitude || 0);
-        setStateCode(locationDetails.stateCode || '');
+        const _locationDetails =
+          pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
+        setstate(_locationDetails.state || '');
+        setcity(`${_locationDetails.city}, ${_locationDetails.state}` || '');
+        setpincode(_locationDetails.pincode || '');
+        setLatitude(_locationDetails.latitude || 0);
+        setLongitude(_locationDetails.longitude || 0);
+        setStateCode(_locationDetails.stateCode || '');
       }
     }
   }, []);
