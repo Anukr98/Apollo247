@@ -5,6 +5,7 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const pharmaOrdersTypeDefs = gql`
   type PharmacyOrderResult {
@@ -67,7 +68,9 @@ const pharmacyOrders: Resolver<
   PharmacyOrderResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(args.patientId);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const medicineOrders = await medicineOrderRepo.getMedicineOrdersList(primaryPatientIds);
   // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2))
   if (medicineOrders && medicineOrders.length > 0) {
     const excludeNullPayments = _.filter(medicineOrders, (o) => {

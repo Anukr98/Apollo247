@@ -7,6 +7,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
 import { STATUS } from 'consults-service/entities';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const consultOrdersTypeDefs = gql`
   type AppointmentsResult {
@@ -78,11 +79,15 @@ const consultOrders: Resolver<
   { patientId: string },
   ConsultServiceContext,
   AppointmentsResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
-  const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
-  // console.log('appointments Response', JSON.stringify(response, null, 2));
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+
+  const response = await apptsRepo.getAllAppointmentsByPatientId(primaryPatientIds);
+  // console.log('appointments Response', JSON.stringify(response, null, 2))
 
   if (response && response.length > 0) {
     const result = [];

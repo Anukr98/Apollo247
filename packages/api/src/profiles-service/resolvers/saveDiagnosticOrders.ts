@@ -684,7 +684,11 @@ const getDiagnosticOrdersList: Resolver<
   DiagnosticOrdersResult
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
-  const ordersList = await diagnosticsRepo.getListOfOrders(args.patientId);
+
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+
+  const ordersList = await diagnosticsRepo.getListOfOrders(primaryPatientIds);
   return { ordersList };
 };
 

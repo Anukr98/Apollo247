@@ -159,9 +159,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patient: String) {
+  getMedicineOrdersList(patientIds: String[]) {
     return this.find({
-      where: { patient },
+      where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',

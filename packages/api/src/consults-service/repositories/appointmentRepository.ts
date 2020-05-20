@@ -460,7 +460,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPastAppointments(doctorId: string, patientId: string) {
+  getPastAppointments(doctorId: string, ids: string[]) {
     /*return this.find({
       where: {
         doctorId,
@@ -476,7 +476,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .where('appointment.appointmentDateTime < :newDate', {
         newDate: new Date(),
       })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
@@ -489,11 +489,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   //get patient all appointments
-  getPatientAllAppointments(patientId: string, offset?: number, limit?: number) {
+  getPatientAllAppointments(ids: string[], offset?: number, limit?: number) {
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -583,14 +583,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  async getPatinetUpcomingAppointments(patientId: string) {
+  async getPatinetUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
     const upcomingAppts = await this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -606,7 +606,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         fromDate: weekPastDateUTC,
         toDate: new Date(),
       })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -1189,10 +1189,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(patientId: string) {
+  getAllAppointmentsByPatientId(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.patientId = :patientId', { patientId: patientId })
+      .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
