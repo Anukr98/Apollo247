@@ -166,7 +166,7 @@ interface PaymentDetail {
 }
 export const paymentInstrumentClickTracking = (data:PaymentDetail) => {
   if (window && window.webengage) {
-    const { paymentMode, type, orderAutoId, orderId } = data;
+    const { paymentMode, type, orderAutoId, orderId=null } = data;
     try {
       window.webengage.track('Payment Instrument', {
         "Payment_Mode": paymentMode,
