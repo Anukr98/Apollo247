@@ -25,6 +25,7 @@ interface PaymentCardBodyProps {
   item: any;
   paymentFor: string;
   navigationProps: any;
+  patientId?: string;
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   useEffect(() => {}, []);
@@ -120,11 +121,12 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
 
   const goToPaymentStatus = () => {
     const { status } = statusItemValues();
-    const { item, paymentFor } = props;
+    const { item, paymentFor, patientId } = props;
     props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
       item: item,
       paymentFor: paymentFor,
       status: status,
+      patientId: patientId,
     });
   };
   const { status } = statusItemValues();
