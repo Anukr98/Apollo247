@@ -262,7 +262,7 @@
     "address": "Address - ",
     "paymentDetails": "PAYMENT DETAILS",
     "mrp_total": "MRP Total",
-    "product_discount": "Discount",
+    "product_discount": "Total Discount",
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges"
   },

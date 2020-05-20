@@ -189,7 +189,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails');
-  console.log({ order });
+  const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
+    (item) => item!.isPrescriptionNeeded
+  );
 
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
@@ -443,7 +445,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean // if any of the order item requires prescription
     ) => {
       const orderStatusDescMapping = {
-        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: isOrderRequirePrescription
+        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
           ? ['', '']
           : [
               'Verification Pending: ',
@@ -721,7 +723,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     : ''
                 }
                 showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
-                getOrderDescription={getOrderDescription(orderDetails.currentStatus!)}
+                getOrderDescription={getOrderDescription(
+                  orderDetails.currentStatus!,
+                  prescriptionRequired
+                )}
                 status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
@@ -1150,7 +1155,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 description: orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
                 )
-                  ? 'Sorry, we cannot cancel once the order is billed.'
+                  ? 'Once your order is billed, you cannot cancel your order.'
                   : 'Sorry, we cannot cancel the order now.',
               });
             } else {
