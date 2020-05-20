@@ -3,6 +3,7 @@ import { Image, ImageProps } from 'react-native';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
+  if (size === 'sm_l') return { width: 18, height: 21 };
   if (size === 'md_l') return { width: 54, height: 54 };
   if (size === 'lg') return { width: 64, height: 64 };
   return { width: 48, height: 48 };
@@ -13,11 +14,11 @@ const getCustomIconSize = (wt: number, ht: number) => {
 };
 
 interface IconProps extends Partial<ImageProps> {
-  size?: 'sm' | 'md' | 'md_l' | 'lg';
+  size?: 'sm' | 'sm_l' | 'md' | 'md_l' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size?: 'sm' | 'md' | 'md_l' | 'lg';
+  size?: 'sm' | 'sm_l' | 'md' | 'md_l' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
@@ -50,6 +51,10 @@ export const DoctorIcon: React.FC<IconProps> = (props) => (
 
 export const CovidRiskLevel: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_white.png')} />
+);
+
+export const NotifySymbol: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/notify_symbol.png')} />
 );
 
 export const CovidHealthScan: React.FC<IconProps> = (props) => (

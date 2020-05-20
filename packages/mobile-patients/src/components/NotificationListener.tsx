@@ -8,7 +8,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_APPOINTMENT_DATA,
   GET_CALL_DETAILS,
-  GET_MEDICINE_ORDER_DETAILS,
+  GET_MEDICINE_ORDER_OMS_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData as getAppointmentDataQuery,
@@ -18,10 +18,6 @@ import {
   getCallDetails,
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
-import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetailsVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -50,6 +46,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  getMedicineOrderOMSDetails,
+  getMedicineOrderOMSDetailsVariables,
+} from '../graphql/types/getMedicineOrderOMSDetails';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -454,8 +454,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const orderId: number = parseInt(data.orderId || '0');
           console.log('Cart_Ready called');
           client
-            .query<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>({
-              query: GET_MEDICINE_ORDER_DETAILS,
+            .query<getMedicineOrderOMSDetails, getMedicineOrderOMSDetailsVariables>({
+              query: GET_MEDICINE_ORDER_OMS_DETAILS,
               variables: {
                 orderAutoId: orderId,
                 patientId: currentPatient && currentPatient.id,
@@ -463,7 +463,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               fetchPolicy: 'no-cache',
             })
             .then((data) => {
-              const orderDetails = data.data.getMedicineOrderDetails.MedicineOrderDetails;
+              const orderDetails = data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
               const items = (orderDetails!.medicineOrderLineItems || [])
                 .map((item) => ({
                   sku: item!.medicineSKU!,

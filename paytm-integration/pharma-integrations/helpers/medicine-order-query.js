@@ -1,7 +1,7 @@
 const getMedicineOrderQuery = (method, patientId, orderId) => {
   return `query {
         ${method}(patientId:"${patientId}", orderAutoId:${orderId}) {
-          MedicineOrderDetails {
+          medicineOrderDetails {
             id
             shopId
             orderAutoId

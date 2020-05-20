@@ -34,7 +34,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     if (paymentFor === 'consult') {
       const { appointmentDateTime, appointmentPayments, doctor, appointmentType } = item;
       leftHeaderText = 'Dr. ' + doctor.name;
-      type = appointmentType === 'ONLINE' ? 'Online' : 'Clinic Visit';
+      type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
       if (!appointmentPayments || !appointmentPayments.length) {
         status = 'PENDING';

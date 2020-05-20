@@ -19,6 +19,13 @@ const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
   if (loading) {
     return <Spinner />;
   }
-  return <PaymentsList payments={payments} type="consult" navigationProps={navigationProps} />;
+  return (
+    <PaymentsList
+      patientId={patientId}
+      payments={payments}
+      type="consult"
+      navigationProps={navigationProps}
+    />
+  );
 };
 export default ConsultPaymentsList;

@@ -14,7 +14,7 @@ import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterN
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   DELETE_DEVICE_TOKEN,
-  GET_MEDICINE_ORDERS_LIST,
+  GET_MEDICINE_ORDERS_OMS__LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
@@ -52,16 +52,16 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '../../graphql/types/GetMedicineOrdersList';
 import { TabHeader } from '../ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '../../strings/AppConfig';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+} from '../../graphql/types/getMedicineOrdersOMSList';
 
 const { width } = Dimensions.get('window');
 
@@ -187,10 +187,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     error: ordersError,
     loading: ordersLoading,
     refetch: ordersRefetch,
-  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'cache-first',
-  });
+  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
+    GET_MEDICINE_ORDERS_OMS__LIST,
+    {
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'cache-first',
+    }
+  );
 
   useEffect(() => {
     if (!currentPatient) {
@@ -447,7 +450,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+              orders: (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
                 (item) =>
                   !(
                     (item!.medicineOrdersStatus || []).length == 1 &&

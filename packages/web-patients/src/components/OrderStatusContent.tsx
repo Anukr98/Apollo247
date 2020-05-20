@@ -239,7 +239,7 @@ interface OrderStatusDetail {
   orderStatusCallback: () => void;
   orderId: number;
   amountPaid: number;
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
+  paymentType?: string;
   paymentRefId: string;
   paymentDateTime?: string;
   type: string;
@@ -304,11 +304,15 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               : ''
           }`}
         >
-          <ErrorOutlineIcon></ErrorOutlineIcon>
+          {paymentStatus && paymentStatus.length > 0 && (
+            <img src={require(`images/${paymentStatus}.svg`)} />
+          )}
           <Typography component="h5">{status[paymentStatus]}</Typography>
           <Typography component="p">Rs. {amountPaid}</Typography>
           <Typography component="p">Order ID : {orderId}</Typography>
-          <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          {paymentRefId && paymentRefId.length > 1 && (
+            <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
+          )}
         </div>
         <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
           <Typography component="h4">{type === 'consult' ? 'Booking' : 'Order'} Details</Typography>

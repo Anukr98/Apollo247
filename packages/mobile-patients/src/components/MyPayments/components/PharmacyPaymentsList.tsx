@@ -19,6 +19,13 @@ const PharmacyPaymentsList: FC<PharmacyPaymentsListProps> = (props) => {
   if (loading) {
     return <Spinner />;
   }
-  return <PaymentsList payments={payments} type="pharmacy" navigationProps={navigationProps} />;
+  return (
+    <PaymentsList
+      patientId={patientId}
+      payments={payments}
+      type="pharmacy"
+      navigationProps={navigationProps}
+    />
+  );
 };
 export default PharmacyPaymentsList;

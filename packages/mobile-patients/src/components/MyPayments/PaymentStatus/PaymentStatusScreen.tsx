@@ -37,6 +37,7 @@ const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
   const itemDetails = props.navigation.getParam('item');
   const paymentType = props.navigation.getParam('paymentFor');
   const paymentStatus = props.navigation.getParam('status');
+  const patientId = props.navigation.getParam('patientId');
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
 
   useEffect(() => {
@@ -120,7 +121,7 @@ const PaymentStatusScreen: FC<PaymentStatusScreenProps> = (props) => {
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
 
       <ScrollView style={styles.container}>
-        <StatusCard item={itemDetails} paymentFor={paymentType} />
+        <StatusCard item={itemDetails} paymentFor={paymentType} patientId={patientId} />
         {appointmentHeader()}
         <DetailsCard item={itemDetails} paymentFor={paymentType} />
         {renderNote()}
