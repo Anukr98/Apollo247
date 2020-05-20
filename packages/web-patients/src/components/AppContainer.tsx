@@ -59,7 +59,6 @@ import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
-import { OrderFeedback } from 'components/orderFeedback';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,7 +185,6 @@ const App: React.FC = () => {
             path={clientRoutes.payOnlineClinicConsult()}
             component={ClinicCheckout}
           />
-          <AuthRouted exact path={clientRoutes.orderFeeback()} component={OrderFeedback} />
         </Switch>
       </div>
     </Scrollbars>
