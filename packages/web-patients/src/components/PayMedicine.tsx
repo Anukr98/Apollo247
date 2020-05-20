@@ -707,8 +707,16 @@ export const PayMedicine: React.FC = (props) => {
               fetchPolicy: 'no-cache',
             })
               .then((res) => {
-                window.location.href = clientRoutes.appointments();
-                localStorage.setItem('consultBookDetails', '');
+                if (
+                  res &&
+                  res.data &&
+                  res.data.makeAppointmentPayment &&
+                  res.data.makeAppointmentPayment.appointment
+                ) {
+                  const bookingId = res.data.makeAppointmentPayment.appointment.orderId;
+                  window.location.href = `${clientRoutes.appointments()}/?apptid=${bookingId}&status=success`;
+                  localStorage.setItem('consultBookDetails', '');
+                }
               })
               .catch((error) => {
                 setIsAlertOpen(true);
