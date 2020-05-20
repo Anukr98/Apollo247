@@ -193,8 +193,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     (item) => item!.isPrescriptionNeeded
   );
 
-  console.log({ order });
-
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -447,7 +445,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean // if any of the order item requires prescription
     ) => {
       const orderStatusDescMapping = {
-        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: isOrderRequirePrescription
+        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
           ? ['', '']
           : [
               'Verification Pending: ',
