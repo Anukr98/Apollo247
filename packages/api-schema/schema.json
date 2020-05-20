@@ -9716,6 +9716,18 @@
             "deprecationReason": null
           },
           {
+            "name": "bankTxnId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "amountPaid",
             "description": null,
             "args": [],
@@ -29163,6 +29175,12 @@
           },
           {
             "name": "OpSummary",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TestReports",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

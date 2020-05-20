@@ -194,7 +194,7 @@ const getOrderInvoice: Resolver<
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(1)
