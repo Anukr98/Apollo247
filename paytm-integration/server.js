@@ -1015,10 +1015,10 @@ app.get('/processOmsOrders', (req, res) => {
                     };
                     orderLineItems.push(lineItem);
                   });
-                  const pharmaItems = orderDetails.medicineOrderLineItems.find((item) => {
+                  const pharmaItems = orderDetails.medicineOrderLineItems.filter((item) => {
                     return item.isMedicine == '1';
                   });
-                  if (pharmaItems.length > 0) {
+                  if (pharmaItems && pharmaItems.length > 0) {
                     orderType = 'Pharma';
                   }
                   if (orderDetails.devliveryCharges > 0) {
@@ -1075,7 +1075,10 @@ app.get('/processOmsOrders', (req, res) => {
                   prefferedsite: '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
-                  deliverydate: tatDate ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss') : '',
+                  deliverydate:
+                    tatDate && Date.parse(tatDate)
+                      ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss')
+                      : '',
                   timeslot: timeslot,
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,

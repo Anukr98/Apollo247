@@ -10,17 +10,19 @@ import {
   MEDICINE_ORDER_STATUS,
   BOOKING_SOURCE,
   DEVICE_TYPE,
-  MedicineOrdersStatus,
   CouponCategoryApplicable,
-  PharmaDiscountApplicableOn,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { Connection } from 'typeorm';
-import { CouponRepository } from 'profiles-service/repositories/couponRepository';
-import { discountCalculation } from 'helpers/couponCommonFunctions';
+import {
+  validatePharmaCoupon,
+  PharmaOutput,
+  PharmaCouponInputArgs,
+} from 'coupons-service/resolvers/validatePharmaCoupon';
+import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSInput {
@@ -112,9 +114,14 @@ const saveMedicineOrderOMS: Resolver<
   MedicineCartOMSInputInputArgs,
   ProfilesServiceContext,
   SaveMedicineOrderResult
-> = async (parent, { medicineCartOMSInput }, { profilesDb }) => {
+> = async (
+  parent,
+  { medicineCartOMSInput },
+  { mobileNumber, profilesDb, doctorsDb, consultsDb }
+) => {
   const errorCode = 0,
     errorMessage = '';
+
   if (!medicineCartOMSInput.items || medicineCartOMSInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
@@ -136,16 +143,50 @@ const saveMedicineOrderOMS: Resolver<
     }
   }
   if (medicineCartOMSInput.coupon) {
-    const couponValidity = await validateCoupon(profilesDb, medicineCartOMSInput);
-    if (!couponValidity.validityStatus) {
+    const orderLineItems = medicineCartOMSInput.items.map((item) => {
+      return {
+        itemId: item.medicineSku,
+        productName: item.medicineName,
+        productType:
+          item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
+        mrp: item.mrp,
+        specialPrice: item.specialPrice,
+        quantity: item.quantity,
+      };
+    });
+    const pharmaCouponInput: PharmaCouponInputArgs = {
+      pharmaCouponInput: {
+        code: medicineCartOMSInput.coupon,
+        patientId: medicineCartOMSInput.patientId,
+        orderLineItems: orderLineItems,
+      },
+    };
+    const context: CouponServiceContext = {
+      mobileNumber,
+      doctorsDb,
+      consultsDb,
+      patientsDb: profilesDb,
+    };
+    const couponValidity: PharmaOutput = (await validatePharmaCoupon(
+      null,
+      pharmaCouponInput,
+      context
+    )) as PharmaOutput;
+    console.log(couponValidity);
+    if (couponValidity.validityStatus) {
       throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
     }
-    if (
-      !couponValidity.estimatedAmount ||
-      medicineCartOMSInput.estimatedAmount !=
-        couponValidity.estimatedAmount + (medicineCartOMSInput.devliveryCharges || 0)
-    ) {
-      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+    if (couponValidity.discountedTotals) {
+      const discountedTotals = couponValidity.discountedTotals;
+      const finalAmount =
+        (medicineCartOMSInput.devliveryCharges || 0) +
+        discountedTotals.mrpPriceTotal -
+        discountedTotals.couponDiscount -
+        discountedTotals.productDiscount;
+      console.log(finalAmount);
+      if (medicineCartOMSInput.estimatedAmount != finalAmount) {
+        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, couponValidity);
+      }
     }
   }
 
@@ -205,149 +246,6 @@ const saveMedicineOrderOMS: Resolver<
   } catch (e) {
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, e);
   }
-};
-
-const validateCoupon = async (profilesDb: Connection, orderDetails: MedicineCartOMSInput) => {
-  const couponRepo = profilesDb.getCustomRepository(CouponRepository);
-  const couponData = await couponRepo.findPharmaCouponByCode(orderDetails.coupon);
-
-  if (couponData == null)
-    return {
-      validityStatus: false,
-    };
-
-  //get coupon related generic rule
-  const couponGenericRulesData = couponData.couponGenericRule;
-  if (couponGenericRulesData == null)
-    return {
-      validityStatus: false,
-    };
-
-  //get coupon related pharma rule
-  const couponRulesData = couponData.couponPharmaRule;
-  if (couponRulesData == null)
-    return {
-      validityStatus: false,
-    };
-
-  //customer type check
-  const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  if (
-    couponGenericRulesData.couponApplicableCustomerType &&
-    couponGenericRulesData.couponApplicableCustomerType == customerTypeInCoupons.FIRST
-  ) {
-    const orderCount = await medicineOrderRepo.getMedicineOrdersCountByPatient(
-      orderDetails.patientId
-    );
-    if (orderCount != 0)
-      return {
-        validityStatus: false,
-      };
-  }
-
-  // coupon count per customer check
-  if (couponGenericRulesData.couponReuseCountPerCustomer) {
-    const customerUsageCount = await medicineOrderRepo.getMedicineOrdersCountByCouponAndPatient(
-      orderDetails.patientId,
-      orderDetails.coupon
-    );
-    if (customerUsageCount >= couponGenericRulesData.couponReuseCountPerCustomer)
-      return {
-        validityStatus: false,
-      };
-  }
-
-  //total coupon count irrespective to customer
-  if (couponGenericRulesData.couponReuseCount) {
-    const customerUsageCount = await medicineOrderRepo.getMedicineOrdersCountByCoupon(
-      orderDetails.coupon
-    );
-    if (customerUsageCount >= couponGenericRulesData.couponReuseCount)
-      return {
-        validityStatus: false,
-      };
-  }
-
-  //coupon start date check
-  const todayDate = new Date();
-  if (couponGenericRulesData.couponStartDate && todayDate < couponGenericRulesData.couponStartDate)
-    return {
-      validityStatus: false,
-    };
-
-  // coupon end date check
-  if (couponGenericRulesData.couponEndDate && todayDate > couponGenericRulesData.couponEndDate)
-    return {
-      validityStatus: false,
-    };
-
-  const lineItemsWithDiscount = orderDetails.items.map((item) => {
-    return {
-      ...item,
-      discountedPrice: 0,
-      applicablePrice: 0,
-    };
-  });
-
-  let specialPriceTotal = 0;
-  let mrpPriceTotal = 0;
-  let discountedPriceTotal = 0;
-
-  lineItemsWithDiscount.forEach((lineItem, index) => {
-    //coupon couponCategoryApplicable check
-    const productType = lineItem.isMedicine == '1' ? 'PHARMA' : 'FMCG';
-    if (couponRulesData.couponCategoryApplicable) {
-      if (
-        couponRulesData.couponCategoryApplicable == CouponCategoryApplicable.PHARMA_FMCG ||
-        couponRulesData.couponCategoryApplicable == productType
-      ) {
-        const itemPrice =
-          couponRulesData.discountApplicableOn == PharmaDiscountApplicableOn.MRP
-            ? lineItem.mrp
-            : lineItem.specialPrice;
-
-        if (
-          couponGenericRulesData.minimumCartValue &&
-          itemPrice < couponGenericRulesData.minimumCartValue
-        ) {
-          return;
-        }
-
-        if (
-          couponGenericRulesData.maximumCartValue &&
-          itemPrice > couponGenericRulesData.maximumCartValue
-        )
-          return;
-
-        const discountedPrice = discountCalculation(
-          itemPrice,
-          couponGenericRulesData.discountType,
-          couponGenericRulesData.discountValue
-        );
-        lineItem.discountedPrice = Number(discountedPrice.toFixed(2));
-        lineItem.applicablePrice =
-          lineItem.discountedPrice < lineItem.specialPrice
-            ? lineItem.discountedPrice
-            : lineItem.specialPrice;
-      } else {
-        lineItem.applicablePrice =
-          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
-      }
-    }
-
-    specialPriceTotal = specialPriceTotal + lineItem.specialPrice * lineItem.quantity;
-    mrpPriceTotal = mrpPriceTotal + lineItem.mrp * lineItem.quantity;
-    discountedPriceTotal =
-      discountedPriceTotal + (lineItem.mrp - lineItem.applicablePrice) * lineItem.quantity;
-  });
-
-  const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
-  const couponDiscount = Number(discountedPriceTotal.toFixed(2)) - productDiscount;
-
-  return {
-    estimatedAmount: mrpPriceTotal - couponDiscount - productDiscount,
-    validityStatus: true,
-  };
 };
 
 export const saveMedicineOrderOMSResolvers = {

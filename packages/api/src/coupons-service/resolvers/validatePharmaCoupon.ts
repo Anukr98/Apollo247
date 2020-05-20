@@ -83,7 +83,7 @@ type PharmaCouponInput = {
   orderLineItems: OrderLineItems[];
 };
 
-type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
+export type PharmaCouponInputArgs = { pharmaCouponInput: PharmaCouponInput };
 
 type PharmaLineItems = {
   applicablePrice: number;
@@ -102,7 +102,7 @@ type DiscountedTotals = {
   productDiscount: number;
 };
 
-type PharmaOutput = {
+export type PharmaOutput = {
   discountedTotals: DiscountedTotals | undefined;
   pharmaLineItemsWithDiscountedPrice: PharmaLineItems[] | undefined;
   successMessage: string | undefined;
@@ -110,7 +110,7 @@ type PharmaOutput = {
   validityStatus: boolean;
 };
 
-const validatePharmaCoupon: Resolver<
+export const validatePharmaCoupon: Resolver<
   null,
   PharmaCouponInputArgs,
   CouponServiceContext,

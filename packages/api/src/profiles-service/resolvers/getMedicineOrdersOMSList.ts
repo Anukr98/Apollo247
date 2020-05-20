@@ -32,6 +32,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     prismPrescriptionFileId: String
     pharmaRequest: String
     orderTat: String
+    couponDiscount: Float
+    productDiscount: Float
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -49,8 +51,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: Int
     mrp: Float
     isPrescriptionNeeded: Int
-    prescriptionImageUrl: String
-    prismPrescriptionFileId: String
     mou: Int
     isMedicine: String
   }
