@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
-import React, { ReactEventHandler } from 'react';
+import React from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
