@@ -352,6 +352,7 @@ export const ClinicCheckout: React.FC = () => {
     setValidateCouponResult,
   ] = useState<ValidateConsultCoupon_validateConsultCoupon | null>(null);
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
+  const [validityStatus, setValidityStatus] = useState<boolean>(false);
 
   const apolloClient = useApolloClient();
 
@@ -634,6 +635,8 @@ export const ClinicCheckout: React.FC = () => {
                 setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
               }}
               cartValue={physicalConsultationFees}
+              validityStatus={validityStatus}
+              setValidityStatus={setValidityStatus}
             />
           </AphDialog>
         </div>

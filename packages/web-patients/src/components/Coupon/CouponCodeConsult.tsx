@@ -166,8 +166,8 @@ interface ApplyCouponProps {
   doctorId: string;
   consultType: string;
   appointmentDateTime: string;
-  validityStatus?: boolean;
-  setValidityStatus?: (validityStatus: boolean) => void;
+  validityStatus: boolean;
+  setValidityStatus: (validityStatus: boolean) => void;
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
