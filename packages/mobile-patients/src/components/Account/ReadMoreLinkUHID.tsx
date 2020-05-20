@@ -1,26 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   BackHandler,
-  Image,
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-  Modal,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
+  HandBlue,
   LinkUHIDStep1,
   LinkUHIDStep2first,
   LinkUHIDStep2second,
   LinkUHIDStep2third,
+  LinkUHIDStep3,
+  PrimaryUHIDIconBlue,
+  LinkUHIDStep4first,
+  LinkUHIDStep4second,
+  LinkUHIDStep4third,
+  LinkUHIDStep4fourth,
+  Arrow1,
+  Arrow2,
+  Arrow3,
+  Arrow4,
+  Arrow5,
+  DottedArrow1,
+  DottedArrow2,
+  DottedArrow3,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 
@@ -34,40 +46,13 @@ const styles = StyleSheet.create({
   cardContainer: {
     ...viewStyles.cardViewStyle,
     ...viewStyles.shadowStyle,
+    margin: 20,
     paddingTop: 16,
     paddingBottom: 16,
   },
   instructionText: {
     ...fonts.IBMPlexSansMedium(9),
     color: theme.colors.LIGHT_BLUE,
-  },
-  rightArrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderTopWidth: 8,
-    borderRightWidth: 0,
-    borderBottomWidth: 8,
-    borderLeftWidth: 8,
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderLeftColor: theme.colors.LIGHT_BLUE,
-  },
-  leftArrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderTopWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 8,
-    borderLeftWidth: 0,
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderLeftColor: theme.colors.LIGHT_BLUE,
   }
 });
 
@@ -101,11 +86,11 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <ScrollView bounces={false} style={{ padding: 20 }}>
+      <ScrollView bounces={false}>
         <View style={styles.cardContainer}>
           <Text style={styles.stepsHeading}>
             STEP 1 - Select one of your own profile as a Primary UHID.
-        </Text>
+          </Text>
           <View
             style={{
               display: 'flex',
@@ -124,30 +109,11 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
               <Text style={styles.instructionText}>Select a profile from manage</Text>
               <Text style={styles.instructionText}>profile section to make it as</Text>
               <Text style={styles.instructionText}>your primary UHID.</Text>
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row'
-                }}
-              >
-                <View
-                  style={{
-                    marginTop: 10,
-                    marginLeft: 30,
-                    width: 60,
-                    height: 60,
-                    borderColor: theme.colors.LIGHT_BLUE,
-                    borderLeftWidth: 1,
-                    borderBottomWidth: 1,
-                  }}
-                />
-                <View
-                  style={[
-                    styles.rightArrow,
-                    { top: 61 }
-                  ]}
-                />
-              </View>
+              <Arrow1 style={{
+                resizeMode: 'contain',
+                height: 70,
+                marginLeft: 70,
+              }} />
             </View>
             <View>
               <LinkUHIDStep1 style={{
@@ -159,19 +125,25 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 style={{
                   position: 'absolute',
                   left: 80,
-                  top: 90,
+                  top: 95,
                   backgroundColor: '#d8d8d8',
                   padding: 4,
                   borderRadius: 7,
                 }}
               >
+                <HandBlue style={{
+                  width: 10,
+                  height: 10,
+                  position: 'absolute',
+                  top: -13
+                }} />
                 <Text style={styles.instructionText}>Selected profile as Primary UHID</Text>
               </View>
             </View>
           </View>
           <Text style={styles.stepsHeading}>
             STEP 2 - How to link your own UHID’s(Profile) to your Primary UHID.
-        </Text>
+          </Text>
           <View
             style={{
               display: 'flex',
@@ -199,10 +171,17 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
               }}
             >
               <Text style={styles.instructionText}>Once primary UHID </Text>
-              <Text style={[styles.instructionText, { marginBottom: 20 }]}>is created.</Text>
-              <Text style={styles.instructionText}>Select your other</Text>
-              <Text style={styles.instructionText}>profiles to link to the</Text>
-              <Text style={styles.instructionText}>the primary UHID.</Text>
+              <Text style={[styles.instructionText, { marginBottom: 12 }]}>is created.</Text>
+              <View style={{ marginLeft: 8 }}>
+                <Arrow2 style={{
+                  resizeMode: 'contain',
+                  position: 'absolute',
+                  left: -40,
+                }} />
+                <Text style={styles.instructionText}>Select your other</Text>
+                <Text style={styles.instructionText}>profiles to link to the</Text>
+                <Text style={styles.instructionText}>the primary UHID.</Text>
+              </View>
             </View>
           </View>
           <View
@@ -224,7 +203,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             style={{
               display: 'flex',
               flexDirection: 'row',
-              // justifyContent: 'space-between',
+              paddingBottom: 20,
               paddingLeft: 10,
               paddingRight: 10,
             }}
@@ -250,21 +229,195 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 }}
               >
                 <View style={{
-                  marginTop: 15
+                  marginTop: 15,
+                  display: 'flex',
+                  flexDirection: 'row'
                 }}>
-                  <>
-                    <View style={styles.leftArrow} />
-                  </>
-                  <>
+                  <View style={{
+                    display: 'flex',
+                    flexDirection: 'row'
+                  }}>
+                    <Arrow3 style={{
+                      resizeMode: 'contain',
+                      top: -10,
+                    }} />
+                  </View>
+                  <View style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    marginLeft: 5,
+                  }}>
                     <Text style={styles.instructionText}>Select the other profiles to link</Text>
                     <Text style={styles.instructionText}>to the primary UHID.</Text>
-                  </>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
+          <Text style={styles.stepsHeading}>
+            STEP 3 - How to access your other UHID’s linked to Primary UHID.
+          </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              marginTop: 20,
+              marginBottom: 20,
+            }}
+          >
+            <View
+              style={{
+                marginTop: 60,
+                marginLeft: 20,
+              }}
+            >
+              <Text style={styles.instructionText}>
+                Click on the icon <PrimaryUHIDIconBlue
+                  style={{
+                    width: 10,
+                    height: 10,
+                  }} /> and view all your
+              </Text>
+              <Text style={styles.instructionText}>linked UHID.</Text>
+              <Arrow4 style={{
+                position: 'absolute',
+                resizeMode: 'contain',
+                width: 80,
+                right: -10,
+              }} />
+            </View>
+            <View>
+              <LinkUHIDStep3 style={{
+                resizeMode: 'contain',
+                width: 115,
+                height: 220,
+                marginLeft: 20,
+              }} />
+            </View>
+          </View>
+          <Text style={styles.stepsHeading}>
+            STEP 4 - How to Delink a UHID from Primary UHID.
+          </Text>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              margin: 20,
+            }}
+          >
+            <View>
+              <LinkUHIDStep4first style={{
+                resizeMode: 'contain',
+                width: 115,
+                height: 220,
+              }} />
+              <Arrow5 style={{
+                resizeMode: 'contain',
+                height: 150,
+                position: 'absolute',
+                left: -25,
+                top: 90
+              }} />
+              <DottedArrow1 style={{
+                resizeMode: 'contain',
+                position: 'absolute',
+                top: 100,
+                left: 120,
+                width: 90,
+              }} />
+              <View style={{ marginLeft: 30 }}>
+                <HandBlue style={{
+                  resizeMode: 'contain',
+                  width: 17,
+                  height: 17,
+                  position: 'absolute',
+                  top: 15,
+                  left: -20,
+                }} />
+                <Text style={[styles.instructionText, { marginTop: 20 }]}>Select any linked profile </Text>
+                <Text style={styles.instructionText}>from above and click on </Text>
+                <Text style={styles.instructionText}>Delink button.</Text>
+              </View>
+              <View>
+                <LinkUHIDStep4third style={{
+                  resizeMode: 'contain',
+                  width: 115,
+                  height: 220,
+                  marginTop: 50,
+                }} />
+                <View style={{
+                  position: 'absolute',
+                  left: 130,
+                  top: 70
+                }}>
+                  <Text style={styles.instructionText}>Other UHID is Delinked</Text>
+                  <Text style={styles.instructionText}>from Primary UHID</Text>
+                </View>
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 230,
+                    left: 110
+                  }}>
+                  <DottedArrow3
+                    style={{
+                      resizeMode: 'stretch',
+                      width: 100,
+                      height: 7,
+                    }}
+                  />
+                  <View style={{ left: 40 }}>
+                    <Text style={styles.instructionText}>Back to</Text>
+                    <Text style={styles.instructionText}>manage profile</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View>
+              <View>
+                <LinkUHIDStep4second style={{
+                  resizeMode: 'contain',
+                  width: 115,
+                  height: 220,
+                  marginTop: 50,
+                }} />
+                <View>
+                  <Text style={[styles.instructionText, { marginLeft: 35, marginTop: 10 }]}>Reconfirmation</Text>
+                  <DottedArrow2 style={{
+                    resizeMode: 'stretch',
+                    width: 120,
+                    height: 70,
+                    position: 'absolute',
+                    left: -90
+                  }} />
+                </View>
+              </View>
+              <LinkUHIDStep4fourth style={{
+                resizeMode: 'contain',
+                width: 115,
+                height: 220,
+                marginTop: 100,
+              }} />
+            </View>
 
+          </View>
         </View>
+        <Button
+          title="OK"
+          style={{
+            width: '30%',
+            paddingLeft: 15,
+            paddingRight: 15,
+            marginBottom: 30,
+            marginTop: 30,
+            alignSelf: 'center'
+          }}
+          titleTextStyle={{
+            ...fonts.IBMPlexSansSemiBold(16)
+          }}
+          onPress={() => { props.navigation.goBack(); }}
+        />
       </ScrollView>
     </SafeAreaView >
   )
