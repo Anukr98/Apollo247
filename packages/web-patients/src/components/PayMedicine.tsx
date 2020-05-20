@@ -501,14 +501,14 @@ export const PayMedicine: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode && couponCode.length > 0
+              couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we have code but result is null when coupon discount <= product discount
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0
+              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we have code but result is null when coupon discount <= product discount
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
@@ -627,18 +627,18 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
-       
+
         if (res && res.data && res.data.saveMedicineOrderOMS) {
           const { orderId, orderAutoId, errorMessage } = res.data.saveMedicineOrderOMS;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
-           /* Webengage Code Start */
+          /* Webengage Code Start */
           paymentInstrumentClickTracking({
             paymentMode: value,
             orderId,
             orderAutoId,
-            type: "Pharmacy"
-          })
-        /* Webengage Code End */
+            type: 'Pharmacy',
+          });
+          /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
@@ -910,7 +910,7 @@ export const PayMedicine: React.FC = (props) => {
                       <p>MRP Total</p> <p>Rs.{mrpTotal && mrpTotal.toFixed(2)}</p>
                     </div>
                     <div className={`${classes.charges} ${classes.discount}`}>
-                      <p>Product Discount</p> <p>- Rs.{productDiscount}</p>
+                      <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
                     </div>
                     <div className={classes.charges}>
                       <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges}</p>
