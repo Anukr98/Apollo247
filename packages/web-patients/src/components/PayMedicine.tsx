@@ -428,7 +428,7 @@ export const PayMedicine: React.FC = (props) => {
     appointmentDateTime,
     appointmentType,
     consultCouponCodeInitial,
-    consultCouponValue,
+    consultCouponValue = 0,
     doctorId,
     hospitalId,
     patientId,
@@ -456,7 +456,8 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (params.payType === 'consults') {
-      setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
+      const amountPayble: number = Number(amount) - Number(consultCouponValue);
+      setRevisedAmount(amountPayble);
       if (!consultCouponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
         setConsultCouponCode(consultCouponCodeInitial || '');
         setValidityStatus(true);
@@ -879,9 +880,11 @@ export const PayMedicine: React.FC = (props) => {
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(onlineConsultationFees) -
-                            parseFloat(validateConsultCouponResult.revisedAmount)
-                          : parseFloat(consultCouponValue)}{' '}
+                          ? (
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateConsultCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : parseFloat(consultCouponValue).toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -921,9 +924,11 @@ export const PayMedicine: React.FC = (props) => {
                       <p>
                         - Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(amount) -
-                            parseFloat(validateConsultCouponResult.revisedAmount)
-                          : consultCouponValue || 0}
+                          ? (
+                              parseFloat(amount) -
+                              parseFloat(validateConsultCouponResult.revisedAmount)
+                            ).toFixed(2)
+                          : parseFloat(consultCouponValue).toFixed(2) || 0}
                       </p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
@@ -931,8 +936,8 @@ export const PayMedicine: React.FC = (props) => {
                       <p>
                         Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? validateConsultCouponResult.revisedAmount
-                          : revisedAmount && revisedAmount.toFixed(2)}
+                          ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
+                          : revisedAmount.toFixed(2)}
                       </p>
                     </div>
                   </Paper>
