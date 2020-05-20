@@ -105,10 +105,13 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
   'West Bengal': 'WB',
 };
 
+const customerCareNumber = '04048217222';
+
 export {
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,
   getPaymentMethodFullName,
   pharmaStateCodeMapping,
+  customerCareNumber,
 };

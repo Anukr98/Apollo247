@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
+import { customerCareNumber } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -237,7 +238,7 @@ export const WeAreHelpYou: React.FC = (props) => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href="tel:08047192606">Call 08047192606 in emergency</a>
+          <a href={`tel:${customerCareNumber}`}>Call {customerCareNumber} in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>
