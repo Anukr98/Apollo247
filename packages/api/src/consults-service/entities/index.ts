@@ -390,7 +390,7 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -458,7 +458,7 @@ export class AppointmentRefunds extends BaseEntity {
   @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({
