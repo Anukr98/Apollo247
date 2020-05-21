@@ -228,11 +228,11 @@ function valuetext(value: number) {
   return `${value}`;
 }
 
-type OrderCardProps = {
+interface OrderCardProps {
   setOrderAutoId: (orderAutoId: number) => void;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
   orderAutoId: number;
-};
+}
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});

@@ -330,10 +330,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type OrderStatusCardProps = {
+interface OrderStatusCardProps {
   orderDetailsData: OrderDetails | null;
   isLoading: boolean;
-};
+}
 
 export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
   switch (status) {

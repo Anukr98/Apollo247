@@ -183,10 +183,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type TrackOrdersProps = {
+interface TrackOrdersProps {
   orderDetailsData: OrderDetails | null;
   isLoading: boolean;
-};
+}
 
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
