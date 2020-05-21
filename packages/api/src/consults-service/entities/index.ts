@@ -127,11 +127,6 @@ export enum PATIENT_TYPE {
   NEW = 'NEW',
   REPEAT = 'REPEAT',
 }
-export enum NOSHOW_REASON {
-  NOSHOW_PATIENT = 'NOSHOW_PATIENT',
-  NOSHOW_DOCTOR = 'NOSHOW_DOCTOR',
-  NOSHOW_30MIN = 'NOSHOW_30MIN',
-}
 
 //Appointment starts
 @Entity()
@@ -216,9 +211,6 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true, default: false })
   isSeniorConsultStarted: Boolean;
-
-  @Column({ nullable: true })
-  noShowReason: NOSHOW_REASON;
 
   @Column({ nullable: true })
   patientCancelReason: string;
