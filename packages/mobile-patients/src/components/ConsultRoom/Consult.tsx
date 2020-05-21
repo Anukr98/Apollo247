@@ -318,7 +318,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               },
             })
             .then(({ data }) => {
-              console.log(data, 'GET_PATIENT_APPOINTMENTS');
               if (
                 data &&
                 data.getPatientAllAppointments &&
@@ -463,8 +462,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderConsultations = () => {
-    console.log(moment(new Date()).add(35, 'h'), 'dtat');
-
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
@@ -660,72 +657,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                   </View>
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
-                  {item.noShowReason === NOSHOW_REASON.NOSHOW_30MIN ? (
-                    <View style={{ flexDirection: 'row' }}>
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        style={{ flex: 1 }}
-                        onPress={() => {
-                          postConsultCardEvents('Chat with Doctor', item);
-                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          if (item.doctorInfo && selectedTab === tabs[0].title) {
-                            item.appointmentType === 'ONLINE'
-                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                })
-                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                  data: item,
-                                  from: 'notification',
-                                });
-                          }
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.prepareForConsult,
-                            {
-                              textAlign: 'left',
-                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
-                            },
-                          ]}
-                        >
-                          RESCHEDULE
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        style={{ flex: 1 }}
-                        onPress={() => {
-                          postConsultCardEvents('Chat with Doctor', item);
-                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-                          if (item.doctorInfo && selectedTab === tabs[0].title) {
-                            item.appointmentType === 'ONLINE'
-                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                                  data: item,
-                                  from: 'cancel',
-                                })
-                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                                  data: item,
-                                  from: 'cancel',
-                                });
-                          }
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.prepareForConsult,
-                            {
-                              opacity: selectedTab === tabs[0].title ? 1 : 0.5,
-                            },
-                          ]}
-                        >
-                          CANCEL
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : item.isFollowUp == 'true' &&
-                    moment(item.appointmentDateTime).isAfter(moment(new Date()).add(-7, 'd')) ? (
+                  {item.isFollowUp == 'true' &&
+                  moment(item.appointmentDateTime).isAfter(moment(new Date()).add(-7, 'd')) ? (
                     <View>
                       <Text style={styles.prepareForConsult}>SCHEDULE FOLLOW-UP</Text>
                       <View
@@ -794,35 +727,70 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
                         </TouchableOpacity>
                       ) : (
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => {
-                            postConsultCardEvents(
-                              item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
-                              item
-                            );
-
-                            if (item.doctorInfo && selectedTab === tabs[0].title) {
-                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                              props.navigation.navigate(AppRoutes.ChatRoom, {
-                                data: item,
-                                callType: '',
-                                prescription: '',
-                              });
-                            }
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.prepareForConsult,
-                              { opacity: selectedTab === tabs[0].title ? 1 : 0.5 },
-                            ]}
+                        <View style={{ flexDirection: 'row' }}>
+                          {item.status == STATUS.PENDING && minutes <= -30 ? (
+                            <TouchableOpacity
+                              activeOpacity={1}
+                              style={{ flex: 1 }}
+                              onPress={() => {
+                                // postConsultCardEvents('Chat with Doctor', item);
+                                CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                                item.appointmentType === 'ONLINE'
+                                  ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                      data: item,
+                                      from: 'cancel',
+                                    })
+                                  : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                      data: item,
+                                      from: 'cancel',
+                                    });
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.prepareForConsult,
+                                  {
+                                    textAlign: 'left',
+                                  },
+                                ]}
+                              >
+                                RESCHEDULE/CANCEL
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
+                          <TouchableOpacity
+                            activeOpacity={1}
+                            style={{ flex: 1 }}
+                            onPress={() => {
+                              postConsultCardEvents(
+                                item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+                                item
+                              );
+                              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                              if (item.doctorInfo && selectedTab === tabs[0].title) {
+                                CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                                props.navigation.navigate(AppRoutes.ChatRoom, {
+                                  data: item,
+                                  callType: '',
+                                  prescription: '',
+                                });
+                              }
+                            }}
                           >
-                            {item.isConsultStarted
-                              ? string.common.continueConsult
-                              : string.common.prepareForConsult}
-                          </Text>
-                        </TouchableOpacity>
+                            <Text
+                              style={[
+                                styles.prepareForConsult,
+                                {
+                                  opacity: selectedTab === tabs[0].title ? 1 : 0.5,
+                                },
+                              ]}
+                            >
+                              {item.isConsultStarted
+                                ? string.common.continueConsult
+                                : string.common.prepareForConsult}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       )}
                     </View>
                   ) : (
