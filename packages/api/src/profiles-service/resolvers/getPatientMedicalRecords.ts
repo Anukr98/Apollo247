@@ -174,7 +174,13 @@ const getPatientMedicalRecords: Resolver<
   }
 
   const medicalRecordsRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
-  const medicalRecords = await medicalRecordsRepo.findByPatientId(patientId, offset, limit);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patientId);
+
+  const medicalRecords = await medicalRecordsRepo.findByPatientIds(
+    primaryPatientIds,
+    offset,
+    limit
+  );
   return { medicalRecords };
 };
 
@@ -227,8 +233,10 @@ const getPatientPrismMedicalRecords: Resolver<
   };
   winston.log(usersLog);
 
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  const patientDetails = await patientsRepo.findById(args.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  const uhid = patientDetails.primaryUhid;
 
   if (!uhid) {
     throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
