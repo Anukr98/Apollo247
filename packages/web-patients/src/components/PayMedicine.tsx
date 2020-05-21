@@ -237,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
+      width: 'auto',
     },
     chargesContainer: {
       [theme.breakpoints.down('xs')]: {
