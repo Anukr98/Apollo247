@@ -7,6 +7,8 @@ import {
   MedicineProduct,
   PlacesApiResponse,
   getDeliveryTime,
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -1115,7 +1117,6 @@ export const getFormattedLocation = (
       findAddrComponents('administrative_area_level_2', addrComponents),
     latitude: lat,
     longitude: lng,
-    lng,
     area: area.join(', '),
     city:
       findAddrComponents('locality', addrComponents) ||
@@ -1126,6 +1127,19 @@ export const getFormattedLocation = (
     pincode: findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
+};
+
+export const getFormattedLocationFromPincode = async (pincode: string) => {
+  const placesResponse = await autoCompletePlaceSearch(pincode, true);
+  const placeId = g(placesResponse, 'data', 'predictions', '0' as any, 'place_id');
+  if (placeId) {
+    const placeIdResponse = await getPlaceInfoByPlaceId(placeId);
+    const addrComponents = g(placeIdResponse, 'data', 'result', 'address_components')!;
+    const latLng = g(placeIdResponse, 'data', 'result', 'geometry', 'location')!;
+    return getFormattedLocation(addrComponents, latLng);
+  } else {
+    throw 'No results found.';
+  }
 };
 
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
