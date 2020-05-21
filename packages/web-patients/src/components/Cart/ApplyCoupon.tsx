@@ -167,6 +167,7 @@ interface ApplyCouponProps {
   cartValue: number;
   validityStatus?: boolean;
   setValidityStatus?: (validityStatus: boolean) => void;
+  setShowErrorMessage: (showErrorMessage: boolean) => void;
 }
 
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
@@ -249,10 +250,18 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             const couponValidateResult = res.data.validatePharmaCoupon;
             props.setValidityStatus(couponValidateResult.validityStatus);
             if (couponValidateResult.validityStatus) {
+              if (couponValidateResult.discountedTotals.couponDiscount > 0) {
+                props.setValidateCouponResult(couponValidateResult);
+                props.setShowErrorMessage(false);
+                setCouponCode && setCouponCode(selectCouponCode);
+              } else {
+                setSelectCouponCode('');
+                props.setValidateCouponResult(null);
+                props.setShowErrorMessage(true);
+                setCouponCode && setCouponCode('');
+              }
               props.close(false);
-              props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
-              setCouponCode && setCouponCode(selectCouponCode);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
