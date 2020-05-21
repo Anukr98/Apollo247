@@ -233,6 +233,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // To remove applied coupon from cart when user leaves this screen.
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      setTimeout(() => {
+        setCoupon!(null);
+      }, 50);
+    });
+    return () => {
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
       Geolocation.getCurrentPosition(
         (position) => {
@@ -1130,7 +1142,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               >
                 {coupon.discountedTotals!.couponDiscount > 0
                   ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
-                  : 'Higher discounts already applied'}
+                  : 'Product(s) in cart are not applicable for this coupon or at higher discounts'}
               </Text>
             </View>
           )}

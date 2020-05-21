@@ -32,6 +32,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     prismPrescriptionFileId: String
     pharmaRequest: String
     orderTat: String
+    couponDiscount: Float
+    productDiscount: Float
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -49,8 +51,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: Int
     mrp: Float
     isPrescriptionNeeded: Int
-    prescriptionImageUrl: String
-    prismPrescriptionFileId: String
     mou: Int
     isMedicine: String
   }
@@ -122,9 +122,10 @@ const getMedicineOrdersOMSList: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(args.patientId);
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
   return { medicineOrdersList };
 };
 

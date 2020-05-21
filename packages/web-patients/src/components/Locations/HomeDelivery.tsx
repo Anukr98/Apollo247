@@ -14,8 +14,10 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import axios, { AxiosResponse, Canceler } from 'axios';
-
+import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
+import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
+import { useMutation } from 'react-apollo-hooks';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
   GetPatientAddressList,
@@ -25,6 +27,7 @@ import {
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -263,6 +266,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const isMounted = useRef(false);
   const urlParams = new URLSearchParams(window.location.search);
   const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (isMounted.current && deliveryAddressId && !selectingAddress) {
@@ -485,29 +490,100 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     return <p>Error while fetching addresses.</p>;
   }
 
+  const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
+
+  const checkLatLongStateCodeAvailability = (address: Address) => {
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    if (!address.latitude || !address.longitude || !address.stateCode) {
+      // get lat long
+      if (address.zipcode && address.zipcode.length === 6) {
+        setIsLoading(true);
+        axios
+          .get(googleMapApi)
+          .then(({ data }) => {
+            try {
+              if (
+                data &&
+                data.results[0] &&
+                data.results[0].geometry &&
+                data.results[0].geometry.location
+              ) {
+                const { lat, lng } = data.results[0].geometry.location;
+                let {
+                  id,
+                  addressLine1,
+                  addressLine2,
+                  mobileNumber,
+                  zipcode,
+                  addressType,
+                  city,
+                  state,
+                  otherAddressType,
+                } = address;
+                const addressComponents = data.results[0].address_components || [];
+                city =
+                  city ||
+                  (
+                    addressComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                state =
+                  state ||
+                  (
+                    addressComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
+                updateAddressMutation({
+                  variables: {
+                    UpdatePatientAddressInput: {
+                      id,
+                      addressLine1,
+                      addressLine2,
+                      city,
+                      state,
+                      zipcode,
+                      mobileNumber,
+                      addressType,
+                      otherAddressType,
+                      latitude: lat,
+                      longitude: lng,
+                      stateCode: pharmaStateCodeMapping[state] || '',
+                    },
+                  },
+                }).then(() => {
+                  setDeliveryAddressId && setDeliveryAddressId(address.id);
+                  setStoreAddressId && setStoreAddressId('');
+                  setIsLoading(false);
+                });
+              }
+            } catch {
+              (e: AxiosError) => {
+                console.log(e);
+                setIsLoading(false);
+                setIsAlertOpen(true);
+                setAlertMessage(e.message);
+              };
+            }
+          })
+          .catch((e: AxiosError) => {
+            setIsLoading(false);
+            setIsAlertOpen(true);
+            setAlertMessage(e.message);
+            console.log(e);
+          });
+      }
+    } else {
+      setDeliveryAddressId && setDeliveryAddressId(address.id);
+      setStoreAddressId && setStoreAddressId('');
+    }
+  };
+
   return (
     <div className={classes.root}>
-      {/* {deliveryAddresses.length > 0 && selectedAddressData ? (
-        <ul>
-          <li>
-            <FormControlLabel
-              checked={true}
-              className={classes.radioLabel}
-              value={selectedAddressData.id}
-              control={<AphRadio color="primary" />}
-              label={formatAddress(selectedAddressData)}
-              onChange={() => {
-                setDeliveryAddressId &&
-                  setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
-                setStoreAddressId && setStoreAddressId('');
-              }}
-            />
-          </li>
-        </ul>
-      ) : ( 
-        <>{isLoading ? <CircularProgress /> : null}</>
-      )} */}
-
       {deliveryAddresses.length > 0 ? (
         <>
           {isLoading ? (
@@ -537,8 +613,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                                   label: 'Address Selected',
                                 });
                                 /**Gtm code End  */
-                                setDeliveryAddressId && setDeliveryAddressId(address.id);
-                                setStoreAddressId && setStoreAddressId('');
+                                checkLatLongStateCodeAvailability(address);
                               } else {
                                 setShowPlaceNotFoundPopup(true);
                               }
@@ -580,7 +655,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       {errorDeliveryTimeMsg.length > 0 && (
         <span>{deliveryLoading ? <CircularProgress size={22} /> : errorDeliveryTimeMsg}</span>
       )}
-      {deliveryTime.length > 0 && (
+      {deliveryTime && deliveryTime.length > 0 && (
         <div className={classes.deliveryTimeGroup}>
           <div className={classes.deliveryTimeGroupWrap}>
             <span className={classes.deliveryTime}>Delivery Time</span>
@@ -697,6 +772,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

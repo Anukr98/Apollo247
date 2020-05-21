@@ -83,6 +83,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -638,14 +639,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const uploadPrescriptionCTA = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0),
               paddingBottom: 12,
             }}
           >
-            Have a prescription ready?
+            Place your order via prescription
           </Text>
           <Button
             onPress={() => {
@@ -655,11 +656,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setShowPopop(true);
             }}
-            style={{ width: 'auto' }}
+            style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
               ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
             }}
-            title={'UPLOAD PRESCRIPTION'}
+            title={'UPLOAD'}
           />
         </View>
         <PrescriptionPad style={{ height: 57, width: 42 }} />

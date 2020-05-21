@@ -9,7 +9,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
-import { getDate, localDateFormat } from '@aph/mobile-patients/src/utils/dateUtil';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
 interface DetailsCardProps {
@@ -21,6 +21,16 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const DetailsCard: FC<DetailsCardProps> = (props) => {
+  const PaymentModes: any = {
+    DEBIT_CARD: 'Debit Card',
+    CREDIT_CARD: 'Credit Card',
+    NET_BANKING: 'Net Banking',
+    PAYTM_WALLET: 'Paytm Wallet',
+    EMI: 'EMI',
+    UPI: 'UPI',
+    PAYTM_POSTPAID: 'Paytm Postpaid',
+    COD: 'COD',
+  };
   const { paymentFor, item } = props;
   const getLowerHeadersText = () => {
     let status = 'TXN_PENDING';
@@ -33,8 +43,9 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        status = medicineOrderPayments[0].paymentStatus;
-        modeOfConsultOrPmt = medicineOrderPayments[0].paymentType;
+        const { paymentType, paymentMode, paymentStatus } = medicineOrderPayments[0];
+        status = paymentStatus;
+        modeOfConsultOrPmt = !paymentMode ? paymentType : PaymentModes[paymentMode];
       }
       doctorNameOrTime = getDate(orderDateTime);
       rightHeaderText = 'Mode of Payment';

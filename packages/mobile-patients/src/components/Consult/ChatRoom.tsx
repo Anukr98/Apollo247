@@ -2469,16 +2469,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
             </Text>
             <StickyBottomComponent
               style={{
                 paddingHorizontal: 0,
+                marginBottom: 4,
                 backgroundColor: 'transparent',
                 shadowColor: 'transparent',
               }}
             >
-              <Button
+              {/* <Button
                 title={'DOWNLOAD'}
                 style={{
                   flex: 0.5,
@@ -2557,11 +2558,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
                   }
                 }}
-              />
+              /> */}
 
               <Button
-                title={'VIEW'}
-                style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                title={'VIEW PRESCRIPTION'}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(

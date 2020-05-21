@@ -22,6 +22,16 @@ interface PaymentCardFooterProps {
 }
 const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
   const { SUCCESS, FAILED } = PaymentConstants;
+  const PaymentModes: any = {
+    DEBIT_CARD: 'Debit Card',
+    CREDIT_CARD: 'Credit Card',
+    NET_BANKING: 'Net Banking',
+    PAYTM_WALLET: 'Paytm Wallet',
+    EMI: 'EMI',
+    UPI: 'UPI',
+    PAYTM_POSTPAID: 'Paytm Postpaid',
+    COD: 'COD',
+  };
   useEffect(() => {}, []);
   const statusItemValues = () => {
     const { paymentFor, item } = props;
@@ -71,7 +81,8 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        type = medicineOrderPayments[0].paymentType;
+        const { paymentType, paymentMode } = medicineOrderPayments[0];
+        type = !paymentMode ? paymentType : PaymentModes[paymentMode];
 
         status = medicineOrderPayments[0].paymentStatus;
         return {
