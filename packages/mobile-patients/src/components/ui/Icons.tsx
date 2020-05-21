@@ -804,19 +804,15 @@ export const NotificationCartIcon: React.FC<IconProps> = (props) => (
 );
 
 export const HandBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/hand.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/hand/hand.png')} />
 );
 
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linked-uhid-white.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedUhidWhite/linked-uhid-02.png')} />
 );
 
 export const PrimaryUHIDIconBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linked-uhid-blue.png')} />
-);
-
-export const PhoneOutlineIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/phone-icon.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedUhidBlue/linked-uhid.png')} />
 );
 
 export const LinkUHIDStep1: React.FC<IconProps> = (props) => (
@@ -824,7 +820,7 @@ export const LinkUHIDStep1: React.FC<IconProps> = (props) => (
 );
 
 export const Arrow1: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step1-1/arrow-1.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-1.png')} />
 );
 
 export const LinkUHIDStep2first: React.FC<IconProps> = (props) => (
@@ -832,7 +828,7 @@ export const LinkUHIDStep2first: React.FC<IconProps> = (props) => (
 );
 
 export const Arrow2: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step2-1/arrow-2.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-2.png')} />
 );
 
 export const LinkUHIDStep2second: React.FC<IconProps> = (props) => (
@@ -840,7 +836,7 @@ export const LinkUHIDStep2second: React.FC<IconProps> = (props) => (
 );
 
 export const Arrow3: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step2-2/arrow-3.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-3.png')} />
 );
 
 export const LinkUHIDStep2third: React.FC<IconProps> = (props) => (
@@ -852,7 +848,7 @@ export const LinkUHIDStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Arrow4: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step3-1/arrow-4.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-4.png')} />
 );
 
 export const LinkUHIDStep4first: React.FC<IconProps> = (props) => (
@@ -860,19 +856,19 @@ export const LinkUHIDStep4first: React.FC<IconProps> = (props) => (
 );
 
 export const Arrow5: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-1/arrow-5.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/arrow-6.png')} />
 );
 
 export const DottedArrow1: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-1/dotted-arrow-1.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-1.png')} />
 );
 
 export const DottedArrow2: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-1/dotted-arrow-2.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-2.png')} />
 );
 
 export const DottedArrow3: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-1/dotted-arrow-3.png')} />
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/arrows/dotted-arrow-3.png')} />
 );
 
 export const LinkUHIDStep4second: React.FC<IconProps> = (props) => (
