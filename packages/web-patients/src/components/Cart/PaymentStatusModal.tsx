@@ -119,7 +119,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         'In case your account has been debited,you should get the refund in 10-14 business days.',
       callbackFunction: () => {
         // paymentStatusRedirect(redirectUrl)
-        window && (window.location.href = clientRoutes.yourOrders());
+        window && (window.location.href = clientRoutes.medicinesCart());
       },
     },
   };
