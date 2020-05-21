@@ -815,6 +815,10 @@ export const PrimaryUHIDIconBlue: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/link-uhid/linked-uhid-blue.png')} />
 );
 
+export const SecondaryUHIDIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedSecondary/secondary.png')} />
+);
+
 export const PhoneOutlineIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/link-uhid/phone-icon.png')} />
 );

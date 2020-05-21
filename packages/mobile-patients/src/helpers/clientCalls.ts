@@ -352,14 +352,14 @@ export const linkUHIDs = (client: ApolloClient<object>, primaryUhid: string, lin
   });
 };
 
-export const deLinkUHIDs = (client: ApolloClient<object>, primaryUhid: string, linkedUhids: string[]) => {
+export const deLinkUHIDs = (client: ApolloClient<object>, primaryUhid: string, unlinkUhids: string[]) => {
   return new Promise((res, rej) => {
     client
       .mutate<linkUhidsVariables>({
         mutation: UNLINK_UHID,
         variables: {
           primaryUhid: primaryUhid,
-          linkedUhids: linkedUhids
+          unlinkUhids: unlinkUhids
         },
         fetchPolicy: 'no-cache',
       })

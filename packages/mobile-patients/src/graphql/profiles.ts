@@ -2124,6 +2124,10 @@ export const GET_PATIENTS_MOBILE = gql`
           temperature
           weight
         }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
       }
     }
   }
