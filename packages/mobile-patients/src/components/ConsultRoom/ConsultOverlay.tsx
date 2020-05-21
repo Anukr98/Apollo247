@@ -43,6 +43,7 @@ import {
   callPermissions,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGWhatsAppEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -84,6 +85,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const { width, height } = Dimensions.get('window');
 
@@ -116,6 +118,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -148,6 +151,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   useEffect(() => {
+    postWEGWhatsAppEvent(true);
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -942,6 +946,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {renderApplyCoupon()}
               {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
+              <WhatsAppStatus
+                // style={{ marginTop: 6 }}
+                onPress={() => {
+                  whatsAppUpdate
+                    ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
+                    : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
+                }}
+                isSelected={whatsAppUpdate}
+              />
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}

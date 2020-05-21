@@ -3,17 +3,22 @@ import { Image, ImageProps } from 'react-native';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
+  if (size === 'sm_l') return { width: 18, height: 21 };
   if (size === 'md_l') return { width: 54, height: 54 };
   if (size === 'lg') return { width: 64, height: 64 };
   return { width: 48, height: 48 };
 };
 
+const getCustomIconSize = (wt: number, ht: number) => {
+  return { width: wt, height: ht };
+};
+
 interface IconProps extends Partial<ImageProps> {
-  size?: 'sm' | 'md' | 'md_l' | 'lg';
+  size?: 'sm' | 'sm_l' | 'md' | 'md_l' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size?: 'sm' | 'md' | 'md_l' | 'lg';
+  size?: 'sm' | 'sm_l' | 'md' | 'md_l' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
@@ -46,6 +51,10 @@ export const DoctorIcon: React.FC<IconProps> = (props) => (
 
 export const CovidRiskLevel: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_white.png')} />
+);
+
+export const NotifySymbol: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/notify_symbol.png')} />
 );
 
 export const CovidHealthScan: React.FC<IconProps> = (props) => (
@@ -186,6 +195,10 @@ export const LocationOff: React.FC<IconProps> = (props) => (
 
 export const Filter: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_filter.png')} />
+);
+
+export const DoctorFilter: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_doctor_filter.png')} />
 );
 
 export const BackArrow: React.FC<IconProps> = (props) => (
@@ -590,6 +603,10 @@ export const Invoice: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
 );
 
+export const CurrencyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/rupee.png')} />
+);
+
 export const AddFileIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
 );
@@ -600,6 +617,19 @@ export const Minus: React.FC<IconProps> = (props) => (
 
 export const Plus: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
+);
+
+export const SuccessIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_success.png')} />
+);
+export const FailedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_payment_failed.png')} />
+);
+export const RefundIcon: React.FC<IconProps> = (props) => (
+  <Image style={[getCustomIconSize(21, 24)]} source={require('./icons/ic_refund.png')} />
+);
+export const PendingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.png')} />
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (
@@ -774,6 +804,13 @@ export const Failure: React.FC<IconProps> = (props) => (
 export const Pending: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Pending.png')} />
 );
+export const Refund: React.FC<IconProps> = (props) => (
+  <Image
+    style={[getCustomIconSize(47, 53)]}
+    source={require('./icons/Refund.png')}
+    resizeMode="cover"
+  />
+);
 
 export const Diabetes: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_diabetes.png')} />
@@ -885,4 +922,28 @@ export const LinkUHIDStep4third: React.FC<IconProps> = (props) => (
 
 export const LinkUHIDStep4fourth: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-4/manage-delink-post-delink.png')} />
+);
+
+export const CheckBox: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/checkbox.png')} />
+);
+
+export const CheckBoxFilled: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
+);
+
+export const WhatsAppIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/whatsapp.png')} />
+);
+
+export const NeedHelpIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.png')} />
+);
+
+export const PrimaryIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/primary.png')} />
+);
+
+export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/linkeduhid.png')} />
 );

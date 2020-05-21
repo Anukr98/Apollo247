@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -29,6 +29,8 @@ import {
   postwebEngageAddToCartEvent,
   postWEGNeedHelpEvent,
   postAppsFlyerAddToCartEvent,
+  addPharmaItemToCart,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -52,7 +54,11 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -147,8 +153,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
+  const [searchHeading, setSearchHeading] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [pinCode, setPinCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
@@ -159,13 +165,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const getSpecialPrice = (special_price?: string | number) =>
     special_price
       ? typeof special_price == 'string'
-        ? parseInt(special_price)
+        ? Number(special_price)
         : special_price
       : undefined;
 
@@ -255,6 +263,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       searchMedicineApi(_searchText)
         .then(async ({ data }) => {
           const products = data.products || [];
+          setSearchHeading(data.search_heading!);
           setMedicineList(products);
           setIsLoading(false);
         })
@@ -295,23 +304,30 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
-    addCartItem!({
-      id: sku,
-      mou,
-      name: stripHtml(name),
-      price: price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? parseInt(special_price)
-          : special_price
-        : undefined,
-      prescriptionRequired: is_prescription_required == '1',
-      isMedicine: type_id == 'Pharma',
-      quantity: 1,
-      thumbnail,
-      isInStock: true,
-    });
-    postwebEngageAddToCartEvent(item, 'Pharmacy List');
+    addPharmaItemToCart(
+      {
+        id: sku,
+        mou,
+        name: stripHtml(name),
+        price: price,
+        specialPrice: special_price
+          ? typeof special_price == 'string'
+            ? Number(special_price)
+            : special_price
+          : undefined,
+        prescriptionRequired: is_prescription_required == '1',
+        isMedicine: type_id == 'Pharma',
+        quantity: 1,
+        thumbnail,
+        isInStock: true,
+      },
+      pharmacyPincode!,
+      addCartItem,
+      globalLoading,
+      props.navigation,
+      currentPatient
+    );
+    postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
     postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
   };
 
@@ -469,9 +485,17 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {!!medicineList.length && (
+              <TouchableOpacity
+                style={{ marginRight: medicineList.length ? 24 : 0 }}
+                activeOpacity={1}
+                onPress={() => setFilterVisible(true)}
+              >
+                <Filter />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: medicineList.length ? 24 : 0 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
@@ -480,11 +504,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {!!medicineList.length && (
-              <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
-                <Filter />
-              </TouchableOpacity>
-            )}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -559,13 +578,13 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
-        <NeedHelpAssistant
+        {/* <NeedHelpAssistant
           navigation={props.navigation}
           containerStyle={{ marginTop: 84, marginBottom: 50 }}
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
-        />
+        /> */}
       </ScrollView>
     );
   };
@@ -598,12 +617,24 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     const price = medicine.price;
     const specialPrice = medicine.special_price
       ? typeof medicine.special_price == 'string'
-        ? parseInt(medicine.special_price)
+        ? Number(medicine.special_price)
         : medicine.special_price
       : undefined;
 
+    const onNotifyMeClick = () => {
+      showAphAlert!({
+        title: 'Okay! :)',
+        description: `You will be notified when ${medicine.name} is back in stock.`,
+      });
+    };
+    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
+    const getItemQuantity = (id: string) => {
+      const foundItem = cartItems.find((item) => item.id == id);
+      return foundItem ? foundItem.quantity : 1;
+    };
+
     return (
-      <MedicineCard
+      <SearchMedicineCard
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
@@ -624,6 +655,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price={price}
         specialPrice={specialPrice}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
+        quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
@@ -632,13 +664,27 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Remove item from cart');
           onRemoveCartItem(medicine);
         }}
+        onNotifyMeClicked={() => {
+          onNotifyMeClick();
+        }}
+        onPressAddQuantity={() =>
+          getItemQuantity(medicine.sku) == 20
+            ? null
+            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) + 1)
+        }
+        onPressSubtractQuantity={() =>
+          getItemQuantity(medicine.sku) == 1
+            ? onRemoveCartItem(medicine)
+            : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
+        }
         onChangeUnit={(unit) => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Change unit in cart');
           onUpdateCartItem(medicine, unit);
         }}
+        isMedicineAddedToCart={isMedicineAddedToCart}
         isCardExpanded={!!foundMedicineInCart}
         isInStock={medicine.is_in_stock}
-        packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}
+        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={'unsubscribed'}
         onChangeSubscription={() => {}}
@@ -650,7 +696,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const renderMatchingMedicines = () => {
     let filteredMedicineList = medicineList;
-
+    let search_heading_text = searchHeading && searchHeading.split("'");
     // Category
     if (categoryIds.length) {
       filteredMedicineList = filteredMedicineList.filter((item) =>
@@ -745,16 +791,46 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 ) : null
               }
               ListHeaderComponent={
-                (filteredMedicineList.length > 0 && (
-                  <SectionHeaderComponent
-                    sectionTitle={
-                      isTest
-                        ? `Matching Tests — ${filteredMedicineList.length}`
-                        : `Matching Medicines — ${filteredMedicineList.length}`
-                    }
-                    style={{ marginBottom: 0 }}
-                  />
-                )) ||
+                (filteredMedicineList.length > 0 &&
+                  (isTest ? (
+                    <SectionHeaderComponent
+                      sectionTitle={`Matching Tests — ${filteredMedicineList.length}`}
+                      style={{ marginBottom: 0 }}
+                    />
+                  ) : search_heading_text ? (
+                    <View
+                      style={{
+                        marginHorizontal: 20,
+                        marginTop: 24,
+                        backgroundColor: 'transparent',
+                      }}
+                    >
+                      <Text style={{ ...theme.viewStyles.text('R', 14, '#01475b', 1, 18) }}>
+                        {search_heading_text[0]}
+                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                          {"'" + search_heading_text[1] + "'"}
+                        </Text>
+                        {search_heading_text[2] && search_heading_text[2]}
+                        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 18) }}>
+                          {search_heading_text[3] && "'" + search_heading_text[3] + "'"}
+                        </Text>
+                        {search_heading_text[4]}
+                      </Text>
+                      <View
+                        style={{
+                          backgroundColor: '#02475b',
+                          marginTop: 5,
+                          opacity: 0.2,
+                          height: 1,
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <SectionHeaderComponent
+                      sectionTitle={`Matching Medicines — ${filteredMedicineList.length}`}
+                      style={{ marginBottom: 0 }}
+                    />
+                  ))) ||
                 null
               }
             />

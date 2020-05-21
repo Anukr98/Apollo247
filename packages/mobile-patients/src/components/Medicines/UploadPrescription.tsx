@@ -18,23 +18,25 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_PRESCRIPTION_MEDICINE_ORDER,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPLOAD_DOCUMENT,
+  UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   MEDICINE_DELIVERY_TYPE,
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
-  NonCartOrderCity,
+  NonCartOrderOMSCity,
   BOOKING_SOURCE,
   DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   g,
   postWebEngageEvent,
   formatAddress,
   postFirebaseEvent,
+  findAddrComponents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -59,6 +61,13 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -99,7 +108,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { deliveryAddressId, storeId, pinCode, addresses, stores } = useShoppingCart();
+  const {
+    deliveryAddressId,
+    storeId,
+    pinCode,
+    addresses,
+    stores,
+    setAddresses,
+  } = useShoppingCart();
+  const { setAddresses: setTestAddresses } = useDiagnosticsCart();
 
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
@@ -150,10 +167,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     } catch (error) {}
   };
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     client
       .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -177,16 +196,84 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       });
   };
 
+  const updateAddressLatLong = async (
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    onComplete: () => void
+  ) => {
+    try {
+      const data = await getPlaceInfoByPincode(address.zipcode!);
+      const { lat, lng } = data.data.results[0].geometry.location;
+      const state = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components
+      );
+      const stateCode = findAddrComponents(
+        'administrative_area_level_1',
+        data.data.results[0].address_components,
+        'short_name'
+      );
+      const finalStateCode =
+        AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+          state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+        ] || stateCode;
+
+      await client.mutate<updatePatientAddress, updatePatientAddressVariables>({
+        mutation: UPDATE_PATIENT_ADDRESS,
+        variables: {
+          UpdatePatientAddressInput: {
+            id: address.id,
+            addressLine1: address.addressLine1!,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            zipcode: address.zipcode!,
+            landmark: address.landmark,
+            mobileNumber: address.mobileNumber,
+            addressType: address.addressType,
+            otherAddressType: address.otherAddressType,
+            latitude: lat,
+            longitude: lng,
+            stateCode: finalStateCode,
+          },
+        },
+      });
+      const newAddrList = [
+        { ...address, latitude: lat, longitude: lng, stateCode: finalStateCode },
+        ...addresses.filter((item) => item.id != address.id),
+      ];
+      setAddresses!(newAddrList);
+      setTestAddresses!(newAddrList);
+      onComplete();
+    } catch (error) {
+      // Let the user order journey continue, even if no lat-lang.
+      onComplete();
+    }
+  };
+
   const onPressSubmit = () => {
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
       (addr) => addr == Number(zipcode)
     );
-    if (isChennaiAddress) {
-      props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
+    const proceed = () => {
+      if (isChennaiAddress) {
+        setLoading!(false);
+        props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
+      } else {
+        onSubmitOrder(false);
+      }
+    };
+
+    if (
+      g(selectedAddress, 'latitude') &&
+      g(selectedAddress, 'longitude') &&
+      g(selectedAddress, 'stateCode')
+    ) {
+      proceed();
     } else {
-      onSubmitOrder(false);
+      setLoading!(true);
+      updateAddressLatLong(selectedAddress!, proceed);
     }
   };
 
@@ -216,8 +303,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         (i) => i
       );
 
-      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-        prescriptionMedicineInput: {
+      const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+        prescriptionMedicineOMSInput: {
           patientId: (currentPatient && currentPatient.id) || '',
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
@@ -230,16 +317,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
           // Values for chennai order
           email: isChennaiOrder && email ? email.trim() : null,
-          NonCartOrderCity: isChennaiOrder ? NonCartOrderCity.CHENNAI : null,
+          NonCartOrderCity: isChennaiOrder ? NonCartOrderOMSCity.CHENNAI : null,
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         },
       };
-      console.log({ prescriptionMedicineInput });
-      console.log(JSON.stringify(prescriptionMedicineInput));
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
-      console.log({ error });
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
       renderErrorAlert('Error occurred while uploading physical prescription(s).');

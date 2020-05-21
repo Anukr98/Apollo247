@@ -255,7 +255,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {availableCoupons.length > 0 && (
+                {
                   <div className={classes.pinSearch}>
                     <AphTextField
                       inputProps={{
@@ -290,12 +290,12 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                       )}
                     </div>
                   </div>
-                )}
+                }
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}
-                <div className={classes.sectionHeader}>Coupons For You</div>
-                <ul>
+                {/* <div className={classes.sectionHeader}>Coupons For You</div> */}
+                {/* <ul>
                   {availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
@@ -332,7 +332,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   ) : (
                     <div className={classes.noCoupons}>No available Coupons</div>
                   )}
-                </ul>
+                </ul> */}
               </div>
             </div>
           </div>

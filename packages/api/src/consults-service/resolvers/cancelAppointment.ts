@@ -21,6 +21,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -61,7 +62,9 @@ const cancelAppointment: Resolver<
   CancelAppointmentResult
 > = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointment = await appointmentRepo.findById(cancelAppointmentInput.appointmentId);
+  const appointment = await appointmentRepo.findAppointmentPaymentById(
+    cancelAppointmentInput.appointmentId
+  );
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -75,12 +78,6 @@ const cancelAppointment: Resolver<
   )
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
-  if (
-    appointment.appointmentDateTime <= new Date() &&
-    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(
     cancelAppointmentInput.appointmentId
@@ -109,6 +106,16 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
+  );
+  await initiateRefund(
+    {
+      orderId: appointment.paymentOrderId,
+      txnId: appointment.appointmentPayments[0].paymentRefId,
+      refundAmount: appointment.appointmentPayments[0].amountPaid,
+      appointment: appointment,
+      appointmentPayments: appointment.appointmentPayments[0],
+    },
+    consultsDb
   );
 
   //update slot status in ES as open

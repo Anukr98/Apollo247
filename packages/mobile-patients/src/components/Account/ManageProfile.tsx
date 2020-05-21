@@ -161,14 +161,12 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       setLoading && setLoading(false);
       const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
       checkForLinkedProfiles(profiles);
-      // setProfiles(profiles);
     }
   }, [allCurrentPatients]);
 
   const checkForLinkedProfiles = (profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]) => {
     let primary;
     let secondary = [];
-    // let secondaryuhid = [];
     let areUhidsLinked = false;
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
@@ -178,7 +176,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }
       else if(profile!.isLinked) {
         secondary.push(profile!.uhid);
-        // secondaryuhid.push(profile);
         areUhidsLinked = true;
       }
     });
@@ -205,7 +202,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'MANAGE PROFILES'}
+          title={'MANAGE FAMILY MEMBERS'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
         />

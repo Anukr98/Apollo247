@@ -35,6 +35,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   APPOINTMENT_TYPE,
+  NOSHOW_REASON,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -65,6 +66,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -182,7 +184,7 @@ type rescheduleType = {
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
-  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
@@ -217,6 +219,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
     if (movedFrom === 'notification') {
       NextAvailableSlotAPI();
+    }
+
+    if (movedFrom === 'cancel') {
+      setShowCancelPopup(true);
     }
   }, [currentPatient]);
 
@@ -532,7 +538,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
+    const showCancel = dateIsAfter || isAwaitingReschedule ? true : minutes <= -30;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -634,7 +641,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule || dateIsAfter ? 1 : 0.5,
+                opacity: isAwaitingReschedule || dateIsAfter || minutes <= -30 ? 1 : 0.5,
               }}
               onPress={() => {
                 console.log(data.status, 'statis');
@@ -650,7 +657,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     'Reschdule_Appointment_Online_Details_Clicked'
                   );
                   try {
-                    isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
+                    isAwaitingReschedule || dateIsAfter || minutes <= -30
+                      ? NextAvailableSlotAPI()
+                      : null;
                   } catch (error) {
                     CommonBugFender('AppointmentOnlineDetails_RESCHEDULE_try', error);
                   }
@@ -745,7 +754,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+              'Since you could not complete the appointment. we’ll issue you a full refund!'
             }
           >
             <View

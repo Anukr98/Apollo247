@@ -9,6 +9,8 @@ import {
   Mascot,
   OnlineConsult,
   PhysicalConsult,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
@@ -42,10 +44,19 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
-import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
-import { APPOINTMENT_STATE, STATUS, APPOINTMENT_TYPE } from '../../graphql/types/globalTypes';
+import {
+  getPatientAllAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '../../graphql/types/getPatientAllAppointments';
+import {
+  APPOINTMENT_STATE,
+  STATUS,
+  APPOINTMENT_TYPE,
+  NOSHOW_REASON,
+} from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
 import { ProfileList } from '../ui/ProfileList';
 import { Spinner } from '../ui/Spinner';
@@ -73,6 +84,7 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+    marginRight: -5,
   },
   hiTextStyle: {
     color: '#02475b',
@@ -167,7 +179,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const { analytics } = useAuth();
 
   const [consultations, setconsultations] = useState<
-    getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
 
   const { loading, setLoading } = useUIElements();
@@ -304,12 +316,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               query: GET_PATIENT_ALL_APPOINTMENTS,
               fetchPolicy: 'no-cache',
               variables: {
-                patientId: userId,
+                patientId:
+                  userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
                 // patientId: currentPatient ? currentPatient!.id : userId,
               },
             })
             .then(({ data }) => {
-              console.log(data, 'GET_PATIENT_APPOINTMENTS');
               if (
                 data &&
                 data.getPatientAllAppointments &&
@@ -454,8 +466,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderConsultations = () => {
-    console.log(moment(new Date()).add(35, 'h'), 'dtat');
-
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
@@ -611,41 +621,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       )}
 
                       <View style={styles.separatorStyle} />
-                      {item.isFollowUp == 'true' ? (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <Text style={styles.consultTextStyles}>
-                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                          </Text>
-                          {item.appointmentType === 'ONLINE' ? (
-                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          ) : (
-                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          )}
-                        </View>
-                      ) : (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <Text style={styles.consultTextStyles}>
-                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                          </Text>
-                          {item.appointmentType === 'ONLINE' ? (
-                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          ) : (
-                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
-                          )}
-                        </View>
-                      )}
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <Text style={styles.consultTextStyles}>
+                          {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                        </Text>
+                        {item.appointmentType === 'ONLINE' ? (
+                          <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        ) : (
+                          <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                        )}
+                      </View>
                       {/* 
                       <View style={styles.separatorStyle} />
                       {item.symptoms == null ? (
@@ -712,6 +703,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                   ) : item.status == STATUS.PENDING ||
                     dateIsAfterconsult ||
+                    item.status == STATUS.IN_PROGRESS ||
                     item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
                     item.status == STATUS.NO_SHOW ||
                     item.status == STATUS.CALL_ABANDON ? (
@@ -739,35 +731,70 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
                         </TouchableOpacity>
                       ) : (
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => {
-                            postConsultCardEvents(
-                              item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
-                              item
-                            );
-
-                            if (item.doctorInfo && selectedTab === tabs[0].title) {
-                              CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                              props.navigation.navigate(AppRoutes.ChatRoom, {
-                                data: item,
-                                callType: '',
-                                prescription: '',
-                              });
-                            }
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.prepareForConsult,
-                              { opacity: selectedTab === tabs[0].title ? 1 : 0.5 },
-                            ]}
+                        <View style={{ flexDirection: 'row' }}>
+                          {item.status == STATUS.PENDING && minutes <= -30 ? (
+                            <TouchableOpacity
+                              activeOpacity={1}
+                              style={{ flex: 1 }}
+                              onPress={() => {
+                                // postConsultCardEvents('Chat with Doctor', item);
+                                CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                                item.appointmentType === 'ONLINE'
+                                  ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                      data: item,
+                                      from: 'cancel',
+                                    })
+                                  : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                      data: item,
+                                      from: 'cancel',
+                                    });
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.prepareForConsult,
+                                  {
+                                    textAlign: 'left',
+                                  },
+                                ]}
+                              >
+                                RESCHEDULE/CANCEL
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
+                          <TouchableOpacity
+                            activeOpacity={1}
+                            style={{ flex: 1 }}
+                            onPress={() => {
+                              postConsultCardEvents(
+                                item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+                                item
+                              );
+                              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+                              if (item.doctorInfo && selectedTab === tabs[0].title) {
+                                CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                                props.navigation.navigate(AppRoutes.ChatRoom, {
+                                  data: item,
+                                  callType: '',
+                                  prescription: '',
+                                });
+                              }
+                            }}
                           >
-                            {item.isConsultStarted
-                              ? string.common.continueConsult
-                              : string.common.prepareForConsult}
-                          </Text>
-                        </TouchableOpacity>
+                            <Text
+                              style={[
+                                styles.prepareForConsult,
+                                {
+                                  opacity: selectedTab === tabs[0].title ? 1 : 0.5,
+                                },
+                              ]}
+                            >
+                              {item.isConsultStarted
+                                ? string.common.continueConsult
+                                : string.common.prepareForConsult}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       )}
                     </View>
                   ) : (
@@ -880,7 +907,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderProfileChangeView = () => {
     return (
-      <View style={{ backgroundColor: theme.colors.WHITE, paddingHorizontal: 20, elevation: 15 }}>
+      <View style={{ backgroundColor: theme.colors.WHITE, paddingLeft: 20, elevation: 15 }}>
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
@@ -896,13 +923,38 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             >
               <Text style={styles.hiTextStyle}>{'hi'}</Text>
               <View style={styles.nameTextContainerStyle}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                </Text>
-                <View style={styles.seperatorStyle} />
-              </View>
-              <View style={{ paddingTop: 15 }}>
-                <DropdownGreen />
+                <View style={{ flexDirection: 'row', flex: 1 }}>
+                  <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                    <PrimaryIcon
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
+                      resizeMode={'contain'}
+                    />
+                  ) : (
+                    currentPatient && (
+                      <LinkedUhidIcon
+                        style={{
+                          width: 22,
+                          height: 20,
+                          marginLeft: 5,
+                          marginTop: Platform.OS === 'ios' ? 16 : 20,
+                        }}
+                        resizeMode={'contain'}
+                      />
+                    )
+                  )}
+                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+                {currentPatient && <View style={styles.seperatorStyle} />}
               </View>
             </View>
           }

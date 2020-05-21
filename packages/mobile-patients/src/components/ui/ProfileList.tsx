@@ -3,7 +3,11 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Dimensions, View, Text, StyleSheet, ViewStyle, StyleProp, TextStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DropdownGreen,
+  PrimaryIcon,
+  LinkedUhidIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -19,6 +23,7 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useUIElements } from '../UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -53,6 +58,7 @@ export interface ProfileListProps {
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
   showList?: boolean;
+  menuHidden?: () => void;
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
 }
 
@@ -68,6 +74,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     unsetloaderDisplay,
   } = props;
   const addString = 'ADD MEMBER';
+  const addBoolen = false;
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const shopCart = useShoppingCart();
@@ -98,7 +105,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const pickerData =
     (profileArray &&
       profileArray!.map((i) => {
-        return { key: i.id, value: titleCase(i.firstName || i.lastName || '') };
+        return {
+          key: i.id,
+          value: titleCase(i.firstName || i.lastName || ''),
+          isPrimary: i.isUhidPrimary,
+        };
       })) ||
     [];
 
@@ -213,6 +224,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         emailAddress: addString,
         photoUrl: addString,
         patientMedicalHistory: null,
+        athsToken: addString,
+        referralCode: addString,
+        isLinked: addBoolen,
+        isUhidPrimary: addBoolen,
+        primaryUhid: addString,
+        primaryPatientId: addString,
+        familyHistory: null,
+        lifeStyle: null,
       });
     }
     return pArray;
@@ -222,6 +241,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     return (
       <MaterialMenu
         showMenu={props.showList}
+        menuHidden={() => {
+          props.menuHidden && props.menuHidden();
+        }}
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
@@ -288,6 +310,19 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               >
                 {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
               </Text>
+              {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                <PrimaryIcon
+                  style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
+                  resizeMode={'contain'}
+                />
+              ) : (
+                currentPatient && (
+                  <LinkedUhidIcon
+                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
+                    resizeMode={'contain'}
+                  />
+                )
+              )}
               <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                 <DropdownGreen />
               </View>

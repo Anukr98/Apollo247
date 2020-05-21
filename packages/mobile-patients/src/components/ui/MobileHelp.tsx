@@ -1,14 +1,23 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
-import { DropdownGreen, Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SEND_HELP_EMAIL } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { NeedHelp } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -16,6 +25,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Keyboard,
+  SafeAreaView,
+  ScrollView,
   StyleProp,
   StyleSheet,
   Text,
@@ -25,51 +36,27 @@ import {
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-  // setBugFenderLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
-  showPopUp: {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-end',
-    flex: 1,
-    left: 0,
-    right: 0,
-  },
   subViewPopup: {
-    marginTop: 120,
+    marginTop: 24,
     backgroundColor: 'white',
-    width: '100%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    borderRadius: 10,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 15,
+    marginHorizontal: 20,
+    marginBottom: 30,
   },
   dropdownOverlayStyle: {
     padding: 0,
     margin: 0,
     height: 'auto',
     borderRadius: 10,
-  },
-  mascotIconStyle: {
-    position: 'absolute',
-    top: -32,
-    right: 20,
   },
   categoryItemStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -115,15 +102,19 @@ const styles = StyleSheet.create({
   resetButtonTextStyle: {
     color: '#fc9916',
   },
+  resetButtonDisabledTextStyle: {
+    color: '#fc9916',
+    opacity: 0.5,
+  },
   submitButtonStyle: {
     flex: 1,
   },
   buttonsWrapperStyle: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 22,
+    marginHorizontal: 20,
+    marginBottom: 20,
   },
 });
 
@@ -134,14 +125,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [helpCategory, setHelpCategory] = useState<string>('');
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const [mobileFollowup, setMobileFollowup] = useState<boolean>(false);
+
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -213,7 +203,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
                   color: theme.colors.SHERPA_BLUE,
                 },
               ]}
-              numberOfLines={1}
+              numberOfLines={2}
             >
               {selectedQuery || 'Select a query'}
             </Text>
@@ -305,14 +295,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
 
   const renderContent = () => {
     return (
-      <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 20 }}>
+      <View style={{ paddingHorizontal: 15, paddingTop: 12, paddingBottom: 20 }}>
         <View style={styles.categoryWrapper}>
           {NeedHelp.map((item) => renderCategory(item.category))}
         </View>
         {renderEmailField()}
         {renderQueyFiled()}
         {renderCommentField()}
-        {renderButtons()}
       </View>
     );
   };
@@ -358,7 +347,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       showAlert();
       return;
     }
-    setShowSpinner(true);
+    setLoading && setLoading(true);
     // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
 
     const helpEmail = {
@@ -377,18 +366,35 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         },
       })
       .then(() => {
-        setShowSpinner(false);
-        setMobileFollowup(true);
+        setLoading && setLoading(false);
+        showAphAlert!({
+          title: 'Hi:)',
+          description:
+            needHelpToContactInMessage ||
+            'Thank you for reaching out. Our team will call you back shortly.',
+          unDismissable: true,
+          onPressOk: () => {
+            hideAphAlert && hideAphAlert();
+            CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
+          },
+        });
       })
       .catch((e) => {
         CommonBugFender('MobileHelp_onSubmit', e);
-        setShowSpinner(false);
+        setLoading && setLoading(false);
         props.navigation.goBack();
         handleGraphQlError(e);
       });
   };
 
-  const isInitialState = !(helpCategory || selectedQuery || comment);
+  const isInitialState = !(helpCategory || email || selectedQuery || comment);
   const onReset = () => {
     if (isInitialState) {
       CommonLogEvent(AppRoutes.MobileHelp, 'Go back clicked');
@@ -406,9 +412,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       <View style={styles.buttonsWrapperStyle}>
         <Button
           onPress={() => onReset()}
-          title={isInitialState ? 'GO BACK' : 'RESET'}
+          title={'RESET'}
+          disabled={isInitialState}
           style={styles.resetButtonStyle}
-          titleTextStyle={styles.resetButtonTextStyle}
+          disabledStyle={styles.resetButtonStyle}
+          titleTextStyle={
+            isInitialState ? styles.resetButtonDisabledTextStyle : styles.resetButtonTextStyle
+          }
         />
         <View style={{ width: 16 }} />
         <Button
@@ -421,58 +431,40 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     );
   };
 
+  const renderHeader = () => {
+    return (
+      <View>
+        <Header
+          container={{ borderBottomWidth: 0 }}
+          title={'NEED HELP'}
+          leftIcon="backArrow"
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+      </View>
+    );
+  };
+
   return (
-    <View style={{ flex: 1 }}>
-      {showSpinner && <Spinner />}
-      <View style={styles.showPopUp}>
-        <View style={styles.subViewPopup}>
+    <SafeAreaView
+      style={{
+        ...theme.viewStyles.container,
+      }}
+    >
+      {renderHeader()}
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          style={styles.subViewPopup}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
           <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
             {'What do you need help with?'}
           </Text>
           <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
-          <Mascot style={styles.mascotIconStyle} />
-        </View>
+        </ScrollView>
+        {renderButtons()}
       </View>
-      {mobileFollowup && (
-        <BottomPopUp
-          title={'Hi:)'}
-          description={
-            needHelpToContactInMessage ||
-            'Thank you for reaching out. Our team will call you back shortly.'
-          }
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setMobileFollowup(false);
-                CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                  })
-                );
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )}
-    </View>
+    </SafeAreaView>
   );
 };

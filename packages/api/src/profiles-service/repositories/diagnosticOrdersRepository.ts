@@ -57,7 +57,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       });
   }
 
-  getListOfOrders(patient: string) {
+  getListOfOrders(ids: string[]) {
     // return this.find({
     //   where: {
     //     patient,
@@ -70,9 +70,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     return this.createQueryBuilder('diagnostic_orders')
       .leftJoinAndSelect('diagnostic_orders.diagnosticOrderLineItems', 'diagnosticOrderLineItems')
       .leftJoinAndSelect('diagnosticOrderLineItems.diagnostics', 'diagnostics')
-      .where('(diagnostic_orders.patient = :patientId)', {
-        patientId: patient,
-      })
+      .where('(diagnostic_orders.patient IN (:...ids))', { ids })
       .andWhere('diagnostic_orders.orderStatus not in(:status1,:status2)', {
         status1: DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
         status2: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,

@@ -5,8 +5,6 @@ module.exports = Object.freeze({
   AUTO_SUBMIT_JD_CASESHEET: `query { autoSubmitJDCasesheet }`,
   SEND_UNREAD_MESSAGES_NOTIFICATION: `query { sendUnreadMessagesNotification }`,
   ARCHIVE_MESSAGES: `query { archiveMessages }`,
-  NO_SHOW_REMINDER: `query {noShowReminderNotification {status apptsListCount noCaseSheetCount}}`,
-  NO_SHOW_REMINDER_30: `query {noShowReminder30Min {status apptsListCount noCaseSheetCount}}`,
   APPT_REMINDER: `query { sendApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
   DAILY_APPOINTMENT_SUMMARY: `query { sendDailyAppointmentSummary }`,

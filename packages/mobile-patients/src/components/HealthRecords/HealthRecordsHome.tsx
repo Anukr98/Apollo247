@@ -11,6 +11,8 @@ import {
   DropdownGreen,
   Filter,
   NoData,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -25,7 +27,7 @@ import {
   GET_MEDICAL_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPLOAD_DOCUMENT,
-  SAVE_PRESCRIPTION_MEDICINE_ORDER,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import {
@@ -81,7 +83,7 @@ import {
 } from '../../graphql/types/globalTypes';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
-import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   nameTextContainerStyle: {
-    maxWidth: '65%',
+    maxWidth: '75%',
   },
   nameTextStyle: {
     marginLeft: 5,
@@ -118,6 +120,7 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+    marginRight: -5,
   },
   descriptionTextStyle: {
     marginTop: 8,
@@ -406,13 +409,38 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             >
               <Text style={styles.hiTextStyle}>{'hi'}</Text>
               <View style={styles.nameTextContainerStyle}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
-                </Text>
-                <View style={styles.seperatorStyle} />
-              </View>
-              <View style={{ paddingTop: 15 }}>
-                <DropdownGreen />
+                <View style={{ flexDirection: 'row', flex: 1 }}>
+                  <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                    <PrimaryIcon
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
+                      resizeMode={'contain'}
+                    />
+                  ) : (
+                    currentPatient && (
+                      <LinkedUhidIcon
+                        style={{
+                          width: 22,
+                          height: 20,
+                          marginLeft: 5,
+                          marginTop: Platform.OS === 'ios' ? 16 : 20,
+                        }}
+                        resizeMode={'contain'}
+                      />
+                    )
+                  )}
+                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+                {currentPatient && <View style={styles.seperatorStyle} />}
               </View>
             </View>
           }
@@ -663,11 +691,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   };
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     setLoading!(true);
     client
       .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -724,8 +754,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setdisplayOrderPopup(false);
           const fieldId = data && data.data!.uploadDocument.fileId;
           if (fieldId) {
-            const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-              prescriptionMedicineInput: {
+            const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+              prescriptionMedicineOMSInput: {
                 patientId: (currentPatient && currentPatient.id) || '',
                 medicineDeliveryType: deliveryAddressId
                   ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY

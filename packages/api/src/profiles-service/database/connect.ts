@@ -69,6 +69,7 @@ import {
   AppointmentDocuments,
   AppointmentNoShow,
   AppointmentPayments,
+  AppointmentRefunds,
   AppointmentSessions,
   CaseSheet,
   DoctorNextAvaialbleSlots,
@@ -181,6 +182,7 @@ export const connect = async () => {
       entities: [
         Appointment,
         AppointmentCallDetails,
+        AppointmentRefunds,
         AppointmentDocuments,
         AppointmentNoShow,
         AppointmentPayments,

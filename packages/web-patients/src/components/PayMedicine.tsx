@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { paymentInstrumentClickTracking } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
@@ -236,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
+      width: 'auto',
     },
     chargesContainer: {
       [theme.breakpoints.down('xs')]: {
@@ -351,6 +352,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 3,
       },
     },
+    hideButton: {
+      display: 'none !important',
+    },
   };
 });
 
@@ -371,6 +375,8 @@ export const PayMedicine: React.FC = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
+  const [showZeroPaymentButton, setShowZeroPaymentButton] = React.useState<boolean>(true);
+
   const [
     validateConsultCouponResult,
     setValidateConsultCouponResult,
@@ -500,14 +506,14 @@ export const PayMedicine: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode && couponCode.length > 0
+              couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0
+              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
@@ -626,21 +632,30 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
+
         if (res && res.data && res.data.saveMedicineOrderOMS) {
           const { orderId, orderAutoId, errorMessage } = res.data.saveMedicineOrderOMS;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
+          /* Webengage Code Start */
+          paymentInstrumentClickTracking({
+            paymentMode: value,
+            orderId,
+            orderAutoId,
+            type: 'Pharmacy',
+          });
+          /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            sessionStorage.removeItem('cartValues');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
             setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
-          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -664,6 +679,8 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
+    setShowZeroPaymentButton(false);
+
     setIsLoading(true);
     paymentMutationConsult({
       variables: {
@@ -839,6 +856,18 @@ export const PayMedicine: React.FC = (props) => {
                       )}
                     </AphButton>
                   )}
+                  {params.payType === 'consults' && revisedAmount === 0 && (
+                    <div className={!showZeroPaymentButton ? classes.hideButton : ''}>
+                      <AphButton
+                        className={classes.payBtn}
+                        onClick={() => onClickConsultPay('PREPAID')}
+                        color="primary"
+                        fullWidth
+                      >
+                        Confirm Booking
+                      </AphButton>
+                    </div>
+                  )}
                 </Paper>
               </Grid>
               <Grid item xs={12} sm={4} className={classes.chargesContainer}>
@@ -900,7 +929,7 @@ export const PayMedicine: React.FC = (props) => {
                       <p>MRP Total</p> <p>Rs.{mrpTotal && mrpTotal.toFixed(2)}</p>
                     </div>
                     <div className={`${classes.charges} ${classes.discount}`}>
-                      <p>Product Discount</p> <p>- Rs.{productDiscount}</p>
+                      <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
                     </div>
                     <div className={classes.charges}>
                       <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges}</p>

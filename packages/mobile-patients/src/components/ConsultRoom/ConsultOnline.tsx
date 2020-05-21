@@ -19,10 +19,11 @@ import {
   getNetStatus,
   nextAvailability,
   timeTo12HrFormat,
-  isIphone5s,
+  // isIphone5s,
   g,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
