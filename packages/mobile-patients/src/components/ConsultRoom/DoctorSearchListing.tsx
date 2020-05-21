@@ -451,6 +451,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     filterMode: ConsultMode = ConsultMode.BOTH,
     SearchData: filterDataType[] = FilterData,
     location: locationType | null = latlng,
+    sort: string | null = value ? 'availability' : 'distance',
     pinCode?: string
   ) => {
     const experienceArray: Range[] = [];
@@ -554,6 +555,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
+      sort: sort,
     };
     console.log(FilterInput, 'FilterInput');
 
@@ -1189,12 +1191,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <View style={styles.viewRowStyle}>
               <Text style={[styles.textStyle, { opacity: value ? 0.6 : 1 }]}>Sort by Distance</Text>
               {value && (
-                <TouchableOpacity onPress={() => setValue(!value)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setValue(!value);
+                    fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
+                  }}
+                >
                   <ToggleOn style={{ marginHorizontal: 10, height: 32, width: 32 }} />
                 </TouchableOpacity>
               )}
               {!value && (
-                <TouchableOpacity onPress={() => setValue(!value)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setValue(!value);
+                    fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+                  }}
+                >
                   <ToggleOff style={{ marginHorizontal: 10, height: 32, width: 32 }} />
                 </TouchableOpacity>
               )}

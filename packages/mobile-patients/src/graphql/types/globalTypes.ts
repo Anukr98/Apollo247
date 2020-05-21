@@ -65,6 +65,7 @@ export enum ConsultType {
 
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -179,6 +180,7 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = "CANCEL_REQUEST",
   DELIVERED = "DELIVERED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_BILLED = "ORDER_BILLED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
@@ -278,9 +280,21 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PAYMENT_METHODS {
+  CC = "CC",
+  COD = "COD",
+  DC = "DC",
+  EMI = "EMI",
+  NB = "NB",
+  PAYTMCC = "PAYTMCC",
+  PPI = "PPI",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+  TestReports = "TestReports",
 }
 
 export enum REQUEST_ROLES {
@@ -351,6 +365,7 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
 }
 
 export enum SpecialtySearchType {
@@ -436,6 +451,9 @@ export interface AppointmentPaymentInput {
   responseMessage: string;
   bankTxnId?: string | null;
   orderId?: string | null;
+  bankName?: string | null;
+  refundAmount?: number | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface BookAppointmentInput {
@@ -589,6 +607,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  sort?: string | null;
 }
 
 export interface Geolocation {
@@ -654,6 +673,7 @@ export interface MedicinePaymentMqInput {
   email?: string | null;
   CODCity?: CODCity | null;
   orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface MessageInput {
@@ -683,6 +703,9 @@ export interface PatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -803,6 +826,9 @@ export interface UpdatePatientAddressInput {
   landmark?: string | null;
   addressType?: PATIENT_ADDRESS_TYPE | null;
   otherAddressType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface UpdatePatientInput {
