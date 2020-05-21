@@ -119,7 +119,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         'In case your account has been debited,you should get the refund in 10-14 business days.',
       callbackFunction: () => {
         // paymentStatusRedirect(redirectUrl)
-        window && (window.location.href = clientRoutes.yourOrders());
+        window && (window.location.href = clientRoutes.medicinesCart());
       },
     },
   };
@@ -193,10 +193,13 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                 orderId={Number(params.orderAutoId)}
                 amountPaid={paymentStatusData.amountPaid}
                 // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
-                paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode)}
+                paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode) || '--'}
                 paymentRefId={paymentStatusData.paymentRefId}
-                paymentDateTime={moment(paymentStatusData.paymentDateTime)
-                  .utc()
+                paymentDateTime={moment(
+                  paymentStatusData.orderDateTime
+                    ? paymentStatusData.orderDateTime
+                    : paymentStatusData.paymentDateTime
+                )
                   .format('DD MMMM YYYY[,] LT')
                   .replace(/(A|P)(M)/, '$1.$2.')
                   .toString()}

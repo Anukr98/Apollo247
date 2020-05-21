@@ -692,6 +692,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
+          deviceType: getDeviceType()
           // couponDiscount: couponValue,
         },
       },
