@@ -7,6 +7,8 @@ import {
   Location,
   ManageProfileIcon,
   NeedHelpIcon,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -234,9 +236,34 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       return (
         <View style={styles.topView}>
           <View style={styles.detailsViewStyle}>
-            <Text style={styles.doctorNameStyles}>
-              {profileDetails.firstName} {profileDetails.lastName}
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.doctorNameStyles}>
+                {profileDetails.firstName} {profileDetails.lastName}
+              </Text>
+              {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                <PrimaryIcon
+                  style={{
+                    width: 22,
+                    height: 20,
+                    marginLeft: 5,
+                    marginTop: Platform.OS === 'ios' ? 5 : 8,
+                  }}
+                  resizeMode={'contain'}
+                />
+              ) : (
+                currentPatient && (
+                  <LinkedUhidIcon
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 5 : 8,
+                    }}
+                    resizeMode={'contain'}
+                  />
+                )
+              )}
+            </View>
             <View style={styles.separatorStyle} />
             <View
               style={{

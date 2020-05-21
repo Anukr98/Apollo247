@@ -110,7 +110,9 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
     fetchPolicy: 'no-cache',
   });
-  const couponList = g(data, 'getPharmaCouponList', 'coupons') || [];
+  const couponList = (g(data, 'getPharmaCouponList', 'coupons') || []).filter(
+    (v) => v!.displayStatus
+  );
 
   useEffect(() => {
     setGlobalLoading!(loading);

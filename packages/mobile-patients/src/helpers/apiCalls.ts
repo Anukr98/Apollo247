@@ -132,6 +132,43 @@ export interface PlaceByIdApiResponse {
   result: PlacesApiResponse['results'][0];
 }
 
+export interface AutoCompleteApiResponse {
+  predictions: Prediction[];
+  status: string;
+}
+
+export interface Prediction {
+  description: string;
+  id: string;
+  matched_substrings: MatchedSubstring[];
+  place_id: string;
+  reference: string;
+  structured_formatting: StructuredFormatting;
+  terms: Term[];
+  types: string[];
+}
+
+interface MatchedSubstring {
+  length: number;
+  offset: number;
+}
+
+interface MainTextMatchedSubstring {
+  length: number;
+  offset: number;
+}
+
+interface StructuredFormatting {
+  main_text: string;
+  main_text_matched_substrings: MainTextMatchedSubstring[];
+  secondary_text: string;
+}
+
+interface Term {
+  offset: number;
+  value: string;
+}
+
 export interface PlacesApiResponse {
   results: {
     address_components: {
@@ -596,11 +633,16 @@ export const getPlaceInfoByPlaceId = (
 
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
-export const autoCompletePlaceSearch = (searchText: string): Promise<AxiosResponse<any>> => {
+export const autoCompletePlaceSearch = (
+  searchText: string,
+  filterCountry?: boolean
+): Promise<AxiosResponse<AutoCompleteApiResponse>> => {
   // const CancelToken = Axios.CancelToken;
   // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
 
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}${
+    filterCountry ? '&components=country:in' : ''
+  }&key=${googlePlacesApiKey}`;
   return Axios.get(url, {
     // cancelToken: new CancelToken((c) => {
     //   // An executor function receives a cancel function as a parameter
