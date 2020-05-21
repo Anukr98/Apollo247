@@ -282,6 +282,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
+        wordBreak: 'break-word',
       },
     },
     headerBackArrow: {

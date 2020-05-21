@@ -16,10 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     orderListingPage: {
-      backgroundColor: '#f0f1ec',
+      backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
-        paddingBottom: 20,
       },
     },
     footerLinks: {

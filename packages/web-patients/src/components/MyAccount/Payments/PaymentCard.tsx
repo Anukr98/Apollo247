@@ -182,7 +182,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
   const { cardDetails } = props;
   let paymentStatus,
-    bankTxnId = '';
+    paymentRefId = '';
   let amountPaid = 0;
 
   const getPaymentStatusText = (paymentStatus: string) => {
@@ -194,10 +194,10 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const paymentInfo =
     cardDetails && cardDetails.appointmentPayments ? cardDetails.appointmentPayments : [];
   if (typeof paymentInfo[0] === 'undefined') {
-    paymentStatus = bankTxnId = 'Invalid';
+    paymentStatus = paymentRefId = 'Invalid';
   } else {
     paymentStatus = paymentInfo[0].paymentStatus;
-    bankTxnId = paymentInfo[0].bankTxnId;
+    paymentRefId = paymentInfo[0].paymentRefId;
     amountPaid = paymentInfo[0].amountPaid;
   }
   const buttonUrl =
@@ -237,7 +237,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
             <div className={classes.price}>Rs. {amountPaid}</div>
           </div>
           <div className={classes.infoText}>
-            <span>Payment Ref Number - {bankTxnId}</span>
+            <span>Payment Ref Number - {paymentRefId}</span>
             <span className={classes.rightArrow}>
               <Link to={clientRoutes.doctorDetails(cardDetails.doctorId)}>
                 <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />

@@ -117,8 +117,9 @@ export enum UPLOAD_FILE_TYPES {
 }
 
 export enum PRISM_DOCUMENT_CATEGORY {
-  HealthChecks = 'HealthChecks',
+  HealthChecks = 'HealthChecks', //not using now
   OpSummary = 'OpSummary',
+  TestReports = 'TestReports',
 }
 
 export enum DIAGNOSTICS_TYPE {
@@ -497,7 +498,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -541,6 +542,9 @@ export class MedicineOrdersStatus extends BaseEntity {
 
   @Column({ nullable: true })
   statusMessage: string;
+
+  @Column({ nullable: true })
+  customReason: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -755,6 +759,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryUhid: string;
 
+  @Index('Patient_primaryPatientId')
   @Column({ nullable: true })
   primaryPatientId: string;
 
@@ -1205,6 +1210,9 @@ export class Coupon extends BaseEntity {
 
   @Column({ default: false })
   isActive: Boolean;
+
+  @Column({ default: true })
+  displayStatus: Boolean;
 
   @Column({ nullable: true })
   updatedDate: Date;
