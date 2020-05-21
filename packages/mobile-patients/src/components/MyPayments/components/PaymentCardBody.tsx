@@ -36,22 +36,24 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     let price = 0;
     if (paymentFor === 'consult') {
       const { appointmentPayments, actualAmount, discountedAmount } = item;
-      price = actualAmount - discountedAmount;
       if (!appointmentPayments.length) {
         status = 'PENDING';
       } else {
-        status = appointmentPayments[0].paymentStatus;
-        refId = appointmentPayments[0].paymentRefId;
+        const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
+        status = paymentStatus;
+        refId = paymentRefId;
+        price = amountPaid;
       }
       return { status: status, refId: refId, price: price };
     } else {
       const { medicineOrderPayments, devliveryCharges, estimatedAmount } = item;
-      price = estimatedAmount + devliveryCharges;
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        status = medicineOrderPayments[0].paymentStatus;
-        refId = medicineOrderPayments[0].paymentRefId;
+        const { paymentStatus, paymentRefId, amountPaid } = medicineOrderPayments[0];
+        status = paymentStatus;
+        refId = paymentRefId;
+        price = amountPaid;
       }
       return { status: status, refId: refId, price: price };
     }
