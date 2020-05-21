@@ -8,14 +8,9 @@ import {
   SpecialtySearchType,
   DOCTOR_ONLINE_STATUS,
 } from 'doctors-service/entities/';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { Client, RequestParams } from '@elastic/elasticsearch';
-import { format, addMinutes, addDays, differenceInMinutes } from 'date-fns';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { Connection } from 'typeorm';
+import { differenceInMinutes } from 'date-fns';
+
 import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
@@ -151,14 +146,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     callStartTime,
     identifier
   );
-  let facilityDistances: FacilityDistanceMap = {};
+  const facilityDistances: FacilityDistanceMap = {};
   searchLogger(`API_CALL___START`);
 
-  let finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
+  const finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let finalSpecialtyDetails;
-  let doctors = [],
-    finalSpecialityDetails = [];
+  let doctors = [];
+  const finalSpecialityDetails = [];
   const elasticMatch = [];
   const earlyAvailableApolloDoctors = [],
     earlyAvailableNearByApolloDoctors = [],
@@ -375,253 +370,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
-  };
-};
-
-const applyFilterLogic = async (
-  filterInput: FilterDoctorInput,
-  doctorsDb: Connection,
-  consultsDb: Connection,
-  facilityDistances?: FacilityDistanceMap
-) => {
-  let filteredDoctors;
-  const doctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
-  let specialtyDetails;
-  const consultModeFilter = filterInput.consultMode ? filterInput.consultMode : ConsultMode.BOTH;
-
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-
-  //create first order curried logger method with first 4 static parameters being passed.
-  const searchLogger = debugLog(
-    'doctorSearchAPILogger',
-    'getDoctorsBySpecialtyAndFilters',
-    apiCallId,
-    callStartTime,
-    identifier
-  );
-
-  try {
-    const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-    specialtyDetails = await specialtiesRepo.findById(filterInput.specialty);
-    if (!specialtyDetails) {
-      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
-    }
-
-    searchLogger('FILTERING_DOCTORS___START');
-    filteredDoctors = await doctorRepository.filterDoctors(filterInput);
-    searchLogger('FILTERING_DOCTORS___END');
-
-    //get filtered doctor ids
-    const doctorIds = filteredDoctors.map((doctor) => {
-      return doctor.id;
-    });
-
-    searchLogger(`FILTER_BY_AVAILABILITY_CONSULT_MODE___START`);
-
-    //preparin required input parameters based on availability filters selected
-    const appointmentDateTimes: AppointmentDateTime[] = [];
-    const availabilityDates = filterInput.availability;
-    const selectedNow = filterInput.availableNow;
-    const selectedDates: string[] = [];
-    let nowDateTime;
-    if (selectedNow && selectedNow != '') {
-      const nowStartDateTime = new Date(selectedNow);
-      let nowEndDateTime = addMinutes(nowStartDateTime, 60);
-      if (format(nowEndDateTime, 'HH:mm') > '18:30') {
-        nowEndDateTime = new Date(format(nowStartDateTime, 'yyyy-MM-dd') + 'T18:29');
-      }
-      nowDateTime = { startDateTime: nowStartDateTime, endDateTime: nowEndDateTime };
-      appointmentDateTimes.push(nowDateTime);
-    }
-
-    if (availabilityDates && availabilityDates.length > 0) {
-      availabilityDates.forEach((date: string) => {
-        const previousDate = format(addDays(new Date(date), -1), 'yyyy-MM-dd');
-        const startDateTime = new Date(previousDate + 'T18:30');
-        const endDateTime = new Date(date + 'T18:29');
-        selectedDates.push(date);
-        appointmentDateTimes.push({ startDateTime, endDateTime });
-      });
-    }
-
-    //get filtered doctors consulthours and consult modes
-    const doctorsConsultModeSlots = doctorRepository.getDoctorsAvailability(
-      consultModeFilter,
-      filteredDoctors,
-      selectedDates,
-      nowDateTime
-    );
-
-    //get filtered doctors appointments
-    if (doctorIds.length > 0) {
-      const doctorsAppointments = await consultsRepo.findByDoctorIdsAndDateTimes(
-        doctorIds,
-        appointmentDateTimes
-      );
-      //console.log('appts: ', doctorsAppointments);
-
-      //reducing availble slots count of filtered doctors based on booked appointment slots
-      doctorsAppointments.forEach((appt) => {
-        const bookedDate = format(appt.appointmentDateTime, 'yyyy-MM-dd');
-
-        if (
-          doctorsConsultModeSlots[appt.doctorId] &&
-          doctorsConsultModeSlots[appt.doctorId][bookedDate]
-        ) {
-          if (
-            appt.appointmentType == 'ONLINE' &&
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].onlineSlots > 0
-          ) {
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].onlineSlots--;
-          }
-          if (
-            appt.appointmentType == 'PHYSICAL' &&
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].physicalSlots > 0
-          ) {
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].physicalSlots--;
-          }
-          if (
-            (appt.appointmentType == 'PHYSICAL' || appt.appointmentType == 'ONLINE') &&
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].bothSlots > 0
-          ) {
-            doctorsConsultModeSlots[appt.doctorId][bookedDate].bothSlots--;
-          }
-        }
-      });
-      //console.log('consult modes: ', doctorsConsultModeSlots);
-
-      //setting the final available consult modes for the filtered doctors
-      for (const docId in doctorsConsultModeSlots) {
-        const doctorAvailability = doctorsConsultModeSlots[docId];
-        const doctorConsultModeAvailability: DoctorConsultModeAvailability = {
-          doctorId: docId,
-          availableModes: [],
-        };
-        Object.keys(doctorAvailability).some((date) => {
-          if (
-            doctorAvailability[date].onlineSlots > 0 &&
-            !doctorConsultModeAvailability.availableModes.includes(ConsultMode.ONLINE)
-          ) {
-            doctorConsultModeAvailability.availableModes.push(ConsultMode.ONLINE);
-          }
-          if (
-            doctorAvailability[date].physicalSlots > 0 &&
-            !doctorConsultModeAvailability.availableModes.includes(ConsultMode.PHYSICAL)
-          ) {
-            doctorConsultModeAvailability.availableModes.push(ConsultMode.PHYSICAL);
-          }
-          if (
-            doctorAvailability[date].bothSlots > 0 &&
-            !doctorConsultModeAvailability.availableModes.includes(ConsultMode.BOTH)
-          ) {
-            doctorConsultModeAvailability.availableModes.push(ConsultMode.BOTH);
-          }
-        });
-
-        doctorsConsultModeAvailability.push(doctorConsultModeAvailability);
-        //console.log(doctorsConsultModeAvailability);
-      }
-    }
-    searchLogger(`FILTER_BY_AVAILABILITY_CONSULT_MODE___END`);
-  } catch (filterDoctorsError) {
-    throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, { filterDoctorsError });
-  }
-
-  //filtering the doctors list based on their availability
-  const finalDoctorsList = filteredDoctors.filter((doctor) => {
-    return doctorsConsultModeAvailability.some((availabilityObject) => {
-      if (consultModeFilter == ConsultMode.BOTH) {
-        return (
-          availabilityObject.doctorId == doctor.id && availabilityObject.availableModes.length > 0
-        );
-      } else {
-        return (
-          availabilityObject.doctorId == doctor.id &&
-          (availabilityObject.availableModes.includes(consultModeFilter) ||
-            availabilityObject.availableModes.includes(ConsultMode.BOTH))
-        );
-      }
-    });
-  });
-
-  //logic to sort based on next availability time
-  const finalDoctorIds = finalDoctorsList.map((doctor) => {
-    return doctor.id;
-  });
-
-  searchLogger('GET_DOCTORS_NEXT_AVAILABILITY___START');
-  const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
-    finalDoctorIds,
-    consultModeFilter,
-    doctorsDb,
-    consultsDb
-  );
-  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___END`);
-
-  //get consult now and book now doctors by available time
-  const { consultNowDoctors, bookNowDoctors } = await doctorRepository.getConsultAndBookNowDoctors(
-    doctorNextAvailSlots.doctorAvailalbeSlots,
-    finalDoctorsList
-  );
-
-  searchLogger(`APPLY_RANKING_ALGORITHM___START`);
-  //apply sort algorithm on ConsultNow doctors
-  if (consultNowDoctors.length > 1) {
-    //get patient and matched doctors previous appointments starts here
-    const consultNowDocIds = consultNowDoctors.map((doctor) => {
-      return doctor.id;
-    });
-    const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-      filterInput.patientId,
-      consultNowDocIds
-    );
-    const consultedDoctorIds = previousAppointments.map((appt) => {
-      return appt.doctorId;
-    });
-    //get patient and matched doctors previous appointments ends here
-
-    consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-      return doctorRepository.sortByRankingAlgorithm(
-        doctorA,
-        doctorB,
-        consultedDoctorIds,
-        facilityDistances
-      );
-    });
-  }
-
-  //apply sort algorithm on BookNow doctors
-  if (bookNowDoctors.length > 1) {
-    //get patient and matched doctors previous appointments starts here
-    const consultNowDocIds = bookNowDoctors.map((doctor) => {
-      return doctor.id;
-    });
-    const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-      filterInput.patientId,
-      consultNowDocIds
-    );
-    const consultedDoctorIds = previousAppointments.map((appt) => {
-      return appt.doctorId;
-    });
-    //get patient and matched doctors previous appointments ends here
-
-    bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-      return doctorRepository.sortByRankingAlgorithm(
-        doctorA,
-        doctorB,
-        consultedDoctorIds,
-        facilityDistances
-      );
-    });
-  }
-  searchLogger(`APPLY_RANKING_ALGORITHM___END`);
-
-  return {
-    consultNowDoctors,
-    bookNowDoctors,
-    doctorNextAvailSlots,
-    doctorsConsultModeAvailability,
   };
 };
 

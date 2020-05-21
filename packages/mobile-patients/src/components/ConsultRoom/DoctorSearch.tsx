@@ -1210,6 +1210,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return (
       <ProfileList
         showList={showList}
+        menuHidden={() => setShowList(false)}
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
@@ -1297,7 +1298,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 doctorsList.length === 1 &&
                 otherDoctors &&
                 renderOtherSUggestedDoctors()}
-              {!showSpinner && renderHelpView()}
+              {/* {!showSpinner && renderHelpView()} */}
             </ScrollView>
           )
         ) : null}

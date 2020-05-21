@@ -405,12 +405,15 @@ export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
 };
 
-const findAddrComponents = (
+export const findAddrComponents = (
   proptoFind: GooglePlacesType,
-  addrComponents: PlacesApiResponse['results'][0]['address_components']
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  key?: 'long_name' | 'short_name' // default long_name
 ) => {
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
-    .long_name;
+  const _key = key || 'long_name';
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+    _key
+  ];
 };
 
 const getlocationData = (
@@ -446,6 +449,11 @@ const getlocationData = (
                 findAddrComponents('locality', addrComponents) ||
                 findAddrComponents('administrative_area_level_2', addrComponents),
               state: findAddrComponents('administrative_area_level_1', addrComponents),
+              stateCode: findAddrComponents(
+                'administrative_area_level_1',
+                addrComponents,
+                'short_name'
+              ),
               country: findAddrComponents('country', addrComponents),
               pincode: findAddrComponents('postal_code', addrComponents),
               lastUpdated: new Date().getTime(),
@@ -847,6 +855,10 @@ export const postWEGNeedHelpEvent = (
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };
 
+export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
+  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
@@ -1112,6 +1124,7 @@ export const getFormattedLocation = (
       findAddrComponents('locality', addrComponents) ||
       findAddrComponents('administrative_area_level_2', addrComponents),
     state: findAddrComponents('administrative_area_level_1', addrComponents),
+    stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
     pincode: findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),

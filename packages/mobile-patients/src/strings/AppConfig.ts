@@ -1,5 +1,6 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
+import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -42,6 +43,7 @@ const appStaticVariables = {
   HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
+  PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -138,8 +140,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.416',
-  Android_Version: '2.416',
+  iOS_Version: '2.418',
+  Android_Version: '2.418',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:

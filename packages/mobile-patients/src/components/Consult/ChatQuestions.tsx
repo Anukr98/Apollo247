@@ -155,6 +155,7 @@ type Slide = {
   validation?: RegExp;
   onSubmitValidation?: RegExp[];
   validationMessage?: string;
+  isNotEmpty?: boolean;
 };
 
 const slides: Slide[] = [
@@ -319,6 +320,9 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         title: 'Please specify your gender',
         buttonText: ['Male', 'Female'],
         inputData: ['value'],
+        onSubmitValidation: [/^(Male)|(Female)$/],
+        isNotEmpty: true,
+        validationMessage: 'Select gender',
       });
     }
     if (currentPatient && !currentPatient.dateOfBirth) {
@@ -329,7 +333,10 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
         inputPlacerholder: 'Enter age in years…',
         inputData: ['value'],
         keyboardType: 'number-pad',
-        validation: /^(0?[1-9]|[1-9][0-9]|[1][1-9][1-9]|200)$/,
+        validation: /^(0?[1-9]|[1-9][0-9]|[1][0-9][0-9]|200)$/,
+        onSubmitValidation: [/^(0?[1-9]|[1-9][0-9]|[1][0-9][0-9]|200)$/],
+        isNotEmpty: true,
+        validationMessage: 'Enter age.',
       });
     }
     if (tmpSlide.length > 0) {
@@ -456,12 +463,15 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       const validations = index > 0 && slides[index - 1].onSubmitValidation;
       if (validations) {
         const inputDataType = slides[index - 1].inputData.filter((i) => i === 'value');
+        const isNotEmpty = slides[index - 1].isNotEmpty;
         let v: any = values && values.find((i) => i.k === slides[index - 1].key);
         v = v && v.v;
         if (inputDataType.length === 1) {
-          v = validations.find((i) => i.test(v[0])) || v[0] === '';
+          v = validations.find((i) => i.test(v[0])) || (!isNotEmpty && v[0] === '');
         } else {
-          v = v[0] ? validations.find((i) => i.test(v[0])) || v[0] === '' : v[1] || v[1] === '';
+          v = v[0]
+            ? validations.find((i) => i.test(v[0])) || (!isNotEmpty && v[0] === '')
+            : v[1] || (!isNotEmpty && v[1] === '');
         }
         if (v) {
           onSlideChangeContinue(index);

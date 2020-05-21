@@ -4,6 +4,8 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrderPayments,
+  PAYMENT_METHODS,
+  PAYMENT_METHODS_REVERSE,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
 } from 'profiles-service/entities';
@@ -28,6 +30,17 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     CHENNAI
   }
 
+  enum PAYMENT_METHODS {
+    DC
+    CC
+    NB
+    PPI
+    EMI
+    UPI
+    PAYTMCC
+    COD
+  }
+
   input MedicinePaymentMqInput {
     orderAutoId: Int!
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE!
@@ -43,6 +56,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     email: String
     CODCity: CODCity
     orderId: String
+    paymentMode: PAYMENT_METHODS
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -73,6 +87,7 @@ type MedicinePaymentMqInput = {
   bankTxnId: string;
   email: string;
   CODCity: CODCity;
+  paymentMode: PAYMENT_METHODS_REVERSE;
 };
 
 enum CODCity {
@@ -129,6 +144,8 @@ const SaveMedicineOrderPaymentMq: Resolver<
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
   }
+  const paymentMode: string = PAYMENT_METHODS[medicinePaymentMqInput.paymentMode];
+
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
     paymentDateTime: medicinePaymentMqInput.paymentDateTime,
@@ -140,6 +157,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     responseMessage: medicinePaymentMqInput.responseMessage,
     bankTxnId: medicinePaymentMqInput.bankTxnId,
   };
+  paymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
   if (medicinePaymentMqInput.bankName) {
     paymentAttrs.bankName = medicinePaymentMqInput.bankName;
   }
@@ -152,17 +170,28 @@ const SaveMedicineOrderPaymentMq: Resolver<
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.QUOTE ||
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
   ) {
-    const savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-    if (!savePaymentDetails) {
-      log(
-        'profileServiceLogger',
-        'saveMedicineOrderPayment failed ',
-        'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
-        JSON.stringify(paymentAttrs),
-        ''
+    let savePaymentDetails: MedicineOrderPayments | undefined;
+    if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+      await medicineOrdersRepo.updateMedicineOrderPayment(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        paymentAttrs
       );
-      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    } else {
+      savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
+      if (!savePaymentDetails) {
+        log(
+          'profileServiceLogger',
+          'saveMedicineOrderPayment failed ',
+          'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
+          JSON.stringify(paymentAttrs),
+          ''
+        );
+        throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+      }
+      delete savePaymentDetails.medicineOrders;
     }
+
     let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
     if (medicinePaymentMqInput.paymentStatus === 'PENDING') {
       currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_PENDING;
@@ -220,12 +249,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-    await medicineOrdersRepo.updateMedicineOrderDetails(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      new Date(),
-      currentStatus
-    );
+    await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
+      orderDateTime: new Date(),
+      currentStatus,
+      paymentInfo: savePaymentDetails,
+    });
     if (
       medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
       medicinePaymentMqInput.paymentStatus != 'PENDING'

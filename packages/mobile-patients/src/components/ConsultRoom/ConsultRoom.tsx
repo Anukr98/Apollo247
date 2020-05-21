@@ -486,7 +486,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listValues: menuOptions[] = [
     {
       id: 1,
-      title: 'Find a Doctor',
+      title: 'Book Doctor Appointment',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
@@ -1523,7 +1523,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderEmergencyCallBanner()}*/}
             </View>
           </View>
-          <View style={{ backgroundColor: '#f0f1ec' }}>
+          {/* <View style={{ backgroundColor: '#f0f1ec' }}>
             <NeedHelpAssistant
               containerStyle={{ marginTop: 16, marginBottom: 32 }}
               navigation={props.navigation}
@@ -1531,7 +1531,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
               }}
             />
-          </View>
+          </View> */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}

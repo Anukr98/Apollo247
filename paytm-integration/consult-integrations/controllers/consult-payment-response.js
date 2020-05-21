@@ -53,6 +53,10 @@ module.exports = async (req, res, next) => {
         }
 
         const appointmentId = response.data.data.makeAppointmentPayment.appointment.appointment.id;
+        const isRefunded = response.data.data.makeAppointmentPayment.isRefunded;
+        if (isRefunded) {
+            transactionStatus = 'refunded';
+        }
 
         if (bookingSource == 'WEB') {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
@@ -70,9 +74,9 @@ module.exports = async (req, res, next) => {
         }
     } catch (e) {
         if (e.response && e.response.data) {
-            logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
+            logger.error(`${orderId} - consult-response - ${JSON.stringify(e.response.data)}`);
         } else {
-            logger.error(`${orderId} - paymed-response -  ${e.stack}`);
+            logger.error(`${orderId} - consult-response -  ${e.stack}`);
         }
         if (bookingSource == 'WEB') {
             const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?status=${transactionStatus}`;

@@ -1802,7 +1802,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 {renderShopByBrand()}
               </>
             )}
-        {renderNeedHelp()}
+        {/* {renderNeedHelp()} */}
       </TouchableOpacity>
     );
   };

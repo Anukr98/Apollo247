@@ -7,7 +7,6 @@ import {
   AphDelayedSlider,
   AphDeliveredSlider,
 } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
   GetMedicineOrdersList,
@@ -379,8 +378,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
     return (
       <div className={classes.orderListing}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
-          <div className={classes.customScroll}>
+        <div className={classes.customScroll}>
             {orderListData && orderListData.length > 0 ? (
               orderListData.map(
                 (orderInfo) =>
@@ -444,7 +442,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               </div>
             )}
           </div>
-        </Scrollbars>
       </div>
     );
   }

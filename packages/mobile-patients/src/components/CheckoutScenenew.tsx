@@ -88,6 +88,7 @@ const windowHeight = Dimensions.get('window').height;
 export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
+
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(isChennaiOrder ? true : false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
