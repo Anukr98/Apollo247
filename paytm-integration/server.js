@@ -1035,7 +1035,9 @@ app.get('/processOmsOrders', (req, res) => {
                     });
                   }
                 }
-                const paymentDetails = orderDetails.medicineOrderPayments;
+                const paymentDetails =
+                  (orderDetails.medicineOrderPayments && orderDetails.medicineOrderPayments[0]) ||
+                  {};
                 const patientDetails = orderDetails.patient;
                 let patientAge = 30;
                 if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
@@ -1071,7 +1073,7 @@ app.get('/processOmsOrders', (req, res) => {
                   VendorName: 'Apollo247',
                   shippingmethod:
                     orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
-                  paymentmethod: paymentDetails[0].paymentType,
+                  paymentmethod: paymentDetails.paymentType === 'CASHLESS' ? 'PREPAID' : 'COD',
                   prefferedsite: '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
@@ -1108,13 +1110,13 @@ app.get('/processOmsOrders', (req, res) => {
                     longitude: long,
                   },
                   paymentdetails:
-                    paymentDetails[0].paymentType === 'CASHLESS'
+                    paymentDetails.paymentType === 'CASHLESS'
                       ? [
                           {
                             paymentsource: 'paytm',
                             transactionstatus: 'TRUE',
-                            paymenttransactionid: paymentDetails[0].paymentRefId,
-                            amount: paymentDetails[0].amountPaid,
+                            paymenttransactionid: paymentDetails.paymentRefId,
+                            amount: paymentDetails.amountPaid,
                           },
                         ]
                       : [],
