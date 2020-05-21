@@ -20,6 +20,7 @@ export interface validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDi
   __typename: "PharmaLineItems";
   applicablePrice: number;
   discountedPrice: number;
+  itemId: string;
   mrp: number;
   productName: string;
   productType: CouponCategoryApplicable;

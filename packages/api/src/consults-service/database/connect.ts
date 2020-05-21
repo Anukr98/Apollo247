@@ -4,6 +4,7 @@ import {
   AppointmentCallDetails,
   AppointmentDocuments,
   AppointmentNoShow,
+  AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
@@ -86,6 +87,7 @@ import {
   SearchHistory,
   RegistrationCodes,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -95,6 +97,7 @@ export const connect = async () => {
         Appointment,
         AppointmentCallDetails,
         AppointmentDocuments,
+        AppointmentRefunds,
         AppointmentNoShow,
         AppointmentPayments,
         AppointmentSessions,
@@ -203,6 +206,7 @@ export const connect = async () => {
         PatientNotificationSettings,
         SearchHistory,
         RegistrationCodes,
+        MedicineOrderCancelReason,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

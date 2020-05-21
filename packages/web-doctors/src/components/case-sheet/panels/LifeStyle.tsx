@@ -56,6 +56,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     display: 'inline-block',
     width: '100%',
+    '& textarea:focus': {
+      borderRadius: '5px',
+      boxShadow: '0 0 5px #00b38e',
+      backgroundColor: '#ffffff',
+      boxSizing: 'border-box',
+    },
   },
   drugAllergies: {
     width: '45%',
@@ -127,8 +133,6 @@ export const LifeStyle: React.FC = () => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
-    lifeStyleError,
-    setLifeStyleError,
   } = useContext(CaseSheetContext);
 
   const gender = patientDetails && patientDetails.gender ? patientDetails.gender : null;
@@ -197,7 +201,7 @@ export const LifeStyle: React.FC = () => {
 
         <Typography className={classes.mainContainer} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
-            Medication History*
+            Medication History
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField
@@ -205,22 +209,7 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              required
-              error={lifeStyleError.medicationHistory.trim() === '' ? true : false}
-              helperText={lifeStyleError.medicationHistory}
               defaultValue={getDefaultValue('medicationHistory')}
-              onChange={(e) => {
-                const value = e.target.value.trim();
-                if (value === '' || value === null) {
-                  setLifeStyleError({
-                    medicationHistory: 'This field is requird',
-                  });
-                } else {
-                  setLifeStyleError({
-                    medicationHistory: '',
-                  });
-                }
-              }}
               onBlur={(e) => {
                 const storageItem = getLocalStorageItem(params.id);
                 if (storageItem) {

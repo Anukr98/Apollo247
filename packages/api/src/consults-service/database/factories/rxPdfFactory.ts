@@ -44,7 +44,7 @@ export const buildRxPdfData = (): RxPdfData => {
   };
 
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
-  const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
+  const appointmentDetails = { displayId: '', consultDate: '', consultTime: '', consultType: '' };
   const diagnosesTests = [
     {
       itemname: '',

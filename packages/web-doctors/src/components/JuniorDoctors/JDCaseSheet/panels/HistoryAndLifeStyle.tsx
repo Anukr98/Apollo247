@@ -137,9 +137,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     inputFieldEdit: {
-      border: '1px solid #00b38e',
-      borderEadius: 10,
-      backgroundColor: '#fff',
+      borderRadius: 10,
       padding: 0,
       '& textarea': {
         color: '#01475b',
@@ -147,6 +145,12 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 500,
         paddingRight: 40,
+      },
+
+      '& textarea:focus': {
+        borderRadius: '5px',
+        boxShadow: '0 0 5px #00b38e',
+        backgroundColor: '#ffffff',
       },
     },
   };
@@ -175,8 +179,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
-    lifeStyleError,
-    setLifeStyleError,
   } = useContext(CaseSheetContextJrd);
 
   return (
@@ -199,7 +201,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
 
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Medication History*</div>
+        <div className={classes.sectionTitle}>Medication History</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
@@ -207,21 +209,8 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            required
-            error={lifeStyleError.medicationHistory.trim() === '' ? true : false}
-            helperText={lifeStyleError.medicationHistory}
             value={medicationHistory}
             onChange={(e) => {
-              const value = e.target.value.trim();
-              if (value === '' || value === null) {
-                setLifeStyleError({
-                  medicationHistory: 'This field is requird',
-                });
-              } else {
-                setLifeStyleError({
-                  medicationHistory: '',
-                });
-              }
               setMedicationHistory(e.target.value);
             }}
           />

@@ -168,7 +168,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     callOurExpertsContainer: {
       padding: 20,
-      width: '30%',
+      width: 270,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
   };
 });
@@ -210,7 +213,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
       <div className={classes.content}>
         <h2>{title}</h2>
         <div className={classes.articleType}>{type}</div>
-        <p>Sourced from {source}</p>
+        {source && source.length && <p>Sourced from {source}</p>}
       </div>
       <Popover
         open={openSubscriptionForm}

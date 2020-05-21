@@ -11,6 +11,7 @@ export const saveDoctorDeviceTokenTypeDefs = gql`
   enum DOCTOR_DEVICE_TYPE {
     IOS
     ANDROID
+    DESKTOP
   }
 
   input SaveDoctorDeviceTokenInput {

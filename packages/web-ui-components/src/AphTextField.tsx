@@ -108,7 +108,7 @@ const AphTextField: React.FC<TextFieldProps> = (props) => {
   return (
     <TextField
       fullWidth
-      className={classes.formControl}
+      className={`${classes.formControl} ${props.className}`}
       InputLabelProps={{
         shrink: true,
         focused: false,

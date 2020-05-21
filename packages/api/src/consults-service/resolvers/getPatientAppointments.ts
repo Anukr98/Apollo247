@@ -1,6 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  APPOINTMENT_STATE,
+  NOSHOW_REASON,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -8,6 +13,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getPatinetAppointmentsTypeDefs = gql`
+  enum NOSHOW_REASON {
+    NOSHOW_PATIENT
+    NOSHOW_DOCTOR
+    NOSHOW_30MIN
+  }
   type PatinetAppointments {
     id: ID!
     patientId: ID!
@@ -31,6 +41,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
     doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
+    noShowReason: NOSHOW_REASON
   }
 
   extend type DoctorDetailsWithStatusExclude @key(fields: "id") {
@@ -106,6 +117,7 @@ type PatinetAppointments = {
   actualAmount: number;
   discountedAmount: number;
   appointmentPayments: AppointmentPayment[];
+  noShowReason: NOSHOW_REASON;
 };
 
 type AppointmentPayment = {
@@ -132,11 +144,14 @@ const getPatinetAppointments: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   PatientAppointmentsResult
-> = async (parent, { patientAppointmentsInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { patientAppointmentsInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const patinetAppointments = await appts.getPatinetUpcomingAppointments(
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
     patientAppointmentsInput.patientId
   );
+
+  const patinetAppointments = await appts.getPatinetUpcomingAppointments(primaryPatientIds);
 
   return { patinetAppointments };
 };
@@ -155,7 +170,9 @@ const getPatientFutureAppointmentCount: Resolver<
   if (patientData.mobileNumber !== mobileNumber) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+
+  const conultsList = await appointmentRepo.getPatinetUpcomingAppointments(primaryPatientIds);
 
   return { consultsCount: conultsList.length };
 };
@@ -165,10 +182,13 @@ const getPatientAllAppointments: Resolver<
   { patientId: string; offset: number; limit: number },
   ConsultServiceContext,
   PatientAllAppointmentsResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, patientsDb }) => {
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+
   const appointments = await appts.getPatientAllAppointments(
-    args.patientId,
+    primaryPatientIds,
     args.offset,
     args.limit
   );
