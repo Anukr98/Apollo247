@@ -159,8 +159,9 @@ const makeAppointmentPayment: Resolver<
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
-
-  const paymentMode: string = PAYMENT_METHODS[paymentInput.paymentMode];
+  let paymentMode: string = '';
+  if (paymentInput.paymentMode)
+    paymentMode = PAYMENT_METHODS[paymentInput.paymentMode];
   if (paymentInfo) {
     log(
       'consultServiceLogger',
@@ -185,13 +186,15 @@ const makeAppointmentPayment: Resolver<
     paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
     paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
     paymentInputUpdates.orderId = paymentInfo.orderId;
-    paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode)
+      paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
     apptPaymentAttrs.appointment = processingAppointment;
     apptPaymentAttrs.paymentType = APPOINTMENT_PAYMENT_TYPE.ONLINE;
-    apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode)
+      apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;

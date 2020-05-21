@@ -498,7 +498,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)
   medicineOrders: MedicineOrders;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
