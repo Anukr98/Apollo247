@@ -180,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
           color: '#fc9916',
         },
       },
-    }
+    },
   };
 });
 
@@ -212,12 +212,13 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
       orderPayment &&
       orderPayment.paymentType === 'COD') ||
     (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
-      <>
+    <>
       <div className={classes.root}>
         <div className={classes.summaryHeader}>
           <div className={classes.headRow}>
             <div className={classes.leftGroup}>
-              <span className={classes.caps}>Order</span> # <br/>{props.orderDetailsData && props.orderDetailsData.orderAutoId}
+              <span className={classes.caps}>Order</span> # <br />
+              {props.orderDetailsData && props.orderDetailsData.orderAutoId}
             </div>
             <div className={classes.rightGroup}>
               Total <b>Rs.{orderPayment && orderPayment.amountPaid}</b>
@@ -229,7 +230,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
             <div className={classes.leftGroup}>
               <label>Order Placed</label>
               <span>
-                {moment(new Date(orderStatus && orderStatus.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+                {moment(new Date(orderStatus && orderStatus.statusDate)).format(
+                  'DD MMM YYYY ,hh:mm a'
+                )}
               </span>
             </div>
             <div className={classes.rightGroup}>
@@ -257,7 +260,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         </div>
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
-            <div className={classes.totalItems}><b>3 item(s)</b> in this shipment</div>
+            <div className={classes.totalItems}>
+              <b>3 item(s)</b> in this shipment
+            </div>
             <div className={`${classes.tableRow} ${classes.rowHead}`}>
               <div>Consult Detail</div>
               <div>QTY</div>
@@ -304,7 +309,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
           </div>
         </div>
       </div>
-      <div className={classes.disclaimerText}><b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span></div>
+      <div className={classes.disclaimerText}>
+        <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
+      </div>
       <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
         <AphButton>Share</AphButton>

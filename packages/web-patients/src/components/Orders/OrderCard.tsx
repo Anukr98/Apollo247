@@ -379,69 +379,69 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     return (
       <div className={classes.orderListing}>
         <div className={classes.customScroll}>
-            {orderListData && orderListData.length > 0 ? (
-              orderListData.map(
-                (orderInfo) =>
-                  orderInfo &&
-                  orderInfo.medicineOrdersStatus &&
-                  getOrderStatus(orderInfo.medicineOrdersStatus) && (
-                    <div
-                      key={orderInfo.id}
-                      className={`${classes.root} ${
-                        orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
-                      }`}
-                      onClick={() => {
-                        if (isSmallScreen) {
-                          props.setShowMobileDetails(true);
-                        }
-                        props.setOrderAutoId(orderInfo.orderAutoId || 0);
-                      }}
-                    >
-                      <div className={classes.orderedItem}>
-                        <div className={classes.itemImg}>
-                          <img src={require('images/ic_tablets.svg')} alt="" />
-                        </div>
-                        <div className={classes.itemSection}>
-                          <div className={classes.itemName}>Medicines</div>
-                          <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
-                          <div className={classes.deliveryType}>
-                            <span>{orderInfo.deliveryType}</span>
-                          </div>
-                        </div>
+          {orderListData && orderListData.length > 0 ? (
+            orderListData.map(
+              (orderInfo) =>
+                orderInfo &&
+                orderInfo.medicineOrdersStatus &&
+                getOrderStatus(orderInfo.medicineOrdersStatus) && (
+                  <div
+                    key={orderInfo.id}
+                    className={`${classes.root} ${
+                      orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
+                    }`}
+                    onClick={() => {
+                      if (isSmallScreen) {
+                        props.setShowMobileDetails(true);
+                      }
+                      props.setOrderAutoId(orderInfo.orderAutoId || 0);
+                    }}
+                  >
+                    <div className={classes.orderedItem}>
+                      <div className={classes.itemImg}>
+                        <img src={require('images/ic_tablets.svg')} alt="" />
                       </div>
-                      <div className={classes.orderTrackSlider}>
-                        {getSlider(orderInfo.medicineOrdersStatus)}
-                      </div>
-                      <div className={classes.orderStatusGroup}>
-                        {orderInfo.medicineOrdersStatus && (
-                          <div
-                            className={
-                              getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
-                                ? `${classes.orderStatusRejected}`
-                                : `${classes.orderStatus}`
-                            }
-                          >
-                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
-                          </div>
-                        )}
-                        <div className={classes.statusInfo}>
-                          {orderInfo.medicineOrdersStatus &&
-                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                      <div className={classes.itemSection}>
+                        <div className={classes.itemName}>Medicines</div>
+                        <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
+                        <div className={classes.deliveryType}>
+                          <span>{orderInfo.deliveryType}</span>
                         </div>
                       </div>
                     </div>
-                  )
-              )
-            ) : (
-              <div className={classes.noOrdersWrapper}>
-                <div>Uh oh! :)</div>
-                <div className={classes.noOrdersText}>No Orders Found!</div>
-                <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
-                  Order Now
-                </Link>
-              </div>
-            )}
-          </div>
+                    <div className={classes.orderTrackSlider}>
+                      {getSlider(orderInfo.medicineOrdersStatus)}
+                    </div>
+                    <div className={classes.orderStatusGroup}>
+                      {orderInfo.medicineOrdersStatus && (
+                        <div
+                          className={
+                            getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                              ? `${classes.orderStatusRejected}`
+                              : `${classes.orderStatus}`
+                          }
+                        >
+                          {getOrderStatus(orderInfo.medicineOrdersStatus)}
+                        </div>
+                      )}
+                      <div className={classes.statusInfo}>
+                        {orderInfo.medicineOrdersStatus &&
+                          getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                      </div>
+                    </div>
+                  </div>
+                )
+            )
+          ) : (
+            <div className={classes.noOrdersWrapper}>
+              <div>Uh oh! :)</div>
+              <div className={classes.noOrdersText}>No Orders Found!</div>
+              <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
+                Order Now
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
