@@ -507,6 +507,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       marginTop: 5,
     },
+    higherDiscountText: {
+      marginTop: 10,
+      color: '#890000',
+      borderRadius: 3,
+      border: 'solid 1px #890000',
+      padding: '4px 10px',
+    },
   };
 });
 
@@ -1251,7 +1258,7 @@ export const MedicineCart: React.FC = (props) => {
                         </div>
                       )}
                     {showErrorMessage && (
-                      <div className={classes.discountTotal}>Higher discounts already applied</div>
+                      <div className={classes.higherDiscountText}>Higher discounts already applied</div>
                     )}
                   </div>
                 </div>
