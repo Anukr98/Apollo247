@@ -24,7 +24,7 @@ const consultsOrderQuery = (payload) => {
         params += `, bankName: "${payload.BANKNAME}"`;
     }
 
-    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){appointment { id appointment{ id } } }}';
+    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){isRefunded appointment { id appointment{ id } } }}';
 };
 
 module.exports = {
