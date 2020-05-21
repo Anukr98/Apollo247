@@ -14,6 +14,8 @@ import {
   SEND_CHAT_MESSAGE_TO_DOCTOR,
   GET_CALL_DETAILS,
   GET_DEVICE_TOKEN_COUNT,
+  LINK_UHID,
+  UNLINK_UHID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -48,6 +50,7 @@ import {
   getDeviceCodeCount,
   getDeviceCodeCountVariables,
 } from '../graphql/types/getDeviceCodeCount';
+import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -323,6 +326,48 @@ export const getDeviceTokenCount = (client: ApolloClient<object>, uniqueDeviceId
       })
       .catch((e: any) => {
         CommonBugFender('clientCalls_getDeviceTokenCount', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const linkUHIDs = (client: ApolloClient<object>, primaryUhid: string, linkedUhids: string[]) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<linkUhidsVariables>({
+        mutation: LINK_UHID,
+        variables: {
+          primaryUhid: primaryUhid,
+          linkedUhids: linkedUhids
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_linkUHIDs', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const deLinkUHIDs = (client: ApolloClient<object>, primaryUhid: string, linkedUhids: string[]) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<linkUhidsVariables>({
+        mutation: UNLINK_UHID,
+        variables: {
+          primaryUhid: primaryUhid,
+          linkedUhids: linkedUhids
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_linkUHIDs', e);
         rej({ error: e });
       });
   });

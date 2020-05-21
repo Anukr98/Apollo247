@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   BackHandler,
   Image,
@@ -135,7 +135,13 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    props.navigation.goBack();
+    if (enableSelectSecondary) {
+      setEnableSelectPrimary(true);
+      setEnableSelectSecondary(false);
+      setSelectedPrimary('');
+    } else {
+      props.navigation.goBack();
+    }
     return false;
   };
 
@@ -266,8 +272,10 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               }
             }
             else if (enableSelectPrimary) {
-              if (profiles) setSelectedPrimary(profiles[index].id);
-              setRefreshFlatList(!refreshFlatList);
+              if (profiles) {
+                setSelectedPrimary(profiles[index].id);
+                setRefreshFlatList(!refreshFlatList);
+              }
             } else {
               props.navigation.navigate(AppRoutes.EditProfile, {
                 isEdit: true,
@@ -461,6 +469,13 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               onPress={() => {
                 // check if any profile is selected
                 if (selectedPrimary) {
+                  // shift selected primary uhid to top
+                  profiles!.forEach( (item, i) => {
+                    if(item!.id === selectedPrimary){
+                      profiles!.splice(i, 1);
+                      profiles!.unshift(item);
+                    }
+                  });
                   setEnableSelectPrimary(false);
                   setEnableSelectSecondary(true);
                 }
@@ -485,7 +500,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               title="LINK"
               style={{ flex: 1, marginHorizontal: 10 }}
               onPress={() => {
-                setShowAlert(true);
+                if (selectedSecondary.length) setShowAlert(true);
               }}
             />
           )

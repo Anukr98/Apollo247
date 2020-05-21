@@ -2158,3 +2158,15 @@ export const GET_TRANSACTION_STATUS = gql`
   }
 }
 `;
+
+export const LINK_UHID = gql`
+  mutation linkUhids($primaryUhid: String!, $linkedUhids: [String]) {
+    linkUhids(primaryUhid: $primaryUhid, linkedUhids: $linkedUhids)
+  }
+`;
+
+export const UNLINK_UHID = gql`
+  mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids) 
+  }
+`;
