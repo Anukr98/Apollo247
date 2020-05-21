@@ -39,6 +39,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   APPOINTMENT_TYPE,
+  NOSHOW_REASON,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -69,6 +70,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -140,7 +142,7 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
 
@@ -181,6 +183,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
     if (movedFrom === 'notification') {
       NextAvailableSlotAPI();
+    }
+
+    if (movedFrom === 'cancel') {
+      setShowCancelPopup(true);
     }
   }, [currentPatient]);
 
@@ -492,7 +498,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = !isAwaitingReschedule ? true : false;
+    const showCancel =
+      dateIsAfter || isAwaitingReschedule ? true : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
     return (
       <View
         style={{
@@ -617,7 +624,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: 1,
+                opacity:
+                  isAwaitingReschedule ||
+                  dateIsAfter ||
+                  data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    ? 1
+                    : 0.5,
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -632,7 +644,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    NextAvailableSlotAPI();
+                    isAwaitingReschedule ||
+                    dateIsAfter ||
+                    data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                      ? NextAvailableSlotAPI()
+                      : null;
                   } catch (error) {
                     CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
                   }
@@ -757,7 +773,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+              'Since you could not complete the appointment. we’ll issue you a full refund!'
             }
           >
             <View

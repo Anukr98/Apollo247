@@ -34,6 +34,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -213,6 +214,14 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       })
       .then((data) => {
         console.log(JSON.stringify(data));
+        try {
+          const paymentEventAttributes = {
+            Payment_Mode: item.paymentMode,
+            Type: 'Consultation',
+            Appointment_Id: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+          };
+          postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+        } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
         !item.bankCode

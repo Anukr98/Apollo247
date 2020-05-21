@@ -130,7 +130,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'MANAGE PROFILES'}
+          title={'MANAGE FAMILY MEMBERS'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
         />

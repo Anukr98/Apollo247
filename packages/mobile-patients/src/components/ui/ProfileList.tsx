@@ -53,6 +53,7 @@ export interface ProfileListProps {
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
   showList?: boolean;
+  menuHidden?: () => void;
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
 }
 
@@ -222,6 +223,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     return (
       <MaterialMenu
         showMenu={props.showList}
+        menuHidden={() => {
+          props.menuHidden && props.menuHidden();
+        }}
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}

@@ -25,7 +25,7 @@ import {
   GET_MEDICAL_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   UPLOAD_DOCUMENT,
-  SAVE_PRESCRIPTION_MEDICINE_ORDER,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import {
@@ -81,7 +81,7 @@ import {
 } from '../../graphql/types/globalTypes';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
-import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -663,11 +663,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   };
 
-  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
     setLoading!(true);
     client
       .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -724,8 +726,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setdisplayOrderPopup(false);
           const fieldId = data && data.data!.uploadDocument.fileId;
           if (fieldId) {
-            const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
-              prescriptionMedicineInput: {
+            const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+              prescriptionMedicineOMSInput: {
                 patientId: (currentPatient && currentPatient.id) || '',
                 medicineDeliveryType: deliveryAddressId
                   ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY

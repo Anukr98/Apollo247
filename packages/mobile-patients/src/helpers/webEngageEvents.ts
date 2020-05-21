@@ -104,6 +104,10 @@ export enum WebEngageEventName {
   CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked', // In appointment details screen
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
+
+  // Payments Events
+  PAYMENT_INSTRUMENT = 'Payment Instrument',
+  PAYMENT_STATUS = 'Payment Status',
 }
 
 export interface PatientInfo {
@@ -213,7 +217,13 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
-    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic' | 'Pharmacy Partial Search' | 'Pharmacy Full Search';
+    Source:
+      | 'Pharmacy Home'
+      | 'Pharmacy PDP'
+      | 'Pharmacy List'
+      | 'Diagnostic'
+      | 'Pharmacy Partial Search'
+      | 'Pharmacy Full Search';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;

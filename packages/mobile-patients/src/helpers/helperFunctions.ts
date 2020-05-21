@@ -131,60 +131,59 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.DELIVERED:
       statusString = 'Order Delivered';
       break;
-    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-      statusString = 'Items Returned';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-      statusString = 'Order Confirmed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-      statusString = 'Order Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-      statusString = 'Order Placed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-      statusString = 'Order Verified';
-      break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-      statusString = 'Prescription Cart Ready';
-      break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-      statusString = 'Prescription Uploaded';
-      break;
-    case MEDICINE_ORDER_STATUS.QUOTE:
-      statusString = 'Quote';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Return Accepted';
-      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-      statusString = 'Payment Success';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      statusString = 'Order Initiated';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
-      statusString = 'Payment Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
-      statusString = 'Ready At Store';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment Pending';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;
+    default:
+      statusString = (status || '')
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+  }
+  return statusString;
+};
+
+export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
+  let statusString = '';
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      statusString = 'Cancel Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      statusString = 'Order Dispatched';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      statusString = 'Order Billed and Packed';
+      break;
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      statusString = 'Order Picked Up';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      statusString = 'Return Requested';
+      break;
+    case 'TO_BE_DELIVERED' as any:
+      statusString = 'Expected Order Delivery';
+      break;
+    default:
+      statusString = (status || '')
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
   }
   return statusString;
 };
@@ -405,12 +404,15 @@ export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
 };
 
-const findAddrComponents = (
+export const findAddrComponents = (
   proptoFind: GooglePlacesType,
-  addrComponents: PlacesApiResponse['results'][0]['address_components']
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  key?: 'long_name' | 'short_name' // default long_name
 ) => {
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
-    .long_name;
+  const _key = key || 'long_name';
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+    _key
+  ];
 };
 
 const getlocationData = (
@@ -446,6 +448,11 @@ const getlocationData = (
                 findAddrComponents('locality', addrComponents) ||
                 findAddrComponents('administrative_area_level_2', addrComponents),
               state: findAddrComponents('administrative_area_level_1', addrComponents),
+              stateCode: findAddrComponents(
+                'administrative_area_level_1',
+                addrComponents,
+                'short_name'
+              ),
               country: findAddrComponents('country', addrComponents),
               pincode: findAddrComponents('postal_code', addrComponents),
               lastUpdated: new Date().getTime(),
@@ -845,6 +852,10 @@ export const postWEGNeedHelpEvent = (
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };
 
+export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
+  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
@@ -1110,6 +1121,7 @@ export const getFormattedLocation = (
       findAddrComponents('locality', addrComponents) ||
       findAddrComponents('administrative_area_level_2', addrComponents),
     state: findAddrComponents('administrative_area_level_1', addrComponents),
+    stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
     pincode: findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
@@ -1134,6 +1146,7 @@ export const addPharmaItemToCart = (
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
   const navigate = () =>
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   setLoading && setLoading(true);

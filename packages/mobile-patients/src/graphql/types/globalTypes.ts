@@ -63,6 +63,17 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum CouponCategoryApplicable {
+  FMCG = "FMCG",
+  PHARMA = "PHARMA",
+  PHARMA_FMCG = "PHARMA_FMCG",
+}
+
+export enum CustomerType {
+  FIRST = "FIRST",
+  RECURRING = "RECURRING",
+}
+
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   DESKTOP = "DESKTOP",
@@ -263,7 +274,13 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
-export enum NonCartOrderCity {
+export enum NOSHOW_REASON {
+  NOSHOW_30MIN = "NOSHOW_30MIN",
+  NOSHOW_DOCTOR = "NOSHOW_DOCTOR",
+  NOSHOW_PATIENT = "NOSHOW_PATIENT",
+}
+
+export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
@@ -295,6 +312,11 @@ export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
   TestReports = "TestReports",
+}
+
+export enum PharmaDiscountApplicableOn {
+  MRP = "MRP",
+  SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
 export enum REQUEST_ROLES {
@@ -623,7 +645,7 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
-export interface MedicineCartInput {
+export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   estimatedAmount?: number | null;
@@ -636,26 +658,34 @@ export interface MedicineCartInput {
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
   orderTat?: string | null;
-  items?: (MedicineCartItem | null)[] | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
   coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
 }
 
-export interface MedicineCartItem {
+export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
-  prescriptionImageUrl?: string | null;
-  prismPrescriptionFileId?: string | null;
   mou?: number | null;
-  isMedicine?: string | null;
+  isMedicine: string;
+  specialPrice: number;
 }
 
 export interface MedicineOrderCancelInput {
   orderNo?: number | null;
   remarksCode?: string | null;
+}
+
+export interface MedicineOrderCancelOMSInput {
+  orderNo?: number | null;
+  cancelReasonCode?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -684,6 +714,15 @@ export interface MessageInput {
   message: string;
   status: notificationStatus;
   type: notificationType;
+}
+
+export interface OrderLineItems {
+  itemId: string;
+  mrp: number;
+  productName: string;
+  productType: CouponCategoryApplicable;
+  quantity: number;
+  specialPrice: number;
 }
 
 export interface OtpVerificationInput {
@@ -740,7 +779,13 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
-export interface PrescriptionMedicineInput {
+export interface PharmaCouponInput {
+  code: string;
+  patientId: string;
+  orderLineItems?: (OrderLineItems | null)[] | null;
+}
+
+export interface PrescriptionMedicineOrderOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
@@ -752,13 +797,13 @@ export interface PrescriptionMedicineInput {
   prismPrescriptionFileId: string;
   appointmentId?: string | null;
   isEprescription?: number | null;
-  payment?: PrescriptionMedicinePaymentDetails | null;
+  payment?: PrescriptionMedicinePaymentOMSDetails | null;
   email?: string | null;
-  NonCartOrderCity?: NonCartOrderCity | null;
+  NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
 }
 
-export interface PrescriptionMedicinePaymentDetails {
+export interface PrescriptionMedicinePaymentOMSDetails {
   paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
   amountPaid?: number | null;
   paymentRefId?: string | null;

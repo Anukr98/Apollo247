@@ -21,10 +21,8 @@ import { FEEDBACKTYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes
 import {
   aphConsole,
   g,
-  // isIphone5s,
   handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   ConsultFeedBackData,
@@ -34,9 +32,9 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   containerStyles: {
@@ -69,6 +67,7 @@ export interface FeedbackPopupProps {
   transactionId: string;
   info: FeedbackInfoCardProps;
   isVisible: boolean;
+  containerStyle?: ViewStyle;
   onComplete?: (ratingStatus: RatingStatus, ratingOption: string) => void;
 }
 
@@ -218,7 +217,11 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
 
   if (!props.isVisible) return null;
   return (
-    <BottomPopUp title={props.title} description={props.description} style={{ elevation: 999 }}>
+    <BottomPopUp
+      title={props.title}
+      description={props.description}
+      style={[{ elevation: 999 }, props.containerStyle]}
+    >
       <KeyboardAwareScrollView bounces={false}>{renderRatingContent()}</KeyboardAwareScrollView>
     </BottomPopUp>
   );

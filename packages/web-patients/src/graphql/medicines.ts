@@ -163,3 +163,117 @@ export const MEDICINE_ORDER_CANCEL_REASONS = gql`
     }
   }
 `;
+
+export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
+  query getMedicineOrdersOMSList($patientId: String) {
+    getMedicineOrdersOMSList(patientId: $patientId) {
+      medicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        currentStatus
+        medicineOrdersStatus {
+          id
+          statusDate
+          orderStatus
+          hideStatus
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          currentStatus
+          medicineOrdersStatus {
+            id
+            statusDate
+            hideStatus
+            orderStatus
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      medicineOrderDetails {
+        id
+        orderAutoId
+        devliveryCharges
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
+        orderType
+        currentStatus
+        patientAddressId
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+          isMedicine
+          mou
+          isPrescriptionNeeded
+        }
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          updatedDate
+          currentStatus
+          itemDetails
+          medicineOrdersStatus {
+            id
+            orderStatus
+            statusDate
+            hideStatus
+          }
+          medicineOrderInvoice {
+            id
+            siteId
+            remarks
+            requestType
+            vendorName
+            billDetails
+            itemDetails
+          }
+        }
+        patient {
+          id
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
+      }
+    }
+  }
+`;

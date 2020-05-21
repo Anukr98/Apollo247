@@ -1926,7 +1926,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           {renderTestsByOrgan()}
           {/* {renderPreventiveTests()} */}
         </>
-        {renderNeedHelp()}
+        {/* {renderNeedHelp()} */}
       </TouchableOpacity>
     );
   };

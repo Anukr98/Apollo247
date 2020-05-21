@@ -78,7 +78,9 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
       .then(({ data: { Availability } }) => {
         if (!Availability) {
           globalLoading!(false);
-          setError('Sorry, not serviceable here.');
+          setError(
+            'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
+          );
         } else {
           updatePlaceInfoByPincode(pincode);
         }
