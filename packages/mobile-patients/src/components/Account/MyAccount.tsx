@@ -242,13 +242,23 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               </Text>
               {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                 <PrimaryIcon
-                  style={{ width: 22, height: 20, marginLeft: 5, marginTop: 5 }}
+                  style={{
+                    width: 22,
+                    height: 20,
+                    marginLeft: 5,
+                    marginTop: Platform.OS === 'ios' ? 5 : 8,
+                  }}
                   resizeMode={'contain'}
                 />
               ) : (
                 currentPatient && (
                   <LinkedUhidIcon
-                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 5 }}
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 5 : 8,
+                    }}
                     resizeMode={'contain'}
                   />
                 )

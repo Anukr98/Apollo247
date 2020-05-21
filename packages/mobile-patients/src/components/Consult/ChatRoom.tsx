@@ -971,6 +971,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
+        setStatus(STATUS.COMPLETED);
         AsyncStorage.setItem('endAPICalled', 'true');
       })
       .catch((e) => {
