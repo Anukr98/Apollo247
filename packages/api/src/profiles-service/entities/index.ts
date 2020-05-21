@@ -1207,6 +1207,9 @@ export class Coupon extends BaseEntity {
   @Column({ default: false })
   isActive: Boolean;
 
+  @Column({ default: true })
+  displayStatus: Boolean;
+
   @Column({ nullable: true })
   updatedDate: Date;
 
