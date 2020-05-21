@@ -1041,7 +1041,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     elevation: 15,
                     flexDirection: 'row',
                     minHeight: 59,
-                    width: width / 2 - 20,
+                    width: width / 2 - 22,
                     marginRight: 12,
                     marginBottom: 12,
                   }}
