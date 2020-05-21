@@ -409,28 +409,38 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             >
               <Text style={styles.hiTextStyle}>{'hi'}</Text>
               <View style={styles.nameTextContainerStyle}>
-                <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.nameTextStyle} numberOfLines={1}>
+                <View style={{ flexDirection: 'row', flex: 1 }}>
+                  <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
                     {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                     <PrimaryIcon
-                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
                       resizeMode={'contain'}
                     />
                   ) : (
                     currentPatient && (
                       <LinkedUhidIcon
-                        style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                        style={{
+                          width: 22,
+                          height: 20,
+                          marginLeft: 5,
+                          marginTop: Platform.OS === 'ios' ? 16 : 20,
+                        }}
                         resizeMode={'contain'}
                       />
                     )
                   )}
+                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                    <DropdownGreen />
+                  </View>
                 </View>
-                <View style={styles.seperatorStyle} />
-              </View>
-              <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                <DropdownGreen />
+                {currentPatient && <View style={styles.seperatorStyle} />}
               </View>
             </View>
           }

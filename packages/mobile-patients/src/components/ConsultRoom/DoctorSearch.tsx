@@ -1234,13 +1234,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <PrimaryIcon
-                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 30 }}
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 16 : 20,
+                    }}
                     resizeMode={'contain'}
                   />
                 ) : (
                   currentPatient && (
                     <LinkedUhidIcon
-                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 30 }}
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
                       resizeMode={'contain'}
                     />
                   )

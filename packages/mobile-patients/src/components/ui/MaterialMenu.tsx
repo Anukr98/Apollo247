@@ -8,6 +8,7 @@ import {
   TextStyle,
   StyleProp,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
 import { PrimaryIcon, LinkedUhidIcon } from './Icons';
@@ -117,12 +118,22 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             {item.isPrimary ? (
               !!props.selectedText && props.selectedText === item.key ? (
                 <PrimaryIcon
-                  style={{ width: 12, height: 10, marginLeft: 12, marginTop: 4 }}
+                  style={{
+                    width: Platform.OS === 'ios' ? 12 : 14,
+                    height: Platform.OS === 'ios' ? 10 : 12,
+                    marginLeft: Platform.OS === 'ios' ? 12 : 15,
+                    marginTop: Platform.OS === 'ios' ? 4 : 6,
+                  }}
                   resizeMode={'contain'}
                 />
               ) : (
                 <LinkedUhidIcon
-                  style={{ width: 12, height: 10, marginLeft: 12, marginTop: 4 }}
+                  style={{
+                    width: Platform.OS === 'ios' ? 12 : 14,
+                    height: Platform.OS === 'ios' ? 10 : 12,
+                    marginLeft: Platform.OS === 'ios' ? 12 : 15,
+                    marginTop: Platform.OS === 'ios' ? 4 : 6,
+                  }}
                   resizeMode={'contain'}
                 />
               )

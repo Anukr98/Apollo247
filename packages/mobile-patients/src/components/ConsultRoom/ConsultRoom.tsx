@@ -1,107 +1,103 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
   Ambulance,
-  Scan,
   CartIcon,
   ConsultationRoom,
+  CovidExpert,
+  CovidRiskLevel,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  LatestArticle,
+  LinkedUhidIcon,
+  Mascot,
+  MedicineIcon,
   MyHealth,
+  NotificationIcon,
   Person,
   PrescriptionMenu,
+  PrimaryIcon,
+  Scan,
   Symptomtracker,
   TestsCartIcon,
   TestsCartMedicineIcon,
   TestsIcon,
-  MedicineIcon,
-  NotificationIcon,
-  CovidRiskLevel,
-  CovidExpert,
-  CovidHealthScan,
-  LatestArticle,
-  Mascot,
-  PrimaryIcon,
-  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
-  DeviceHelper,
   CommonBugFender,
+  CommonLogEvent,
   CommonSetUserBugsnag,
+  DeviceHelper,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  GET_DIAGNOSTICS_CITES,
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
-  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
+  doRequestAndAccessLocationModified,
   g,
   postWebEngageEvent,
   UnInstallAppsFlyer,
-  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  PatientInfo,
+  PatientInfoWithSource,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   ImageBackground,
   Linking,
+  NativeModules,
   Platform,
-  Image,
   SafeAreaView,
   StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableOpacityProps,
   View,
   ViewStyle,
-  NativeModules,
-  TouchableOpacityProps,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-  PatientInfo,
-  PatientInfoWithSource,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import moment from 'moment';
 import WebEngage from 'react-native-webengage';
-import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
-import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  getDiagnosticsCites,
-  getDiagnosticsCitesVariables,
-  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { NavigationScreenProps } from 'react-navigation';
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -179,7 +175,6 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
-    marginRight: -5,
   },
   descriptionTextStyle: {
     marginLeft: 20,
@@ -953,28 +948,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
+              <View style={{ flexDirection: 'row', flex: 1 }}>
+                <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
                   {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <PrimaryIcon
-                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 16 : 20,
+                    }}
                     resizeMode={'contain'}
                   />
                 ) : (
                   currentPatient && (
                     <LinkedUhidIcon
-                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
                       resizeMode={'contain'}
                     />
                   )
                 )}
+                <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                  <DropdownGreen />
+                </View>
               </View>
-              {/* <View style={styles.seperatorStyle} /> */}
-            </View>
-            <View style={{ paddingTop: 15, marginLeft: 10 }}>
-              <DropdownGreen />
+              {currentPatient && <View style={styles.seperatorStyle} />}
             </View>
           </View>
         }
