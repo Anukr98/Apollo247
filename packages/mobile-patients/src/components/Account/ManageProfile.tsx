@@ -119,10 +119,10 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     //   .finally(() => {
     //     setLoading!(false);
     //   });
-    if (allCurrentPatients) {
-      setLoading && setLoading(false);
-      setProfiles(allCurrentPatients.filter((item) => item.id !== item.emailAddress));
-    }
+    // if (allCurrentPatients) {
+    // setLoading && setLoading(false);
+    // setProfiles(allCurrentPatients.filter((item) => item.id !== item.emailAddress));
+    // }
   }, [allCurrentPatients]);
 
   const renderHeader = () => {

@@ -5,17 +5,29 @@ export const GET_CURRENT_PATIENTS = gql`
     getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
-        mobileNumber
+        uhid
         firstName
         lastName
-        relation
-        uhid
-        gender
+        mobileNumber
         dateOfBirth
         emailAddress
         gender
-        dateOfBirth
+        relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies
@@ -2346,6 +2358,20 @@ export const GET_PATIENTS_MOBILE = gql`
         gender
         relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies

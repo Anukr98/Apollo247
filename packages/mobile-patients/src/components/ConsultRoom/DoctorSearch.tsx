@@ -2,7 +2,13 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, Mascot, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  Mascot,
+  DropdownGreen,
+  PrimaryIcon,
+  LinkedUhidIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -1226,6 +1232,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 <Text style={styles.nameTextStyle} numberOfLines={1}>
                   {(currentPatient && currentPatient!.firstName) || ''}
                 </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <PrimaryIcon
+                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 30 }}
+                    resizeMode={'contain'}
+                  />
+                ) : (
+                  currentPatient && (
+                    <LinkedUhidIcon
+                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 30 }}
+                      resizeMode={'contain'}
+                    />
+                  )
+                )}
                 <View style={{ paddingTop: 28 }}>
                   <DropdownGreen />
                 </View>

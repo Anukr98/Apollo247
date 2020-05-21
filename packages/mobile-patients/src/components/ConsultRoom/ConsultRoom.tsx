@@ -24,6 +24,8 @@ import {
   CovidHealthScan,
   LatestArticle,
   Mascot,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -177,6 +179,7 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+    marginRight: -5,
   },
   descriptionTextStyle: {
     marginLeft: 20,
@@ -950,12 +953,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
-              <Text style={styles.nameTextStyle} numberOfLines={1}>
-                {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-              </Text>
-              <View style={styles.seperatorStyle} />
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <PrimaryIcon
+                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                    resizeMode={'contain'}
+                  />
+                ) : (
+                  currentPatient && (
+                    <LinkedUhidIcon
+                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                      resizeMode={'contain'}
+                    />
+                  )
+                )}
+              </View>
+              {/* <View style={styles.seperatorStyle} /> */}
             </View>
-            <View style={{ paddingTop: 15 }}>
+            <View style={{ paddingTop: 15, marginLeft: 10 }}>
               <DropdownGreen />
             </View>
           </View>
