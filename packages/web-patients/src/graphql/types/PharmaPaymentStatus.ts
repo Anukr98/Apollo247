@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -15,6 +14,7 @@ export interface PharmaPaymentStatus_pharmaPaymentStatus {
   paymentStatus: string;
   paymentDateTime: any | null;
   paymentMode: string | null;
+  orderDateTime: any;
 }
 
 export interface PharmaPaymentStatus {

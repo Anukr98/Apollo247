@@ -237,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
+      width: 'auto',
     },
     chargesContainer: {
       [theme.breakpoints.down('xs')]: {
@@ -352,6 +352,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 3,
       },
     },
+    hideButton: {
+      display: 'none !important',
+    },
   };
 });
 
@@ -372,6 +375,8 @@ export const PayMedicine: React.FC = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
+  const [showZeroPaymentButton, setShowZeroPaymentButton] = React.useState<boolean>(true);
+
   const [
     validateConsultCouponResult,
     setValidateConsultCouponResult,
@@ -644,13 +649,13 @@ export const PayMedicine: React.FC = (props) => {
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            sessionStorage.removeItem('cartValues');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
             setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
-          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -674,6 +679,8 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
+    setShowZeroPaymentButton(false);
+
     setIsLoading(true);
     paymentMutationConsult({
       variables: {
@@ -685,6 +692,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
+          deviceType: getDeviceType()
           // couponDiscount: couponValue,
         },
       },
@@ -848,6 +856,18 @@ export const PayMedicine: React.FC = (props) => {
                         `Pay RS. ${totalWithCouponDiscount.toFixed(2)} On delivery`
                       )}
                     </AphButton>
+                  )}
+                  {params.payType === 'consults' && revisedAmount === 0 && (
+                    <div className={!showZeroPaymentButton ? classes.hideButton : ''}>
+                      <AphButton
+                        className={classes.payBtn}
+                        onClick={() => onClickConsultPay('PREPAID')}
+                        color="primary"
+                        fullWidth
+                      >
+                        Confirm Booking
+                      </AphButton>
+                    </div>
                   )}
                 </Paper>
               </Grid>

@@ -50,6 +50,7 @@ export const validateConsultCouponTypeDefs = gql`
     couponPharmaRule: CouponPharmaRule
     createdDate: DateTime
     description: String
+    displayStatus: Boolean
     id: ID
     isActive: Boolean
   }

@@ -61,9 +61,10 @@ const cancelAppointment: Resolver<
   ConsultServiceContext,
   CancelAppointmentResult
 > = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
-
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointment = await appointmentRepo.findAppointmentPaymentById(cancelAppointmentInput.appointmentId);
+  const appointment = await appointmentRepo.findAppointmentPaymentById(
+    cancelAppointmentInput.appointmentId
+  );
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -77,12 +78,6 @@ const cancelAppointment: Resolver<
   )
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
-  if (
-    appointment.appointmentDateTime <= new Date() &&
-    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(
     cancelAppointmentInput.appointmentId
@@ -112,14 +107,16 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
   );
-  await initiateRefund({
-    orderId: appointment.paymentOrderId,
-    txnId: appointment.appointmentPayments[0].paymentRefId,
-    refundAmount: appointment.appointmentPayments[0].amountPaid,
-    appointment: appointment,
-    appointmentPayments: appointment.appointmentPayments[0]
-
-  }, consultsDb);
+  await initiateRefund(
+    {
+      orderId: appointment.paymentOrderId,
+      txnId: appointment.appointmentPayments[0].paymentRefId,
+      refundAmount: appointment.appointmentPayments[0].amountPaid,
+      appointment: appointment,
+      appointmentPayments: appointment.appointmentPayments[0],
+    },
+    consultsDb
+  );
 
   //update slot status in ES as open
   const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
@@ -133,9 +130,9 @@ const cancelAppointment: Resolver<
     .getUTCHours()
     .toString()
     .padStart(2, '0')}:${appointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+    .getUTCMinutes()
+    .toString()
+    .padStart(2, '0')}:00.000Z`;
   console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
   appointmentRepo.updateDoctorSlotStatusES(
     appointment.doctorId,
@@ -212,14 +209,14 @@ const cancelAppointment: Resolver<
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const ccTriggerEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
