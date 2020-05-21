@@ -22,7 +22,6 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
-  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -774,9 +773,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -933,9 +932,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -977,20 +976,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     this.update(id, { status, isSeniorConsultStarted }).catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
-  }
-
-  updateAppointmentNoShowStatus(
-    id: string,
-    status: STATUS,
-    isSeniorConsultStarted: boolean,
-    appointmentState: APPOINTMENT_STATE,
-    noShowReason: NOSHOW_REASON
-  ) {
-    this.update(id, { status, isSeniorConsultStarted, appointmentState, noShowReason }).catch(
-      (createErrors) => {
-        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      }
-    );
   }
 
   updateSDAppointmentStatus(
@@ -1077,14 +1062,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     this.update(id, { appointmentState, isSeniorConsultStarted: false });
   }
 
-  updateTransferStateAndNoshow(
-    id: string,
-    appointmentState: APPOINTMENT_STATE,
-    noShowReason: NOSHOW_REASON
-  ) {
-    this.update(id, { appointmentState, isSeniorConsultStarted: false, noShowReason });
-  }
-
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
     return this.count({ where: { doctorId, appointmentDateTime } });
   }
@@ -1100,7 +1077,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCount,
       appointmentState,
       status: STATUS.PENDING,
-      noShowReason: undefined,
     });
   }
 
@@ -1132,7 +1108,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       rescheduleCountByDoctor,
       appointmentState,
       status: STATUS.PENDING,
-      noShowReason: undefined,
     });
   }
 
@@ -1149,7 +1124,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         doctorCancelReason: cancelReason,
         cancelledDate: new Date(),
-        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
@@ -1160,11 +1134,20 @@ export class AppointmentRepository extends Repository<Appointment> {
         cancelledById,
         patientCancelReason: cancelReason,
         cancelledDate: new Date(),
-        noShowReason: undefined,
       }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       });
     }
+  }
+
+  systemCancelAppointment(id: string) {
+    return this.update(id, {
+      status: STATUS.CANCELLED,
+      cancelledBy: REQUEST_ROLES.SYSTEM,
+      cancelledDate: new Date()
+    }).catch((cancelError) => {
+      throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
+    });
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
@@ -1243,9 +1226,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1303,9 +1286,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 

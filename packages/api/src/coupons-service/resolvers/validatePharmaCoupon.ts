@@ -260,7 +260,8 @@ export const validatePharmaCoupon: Resolver<
             ? lineItem.mrp * lineItem.quantity
             : lineItem.specialPrice * lineItem.quantity;
 
-        lineItem.applicablePrice = lineItem.mrp;
+        lineItem.applicablePrice =
+          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
 
         if (
           couponGenericRulesData.minimumCartValue &&

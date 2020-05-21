@@ -55,6 +55,19 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
+export enum REFUND_STATUS {
+  REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
+  REFUND_FAILED = 'REFUND_FAILED',
+  REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED'
+}
+
+export enum PAYTM_STATUS {
+  TXN_FAILURE = 'TXN_FAILURE',
+  PENDING = 'PENDING',
+  TXN_SUCCESS = 'TXN_SUCCESS',
+}
+
 export enum APPOINTMENT_STATE {
   NEW = 'NEW',
   TRANSFER = 'TRANSFER',
@@ -90,6 +103,7 @@ export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
+  SYSTEM = 'SYSTEM'
 }
 
 export enum TRANSFER_STATUS {
@@ -126,11 +140,6 @@ export enum DEVICETYPE {
 export enum PATIENT_TYPE {
   NEW = 'NEW',
   REPEAT = 'REPEAT',
-}
-export enum NOSHOW_REASON {
-  NOSHOW_PATIENT = 'NOSHOW_PATIENT',
-  NOSHOW_DOCTOR = 'NOSHOW_DOCTOR',
-  NOSHOW_30MIN = 'NOSHOW_30MIN',
 }
 
 //Appointment starts
@@ -218,9 +227,6 @@ export class Appointment extends BaseEntity {
   isSeniorConsultStarted: Boolean;
 
   @Column({ nullable: true })
-  noShowReason: NOSHOW_REASON;
-
-  @Column({ nullable: true })
   patientCancelReason: string;
 
   @Index('Appointment_patientId')
@@ -295,6 +301,12 @@ export class Appointment extends BaseEntity {
     (appointmentPayments) => appointmentPayments.appointment
   )
   appointmentPayments: AppointmentPayments[];
+
+  @OneToMany(
+    (type) => AppointmentRefunds,
+    (appointmentRefunds) => appointmentRefunds.appointment
+  )
+  appointmentRefunds: AppointmentRefunds[];
 
   @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
   appointmentNoShow: AppointmentNoShow[];
@@ -378,7 +390,7 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -388,6 +400,85 @@ export class AppointmentPayments extends BaseEntity {
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
+
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointmentPayments)
+  appointmentRefunds: AppointmentRefunds[]
+}
+
+@Entity()
+export class AppointmentRefunds extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  refId: string;
+
+  @Column({ nullable: false })
+  txnId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
+  @Column({ nullable: true })
+  totalRefundAmount: number;
+
+  @Column({ nullable: true, type: 'text' })
+  comments: string;
+
+  @Column({ nullable: false, default: 'REFUND_REQUEST_NOT_RAISED' })
+  refundStatus: REFUND_STATUS;
+
+  @Column({ nullable: true })
+  paytmRequestStatus: PAYTM_STATUS
+
+  @Column({ nullable: true })
+  refundId: string;
+
+  @Column({ nullable: true })
+  txnAmount: number;
+
+  @Column({ nullable: true })
+  txnTimestamp: Date;
+
+  @Column({ nullable: false })
+  orderId: string;
+
+  @Column({ nullable: true })
+  payMethod: string;
+
+  @Column({ nullable: true })
+  acceptRefundTimestamp: Date;
+
+  @Column({ nullable: true })
+  userCreditInitiateTimestamp: Date;
+
+  @Column({ nullable: true })
+  resultCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  resultMsg: string;
+
+  @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+  }) refundDetailInfo: JSON
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
+  appointment: Appointment;
+
+  @ManyToOne(() => AppointmentPayments, (appointmentPayments) => appointmentPayments.appointmentRefunds)
+  appointmentPayments: AppointmentPayments;
+
 }
 //AppointmentPayments ends
 

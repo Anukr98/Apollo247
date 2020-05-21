@@ -13,8 +13,7 @@ const consultsOrderQuery = (payload) => {
     paymentDateTime: "${txnDate}", 
     responseCode: "${payload.RESPCODE}", 
     responseMessage: "${payload.RESPMSG}", 
-    bankTxnId: "${payload.BANKTXNID}",
-    paymentMode: ${payload.PAYMENTMODE}`;
+    bankTxnId: "${payload.BANKTXNID}"`;
 
     if (payload.REFUNDAMT) {
         params += `, refundAmount: ${payload.REFUNDAMT}`;
@@ -24,7 +23,11 @@ const consultsOrderQuery = (payload) => {
         params += `, bankName: "${payload.BANKNAME}"`;
     }
 
-    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){appointment { id appointment{ id } } }}';
+    if (payload.PAYMENTMODE) {
+        params += `, paymentMode: ${payload.PAYMENTMODE}`;
+    }
+
+    return 'mutation { makeAppointmentPayment(paymentInput: {' + params + '}){isRefunded appointment { id appointment{ id } } }}';
 };
 
 module.exports = {
