@@ -195,7 +195,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                 // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
                 paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode)}
                 paymentRefId={paymentStatusData.paymentRefId}
-                paymentDateTime={moment(paymentStatusData.paymentDateTime)
+                paymentDateTime={moment(paymentStatusData.orderDateTime)
                   .utc()
                   .format('DD MMMM YYYY[,] LT')
                   .replace(/(A|P)(M)/, '$1.$2.')
