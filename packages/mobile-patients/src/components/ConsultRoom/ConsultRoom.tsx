@@ -1025,8 +1025,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
-          marginLeft: 20,
-          marginRight: 8,
+          marginLeft: 16,
           marginTop: 16,
           marginBottom: 8,
         }}
@@ -1042,7 +1041,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     elevation: 15,
                     flexDirection: 'row',
                     minHeight: 59,
-                    width: width / 2 - 28,
+                    width: width / 2 - 22,
                     marginRight: 12,
                     marginBottom: 12,
                   }}
@@ -1061,7 +1060,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     style={{
                       alignItems: 'flex-start',
                       justifyContent: 'center',
-                      marginRight: 10,
+                      marginRight: 6,
                       flex: 1,
                     }}
                   >
