@@ -1,10 +1,5 @@
 const consultsOrderQuery = (payload) => {
     let txnDate = new Date(new Date().toUTCString()).toISOString();
-    if (payload.TXNDATETIME) {
-        txnDate = new Date(new Date(payload.TXNDATETIME).toUTCString()).toISOString();
-    } else if (payload.TXNDATE) {
-        txnDate = new Date(new Date(payload.TXNDATE).toUTCString()).toISOString();
-    }
 
     let params = `orderId: "${payload.ORDERID}",
     amountPaid: ${payload.TXNAMOUNT},

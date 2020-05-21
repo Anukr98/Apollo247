@@ -56,7 +56,7 @@ module.exports = async (req, res, next) => {
         if (bookingSource === 'WEB') {
             let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
             if (transactionStatus === 'failed') {
-                redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
+                redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
             }
             res.redirect(redirectUrl);
         } else {
@@ -75,7 +75,7 @@ module.exports = async (req, res, next) => {
         }
 
         if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${orderId}/${transactionStatus}`;
+            const redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
             res.redirect(redirectUrl);
         } else {
             res.redirect(`/mob-error?status=${transactionStatus}`);
