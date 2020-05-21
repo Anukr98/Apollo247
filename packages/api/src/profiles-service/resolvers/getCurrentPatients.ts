@@ -14,7 +14,7 @@ import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { log, debugLog } from 'customWinstonLogger';
+import { debugLog } from 'customWinstonLogger';
 import { Gender } from 'doctors-service/entities';
 
 export const getCurrentPatientsTypeDefs = gql`
