@@ -12,7 +12,6 @@ import {
   TRANSFER_STATUS,
   APPOINTMENT_STATE,
   AppointmentNoShow,
-  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -448,9 +447,7 @@ const endAppointmentSession: Resolver<
         ? ApiConstants.PATIENT_APPT_CC_EMAILID
         : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     let isDoctorNoShow = 0;
-    let noShowReason = NOSHOW_REASON.NOSHOW_PATIENT;
     if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
-      noShowReason = NOSHOW_REASON.NOSHOW_DOCTOR;
       isDoctorNoShow = 1;
       rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
@@ -477,11 +474,7 @@ const endAppointmentSession: Resolver<
       });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
-    await apptRepo.updateTransferStateAndNoshow(
-      apptDetails.id,
-      APPOINTMENT_STATE.AWAITING_RESCHEDULE,
-      noShowReason
-    );
+    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
     // send notification
     let pushNotificationInput = {
       appointmentId: apptDetails.id,
