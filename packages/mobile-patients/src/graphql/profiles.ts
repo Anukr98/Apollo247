@@ -2384,6 +2384,10 @@ export const GET_PATIENTS_MOBILE = gql`
           temperature
           weight
         }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
       }
     }
   }
@@ -2502,5 +2506,17 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
 export const CONSULT_ORDER_INVOICE = gql`
   query getOrderInvoice($patientId: String!, $appointmentId: String!) {
     getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  }
+`;
+
+export const LINK_UHID = gql`
+  mutation linkUhids($primaryUhid: String!, $linkedUhids: [String]) {
+    linkUhids(primaryUhid: $primaryUhid, linkedUhids: $linkedUhids)
+  }
+`;
+
+export const UNLINK_UHID = gql`
+  mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids) 
   }
 `;
