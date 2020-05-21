@@ -17,7 +17,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getDeviceType } from 'helpers/commonHelpers'
+import { getDeviceType } from 'helpers/commonHelpers';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
   makeAppointmentPayment,
@@ -573,7 +573,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   responseCode: couponCode,
                   responseMessage: 'Coupon applied',
                   bankTxnId: '',
-                  orderId: res.data.bookAppointment.appointment.id
+                  orderId: res.data.bookAppointment.appointment.id,
                 },
               },
               fetchPolicy: 'no-cache',

@@ -48,13 +48,13 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: 72,
       },
-    }
+    },
   };
 });
 
 interface PaymentStatusProps {
   history: History;
-  addToCartRef:any;
+  addToCartRef: any;
 }
 
 export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
@@ -64,15 +64,13 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
     orderStatus: string;
   }>();
 
-  const [paymentStatusData, setPaymentStatusData] = useState<PharmaPaymentDetails>(null)
+  const [paymentStatusData, setPaymentStatusData] = useState<PharmaPaymentDetails>(null);
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
 
-  
   const getPaymentStatus = () => {
-    if (!paymentStatusData)
-      return '';
+    if (!paymentStatusData) return '';
     else {
       switch (paymentStatusData.paymentStatus) {
         case 'PAYMENT_FAILED':
@@ -80,11 +78,12 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         case 'PAYMENT_PENDING':
           return 'pending';
         case 'PAYMENT_SUCCESS':
-          return 'success'
-        default: return ''
+          return 'success';
+        default:
+          return '';
       }
     }
-  }
+  };
   interface PaymentStatusInterface {
     ctaText: string;
     info: string;
@@ -93,7 +92,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   interface PaymentStatusType {
     [name: string]: PaymentStatusInterface;
   }
-      
+
   const paymentStatusObj: PaymentStatusType = {
     pending: {
       ctaText: 'GO TO HOME',
@@ -105,8 +104,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
     },
     success: {
       ctaText: 'VIEW ORDERS',
-      info:
-        'Your order has been placed successfully. We will confirm the order in a few minutes.',
+      info: 'Your order has been placed successfully. We will confirm the order in a few minutes.',
       callbackFunction: () => {
         paymentStatusRedirect(clientRoutes.yourOrders());
       },
@@ -132,34 +130,42 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
     if (params.orderAutoId) {
       pharmaPayments({
         variables: {
-          orderId: typeof params.orderAutoId === 'string' ? parseInt(params.orderAutoId) : params.orderAutoId
-        }
+          orderId:
+            typeof params.orderAutoId === 'string'
+              ? parseInt(params.orderAutoId)
+              : params.orderAutoId,
+        },
       })
         .then((resp: any) => {
           if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-            const { paymentStatus,  paymentRefId  } = resp.data.pharmaPaymentStatus
-            setPaymentStatusData(resp.data.pharmaPaymentStatus)
+            const { paymentStatus, paymentRefId } = resp.data.pharmaPaymentStatus;
+            setPaymentStatusData(resp.data.pharmaPaymentStatus);
             /* WebEngage Tracking Start*/
-            paymentRefId && paymentStatusTracking({
-              orderId: paymentRefId,
-              paymentStatus,
-              type: 'Pharmacy',
-              orderAutoId: typeof params.orderAutoId === 'string' ? parseInt(params.orderAutoId) : params.orderAutoId
-            })
+            paymentRefId &&
+              paymentStatusTracking({
+                orderId: paymentRefId,
+                paymentStatus,
+                type: 'Pharmacy',
+                orderAutoId:
+                  typeof params.orderAutoId === 'string'
+                    ? parseInt(params.orderAutoId)
+                    : params.orderAutoId,
+              });
             /* WebEngage Tracking End*/
           } else {
-            // redirect to medicine 
+            // redirect to medicine
             paymentStatusRedirect(clientRoutes.medicines());
           }
         })
         .catch(() => {
           paymentStatusRedirect(clientRoutes.medicines());
-        })
+        });
     }
   }, []);
 
   const paymentStatus = getPaymentStatus();
-  const paymentDetail = paymentStatusData && paymentStatusObj[paymentStatus] ? paymentStatusObj[paymentStatus] : null;
+  const paymentDetail =
+    paymentStatusData && paymentStatusObj[paymentStatus] ? paymentStatusObj[paymentStatus] : null;
 
   return (
     <>
@@ -176,25 +182,31 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                 <CircularProgress />
               </div>
             ) : (
-                <OrderStatusContent
-                  paymentStatus={paymentStatus}
-                  paymentInfo={paymentDetail ? paymentDetail.info : ''}
-                  orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => { }}
-                  orderId={Number(params.orderAutoId)}
-                  amountPaid={paymentStatusData.amountPaid}
-                  // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
-                  paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode)}
-                  paymentRefId={paymentStatusData.paymentRefId}
-                  paymentDateTime={moment(paymentStatusData.paymentDateTime).utc().format('DD MMMM YYYY[,] LT').replace(/(A|P)(M)/, '$1.$2.')
-                    .toString()}
-                  type='ORDER'
-                  onClose={() => { handleOnClose() }}
-                  ctaText={paymentDetail ? paymentDetail.ctaText : ''}
-                />
-              )}
+              <OrderStatusContent
+                paymentStatus={paymentStatus}
+                paymentInfo={paymentDetail ? paymentDetail.info : ''}
+                orderStatusCallback={paymentDetail ? paymentDetail.callbackFunction : () => {}}
+                orderId={Number(params.orderAutoId)}
+                amountPaid={paymentStatusData.amountPaid}
+                // paymentType={paymentStatusData.paymentRefId ? 'Prepaid': 'COD'}
+                paymentType={getPaymentMethodFullName(paymentStatusData.paymentMode)}
+                paymentRefId={paymentStatusData.paymentRefId}
+                paymentDateTime={moment(paymentStatusData.paymentDateTime)
+                  .utc()
+                  .format('DD MMMM YYYY[,] LT')
+                  .replace(/(A|P)(M)/, '$1.$2.')
+                  .toString()}
+                type="ORDER"
+                onClose={() => {
+                  handleOnClose();
+                }}
+                ctaText={paymentDetail ? paymentDetail.ctaText : ''}
+              />
+            )}
           </>
-        </Modal>) :
-        (<Popover
+        </Modal>
+      ) : (
+        <Popover
           open={showOrderPopup}
           anchorEl={props.addToCartRef.current}
           anchorOrigin={{
@@ -215,7 +227,8 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
               <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
             </div>
           </div>
-        </Popover>)
-      }</>
+        </Popover>
+      )}
+    </>
   );
 };
