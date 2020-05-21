@@ -87,7 +87,7 @@ const getOrderInvoice: Resolver<
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientsRep = patientsDb.getCustomRepository(PatientRepository);
   const patientResponse = await apptsRepo.findByAppointmentId(args.appointmentId);
-  console.log('orders Response', JSON.stringify(patientResponse, null, 2));
+  // console.log('orders Response', JSON.stringify(patientResponse, null, 2));
 
   const patientDetails = await patientsRep.findById(args.patientId);
   // console.log('orders Response', JSON.stringify(patientDetails, null, 2));
@@ -213,7 +213,7 @@ const getOrderInvoice: Resolver<
     //Doctor Address Details
     const addressLastLine = `${hospitalAddress.city}  ${
       hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(1)
