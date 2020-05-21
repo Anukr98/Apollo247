@@ -22,7 +22,6 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
-  NOSHOW_REASON,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -258,9 +257,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
   async getBookedSlots(doctorIds: string[]) {
     const appointmentDate = new Date();
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     //const inputDate = format(appointmentDate, 'yyyy-MM-dd');
-    const inputStartDate = format(appointmentDate, 'yyyy-MM-dd');
-    const inputEndDate = format(addDays(appointmentDate, +1), 'yyyy-MM-dd');
+    const inputEndDate = format(appointmentDate, 'yyyy-MM-dd');
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const fromDate = new Date(inputStartDate + 'T18:30');
     const toDate = new Date(inputEndDate + 'T18:29');
@@ -301,6 +301,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateAppointment(id: string, appointmentInfo: Partial<Appointment>) {
+    return this.update(id, appointmentInfo).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   findAppointmentPayment(id: string) {
     return AppointmentPayments.findOne({ where: { appointment: id } }).catch((getErrors) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
@@ -336,7 +344,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPatientAppointments(doctorId: string, patientId: string) {
+  getPatientAppointments(doctorId: string, patientIds: string[]) {
     const curDate = new Date();
     let curMin = curDate.getUTCMinutes();
     if (curMin >= 0 && curMin < 15) {
@@ -354,7 +362,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.find({
       where: {
         doctorId,
-        patientId,
+        patientId: In(patientIds),
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },
@@ -460,7 +468,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPastAppointments(doctorId: string, patientId: string) {
+  getPastAppointments(doctorId: string, ids: string[]) {
     /*return this.find({
       where: {
         doctorId,
@@ -476,7 +484,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .where('appointment.appointmentDateTime < :newDate', {
         newDate: new Date(),
       })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
@@ -489,11 +497,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   //get patient all appointments
-  getPatientAllAppointments(patientId: string, offset?: number, limit?: number) {
+  getPatientAllAppointments(ids: string[], offset?: number, limit?: number) {
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -583,14 +591,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  async getPatinetUpcomingAppointments(patientId: string) {
+  async getPatinetUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
     const upcomingAppts = await this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -606,7 +614,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         fromDate: weekPastDateUTC,
         toDate: new Date(),
       })
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
@@ -970,20 +978,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointmentNoShowStatus(
-    id: string,
-    status: STATUS,
-    isSeniorConsultStarted: boolean,
-    appointmentState: APPOINTMENT_STATE,
-    noShowReason: NOSHOW_REASON
-  ) {
-    this.update(id, { status, isSeniorConsultStarted, appointmentState, noShowReason }).catch(
-      (createErrors) => {
-        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      }
-    );
-  }
-
   updateSDAppointmentStatus(
     id: string,
     status: STATUS,
@@ -1068,14 +1062,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     this.update(id, { appointmentState, isSeniorConsultStarted: false });
   }
 
-  updateTransferStateAndNoshow(
-    id: string,
-    appointmentState: APPOINTMENT_STATE,
-    noShowReason: NOSHOW_REASON
-  ) {
-    this.update(id, { appointmentState, isSeniorConsultStarted: false, noShowReason });
-  }
-
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
     return this.count({ where: { doctorId, appointmentDateTime } });
   }
@@ -1154,6 +1140,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
   }
 
+  systemCancelAppointment(id: string) {
+    return this.update(id, {
+      status: STATUS.CANCELLED,
+      cancelledBy: REQUEST_ROLES.SYSTEM,
+      cancelledDate: new Date(),
+    }).catch((cancelError) => {
+      throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
+    });
+  }
+
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
     const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
@@ -1185,10 +1181,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(patientId: string) {
+  getAllAppointmentsByPatientId(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.patientId = :patientId', { patientId: patientId })
+      .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();

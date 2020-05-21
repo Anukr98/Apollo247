@@ -8,6 +8,7 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -40,6 +41,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mp."paymentStatus"',
         'mp."bankTxnId"',
         'mo."orderAutoId"',
+        'mo."orderDateTime"',
+        'mp."paymentMode"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
       .getRawOne();
@@ -53,6 +56,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  findMedicineOrderPayment(id: string) {
+    return MedicineOrderPayments.findOne({
+      where: { medicineOrders: id },
+    }).catch((medicinePaymentError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
+        medicinePaymentError,
+      });
+    });
   }
 
   saveMedicineOrderPayment(paymentAttrs: Partial<MedicineOrderPayments>) {
@@ -158,9 +171,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patient: String) {
+  getMedicineOrdersList(patientIds: String[]) {
     return this.find({
-      where: { patient },
+      where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',
@@ -250,6 +263,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  updateMedicineOrder(id: string, orderAutoId: number, orderObj: Partial<MedicineOrders>) {
+    return this.update({ id, orderAutoId }, orderObj);
   }
 
   getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
@@ -406,6 +423,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
     return this.count({
       where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrderCancelReasons() {
+    return MedicineOrderCancelReason.find({}).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
     });
   }
 }

@@ -4,6 +4,13 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import {
+  prismAuthentication,
+  prismGetUsers,
+  prismGetUserDetails,
+  linkUhid,
+  delinkUhid,
+} from 'helpers/prismCall';
 
 export const uhidTypeDefs = gql`
   extend type Mutation {
@@ -42,6 +49,12 @@ const linkUhids: Resolver<
     (patient) => patient.isUhidPrimary && patient.uhid != primaryUhid
   );
   if (primaryUhidExists) throw new AphError(AphErrorMessages.PRIMARY_UHID_EXISTS, undefined, {});
+
+  //Removing the country code from mobile number
+  const mobileNumberWithOutCode = sanitizeMobileNumber(mobileNumber);
+
+  //Calling the prism apis
+  await callPrismApis(mobileNumberWithOutCode, primaryUhid, linkedUhids, true);
 
   //Getting the ids of primary and linked patients
   let primaryPatientId = '';
@@ -95,6 +108,12 @@ const unlinkUhids: Resolver<
   if (AreLinkedUhidsPresent.length != unlinkUhids.length)
     throw new AphError(AphErrorMessages.INVALID_LINKED_UHID, undefined, {});
 
+  //Removing the country code from mobile number
+  const mobileNumberWithOutCode = sanitizeMobileNumber(mobileNumber);
+
+  //Calling the prism apis
+  await callPrismApis(mobileNumberWithOutCode, primaryUhid, unlinkUhids, false);
+
   //Getting the ids of primary and linked patients
   let primaryPatientId = '';
   const linkedPatientIds: string[] = [];
@@ -120,6 +139,50 @@ const unlinkUhids: Resolver<
   }
 
   return true;
+};
+
+const sanitizeMobileNumber = (mobileNumber: string) => {
+  const codes: string[] = process.env.COUNTRY_CODES.split(',');
+  let mobileNumberWithOutCode = mobileNumber;
+
+  codes.forEach((code) => {
+    if (mobileNumber.includes(code)) {
+      mobileNumberWithOutCode = mobileNumber.replace(code, '');
+    }
+  });
+
+  return mobileNumberWithOutCode;
+};
+
+const callPrismApis = async (
+  mobileNumber: string,
+  primaryUhid: string,
+  linkedUhids: string[],
+  link: boolean
+) => {
+  const authoken = await prismAuthentication(mobileNumber);
+  if (!authoken.response)
+    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
+
+  const authToken = authoken.response;
+
+  const getUsersPrism = await prismGetUsers(mobileNumber, authToken);
+  if (!getUsersPrism.response)
+    throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {});
+
+  const getUserDetailsPrism = await prismGetUserDetails(primaryUhid, authToken);
+  if (!getUserDetailsPrism.response)
+    throw new AphError(AphErrorMessages.PRISM_GET_USER_DETAILS_ERROR, undefined, {});
+
+  if (link) {
+    const prismLinkUhid = await linkUhid(primaryUhid, authToken, linkedUhids.join(','));
+    if (!prismLinkUhid.response)
+      throw new AphError(AphErrorMessages.PRISM_LINK_UHID_ERROR, undefined, {});
+  } else {
+    const prismDeLinkUhid = await delinkUhid(primaryUhid, authToken, linkedUhids.join(','));
+    if (!prismDeLinkUhid.response)
+      throw new AphError(AphErrorMessages.PRISM_DELINK_UHID_ERROR, undefined, {});
+  }
 };
 
 export const uhidResolvers = {

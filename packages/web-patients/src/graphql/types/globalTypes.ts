@@ -278,9 +278,21 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PAYMENT_METHODS {
+  CC = "CC",
+  COD = "COD",
+  DC = "DC",
+  EMI = "EMI",
+  NB = "NB",
+  PAYTMCC = "PAYTMCC",
+  PPI = "PPI",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+  TestReports = "TestReports",
 }
 
 export enum PharmaDiscountApplicableOn {
@@ -412,6 +424,9 @@ export interface AppointmentPaymentInput {
   responseMessage: string;
   bankTxnId?: string | null;
   orderId?: string | null;
+  bankName?: string | null;
+  refundAmount?: number | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface BookAppointmentInput {
@@ -523,6 +538,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  sort?: string | null;
 }
 
 export interface Geolocation {
@@ -568,6 +584,44 @@ export interface MedicineCartItem {
   isMedicine?: string | null;
 }
 
+export interface MedicineCartOMSInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  patientAddressId: string;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
+  orderTat?: string | null;
+  items?: (MedicineCartOMSItem | null)[] | null;
+  coupon?: string | null;
+  couponDiscount?: number | null;
+  productDiscount?: number | null;
+}
+
+export interface MedicineCartOMSItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  itemValue?: number | null;
+  itemDiscount?: number | null;
+  isPrescriptionNeeded?: number | null;
+  mou?: number | null;
+  isMedicine: string;
+  specialPrice: number;
+}
+
+export interface MedicineOrderCancelOMSInput {
+  orderNo?: number | null;
+  cancelReasonCode?: string | null;
+}
+
 export interface MedicinePaymentInput {
   orderId: string;
   orderAutoId: number;
@@ -596,6 +650,7 @@ export interface MedicinePaymentMqInput {
   email?: string | null;
   CODCity?: CODCity | null;
   orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface OrderCancelInput {
@@ -631,6 +686,7 @@ export interface PatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -744,6 +800,7 @@ export interface UpdatePatientAddressInput {
   otherAddressType?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  stateCode?: string | null;
 }
 
 export interface UpdatePatientInput {

@@ -18,7 +18,7 @@ import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
-import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking'
+import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -255,8 +255,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                 gender: values.gender,
                 emailAddress: values.emailAddress,
                 dateOfBirth: values.dateOfBirth,
-                mobileNumber: patient.mobileNumber
-              })
+                mobileNumber: patient.mobileNumber,
+              });
               /* webengage code end */
               setShowProfileSuccess(true);
             })
