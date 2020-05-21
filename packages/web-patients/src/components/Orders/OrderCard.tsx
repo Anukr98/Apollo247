@@ -9,15 +9,15 @@ import {
 } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList as ordersList,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus as statusDetails,
-} from 'graphql/types/GetMedicineOrdersList';
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList as OrdersList,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus as StatusDetails,
+} from 'graphql/types/getMedicineOrdersOMSList';
 
 import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
@@ -240,9 +240,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const { data, error, loading } = useQueryWithSkip<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+    getMedicineOrdersOMSList,
+    getMedicineOrdersOMSListVariables
+  >(GET_MEDICINE_ORDERS_OMS_LIST, {
     variables: {
       patientId: currentPatient && currentPatient.id,
     },
@@ -255,9 +255,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   if (error) return <div>Error :(</div>;
 
-  const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
-    if (statusList && statusList.length > 0) {
-      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+  const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
+    const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+    if (filteredStatusList && filteredStatusList.length > 0) {
       return (
         filteredStatusList.sort(
           (a, b) =>
@@ -273,8 +273,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     return null;
   };
 
-  const getOrderStatus = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderStatus = (statusList: (StatusDetails | null)[]) => {
+    const sortedList = getSortedStatusList(statusList);
     if (sortedList && sortedList.length > 0) {
       const firstSortedData = sortedList[0];
       if (firstSortedData && firstSortedData.orderStatus) {
@@ -283,8 +283,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getOrderDeliveryDate = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderDeliveryDate = (status: (StatusDetails | null)[]) => {
+    const sortedList = getSortedStatusList(status);
     if (sortedList && sortedList.length > 0) {
       const firstSortedData = sortedList[0];
       return (
@@ -294,7 +294,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getSlider = (status: (statusDetails | null)[]) => {
+  const getSlider = (status: (StatusDetails | null)[]) => {
     const sliderStatus = getOrderStatus(status);
     switch (sliderStatus) {
       case 'Order Placed':
@@ -365,11 +365,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
   if (
     data &&
-    data.getMedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList.length > 0
+    data.getMedicineOrdersOMSList &&
+    data.getMedicineOrdersOMSList.medicineOrdersList &&
+    data.getMedicineOrdersOMSList.medicineOrdersList.length > 0
   ) {
-    const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
+    const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
 
     const firstOrderInfo = orderListData[0];
     if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
