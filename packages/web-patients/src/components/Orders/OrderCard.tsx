@@ -224,10 +224,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-function valuetext(value: number) {
-  return `${value}`;
-}
-
 interface OrderCardProps {
   setOrderAutoId: (orderAutoId: number) => void;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
@@ -304,8 +300,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return 60;
       case 'Order Delivered':
         return 360;
-      default:
-        return 0;
     }
   };
 
@@ -326,7 +320,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           <AphTrackSlider
             color="primary"
             defaultValue={getDefaultValue(sliderStatus)}
-            getAriaValueText={valuetext}
+            getAriaValueText={(value: number) => value.toString()}
             disabled={isSliderDisabled(sliderStatus)}
             min={0}
             max={360}
