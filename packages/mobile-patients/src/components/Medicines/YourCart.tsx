@@ -1128,7 +1128,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                Savings of Rs. {couponDiscount.toFixed(2)} on the bill
+                {coupon.discountedTotals!.couponDiscount > 0
+                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
+                  : 'Higher discounts already applied'}
               </Text>
             </View>
           )}
