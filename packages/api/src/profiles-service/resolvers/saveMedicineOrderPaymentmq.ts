@@ -143,8 +143,8 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
+    medicinePaymentMqInput.paymentMode = PAYMENT_METHODS_REVERSE.COD;
   }
-  const paymentMode: string = PAYMENT_METHODS[medicinePaymentMqInput.paymentMode];
 
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
@@ -157,7 +157,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
     responseMessage: medicinePaymentMqInput.responseMessage,
     bankTxnId: medicinePaymentMqInput.bankTxnId,
   };
-  paymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+  if (medicinePaymentMqInput.paymentMode) {
+    const paymentMode: string = PAYMENT_METHODS[medicinePaymentMqInput.paymentMode];
+    paymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+  }
+
   if (medicinePaymentMqInput.bankName) {
     paymentAttrs.bankName = medicinePaymentMqInput.bankName;
   }

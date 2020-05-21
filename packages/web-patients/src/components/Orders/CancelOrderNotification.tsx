@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       marginLeft: 'auto',
-      fontWeight: 'bold',
+      fozntWeight: 'bold',
       color: '#fc9916',
       padding: 0,
       '&:hover': {
@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CancelOrderNotificationProps {
   setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-  cancelOrderText?: string;
 }
 
 export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (props) => {
@@ -51,7 +50,10 @@ export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Hi! :)</Typography>
-        <p>{props.cancelOrderText}</p>
+        <p>
+          Your cancellation request has been accepted and order is cancelled. If prepaid, the amount
+          paid will be refunded automatically.
+        </p>
       </div>
       <div className={classes.actions}>
         <AphButton

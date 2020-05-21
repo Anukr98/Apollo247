@@ -9,15 +9,15 @@ import {
 } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList as ordersList,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus as statusDetails,
-} from 'graphql/types/GetMedicineOrdersList';
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList as OrdersList,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus as StatusDetails,
+} from 'graphql/types/getMedicineOrdersOMSList';
 
 import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
@@ -224,15 +224,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-function valuetext(value: number) {
-  return `${value}`;
-}
-
-type OrderCardProps = {
+interface OrderCardProps {
   setOrderAutoId: (orderAutoId: number) => void;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
   orderAutoId: number;
-};
+}
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
@@ -240,9 +236,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const { data, error, loading } = useQueryWithSkip<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+    getMedicineOrdersOMSList,
+    getMedicineOrdersOMSListVariables
+  >(GET_MEDICINE_ORDERS_OMS_LIST, {
     variables: {
       patientId: currentPatient && currentPatient.id,
     },
@@ -255,9 +251,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   if (error) return <div>Error :(</div>;
 
-  const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
-    if (statusList && statusList.length > 0) {
-      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+  const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
+    const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+    if (filteredStatusList && filteredStatusList.length > 0) {
       return (
         filteredStatusList.sort(
           (a, b) =>
@@ -273,8 +269,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     return null;
   };
 
-  const getOrderStatus = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderStatus = (statusList: (StatusDetails | null)[]) => {
+    const sortedList = getSortedStatusList(statusList);
     if (sortedList && sortedList.length > 0) {
       const firstSortedData = sortedList[0];
       if (firstSortedData && firstSortedData.orderStatus) {
@@ -283,8 +279,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getOrderDeliveryDate = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderDeliveryDate = (status: (StatusDetails | null)[]) => {
+    const sortedList = getSortedStatusList(status);
     if (sortedList && sortedList.length > 0) {
       const firstSortedData = sortedList[0];
       return (
@@ -294,39 +290,38 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getSlider = (status: (statusDetails | null)[]) => {
+  const getDefaultValue = (status: string) => {
+    switch (status) {
+      case 'Order Placed':
+        return 80;
+      case 'Order Verified':
+        return 100;
+      case 'Order Initiated':
+        return 60;
+      case 'Order Delivered':
+        return 360;
+    }
+  };
+
+  const isSliderDisabled = (sliderStatus: string) => {
+    return sliderStatus === 'Return Accepted' || sliderStatus === 'Order Cancelled';
+  };
+
+  const getSlider = (status: (StatusDetails | null)[]) => {
     const sliderStatus = getOrderStatus(status);
     switch (sliderStatus) {
-      case 'Order Placed':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={80}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
       case 'Order Delivered':
-        return (
-          <AphDeliveredSlider
-            color="primary"
-            defaultValue={360}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Return Accepted' || 'Order Cancelled':
+      case 'Order Placed':
+      case 'Order Verified':
+      case 'Order Initiated':
+      case 'Return Accepted':
+      case 'Order Cancelled':
         return (
           <AphTrackSlider
             color="primary"
-            getAriaValueText={valuetext}
-            disabled
+            defaultValue={getDefaultValue(sliderStatus)}
+            getAriaValueText={(value: number) => value.toString()}
+            disabled={isSliderDisabled(sliderStatus)}
             min={0}
             max={360}
             valueLabelDisplay="off"
@@ -334,30 +329,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           />
         );
 
-      case 'Order Verified':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={100}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Order Initiated':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={60}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
       default:
         return null;
     }
@@ -365,11 +336,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
   if (
     data &&
-    data.getMedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList.length > 0
+    data.getMedicineOrdersOMSList &&
+    data.getMedicineOrdersOMSList.medicineOrdersList &&
+    data.getMedicineOrdersOMSList.medicineOrdersList.length > 0
   ) {
-    const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
+    const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
 
     const firstOrderInfo = orderListData[0];
     if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
