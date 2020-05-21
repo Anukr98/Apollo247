@@ -1573,6 +1573,7 @@ export const GET_PHARMA_COUPON_LIST = gql`
         description
         id
         isActive
+        displayStatus
       }
     }
   }
