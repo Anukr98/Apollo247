@@ -45,6 +45,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
+  const [paymentMode, setPaymentMode] = useState<string>('');
   // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
 
@@ -62,8 +63,22 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     CC: 'Credit Card',
     NB: 'Net Banking',
     UPI: 'UPI',
-    PPI: 'PayTm',
+    PPI: 'Paytm Wallet',
+    PAYTM_DIGITAL_CREDIT:'Paytm Postpaid',
+    EMI:'EMI'
   };
+
+  const Modes: any = {
+    DEBIT_CARD: 'Debit Card',
+    CREDIT_CARD: 'Credit Card',
+    NET_BANKING: 'Net Banking',
+    PAYTM_WALLET: 'Paytm Wallet',
+    EMI: 'EMI',
+    UPI: 'UPI',
+    PAYTM_POSTPAID: 'Paytm Postpaid',
+    COD: 'COD',
+  };
+
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -92,7 +107,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         setorderDateTime(res.data.pharmaPaymentStatus.paymentDateTime);
         setrefNo(res.data.pharmaPaymentStatus.bankTxnId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
-
+        setPaymentMode(res.data.pharmaPaymentStatus.paymentMode);
         setLoading(false);
       })
       .catch((error) => {
@@ -221,7 +236,9 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
   const orderCard = () => {
     const date = String(orderDateTime != '' && orderDateTime != null ? getdate() : '--');
-
+    const paymenttype = String(
+      paymentMode != '' && paymentMode != null ? Modes[paymentMode] : PaymentModes[paymentTypeID]
+    );
     return (
       <View style={styles.orderCardStyle}>
         <View style={{ flex: 0.6, paddingTop: 0.05 * windowWidth }}>
@@ -237,12 +254,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-            {textComponent(
-              PaymentModes[paymentTypeID],
-              undefined,
-              theme.colors.SHADE_CYAN_BLUE,
-              false
-            )}
+            {textComponent(paymenttype, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
           </View>
         </View>
       </View>
