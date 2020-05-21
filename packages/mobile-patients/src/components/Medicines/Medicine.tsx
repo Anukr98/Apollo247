@@ -479,8 +479,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const location = pharmacyLocation
-        ? `${formatText(g(pharmacyLocation, 'city') || '', 18)} ${g(pharmacyLocation, 'pincode')}`
-        : `${formatText(g(locationDetails, 'city') || '', 18)} ${g(locationDetails, 'pincode')}`;
+        ? `${formatText(g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '', 18)} ${g(
+            pharmacyLocation,
+            'pincode'
+          )}`
+        : `${formatText(g(locationDetails, 'city') || g(pharmacyLocation, 'state') || '', 18)} ${g(
+            locationDetails,
+            'pincode'
+          )}`;
 
       return (
         <View style={{ paddingLeft: 15, marginTop: -3.5 }}>
