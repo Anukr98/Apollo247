@@ -3,10 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import moment from 'moment';
 import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments as payments,
-} from 'graphql/types/GetMedicineOrderDetails';
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
+} from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 
@@ -180,14 +179,14 @@ const useStyles = makeStyles((theme: Theme) => {
           color: '#fc9916',
         },
       },
-    }
+    },
   };
 });
 
-type TrackOrdersProps = {
-  orderDetailsData: orederDetails | null;
+interface TrackOrdersProps {
+  orderDetailsData: OrderDetails | null;
   isLoading: boolean;
-};
+}
 
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
@@ -212,12 +211,13 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
       orderPayment &&
       orderPayment.paymentType === 'COD') ||
     (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
-      <>
+    <>
       <div className={classes.root}>
         <div className={classes.summaryHeader}>
           <div className={classes.headRow}>
             <div className={classes.leftGroup}>
-              <span className={classes.caps}>Order</span> # <br/>{props.orderDetailsData && props.orderDetailsData.orderAutoId}
+              <span className={classes.caps}>Order</span> # <br />
+              {props.orderDetailsData && props.orderDetailsData.orderAutoId}
             </div>
             <div className={classes.rightGroup}>
               Total <b>Rs.{orderPayment && orderPayment.amountPaid}</b>
@@ -229,7 +229,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
             <div className={classes.leftGroup}>
               <label>Order Placed</label>
               <span>
-                {moment(new Date(orderStatus && orderStatus.statusDate)).format('DD MMM YYYY ,hh:mm a')}
+                {moment(new Date(orderStatus && orderStatus.statusDate)).format(
+                  'DD MMM YYYY ,hh:mm a'
+                )}
               </span>
             </div>
             <div className={classes.rightGroup}>
@@ -257,7 +259,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         </div>
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
-            <div className={classes.totalItems}><b>3 item(s)</b> in this shipment</div>
+            <div className={classes.totalItems}>
+              <b>3 item(s)</b> in this shipment
+            </div>
             <div className={`${classes.tableRow} ${classes.rowHead}`}>
               <div>Consult Detail</div>
               <div>QTY</div>
@@ -304,7 +308,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
           </div>
         </div>
       </div>
-      <div className={classes.disclaimerText}><b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span></div>
+      <div className={classes.disclaimerText}>
+        <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
+      </div>
       <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
         <AphButton>Share</AphButton>
