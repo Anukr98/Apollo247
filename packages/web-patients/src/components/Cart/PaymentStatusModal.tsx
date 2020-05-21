@@ -75,10 +75,14 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
       switch (paymentStatusData.paymentStatus) {
         case 'PAYMENT_FAILED':
           return 'failed';
-        case 'PAYMENT_PENDING':
+        case 'PAYMENT_PENDING': {
+          sessionStorage.removeItem('cartValues');
           return 'pending';
-        case 'PAYMENT_SUCCESS':
+        }
+        case 'PAYMENT_SUCCESS': {
+          sessionStorage.removeItem('cartValues');
           return 'success';
+        }
         default:
           return '';
       }

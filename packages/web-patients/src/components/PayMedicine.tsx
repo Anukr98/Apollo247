@@ -644,13 +644,13 @@ export const PayMedicine: React.FC = (props) => {
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            sessionStorage.removeItem('cartValues');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
             setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
-          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
