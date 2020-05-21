@@ -3,10 +3,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import moment from 'moment';
 import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments as payments,
-} from 'graphql/types/GetMedicineOrderDetails';
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
+} from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 
@@ -184,10 +183,10 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type TrackOrdersProps = {
-  orderDetailsData: orederDetails | null;
+interface TrackOrdersProps {
+  orderDetailsData: OrderDetails | null;
   isLoading: boolean;
-};
+}
 
 export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
