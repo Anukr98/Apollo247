@@ -740,7 +740,7 @@ const modifyCaseSheet: Resolver<
 
   //stop updating data if PDF is generated already.
   if (getCaseSheetData.blobName && getCaseSheetData.blobName.length > 0)
-    throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+    throw new AphError(AphErrorMessages.CASESHEET_SENT_TO_PATIENT_ALREADY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);

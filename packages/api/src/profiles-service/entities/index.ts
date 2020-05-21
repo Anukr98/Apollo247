@@ -756,6 +756,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryUhid: string;
 
+  @Index('Patient_primaryPatientId')
   @Column({ nullable: true })
   primaryPatientId: string;
 
@@ -1206,6 +1207,9 @@ export class Coupon extends BaseEntity {
 
   @Column({ default: false })
   isActive: Boolean;
+
+  @Column({ default: true })
+  displayStatus: Boolean;
 
   @Column({ nullable: true })
   updatedDate: Date;

@@ -8,6 +8,15 @@ import {
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import {
+  GetPatientAddressList,
+  GetPatientAddressListVariables,
+  GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
+} from 'graphql/types/GetPatientAddressList';
+import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -183,99 +192,192 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface TrackOrdersProps {
+interface OrdersSummaryProps {
   orderDetailsData: OrderDetails | null;
   isLoading: boolean;
 }
 
-export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
+export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   const classes = useStyles({});
+  const { orderDetailsData, isLoading } = props;
+  const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
+  const client = useApolloClient();
   const orderStatus =
-    props.orderDetailsData &&
-    props.orderDetailsData.medicineOrdersStatus &&
-    props.orderDetailsData.medicineOrdersStatus.length > 0 &&
-    props.orderDetailsData.medicineOrdersStatus[0];
-  const orderItem = props.orderDetailsData && props.orderDetailsData.medicineOrderLineItems;
+    orderDetailsData &&
+    orderDetailsData.medicineOrdersStatus &&
+    orderDetailsData.medicineOrdersStatus.length > 0 &&
+    orderDetailsData.medicineOrdersStatus[0];
+  const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
   const orderPayment =
-    props.orderDetailsData &&
-    props.orderDetailsData.medicineOrderPayments &&
-    props.orderDetailsData.medicineOrderPayments.length > 0 &&
-    props.orderDetailsData.medicineOrderPayments[0];
+    orderDetailsData &&
+    orderDetailsData.medicineOrderPayments &&
+    orderDetailsData.medicineOrderPayments.length > 0 &&
+    orderDetailsData.medicineOrderPayments[0];
+  const mrpTotal =
+    orderItems &&
+    orderItems.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!, 0);
+  const discount =
+    orderDetailsData && orderDetailsData.devliveryCharges && orderDetailsData.estimatedAmount
+      ? orderDetailsData.devliveryCharges + mrpTotal - orderDetailsData.estimatedAmount
+      : 0;
 
-  return props.isLoading ? (
+  let item_quantity: string;
+  if (orderItems.length == 1) {
+    item_quantity = orderItems.length + ' item ';
+  } else {
+    item_quantity = orderItems.length + ' item(s) ';
+  }
+
+  const getFormattedDateTime = (orderDetails: OrderDetails) => {
+    const statusDate = orderStatus.statusDate;
+    return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+  };
+
+  const getFormattedDate = (orderDetails: OrderDetails) => {
+    const statusDate = orderStatus.statusDate;
+    return moment(statusDate).format('ddd, D MMMM');
+  };
+
+  const paymentMethodToDisplay =
+    orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD
+      ? 'COD'
+      : orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
+      ? 'Prepaid'
+      : 'No Payment';
+
+  const getAddressDetails = (deliveryAddressId: string, id: string) => {
+    client
+      .query<GetPatientAddressList, GetPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESSES_LIST,
+        variables: {
+          patientId: id || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        if (
+          _data.data &&
+          _data.data.getPatientAddressList &&
+          _data.data.getPatientAddressList.addressList
+        ) {
+          const addresses = _data.data.getPatientAddressList.addressList.reverse();
+          if (addresses && addresses.length > 0) {
+            setDeliveryAddresses && setDeliveryAddresses(addresses);
+            getPatientAddress(addresses);
+          } else {
+            setDeliveryAddresses && setDeliveryAddresses([]);
+          }
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
+
+  const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
+    if (deliveryAddresses.length > 0 && orderDetailsData && orderDetailsData.patientAddressId) {
+      const selectedAddress = deliveryAddresses.find(
+        (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
+      );
+      const addressData = selectedAddress
+        ? `${selectedAddress.addressLine1} ${
+            selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
+          }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
+        : '';
+      return addressData;
+    } else {
+      getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
+    }
+  };
+
+  const getMedicineName = (medicineName: string, mou: number) => {
+    const isTablet = (medicineName || '').includes('TABLET');
+    return `${medicineName}${mou! > 1 ? ` (${mou}${isTablet ? ' tabs' : ''})` : ''}`;
+  };
+
+  return isLoading ? (
     <div className={classes.loader}>
       <CircularProgress />
     </div>
-  ) : (props.orderDetailsData &&
-      props.orderDetailsData.orderAutoId &&
-      orderPayment &&
-      orderPayment.paymentType === 'COD') ||
-    (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
+  ) : orderDetailsData && orderDetailsData.orderAutoId ? (
     <>
       <div className={classes.root}>
         <div className={classes.summaryHeader}>
           <div className={classes.headRow}>
             <div className={classes.leftGroup}>
               <span className={classes.caps}>Order</span> # <br />
-              {props.orderDetailsData && props.orderDetailsData.orderAutoId}
+              {orderDetailsData.orderAutoId}
             </div>
             <div className={classes.rightGroup}>
-              Total <b>Rs.{orderPayment && orderPayment.amountPaid}</b>
+              Total <b>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</b>
             </div>
           </div>
         </div>
         <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
           <div className={classes.headRow}>
-            <div className={classes.leftGroup}>
-              <label>Order Placed</label>
-              <span>
-                {moment(new Date(orderStatus && orderStatus.statusDate)).format(
-                  'DD MMM YYYY ,hh:mm a'
-                )}
-              </span>
-            </div>
-            <div className={classes.rightGroup}>
-              <label>Order Placed</label>
-              <span>Prepaid</span>
-            </div>
+            {orderStatus && (
+              <div className={classes.leftGroup}>
+                <label>Order Placed</label>
+                <span>{getFormattedDateTime(orderDetailsData)}</span>
+              </div>
+            )}
+            {orderPayment && (
+              <div className={classes.rightGroup}>
+                <label>Payment Method</label>
+                <span>{paymentMethodToDisplay}</span>
+              </div>
+            )}
           </div>
         </div>
         <div className={classes.addressHead}>
           <span>Shipping Address</span>
         </div>
         <div className={classes.addressDetails}>
-          <div className={classes.addressRow}>
-            <label>Name -</label>
-            <span>Surj Gupta</span>
-          </div>
+          {orderDetailsData.patient && (
+            <div className={classes.addressRow}>
+              <label>Name -</label>
+              <span>{`${orderDetailsData.patient.firstName} ${orderDetailsData.patient.lastName}`}</span>
+            </div>
+          )}
           <div className={classes.addressRow}>
             <label>Address -</label>
-            <span>L-2/203, Gulmohar Gardens, Raj Nagar Extension, 201017</span>
+            <span>{getPatientAddress(deliveryAddresses)}</span>
           </div>
         </div>
-        <div className={classes.itemsHeader}>
-          <span className={classes.caps}>Item Details</span>
-          <span>Delivered Tue, 27 April</span>
-        </div>
+        {orderStatus && (
+          <div className={classes.itemsHeader}>
+            <span className={classes.caps}>Item Details</span>
+            <span>Delivered {getFormattedDate(orderDetailsData)}</span>
+          </div>
+        )}
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
             <div className={classes.totalItems}>
-              <b>3 item(s)</b> in this shipment
+              <b>{item_quantity}</b> in this shipment
             </div>
-            <div className={`${classes.tableRow} ${classes.rowHead}`}>
-              <div>Consult Detail</div>
-              <div>QTY</div>
-              <div>Charges</div>
-            </div>
-            {orderItem &&
-              orderItem.length > 0 &&
-              orderItem.map((item, index) => (
-                <div key={index} className={classes.tableRow}>
-                  <div className={classes.medicineName}>{item && item.medicineName}</div>
-                  <div>{item && item.quantity}</div>
-                  <div>Rs.{item && item.price}</div>
+            {orderItems && orderItems.length > 0 && (
+              <>
+                <div className={`${classes.tableRow} ${classes.rowHead}`}>
+                  <div>ITEM NAME</div>
+                  <div>QTY</div>
+                  <div>Charges</div>
                 </div>
-              ))}
+                {orderItems &&
+                  orderItems.length > 0 &&
+                  orderItems.map(
+                    (item, index) =>
+                      item && (
+                        <div key={index} className={classes.tableRow}>
+                          <div className={classes.medicineName}>
+                            {getMedicineName(item.medicineName, item.mou)}
+                          </div>
+                          <div>{item.quantity}</div>
+                          <div>Rs.{item.price}</div>
+                        </div>
+                      )
+                  )}
+              </>
+            )}
           </div>
         </div>
         <div className={classes.addressHead}>
@@ -284,37 +386,39 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         <div className={classes.totalDetails}>
           <div className={classes.priceRow}>
             <span>MRP Total</span>
-            <span>Rs. 300</span>
+            <span>Rs. {mrpTotal.toFixed(2)}</span>
           </div>
           <div className={classes.priceRow}>
             <span>Product Discount</span>
-            <span>- Rs. 90</span>
+            <span>- Rs. {discount.toFixed(2)}</span>
           </div>
           <div className={classes.priceRow}>
             <span>Delivery Charges</span>
-            <span>+ Rs. 60</span>
+            <span>+ Rs. {(orderDetailsData.devliveryCharges || 0).toFixed(2)}</span>
           </div>
           <div className={classes.priceRow}>
             <span>Packaging Charges</span>
-            <span>+ Rs. 60</span>
+            <span>+ Rs. 0.00</span>
           </div>
           <div className={`${classes.priceRow} ${classes.totalPaid}`}>
             <span>Total</span>
-            <span>Rs.{orderPayment && orderPayment.amountPaid}</span>
+            <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
           </div>
-          <div className={`${classes.priceRow} ${classes.lastRow}`}>
-            <span>Payment method</span>
-            <span>Payment method</span>
-          </div>
+          {orderPayment && (
+            <div className={`${classes.priceRow} ${classes.lastRow}`}>
+              <span>Payment method</span>
+              <span>{paymentMethodToDisplay}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className={classes.disclaimerText}>
         <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
       </div>
-      <div className={classes.bottomActions}>
+      {/* <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
         <AphButton>Share</AphButton>
-      </div>
+      </div> */}
     </>
   ) : null;
 };

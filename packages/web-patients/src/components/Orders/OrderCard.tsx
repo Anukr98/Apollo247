@@ -224,10 +224,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-function valuetext(value: number) {
-  return `${value}`;
-}
-
 interface OrderCardProps {
   setOrderAutoId: (orderAutoId: number) => void;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
@@ -294,39 +290,38 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
+  const getDefaultValue = (status: string) => {
+    switch (status) {
+      case 'Order Placed':
+        return 80;
+      case 'Order Verified':
+        return 100;
+      case 'Order Initiated':
+        return 60;
+      case 'Order Delivered':
+        return 360;
+    }
+  };
+
+  const isSliderDisabled = (sliderStatus: string) => {
+    return sliderStatus === 'Return Accepted' || sliderStatus === 'Order Cancelled';
+  };
+
   const getSlider = (status: (StatusDetails | null)[]) => {
     const sliderStatus = getOrderStatus(status);
     switch (sliderStatus) {
-      case 'Order Placed':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={80}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
       case 'Order Delivered':
-        return (
-          <AphDeliveredSlider
-            color="primary"
-            defaultValue={360}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Return Accepted' || 'Order Cancelled':
+      case 'Order Placed':
+      case 'Order Verified':
+      case 'Order Initiated':
+      case 'Return Accepted':
+      case 'Order Cancelled':
         return (
           <AphTrackSlider
             color="primary"
-            getAriaValueText={valuetext}
-            disabled
+            defaultValue={getDefaultValue(sliderStatus)}
+            getAriaValueText={(value: number) => value.toString()}
+            disabled={isSliderDisabled(sliderStatus)}
             min={0}
             max={360}
             valueLabelDisplay="off"
@@ -334,30 +329,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           />
         );
 
-      case 'Order Verified':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={100}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Order Initiated':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={60}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
       default:
         return null;
     }
