@@ -2469,7 +2469,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now.`}
             </Text>
             <StickyBottomComponent
               style={{
