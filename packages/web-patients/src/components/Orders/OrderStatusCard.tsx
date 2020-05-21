@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, CircularProgress, Typography, Link } from '@material-ui/core';
 import {
@@ -9,7 +9,7 @@ import moment from 'moment';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import Button from "@material-ui/core/Button";
+import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -219,13 +219,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#02475b',
-        margin: '0 0 10px'
+        margin: '0 0 10px',
       },
       '& h4': {
         fontSize: 17,
         fontWeight: 'bold',
         color: '#0087ba',
-      }
+      },
     },
     windowWrap: {
       width: 368,
@@ -242,20 +242,20 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
-    deliveryDetails:{
+    deliveryDetails: {
       background: '#f7f8f5',
       padding: 20,
       display: 'flex',
       alignItems: 'center',
       margin: '20px 0',
     },
-    iconContainer:{
-      width:40,
-      height:40,
+    iconContainer: {
+      width: 40,
+      height: 40,
       background: '#fff',
       borderRadius: '50%',
       display: 'flex',
-      alignItems:'center',
+      alignItems: 'center',
       justifyContent: 'center',
       margin: '0 20px 0 0',
     },
@@ -264,36 +264,36 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       margin: '20px 0',
-      listStyle:'none',
-      padding:0,
-      '& li':{
+      listStyle: 'none',
+      padding: 0,
+      '& li': {
         fontSize: 12,
         textTransform: 'uppercase',
         fontWeight: 'bold',
-        textAlign: 'center'
+        textAlign: 'center',
       },
     },
-    suggestion:{
+    suggestion: {
       margin: '20px 0 0',
       padding: '20px 0 0',
-      borderTop: "1px solid rgba(2, 71, 91, .2)",
-      '& h4':{
+      borderTop: '1px solid rgba(2, 71, 91, .2)',
+      '& h4': {
         fontSize: 14,
         fontWeight: 'bold',
       },
-      "& button": {
+      '& button': {
         display: 'block',
         background: '#fc9916',
         color: '#fff',
         fontSize: 14,
         textTransform: 'uppercase',
-        padding:10,
+        padding: 10,
         borderRadius: 10,
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        width:160,
+        width: 160,
         margin: '0px auto',
-        fontWeight: 'bold'
-      }
+        fontWeight: 'bold',
+      },
     },
     textInput: {
       margin: '10px 0 30px',
@@ -304,7 +304,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#02475b',
-        margin: '0 0 10px'
+        margin: '0 0 10px',
       },
       '& h4': {
         fontSize: 17,
@@ -312,12 +312,12 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0087ba',
         margin: '0 0 20px',
       },
-      '& a':{
+      '& a': {
         fontSize: 14,
         textTransform: 'uppercase',
         fontWeight: 'bold',
-        textAlign:'right'
-      }
+        textAlign: 'right',
+      },
     },
   };
 });
@@ -432,7 +432,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         </div>
         <div className={classes.detailsRow}>
           <div className={classes.orderTitle}>Address -</div>
-          <div className={classes.discription}>L-2/203, Gulmohar Gardens, Raj Nagar Extension, 201017</div>
+          <div className={classes.discription}>
+            L-2/203, Gulmohar Gardens, Raj Nagar Extension, 201017
+          </div>
         </div>
       </div>
       <div className={classes.expectedDelivery}>
@@ -469,7 +471,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                     </div>
                   </div>
                   <div className={classes.infoText}>
-                    <span>Verification Pending :</span> Your order is being verified by our pharmacists. Our Pharmacists might be required to call you for order verification.
+                    <span>Verification Pending :</span> Your order is being verified by our
+                    pharmacists. Our Pharmacists might be required to call you for order
+                    verification.
                   </div>
                 </div>
               )
@@ -479,7 +483,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       <div className={classes.bottomNotification}>
         <p>Your order no.#A2472707936 is successfully delivered on 27 April 2020 at 13:57pm.</p>
         <h4>Thank You for choosing Apollo 24|7</h4>
-        <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>Rate your delivery experience</AphButton>
+        <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          Rate your delivery experience
+        </AphButton>
       </div>
       <Popover
         open={isPopoverOpen}
@@ -500,50 +506,53 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className="feedbackContent">
-            <Typography component="h3">We Value Your Feedback! :) </Typography>
-            <Typography component="h4">How was your overall experience with the following medicine delivery —</Typography>
-            <div className={classes.deliveryDetails}>
-              <div className={classes.iconContainer}>
-              <img src={require('images/ic_tablets.svg')} />
+              <Typography component="h3">We Value Your Feedback! :) </Typography>
+              <Typography component="h4">
+                How was your overall experience with the following medicine delivery —
+              </Typography>
+              <div className={classes.deliveryDetails}>
+                <div className={classes.iconContainer}>
+                  <img src={require('images/ic_tablets.svg')} />
+                </div>
+                <div>
+                  <Typography component="h4">Medicines — #A2472707936 </Typography>
+                  <Typography component="p">Delivered On: 24 Oct 2019</Typography>
+                </div>
               </div>
-              <div>
-                <Typography component="h4">Medicines — #A2472707936 </Typography>
-                <Typography component="p">Delivered On: 24 Oct 2019</Typography>
+              <ul className={classes.feedbackList}>
+                <li>
+                  <img src={require('images/ic-poor.png')} />
+                  Poor
+                </li>
+                <li>
+                  <img src={require('images/ic-okay.png')} />
+                  Okay
+                </li>
+                <li>
+                  <img src={require('images/ic-good.png')} />
+                  Good
+                </li>
+                <li>
+                  <img src={require('images/ic-great.png')} />
+                  Great
+                </li>
+              </ul>
+              <div className={classes.suggestion}>
+                <Typography component="h4">What can be improved?</Typography>
+                <TextField className={classes.textInput} label="Write your suggestion here.." />
+                <Button variant="contained">Submit Feedback</Button>
               </div>
-            </div>
-            <ul className={classes.feedbackList}>
-              <li>
-                <img src={require('images/ic-poor.png')} />
-                Poor
-              </li>
-              <li>
-                <img src={require('images/ic-okay.png')} />
-                Okay
-              </li>
-              <li>
-                <img src={require('images/ic-good.png')} />
-                Good
-              </li>
-              <li>
-                <img src={require('images/ic-great.png')} />
-                Great
-              </li>
-            </ul>
-            <div className={classes.suggestion}>
-              <Typography component="h4">What can be improved?</Typography>
-              <TextField className={classes.textInput} label="Write your suggestion here.." />
-              <Button variant="contained">Submit Feedback</Button>
-            </div>
             </div>
             <div className={classes.thankyou}>
               <Typography component="h3">We Value Your Feedback! :) </Typography>
-              <Typography component="h4">How was your overall experience with the following medicine delivery —</Typography>
+              <Typography component="h4">
+                How was your overall experience with the following medicine delivery —
+              </Typography>
               <Link href="#">Ok, Got It</Link>
             </div>
           </div>
         </div>
       </Popover>
-    
     </div>
   );
 };
