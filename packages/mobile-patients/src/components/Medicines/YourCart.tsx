@@ -51,6 +51,7 @@ import {
   Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -82,6 +83,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -294,9 +296,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           .then(({ data: { Availability } }) => {
             setCheckingServicability(false);
             if (Availability) {
+          
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
-              postPhamracyCartAddressSelectedSuccess(
+              postPhamracyCartAddressSelectedFailure(
                 addresses[selectedAddressIndex].zipcode!,
                 formatAddress(addresses[selectedAddressIndex]),
                 'No'
@@ -770,7 +773,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
-          postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
+          postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,

@@ -324,7 +324,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       pharmacyPincode!,
       addCartItem,
       globalLoading,
-      props.navigation
+      props.navigation,
+      currentPatient
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Full Search');
     postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
