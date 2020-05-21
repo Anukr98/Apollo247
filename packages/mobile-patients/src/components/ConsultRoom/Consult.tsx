@@ -9,6 +9,8 @@ import {
   Mascot,
   OnlineConsult,
   PhysicalConsult,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
@@ -81,6 +83,7 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+    marginRight: -5,
   },
   hiTextStyle: {
     color: '#02475b',
@@ -935,7 +938,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderProfileChangeView = () => {
     return (
-      <View style={{ backgroundColor: theme.colors.WHITE, paddingHorizontal: 20, elevation: 15 }}>
+      <View style={{ backgroundColor: theme.colors.WHITE, paddingLeft: 20, elevation: 15 }}>
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
@@ -951,12 +954,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             >
               <Text style={styles.hiTextStyle}>{'hi'}</Text>
               <View style={styles.nameTextContainerStyle}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.nameTextStyle} numberOfLines={1}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                    <PrimaryIcon
+                      style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                      resizeMode={'contain'}
+                    />
+                  ) : (
+                    currentPatient && (
+                      <LinkedUhidIcon
+                        style={{ width: 22, height: 20, marginLeft: 5, marginTop: 16 }}
+                        resizeMode={'contain'}
+                      />
+                    )
+                  )}
+                </View>
                 <View style={styles.seperatorStyle} />
               </View>
-              <View style={{ paddingTop: 15 }}>
+              <View style={{ paddingTop: 15, marginLeft: 10 }}>
                 <DropdownGreen />
               </View>
             </View>

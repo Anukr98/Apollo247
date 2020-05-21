@@ -855,3 +855,11 @@ export const WhatsAppIcon: React.FC<IconProps> = (props) => (
 export const NeedHelpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_round_live_help.png')} />
 );
+
+export const PrimaryIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/primary.png')} />
+);
+
+export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/linkeduhid.png')} />
+);

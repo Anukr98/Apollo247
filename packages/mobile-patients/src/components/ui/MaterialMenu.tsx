@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
+import { PrimaryIcon, LinkedUhidIcon } from './Icons';
 
 const styles = StyleSheet.create({
   itemContainer: {
@@ -38,6 +39,7 @@ export type Option = {
 type OptionsObject = {
   key: string;
   value: string | number;
+  isPrimary: boolean;
   data?: any;
 };
 
@@ -112,6 +114,19 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             ]}
           >
             {item.value}
+            {item.isPrimary ? (
+              !!props.selectedText && props.selectedText === item.key ? (
+                <PrimaryIcon
+                  style={{ width: 12, height: 10, marginLeft: 12, marginTop: 4 }}
+                  resizeMode={'contain'}
+                />
+              ) : (
+                <LinkedUhidIcon
+                  style={{ width: 12, height: 10, marginLeft: 12, marginTop: 4 }}
+                  resizeMode={'contain'}
+                />
+              )
+            ) : null}
           </MenuItem>
         ))}
         <View style={[{ paddingBottom: 25 }, props.bottomPadding]} />
