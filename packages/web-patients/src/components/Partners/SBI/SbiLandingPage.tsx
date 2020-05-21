@@ -4,6 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { customerCareNumber } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -210,7 +211,7 @@ export const SbiLandingPage: React.FC = (props) => {
             <div>
               <h1>India, let’s take care of your biggest asset: Your Health</h1>
               <p>
-              Avail these offers till <span>19th May</span>
+                Avail these offers till <span>19th May</span>
               </p>
               <Link to={`${homePageUrl}${urlParams}`}>
                 <button className={classes.primaryButton}>Get Started</button>
@@ -233,7 +234,7 @@ export const SbiLandingPage: React.FC = (props) => {
               </div>
               <div className={classes.cardExt}>
                 <p>
-                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span> 
+                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span>
                 </p>
               </div>
             </div>
@@ -258,8 +259,8 @@ export const SbiLandingPage: React.FC = (props) => {
                   Get <span>10% off</span> on all chronic medicines
                 </p>
                 <p>
-                  *Pharmacy offer is available till 19th May in selected cities- Hyderabad,
-                  Chennai, Bengaluru, Kolkata, Delhi, Gurugram, Noida, Jaipur & Vizag
+                  *Pharmacy offer is available till 19th May in selected cities- Hyderabad, Chennai,
+                  Bengaluru, Kolkata, Delhi, Gurugram, Noida, Jaipur & Vizag
                 </p>
               </div>
             </div>
@@ -309,7 +310,7 @@ export const SbiLandingPage: React.FC = (props) => {
                   </p>
                 </div>
               </a>
-              <a href="tel:08047192606">
+              <a href={`tel:${customerCareNumber}`}>
                 <div className={classes.serviceDetails}>
                   <h6>Talk to experts about COVID-19</h6>
                   <p>

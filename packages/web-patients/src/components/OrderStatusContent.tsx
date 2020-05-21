@@ -79,6 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         width: '100%',
+        padding: '30px 0 0',
+        borderRadius:0,
       },
     },
     modalHeader: {
@@ -101,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',
+      cursor: 'pointer',
       top: 0,
       right: '-50px',
       [theme.breakpoints.down('sm')]: {
@@ -225,6 +228,11 @@ const useStyles = makeStyles((theme: Theme) => {
     consultDetail: {
       display: 'flex !important',
     },
+    viewInvoice: {
+      color: '#fc9916 !important',
+      textTransform: 'uppercase',
+      cursor: 'pointer',
+    },
   };
 });
 
@@ -248,6 +256,7 @@ interface OrderStatusDetail {
   consultMode?: string;
   onClose: () => void;
   ctaText: string;
+  fetchConsultInvoice?: (fetchInvoice: boolean) => void;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
@@ -267,6 +276,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     consultMode,
     onClose,
     ctaText,
+    fetchConsultInvoice,
   } = props;
 
   interface statusMap {
@@ -313,6 +323,15 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           {paymentRefId && paymentRefId.length > 1 && (
             <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
           )}
+          {type === 'consult' && paymentStatus == 'success' && (
+            <Typography
+              component="p"
+              className={classes.viewInvoice}
+              onClick={() => fetchConsultInvoice(true)}
+            >
+              View Invoice
+            </Typography>
+          )}
         </div>
         <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
           <Typography component="h4">{type === 'consult' ? 'Booking' : 'Order'} Details</Typography>
@@ -337,11 +356,11 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                   <div className={classes.details}>
                     <Typography component="h6">Mode of Consult</Typography>
                     <Typography component="p">
-                      {consultMode === 'PHYSICAL' ? 'Clinic Visit' : consultMode}
+                      {consultMode.toLowerCase() === 'physical' ? 'Clinic Visit' : consultMode}
                     </Typography>
                   </div>
                 </Grid>
-                {consultMode === 'PHYSICAL' &&
+                {consultMode.toLowerCase() === 'physical' &&
                   doctorAddressDetail &&
                   Object.keys(doctorAddressDetail).length > 1 && (
                     <Grid item xs={12} sm={12}>
@@ -367,7 +386,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
               </div>
               <div className={classes.details}>
                 <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType === 'COD' ? 'COD' : 'PREPAID'}</Typography>
+                <Typography component="p">{paymentType}</Typography>
               </div>
             </Paper>
           )}

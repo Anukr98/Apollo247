@@ -59,6 +59,7 @@ import {
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import { getItemSpecialPrice } from '../PayMedicine';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -528,6 +529,7 @@ export const MedicineCart: React.FC = (props) => {
     setUploadedEPrescription,
     cartTat,
     couponCode,
+    setCouponCode,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -567,6 +569,8 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult,
     setValidateCouponResult,
   ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
+  const [validityStatus, setValidityStatus] = useState<boolean>(false);
+  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
 
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -594,11 +598,9 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const { currentPatient } = useAllCurrentPatients();
-  const { authToken } = useAuth();
   const pharmacyMinDeliveryValue = process.env.PHARMACY_MIN_DELIVERY_VALUE;
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const disablePayButton = paymentMethod === '';
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
@@ -651,7 +653,7 @@ export const MedicineCart: React.FC = (props) => {
       const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
         (item) => item.itemId === id.toString()
       );
-      return item.applicablePrice;
+      return item.applicablePrice.toFixed(2);
     }
   };
 
@@ -662,16 +664,16 @@ export const MedicineCart: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode.length > 0
-                ? getDiscountedLineItemPrice(cartItemDetails.id)
-                : Number(cartItemDetails.special_price),
+              couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode.length > 0
-                ? cartItemDetails.price - getDiscountedLineItemPrice(cartItemDetails.id)
-                : cartItemDetails.price - Number(cartItemDetails.special_price)),
+              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
@@ -681,7 +683,7 @@ export const MedicineCart: React.FC = (props) => {
                 : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-            // specialPrice: Number(cartItemDetails.special_price) || 0,
+            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];
@@ -723,8 +725,15 @@ export const MedicineCart: React.FC = (props) => {
         .then((res: any) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
-            if (couponValidateResult.validityStatus) {
+            if (
+              couponValidateResult.validityStatus &&
+              couponValidateResult.discountedTotals.couponDiscount > 0
+            ) {
               setValidateCouponResult(couponValidateResult);
+              setShowErrorMessage(false);
+            } else {
+              setValidateCouponResult(null);
+              setShowErrorMessage(true);
             }
           }
         })
@@ -737,7 +746,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!nonCartFlow && couponCode.length > 0 && cartItems.length > 0) {
+    if (!nonCartFlow && cartItems.length > 0 && couponCode.length > 0) {
       validateCoupon();
     }
   }, [couponCode, cartItems]);
@@ -846,7 +855,7 @@ export const MedicineCart: React.FC = (props) => {
         if (
           data &&
           data.savePrescriptionMedicineOrderOMS &&
-          data.savePrescriptionMedicineOrderOMS.errorMessage === ''
+          data.savePrescriptionMedicineOrderOMS.orderAutoId
         ) {
           window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
         } else {
@@ -1207,7 +1216,7 @@ export const MedicineCart: React.FC = (props) => {
                         <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
                       </span>
                       <div className={classes.couponRight}>
-                        {couponCode === '' ? (
+                        {!validateCouponResult ? (
                           <div className={classes.applyCoupon}>
                             <span className={classes.linkText}>Apply Coupon</span>
                             <span className={classes.rightArrow}>
@@ -1231,14 +1240,18 @@ export const MedicineCart: React.FC = (props) => {
                         )}
                       </div>
                     </div>
-                    {couponCode.length > 0 && (
-                      <div className={classes.discountTotal}>
-                        Savings of Rs.{' '}
-                        {validateCouponResult && validateCouponResult.discountedTotals
-                          ? validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
-                          : 0}{' '}
-                        on the bill
-                      </div>
+                    {couponCode.length > 0 &&
+                      validateCouponResult &&
+                      validateCouponResult.discountedTotals &&
+                      validateCouponResult.discountedTotals.couponDiscount > 0 && (
+                        <div className={classes.discountTotal}>
+                          Savings of Rs.
+                          {validateCouponResult.discountedTotals.couponDiscount.toFixed(2)}
+                          on the bill
+                        </div>
+                      )}
+                    {showErrorMessage && (
+                      <div className={classes.discountTotal}>Higher discounts already applied</div>
                     )}
                   </div>
                 </div>
@@ -1396,7 +1409,7 @@ export const MedicineCart: React.FC = (props) => {
         </div>
       </div>
 
-      {/* <Popover
+      <Popover
         open={showOrderPopup}
         anchorEl={addToCartRef.current}
         anchorOrigin={{
@@ -1417,14 +1430,14 @@ export const MedicineCart: React.FC = (props) => {
             <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
           </div>
         </div>
-      </Popover> */}
-      {showOrderPopup && (
+      </Popover>
+      {/* {showOrderPopup && (
         <Route
           render={({ history }) => {
             return <PaymentStatusModal history={history} />;
           }}
         />
-      )}
+      )} */}
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
@@ -1450,10 +1463,13 @@ export const MedicineCart: React.FC = (props) => {
         <ApplyCoupon
           couponCode={couponCode}
           setValidateCouponResult={setValidateCouponResult}
+          setShowErrorMessage={setShowErrorMessage}
           close={(isApplyCouponDialogOpen: boolean) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}
           cartValue={cartTotal}
+          validityStatus={validityStatus}
+          setValidityStatus={setValidityStatus}
         />
       </AphDialog>
 

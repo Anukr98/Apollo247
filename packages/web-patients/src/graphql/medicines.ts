@@ -103,13 +103,63 @@ export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const GET_PHARMACY_PAYMENTS = gql`
+  query PharmacyOrders($patientId: String) {
+    pharmacyOrders(patientId: $patientId) {
+      pharmaOrders {
+        id
+        bookingSource
+        devliveryCharges
+        estimatedAmount
+        orderAutoId
+        appointmentId
+        currentStatus
+        orderType
+        quoteDateTime
+        orderDateTime
+        medicineOrderPayments {
+          paymentStatus
+          paymentRefId
+          paymentType
+          amountPaid
+          paymentDateTime
+          paymentMode
+        }
+      }
+    }
+  }
+`;
+
 export const PHRAMA_PAYMENT_STATUS = gql`
   query PharmaPaymentStatus($orderId: Int) {
     pharmaPaymentStatus(orderId: $orderId) {
       paymentRefId
+      bankTxnId
       amountPaid
       paymentStatus
       paymentDateTime
+      paymentMode
+    }
+  }
+`;
+
+export const CANCEL_MEDICINE_ORDER = gql`
+  mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
+    cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
+      orderStatus
+    }
+  }
+`;
+
+export const MEDICINE_ORDER_CANCEL_REASONS = gql`
+  query GetMedicineOrderCancelReasons {
+    getMedicineOrderCancelReasons {
+      cancellationReasons {
+        reasonCode
+        description
+        displayMessage
+        isUserReason
+      }
     }
   }
 `;
