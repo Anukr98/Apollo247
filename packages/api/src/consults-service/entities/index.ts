@@ -59,7 +59,7 @@ export enum REFUND_STATUS {
   REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
   REFUND_FAILED = 'REFUND_FAILED',
   REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
-  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED'
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
 }
 
 export enum PAYTM_STATUS {
@@ -103,7 +103,7 @@ export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
 }
 
 export enum TRANSFER_STATUS {
@@ -302,10 +302,7 @@ export class Appointment extends BaseEntity {
   )
   appointmentPayments: AppointmentPayments[];
 
-  @OneToMany(
-    (type) => AppointmentRefunds,
-    (appointmentRefunds) => appointmentRefunds.appointment
-  )
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointment)
   appointmentRefunds: AppointmentRefunds[];
 
   @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
@@ -401,8 +398,11 @@ export class AppointmentPayments extends BaseEntity {
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
 
-  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointmentPayments)
-  appointmentRefunds: AppointmentRefunds[]
+  @OneToMany(
+    (type) => AppointmentRefunds,
+    (appointmentRefunds) => appointmentRefunds.appointmentPayments
+  )
+  appointmentRefunds: AppointmentRefunds[];
 }
 
 @Entity()
@@ -426,7 +426,7 @@ export class AppointmentRefunds extends BaseEntity {
   refundStatus: REFUND_STATUS;
 
   @Column({ nullable: true })
-  paytmRequestStatus: PAYTM_STATUS
+  paytmRequestStatus: PAYTM_STATUS;
 
   @Column({ nullable: true })
   refundId: string;
@@ -466,7 +466,8 @@ export class AppointmentRefunds extends BaseEntity {
     type: 'jsonb',
     array: false,
     default: () => "'{}'",
-  }) refundDetailInfo: JSON
+  })
+  refundDetailInfo: JSON;
 
   @BeforeUpdate()
   updateDateUpdate() {
@@ -476,9 +477,11 @@ export class AppointmentRefunds extends BaseEntity {
   @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
   appointment: Appointment;
 
-  @ManyToOne(() => AppointmentPayments, (appointmentPayments) => appointmentPayments.appointmentRefunds)
+  @ManyToOne(
+    () => AppointmentPayments,
+    (appointmentPayments) => appointmentPayments.appointmentRefunds
+  )
   appointmentPayments: AppointmentPayments;
-
 }
 //AppointmentPayments ends
 
