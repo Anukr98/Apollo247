@@ -139,6 +139,7 @@ export const PHRAMA_PAYMENT_STATUS = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      orderDateTime
     }
   }
 `;
