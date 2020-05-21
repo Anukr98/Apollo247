@@ -2469,11 +2469,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now.`}
+              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
             </Text>
             <StickyBottomComponent
               style={{
                 paddingHorizontal: 0,
+                marginBottom: 4,
                 backgroundColor: 'transparent',
                 shadowColor: 'transparent',
               }}
@@ -2560,7 +2561,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               /> */}
 
               <Button
-                title={'VIEW'}
+                title={'VIEW PRESCRIPTION'}
                 style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
                 onPress={() => {
                   try {
