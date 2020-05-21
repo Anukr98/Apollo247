@@ -156,6 +156,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
+  const [omsAPIError, setOMSAPIError] = useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -217,6 +218,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         currentPatient
       );
       setEventFired(true);
+    } else {
+      setOMSAPIError(true);
     }
   }, [order]);
 
@@ -1186,22 +1189,42 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         </View>
 
-        <TabsComponent
-          style={styles.tabsContainer}
-          onChange={(title) => {
-            const isNonCartOrder = orderStatusList.find(
-              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-            );
-            if (!isNonCartOrder) {
-              setSelectedTab(title);
-            }
-          }}
-          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-          selectedTab={selectedTab}
-        />
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-        </ScrollView>
+        {omsAPIError && !order && !loading ? (
+          <View
+            style={{ justifyContent: 'center', alignSelf: 'center', flex: 1, alignItems: 'center' }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 16, '#890000'),
+                paddingHorizontal: 16,
+                textAlign: 'center',
+              }}
+            >
+              {'Something went wrong. Unable fetch order details.'}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <TabsComponent
+              style={styles.tabsContainer}
+              onChange={(title) => {
+                const isNonCartOrder = orderStatusList.find(
+                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+                );
+                if (!isNonCartOrder) {
+                  setSelectedTab(title);
+                }
+              }}
+              data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+              selectedTab={selectedTab}
+            />
+            <ScrollView bounces={false}>
+              {selectedTab == string.orders.trackOrder
+                ? renderOrderHistory()
+                : renderOrderSummary()}
+            </ScrollView>
+          </>
+        )}
       </SafeAreaView>
       {renderFeedbackPopup()}
       {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}

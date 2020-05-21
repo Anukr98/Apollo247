@@ -7,6 +7,8 @@ import {
   MedicineProduct,
   PlacesApiResponse,
   getDeliveryTime,
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -56,6 +58,7 @@ import {
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -818,7 +821,8 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
 
 export const postwebEngageAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
+  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
+  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section']
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -831,6 +835,7 @@ export const postwebEngageAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    Section: section ? section : '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1115,7 +1120,6 @@ export const getFormattedLocation = (
       findAddrComponents('administrative_area_level_2', addrComponents),
     latitude: lat,
     longitude: lng,
-    lng,
     area: area.join(', '),
     city:
       findAddrComponents('locality', addrComponents) ||
@@ -1126,6 +1130,19 @@ export const getFormattedLocation = (
     pincode: findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
+};
+
+export const getFormattedLocationFromPincode = async (pincode: string) => {
+  const placesResponse = await autoCompletePlaceSearch(pincode, true);
+  const placeId = g(placesResponse, 'data', 'predictions', '0' as any, 'place_id');
+  if (placeId) {
+    const placeIdResponse = await getPlaceInfoByPlaceId(placeId);
+    const addrComponents = g(placeIdResponse, 'data', 'result', 'address_components')!;
+    const latLng = g(placeIdResponse, 'data', 'result', 'geometry', 'location')!;
+    return getFormattedLocation(addrComponents, latLng);
+  } else {
+    throw 'No results found.';
+  }
 };
 
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
@@ -1141,14 +1158,24 @@ export const addPharmaItemToCart = (
   addCartItem: ShoppingCartContextProps['addCartItem'],
   setLoading: UIElementsContextProps['setLoading'],
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
-  const navigate = () =>
+  const navigate = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+      'product name': cartItem.name,
+      'product id': cartItem.id,
+      pincode: pincode,
+      'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    };
+    console.log('eventAttributes------------------------', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
+  };
   setLoading && setLoading(true);
   getDeliveryTime({
     postalcode: pincode,

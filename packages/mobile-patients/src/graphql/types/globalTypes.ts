@@ -623,6 +623,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  sort?: string | null;
 }
 
 export interface Geolocation {

@@ -1420,6 +1420,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         id
         orderAutoId
         devliveryCharges
+        couponDiscount
+        productDiscount
         estimatedAmount
         prescriptionImageUrl
         orderTat
@@ -1571,6 +1573,7 @@ export const GET_PHARMA_COUPON_LIST = gql`
         description
         id
         isActive
+        displayStatus
       }
     }
   }
@@ -2406,6 +2409,7 @@ export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
       appointment {
+        paymentRefId
         displayId
         bankTxnId
         paymentStatus
@@ -2459,6 +2463,7 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         appointmentPayments {
           paymentRefId
           paymentStatus
+          amountPaid
         }
         doctor {
           name
@@ -2487,6 +2492,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           paymentDateTime
+          amountPaid
         }
       }
     }

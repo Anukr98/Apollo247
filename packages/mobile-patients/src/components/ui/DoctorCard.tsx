@@ -2,18 +2,19 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import {
+  ConsultMode,
   DoctorType,
   SEARCH_TYPE,
-  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -30,7 +31,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -45,10 +45,21 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.BUTTON_BG,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 15,
+    borderRadius: 10,
+    width: 177,
+  },
+  buttonProfileView: {
+    height: 44,
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
   },
   buttonText: {
-    ...theme.fonts.IBMPlexSansBold(14),
+    ...theme.fonts.IBMPlexSansBold(13),
     color: theme.colors.BUTTON_TEXT,
+    lineHeight: 24,
   },
   availableView: {
     position: 'absolute',
@@ -382,11 +393,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {rowData.experience} YR
                 {Number(rowData.experience) != 1 ? 'S' : ''} EXP
               </Text>
-              {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
+              {/* {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
                 <Text style={styles.doctorSpecializationStyles}>
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
-              ) : null}
+              ) : null} */}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
                 {rowData.qualification}
               </Text>
@@ -399,7 +410,23 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </View>
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             {props.displayButton && (
-              <View style={{ overflow: 'hidden' }}>
+              <View
+                style={{
+                  overflow: 'hidden',
+                  flexDirection: 'row',
+                  marginHorizontal: 17,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={styles.buttonProfileView}
+                  onPress={() => {
+                    props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
+                  }}
+                >
+                  <Text style={[styles.buttonText, { color: '#fc9916' }]}>VIEW PROFILE</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={1}
                   style={styles.buttonView}

@@ -51,6 +51,7 @@ import {
   Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -82,6 +83,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -233,6 +235,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // To remove applied coupon from cart when user leaves this screen.
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      setTimeout(() => {
+        setCoupon!(null);
+      }, 50);
+    });
+    return () => {
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
       Geolocation.getCurrentPosition(
         (position) => {
@@ -282,9 +296,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           .then(({ data: { Availability } }) => {
             setCheckingServicability(false);
             if (Availability) {
+          
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
-              postPhamracyCartAddressSelectedSuccess(
+              postPhamracyCartAddressSelectedFailure(
                 addresses[selectedAddressIndex].zipcode!,
                 formatAddress(addresses[selectedAddressIndex]),
                 'No'
@@ -758,7 +773,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
-          postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
+          postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
@@ -1128,7 +1143,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                Savings of Rs. {couponDiscount.toFixed(2)} on the bill
+                {coupon.discountedTotals!.couponDiscount > 0
+                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
+                  : 'Product(s) in cart are not applicable for this coupon or at higher discounts'}
               </Text>
             </View>
           )}

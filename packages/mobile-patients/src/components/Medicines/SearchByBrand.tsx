@@ -206,6 +206,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
+      currentPatient,
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
@@ -785,7 +786,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}

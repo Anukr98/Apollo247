@@ -227,6 +227,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         !item.bankCode
           ? props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               doctorName: doctorName,
+              doctorID: doctor.id,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
@@ -242,6 +243,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               doctorName: doctorName,
+              doctorID: doctor.id,
               appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
               price: price,
               paymentTypeID: item.paymentMode,
