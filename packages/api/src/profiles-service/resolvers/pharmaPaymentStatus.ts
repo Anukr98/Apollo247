@@ -14,6 +14,8 @@ export const paymentStatusTypeDefs = gql`
     amountPaid: Float
     paymentStatus: String!
     paymentDateTime: DateTime
+    paymentMode: String
+    orderDateTime: DateTime!
   }
 
   extend type Query {
@@ -27,6 +29,8 @@ type PharmaPaymentResponse = {
   amountPaid: number;
   paymentStatus: PAYMENT_STATUS_MAP;
   paymentDateTime: Date;
+  paymentMode: string;
+  orderDateTime: Date;
 };
 
 const pharmaPaymentStatus: Resolver<

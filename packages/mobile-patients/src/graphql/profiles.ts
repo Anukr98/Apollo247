@@ -377,7 +377,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
-        noShowReason
         doctorInfo {
           awards
           city
@@ -2435,6 +2434,7 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         appointmentPayments {
           paymentRefId
           paymentStatus
+          amountPaid
         }
         doctor {
           name
@@ -2463,6 +2463,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           paymentDateTime
+          amountPaid
         }
       }
     }

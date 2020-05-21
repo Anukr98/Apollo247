@@ -2478,7 +2478,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 shadowColor: 'transparent',
               }}
             >
-              <Button
+              {/* <Button
                 title={'DOWNLOAD'}
                 style={{
                   flex: 0.5,
@@ -2557,11 +2557,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
                   }
                 }}
-              />
+              /> */}
 
               <Button
                 title={'VIEW'}
-                style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(

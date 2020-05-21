@@ -149,7 +149,7 @@ export const MyPayments: React.FC = (props) => {
                     <PharmacyPayments />
                   </TabContainer>
                 )}
-              </div>  
+              </div>
             </div>
           </div>
         </div>

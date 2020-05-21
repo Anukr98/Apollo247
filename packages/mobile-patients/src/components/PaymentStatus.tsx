@@ -65,8 +65,8 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     NB: 'Net Banking',
     UPI: 'UPI',
     PPI: 'Paytm Wallet',
-    PAYTM_DIGITAL_CREDIT: 'Paytm Postpaid',
-    EMI: 'EMI',
+    PAYTM_DIGITAL_CREDIT:'Paytm Postpaid',
+    EMI:'EMI'
   };
 
   const Modes: any = {

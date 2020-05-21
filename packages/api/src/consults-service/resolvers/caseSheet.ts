@@ -547,10 +547,12 @@ const getJuniorDoctorCaseSheet: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
     appointmentData.doctorId,
-    appointmentData.patientId
+    primaryPatientIds
   );
 
   return {
@@ -638,10 +640,12 @@ const getCaseSheet: Resolver<
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
   juniorDoctorNotes = juniorDoctorCaseSheet.notes;
 
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(appointmentData.patientId);
+
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
     appointmentData.doctorId,
-    appointmentData.patientId
+    primaryPatientIds
   );
   let pastAppointmentsWithUnreadMessages: AppointmentDetails[] = [];
   if (pastAppointments.length) {
@@ -733,6 +737,11 @@ const modifyCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  //stop updating data if PDF is generated already.
+  if (getCaseSheetData.blobName && getCaseSheetData.blobName.length > 0)
+    throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);
   const seniorDoctorDetails = await doctorRepository.findById(

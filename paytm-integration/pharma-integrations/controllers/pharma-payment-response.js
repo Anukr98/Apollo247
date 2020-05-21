@@ -49,8 +49,8 @@ module.exports = async (req, res, next) => {
         logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
 
         if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - consult - payment - response - ${JSON.stringify(response.data.errors)}`)
-            throw new Error("Error Occured in SaveMedicineOrderPaymentMq!")
+            logger.error(`${orderId} - pharma-payment-response - ${JSON.stringify(response.data.errors)}`);
+            throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
         }
 
         if (bookingSource === 'WEB') {
@@ -66,7 +66,6 @@ module.exports = async (req, res, next) => {
             else {
                 res.redirect(`/mob?status=${transactionStatus}`);
             }
-
         }
     } catch (e) {
         if (e.response && e.response.data) {
@@ -82,4 +81,4 @@ module.exports = async (req, res, next) => {
             res.redirect(`/mob-error?status=${transactionStatus}`);
         }
     }
-}
+};
