@@ -2381,6 +2381,7 @@ export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
       appointment {
+        paymentRefId
         displayId
         bankTxnId
         paymentStatus

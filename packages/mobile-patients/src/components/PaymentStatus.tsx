@@ -34,6 +34,7 @@ import {
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -90,7 +91,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
         setorderDateTime(res.data.pharmaPaymentStatus.paymentDateTime);
-        setrefNo(res.data.pharmaPaymentStatus.bankTxnId);
+        setrefNo(res.data.pharmaPaymentStatus.paymentRefId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
 
         setLoading(false);
@@ -135,6 +136,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
+        selectable={true}
       >
         {message}
       </Text>
@@ -165,7 +167,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
 
   const renderStatusCard = () => {
-    const refNumberText = 'Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
+    const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
     const priceText = 'Rs. ' + String(totalAmount);
     return (
@@ -182,7 +184,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View
           style={{
-            flex: 0.18,
+            flex: 0.16,
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}
@@ -191,15 +193,16 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View
           style={{
-            flex: 0.18,
+            flex: 0.16,
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}
         >
-          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
-        </View>
-        <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
           {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
+        </View>
+        <View style={{ flex: 0.29, justifyContent: 'flex-start', alignItems: 'center' }}>
+          {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
+          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
       </View>
     );
@@ -213,14 +216,15 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     );
   };
 
-  const getdate = () => {
+  const getdateTime = () => {
     const newdate = new Date(orderDateTime);
     newdate.setHours(newdate.getHours() - 5);
     newdate.setMinutes(newdate.getMinutes() - 30);
-    return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
+    return getDate(String(newdate));
+    // return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
   };
   const orderCard = () => {
-    const date = String(orderDateTime != '' && orderDateTime != null ? getdate() : '--');
+    const date = String(orderDateTime != '' && orderDateTime != null ? getdateTime() : '--');
 
     return (
       <View style={styles.orderCardStyle}>
