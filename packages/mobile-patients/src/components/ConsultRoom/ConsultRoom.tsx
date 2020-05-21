@@ -98,6 +98,8 @@ import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
