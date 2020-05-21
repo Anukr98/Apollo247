@@ -202,19 +202,17 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
       medicineOrderDetails {
         id
         orderAutoId
-        devliveryCharges
         estimatedAmount
+        patientAddressId
+        coupon
+        devliveryCharges
         prescriptionImageUrl
+        prismPrescriptionFileId
         orderTat
+        couponDiscount
+        productDiscount
         orderType
         currentStatus
-        patientAddressId
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-        }
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -235,6 +233,12 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           responseCode
           responseMessage
           bankTxnId
+        }
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
         }
         medicineOrderShipments {
           id

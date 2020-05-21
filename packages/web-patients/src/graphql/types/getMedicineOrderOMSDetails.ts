@@ -9,14 +9,6 @@ import { MEDICINE_ORDER_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE
 // GraphQL query operation: getMedicineOrderOMSDetails
 // ====================================================
 
-export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus {
-  __typename: "MedicineOrdersOMSStatus";
-  id: string;
-  orderStatus: MEDICINE_ORDER_STATUS | null;
-  statusDate: any | null;
-  hideStatus: boolean | null;
-}
-
 export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems {
   __typename: "MedicineOrderOMSLineItems";
   medicineSKU: string | null;
@@ -40,6 +32,14 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   responseCode: string | null;
   responseMessage: string | null;
   bankTxnId: string | null;
+}
+
+export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus {
+  __typename: "MedicineOrdersOMSStatus";
+  id: string;
+  orderStatus: MEDICINE_ORDER_STATUS | null;
+  statusDate: any | null;
+  hideStatus: boolean | null;
 }
 
 export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus {
@@ -96,16 +96,20 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   __typename: "MedicineOrdersOMS";
   id: string;
   orderAutoId: number | null;
-  devliveryCharges: number | null;
   estimatedAmount: number | null;
+  patientAddressId: string | null;
+  coupon: string | null;
+  devliveryCharges: number | null;
   prescriptionImageUrl: string | null;
+  prismPrescriptionFileId: string | null;
   orderTat: string | null;
+  couponDiscount: number | null;
+  productDiscount: number | null;
   orderType: MEDICINE_ORDER_TYPE | null;
   currentStatus: MEDICINE_ORDER_STATUS | null;
-  patientAddressId: string | null;
-  medicineOrdersStatus: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments | null)[] | null;
+  medicineOrdersStatus: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderShipments: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderShipments | null)[] | null;
   patient: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_patient | null;
 }
