@@ -2434,6 +2434,7 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         appointmentPayments {
           paymentRefId
           paymentStatus
+          amountPaid
         }
         doctor {
           name
@@ -2462,6 +2463,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           paymentDateTime
+          amountPaid
         }
       }
     }
