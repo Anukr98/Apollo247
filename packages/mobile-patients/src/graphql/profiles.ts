@@ -1408,6 +1408,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         id
         orderAutoId
         devliveryCharges
+        couponDiscount
+        productDiscount
         estimatedAmount
         prescriptionImageUrl
         orderTat
