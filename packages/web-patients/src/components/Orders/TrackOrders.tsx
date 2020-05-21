@@ -452,7 +452,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <CancelOrderNotification
               setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
               setIsPopoverOpen={setIsPopoverOpen}
-              cancelOrderText={cancelOrderReasonText}
             />
           </div>
         </div>
