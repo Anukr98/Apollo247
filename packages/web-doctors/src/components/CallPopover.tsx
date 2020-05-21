@@ -1899,15 +1899,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const onPrint = () => {
-    // console.log('printing started');
-    // var printContents = document.getElementById('prescriptionWrapper').innerHTML;
-    // var originalContents = document.body.innerHTML;
-    // document.body.innerHTML = printContents;
-    // window.print();
-    // document.body.innerHTML = originalContents;
-
     var divToPrint = document.getElementById('prescriptionWrapper');
     var head = document.getElementsByTagName('head')[0].innerHTML;
+
+    var popupWin = window.open('', '_blank');
+    popupWin.document.open();
 
     const winHtml = `<!DOCTYPE html>
     <html>
@@ -1918,8 +1914,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ${divToPrint.innerHTML}
         </body>
     </html>`;
-    const winUrl = URL.createObjectURL(new Blob([winHtml], { type: 'text/html' }));
-    console.log(winUrl);
+
+    popupWin.document.write(winHtml);
+    popupWin.document.close();
   };
 
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
