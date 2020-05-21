@@ -377,7 +377,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
-        noShowReason
         doctorInfo {
           awards
           city
