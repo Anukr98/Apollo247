@@ -664,14 +664,14 @@ export const MedicineCart: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we have code but result is null when coupon discount <= product discount
+              couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we have code but result is null when coupon discount <= product discount
+              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
