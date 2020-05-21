@@ -236,7 +236,12 @@ const getPatientPrismMedicalRecords: Resolver<
   const patientDetails = await patientsRepo.findById(args.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
-  const uhid = patientDetails.primaryUhid;
+  let uhid = '';
+  if (patientDetails.primaryUhid) {
+    uhid = patientDetails.primaryUhid;
+  } else {
+    uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  }
 
   if (!uhid) {
     throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});

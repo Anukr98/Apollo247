@@ -219,8 +219,12 @@ const getPatientLabResults: Resolver<
   const patientDetails = await patientsRepo.findById(args.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
-  //check if current user uhid matches with response uhids
-  const uhid = patientDetails.primaryUhid;
+  let uhid = '';
+  if (patientDetails.primaryUhid) {
+    uhid = patientDetails.primaryUhid;
+  } else {
+    uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  }
 
   if (!uhid) {
     return false;
