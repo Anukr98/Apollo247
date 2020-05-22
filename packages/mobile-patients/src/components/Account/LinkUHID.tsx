@@ -195,29 +195,33 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   };
 
   const linkUhidsApiCall = () => {
+    setLoading && setLoading(true);
     linkUHIDs(client, selectedPrimary, selectedSecondary)
     .then((data) => {
+      setLoading && setLoading(false);
       getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
+      setLoading && setLoading(false);
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const deLinkUhidsApiCall = () => {
+    setLoading && setLoading(true);
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
     .then((data) => {
+      setLoading && setLoading(false);
       getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
+      setLoading && setLoading(false);
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const backDataFunctionality = async () => {
