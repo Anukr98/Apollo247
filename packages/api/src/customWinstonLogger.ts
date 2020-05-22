@@ -190,40 +190,38 @@ export const debugLog = _.curry(
     message: string
   ) => {
     const logger = winstonLogger.loggers.get(loggerName);
+    const endTime = new Date();
     const logMessage = {
-      time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-      apiName,
-      message,
       id,
+      apiName,
       identifier,
       level: 'info',
+      startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+      endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+      durationInMilliseconds: differenceInMilliseconds(endTime, startTime),
+      message,
     };
     logger.log(logMessage);
-
-    //log duration on call end
-    if (message === 'API_CALL___END') {
-      logDuration(logger, apiName, id, startTime, identifier, message);
-    }
   }
 );
 
 //utility method to log duration
-const logDuration = (
-  logger: winston.Logger,
-  apiName: string,
-  id: number,
-  startTime: Date,
-  identifier: string,
-  message: string
-) => {
-  const durationLogMsg = {
-    apiName,
-    durationInMilliseconds: differenceInMilliseconds(new Date(), startTime),
-    message: 'DURATION',
-    id,
-    identifier,
-    level: 'info',
-  };
+// const logDuration = (
+//   logger: winston.Logger,
+//   apiName: string,
+//   id: number,
+//   startTime: Date,
+//   identifier: string,
+//   message: string
+// ) => {
+//   const durationLogMsg = {
+//     apiName,
+//     durationInMilliseconds: differenceInMilliseconds(new Date(), startTime),
+//     message: 'DURATION',
+//     id,
+//     identifier,
+//     level: 'info',
+//   };
 
-  logger.log(durationLogMsg);
-};
+//   logger.log(durationLogMsg);
+// };

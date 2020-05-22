@@ -541,7 +541,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   };
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} id={'prescriptionWrapper'}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>
         <div className={classes.pageHeader}>

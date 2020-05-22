@@ -14,6 +14,7 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { format, addMinutes, parseISO } from 'date-fns';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -74,6 +75,7 @@ const updateOrderStatus: Resolver<
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
     updateOrderStatusInput.orderId
   );
+
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
@@ -88,17 +90,21 @@ const updateOrderStatus: Resolver<
   if (!shipmentDetails && status != MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
+  const statusDate = format(
+    addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
+    "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
-      new Date(updateOrderStatusInput.updatedDate),
+      new Date(statusDate),
       MEDICINE_ORDER_STATUS.CANCELLED
     );
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
       medicineOrders: orderDetails,
-      statusDate: new Date(updateOrderStatusInput.updatedDate),
+      statusDate: new Date(statusDate),
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
@@ -111,7 +117,7 @@ const updateOrderStatus: Resolver<
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: status,
       medicineOrderShipments: shipmentDetails,
-      statusDate: new Date(updateOrderStatusInput.updatedDate),
+      statusDate: new Date(statusDate),
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     try {
@@ -146,13 +152,13 @@ const updateOrderStatus: Resolver<
       await medicineOrdersRepo.updateMedicineOrderDetails(
         orderDetails.id,
         orderDetails.orderAutoId,
-        new Date(updateOrderStatusInput.updatedDate),
+        new Date(statusDate),
         status
       );
       const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
         orderStatus: status,
         medicineOrders: orderDetails,
-        statusDate: new Date(updateOrderStatusInput.updatedDate),
+        statusDate: new Date(statusDate),
         statusMessage: updateOrderStatusInput.reasonCode,
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);

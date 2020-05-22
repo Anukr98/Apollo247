@@ -81,6 +81,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
     statusDate: DateTime
+    statusMessage: String
+    customReason: String
     hideStatus: Boolean
   }
 

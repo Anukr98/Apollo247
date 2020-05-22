@@ -14,7 +14,7 @@ import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { log, debugLog } from 'customWinstonLogger';
+import { debugLog } from 'customWinstonLogger';
 import { Gender } from 'doctors-service/entities';
 
 export const getCurrentPatientsTypeDefs = gql`
@@ -131,6 +131,10 @@ export type GetCurrentPatientsResult = {
   patients: Object[] | null;
 };
 
+//create first order curried method with first 4 static parameters being passed.
+const apiCallId = Math.floor(Math.random() * 10000000);
+const dLogger = debugLog('profileServiceLogger', 'getCurrentPatients', apiCallId);
+
 const getCurrentPatients: Resolver<
   null,
   { appVersion: string; deviceType: DEVICE_TYPE },
@@ -142,26 +146,10 @@ const getCurrentPatients: Resolver<
 
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
-    const callStartTime = new Date();
-    const apiCallId = Math.floor(Math.random() * 1000000);
-    //create first order curried method with first 4 static parameters being passed.
-    const homeLogger = debugLog(
-      'currentPatientsAPILogger',
-      'login',
-      apiCallId,
-      callStartTime,
-      mobileNumber
-    );
-
-    homeLogger('API_CALL___START');
-
     let isPrismWorking = 1,
       isUserDetails = 0;
     const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
     const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
-    // if (prismUrl == '') {
-    //   isPrismWorking = 0;
-    // }
     const prismBaseUrl = prismUrl + '/data';
     const prismHeaders = {
       method: 'get',
@@ -169,88 +157,56 @@ const getCurrentPatients: Resolver<
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    homeLogger('PRISM_GET_AUTHTOKEN_API_CALL___START');
     const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
-    log(
-      'profileServiceLogger',
-      `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-      'getCurrentPatients()->API_CALL_STARTING',
-      '',
-      ''
-    );
+
     let uhids;
+    let reqStartTime = new Date();
     try {
       const prismAuthToken = await fetch(apiUrl, prismHeaders)
         .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
         .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
-          homeLogger('PRISM_GET_AUTHTOKEN_API_CALL___ERROR_END');
-          log(
-            'profileServiceLogger',
-            'API_CALL_ERROR',
-            'getCurrentPatients()->CATCH_BLOCK',
-            '',
-            JSON.stringify(prismGetAuthTokenError)
+          dLogger(
+            reqStartTime,
+            'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
+            `${apiUrl} --- ${JSON.stringify(prismGetAuthTokenError)}`
           );
-          // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
-          //   prismGetAuthTokenError,
-          // });
           isPrismWorking = 0;
         });
-      homeLogger('PRISM_GET_AUTHTOKEN_API_CALL___END');
-      log(
-        'profileServiceLogger',
-        'API_CALL_RESPONSE',
-        'getCurrentPatients()->API_CALL_RESPONSE',
-        JSON.stringify(prismAuthToken),
-        ''
+      dLogger(
+        reqStartTime,
+        'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___END',
+        `${apiUrl} --- ${JSON.stringify(prismAuthToken)}`
       );
-      console.log(prismAuthToken, 'prismAuthToken');
 
       if (prismAuthToken != null) {
         const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
-        homeLogger('PRISM_GET_USERS_API_CALL___START');
-        log(
-          'profileServiceLogger',
-          `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
-          'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
-          '',
-          ''
-        );
 
+        reqStartTime = new Date();
         uhids = await fetch(getUserApiUrl, prismHeaders)
           .then((res) => res.json() as Promise<PrismGetUsersResponse>)
           .catch((prismGetUsersError: PrismGetUsersError) => {
-            homeLogger('PRISM_GET_USERS_API_CALL___ERROR_END');
-            log(
-              'profileServiceLogger',
-              'API_CALL_ERROR',
-              'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
-              '',
-              JSON.stringify(prismGetUsersError)
+            dLogger(
+              reqStartTime,
+              'getCurrentPatients PRISM_GET_USERS_API_CALL___ERROR',
+              `${getUserApiUrl} --- ${JSON.stringify(prismGetUsersError)}`
             );
-            // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
-            //   prismGetUsersError,
-            // });
             isPrismWorking = 0;
             isUserDetails = 1;
           });
+        dLogger(
+          reqStartTime,
+          'getCurrentPatients PRISM_GET_USERS_API_CALL___END',
+          `${getUserApiUrl} --- ${JSON.stringify(uhids)}`
+        );
+      } else {
+        isUserDetails = 1;
       }
-
-      homeLogger('PRISM_GET_USERS_API_CALL___END');
-      // log(
-      //   'profileServiceLogger',
-      //   'API_CALL_RESPONSE',
-      //   'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
-      //   JSON.stringify(uhids),
-      //   ''
-      // );
-      isUserDetails = 1;
-      console.log(uhids, 'uhid', isPrismWorking);
     } catch (e) {
       isPrismWorking = 0;
       isUserDetails = 1;
     }
 
+    reqStartTime = new Date();
     const findOrCreatePatient = (
       findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
       createOptions: Partial<Patient>
@@ -266,10 +222,6 @@ const getCurrentPatients: Resolver<
     //if prism is working - process with prism uhids and 24x7 database
     if (uhids != null && uhids.response != null) {
       isPrismWorking = 1;
-      homeLogger('CREATE_OR_RETURN_PATIENTS_START');
-
-      //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
-
       patientPromises = uhids.response!.signUpUserData.map((data) => {
         return findOrCreatePatient(
           { uhid: data.UHID, mobileNumber },
@@ -296,7 +248,6 @@ const getCurrentPatients: Resolver<
     const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
     if (isPrismWorking == 0 && isUserDetails == 1) {
       if (checkPatients == null || checkPatients.length == 0) {
-        homeLogger('CREATE_OR_RETURN_PATIENTS_START');
         patientPromises = [
           findOrCreatePatient(
             { uhid: '', mobileNumber },
@@ -314,10 +265,13 @@ const getCurrentPatients: Resolver<
     const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
     });
-    console.log(updatePatients);
-    homeLogger('CREATE_OR_RETURN_PATIENTS_END');
+    dLogger(
+      reqStartTime,
+      'getCurrentPatients CREATE_OR_RETURN_PATIENTS___END',
+      `${updatePatients}`
+    );
 
-    homeLogger('ASYNC_UPDATE_APP_VERSION_START');
+    reqStartTime = new Date();
     //patients = await patientRepo.findByMobileNumber(mobileNumber);
     patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
     if (args.appVersion && args.deviceType) {
@@ -326,27 +280,16 @@ const getCurrentPatients: Resolver<
           ? { id: patient.id, androidVersion: args.appVersion }
           : { id: patient.id, iosVersion: args.appVersion };
       });
-      console.log('verionUpdateRecords =>', versionUpdateRecords);
-      log(
-        'profileServiceLogger',
-        'DEBUG_LOG',
-        'getCurrentPatients()->updateAppVersion',
-        JSON.stringify(versionUpdateRecords),
-        ''
-      );
+
       const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-      log(
-        'profileServiceLogger',
-        'DEBUG_LOG',
-        'getCurrentPatients()->updateAppVersion',
-        JSON.stringify(updatedProfiles),
-        ''
+      dLogger(
+        reqStartTime,
+        'getCurrentPatients ASYNC_UPDATE_APP_VERSION___END',
+        `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
       );
     }
-    homeLogger('ASYNC_UPDATE_APP_VERSION_END');
-
-    homeLogger('API_CALL___END');
   }
+
   return { patients };
 };
 
@@ -371,77 +314,48 @@ const getLoginPatients: Resolver<
   };
 
   const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
-    'getCurrentPatients()->API_CALL_STARTING',
-    '',
-    ''
-  );
 
+  let reqStartTime = new Date();
   const prismAuthToken = await fetch(apiUrl, prismHeaders)
     .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
     .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
-      log(
-        'profileServiceLogger',
-        'API_CALL_ERROR',
-        'getCurrentPatients()->CATCH_BLOCK',
-        '',
-        JSON.stringify(prismGetAuthTokenError)
+      dLogger(
+        reqStartTime,
+        'getLoginPatients PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
+        `${apiUrl} --- ${JSON.stringify(prismGetAuthTokenError)}`
       );
-      // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
-      //   prismGetAuthTokenError,
-      // });
       isPrismWorking = 0;
     });
-  log(
-    'profileServiceLogger',
-    'API_CALL_RESPONSE',
-    'getCurrentPatients()->API_CALL_RESPONSE',
-    JSON.stringify(prismAuthToken),
-    ''
+  dLogger(
+    reqStartTime,
+    'getLoginPatients PRISM_GET_AUTHTOKEN_API_CALL___END',
+    `${apiUrl} --- ${JSON.stringify(prismAuthToken)}`
   );
-  console.log(prismAuthToken, 'prismAuthToken');
 
   let uhids;
   if (prismAuthToken != null) {
     const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
-    log(
-      'profileServiceLogger',
-      `EXTERNAL_API_CALL_PRISM: ${getUserApiUrl}`,
-      'getCurrentPatients()->prismGetUsersApiCall->API_CALL_STARTING',
-      '',
-      ''
-    );
 
+    reqStartTime = new Date();
     uhids = await fetch(getUserApiUrl, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetUsersResponse>)
       .catch((prismGetUsersError: PrismGetUsersError) => {
-        log(
-          'profileServiceLogger',
-          'API_CALL_ERROR',
-          'getCurrentPatients()->prismGetUsersApiCall->CATCH_BLOCK',
-          '',
-          JSON.stringify(prismGetUsersError)
+        dLogger(
+          reqStartTime,
+          'getLoginPatients PRISM_GET_USERS_API_CALL___ERROR',
+          `${getUserApiUrl} --- ${JSON.stringify(prismGetUsersError)}`
         );
-        // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
-        //   prismGetUsersError,
-        // });
         isPrismWorking = 0;
       });
+    dLogger(
+      reqStartTime,
+      'getLoginPatients PRISM_GET_USERS_API_CALL___END',
+      `${getUserApiUrl} --- ${JSON.stringify(uhids)}`
+    );
   }
 
-  log(
-    'profileServiceLogger',
-    'API_CALL_RESPONSE',
-    'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
-    JSON.stringify(uhids),
-    ''
-  );
-
-  console.log(uhids, 'uhid', isPrismWorking);
+  reqStartTime = new Date();
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -494,18 +408,12 @@ const getLoginPatients: Resolver<
       ];
     }
   }
-
   const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
-  console.log(updatePatients);
-  /*
-  checkPatients.map(async (patient) => {
-    if ((patient.uhid == '' || patient.uhid == null) && patient.firstName.trim() != '') {
-      await patientRepo.createNewUhid(patient.id);
-    }
-  });*/
-  //const patients = await patientRepo.findByMobileNumber(mobileNumber);
+  dLogger(reqStartTime, 'getLoginPatients CREATE_OR_RETURN_PATIENTS___END', `${updatePatients}`);
+
+  reqStartTime = new Date();
   const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
   if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
@@ -513,21 +421,11 @@ const getLoginPatients: Resolver<
         ? { id: patient.id, androidVersion: args.appVersion }
         : { id: patient.id, iosVersion: args.appVersion };
     });
-    console.log('verionUpdateRecords =>', versionUpdateRecords);
-    log(
-      'profileServiceLogger',
-      'DEBUG_LOG',
-      'getCurrentPatients()->updateAppVersion',
-      JSON.stringify(versionUpdateRecords),
-      ''
-    );
     const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-    log(
-      'profileServiceLogger',
-      'DEBUG_LOG',
-      'getCurrentPatients()->updateAppVersion',
-      JSON.stringify(updatedProfiles),
-      ''
+    dLogger(
+      reqStartTime,
+      'getLoginPatients ASYNC_UPDATE_APP_VERSION___END',
+      `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
     );
   }
 
