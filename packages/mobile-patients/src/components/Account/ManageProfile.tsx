@@ -230,7 +230,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         style={[
           { marginHorizontal: 20 },
           profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
-          index == 0 ? { marginTop: 20 } : {},
+          index == 0 ? { marginTop: 20 } : {margin: 0},
         ]}
       >
         {showSecondaryUhids && idSecondaryUHID && (
@@ -544,7 +544,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG style={{}}>
+      <StickyBottomComponent defaultBG >
         {showLinkUhid && (
           <Button
             title="LINK UHID"
