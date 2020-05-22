@@ -182,9 +182,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       paddingLeft: 5,
       lineHeight: '13px',
-      '& span': {
-        color: '#00b38e',
-      },
+    },
+    labelStatus: {
+      color: '#00b38e',
     },
     bottomNotification: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -260,6 +260,7 @@ interface OrderStatusCardProps {
 }
 
 export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+  let statusString = '';
   switch (status) {
     case MEDICINE_ORDER_STATUS.CANCELLED:
       return 'Order Cancelled';
@@ -269,8 +270,10 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Order Delivered';
     case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
       return 'Items Returned';
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      return 'Order Initiated';
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
-      return 'Order Billed';
+      return 'Order Billed and Packed';
     case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
       return 'Order Confirmed';
     case MEDICINE_ORDER_STATUS.ORDER_FAILED:
@@ -293,18 +296,22 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Prescription Cart Ready';
     case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
       return 'Prescription Uploaded';
-    case MEDICINE_ORDER_STATUS.QUOTE:
-      return 'Quote';
     case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
       return 'Return Accepted';
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       return 'Return Requested';
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      return 'Order Initiated';
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       return 'Ready At Store';
+    // case MEDICINE_ORDER_STATUS.QUOTE:
+    //   return 'Quote';
     case 'TO_BE_DELIVERED' as any:
       return 'Expected Order Delivery';
+    default:
+      statusString = status
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+      return statusString;
   }
 };
 
@@ -355,14 +362,18 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'ORDER_FAILED',
     'ORDER_INITIATED',
     'ORDER_PLACED',
+    'ORDER_BILLED',
     'ORDER_VERIFIED',
     'OUT_FOR_DELIVERY',
+    'PAYMENT_FAILED',
+    'PAYMENT_PENDING',
     'PAYMENT_SUCCESS',
     'PICKEDUP',
     'PRESCRIPTION_CART_READY',
     'PRESCRIPTION_UPLOADED',
     'RETURN_ACCEPTED',
     'RETURN_INITIATED',
+    'READY_AT_STORE',
   ];
 
   const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
@@ -429,7 +440,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           ''
         ) : (
           <>
-            <span>Verification Pending:</span>
+            <span className={classes.labelStatus}>Verification Pending: </span>
             Your order is being verified by our pharmacists. Our pharmacists might be required to
             call you for order verification.
           </>
@@ -437,7 +448,8 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return (
           <>
-            <span>Store Assigned:</span> Your order has been assigned to our pharmacy.
+            <span className={classes.labelStatus}>Store Assigned: </span> Your order has been
+            assigned to our pharmacy.
           </>
         );
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
@@ -501,8 +513,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 <div id={statusInfo.id} className={classes.cardGroup}>
                   <div
                     className={`${classes.statusCard} ${
-                      statusInfo.orderStatus &&
-                      completedStatusArray.includes(statusInfo.orderStatus)
+                      statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
                         ? `${classes.orderStatusCompleted}${classes.orderStatusActive}`
                         : classes.orderStatusActive
                     }`}
@@ -515,9 +526,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                   </div>
 
                   <div className={classes.infoText}>
-                    {/* <span>Verification Pending :</span> Your order is being verified by our
-                      pharmacists. Our Pharmacists might be required to call you for order
-                      verification. */}
                     <span>{getOrderDescription(statusInfo.orderStatus)}</span>
                   </div>
                 </div>
@@ -536,9 +544,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             .
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton>
+          </AphButton> */}
         </div>
       )}
       <Popover

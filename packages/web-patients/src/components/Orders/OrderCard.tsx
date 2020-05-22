@@ -298,6 +298,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return 100;
       case 'Order Initiated':
         return 60;
+      case 'Order Billed and Packed':
+        return 120;
       case 'Order Delivered':
         return 360;
     }
