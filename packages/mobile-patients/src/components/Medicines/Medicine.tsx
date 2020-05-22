@@ -681,7 +681,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
             style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
-              ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
+              ...theme.viewStyles.text('B', 17, '#fff', 1, 24, 0),
             }}
             title={'UPLOAD'}
           />
