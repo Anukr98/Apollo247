@@ -207,6 +207,8 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
     amountPaid = paymentInfo[0].amountPaid;
     paymentMode = paymentInfo[0].paymentMode
       ? getPaymentMethodFullName(paymentInfo[0].paymentMode)
+      : paymentInfo[0].paymentType && paymentInfo[0].paymentType.length
+      ? paymentInfo[0].paymentType
       : '';
   }
 
