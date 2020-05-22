@@ -27,6 +27,7 @@ import {
   GET_MEDICINE_ORDER_OMS_DETAILS,
   GET_MEDICINE_ORDERS_OMS__LIST,
   CANCEL_MEDICINE_ORDER_OMS,
+  GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -39,6 +40,7 @@ import {
   MEDICINE_ORDER_TYPE,
   FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -157,7 +159,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [omsAPIError, setOMSAPIError] = useState(false);
-
+  const [addressData, setAddressData] = useState('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const {
@@ -166,6 +168,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     ePrescriptions,
     setEPrescriptions,
     addresses,
+    setAddresses,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
@@ -194,11 +197,107 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     (item) => item!.isPrescriptionNeeded
   );
 
+  console.log({ order });
+
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
   );
+
+  const getAddressDatails = () => {
+    let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
+    if (!selectedAddressIndex) {
+      console.log('!selectedAddressIndex', selectedAddressIndex);
+      setShowSpinner(true);
+      client
+        .query<getPatientAddressList>({
+          query: GET_PATIENT_ADDRESS_LIST,
+          fetchPolicy: 'no-cache',
+          variables: {
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+        })
+        .then((data) => {
+          if (
+            data.data &&
+            data.data.getPatientAddressList &&
+            data.data.getPatientAddressList.addressList &&
+            addresses !== data.data.getPatientAddressList.addressList
+          ) {
+            setAddresses && setAddresses(data.data.getPatientAddressList.addressList);
+            selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
+              (address) => address.id == order!.patientAddressId
+            );
+            if (selectedAddressIndex) {
+              console.log('if selectedAddressIndex', selectedAddressIndex);
+              if (!selectedAddressIndex.addressLine1) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.addressLine2) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.city) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.state) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.zipcode) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
+                );
+              } else {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              }
+            } else {
+              setAddressData('');
+            }
+          }
+        })
+        .catch((error) => {
+          handleGraphQlError(error);
+        })
+        .finally(() => {
+          setShowSpinner(false);
+        });
+    } else {
+      console.log('else selectedAddressIndex', selectedAddressIndex);
+      if (!selectedAddressIndex.addressLine1) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.addressLine2) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.city) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.state) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.zipcode) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
+        );
+      } else {
+        setAddressData(
+          selectedAddressIndex
+            ? `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+            : ''
+        );
+      }
+    }
+  };
 
   const [isEventFired, setEventFired] = useState(false);
 
@@ -217,6 +316,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
         currentPatient
       );
+      getAddressDatails();
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -274,14 +374,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
     return finalDateTime;
   };
-
-  const selectedAddressIndex = addresses.find((address) => address.id == order?.patientAddressId);
-  const addressData = selectedAddressIndex
-    ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-    : '';
-
-  let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${orderDetails.orderTat &&
-    getFormattedDateTime(orderDetails.orderTat)}.`;
 
   const reOrder = () => {
     setLoading!(true);
@@ -420,7 +512,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const hours = expectedDeliveryDiff.asHours();
     // const formattedDateDeliveryTime =
     //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
-
+    let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
+      isDelivered.statusDate &&
+      getFormattedDateTime(isDelivered.statusDate)}.`;
     let capsuleViewBGColor: string;
     let capsuleTextColor: string;
     let capsuleText: string;
@@ -709,7 +803,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
             }}
           >
-            {tatInfo && getFormattedDate(tatInfo)}
+            {isDelivered
+              ? getFormattedDate(isDelivered.statusDate)
+              : tatInfo && getFormattedDate(tatInfo)}
           </Text>
         </View>
         <View style={{ margin: 20 }}>
@@ -972,7 +1068,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderOrderSummary = () => {
     return (
       <View>
-        <OrderSummary orderDetails={orderDetails as any} />
+        <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
         <View style={{ marginTop: 30 }} />
         {/* <NeedHelpAssistant
           onNeedHelpPress={() => {

@@ -174,6 +174,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -317,11 +318,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       doctorId: doctorDetails.id,
       newDateTimeslot: availability,
       initiatedBy:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? TRANSFER_INITIATED_TYPE.DOCTOR
           : TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? doctorDetails.id
           : data.patientId,
       patientId: data.patientId,
@@ -498,7 +501,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
     const showCancel =
       dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
