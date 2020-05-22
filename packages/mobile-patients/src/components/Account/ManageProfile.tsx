@@ -138,25 +138,17 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    // setLoading!(true);
-    // client
-    //   .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-    //     query: GET_PATIENTS_MOBILE,
-    //     variables: {
-    //       mobileNumber: currentPatient && currentPatient!.mobileNumber,
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((data) => {
-    //     const profileData = data.data.getPatientByMobileNumber;
-    //     profileData && setProfiles(profileData!.patients!);
-    //   })
-    //   .catch((e: any) => {
-    //     setBottomPopUP(true);
-    //   })
-    //   .finally(() => {
-    //     setLoading!(false);
-    //   });
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      getPatientApiCall();
+      const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
+      checkForLinkedProfiles(profiles);
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+  }, [props.navigation]);
+
+  useEffect(() => {
     if (allCurrentPatients) {
       setLoading && setLoading(false);
       const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
@@ -165,6 +157,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   }, [allCurrentPatients]);
 
   const checkForLinkedProfiles = (profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]) => {
+    console.log('checkForLinkedProfiles: ', profiles);
     let primary;
     let secondary = [];
     let areUhidsLinked = false;
@@ -193,6 +186,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       const profileArray = [...primaryArray, ...secondaryArray, ...filteredArray];
       setProfiles(profileArray);
     } else {
+      setPrimaryUHIDs('');
+      setShowLinkButtons(false);
+      setSecondaryUHIDs([]);
+      setFirstSecondaryUHID('');
+      setShowSecondaryUHIDs(true);
       setProfiles(profiles);
     }
   };
