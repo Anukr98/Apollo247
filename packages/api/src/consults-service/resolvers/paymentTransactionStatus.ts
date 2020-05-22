@@ -59,8 +59,7 @@ type RefundDetails = {
   refundStatus: REFUND_STATUS;
   refundId: String;
   refundAmount: number;
-
-}
+};
 
 const paymentTransactionStatus: Resolver<
   null,
@@ -93,10 +92,8 @@ const paymentTransactionStatus: Resolver<
   if (appointmentRefundsResponse) {
     appointmentRefundsResponse.forEach((val) => {
       if (val.refundStatus !== REFUND_STATUS.REFUND_REQUEST_NOT_RAISED) {
-        if (refundData.refundAmount)
-          refundData.refundAmount += val.refundAmount;
-        else
-          refundData.refundAmount = val.refundAmount;
+        if (refundData.refundAmount) refundData.refundAmount += val.refundAmount;
+        else refundData.refundAmount = val.refundAmount;
         refundData.refundId = val.refundId;
         refundData.refundStatus = val.refundStatus;
       }
@@ -116,7 +113,9 @@ const paymentTransactionStatus: Resolver<
     paymentMode: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentMode : '',
     refundAmount: refundData.refundAmount ? refundData.refundAmount : 0,
     refundId: refundData.refundId ? refundData.refundId : '',
-    refundStatus: refundData.refundStatus ? refundData.refundStatus : REFUND_STATUS.REFUND_REQUEST_NOT_RAISED
+    refundStatus: refundData.refundStatus
+      ? refundData.refundStatus
+      : REFUND_STATUS.REFUND_REQUEST_NOT_RAISED,
   };
 
   if (appointmentPaymentsResponse) {
