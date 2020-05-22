@@ -79,6 +79,7 @@ import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -359,7 +360,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             quantity: item.quantity,
             mrp: getFormattedAmount(item.price),
             price: discountedPrice,
-            specialPrice: Number(item.price || item.specialPrice),
+            specialPrice: Number(item.specialPrice || item.price),
             itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
             itemDiscount: getFormattedAmount(
               item.price * item.quantity - discountedPrice * item.quantity
@@ -416,7 +417,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
-        handleGraphQlError(error);
+        if (g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE') {
+          props.navigation.goBack();
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: 'Sorry, invalid coupon applied. Remove the coupon and try again.',
+          });
+        } else {
+          handleGraphQlError(error);
+        }
       });
   };
 
