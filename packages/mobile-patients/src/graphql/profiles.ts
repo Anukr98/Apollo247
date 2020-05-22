@@ -2464,6 +2464,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           paymentDateTime
+          paymentMode
         }
       }
     }
