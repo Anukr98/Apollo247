@@ -23,6 +23,21 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    noData: {
+      paddingTop: 30,
+      paddingBottom: 30,
+      textAlign: 'center',
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    icon: {
+      paddingBottom: 10,
+      '& img': {
+        maxWidth: 34,
+        verticalAlign: 'middle',
+      },
+    },    
   };
 });
 
@@ -50,6 +65,12 @@ export const ConsultPayments: React.FC = (props) => {
     const dataReversed = [...appointmentData].reverse();
     return (
       <div className={classes.root}>
+        <div className={classes.noData}>
+          <div className={classes.icon}>
+            <img src={require('images/transaction_history.svg')} alt="" />
+          </div>
+          <div>You have no payment history!</div>
+        </div>
         {dataReversed.map((appointmentDetails) => (
           <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
         ))}
