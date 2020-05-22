@@ -195,28 +195,28 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
   const linkUhidsApiCall = () => {
     linkUHIDs(client, selectedPrimary, selectedSecondary)
-    .then(({ data }: any) => {
-      setShowAlert(false);
+    .then((data) => {
+      getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    .finally(() => {setLoading && setLoading(false);});
+    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const deLinkUhidsApiCall = () => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
-    .then(({ data }: any) => {
-      setShowAlert(false);
+    .then((data) => {
+      getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    .finally(() => {setLoading && setLoading(false);});
+    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const backDataFunctionality = async () => {
@@ -316,7 +316,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   ...fonts.IBMPlexSansSemiBold(16)
                 }}
                 onPress={() => {
-                  setLoading && setLoading(true);
+                  // setLoading && setLoading(true);
+                  setShowAlert(false);
                   if (action === 'delink') {
                     deLinkUhidsApiCall();
                   } else {
@@ -351,6 +352,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
     const indexOfDelink = delinkSecondaryUHIDs.indexOf(profile!.uhid);
     const isDeSelected = (action === 'delink' && (indexOfDelink > -1)) ? true : false;
+    const isLinkDelink = (action === 'link' || action === 'delink');
     return (
       <View
         key={index}
@@ -479,7 +481,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               </View>
             }
             {
-              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID) && 
+              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID && !isLinkDelink) && 
               <View 
                 style={[
                   styles.circle,
