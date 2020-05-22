@@ -23,6 +23,7 @@ export interface getPharmaCouponList_getPharmaCouponList_coupons {
   couponPharmaRule: getPharmaCouponList_getPharmaCouponList_coupons_couponPharmaRule | null;
   createdDate: any | null;
   description: string | null;
+  displayStatus: boolean | null;
   id: string | null;
   isActive: boolean | null;
 }

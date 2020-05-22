@@ -55,6 +55,7 @@ export const PHRAMA_COUPONS_LIST = gql`
           messageOnCouponScreen
           successMessage
         }
+        displayStatus
         createdDate
         description
         id
