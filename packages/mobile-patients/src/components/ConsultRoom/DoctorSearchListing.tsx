@@ -1197,8 +1197,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   setValue(!value);
                   setshowSpinner(true);
                   if (value) {
+                    postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                      'Sort By': 'distance',
+                    });
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
                   } else {
+                    postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                      'Sort By': 'availability',
+                    });
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
                   }
                 }}
