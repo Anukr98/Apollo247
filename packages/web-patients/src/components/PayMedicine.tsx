@@ -933,11 +933,16 @@ export const PayMedicine: React.FC = (props) => {
                     <div className={`${classes.charges} ${classes.discount}`}>
                       <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
                     </div>
+                    {couponCode != '' && couponValue ? (
+                      <div className={`${classes.charges} ${classes.discount}`}>
+                        <p>Coupon Discount</p> <p>- Rs.{couponValue}</p>
+                      </div>
+                    ) : null}
                     <div className={classes.charges}>
-                      <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges}</p>
+                      <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges.toFixed(2)}</p>
                     </div>
                     <div className={classes.charges}>
-                      <p>Packing Charges</p> <p>+ Rs.0</p>
+                      <p>Packing Charges</p> <p>+ Rs. 0.00</p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
                       <p>To Pay</p>{' '}
