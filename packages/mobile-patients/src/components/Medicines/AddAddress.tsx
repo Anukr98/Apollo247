@@ -153,6 +153,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
 
+  const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
+
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       console.log('DataAddress', addressData);
@@ -194,7 +196,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         const _locationDetails =
           pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
         setstate(_locationDetails.state || '');
-        setcity(`${_locationDetails.city}, ${_locationDetails.state}` || '');
+        setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state));
         setpincode(_locationDetails.pincode || '');
         setLatitude(_locationDetails.latitude || 0);
         setLongitude(_locationDetails.longitude || 0);
@@ -414,7 +416,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
             ] || stateCode;
 
-          setcity((city && `${city}${state ? `, ${state}` : ''}`) || '');
+          setcity(formatCityStateDisplay(city, state));
           setstate(state || '');
           setStateCode(finalStateCode);
           setLatitude(response.latitude!);
@@ -597,7 +599,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         /> */}
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
         <TextInputComponent
-          value={city}
+          value={(city || '').startsWith(',') ? city.replace(', ', '') : city}
           textInputprops={{ editable: false }}
           onChangeText={(city) =>
             city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')

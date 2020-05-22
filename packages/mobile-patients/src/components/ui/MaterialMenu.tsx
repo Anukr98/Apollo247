@@ -8,8 +8,10 @@ import {
   TextStyle,
   StyleProp,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
+import { PrimaryIcon, LinkedUhidIcon } from './Icons';
 
 const styles = StyleSheet.create({
   itemContainer: {
@@ -38,6 +40,7 @@ export type Option = {
 type OptionsObject = {
   key: string;
   value: string | number;
+  isPrimary: boolean;
   data?: any;
 };
 
@@ -55,6 +58,7 @@ export interface MaterialMenuProps {
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
   bottomPadding?: StyleProp<ViewStyle> | undefined;
   showMenu?: boolean;
+  menuHidden?: () => void;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
@@ -84,6 +88,9 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
         </TouchableOpacity>
       }
       style={[styles.menuContainer, props.menuContainerStyle]}
+      onHidden={() => {
+        props.menuHidden && props.menuHidden();
+      }}
     >
       <ScrollView bounces={false} style={[{ paddingVertical: 8 }, props.scrollViewContainerStyle]}>
         {optionsObject.map((item, index) => (
@@ -108,6 +115,29 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             ]}
           >
             {item.value}
+            {item.isPrimary ? (
+              !!props.selectedText && props.selectedText === item.key ? (
+                <PrimaryIcon
+                  style={{
+                    width: Platform.OS === 'ios' ? 12 : 14,
+                    height: Platform.OS === 'ios' ? 10 : 12,
+                    marginLeft: Platform.OS === 'ios' ? 12 : 15,
+                    marginTop: Platform.OS === 'ios' ? 4 : 6,
+                  }}
+                  resizeMode={'contain'}
+                />
+              ) : (
+                <LinkedUhidIcon
+                  style={{
+                    width: Platform.OS === 'ios' ? 12 : 14,
+                    height: Platform.OS === 'ios' ? 10 : 12,
+                    marginLeft: Platform.OS === 'ios' ? 12 : 15,
+                    marginTop: Platform.OS === 'ios' ? 4 : 6,
+                  }}
+                  resizeMode={'contain'}
+                />
+              )
+            ) : null}
           </MenuItem>
         ))}
         <View style={[{ paddingBottom: 25 }, props.bottomPadding]} />

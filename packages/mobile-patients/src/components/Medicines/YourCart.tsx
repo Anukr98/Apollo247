@@ -1,13 +1,15 @@
 import {
   aphConsole,
-  formatAddress,
-  handleGraphQlError,
-  postWebEngageEvent,
-  g,
   dataSavedUserID,
   findAddrComponents,
+  formatAddress,
+  g,
+  handleGraphQlError,
+  postWebEngageEvent,
+  postWEGWhatsAppEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -18,39 +20,53 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { MedicineIcon, CouponIcon, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  UPLOAD_DOCUMENT,
   GET_PATIENT_ADDRESS_LIST,
-  VALIDATE_PHARMA_COUPON,
   UPDATE_PATIENT_ADDRESS,
+  UPLOAD_DOCUMENT,
+  VALIDATE_PHARMA_COUPON,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   getDeliveryTime,
   getPlaceInfoByLatLng,
+  getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
-  getPlaceInfoByPincode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  postPhamracyCartAddressSelectedFailure,
+  postPhamracyCartAddressSelectedSuccess,
+  postPharmacyAddNewAddressClick,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Geolocation from '@react-native-community/geolocation';
 import Axios from 'axios';
 import moment from 'moment';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -61,36 +77,22 @@ import {
   View,
 } from 'react-native';
 import {
+  NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
-  NavigationActions,
 } from 'react-navigation';
-import Geolocation from '@react-native-community/geolocation';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  postPharmacyAddNewAddressClick,
-  postPhamracyCartAddressSelectedSuccess,
-} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '../../graphql/types/getPatientAddressList';
+import { CouponCategoryApplicable, OrderLineItems } from '../../graphql/types/globalTypes';
 import {
   validatePharmaCoupon,
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
-import { CouponCategoryApplicable, OrderLineItems } from '../../graphql/types/globalTypes';
-import {
-  updatePatientAddress,
-  updatePatientAddressVariables,
-} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -198,8 +200,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+
+  // To remove applied coupon from cart when user goes back.
+  useEffect(() => {
+    return () => {
+      setCoupon!(null);
+    };
+  }, []);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -282,7 +292,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             if (Availability) {
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
-              postPhamracyCartAddressSelectedSuccess(
+              postPhamracyCartAddressSelectedFailure(
                 addresses[selectedAddressIndex].zipcode!,
                 formatAddress(addresses[selectedAddressIndex]),
                 'No'
@@ -304,6 +314,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    postWEGWhatsAppEvent(true);
     getUserAddress();
   }, []);
 
@@ -594,9 +605,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                if (props.navigation.getParam('isComingFromConsult'))
+                if (props.navigation.getParam('isComingFromConsult')) {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                else {
+                  setCoupon!(null);
+                } else {
                   CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
                   if (navigatedFrom === 'registration') {
                     props.navigation.dispatch(
@@ -755,7 +767,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
-          postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
+          postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
@@ -1050,6 +1062,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             });
           } else {
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
+            setCoupon!(null);
           }
         }}
       >
@@ -1125,7 +1138,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                Savings of Rs. {couponDiscount.toFixed(2)} on the bill
+                {coupon.discountedTotals!.couponDiscount > 0
+                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
+                  : 'Product(s) in cart are not applicable for this coupon or at higher discounts'}
               </Text>
             </View>
           )}
@@ -1364,9 +1379,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       (addr) => addr == Number(zipcode)
     );
     if (isChennaiAddress) {
-      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime, isChennaiOrder: true });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+        deliveryTime,
+        isChennaiOrder: true,
+      });
     } else {
-      props.navigation.navigate(AppRoutes.CheckoutSceneNew, { deliveryTime });
+      props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+        deliveryTime,
+      });
     }
   };
 
@@ -1528,6 +1548,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
+          <WhatsAppStatus
+            style={{ marginTop: 6 }}
+            onPress={() => {
+              whatsAppUpdate
+                ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
+                : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
+            }}
+            isSelected={whatsAppUpdate}
+          />
           <View style={{ height: 70 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>

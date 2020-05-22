@@ -156,6 +156,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
+  const [omsAPIError, setOMSAPIError] = useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -189,7 +190,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
   const order = g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails');
-  console.log({ order });
+  const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
+    (item) => item!.isPrescriptionNeeded
+  );
 
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
@@ -215,6 +218,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         currentPatient
       );
       setEventFired(true);
+    } else {
+      setOMSAPIError(true);
     }
   }, [order]);
 
@@ -443,7 +448,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean // if any of the order item requires prescription
     ) => {
       const orderStatusDescMapping = {
-        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: isOrderRequirePrescription
+        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
           ? ['', '']
           : [
               'Verification Pending: ',
@@ -721,7 +726,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     : ''
                 }
                 showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
-                getOrderDescription={getOrderDescription(orderDetails.currentStatus!)}
+                getOrderDescription={getOrderDescription(
+                  orderDetails.currentStatus!,
+                  prescriptionRequired
+                )}
                 status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
@@ -786,13 +794,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             />
           </View>
         ) : null}
-        <NeedHelpAssistant
+        {/* <NeedHelpAssistant
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
-        />
+        /> */}
       </View>
     );
   };
@@ -964,13 +972,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} />
-        <NeedHelpAssistant
+        <View style={{ marginTop: 30 }} />
+        {/* <NeedHelpAssistant
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
           containerStyle={{ marginTop: 30, marginBottom: 30 }}
           navigation={props.navigation}
-        />
+        /> */}
       </View>
     );
   };
@@ -1150,7 +1159,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 description: orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
                 )
-                  ? 'Sorry, we cannot cancel once the order is billed.'
+                  ? 'Once your order is billed, you cannot cancel your order.'
                   : 'Sorry, we cannot cancel the order now.',
               });
             } else {
@@ -1180,22 +1189,42 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         </View>
 
-        <TabsComponent
-          style={styles.tabsContainer}
-          onChange={(title) => {
-            const isNonCartOrder = orderStatusList.find(
-              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-            );
-            if (!isNonCartOrder) {
-              setSelectedTab(title);
-            }
-          }}
-          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-          selectedTab={selectedTab}
-        />
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-        </ScrollView>
+        {omsAPIError && !order && !loading ? (
+          <View
+            style={{ justifyContent: 'center', alignSelf: 'center', flex: 1, alignItems: 'center' }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 16, '#890000'),
+                paddingHorizontal: 16,
+                textAlign: 'center',
+              }}
+            >
+              {'Something went wrong. Unable fetch order details.'}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <TabsComponent
+              style={styles.tabsContainer}
+              onChange={(title) => {
+                const isNonCartOrder = orderStatusList.find(
+                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+                );
+                if (!isNonCartOrder) {
+                  setSelectedTab(title);
+                }
+              }}
+              data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+              selectedTab={selectedTab}
+            />
+            <ScrollView bounces={false}>
+              {selectedTab == string.orders.trackOrder
+                ? renderOrderHistory()
+                : renderOrderSummary()}
+            </ScrollView>
+          </>
+        )}
       </SafeAreaView>
       {renderFeedbackPopup()}
       {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}

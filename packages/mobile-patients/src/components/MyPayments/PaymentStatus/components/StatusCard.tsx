@@ -34,13 +34,14 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     let orderID = '';
     if (paymentFor === 'consult') {
       const { appointmentPayments, actualAmount, displayId, discountedAmount } = item;
-      price = actualAmount - discountedAmount;
       orderID = 'Order ID: ' + String(displayId);
       if (!appointmentPayments.length) {
         status = 'PENDING';
       } else {
-        status = appointmentPayments[0].paymentStatus;
-        refId = appointmentPayments[0].paymentRefId;
+        const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
+        status = paymentStatus;
+        refId = paymentRefId;
+        price = amountPaid;
       }
       return {
         status: status,
@@ -50,13 +51,14 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       };
     } else {
       const { medicineOrderPayments, devliveryCharges, estimatedAmount, orderAutoId } = item;
-      price = estimatedAmount + devliveryCharges;
       orderID = 'Order ID: ' + String(orderAutoId);
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        status = medicineOrderPayments[0].paymentStatus;
-        refId = medicineOrderPayments[0].paymentRefId;
+        const { paymentStatus, paymentRefId, amountPaid } = medicineOrderPayments[0];
+        status = paymentStatus;
+        refId = paymentRefId;
+        price = amountPaid;
       }
       return {
         status: status,

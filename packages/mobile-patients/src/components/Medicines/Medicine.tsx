@@ -83,6 +83,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -175,13 +176,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
     categoryName: string,
-    sectionName: string
+    sectionName: string,
+    imageUrl: string
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED] = {
       'category name': categoryName,
       'category ID': categoryId,
       'Section Name': sectionName,
       Source: 'Home',
+      imageUrl: imageUrl,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
@@ -374,6 +377,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const autoDetectLocation = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
+      'Patient UHID': currentPatient.uhid,
+      'Mobile Number': currentPatient.mobileNumber,
+      'Customer ID': currentPatient.id,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
@@ -464,6 +473,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             if (item.value == options[0].value) {
               autoDetectLocation();
             } else {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED] = {
+                'Patient UHID': currentPatient.uhid,
+                'Mobile Number': currentPatient.mobileNumber,
+                'Customer ID': currentPatient.id,
+              };
+              postWebEngageEvent(
+                WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED,
+                eventAttributes
+              );
               setPincodePopupVisible(true);
             }
           }}
@@ -478,8 +496,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       const location = pharmacyLocation
-        ? `${formatText(g(pharmacyLocation, 'city') || '', 18)} ${g(pharmacyLocation, 'pincode')}`
-        : `${formatText(g(locationDetails, 'city') || '', 18)} ${g(locationDetails, 'pincode')}`;
+        ? `${formatText(g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '', 18)} ${g(
+            pharmacyLocation,
+            'pincode'
+          )}`
+        : `${formatText(g(locationDetails, 'city') || g(pharmacyLocation, 'state') || '', 18)} ${g(
+            locationDetails,
+            'pincode'
+          )}`;
 
       return (
         <View style={{ paddingLeft: 15, marginTop: -3.5 }}>
@@ -638,14 +662,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const uploadPrescriptionCTA = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text
             style={{
               ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0),
               paddingBottom: 12,
             }}
           >
-            Have a prescription ready?
+            Place your order via prescription
           </Text>
           <Button
             onPress={() => {
@@ -655,11 +679,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setShowPopop(true);
             }}
-            style={{ width: 'auto' }}
+            style={{ width: Platform.OS == 'android' ? '85%' : '90%' }}
             titleTextStyle={{
               ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
             }}
-            title={'UPLOAD PRESCRIPTION'}
+            title={'UPLOAD'}
           />
         </View>
         <PrescriptionPad style={{ height: 57, width: 42 }} />
@@ -804,7 +828,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY HEALTH AREAS'
+                  'SHOP BY HEALTH AREAS',
+                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -840,7 +865,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', 'DEALS OF THE DAY');
+                  postwebEngageCategoryClickedEvent(
+                    item.category_id,
+                    'Banner',
+                    'DEALS OF THE DAY',
+                    `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  );
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
                     title: 'DEALS OF THE DAY',
@@ -1014,10 +1044,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         pharmacyPincode!,
         addCartItem,
         globalLoading,
-        props.navigation
+        props.navigation,
+        currentPatient
       );
 
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home');
+      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', 'HOT SELLERS');
       postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
 
@@ -1081,7 +1112,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               item.title,
               `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, 'SHOP BY CATEGORY');
+                postwebEngageCategoryClickedEvent(
+                  item.category_id,
+                  item.title,
+                  'SHOP BY CATEGORY',
+                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                );
 
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -1132,7 +1168,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(item.category_id, item.title, 'SHOP BY BRAND');
+                postwebEngageCategoryClickedEvent(
+                  item.category_id,
+                  item.title,
+                  'SHOP BY BRAND',
+                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
@@ -1368,6 +1409,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       addCartItem,
       null,
       props.navigation,
+      currentPatient,
       () => setItemsLoading({ ...itemsLoading, [sku]: false })
     );
     postwebEngageAddToCartEvent(item, 'Pharmacy Partial Search');
@@ -1517,7 +1559,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 {renderShopByBrand()}
               </>
             )}
-        {renderNeedHelp()}
+        {/* {renderNeedHelp()} */}
       </TouchableOpacity>
     );
   };
