@@ -499,14 +499,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    if (doctorInfo.qualifications) {
+    /*if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }
+    }*/
 
     doc
       .fontSize(9)
@@ -694,6 +694,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#666666')
           .text(`${advice.instruction}`, 150, doc.y)
           .moveDown(0.5);
+
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
       });
       if (followUpData) {
         if (doc.y > doc.page.height - 150) {
@@ -873,14 +877,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      if (doctorInfo.qualifications) {
+      /*if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      }
+      } */
 
       doc
         .fontSize(9)
