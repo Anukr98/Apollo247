@@ -157,7 +157,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   }, [allCurrentPatients]);
 
   const checkForLinkedProfiles = (profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]) => {
-    console.log('checkForLinkedProfiles: ', profiles);
+    console.log('checkForLinkedProfiles: ');
     let primary;
     let secondary = [];
     let areUhidsLinked = false;
@@ -281,8 +281,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 //  marginTop: i === 0 ? 16 : 8,
               },
               isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
-              idSecondaryUHID ? styles.secondaryUHIDCard : {},
-              (idSecondaryUHID && !showSecondaryUhids) ? {display: 'none'} : {}
+              idSecondaryUHID ? styles.secondaryUHIDCard : {display: 'flex'},
+              (idSecondaryUHID && !showSecondaryUhids) ? {display: 'none'} : {display: 'flex'}
             ]}
             key={index}
           >
@@ -564,8 +564,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     >
       {renderHeader()}
       {renderDisclaimerBanner()}
-      <ScrollView bounces={false} style={showLinkButtons ? {marginBottom: 120} : {}}>{renderProfilesDetails()}</ScrollView>
-      {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : {}}
+      <ScrollView bounces={false} style={showLinkButtons ? {marginBottom: 120} : {marginBottom: 20}}>{renderProfilesDetails()}</ScrollView>
+      {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : <></>}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
