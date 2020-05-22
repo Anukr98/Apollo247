@@ -655,6 +655,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       if (prescription.instructions) {
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
         doc
           .fontSize(11)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')

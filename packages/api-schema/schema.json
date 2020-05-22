@@ -5330,6 +5330,18 @@
             "deprecationReason": null
           },
           {
+            "name": "customReason",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "hideStatus",
             "description": null,
             "args": [],
@@ -30958,6 +30970,16 @@
           },
           {
             "name": "cancelReasonCode",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "cancelReasonText",
             "description": null,
             "type": {
               "kind": "SCALAR",

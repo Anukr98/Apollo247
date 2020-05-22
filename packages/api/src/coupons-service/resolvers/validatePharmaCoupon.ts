@@ -252,18 +252,6 @@ export const validatePharmaCoupon: Resolver<
         lineItem.applicablePrice =
           lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
 
-        if (
-          couponGenericRulesData.minimumCartValue &&
-          itemPrice < couponGenericRulesData.minimumCartValue
-        )
-          return;
-
-        if (
-          couponGenericRulesData.maximumCartValue &&
-          itemPrice > couponGenericRulesData.maximumCartValue
-        )
-          return;
-
         const discountedPrice = discountCalculation(
           itemPrice,
           couponGenericRulesData.discountType,
