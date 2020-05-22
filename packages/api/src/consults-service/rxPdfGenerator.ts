@@ -1,4 +1,4 @@
-import { format, getTime } from 'date-fns';
+import { format, getTime, addMilliseconds } from 'date-fns';
 import path from 'path';
 import util from 'util';
 
@@ -318,10 +318,11 @@ export const convertCaseSheetToRxPdfData = async (
     const consultDate = caseSheet.appointment.sdConsultationDate
       ? caseSheet.appointment.sdConsultationDate
       : caseSheet.appointment.appointmentDateTime;
+    const istDateTime = addMilliseconds(consultDate, 19800000);
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(consultDate, 'dd/MM/yyyy'),
-      consultTime: format(consultDate, 'hh:mm a'),
+      consultDate: format(istDateTime, 'dd/MM/yyyy'),
+      consultTime: format(istDateTime, 'hh:mm a'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
