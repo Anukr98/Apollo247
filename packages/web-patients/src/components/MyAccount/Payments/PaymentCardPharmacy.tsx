@@ -257,21 +257,23 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.doctorName}>Order No. - {cardDetails.orderAutoId}</div>
         <div className={classes.consultDate}>
-          <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mma')}</span>
+          <span>{moment(cardDetails.orderDateTime).format('DD MMM YYYY, h:mm[ ]A')}</span>
           {paymentMode && paymentMode.length > 0 && (
             <span className={classes.consultType}> ({paymentMode})</span>
           )}
         </div>
-        <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.open(buttonUrl);
-            }}
-          >
-            {buttonText}
-          </AphButton>
-        </div>
+        {paymentStatus !== 'PENDING' && (
+          <div className={classes.bottomActions}>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                window.open(buttonUrl);
+              }}
+            >
+              {buttonText}
+            </AphButton>
+          </div>
+        )}
       </div>
     </div>
   );
