@@ -225,7 +225,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       >
         {
           (showSecondaryUhids && idSecondaryUHID) && (
-            <View style={{zIndex: 1}}>
+            <View>
               <View
                 style={{
                   position: 'absolute',
@@ -280,7 +280,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 minHeight: 145,
                 //  marginTop: i === 0 ? 16 : 8,
               },
-              isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR, zIndex: 6} : {backgroundColor: colors.WHITE},
+              isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
               idSecondaryUHID ? styles.secondaryUHIDCard : {},
               (idSecondaryUHID && !showSecondaryUhids) ? {display: 'none'} : {}
             ]}
@@ -463,63 +463,65 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderLinkingButtons = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 10,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Button
-          title="ADD NEW PROFILE"
-          style={{ flex: 1 ,marginHorizontal: 20, width: '60%', alignSelf: 'center', marginBottom: 20 }}
-          onPress={() => {
-            props.navigation.navigate(AppRoutes.EditProfile, {
-              isEdit: false,
-              mobileNumber: currentPatient && currentPatient!.mobileNumber,
-            });
-          }}
-        />
+      <StickyBottomComponent defaultBG style={{minHeight: 120}}>
         <View
           style={{
+            position: 'absolute',
+            bottom: 10,
+            left: 0,
+            right: 0,
             display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            flexDirection: 'column',
           }}
         >
           <Button
-            title="LINK"
-            style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE, }}
-            titleTextStyle={{
-              color: theme.colors.BUTTON_BG,
-              ...fonts.IBMPlexSansSemiBold(16)
-            }}
+            title="ADD NEW PROFILE"
+            style={{ flex: 1 ,marginHorizontal: 20, width: '60%', alignSelf: 'center', marginBottom: 20 }}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.LinkUHID, {
-                action: 'link',
-                profiles: profiles
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
               });
             }}
           />
-          <Button
-            title="DELINK"
-            style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE, }}
-            titleTextStyle={{
-              color: theme.colors.BUTTON_BG,
-              ...fonts.IBMPlexSansSemiBold(16)
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.LinkUHID, {
-                action: 'delink',
-                profiles: profiles
-              });
-            }}
-          />
+          >
+            <Button
+              title="LINK"
+              style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE, }}
+              titleTextStyle={{
+                color: theme.colors.BUTTON_BG,
+                ...fonts.IBMPlexSansSemiBold(16)
+              }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.LinkUHID, {
+                  action: 'link',
+                  profiles: profiles
+                });
+              }}
+            />
+            <Button
+              title="DELINK"
+              style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE, }}
+              titleTextStyle={{
+                color: theme.colors.BUTTON_BG,
+                ...fonts.IBMPlexSansSemiBold(16)
+              }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.LinkUHID, {
+                  action: 'delink',
+                  profiles: profiles
+                });
+              }}
+            />
+          </View>
         </View>
-      </View>
+      </StickyBottomComponent>
     );
   };
 
@@ -562,7 +564,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     >
       {renderHeader()}
       {renderDisclaimerBanner()}
-      <ScrollView bounces={false}>{renderProfilesDetails()}</ScrollView>
+      <ScrollView bounces={false} style={showLinkButtons ? {marginBottom: 120} : {}}>{renderProfilesDetails()}</ScrollView>
       {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : {}}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
