@@ -362,14 +362,18 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'ORDER_FAILED',
     'ORDER_INITIATED',
     'ORDER_PLACED',
+    'ORDER_BILLED',
     'ORDER_VERIFIED',
     'OUT_FOR_DELIVERY',
+    'PAYMENT_FAILED',
+    'PAYMENT_PENDING',
     'PAYMENT_SUCCESS',
     'PICKEDUP',
     'PRESCRIPTION_CART_READY',
     'PRESCRIPTION_UPLOADED',
     'RETURN_ACCEPTED',
     'RETURN_INITIATED',
+    'READY_AT_STORE',
   ];
 
   const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
@@ -509,8 +513,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 <div id={statusInfo.id} className={classes.cardGroup}>
                   <div
                     className={`${classes.statusCard} ${
-                      statusInfo.orderStatus &&
-                      completedStatusArray.includes(statusInfo.orderStatus)
+                      statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
                         ? `${classes.orderStatusCompleted}${classes.orderStatusActive}`
                         : classes.orderStatusActive
                     }`}
@@ -541,9 +544,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             .
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton>
+          </AphButton> */}
         </div>
       )}
       <Popover
