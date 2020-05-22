@@ -9,10 +9,14 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 } from '../graphql/types/getMedicineOrderOMSDetails';
 const styles = StyleSheet.create({
   horizontalline: {
@@ -179,6 +183,10 @@ export interface OrderSummaryViewProps extends NavigationScreenProps {
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
+  const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
+  const deliveredOrder = medicineOrderStatus.find(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  );
   let item_quantity: string;
   if (medicineOrderLineItems.length == 1) {
     item_quantity = medicineOrderLineItems.length + ' item ';
@@ -256,11 +264,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     );
   };
 
-  const getFormattedDate = (
-    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  const getDeliveredDate = (
+    medicineOrderStatus: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus
   ) => {
-    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
-    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    const statusDate = g(medicineOrderStatus, 'statusDate');
     return moment(statusDate).format('ddd, D MMMM');
   };
 
@@ -351,13 +358,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             >
               {'ITEM DETAILS'}
             </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#01475b'),
-              }}
-            >
-              {'Delivered ' + getFormattedDate(orderDetails)}
-            </Text>
+            {!!deliveredOrder && (
+              <Text style={theme.viewStyles.text('M', 13, '#01475b')}>
+                {'Delivered ' + getDeliveredDate(deliveredOrder)}
+              </Text>
+            )}
           </View>
           <View style={styles.horizontalline} />
           <View
