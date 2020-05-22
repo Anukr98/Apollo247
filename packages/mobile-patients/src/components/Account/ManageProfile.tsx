@@ -143,17 +143,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      getPatientApiCall();
-      const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
-      checkForLinkedProfiles(profiles);
-    });
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-    };
-  }, [props.navigation]);
-
-  useEffect(() => {
     if (allCurrentPatients) {
       setLoading && setLoading(false);
       const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
