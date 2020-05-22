@@ -1219,7 +1219,15 @@ export const MedicineCart: React.FC = (props) => {
                 </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div
-                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    onClick={() => {
+                      if (couponCode === '') {
+                        setIsApplyCouponDialogOpen(true);
+                      } else {
+                        setValidateCouponResult(null);
+                        setErrorMessage('');
+                        setCouponCode && setCouponCode('');
+                      }
+                    }}
                     className={`${classes.serviceType}`}
                   >
                     <div className={classes.couponTopGroup}>
