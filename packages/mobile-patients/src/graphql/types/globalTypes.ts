@@ -680,6 +680,7 @@ export interface MedicineOrderCancelInput {
 export interface MedicineOrderCancelOMSInput {
   orderNo?: number | null;
   cancelReasonCode?: string | null;
+  cancelReasonText?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
