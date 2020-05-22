@@ -282,3 +282,11 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     }
   }
 `;
+
+export const ADD_PATIENT_FEEDBACK = gql`
+  mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput!) {
+    addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
+      status
+    }
+  }
+`;
