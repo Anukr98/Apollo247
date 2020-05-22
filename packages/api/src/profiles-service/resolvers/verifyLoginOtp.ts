@@ -63,9 +63,9 @@ const verifyLoginOtp: Resolver<
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
   // QUERY_START
-  let time = new Date();
+  let reqStartTime = new Date();
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
-  verifyLogger(time, otpVerificationInput.id, 'QUERY_END');
+  verifyLogger(reqStartTime, otpVerificationInput.id, 'QUERY_END');
 
   if (matchedOtpRow.length === 0) {
     verifyLogger(callStartTime, otpVerificationInput.id, 'VALIDATION_FAILED_API_CALL___END');
@@ -79,7 +79,7 @@ const verifyLoginOtp: Resolver<
   }
 
   // VALIDATION_START
-  time = new Date();
+  reqStartTime = new Date();
   if (matchedOtpRow[0].status === OTP_STATUS.BLOCKED) {
     verifyLogger(callStartTime, matchedOtpRow[0].mobileNumber, 'VALIDATION_FAILED_API_CALL___END');
     return {
@@ -108,10 +108,10 @@ const verifyLoginOtp: Resolver<
       incorrectAttempts: matchedOtpRow[0].incorrectAttempts + 1,
     };
   }
-  verifyLogger(time, matchedOtpRow[0].mobileNumber, 'VALIDATION_END');
+  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'VALIDATION_END');
 
   //UPDATION_START
-  time = new Date();
+  reqStartTime = new Date();
   //update status of otp
   await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
     status: OTP_STATUS.VERIFIED,
@@ -119,13 +119,13 @@ const verifyLoginOtp: Resolver<
 
   //archive the old otp record and then delete it
   archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
-  verifyLogger(time, matchedOtpRow[0].mobileNumber, 'UPDATION_END');
+  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'UPDATION_END');
 
   //CREATE_TOKEN_START
-  time = new Date();
+  reqStartTime = new Date();
   //generate customToken
   const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
-  verifyLogger(time, matchedOtpRow[0].mobileNumber, 'CREATE_TOKEN_END');
+  verifyLogger(reqStartTime, matchedOtpRow[0].mobileNumber, 'CREATE_TOKEN_END');
 
   verifyLogger(callStartTime, matchedOtpRow[0].mobileNumber, 'API_CALL___END');
   return {

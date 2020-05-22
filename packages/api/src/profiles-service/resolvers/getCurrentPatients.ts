@@ -160,20 +160,20 @@ const getCurrentPatients: Resolver<
     const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
 
     let uhids;
-    let time = new Date();
+    let reqStartTime = new Date();
     try {
       const prismAuthToken = await fetch(apiUrl, prismHeaders)
         .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
         .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
           dLogger(
-            time,
+            reqStartTime,
             'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
             `${apiUrl} --- ${JSON.stringify(prismGetAuthTokenError)}`
           );
           isPrismWorking = 0;
         });
       dLogger(
-        time,
+        reqStartTime,
         'getCurrentPatients PRISM_GET_AUTHTOKEN_API_CALL___END',
         `${apiUrl} --- ${JSON.stringify(prismAuthToken)}`
       );
@@ -181,12 +181,12 @@ const getCurrentPatients: Resolver<
       if (prismAuthToken != null) {
         const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
 
-        time = new Date();
+        reqStartTime = new Date();
         uhids = await fetch(getUserApiUrl, prismHeaders)
           .then((res) => res.json() as Promise<PrismGetUsersResponse>)
           .catch((prismGetUsersError: PrismGetUsersError) => {
             dLogger(
-              time,
+              reqStartTime,
               'getCurrentPatients PRISM_GET_USERS_API_CALL___ERROR',
               `${getUserApiUrl} --- ${JSON.stringify(prismGetUsersError)}`
             );
@@ -194,7 +194,7 @@ const getCurrentPatients: Resolver<
             isUserDetails = 1;
           });
         dLogger(
-          time,
+          reqStartTime,
           'getCurrentPatients PRISM_GET_USERS_API_CALL___END',
           `${getUserApiUrl} --- ${JSON.stringify(uhids)}`
         );
@@ -206,7 +206,7 @@ const getCurrentPatients: Resolver<
       isUserDetails = 1;
     }
 
-    time = new Date();
+    reqStartTime = new Date();
     const findOrCreatePatient = (
       findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
       createOptions: Partial<Patient>
@@ -265,9 +265,13 @@ const getCurrentPatients: Resolver<
     const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
     });
-    dLogger(time, 'getCurrentPatients CREATE_OR_RETURN_PATIENTS___END', `${updatePatients}`);
+    dLogger(
+      reqStartTime,
+      'getCurrentPatients CREATE_OR_RETURN_PATIENTS___END',
+      `${updatePatients}`
+    );
 
-    time = new Date();
+    reqStartTime = new Date();
     //patients = await patientRepo.findByMobileNumber(mobileNumber);
     patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
     if (args.appVersion && args.deviceType) {
@@ -279,7 +283,7 @@ const getCurrentPatients: Resolver<
 
       const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
       dLogger(
-        time,
+        reqStartTime,
         'getCurrentPatients ASYNC_UPDATE_APP_VERSION___END',
         `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
       );
@@ -311,19 +315,19 @@ const getLoginPatients: Resolver<
 
   const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
 
-  let time = new Date();
+  let reqStartTime = new Date();
   const prismAuthToken = await fetch(apiUrl, prismHeaders)
     .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
     .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
       dLogger(
-        time,
+        reqStartTime,
         'getLoginPatients PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
         `${apiUrl} --- ${JSON.stringify(prismGetAuthTokenError)}`
       );
       isPrismWorking = 0;
     });
   dLogger(
-    time,
+    reqStartTime,
     'getLoginPatients PRISM_GET_AUTHTOKEN_API_CALL___END',
     `${apiUrl} --- ${JSON.stringify(prismAuthToken)}`
   );
@@ -332,25 +336,25 @@ const getLoginPatients: Resolver<
   if (prismAuthToken != null) {
     const getUserApiUrl = `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`;
 
-    time = new Date();
+    reqStartTime = new Date();
     uhids = await fetch(getUserApiUrl, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetUsersResponse>)
       .catch((prismGetUsersError: PrismGetUsersError) => {
         dLogger(
-          time,
+          reqStartTime,
           'getLoginPatients PRISM_GET_USERS_API_CALL___ERROR',
           `${getUserApiUrl} --- ${JSON.stringify(prismGetUsersError)}`
         );
         isPrismWorking = 0;
       });
     dLogger(
-      time,
+      reqStartTime,
       'getLoginPatients PRISM_GET_USERS_API_CALL___END',
       `${getUserApiUrl} --- ${JSON.stringify(uhids)}`
     );
   }
 
-  time = new Date();
+  reqStartTime = new Date();
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
@@ -407,9 +411,9 @@ const getLoginPatients: Resolver<
   const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
-  dLogger(time, 'getLoginPatients CREATE_OR_RETURN_PATIENTS___END', `${updatePatients}`);
+  dLogger(reqStartTime, 'getLoginPatients CREATE_OR_RETURN_PATIENTS___END', `${updatePatients}`);
 
-  time = new Date();
+  reqStartTime = new Date();
   const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
   if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
@@ -419,7 +423,7 @@ const getLoginPatients: Resolver<
     });
     const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
     dLogger(
-      time,
+      reqStartTime,
       'getLoginPatients ASYNC_UPDATE_APP_VERSION___END',
       `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
     );

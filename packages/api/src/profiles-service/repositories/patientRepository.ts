@@ -144,19 +144,19 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const authTokenResult = await fetch(url, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
       .catch((error: PrismGetAuthTokenError) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPrismAuthToken PRISM_GET_AUTHTOKEN_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPrismAuthToken PRISM_GET_AUTHTOKEN_API_CALL___END',
       `${url} --- ${JSON.stringify(authTokenResult)}`
     );
@@ -173,19 +173,19 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_USERS_API}?authToken=${authToken}&mobile=${mobileNumber}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const usersResult = await fetch(url, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetUsersResponse>)
       .catch((error: PrismGetUsersError) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPrismUsersList PRISM_GET_USERS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPrismUsersList PRISM_GET_USERS_API_CALL___END',
       `${url} --- ${JSON.stringify(usersResult)}`
     );
@@ -202,19 +202,19 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_UHID_AUTH_TOKEN_API}?uhid=${uhid}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const authTokenResult = await fetch(url, prismHeaders)
       .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
       .catch((error: PrismGetAuthTokenError) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPrismAuthTokenByUHID PRISM_GET_UHID_AUTH_TOKEN_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPrismAuthTokenByUHID PRISM_GET_UHID_AUTH_TOKEN_API_CALL___END',
       `${url} --- ${JSON.stringify(authTokenResult)}`
     );
@@ -223,7 +223,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
-    const time = new Date();
+    const reqStartTime = new Date();
     const patientData = await this.findOne({ where: { id } }).catch((error) => {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
         error,
@@ -242,7 +242,7 @@ export class PatientRepository extends Repository<Patient> {
     } else {
       const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
       dLogger(
-        time,
+        reqStartTime,
         'validateAndGetUHID VALIDATE_AND_GET_UHID___END',
         `${JSON.stringify(prismUsersList)} --- ${JSON.stringify(matchedUser)}`
       );
@@ -268,21 +268,21 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const detailsResult = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPrismUsersDetails PRISM_GET_USER_DETAILS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPrismUsersDetails PRISM_GET_USER_DETAILS_API_CALL___END',
       `${url} --- ${JSON.stringify(detailsResult)}`
     );
@@ -320,21 +320,21 @@ export class PatientRepository extends Repository<Patient> {
       formData: formData,
     };
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const uploadResult = await requestPromise(options)
       .then((res) => {
         return JSON.parse(res);
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
           `${url} --- ${formData} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
       `${url} --- ${formData} --- ${JSON.stringify(uploadResult)}`
     );
@@ -355,21 +355,21 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const time = new Date();
+    const reqStartTime = new Date();
     const labResults = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(labResults)}`
         );
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___END',
       `${url} --- ${JSON.stringify(labResults)}`
     );
@@ -385,21 +385,21 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___END',
       `${url} --- ${JSON.stringify(healthChecks)}`
     );
@@ -415,21 +415,21 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___END',
       `${url} --- ${JSON.stringify(hospitalizations)}`
     );
@@ -445,21 +445,21 @@ export class PatientRepository extends Repository<Patient> {
 
     const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const opPrescriptions = await fetch(url, prismHeaders)
       .then((res) => {
         return res.json();
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___ERROR',
           `${url} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___END',
       `${url} --- ${JSON.stringify(opPrescriptions)}`
     );
@@ -619,7 +619,7 @@ export class PatientRepository extends Repository<Patient> {
       },
     };
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const uhidCreateResp = await fetch(newUhidUrl, {
       method: 'POST',
       body: JSON.stringify(uhidInput),
@@ -629,7 +629,7 @@ export class PatientRepository extends Repository<Patient> {
       },
     }).catch((error) => {
       dLogger(
-        time,
+        reqStartTime,
         'createNewUhid CREATE_NEW_UHID_URL_API_CALL___ERROR',
         `${newUhidUrl} --- ${JSON.stringify(uhidInput)} --- ${JSON.stringify(error)}`
       );
@@ -638,7 +638,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const textProcessRes = await uhidCreateResp.text();
     dLogger(
-      time,
+      reqStartTime,
       'createNewUhid CREATE_NEW_UHID_URL_API_CALL___END',
       `${newUhidUrl} --- ${JSON.stringify(uhidInput)} --- ${textProcessRes}`
     );
@@ -685,7 +685,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const createUserAPI = `${process.env.PRISM_CREATE_UHID_USER_API}?${queryParams}`;
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const uhidUserResp = await fetch(createUserAPI, {
       method: 'GET',
       headers: {
@@ -693,7 +693,7 @@ export class PatientRepository extends Repository<Patient> {
       },
     }).catch((error) => {
       dLogger(
-        time,
+        reqStartTime,
         'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___ERROR',
         `${createUserAPI} --- ${JSON.stringify(error)}`
       );
@@ -702,7 +702,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const textRes = await uhidUserResp.text();
     dLogger(
-      time,
+      reqStartTime,
       'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___END',
       `${createUserAPI} --- ${textRes}`
     );
@@ -732,7 +732,7 @@ export class PatientRepository extends Repository<Patient> {
     };
     const athsTokenUrl = process.env.ATHS_TOKEN_CREATE ? process.env.ATHS_TOKEN_CREATE : '';
 
-    const time = new Date();
+    const reqStartTime = new Date();
     const tokenResp = await fetch(athsTokenUrl, {
       method: 'POST',
       body: JSON.stringify(athsTokenInput),
@@ -743,14 +743,14 @@ export class PatientRepository extends Repository<Patient> {
       })
       .catch((error) => {
         dLogger(
-          time,
+          reqStartTime,
           'createAthsToken ATHS_TOKEN_CREATE_API_CALL___ERROR',
           `${athsTokenUrl} --- ${JSON.stringify(athsTokenInput)} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.PRISM_CREATE_ATHS_TOKEN_ERROR);
       });
     dLogger(
-      time,
+      reqStartTime,
       'createAthsToken ATHS_TOKEN_CREATE_API_CALL___END',
       `${athsTokenUrl} --- ${JSON.stringify(athsTokenInput)} --- ${JSON.stringify(tokenResp)}`
     );
