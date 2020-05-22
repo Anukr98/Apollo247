@@ -7,6 +7,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import moment from 'moment';
+import { OrderFeedback } from './OrderFeedback';
+
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
@@ -212,6 +214,8 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
+      bottom: '0 !important',
+      top: 'auto !important',
       [theme.breakpoints.down('xs')]: {
         left: '0px !important',
         maxWidth: '100%',
@@ -608,9 +612,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             {orderDetailsData.orderTat && getFormattedDateTime(orderDetailsData.orderTat)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton> */}
+          </AphButton>
         </div>
       )}
       <Popover
@@ -626,58 +630,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <div className={classes.feedbackPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className="feedbackContent">
-              <Typography component="h3">We Value Your Feedback! :) </Typography>
-              <Typography component="h4">
-                How was your overall experience with the following medicine delivery —
-              </Typography>
-              <div className={classes.deliveryDetails}>
-                <div className={classes.iconContainer}>
-                  <img src={require('images/ic_tablets.svg')} />
-                </div>
-                <div>
-                  <Typography component="h4">Medicines — #A2472707936 </Typography>
-                  <Typography component="p">Delivered On: 24 Oct 2019</Typography>
-                </div>
-              </div>
-              <ul className={classes.feedbackList}>
-                <li>
-                  <img src={require('images/ic-poor.png')} />
-                  Poor
-                </li>
-                <li>
-                  <img src={require('images/ic-okay.png')} />
-                  Okay
-                </li>
-                <li>
-                  <img src={require('images/ic-good.png')} />
-                  Good
-                </li>
-                <li>
-                  <img src={require('images/ic-great.png')} />
-                  Great
-                </li>
-              </ul>
-              <div className={classes.suggestion}>
-                <Typography component="h4">What can be improved?</Typography>
-                <TextField className={classes.textInput} label="Write your suggestion here.." />
-                <Button variant="contained">Submit Feedback</Button>
-              </div>
-            </div>
-            <div className={classes.thankyou}>
-              <Typography component="h3">We Value Your Feedback! :) </Typography>
-              <Typography component="h4">
-                How was your overall experience with the following medicine delivery —
-              </Typography>
-              <Link href="#">Ok, Got It</Link>
-            </div>
-          </div>
-        </div>
+        <OrderFeedback setIsPopoverOpen={setIsPopoverOpen} />
       </Popover>
     </div>
   );
