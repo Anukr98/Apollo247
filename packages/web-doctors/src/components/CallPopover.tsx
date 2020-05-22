@@ -1897,7 +1897,30 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       isConsultStarted = false;
     }
   };
+
+  const onPrint = () => {
+    var divToPrint = document.getElementById('prescriptionWrapper');
+    var head = document.getElementsByTagName('head')[0].innerHTML;
+
+    var popupWin = window.open('', '_blank');
+    popupWin.document.open();
+
+    const winHtml = `<!DOCTYPE html>
+    <html>
+        <head>
+          ${head}
+        </head>
+        <body onload="window.print()">
+          ${divToPrint.innerHTML}
+        </body>
+    </html>`;
+
+    popupWin.document.write(winHtml);
+    popupWin.document.close();
+  };
+
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
+
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1934,15 +1957,25 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus === STATUS.COMPLETED &&
             currentUserType !== LoggedInUserType.SECRETARY &&
             props.sentToPatient === true ? (
-              <Button
-                className={classes.backButton}
-                onClick={() => {
-                  onStopConsult(true);
-                }}
-              >
-                {isResendLoading ? 'please wait...' : 'Resend Prescription'}
-                {/* <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span> */}
-              </Button>
+              <>
+                <Button
+                  className={classes.backButton}
+                  onClick={() => {
+                    onStopConsult(true);
+                  }}
+                >
+                  {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                  {/* <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span> */}
+                </Button>
+                <Button
+                  className={classes.backButton}
+                  onClick={() => {
+                    onPrint();
+                  }}
+                >
+                  Print
+                </Button>
+              </>
             ) : (
               props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
@@ -2194,6 +2227,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 Reschedule
               </Button>
             )}
+
             {!showCallMoreBtns && (
               <Button
                 className={classes.consultIcon}
