@@ -360,7 +360,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         style={[
           { marginHorizontal: 20 },
           profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
-          index == 0 ? { marginTop: 20 } : {},
+          index == 0 ? { marginTop: 20 } : {margin: 0},
         ]}
       >
         {
@@ -467,8 +467,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               {backgroundColor: theme.colors.APP_YELLOW_COLOR},
               // isSelectedPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
               isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
-              idSecondaryUHID ? styles.secondaryUHIDCard : {},
-              isDeSelected ? {minHeight: 50, width: '75%', padding: 10} : {}
+              idSecondaryUHID ? styles.secondaryUHIDCard : {display: 'flex'},
+              isDeSelected ? {minHeight: 50, width: '75%', padding: 10} : {display: 'flex'}
           ]}
             key={index}
           >
@@ -500,7 +500,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               <View 
                 style={[
                   styles.circle,
-                  (indexOfId > -1) ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {},
+                  (indexOfId > -1) ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {backgroundColor: theme.colors.WHITE},
                 ]} />
             }
             {
@@ -508,7 +508,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               <View 
                 style={[
                   styles.circle,
-                  profile!.uhid === selectedPrimary ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {},
+                  profile!.uhid === selectedPrimary ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {backgroundColor: theme.colors.WHITE},
                 ]} />
             }
             <View
@@ -520,14 +520,14 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
             >
               <View style={[
                 styles.imageView,
-                isDeSelected ? styles.imageViewSmall : {}
+                isDeSelected ? styles.imageViewSmall : {display: 'flex'}
               ]}>
                 {profile!.photoUrl &&
                 profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                   <Image
                     style={[
                       styles.profileImageStyle,
-                      isDeSelected ? styles.profileImageStyleSmall : {}
+                      isDeSelected ? styles.profileImageStyleSmall : {display: 'flex'}
                     ]}
                     source={{
                       uri: profile!.photoUrl,
@@ -673,7 +673,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG style={{}}>
+      <StickyBottomComponent defaultBG >
         {
           (action === 'link') && (
             <>
