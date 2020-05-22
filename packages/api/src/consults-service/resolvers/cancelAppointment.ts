@@ -120,6 +120,14 @@ const cancelAppointment: Resolver<
     appointmentPayments: appointment.appointmentPayments[0]
 
   }, consultsDb);
+  sendNotification({
+    appointmentId: appointment.id,
+    notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+  }
+    , patientsDb
+    , consultsDb
+    , doctorsDb
+  )
 
   //update slot status in ES as open
   const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';

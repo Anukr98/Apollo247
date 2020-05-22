@@ -1,10 +1,11 @@
 import {
     EntityRepository,
-    Repository
+    Repository,
+    Not
 } from 'typeorm';
 
 import {
-    AppointmentRefunds,
+    AppointmentRefunds, REFUND_STATUS,
 } from 'consults-service/entities';
 
 import {
@@ -25,7 +26,6 @@ export class AppointmentRefundsRepository extends Repository<AppointmentRefunds>
     }
 
     async raiseRefundRequestWithPaytm(paytmBody: PaytmHeadBody, paytmUrl: string) {
-        console.log("paytm final", paytmBody);
         try {
             const response = await fetch(paytmUrl, {
                 method: 'POST',
@@ -44,6 +44,17 @@ export class AppointmentRefundsRepository extends Repository<AppointmentRefunds>
                 updateRefundError,
             });
         })
+    }
+
+    async getRefundsByAppointmentId(id: AppointmentRefunds['appointment']) {
+        try {
+            return this.findOne({ where: { appointment: id, refundStatus: REFUND_STATUS.REFUND_REQUEST_RAISED }, order: { txnTimestamp: 'DESC' } });
+        }
+        catch (getRefundError) {
+            throw new AphError(AphErrorMessages.GET_REFUND_ERROR, undefined, {
+                getRefundError,
+            });
+        }
     }
 
 }
