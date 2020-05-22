@@ -45,13 +45,16 @@ export const ConsultPayments: React.FC = (props) => {
 
   if (error) return <div className={classes.circlularProgress}>No data is available</div>;
 
-  return data && data.consultOrders && data.consultOrders.appointments ? (
-    <div className={classes.root}>
-      {data.consultOrders.appointments.map((appointmentDetails) => (
-        <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
-      ))}
-    </div>
-  ) : (
-    <></>
-  );
+  if (data && data.consultOrders && data.consultOrders.appointments) {
+    const appointmentData = data.consultOrders.appointments;
+    const dataReversed = [...appointmentData].reverse();
+    return (
+      <div className={classes.root}>
+        {dataReversed.map((appointmentDetails) => (
+          <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
+        ))}
+      </div>
+    );
+  }
+  return <div></div>;
 };

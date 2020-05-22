@@ -262,16 +262,18 @@ export const PaymentCardPharmacy: React.FC<PaymentCardProps> = (props) => {
             <span className={classes.consultType}> ({paymentMode})</span>
           )}
         </div>
-        <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.open(buttonUrl);
-            }}
-          >
-            {buttonText}
-          </AphButton>
-        </div>
+        {paymentStatus !== 'PENDING' && (
+          <div className={classes.bottomActions}>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                window.open(buttonUrl);
+              }}
+            >
+              {buttonText}
+            </AphButton>
+          </div>
+        )}
       </div>
     </div>
   );

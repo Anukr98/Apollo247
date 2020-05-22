@@ -249,7 +249,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.doctorName}>{cardDetails.doctor.name}</div>
         <div className={classes.consultDate}>
-          <span>{moment(cardDetails.appointmentDateTime).format('DD MMM YYYY, h:mma')}</span>
+          <span>{moment(cardDetails.appointmentDateTime).format('DD MMM YYYY, h:mm[ ]A')}</span>
           <span className={classes.consultType}>
             {' '}
             ({cardDetails.appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit'})
