@@ -780,6 +780,9 @@ export class CaseSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, default: false })
+  isJdConsultStarted: Boolean;
+
   @Column({ nullable: true, type: 'json' })
   medicinePrescription: string;
 
