@@ -38,6 +38,7 @@ export const consultOrdersTypeDefs = gql`
     paymentStatus: String
     paymentType: String
     responseMessage: String
+    paymentDateTime: DateTime
   }
   extend type Query {
     consultOrders(patientId: String): AppointmentsResult
@@ -72,6 +73,7 @@ type ApptPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
+  paymentDateTime: Date;
 };
 
 const consultOrders: Resolver<
