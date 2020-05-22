@@ -369,19 +369,34 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
       currentPatient.patientMedicalHistory.bp &&
         (v.find((i) => i.k === 'bp')!.v = [
           currentPatient.patientMedicalHistory.bp !== 'No Idea'
-            ? currentPatient.patientMedicalHistory.bp
+            ? (currentPatient.patientMedicalHistory.bp.match(/^\d{0,3}(\/|\\){0,1}\d{0,3}$/) || [
+                '',
+              ])[0] || ''
             : '',
           '',
         ]);
-      currentPatient.patientMedicalHistory.height &&
-        (v.find((i) => i.k === 'height')!.v =
-          currentPatient.patientMedicalHistory.height !== 'No Idea'
-            ? [...currentPatient.patientMedicalHistory.height.split(' ')]
-            : ['', 'cm']);
+
+      const height = [];
+      if (currentPatient.patientMedicalHistory.height) {
+        const heightData = currentPatient.patientMedicalHistory.height.split(' ');
+        if (heightData.length == 2) {
+          height.push((heightData[0].match(/^[0-9'"’”.]*$/g) || [''])[0] || '');
+          height.push(
+            ['cm', 'ft'].includes(heightData[1].toLowerCase()) ? heightData[1].toLowerCase() : 'cm'
+          );
+        } else {
+          height.push('', 'cm');
+        }
+      } else {
+        height.push('', 'cm');
+      }
+      v.find((i) => i.k === 'height')!.v = height;
       currentPatient.patientMedicalHistory.weight &&
         (v.find((i) => i.k === 'weight')!.v = [
           currentPatient.patientMedicalHistory.weight !== 'No Idea'
-            ? currentPatient.patientMedicalHistory.weight
+            ? (currentPatient.patientMedicalHistory.weight.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [
+                '',
+              ])[0] || ''
             : '',
         ]);
       currentPatient.patientMedicalHistory.dietAllergies &&
