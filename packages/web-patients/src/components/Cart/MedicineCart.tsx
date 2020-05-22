@@ -739,7 +739,7 @@ export const MedicineCart: React.FC = (props) => {
               } else {
                 setValidateCouponResult(null);
                 setErrorMessage(
-                  'Product(s) in cart are not applicable for this coupon or at higher discounts'
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
               }
             } else {
@@ -930,7 +930,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);

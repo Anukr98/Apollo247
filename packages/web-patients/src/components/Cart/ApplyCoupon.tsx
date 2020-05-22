@@ -260,7 +260,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 // setSelectCouponCode('');
                 props.setValidateCouponResult(null);
                 setErrorMessage(
-                  'Product(s) in cart are not applicable for this coupon or at higher discounts'
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
                 setCouponCode && setCouponCode('');
               }
