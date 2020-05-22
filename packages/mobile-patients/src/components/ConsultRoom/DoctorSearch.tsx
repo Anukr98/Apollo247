@@ -151,13 +151,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   showPopUp: {
-    backgroundColor: 'rgba(0,0,0,0.01)',
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.15)',
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
     bottom: 0,
-    elevation: 5,
+    elevation: 160,
   },
   container: {
     justifyContent: 'flex-end',
