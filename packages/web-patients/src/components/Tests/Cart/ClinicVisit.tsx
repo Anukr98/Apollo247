@@ -295,8 +295,11 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
             <>
               {pincodeError && (
                 <div className={classes.noAddress}>
-                  Sorry! We're working hard to get to this area! In the meantime, you can either
-                  pick up from a nearby store, or change the pincode.
+                  <p>
+                    Sorry! We're working hard to get to this area! In the meantime, you can either
+                    pick up from a nearby store, or change the pincode.
+                  </p>
+                  <p>You can also call 1860 500 0101 for Apollo Pharmacy retail customer care.</p>
                 </div>
               )}
             </>

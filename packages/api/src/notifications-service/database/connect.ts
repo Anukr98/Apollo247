@@ -3,6 +3,7 @@ import {
   Appointment,
   AppointmentCallDetails,
   AppointmentDocuments,
+  AppointmentRefunds,
   AppointmentNoShow,
   AppointmentPayments,
   AppointmentSessions,
@@ -80,6 +81,7 @@ import {
   ReferralCodesMaster,
   ReferalCouponMapping,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -90,6 +92,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         AppointmentDocuments,
         AppointmentNoShow,
+        AppointmentRefunds,
         AppointmentPayments,
         AppointmentSessions,
         AuditHistory,
@@ -190,6 +193,7 @@ export const connect = async () => {
         RegistrationCodes,
         ReferralCodesMaster,
         ReferalCouponMapping,
+        MedicineOrderCancelReason,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

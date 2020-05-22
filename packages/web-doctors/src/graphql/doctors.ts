@@ -1,7 +1,10 @@
 import gql from 'graphql-tag';
 
-export const UPDATE_DOCTOR_ONLINE_STATUS = gql`
-  mutation UpdateDoctorOnlineStatus($doctorId: String!, $onlineStatus: DOCTOR_ONLINE_STATUS!) {
+export const UPDATE_DOCTOR_ONLINE_STATUS_DOCTOR = gql`
+  mutation UpdateDoctorOnlineStatusDoctor(
+    $doctorId: String!
+    $onlineStatus: DOCTOR_ONLINE_STATUS!
+  ) {
     updateDoctorOnlineStatus(doctorId: $doctorId, onlineStatus: $onlineStatus) {
       doctor {
         id
@@ -81,8 +84,8 @@ export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
   }
 `;
 /* get doctor details by doctor id */
-export const GET_DOCTOR_DETAILS_BY_ID = gql`
-  query GetDoctorDetailsById($id: String!) {
+export const GET_DOCTOR_DETAILS_BY_ID_DOCTOR = gql`
+  query GetDoctorDetailsByIdDoctor($id: String!) {
     getDoctorDetailsById(id: $id) {
       id
       salutation
@@ -185,8 +188,8 @@ export const GET_JD_DASHBOARD = gql`
   }
 `;
 
-export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
-  query GetDoctorFavouriteMedicineList {
+export const GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR = gql`
+  query GetDoctorFavouriteMedicineListDoctor {
     getDoctorFavouriteMedicineList {
       medicineList {
         medicineConsumptionDurationInDays
@@ -209,8 +212,8 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
     }
   }
 `;
-export const GET_DOCTOR_FAVOURITE_TESTS = gql`
-  query GetDoctorFavouriteTestList {
+export const GET_DOCTOR_FAVOURITE_TESTS_DOCTOR = gql`
+  query GetDoctorFavouriteTestListDoctor {
     getDoctorFavouriteTestList {
       testList {
         id

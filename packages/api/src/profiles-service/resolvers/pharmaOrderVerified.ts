@@ -13,6 +13,7 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { format, addMinutes, parseISO } from 'date-fns';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -28,7 +29,15 @@ export const saveOrderShipmentsTypeDefs = gql`
     siteName: String
     apOrderNo: String
     updatedDate: String!
-    itemDetails: [ArticleDetails]
+    itemDetails: [ItemArticleDetails]
+  }
+
+  input ItemArticleDetails {
+    articleCode: String
+    articleName: String
+    quantity: Int
+    batch: String
+    unitPrice: Float
   }
 
   type SaveOrderShipmentsResult {
@@ -63,10 +72,10 @@ type Shipment = {
   apOrderNo: string;
   updatedDate: string;
   status: MEDICINE_ORDER_STATUS;
-  itemDetails: ArticleDetails[];
+  itemDetails: ItemArticleDetails[];
 };
 
-type ArticleDetails = {
+type ItemArticleDetails = {
   articleCode: string;
   articleName: string;
   quantity: number;
@@ -96,9 +105,7 @@ const saveOrderShipments: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
-  const shipmentsInput = saveOrderShipmentsInput.shipments.sort(
-    (a, b) => b.itemDetails.length - a.itemDetails.length
-  );
+  const shipmentsInput = saveOrderShipmentsInput.shipments;
   let shipmentsResults;
   try {
     const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
@@ -109,7 +116,6 @@ const saveOrderShipments: Resolver<
         siteId: shipment.siteId,
         siteName: shipment.siteName,
         itemDetails: JSON.stringify(shipment.itemDetails),
-        isPrimary: !index,
       };
       return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
     });
@@ -117,8 +123,11 @@ const saveOrderShipments: Resolver<
   } catch (e) {
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
   }
-
   shipmentsResults.forEach(async (shipmentsResult, index) => {
+    const statusDate = format(
+      addMinutes(parseISO(shipmentsInput[index].updatedDate), -330),
+      "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+    );
     medicineOrdersRepo.saveMedicineOrderStatus(
       {
         orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
@@ -130,10 +139,27 @@ const saveOrderShipments: Resolver<
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
       medicineOrderShipments: shipmentsResult,
-      statusDate: new Date(shipmentsInput[index].updatedDate),
+      statusDate: new Date(statusDate),
     };
     medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   });
+  const statusDate = format(
+    addMinutes(parseISO(shipmentsInput[0].updatedDate), -330),
+    "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+  );
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+    medicineOrders: orderDetails,
+    statusDate: new Date(statusDate),
+  };
+  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+
+  await medicineOrdersRepo.updateMedicineOrderDetails(
+    orderDetails.id,
+    orderDetails.orderAutoId,
+    new Date(),
+    MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+  );
 
   sendMedicineOrderStatusNotification(
     NotificationType.MEDICINE_ORDER_CONFIRMED,

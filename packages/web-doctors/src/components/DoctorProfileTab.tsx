@@ -727,8 +727,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const currentUserId = useAuthContext().currentUserId!;
   const currentUserType = useAuthContext().currentUserType!;
   const client = useApolloClient();
-  const [userDetails, setUserDetails] = React.useState();
-  const [starDoctors, setStarDoctor] = React.useState();
+  const [userDetails, setUserDetails] = React.useState<any>();
+  const [starDoctors, setStarDoctor] = React.useState<any>();
   const getDoctorDetailsById = () => {
     client
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({

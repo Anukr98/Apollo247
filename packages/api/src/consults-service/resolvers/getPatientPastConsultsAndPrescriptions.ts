@@ -12,6 +12,8 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
@@ -33,6 +35,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
 
   enum MEDICINE_ORDER_STATUS {
     QUOTE
+    ORDER_BILLED
     PAYMENT_SUCCESS
     PAYMENT_PENDING
     PAYMENT_FAILED
@@ -213,8 +216,15 @@ const getPatientLabResults: Resolver<
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
   console.log(prismUserList);
 
-  //check if current user uhid matches with response uhids
-  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  const patientDetails = await patientsRepo.findById(args.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  let uhid = '';
+  if (patientDetails.primaryUhid) {
+    uhid = patientDetails.primaryUhid;
+  } else {
+    uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  }
 
   if (!uhid) {
     return false;

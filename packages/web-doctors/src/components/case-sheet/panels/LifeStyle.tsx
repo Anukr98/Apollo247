@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     width: '100%',
     position: 'relative',
+    marginBottom: 15,
     '& textarea': {
       border: 'none',
       padding: 15,
@@ -33,6 +34,11 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontWeight: 500,
       paddingRight: 60,
       borderRadius: 0,
+    },
+    '& p': {
+      position: 'absolute',
+      bottom: -20,
+      color: '#890000 !important',
     },
   },
   textContent: {
@@ -50,6 +56,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     display: 'inline-block',
     width: '100%',
+    '& textarea:focus': {
+      borderRadius: '5px',
+      boxShadow: '0 0 5px #00b38e',
+      backgroundColor: '#ffffff',
+      boxSizing: 'border-box',
+    },
   },
   drugAllergies: {
     width: '45%',
@@ -116,6 +128,11 @@ export const LifeStyle: React.FC = () => {
     menstrualHistory,
     familyHistory,
     caseSheetEdit,
+
+    medicationHistory,
+    setMedicationHistory,
+    occupationHistory,
+    setOccupationHistory,
   } = useContext(CaseSheetContext);
 
   const gender = patientDetails && patientDetails.gender ? patientDetails.gender : null;
@@ -124,7 +141,7 @@ export const LifeStyle: React.FC = () => {
       element.selectionStart = element.selectionEnd = element.value.length;
     } else if (typeof element.createTextRange != 'undefined') {
       element.focus();
-      var range = element.createTextRange();
+      const range = element.createTextRange();
       range.collapse(false);
       range.select();
     }
@@ -147,6 +164,10 @@ export const LifeStyle: React.FC = () => {
         return localStorageItem ? localStorageItem.menstrualHistory : menstrualHistory;
       case 'familyHistory':
         return localStorageItem ? localStorageItem.familyHistory : familyHistory;
+      case 'medicationHistory':
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
+      case 'occupationHistory':
+        return localStorageItem ? localStorageItem.occupationHistory : occupationHistory;
     }
   };
 
@@ -173,6 +194,29 @@ export const LifeStyle: React.FC = () => {
                   updateLocalStorageItem(params.id, storageItem);
                 }
                 setPastMedicalHistory(e.target.value);
+              }}
+            />
+          </Typography>
+        </Typography>
+
+        <Typography className={classes.mainContainer} component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Medication History
+          </Typography>
+          <Typography component="div" className={classes.content}>
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+              disabled={!caseSheetEdit}
+              fullWidth
+              multiline
+              defaultValue={getDefaultValue('medicationHistory')}
+              onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.medicationHistory = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+                setMedicationHistory(e.target.value);
               }}
             />
           </Typography>
@@ -265,6 +309,29 @@ export const LifeStyle: React.FC = () => {
                   updateLocalStorageItem(params.id, storageItem);
                 }
                 setLifeStyle(e.target.value);
+              }}
+            />
+          </Typography>
+        </Typography>
+
+        <Typography className={classes.mainContainer} component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Environmental & Occupational History
+          </Typography>
+          <Typography component="div" className={classes.content}>
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+              disabled={!caseSheetEdit}
+              fullWidth
+              multiline
+              defaultValue={getDefaultValue('occupationHistory')}
+              onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.occupationHistory = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+                setOccupationHistory(e.target.value);
               }}
             />
           </Typography>

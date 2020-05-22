@@ -55,6 +55,19 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
+export enum REFUND_STATUS {
+  REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
+  REFUND_FAILED = 'REFUND_FAILED',
+  REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
+}
+
+export enum PAYTM_STATUS {
+  TXN_FAILURE = 'TXN_FAILURE',
+  PENDING = 'PENDING',
+  TXN_SUCCESS = 'TXN_SUCCESS',
+}
+
 export enum APPOINTMENT_STATE {
   NEW = 'NEW',
   TRANSFER = 'TRANSFER',
@@ -64,10 +77,33 @@ export enum APPOINTMENT_STATE {
   AWAITING_RESCHEDULE = 'AWAITING_RESCHEDULE',
 }
 
+export enum PAYMENT_METHODS {
+  DC = 'DEBIT_CARD',
+  CC = 'CREDIT_CARD',
+  NB = 'NET_BANKING',
+  PPI = 'PAYTM_WALLET',
+  EMI = 'CREDIT_CARD_EMI',
+  UPI = 'UPI',
+  PAYTMCC = 'PAYTM_POSTPAID',
+  COD = 'COD',
+}
+
+export enum PAYMENT_METHODS_REVERSE {
+  DEBIT_CARD = 'DC',
+  CREDIT_CARD = 'CC',
+  NET_BANKING = 'NB',
+  PAYTM_WALLET = 'PPI',
+  CREDIT_CARD_EMI = 'EMI',
+  UPI = 'UPI',
+  PAYTM_POSTPAID = 'PAYTMCC',
+  COD = 'COD',
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
+  SYSTEM = 'SYSTEM',
 }
 
 export enum TRANSFER_STATUS {
@@ -234,6 +270,15 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   deviceType: DEVICETYPE;
 
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
+  paymentInfo: Partial<AppointmentPayments>;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -256,6 +301,9 @@ export class Appointment extends BaseEntity {
     (appointmentPayments) => appointmentPayments.appointment
   )
   appointmentPayments: AppointmentPayments[];
+
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointment)
+  appointmentRefunds: AppointmentRefunds[];
 
   @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
   appointmentNoShow: AppointmentNoShow[];
@@ -324,13 +372,22 @@ export class AppointmentPayments extends BaseEntity {
   @Column()
   paymentType: APPOINTMENT_PAYMENT_TYPE;
 
+  @Column({ nullable: true })
+  paymentMode: PAYMENT_METHODS_REVERSE;
+
+  @Column({ nullable: true })
+  bankName: string;
+
+  @Column({ nullable: true })
+  refundAmount: number;
+
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
 
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -340,6 +397,91 @@ export class AppointmentPayments extends BaseEntity {
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
+
+  @OneToMany(
+    (type) => AppointmentRefunds,
+    (appointmentRefunds) => appointmentRefunds.appointmentPayments
+  )
+  appointmentRefunds: AppointmentRefunds[];
+}
+
+@Entity()
+export class AppointmentRefunds extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  refId: string;
+
+  @Column({ nullable: false })
+  txnId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
+  @Column({ nullable: true })
+  totalRefundAmount: number;
+
+  @Column({ nullable: true, type: 'text' })
+  comments: string;
+
+  @Column({ nullable: false, default: 'REFUND_REQUEST_NOT_RAISED' })
+  refundStatus: REFUND_STATUS;
+
+  @Column({ nullable: true })
+  paytmRequestStatus: PAYTM_STATUS;
+
+  @Column({ nullable: true })
+  refundId: string;
+
+  @Column({ nullable: true })
+  txnAmount: number;
+
+  @Column({ nullable: true })
+  txnTimestamp: Date;
+
+  @Column({ nullable: false })
+  orderId: string;
+
+  @Column({ nullable: true })
+  payMethod: string;
+
+  @Column({ nullable: true })
+  acceptRefundTimestamp: Date;
+
+  @Column({ nullable: true })
+  userCreditInitiateTimestamp: Date;
+
+  @Column({ nullable: true })
+  resultCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  resultMsg: string;
+
+  @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+  })
+  refundDetailInfo: JSON;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
+  appointment: Appointment;
+
+  @ManyToOne(
+    () => AppointmentPayments,
+    (appointmentPayments) => appointmentPayments.appointmentRefunds
+  )
+  appointmentPayments: AppointmentPayments;
 }
 //AppointmentPayments ends
 
@@ -1540,7 +1682,12 @@ export interface RxPdfData {
     phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
-  appointmentDetails: { displayId: string; consultDate: string; consultType: string };
+  appointmentDetails: {
+    displayId: string;
+    consultDate: string;
+    consultTime: string;
+    consultType: string;
+  };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;

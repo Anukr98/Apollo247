@@ -59,6 +59,10 @@ export const getCurrentPatientsTypeDefs = gql`
     photoUrl: String
     uhid: String
     relation: Relation
+    isLinked: Boolean
+    isUhidPrimary: Boolean
+    primaryUhid: String
+    primaryPatientId: String
   }
 
   type HealthVault {
@@ -84,6 +88,10 @@ export const getCurrentPatientsTypeDefs = gql`
     referralCode: String
     relation: Relation
     uhid: String
+    isLinked: Boolean
+    isUhidPrimary: Boolean
+    primaryUhid: String
+    primaryPatientId: String
   }
 
   type LifeStyle {
