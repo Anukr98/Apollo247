@@ -375,9 +375,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return finalDateTime;
   };
 
-  let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${orderDetails.orderTat &&
-    getFormattedDateTime(orderDetails.orderTat)}.`;
-
   const reOrder = () => {
     setLoading!(true);
     const items = (orderDetails!.medicineOrderLineItems || [])
@@ -515,7 +512,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const hours = expectedDeliveryDiff.asHours();
     // const formattedDateDeliveryTime =
     //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
-
+    let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
+      isDelivered.statusDate &&
+      getFormattedDateTime(isDelivered.statusDate)}.`;
     let capsuleViewBGColor: string;
     let capsuleTextColor: string;
     let capsuleText: string;
@@ -804,7 +803,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
             }}
           >
-            {tatInfo && getFormattedDate(tatInfo)}
+            {isDelivered
+              ? getFormattedDate(isDelivered.statusDate)
+              : tatInfo && getFormattedDate(tatInfo)}
           </Text>
         </View>
         <View style={{ margin: 20 }}>
