@@ -12,7 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
 import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-// import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -264,6 +264,19 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0 &&
     orderDetailsData.medicineOrderPayments[0];
+  const orderShipments =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderShipments &&
+    orderDetailsData.medicineOrderShipments[0];
+
+  const isShipmentListHasBilledState = () => {
+    if (orderShipments && orderShipments.medicineOrdersStatus) {
+      const isBilled = orderShipments.medicineOrdersStatus.findIndex(
+        (statusDetails) => statusDetails.orderStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED
+      );
+      return isBilled !== -1 ? true : false;
+    }
+  };
 
   let isDisableCancel = false;
   if (
@@ -271,12 +284,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0
   ) {
-    if (
-      (orderPayment && orderPayment.paymentType === 'COD') ||
-      (orderPayment && orderPayment.paymentType === 'CASHLESS')
-    ) {
-      isDisableCancel = true;
-    }
+    isDisableCancel = orderShipments ? isShipmentListHasBilledState() : false;
   }
 
   return (
@@ -305,7 +313,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable || !isDisableCancel}
+                disabled={!props.orderAutoId || isDisable || isDisableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >
@@ -444,7 +452,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <CancelOrderNotification
               setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
               setIsPopoverOpen={setIsPopoverOpen}
-              cancelOrderText={cancelOrderReasonText}
             />
           </div>
         </div>

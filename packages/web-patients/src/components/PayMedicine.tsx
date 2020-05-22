@@ -609,7 +609,8 @@ export const PayMedicine: React.FC = (props) => {
       });
   };
 
-  const onClickPay = (value: string) => {
+  const onClickPay = (value: string, displayName?: string) => {
+    localStorage.setItem('selectedPaymentMode', displayName);
     setIsLoading(true);
     /**Gtm code start  */
     gtmTracking({
@@ -692,6 +693,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
+          deviceType: getDeviceType(),
           // couponDiscount: couponValue,
         },
       },
@@ -815,7 +817,7 @@ export const PayMedicine: React.FC = (props) => {
                               key={index}
                               onClick={() =>
                                 params.payType === 'pharmacy'
-                                  ? onClickPay(payType.paymentMode)
+                                  ? onClickPay(payType.paymentMode, payType.name)
                                   : onClickConsultPay(payType.paymentMode)
                               }
                               style={{ cursor: 'pointer' }}

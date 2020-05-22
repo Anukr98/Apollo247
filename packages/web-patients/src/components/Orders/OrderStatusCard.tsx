@@ -345,6 +345,8 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Order Delivered';
     case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
       return 'Items Returned';
+    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      return 'Order Billed';
     case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
       return 'Order Confirmed';
     case MEDICINE_ORDER_STATUS.ORDER_FAILED:
@@ -355,6 +357,12 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Order Verified';
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       return 'Order Shipped';
+    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+      return 'Payment Failed';
+    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
+      return 'Payment Pending';
+    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      return 'Payment Success';
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       return 'Order Picked Up';
     case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
@@ -367,16 +375,10 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Return Accepted';
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       return 'Return Requested';
-    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-      return 'Payment Success';
     case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
       return 'Order Initiated';
-    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
-      return 'Payment Failed';
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       return 'Ready At Store';
-    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
-      return 'Payment Pending';
     case 'TO_BE_DELIVERED' as any:
       return 'Expected Order Delivery';
   }
