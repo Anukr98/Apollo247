@@ -125,13 +125,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [helpCategory, setHelpCategory] = useState<string>('');
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
-
+  const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
   const [email, setEmail] = useState<string>('');
   const [emailValidation, setEmailValidation] = useState<boolean>(false);
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -347,7 +347,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       showAlert();
       return;
     }
-    setLoading && setLoading(true);
+    setLoading(true);
     // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
 
     const helpEmail = {
@@ -366,7 +366,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         },
       })
       .then(() => {
-        setLoading && setLoading(false);
+        setLoading(false);
         showAphAlert!({
           title: 'Hi:)',
           description:
@@ -388,7 +388,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('MobileHelp_onSubmit', e);
-        setLoading && setLoading(false);
+        setLoading(false);
         props.navigation.goBack();
         handleGraphQlError(e);
       });
@@ -445,26 +445,25 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   };
 
   return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      {renderHeader()}
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          style={styles.subViewPopup}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
-          <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
-            {'What do you need help with?'}
-          </Text>
-          <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
-        </ScrollView>
-        {renderButtons()}
-      </View>
-    </SafeAreaView>
+    <View style={theme.viewStyles.container}>
+      {loading && <Spinner />}
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            style={styles.subViewPopup}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
+            <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
+              {'What do you need help with?'}
+            </Text>
+            <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
+          </ScrollView>
+          {renderButtons()}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };

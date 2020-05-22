@@ -153,8 +153,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
 
-  const formatCityStateDisplay = (city: string, state: string) =>
-    [city, state].filter((v) => v).join(', ');
+  const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
 
   useEffect(() => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
@@ -600,7 +599,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         /> */}
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
         <TextInputComponent
-          value={city}
+          value={(city || '').startsWith(',') ? city.replace(', ', '') : city}
           textInputprops={{ editable: false }}
           onChangeText={(city) =>
             city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')

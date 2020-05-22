@@ -63,7 +63,6 @@ const uploadDocument: Resolver<
 
   //get users list for the mobile number
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-  console.log(prismUserList);
 
   //check if current user uhid matches with response uhids
   const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);

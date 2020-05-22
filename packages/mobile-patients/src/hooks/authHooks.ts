@@ -123,15 +123,15 @@ export const useAllCurrentPatients = () => {
   }
 
   if (allCurrentPatients) {
-    allCurrentPatients = allCurrentPatients.filter((obj: any) => {
-      return obj.isLinked === false;
-    });
+    // allCurrentPatients = allCurrentPatients.filter((obj: any) => {
+    //   return obj.isLinked === false;
+    // });
 
     // console.log('unLinkedProfiles', allCurrentPatients);
 
     currentPatient = allCurrentPatients
       ? allCurrentPatients.find((patient: any) => patient.id === currentPatientId) ||
-        allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true)
+      allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true)
       : null;
   }
 
@@ -142,7 +142,7 @@ export const useAllCurrentPatients = () => {
     if (!currentPatientId) {
       const defaultCurrentPatient = allCurrentPatients
         ? allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true) ||
-          allCurrentPatients[0]
+        allCurrentPatients[0]
         : null;
       setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
       // console.log('currentPatientId', currentPatientId);

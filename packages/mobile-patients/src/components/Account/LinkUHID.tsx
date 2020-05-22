@@ -146,6 +146,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   const [selectedSecondary, setSelectedSecondary] = useState<string[]>([]);
   const [enableSelectPrimary, setEnableSelectPrimary] = useState<boolean>(true);
   const [enableSelectSecondary, setEnableSelectSecondary] = useState<boolean>(false);
+  const [enableSelect, setEnableSelect] = useState<boolean>(false);
 
   const [primaryUHIDs, setPrimaryUHIDs] = useState<string>('');
   const [secondaryUHIDs, setSecondaryUHIDs] = useState<string[]>([]);
@@ -195,28 +196,28 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
   const linkUhidsApiCall = () => {
     linkUHIDs(client, selectedPrimary, selectedSecondary)
-    .then(({ data }: any) => {
-      setShowAlert(false);
+    .then((data) => {
+      getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    .finally(() => {setLoading && setLoading(false);});
+    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const deLinkUhidsApiCall = () => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
-    .then(({ data }: any) => {
-      setShowAlert(false);
+    .then((data) => {
+      getPatientApiCall();
       props.navigation.navigate(AppRoutes.ManageProfile);
     })
     .catch((e) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    .finally(() => {setLoading && setLoading(false);});
+    // .finally(() => {setLoading && setLoading(false);});
   };
 
   const backDataFunctionality = async () => {
@@ -284,7 +285,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-around',
-                width: '90%',
+                width: '100%',
               }}
             >
               <Button
@@ -293,8 +294,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   alignContent: 'center',
                   width: '40%',
                   backgroundColor: colors.WHITE,
-                  paddingLeft: 15,
-                  paddingRight: 15,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                 }}
                 titleTextStyle={{
                   color: theme.colors.BUTTON_BG,
@@ -309,14 +310,15 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 style={{
                   alignContent: 'center',
                   width: '40%',
-                  paddingLeft: 15,
-                  paddingRight: 15,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                 }}
                 titleTextStyle={{
                   ...fonts.IBMPlexSansSemiBold(16)
                 }}
                 onPress={() => {
-                  setLoading && setLoading(true);
+                  // setLoading && setLoading(true);
+                  setShowAlert(false);
                   if (action === 'delink') {
                     deLinkUhidsApiCall();
                   } else {
@@ -351,6 +353,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
     const indexOfDelink = delinkSecondaryUHIDs.indexOf(profile!.uhid);
     const isDeSelected = (action === 'delink' && (indexOfDelink > -1)) ? true : false;
+    const isLinkDelink = (action === 'link' || action === 'delink');
     return (
       <View
         key={index}
@@ -403,18 +406,32 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
             if (action === 'link' && (isPrimaryUHID || idSecondaryUHID)) {
               return false;
             } else if (action === 'link') {
-              setSecondaryUHIDs([...secondaryUHIDs, profiles[index].uhid]);
-              setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
-              setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
-            } else if (action === 'delink' && idSecondaryUHID) {
-              if (indexOfDelink > -1) {
-                delinkSecondaryUHIDs.splice(indexOfDelink, 1);
-              } else {
-                setDelinkSecondaryUHIDs([...delinkSecondaryUHIDs, profiles[index].uhid]);
+              if (enableSelect) {
+                setSecondaryUHIDs([...secondaryUHIDs, profiles[index].uhid]);
+                setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
+                setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
+
+                const secondaryids = [...secondaryUHIDs];
+                secondaryids.push(profiles[index].uhid);
+                const filteredArray = allProfiles!.filter((item) => {
+                  return !item!.isUhidPrimary && !secondaryids.includes(item!.uhid);
+                });
+                const primaryArray = allProfiles!.filter((item) => item!.isUhidPrimary);
+                const secondaryArray = allProfiles!.filter((item) => secondaryids.includes(item!.uhid));
+                const profileArray = [...primaryArray, ...secondaryArray, ...filteredArray];
+                setProfiles(profileArray);
               }
-              setRefreshFlatList(!refreshFlatList);
+            } else if (action === 'delink' && idSecondaryUHID) {
+              if (enableSelect) {
+                if (indexOfDelink > -1) {
+                  delinkSecondaryUHIDs.splice(indexOfDelink, 1);
+                } else {
+                  setDelinkSecondaryUHIDs([...delinkSecondaryUHIDs, profiles[index].uhid]);
+                }
+                setRefreshFlatList(!refreshFlatList);
+              }
             } else if (enableSelectSecondary) {
-              if (profiles) {
+              if (profiles && enableSelect) {
                 if (indexOfId > -1) {
                   selectedSecondary.splice(indexOfId, 1);
                 } else {
@@ -449,7 +466,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               },
               {backgroundColor: theme.colors.APP_YELLOW_COLOR},
               // isSelectedPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
-              isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR, zIndex: 6} : {backgroundColor: colors.WHITE},
+              isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
               idSecondaryUHID ? styles.secondaryUHIDCard : {},
               isDeSelected ? {minHeight: 50, width: '75%', padding: 10} : {}
           ]}
@@ -479,7 +496,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               </View>
             }
             {
-              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID) && 
+              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID && !isLinkDelink) && 
               <View 
                 style={[
                   styles.circle,
@@ -664,7 +681,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 title="SELECT"
                 style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
                 titleTextStyle={{color: theme.colors.APP_YELLOW}}
-                onPress={() => {}}
+                onPress={() => {setEnableSelect(true)}}
               />
               <Button
                 title="LINK"
@@ -683,7 +700,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 title="SELECT"
                 style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
                 titleTextStyle={{color: theme.colors.APP_YELLOW}}
-                onPress={() => {}}
+                onPress={() => {setEnableSelect(true)}}
               />
               <Button
                 title="DELINK"
@@ -724,7 +741,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               title="SELECT"
               style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
               titleTextStyle={{color: theme.colors.APP_YELLOW}}
-              onPress={() => {}}
+              onPress={() => {setEnableSelect(true)}}
             />
           )
         }
