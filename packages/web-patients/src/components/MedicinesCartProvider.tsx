@@ -227,7 +227,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const removePharmaCoupon = () => {
     const existCouponCode = localStorage.getItem('pharmaCoupon');
     existCouponCode && existCouponCode.length > 0 && localStorage.removeItem('pharmaCoupon');
-    // setCouponCode('');
+    couponCode.length > 0 && setCouponCode('');
   };
 
   useEffect(() => {
