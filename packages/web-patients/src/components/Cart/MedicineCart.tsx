@@ -926,7 +926,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1258,7 +1258,9 @@ export const MedicineCart: React.FC = (props) => {
                         </div>
                       )}
                     {showErrorMessage && (
-                      <div className={classes.higherDiscountText}>Higher discounts already applied</div>
+                      <div className={classes.higherDiscountText}>
+                        Higher discounts already applied
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1286,7 +1288,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.priceRow}>
                         <span>Delivery Charges</span>
                         <span className={classes.priceCol}>
-                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
+                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0.00'}
                         </span>
                       </div>
                       {/* <div className={classes.priceRow}>
