@@ -1190,26 +1190,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View>
             <View style={styles.viewRowStyle}>
               <Text style={[styles.textStyle, { opacity: value ? 0.6 : 1 }]}>Sort by Distance</Text>
-              {value && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue(!value);
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  setValue(!value);
+                  if (value) {
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
-                  }}
-                >
-                  <ToggleOn style={{ marginHorizontal: 10, height: 32, width: 32 }} />
-                </TouchableOpacity>
-              )}
-              {!value && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue(!value);
+                  } else {
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+                  }
+                }}
+              >
+                <ToggleOn
+                  style={{
+                    marginHorizontal: 10,
+                    height: 32,
+                    width: 32,
+                    transform: [{ rotate: value ? '0deg' : '180deg' }],
                   }}
-                >
-                  <ToggleOff style={{ marginHorizontal: 10, height: 32, width: 32 }} />
-                </TouchableOpacity>
-              )}
+                />
+              </TouchableOpacity>
               <Text style={[styles.textStyle, { opacity: value ? 1 : 0.6 }]}>
                 Sort by Availability
               </Text>
