@@ -1,7 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, CircularProgress, Typography, Link } from '@material-ui/core';
 import { AphButton, AphInput } from '@aph/web-ui-components';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { ADD_PATIENT_FEEDBACK } from 'graphql/medicines';
+import { useMutation } from 'react-apollo-hooks';
+import { addPatientFeedback, addPatientFeedbackVariables } from 'graphql/types/addPatientFeedback';
+import { FEEDBACKTYPE } from 'graphql/types/globalTypes';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,7 +65,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& button': {
         display: 'block',
-        background: '#fc9916',
         color: '#fff',
         fontSize: 14,
         textTransform: 'uppercase',
@@ -70,7 +75,6 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0px auto',
         fontWeight: 'bold',
         '&:hover': {
-          background: '#fc9916',
           color: '#fff',
         },
       },
@@ -145,12 +149,26 @@ const defaultImages: Images = {
 type Props = {
   children?: React.ReactNode;
   setIsPopoverOpen: (active: boolean) => void;
+  orderDetailsData: OrderDetails | null;
 };
 
-export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
+export const OrderFeedback: React.FC<Props> = (props) => {
   const classes = useStyles({});
+  const {
+    setIsPopoverOpen,
+    orderDetailsData: {
+      orderAutoId,
+      orderTat,
+      id: orderId,
+      patient: { id },
+    },
+  } = props;
   const [feedbackSubmitted, setFeedbackSubmitted] = React.useState<boolean>(false);
   const [selected, setSelected] = React.useState<number | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [rating, setRating] = useState<string>('');
+  const [reason, setReason] = useState<string>('');
   const userExperiences: Array<userExperience> = [
     { imgUrl: defaultImages.Poor, activeimage: activeImages.Poor, label: 'Poor' },
     { imgUrl: defaultImages.Okay, activeimage: activeImages.Okay, label: 'Okay' },
@@ -161,6 +179,34 @@ export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
       label: 'Great',
     },
   ];
+
+  const addPatientFeedbackMutation = useMutation<addPatientFeedback, addPatientFeedbackVariables>(
+    ADD_PATIENT_FEEDBACK,
+    {
+      variables: {
+        patientFeedbackInput: {
+          patientId: id,
+          rating: rating,
+          thankyouNote: reason,
+          reason: reason,
+          feedbackType: FEEDBACKTYPE.PHARMACY,
+          transactionId: orderId,
+        },
+      },
+    }
+  );
+
+  const onSubmitFeedback = () => {
+    addPatientFeedbackMutation()
+      .then(() => {
+        setFeedbackSubmitted(true);
+      })
+      .catch(() => {
+        setIsPopoverOpen(false);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while submitting feedback`);
+      });
+  };
   return (
     <div>
       {!feedbackSubmitted ? (
@@ -174,8 +220,8 @@ export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
               <img src={require('images/ic_tablets.svg')} />
             </div>
             <div>
-              <Typography component="h4">Medicines — #A2472707936 </Typography>
-              <Typography component="p">Delivered On: 24 Oct 2019</Typography>
+              <Typography component="h4">Medicines — #{orderAutoId} </Typography>
+              <Typography component="p">Delivered On: {orderTat}</Typography>
             </div>
           </div>
           <ul className={classes.feedbackList}>
@@ -184,6 +230,7 @@ export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
                 <li
                   onClick={() => {
                     setSelected(index);
+                    setRating(exp.label);
                   }}
                 >
                   <img
@@ -204,8 +251,9 @@ export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
               <AphInput
                 placeholder={'Write your suggestion here..'}
                 className={classes.textInput}
+                onChange={(e) => setReason(e.target.value)}
               />
-              <AphButton color="primary" onClick={() => setFeedbackSubmitted(true)}>
+              <AphButton color="primary" onClick={() => onSubmitFeedback()}>
                 Submit Feedback
               </AphButton>
             </div>
@@ -224,6 +272,12 @@ export const OrderFeedback: React.FC<Props> = ({ setIsPopoverOpen }) => {
           </div>
         </div>
       )}
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

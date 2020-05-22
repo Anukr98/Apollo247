@@ -8,12 +8,9 @@ import {
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
-
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import {
   GetPatientAddressList,
@@ -252,83 +249,6 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -40,
       '& img': {
         maxWidth: 80,
-      },
-    },
-    deliveryDetails: {
-      background: '#f7f8f5',
-      padding: 20,
-      display: 'flex',
-      alignItems: 'center',
-      margin: '20px 0',
-    },
-    iconContainer: {
-      width: 40,
-      height: 40,
-      background: '#fff',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 20px 0 0',
-    },
-    feedbackList: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '20px 0',
-      listStyle: 'none',
-      padding: 0,
-      '& li': {
-        fontSize: 12,
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        textAlign: 'center',
-      },
-    },
-    suggestion: {
-      margin: '20px 0 0',
-      padding: '20px 0 0',
-      borderTop: '1px solid rgba(2, 71, 91, .2)',
-      '& h4': {
-        fontSize: 14,
-        fontWeight: 'bold',
-      },
-      '& button': {
-        display: 'block',
-        background: '#fc9916',
-        color: '#fff',
-        fontSize: 14,
-        textTransform: 'uppercase',
-        padding: 10,
-        borderRadius: 10,
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        width: 160,
-        margin: '0px auto',
-        fontWeight: 'bold',
-      },
-    },
-    textInput: {
-      margin: '10px 0 30px',
-      width: '100%',
-    },
-    thankyou: {
-      '& h3': {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#02475b',
-        margin: '0 0 10px',
-      },
-      '& h4': {
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: '#0087ba',
-        margin: '0 0 20px',
-      },
-      '& a': {
-        fontSize: 14,
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        textAlign: 'right',
       },
     },
   };
@@ -608,8 +528,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       {isDelivered && (
         <div className={classes.bottomNotification}>
           <p>
-            Your order no.#{orderDetailsData.orderAutoId} is successfully delivered on{' '}
-            {orderDetailsData.orderTat && getFormattedDateTime(orderDetailsData.orderTat)}.
+            Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
+            delivered on{' '}
+            {orderDetailsData &&
+              orderDetailsData.orderTat &&
+              getFormattedDateTime(orderDetailsData.orderTat)}
+            .
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
           <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
@@ -630,7 +554,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <OrderFeedback setIsPopoverOpen={setIsPopoverOpen} />
+        <div className={classes.feedbackPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderFeedback
+              setIsPopoverOpen={setIsPopoverOpen}
+              orderDetailsData={orderDetailsData}
+            />
+          </div>
+        </div>
       </Popover>
     </div>
   );
