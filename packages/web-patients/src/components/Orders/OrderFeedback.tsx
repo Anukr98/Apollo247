@@ -196,17 +196,6 @@ export const OrderFeedback: React.FC<Props> = (props) => {
     }
   );
 
-  const onSubmitFeedback = () => {
-    addPatientFeedbackMutation()
-      .then(() => {
-        setFeedbackSubmitted(true);
-      })
-      .catch(() => {
-        setIsPopoverOpen(false);
-        setIsAlertOpen(true);
-        setAlertMessage(`Error occured while submitting feedback`);
-      });
-  };
   return (
     <div>
       {!feedbackSubmitted ? (
@@ -253,7 +242,20 @@ export const OrderFeedback: React.FC<Props> = (props) => {
                 className={classes.textInput}
                 onChange={(e) => setReason(e.target.value)}
               />
-              <AphButton color="primary" onClick={() => onSubmitFeedback()}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  addPatientFeedbackMutation()
+                    .then(() => {
+                      setFeedbackSubmitted(true);
+                    })
+                    .catch(() => {
+                      setIsPopoverOpen(false);
+                      setIsAlertOpen(true);
+                      setAlertMessage(`Error occured while submitting feedback`);
+                    });
+                }}
+              >
                 Submit Feedback
               </AphButton>
             </div>
