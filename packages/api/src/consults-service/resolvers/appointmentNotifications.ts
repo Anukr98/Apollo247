@@ -12,7 +12,12 @@ import { format, addMinutes } from 'date-fns';
 import { DoctorType } from 'doctors-service/entities';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
-import { CASESHEET_STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import {
+  CASESHEET_STATUS,
+  APPOINTMENT_TYPE,
+  CaseSheet,
+  Appointment,
+} from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
 export const appointmentNotificationTypeDefs = gql`
@@ -54,7 +59,24 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
 
   if (appointmentIds.length) {
     const caseSheets = await caseSheetRepo.getJDCaseSheetsByAppointmentId(appointmentIds);
-    const attendedAppointmentIds = caseSheets.map((casesheet) => casesheet.appointment.id);
+    const attendedAppointments: CaseSheet[] = [];
+    const pendingCaseSheets: CaseSheet[] = [];
+    caseSheets.forEach((casesheet) => {
+      if (casesheet.isJdConsultStarted) {
+        attendedAppointments.push(casesheet);
+      } else {
+        pendingCaseSheets.push(casesheet);
+      }
+    });
+    const pendingAppointmentIds: string[] = [];
+    const pendingCasesheetIds: string[] = [];
+    pendingCaseSheets.forEach((casesheet) => {
+      pendingAppointmentIds.push(casesheet.appointment.id);
+      pendingCasesheetIds.push(casesheet.id);
+    });
+    const attendedAppointmentIds = attendedAppointments.map(
+      (casesheet) => casesheet.appointment.id
+    );
     const unAttendedAppointmentIds = appointmentIds.filter(
       (id) => !attendedAppointmentIds.includes(id)
     );
@@ -90,11 +112,15 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
       );
       if (queueItemsToBeAdded.length) ConsultQueueRepo.saveConsultQueueItems(queueItemsToBeAdded);
 
+      const caseSheetsToBeAdded = unAttendedAppointments.filter(
+        (appointment) => !pendingAppointmentIds.includes(appointment.id)
+      );
+
       //adding case sheets
-      const casesheetAttrs = unAttendedAppointments.map((appointment) => {
+      const casesheetAttrsToAdd = caseSheetsToBeAdded.map((appointment) => {
         return {
           createdDate: createdDate,
-          consultType: APPOINTMENT_TYPE.ONLINE,
+          consultType: appointment.appointmentType,
           createdDoctorId: process.env.VIRTUAL_JD_ID,
           doctorType: DoctorType.JUNIOR,
           doctorId: appointment.doctorId,
@@ -104,9 +130,19 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
           notes: activequeueItemAppointmentIds.includes(appointment.id)
             ? ApiConstants.VIRTUAL_JD_NOTES_ASSIGNED.toString()
             : ApiConstants.VIRTUAL_JD_NOTES_UNASSIGNED.toString(),
+          isJdConsultStarted: true,
         };
       });
-      caseSheetRepo.saveMultipleCaseSheets(casesheetAttrs);
+      caseSheetRepo.saveMultipleCaseSheets(casesheetAttrsToAdd);
+
+      //updating case sheets
+      const casesheetAttrsToUpdate = {
+        createdDoctorId: process.env.VIRTUAL_JD_ID,
+        status: CASESHEET_STATUS.COMPLETED,
+        notes: ApiConstants.VIRTUAL_JD_NOTES_ASSIGNED.toString(),
+        isJdConsultStarted: true,
+      };
+      caseSheetRepo.updateMultipleCaseSheets(pendingCasesheetIds, casesheetAttrsToUpdate);
 
       //updating appointments
       apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
