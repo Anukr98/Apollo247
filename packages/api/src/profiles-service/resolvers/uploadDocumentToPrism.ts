@@ -12,6 +12,7 @@ export const uploadDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
     HealthChecks
     OpSummary
+    TestReports
   }
   type UploadPrismDocumentResult {
     status: Boolean!

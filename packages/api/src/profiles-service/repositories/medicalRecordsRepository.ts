@@ -32,6 +32,22 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
       });
   }
 
+  findByPatientIds(ids: string[], offset?: number, limit?: number) {
+    return this.createQueryBuilder('medicalRecords')
+      .leftJoinAndSelect('medicalRecords.medicalRecordParameters', 'medicalRecordParameters')
+      .leftJoinAndSelect('medicalRecords.patient', 'patient')
+      .where('medicalRecords.patient IN (:...ids)', { ids })
+      .orderBy('medicalRecords.testDate', 'DESC')
+      .skip(offset)
+      .take(limit)
+      .getMany()
+      .catch((getRecordsError) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {
+          getRecordsError,
+        });
+      });
+  }
+
   findById(recordId: string) {
     return this.createQueryBuilder('medicalRecords')
       .where('medicalRecords.id = :recordId', { recordId })

@@ -331,6 +331,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
 
   useEffect(() => {
+    if (!_deliveryError) {
+      fetchDeliveryTime();
+    }
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
@@ -466,6 +472,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             ) {
               //
               setSubstitutes(data.products);
+              setTimeout(() => {
+                scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+              }, 20);
             }
           }
         } catch (error) {
@@ -498,7 +507,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
-        {isOutOfStock ? (
+        {!deliveryTime || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,

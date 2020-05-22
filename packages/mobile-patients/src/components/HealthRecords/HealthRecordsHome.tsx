@@ -11,6 +11,8 @@ import {
   DropdownGreen,
   Filter,
   NoData,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   nameTextContainerStyle: {
-    maxWidth: '65%',
+    maxWidth: '75%',
   },
   nameTextStyle: {
     marginLeft: 5,
@@ -118,6 +120,7 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+    marginRight: -5,
   },
   descriptionTextStyle: {
     marginTop: 8,
@@ -406,13 +409,38 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             >
               <Text style={styles.hiTextStyle}>{'hi'}</Text>
               <View style={styles.nameTextContainerStyle}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient.firstName!.toLowerCase()) || ''}
-                </Text>
-                <View style={styles.seperatorStyle} />
-              </View>
-              <View style={{ paddingTop: 15 }}>
-                <DropdownGreen />
+                <View style={{ flexDirection: 'row', flex: 1 }}>
+                  <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                    <PrimaryIcon
+                      style={{
+                        width: 22,
+                        height: 20,
+                        marginLeft: 5,
+                        marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      }}
+                      resizeMode={'contain'}
+                    />
+                  ) : (
+                    currentPatient && (
+                      <LinkedUhidIcon
+                        style={{
+                          width: 22,
+                          height: 20,
+                          marginLeft: 5,
+                          marginTop: Platform.OS === 'ios' ? 16 : 20,
+                        }}
+                        resizeMode={'contain'}
+                      />
+                    )
+                  )}
+                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+                {currentPatient && <View style={styles.seperatorStyle} />}
               </View>
             </View>
           }

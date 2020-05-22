@@ -256,7 +256,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <></>
         ) : (
           <>
-            <View style={{ flex: 0.7 }}>
+            <View style={{ flex: 0.6 }}>
               <MaterialMenu
                 options={opitons}
                 selectedText={unit!.toString()}
@@ -305,7 +305,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                     ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
                     textDecorationLine: 'line-through',
                   }}
-                >{`Rs. ${price}`}</Text>
+                >{`Rs. ${price.toFixed(2)}`}</Text>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, '#02475b', 0.7, undefined, 0.25),
@@ -319,9 +319,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : (
             <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
-          <Text
-            style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'flex-start' }]}
-          >{`Rs. ${specialPrice || price}`}</Text>
+          <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>{`Rs. ${(
+            specialPrice || price
+          ).toFixed(2)}`}</Text>
         </View>
       </View>
     );
@@ -375,11 +375,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       </Text>
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
+        <Text style={styles.priceTextCollapseStyle}>Rs. {(specialPrice || price).toFixed(2)}</Text>
         {specialPrice && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price.toFixed(2)}`}</Text>
             {')'}
           </Text>
         )}

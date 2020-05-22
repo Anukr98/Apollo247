@@ -110,7 +110,9 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { data, loading, error } = useQuery<getPharmaCouponList>(GET_PHARMA_COUPON_LIST, {
     fetchPolicy: 'no-cache',
   });
-  const couponList = g(data, 'getPharmaCouponList', 'coupons') || [];
+  const couponList = (g(data, 'getPharmaCouponList', 'coupons') || []).filter(
+    (v) => v!.displayStatus
+  );
 
   useEffect(() => {
     setGlobalLoading!(loading);
@@ -261,7 +263,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
-        onPress={() => setCouponText(coupon!.code!)}
+        onPress={() => setCouponText(coupon!.code == couponText ? '' : coupon!.code!)}
       >
         {coupon!.code == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>
@@ -294,7 +296,9 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
+        <ScrollView style={{ marginBottom: 80 }} bounces={false}>
+          {renderCouponCard()}
+        </ScrollView>
         {renderBottomButtons()}
       </SafeAreaView>
     </View>

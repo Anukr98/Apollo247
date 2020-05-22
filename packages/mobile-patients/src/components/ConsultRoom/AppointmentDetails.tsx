@@ -498,8 +498,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel =
-      dateIsAfter || isAwaitingReschedule ? true : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
+    const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
+    const showCancel = dateIsAfter || isAwaitingReschedule ? true : minutes <= -30;
     return (
       <View
         style={{
@@ -624,12 +624,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity:
-                  isAwaitingReschedule ||
-                  dateIsAfter ||
-                  data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
-                    ? 1
-                    : 0.5,
+                opacity: isAwaitingReschedule || dateIsAfter || minutes <= -30 ? 1 : 0.5,
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -644,9 +639,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    isAwaitingReschedule ||
-                    dateIsAfter ||
-                    data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    isAwaitingReschedule || dateIsAfter || minutes <= -30
                       ? NextAvailableSlotAPI()
                       : null;
                   } catch (error) {

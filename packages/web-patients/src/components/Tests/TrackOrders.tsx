@@ -327,7 +327,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 {noOrderDetails ? (
                   'No Order is Found'
                 ) : (
-                  <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                  <></>
+                  // <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
                 )}
               </div>
             </Scrollbars>
@@ -350,7 +351,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 {noOrderDetails ? (
                   'No Order is Found'
                 ) : (
-                  <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                  <></>
+                  // <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
                 )}
               </div>
             </Scrollbars>
