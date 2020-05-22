@@ -177,11 +177,16 @@ const styles = StyleSheet.create({
 export interface OrderSummaryViewProps extends NavigationScreenProps {
   orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   isTest?: boolean;
+  addressData?: string;
 }
 {
 }
 
-export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
+export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
+  orderDetails,
+  isTest,
+  addressData,
+}) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
   const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
   const deliveredOrder = medicineOrderStatus.find(
@@ -214,9 +219,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   const selectedAddressIndex = addresses.find(
     (address) => address.id == orderDetails.patientAddressId
   );
-  const addressData = selectedAddressIndex
-    ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-    : '';
 
   const renderMedicineRow = (
     item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
