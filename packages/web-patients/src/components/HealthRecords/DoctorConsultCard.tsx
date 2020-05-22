@@ -180,9 +180,9 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
   };
 
   return (
-    <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+    <>
       {consult && consult.patientId ? (
-        <>
+        <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
           <div className={classes.doctorInfoGroup}>
             <div className={classes.doctorImg}>
               <Avatar
@@ -236,50 +236,56 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
           {/* <AphButton>Book Follow-up</AphButton>
             <AphButton>Order Meds & Tests</AphButton> */}
           {/* </div> */}
-        </>
+        </div>
       ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <img src={require('images/ic_prescription_icon.svg')} alt="" />
-          </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>Prescription uploaded by Patient</div>
-            <div className={classes.dateField}>
-              <span>
-                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
-              </span>
+        <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+          <div className={classes.doctorInfoGroup}>
+            <div className={classes.doctorImg}>
+              <img src={require('images/ic_prescription_icon.svg')} alt="" />
+            </div>
+            <div className={classes.doctorInfo}>
+              <div className={classes.doctorName}>Prescription uploaded by Patient</div>
+              <div className={classes.dateField}>
+                <span>
+                  {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <Avatar
-              alt="Dr. Simran Rai"
-              src={
-                consult.doctorInfo &&
-                consult.doctorInfo.photoUrl &&
-                consult.doctorInfo.photoUrl.length > 0
-                  ? consult.doctorInfo.photoUrl
-                  : ''
-              }
-              className={classes.avatar}
-            />
-          </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>
-              {consult.medicineOrderLineItems.map((medicine: any) => (
-                <span>{medicine.medicineName}</span>
-              ))}
+        <>
+          {consult.medicineOrderLineItems.map((medicine: any) => (
+            <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+              <div className={classes.doctorInfoGroup}>
+                <div className={classes.doctorImg}>
+                  <Avatar
+                    alt="Dr. Simran Rai"
+                    src={
+                      consult.doctorInfo &&
+                      consult.doctorInfo.photoUrl &&
+                      consult.doctorInfo.photoUrl.length > 0
+                        ? consult.doctorInfo.photoUrl
+                        : ''
+                    }
+                    className={classes.avatar}
+                  />
+                </div>
+                <div className={classes.doctorInfo}>
+                  <div className={classes.doctorName}>
+                    <span>{medicine.medicineName}</span>
+                  </div>
+                  <div className={classes.dateField}>
+                    <span>
+                      {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className={classes.dateField}>
-              <span>
-                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
-              </span>
-            </div>
-          </div>
-        </div>
+          ))}
+        </>
       )}
-    </div>
+    </>
   );
 };
