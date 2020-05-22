@@ -845,15 +845,27 @@ export const HandBlue: React.FC<IconProps> = (props) => (
 );
 
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedUhidWhite/linked-uhid-02.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkedUhidWhite/linked-uhid-02.png')}
+  />
 );
 
 export const PrimaryUHIDIconBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedUhidBlue/linked-uhid.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkedUhidBlue/linked-uhid.png')}
+  />
 );
 
 export const SecondaryUHIDIconBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkedSecondary/secondary.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkedSecondary/secondary.png')}
+  />
 );
 
 export const LinkUHIDStep1: React.FC<IconProps> = (props) => (
@@ -865,7 +877,11 @@ export const Arrow1: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDStep2first: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step2-1/link-uhid.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step2-1/link-uhid.png')}
+  />
 );
 
 export const Arrow2: React.FC<IconProps> = (props) => (
@@ -873,7 +889,11 @@ export const Arrow2: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDStep2second: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step2-2/link-popup.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step2-2/link-popup.png')}
+  />
 );
 
 export const Arrow3: React.FC<IconProps> = (props) => (
@@ -881,11 +901,19 @@ export const Arrow3: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDStep2third: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step2-3/link-other-profile.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step2-3/link-other-profile.png')}
+  />
 );
 
 export const LinkUHIDStep3: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step3-1/access-link-uhid.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step3-1/access-link-uhid.png')}
+  />
 );
 
 export const Arrow4: React.FC<IconProps> = (props) => (
@@ -893,7 +921,11 @@ export const Arrow4: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDStep4first: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-1/delink-uhid.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step4-1/delink-uhid.png')}
+  />
 );
 
 export const Arrow5: React.FC<IconProps> = (props) => (
@@ -913,15 +945,27 @@ export const DottedArrow3: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDStep4second: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-2/manage-delink-post-delink.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step4-2/manage-delink-post-delink.png')}
+  />
 );
 
 export const LinkUHIDStep4third: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-3/post-delink.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step4-3/post-delink.png')}
+  />
 );
 
 export const LinkUHIDStep4fourth: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/link-uhid/linkuhid-step4-4/manage-delink-post-delink.png')} />
+  <IconBase
+    size="md"
+    {...props}
+    source={require('./icons/link-uhid/linkuhid-step4-4/manage-delink-post-delink.png')}
+  />
 );
 
 export const CheckBox: React.FC<IconProps> = (props) => (

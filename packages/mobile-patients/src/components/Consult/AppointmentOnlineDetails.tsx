@@ -539,7 +539,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
-    const showCancel = dateIsAfter || isAwaitingReschedule ? true : minutes <= -30;
+    const showCancel =
+      dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -641,7 +642,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule || dateIsAfter || minutes <= -30 ? 1 : 0.5,
+                opacity:
+                  isAwaitingReschedule ||
+                  dateIsAfter ||
+                  (data.status == STATUS.PENDING && minutes <= -30)
+                    ? 1
+                    : 0.5,
               }}
               onPress={() => {
                 console.log(data.status, 'statis');
@@ -657,7 +663,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     'Reschdule_Appointment_Online_Details_Clicked'
                   );
                   try {
-                    isAwaitingReschedule || dateIsAfter || minutes <= -30
+                    isAwaitingReschedule ||
+                    dateIsAfter ||
+                    (data.status == STATUS.PENDING && minutes <= -30)
                       ? NextAvailableSlotAPI()
                       : null;
                   } catch (error) {

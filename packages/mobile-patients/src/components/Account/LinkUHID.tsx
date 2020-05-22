@@ -352,8 +352,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     const isFirstSecondaryId = firstSecondaryUHID === profile!.uhid ? true : false;
 
     const indexOfDelink = delinkSecondaryUHIDs.indexOf(profile!.uhid);
-    const isDeSelected = (action === 'delink' && (indexOfDelink > -1)) ? true : false;
-    const isLinkDelink = (action === 'link' || action === 'delink');
+    const isDelink = action === 'delink';
+    const isDeSelected = (isDelink && (indexOfDelink > -1)) ? true : false;
     return (
       <View
         key={index}
@@ -496,7 +496,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               </View>
             }
             {
-              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID && !isLinkDelink) && 
+              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID && !isDelink) && 
               <View 
                 style={[
                   styles.circle,

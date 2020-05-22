@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     height: 45,
   },
   statusCardStyle: {
-    height: 0.27 * windowHeight,
+    height: 0.3 * windowHeight,
     margin: 0.06 * windowWidth,
     flex: 1,
     borderRadius: 10,

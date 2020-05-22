@@ -10,7 +10,6 @@ import {
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -205,6 +204,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
+  // To remove applied coupon from cart when user goes back.
+  useEffect(() => {
+    return () => {
+      setCoupon!(null);
+    };
+  }, []);
+
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
@@ -232,18 +238,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       }
       postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
     }
-  }, []);
-
-  useEffect(() => {
-    // To remove applied coupon from cart when user leaves this screen.
-    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
-      setTimeout(() => {
-        setCoupon!(null);
-      }, 50);
-    });
-    return () => {
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
   }, []);
 
   useEffect(() => {
@@ -296,7 +290,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           .then(({ data: { Availability } }) => {
             setCheckingServicability(false);
             if (Availability) {
-          
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
               postPhamracyCartAddressSelectedFailure(
@@ -612,9 +605,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                if (props.navigation.getParam('isComingFromConsult'))
+                if (props.navigation.getParam('isComingFromConsult')) {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                else {
+                  setCoupon!(null);
+                } else {
                   CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
                   if (navigatedFrom === 'registration') {
                     props.navigation.dispatch(
@@ -1068,6 +1062,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             });
           } else {
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
+            setCoupon!(null);
           }
         }}
       >

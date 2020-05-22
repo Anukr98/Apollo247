@@ -79,7 +79,12 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const client = useApolloClient();
   const shopCart = useShoppingCart();
   const diagCart = useDiagnosticsCart();
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const {
+    allCurrentPatients,
+    setCurrentPatientId,
+    currentPatient,
+    profileAllPatients,
+  } = useAllCurrentPatients();
   const { loading, setLoading } = useUIElements();
   const { width, height } = Dimensions.get('window');
 
@@ -143,11 +148,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setProfileArray(addNewProfileText(allCurrentPatients!));
-    if (allCurrentPatients) {
+    setProfileArray(addNewProfileText(profileAllPatients!));
+    if (profileAllPatients) {
       setLoading && setLoading(false);
     }
-  }, [allCurrentPatients]);
+  }, [profileAllPatients]);
 
   useEffect(() => {
     setProfileArray(addNewProfileText(profileArray!, profile));
@@ -311,18 +316,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
                 {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
               </Text>
               {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                <PrimaryIcon
+                <LinkedUhidIcon
                   style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
                   resizeMode={'contain'}
                 />
-              ) : (
-                currentPatient && (
-                  <LinkedUhidIcon
-                    style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
-                    resizeMode={'contain'}
-                  />
-                )
-              )}
+              ) : null}
               <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                 <DropdownGreen />
               </View>

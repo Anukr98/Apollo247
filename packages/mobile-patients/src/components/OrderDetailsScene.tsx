@@ -943,6 +943,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               onPress={() => {
                 setCancelVisible(!isCancelVisible);
                 setSelectedReason('');
+                setComment('');
               }}
             >
               <CrossPopup />
@@ -992,6 +993,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         cancelReasonCode:
           cancellationReasons &&
           cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+        cancelReasonText: comment,
       },
     };
 
