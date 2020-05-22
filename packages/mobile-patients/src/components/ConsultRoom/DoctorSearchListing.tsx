@@ -444,6 +444,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     } catch (e) {
       CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+      setshowSpinner(false);
     }
   };
 
@@ -1194,6 +1195,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 activeOpacity={1}
                 onPress={() => {
                   setValue(!value);
+                  setshowSpinner(true);
                   if (value) {
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
                   } else {
