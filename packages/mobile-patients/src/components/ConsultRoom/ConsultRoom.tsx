@@ -976,11 +976,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row', flex: 1 }}>
-                <Text style={[styles.nameTextStyle, { maxWidth: '75%' }]} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.nameTextStyle,
+                    { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
+                  ]}
+                  numberOfLines={1}
+                >
                   {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <PrimaryIcon
+                  <LinkedUhidIcon
                     style={{
                       width: 22,
                       height: 20,
@@ -989,19 +995,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }}
                     resizeMode={'contain'}
                   />
-                ) : (
-                  currentPatient && (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 16 : 20,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  )
-                )}
+                ) : null}
                 <View style={{ paddingTop: 15, marginLeft: 6 }}>
                   <DropdownGreen />
                 </View>
