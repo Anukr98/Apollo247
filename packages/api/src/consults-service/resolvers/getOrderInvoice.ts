@@ -169,7 +169,7 @@ const getOrderInvoice: Resolver<
       .fillColor('#7f7f7f')
       .text(labelText1, margin + 10, y, { lineBreak: false })
 
-      .fontSize(11)
+      .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#333333')
       .text(`${labelValue1}`, 200, y, { lineBreak: false })
@@ -261,7 +261,7 @@ const getOrderInvoice: Resolver<
         `${textArray.join('   |   ')}`,
         'Patient UHID',
         `${patientInfo.uhid}`,
-        doc.y
+        doc.y + 10
       );
     }
     if (patientInfo.mobileNumber) {
@@ -270,7 +270,7 @@ const getOrderInvoice: Resolver<
         `${patientInfo.mobileNumber.slice(3)}`,
         'Email Address',
         `${patientInfo.emailAddress}`,
-        doc.y
+        doc.y + 10
       );
     }
     if (appointmentData[0].displayId) {
@@ -283,7 +283,7 @@ const getOrderInvoice: Resolver<
         `${appointmentData[0].displayId}`,
         'Date of Appointment',
         `${formattedDate}`,
-        doc.y
+        doc.y + 10
       );
     }
     if (appointmentData[0].appointmentType || doctorInfo.specialization) {
@@ -293,12 +293,12 @@ const getOrderInvoice: Resolver<
         `${_capitalize(appointmentData[0].appointmentType)}`,
         'Doctor Speciality',
         `${specialty}`,
-        doc.y
+        doc.y + 20
       );
     }
     if (doctorInfo.firstName || doctorInfo.lastName || doctorInfo.salutation) {
       const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
-      renderFourColumnRow('Doctor Name', `${nameLine}`, '', '', doc.y);
+      renderFourColumnRow('Doctor Name', `${nameLine}`, '', '', doc.y + 10);
     }
     if (appointmentData[0].actualAmount) {
       renderFourColumnRow(
