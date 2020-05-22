@@ -61,9 +61,10 @@ const cancelAppointment: Resolver<
   ConsultServiceContext,
   CancelAppointmentResult
 > = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
-
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointment = await appointmentRepo.findAppointmentPaymentById(cancelAppointmentInput.appointmentId);
+  const appointment = await appointmentRepo.findAppointmentPaymentById(
+    cancelAppointmentInput.appointmentId
+  );
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -77,12 +78,6 @@ const cancelAppointment: Resolver<
   )
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
-  if (
-    appointment.appointmentDateTime <= new Date() &&
-    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(
     cancelAppointmentInput.appointmentId

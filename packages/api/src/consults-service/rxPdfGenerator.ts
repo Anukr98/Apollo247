@@ -1,4 +1,4 @@
-import { format, getTime } from 'date-fns';
+import { format, getTime, addMilliseconds } from 'date-fns';
 import path from 'path';
 import util from 'util';
 
@@ -318,10 +318,11 @@ export const convertCaseSheetToRxPdfData = async (
     const consultDate = caseSheet.appointment.sdConsultationDate
       ? caseSheet.appointment.sdConsultationDate
       : caseSheet.appointment.appointmentDateTime;
+    const istDateTime = addMilliseconds(consultDate, 19800000);
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(consultDate, 'dd/MM/yyyy'),
-      consultTime: format(consultDate, 'hh:mm a'),
+      consultDate: format(istDateTime, 'dd/MM/yyyy'),
+      consultTime: format(istDateTime, 'hh:mm a'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
@@ -498,14 +499,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    if (doctorInfo.qualifications) {
+    /*if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }
+    }*/
 
     doc
       .fontSize(9)
@@ -655,6 +656,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       if (prescription.instructions) {
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
         doc
           .fontSize(11)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
@@ -690,6 +694,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#666666')
           .text(`${advice.instruction}`, 150, doc.y)
           .moveDown(0.5);
+
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
       });
       if (followUpData) {
         if (doc.y > doc.page.height - 150) {
@@ -869,14 +877,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      if (doctorInfo.qualifications) {
+      /*if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      }
+      } */
 
       doc
         .fontSize(9)

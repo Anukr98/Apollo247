@@ -59,7 +59,7 @@ export enum REFUND_STATUS {
   REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
   REFUND_FAILED = 'REFUND_FAILED',
   REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
-  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED'
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
 }
 
 export enum PAYTM_STATUS {
@@ -103,7 +103,7 @@ export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
 }
 
 export enum TRANSFER_STATUS {
@@ -140,11 +140,6 @@ export enum DEVICETYPE {
 export enum PATIENT_TYPE {
   NEW = 'NEW',
   REPEAT = 'REPEAT',
-}
-export enum NOSHOW_REASON {
-  NOSHOW_PATIENT = 'NOSHOW_PATIENT',
-  NOSHOW_DOCTOR = 'NOSHOW_DOCTOR',
-  NOSHOW_30MIN = 'NOSHOW_30MIN',
 }
 
 //Appointment starts
@@ -232,9 +227,6 @@ export class Appointment extends BaseEntity {
   isSeniorConsultStarted: Boolean;
 
   @Column({ nullable: true })
-  noShowReason: NOSHOW_REASON;
-
-  @Column({ nullable: true })
   patientCancelReason: string;
 
   @Index('Appointment_patientId')
@@ -310,10 +302,7 @@ export class Appointment extends BaseEntity {
   )
   appointmentPayments: AppointmentPayments[];
 
-  @OneToMany(
-    (type) => AppointmentRefunds,
-    (appointmentRefunds) => appointmentRefunds.appointment
-  )
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointment)
   appointmentRefunds: AppointmentRefunds[];
 
   @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
@@ -398,7 +387,7 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -409,8 +398,11 @@ export class AppointmentPayments extends BaseEntity {
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
 
-  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointmentPayments)
-  appointmentRefunds: AppointmentRefunds[]
+  @OneToMany(
+    (type) => AppointmentRefunds,
+    (appointmentRefunds) => appointmentRefunds.appointmentPayments
+  )
+  appointmentRefunds: AppointmentRefunds[];
 }
 
 @Entity()
@@ -434,7 +426,7 @@ export class AppointmentRefunds extends BaseEntity {
   refundStatus: REFUND_STATUS;
 
   @Column({ nullable: true })
-  paytmRequestStatus: PAYTM_STATUS
+  paytmRequestStatus: PAYTM_STATUS;
 
   @Column({ nullable: true })
   refundId: string;
@@ -466,7 +458,7 @@ export class AppointmentRefunds extends BaseEntity {
   @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Column({ nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({
@@ -474,7 +466,8 @@ export class AppointmentRefunds extends BaseEntity {
     type: 'jsonb',
     array: false,
     default: () => "'{}'",
-  }) refundDetailInfo: JSON
+  })
+  refundDetailInfo: JSON;
 
   @BeforeUpdate()
   updateDateUpdate() {
@@ -484,9 +477,11 @@ export class AppointmentRefunds extends BaseEntity {
   @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
   appointment: Appointment;
 
-  @ManyToOne(() => AppointmentPayments, (appointmentPayments) => appointmentPayments.appointmentRefunds)
+  @ManyToOne(
+    () => AppointmentPayments,
+    (appointmentPayments) => appointmentPayments.appointmentRefunds
+  )
   appointmentPayments: AppointmentPayments;
-
 }
 //AppointmentPayments ends
 
@@ -784,6 +779,9 @@ export class CaseSheet extends BaseEntity {
   @Index('CaseSheet_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true, default: false })
+  isJdConsultStarted: Boolean;
 
   @Column({ nullable: true, type: 'json' })
   medicinePrescription: string;

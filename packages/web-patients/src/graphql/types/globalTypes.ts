@@ -124,6 +124,12 @@ export enum DoctorType {
   SUGAR = "SUGAR",
 }
 
+export enum FEEDBACKTYPE {
+  CONSULT = "CONSULT",
+  DIAGNOSTICS = "DIAGNOSTICS",
+  PHARMACY = "PHARMACY",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -538,6 +544,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  sort?: string | null;
 }
 
 export interface Geolocation {
@@ -619,6 +626,7 @@ export interface MedicineCartOMSItem {
 export interface MedicineOrderCancelOMSInput {
   orderNo?: number | null;
   cancelReasonCode?: string | null;
+  cancelReasonText?: string | null;
 }
 
 export interface MedicinePaymentInput {
@@ -698,6 +706,15 @@ export interface PatientConsultsAndOrdersInput {
   filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
+}
+
+export interface PatientFeedbackInput {
+  patientId: string;
+  rating?: string | null;
+  thankyouNote?: string | null;
+  reason?: string | null;
+  feedbackType?: FEEDBACKTYPE | null;
+  transactionId: string;
 }
 
 export interface PatientProfileInput {

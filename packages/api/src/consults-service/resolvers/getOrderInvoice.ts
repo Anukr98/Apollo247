@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { getTime, format } from 'date-fns';
+import { getTime, format, addMinutes } from 'date-fns';
 
 export const getOrderInvoiceTypeDefs = gql`
   extend type Query {
@@ -87,7 +87,7 @@ const getOrderInvoice: Resolver<
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientsRep = patientsDb.getCustomRepository(PatientRepository);
   const patientResponse = await apptsRepo.findByAppointmentId(args.appointmentId);
-  // console.log('orders Response', JSON.stringify(response, null, 2));
+  // console.log('orders Response', JSON.stringify(patientResponse, null, 2));
 
   const patientDetails = await patientsRep.findById(args.patientId);
   // console.log('orders Response', JSON.stringify(patientDetails, null, 2));
@@ -152,20 +152,39 @@ const getOrderInvoice: Resolver<
       .opacity(0.7)
       .fillColor('#000')
       .fontSize(11)
-      .text(_capitalize(headerText), margin + 100, doc.y + 10, { fill: true })
+      .text(headerText, margin + 100, doc.y + 10, { fill: true })
       .moveDown(2);
   };
 
-  const renderDetailsRow = (labelText: string, labelValue: string, y?: number) => {
-    doc
-      .fontSize(9)
-      .fillColor('#000000')
-      .text(labelText, margin + 10, y, { lineBreak: false });
+  const renderFourColumnRow = (
+    labelText1: string,
+    labelValue1: string,
+    labelText2: string,
+    labelValue2: string,
+    y?: number
+  ) => {
     return doc
-      .fontSize(labelText === 'Patient' ? 10 : 9)
-      .fillColor('#02475b')
-      .text(`${labelValue}`, 200, y)
-      .opacity(0.6)
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#7f7f7f')
+      .text(labelText1, margin + 10, y, { lineBreak: false })
+
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#333333')
+      .text(`${labelValue1}`, 200, y, { lineBreak: false })
+      .moveDown(0.5)
+
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#7f7f7f')
+      .text(labelText2, margin + 300, y, { lineBreak: false })
+
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#333333')
+      .text(`${labelValue2}`, 450, y)
+
       .moveDown(0.5);
   };
 
@@ -222,7 +241,8 @@ const getOrderInvoice: Resolver<
 
   const renderpatients = (
     patientInfo: AppointmentsResult['patient'],
-    appointmentData: AppointmentsResult['appointments']
+    appointmentData: AppointmentsResult['appointments'],
+    doctorInfo: AppointmentsResult['doctor']
   ) => {
     renderSectionHeader('PAYMENT RECEIPT');
 
@@ -236,65 +256,73 @@ const getOrderInvoice: Resolver<
     if (patientName) textArray.push(`${patientName}`);
     // console.log('text Array ', textArray);
     if (textArray.length > 0) {
-      renderDetailsRow('Patient Name', `${textArray.join('   |   ')}`, doc.y);
-    }
-
-    if (patientInfo.uhid) {
-      renderDetailsRow('Patient UHID', `${patientInfo.uhid}`, doc.y);
+      renderFourColumnRow(
+        'Patient Name',
+        `${textArray.join('   |   ')}`,
+        'Patient UHID',
+        `${patientInfo.uhid}`,
+        doc.y + 10
+      );
     }
     if (patientInfo.mobileNumber) {
-      renderDetailsRow('Mobile Number', `${patientInfo.mobileNumber}`, doc.y);
-    }
-    if (patientInfo.emailAddress) {
-      renderDetailsRow('Email Address', `${patientInfo.emailAddress}`, doc.y);
+      renderFourColumnRow(
+        'Contact No.',
+        `${patientInfo.mobileNumber.slice(3)}`,
+        'Email Address',
+        `${patientInfo.emailAddress}`,
+        doc.y + 10
+      );
     }
     if (appointmentData[0].displayId) {
-      renderDetailsRow('Appointment ID', `${appointmentData[0].displayId}`, doc.y);
-    }
-
-    if (appointmentData[0].appointmentDateTime) {
-      const formattedDate = format(appointmentData[0].appointmentDateTime, 'dd MMM yyyy hh:mm a');
-      renderDetailsRow('Consult Date', `${formattedDate}`, doc.y);
-    }
-
-    if (appointmentData[0].appointmentType) {
-      renderDetailsRow('Consult Type', `${appointmentData[0].appointmentType}`, doc.y);
-    }
-    if (
-      appointmentData[0].appointmentPayments &&
-      appointmentData[0].appointmentPayments.length > 0
-    ) {
-      renderDetailsRow(
-        'Payment Reference Number',
-        `${appointmentData[0].appointmentPayments[0].paymentRefId}`,
-        doc.y
+      const formattedDate = format(
+        addMinutes(appointmentData[0].appointmentDateTime, 330),
+        'dd MMM yyyy hh:mm a'
+      );
+      renderFourColumnRow(
+        'Appointment ID',
+        `${appointmentData[0].displayId}`,
+        'Date of Appointment',
+        `${formattedDate}`,
+        doc.y + 10
       );
     }
-    if (
-      appointmentData[0].appointmentPayments &&
-      appointmentData[0].appointmentPayments.length > 0
-    ) {
-      renderDetailsRow(
-        'Payment Status',
-        `${appointmentData[0].appointmentPayments[0].paymentStatus}`,
-        doc.y
+    if (appointmentData[0].appointmentType || doctorInfo.specialization) {
+      const specialty = doctorInfo.specialization;
+      renderFourColumnRow(
+        'Service Type',
+        `${_capitalize(appointmentData[0].appointmentType)}`,
+        'Doctor Speciality',
+        `${specialty}`,
+        doc.y + 20
       );
+    }
+    if (doctorInfo.firstName || doctorInfo.lastName || doctorInfo.salutation) {
+      const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+      renderFourColumnRow('Doctor Name', `${nameLine}`, '', '', doc.y + 10);
     }
     if (appointmentData[0].actualAmount) {
-      renderDetailsRow(
-        appointmentData[0].appointmentType + ' Consultation Fees',
-        `${appointmentData[0].actualAmount}`,
-        doc.y
+      renderFourColumnRow(
+        _capitalize(appointmentData[0].appointmentType) + ' Consultation Fees',
+        `Rs ${appointmentData[0].actualAmount}`,
+        '',
+        '',
+        doc.y + 50
       );
     }
-    if (appointmentData[0].discountedAmount) {
-      renderDetailsRow('Discount Applied', ` - ${appointmentData[0].discountedAmount}`, doc.y);
-    }
     if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
-      const totalAmount: number =
+      const discount: number =
         (appointmentData[0].actualAmount as number) -
         (appointmentData[0].discountedAmount as number);
-      renderDetailsRow('Total Amount', `${totalAmount}`, doc.y);
+      renderFourColumnRow('Discount Applied', `Rs ${discount}`, '', '', doc.y + 10);
+    }
+    if (appointmentData[0].discountedAmount) {
+      renderFourColumnRow(
+        'Total Amount',
+        `Rs ${appointmentData[0].discountedAmount}`,
+        '',
+        '',
+        doc.y + 10
+      );
     }
   };
   if (AppointmentsResult.doctor && AppointmentsResult.doctor == null)
@@ -311,8 +339,12 @@ const getOrderInvoice: Resolver<
     renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
   }
   if (!_isEmpty(AppointmentsResult.patient)) {
-    if (AppointmentsResult.patient) {
-      renderpatients(AppointmentsResult.patient, AppointmentsResult.appointments);
+    if (AppointmentsResult.patient && AppointmentsResult.doctor) {
+      renderpatients(
+        AppointmentsResult.patient,
+        AppointmentsResult.appointments,
+        AppointmentsResult.doctor
+      );
       doc.moveDown(1.5);
     }
   }

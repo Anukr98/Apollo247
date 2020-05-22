@@ -115,6 +115,9 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: -18,
       paddingRight: 15,
     },
+    pastConsult: {
+      justifyContent: 'flex-end',
+    },
   })
 );
 
@@ -179,7 +182,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
               <CardContent>
                 <Grid item xs={12}>
                   <Grid item container spacing={2}>
-                    <Grid item lg={4} sm={3} xs={3} key={1} container>
+                    <Grid item lg={4} sm={3} xs={6} key={1} container>
                       <Grid sm={3} xs={2} key={5} item>
                         <img
                           alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
@@ -216,18 +219,8 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         </Typography>
                       )}
                     </Grid>
-                    <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
-                      <Typography
-                        gutterBottom
-                        variant="body1"
-                        className={classes.mainHeadingconsult}
-                      >
-                        {patient.appointmentids.length > 1
-                          ? `${patient.appointmentids.length} Consults`
-                          : `${patient.appointmentids.length} Consult`}
-                      </Typography>
-                    </Grid>
-                    <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
+
+                    <Grid lg={2} sm={3} xs={3} key={3} className={classes.valign} item>
                       <span className={classes.chatSpan}>
                         <div
                           className={classes.ChatStyle}
@@ -270,7 +263,28 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           {/* </Link> */}
                         </div>
                       </span>
-
+                    </Grid>
+                    <Grid
+                      lg={3}
+                      sm={6}
+                      xs={3}
+                      key={4}
+                      item
+                      className={`${classes.valign} ${classes.pastConsult}`}
+                    >
+                      <Link
+                        to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}
+                      >
+                        <Typography
+                          gutterBottom
+                          variant="body1"
+                          className={classes.mainHeadingconsult}
+                        >
+                          {patient.appointmentids.length > 1
+                            ? `${patient.appointmentids.length} Past Consults`
+                            : `${patient.appointmentids.length} Past Consult`}
+                        </Typography>
+                      </Link>
                       <div className={classes.section2}>
                         <Link
                           to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}

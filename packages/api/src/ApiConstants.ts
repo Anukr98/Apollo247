@@ -92,7 +92,7 @@ export enum ApiConstants {
 
   //payment refund
   PAYMENT_REFUND_TITLE = 'Your appointment payment will be refunded',
-  PAYMENT_REFUND_BODY = 'Hi there! The refund of Rs.{0} for your Consultation ID: {2}  has been initiated by Apollo 24/7 with the refund ID - {2}. Due to the lockdown, banks are taking longer than usual to process the refunds.Hence, the amount may take around 10-14 working days to reflect in your source account. However, we are working with banks to speed up the refund process. Thank you for your understanding',
+  PAYMENT_REFUND_BODY = 'Hi there! The refund of Rs.{0} for your Consultation ID: {1}  has been initiated by Apollo 24/7 with the refund ID - {2}. Due to the lockdown, banks are taking longer than usual to process the refunds.Hence, the amount may take around 10-14 working days to reflect in your source account. However, we are working with banks to speed up the refund process. Thank you for your understanding',
 
   //book appointment payment success
   BOOK_APPOINTMENT_PAYMENT_SUCCESS_TITLE = 'Your appointment payment is received',
@@ -139,8 +139,6 @@ export enum ApiConstants {
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
   PATIENT_INITIATE_REASON = 'initiated by patient',
-  PATIENT_NOSHOW_REASON = 'Patient did not initiate the appointment, no casesheet',
-  NOSHOW_REASON = 'Both Doctor & the Patient have not joined the consultation',
 
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',

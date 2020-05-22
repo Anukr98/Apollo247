@@ -6,7 +6,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { ApiConstants } from 'ApiConstants';
-import { discountCalculation } from 'helpers/couponCommonFunctions';
+import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
 import {
   Coupon,
   CouponCategoryApplicable,
@@ -209,39 +209,28 @@ export const validatePharmaCoupon: Resolver<
       };
   }
 
-  //coupon start date check
-  const todayDate = new Date();
-  if (
-    couponGenericRulesData.couponStartDate &&
-    todayDate < couponGenericRulesData.couponStartDate
-  ) {
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      validityStatus: false,
-      reasonForInvalidStatus: ApiConstants.EARLY_COUPON.toString(),
-    };
-  }
-
-  // coupon end date check
-  if (couponGenericRulesData.couponEndDate && todayDate > couponGenericRulesData.couponEndDate) {
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      validityStatus: false,
-      reasonForInvalidStatus: ApiConstants.COUPON_EXPIRED.toString(),
-    };
-  }
-
+  let cartPrice = 0;
   const lineItemsWithDiscount = orderLineItems.map((item) => {
+    const itemPrice = item.mrp < item.specialPrice ? item.mrp : item.specialPrice;
+    cartPrice = cartPrice + itemPrice * item.quantity;
     return {
       ...item,
       discountedPrice: 0,
       applicablePrice: 0,
     };
   });
+
+  //call to check generic rule
+  const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, cartPrice);
+  if (genericRuleCheckResult) {
+    return {
+      discountedTotals: undefined,
+      pharmaLineItemsWithDiscountedPrice: undefined,
+      successMessage: '',
+      validityStatus: genericRuleCheckResult.validityStatus,
+      reasonForInvalidStatus: genericRuleCheckResult.reasonForInvalidStatus,
+    };
+  }
 
   let specialPriceTotal = 0;
   let mrpPriceTotal = 0;
@@ -262,18 +251,6 @@ export const validatePharmaCoupon: Resolver<
 
         lineItem.applicablePrice =
           lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
-
-        if (
-          couponGenericRulesData.minimumCartValue &&
-          itemPrice < couponGenericRulesData.minimumCartValue
-        )
-          return;
-
-        if (
-          couponGenericRulesData.maximumCartValue &&
-          itemPrice > couponGenericRulesData.maximumCartValue
-        )
-          return;
 
         const discountedPrice = discountCalculation(
           itemPrice,

@@ -75,7 +75,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
   }
 
   type AppointmentPaymentResult {
-    appointment: AppointmentPayment,
+    appointment: AppointmentPayment
     isRefunded: Boolean
   }
 
@@ -159,8 +159,8 @@ const makeAppointmentPayment: Resolver<
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
-
-  const paymentMode: string = PAYMENT_METHODS[paymentInput.paymentMode];
+  let paymentMode: string = '';
+  if (paymentInput.paymentMode) paymentMode = PAYMENT_METHODS[paymentInput.paymentMode];
   if (paymentInfo) {
     log(
       'consultServiceLogger',
@@ -185,20 +185,19 @@ const makeAppointmentPayment: Resolver<
     paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
     paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
     paymentInputUpdates.orderId = paymentInfo.orderId;
-    paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode) paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
     apptPaymentAttrs.appointment = processingAppointment;
     apptPaymentAttrs.paymentType = APPOINTMENT_PAYMENT_TYPE.ONLINE;
-    apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode) apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
-
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -214,13 +213,16 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await initiateRefund({
-        appointment: processingAppointment,
-        appointmentPayments: paymentInfo,
-        refundAmount: paymentInfo.amountPaid,
-        txnId: paymentInfo.paymentRefId,
-        orderId: processingAppointment.paymentOrderId
-      }, consultsDb)
+      await initiateRefund(
+        {
+          appointment: processingAppointment,
+          appointmentPayments: paymentInfo,
+          refundAmount: paymentInfo.amountPaid,
+          txnId: paymentInfo.paymentRefId,
+          orderId: processingAppointment.paymentOrderId,
+        },
+        consultsDb
+      );
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
       paymentInfo.appointment = processingAppointment;
       sendNotification({
@@ -233,8 +235,8 @@ const makeAppointmentPayment: Resolver<
       )
       return {
         appointment: paymentInfo,
-        isRefunded: true
-      }
+        isRefunded: true,
+      };
     }
 
     const slotApptDt =
@@ -249,9 +251,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -434,8 +436,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

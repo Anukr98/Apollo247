@@ -20,27 +20,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
+  updateMultipleCaseSheets(ids: string[], caseSheetAttrs: Partial<CaseSheet>) {
+    return this.update(ids, caseSheetAttrs).catch((error) => {
+      throw new AphError(AphErrorMessages.UPDATE_CONSULT_QUEUE_ERROR, undefined, { error });
+    });
+  }
+
   getCaseSheetByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .getMany();
-  }
-
-  getCompletedCaseSheetsByAppointmentId(appointmentId: string) {
-    return this.createQueryBuilder('case_sheet')
-      .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
-      .getMany();
-  }
-
-  getSDCompletedCaseSheetsByAppointmentId(appointmentId: string) {
-    return this.createQueryBuilder('case_sheet')
-      .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
-      .andWhere('case_sheet.doctorType != :juniorDoctorType', {
-        juniorDoctorType: DoctorType.JUNIOR,
-      })
       .getMany();
   }
 
@@ -88,6 +77,20 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
       });
+  }
+
+  async findAndUpdateJdConsultStatus(appointmentId: string) {
+    const caseSheet = await this.findOne({
+      where: { appointment: appointmentId, doctorType: DoctorType.JUNIOR },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
+    });
+
+    if (!caseSheet) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
+
+    return this.update(caseSheet.id, { isJdConsultStarted: true }).catch((error) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { error });
+    });
   }
 
   updateJDCaseSheet(appointmentId: string) {

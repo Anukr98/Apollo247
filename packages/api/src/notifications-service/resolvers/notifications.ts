@@ -714,9 +714,10 @@ export async function sendNotification(
     const refundsInfo = await appRefRepo.getRefundsByAppointmentId(appointment);
     if (refundsInfo) {
       notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
-      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace('{0}', "" + refundsInfo.refundAmount)
-        .replace('{1}', appointment.id)
-        .replace('{2}', refundsInfo.refundId)
+      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace('{0}', "" + refundsInfo.refundAmount.toFixed(2));
+      notificationBody = notificationBody.replace('{1}', appointment.id)
+      notificationBody = notificationBody.replace('{2}', refundsInfo.refundId)
+
       sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
     } else {
       return;
