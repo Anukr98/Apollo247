@@ -9,6 +9,7 @@ import {
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { format, addMinutes, parseISO } from 'date-fns';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -112,12 +113,16 @@ const saveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
-
+  const statusDate = format(
+    addMinutes(parseISO(saveOrderShipmentInvoiceInput.updatedDate), -330),
+    "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+  );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
     medicineOrderShipments: shipmentDetails,
-    statusDate: new Date(saveOrderShipmentInvoiceInput.updatedDate),
+    statusDate: new Date(statusDate),
   };
+
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
@@ -125,7 +130,10 @@ const saveOrderShipmentInvoice: Resolver<
     apOrderNo: shipmentDetails.apOrderNo,
     siteId: shipmentDetails.siteId,
     billDetails: JSON.stringify({
-      billDateTime: new Date(saveOrderShipmentInvoiceInput.billingDetails.invoiceTime),
+      billDateTime: format(
+        addMinutes(parseISO(saveOrderShipmentInvoiceInput.billingDetails.invoiceTime), -330),
+        "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+      ),
       billNumber: saveOrderShipmentInvoiceInput.billingDetails.invoiceNo,
       invoiceValue: saveOrderShipmentInvoiceInput.billingDetails.invoiceValue,
     }),
@@ -162,13 +170,13 @@ const saveOrderShipmentInvoice: Resolver<
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
       medicineOrders: orderDetails,
-      statusDate: new Date(saveOrderShipmentInvoiceInput.updatedDate),
+      statusDate: new Date(statusDate),
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
-      new Date(saveOrderShipmentInvoiceInput.updatedDate),
+      new Date(statusDate),
       MEDICINE_ORDER_STATUS.ORDER_BILLED
     );
   }
