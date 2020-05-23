@@ -361,6 +361,9 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ nullable: true })
   orderId: string;
 
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
 
