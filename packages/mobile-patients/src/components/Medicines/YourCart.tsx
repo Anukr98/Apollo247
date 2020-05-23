@@ -1140,7 +1140,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               >
                 {coupon.discountedTotals!.couponDiscount > 0
                   ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
-                  : 'Product(s) in cart are not applicable for this coupon or at higher discounts'}
+                  : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
               </Text>
             </View>
           )}
