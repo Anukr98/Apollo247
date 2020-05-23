@@ -279,13 +279,16 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getOrderDeliveryDate = (status: (StatusDetails | null)[]) => {
+  const getOrderStatusDate = (
+    status: (StatusDetails | null)[],
+    currentStatus: MEDICINE_ORDER_STATUS
+  ) => {
     const sortedList = getSortedStatusList(status);
     if (sortedList && sortedList.length > 0) {
-      const firstSortedData = sortedList[0];
+      const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
       return (
-        firstSortedData &&
-        moment(new Date(firstSortedData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+        currentStatusData &&
+        moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
       );
     }
   };
@@ -293,9 +296,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const getDefaultValue = (status: string) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         return 60;
       case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-        return 80;
+        return 120;
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return 180;
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
@@ -324,6 +329,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.CANCELLED:
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         return (
           <AphTrackSlider
             color="primary"
@@ -391,9 +398,10 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                       </div>
                       <div className={classes.itemSection}>
                         <div className={classes.itemName}>Medicines</div>
-                        <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                         <div className={classes.deliveryType}>
-                          <span>{getDeliveryType(orderInfo.deliveryType)}</span>
+                          <span>
+                            {getDeliveryType(orderInfo.deliveryType)} | #{orderInfo.orderAutoId}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -409,12 +417,16 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                               : `${classes.orderStatus}`
                           }
                         >
-                          {getStatus(orderInfo.currentStatus)}
+                          {getOrderStatus(orderInfo.medicineOrdersStatus)}
                         </div>
                       )}
+
                       <div className={classes.statusInfo}>
-                        {orderInfo.medicineOrdersStatus &&
-                          getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                        {orderInfo.currentStatus &&
+                          getOrderStatusDate(
+                            orderInfo.medicineOrdersStatus,
+                            orderInfo.currentStatus
+                          )}
                       </div>
                     </div>
                   </div>

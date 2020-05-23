@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Typography, Link } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -420,16 +420,20 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   };
 
   const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
-    if (deliveryAddresses.length > 0 && orderDetailsData && orderDetailsData.patientAddressId) {
-      const selectedAddress = deliveryAddresses.find(
-        (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
-      );
-      const addressData = selectedAddress
-        ? `${selectedAddress.addressLine1} ${
-            selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
-          }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
-        : '';
-      return addressData;
+    if (deliveryAddresses.length > 0) {
+      if (orderDetailsData && orderDetailsData.patientAddressId) {
+        const selectedAddress = deliveryAddresses.find(
+          (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
+        );
+        const addressData = selectedAddress
+          ? `${selectedAddress.addressLine1} ${
+              selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
+            }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
+          : '';
+        return addressData;
+      } else {
+        return '';
+      }
     } else {
       getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
     }
@@ -539,7 +543,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                       <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
                     </div>
                   </div>
-                  {statusInfo.orderStatus === orderDetailsData.currentStatus && (
+                  {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
                     <div className={classes.infoText}>
                       <span>{getOrderDescription(orderDetailsData.currentStatus)}</span>
                     </div>
@@ -549,7 +553,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           )
         )}
       </div>
-      {deliveredOrderDetails && (
+      {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
           <p>
             Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
