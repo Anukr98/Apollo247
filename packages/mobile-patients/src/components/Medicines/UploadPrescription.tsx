@@ -341,7 +341,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     showAphAlert!({
       title: 'Hi:)',
       description:
-        'Your prescriptions have been submitted successfully. We will notify you when the items are in your cart.\n\n\nIf we need any clarificaitons, we will call you within 1 hour.',
+        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
       unDismissable: true,
     });
 
