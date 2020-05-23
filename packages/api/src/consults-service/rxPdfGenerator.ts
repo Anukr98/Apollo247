@@ -541,7 +541,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fill('#d9e3e6');
 
     const disclaimerText =
-      'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue for upto 90 days(for the specific period / dosage of each medicine as advised).';
+      'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue until the specific period/dosage of each medicine as advised.';
 
     doc
       .fontSize(10)
@@ -776,7 +776,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnosticTest = (diagnosticTests: RxPdfData['diagnosesTests']) => {
     if (diagnosticTests) {
-      renderSectionHeader('Diagnostic Tests Prescribed', 'ic-microscope-solid.png');
+      renderSectionHeader('Diagnostic Tests', 'ic-microscope-solid.png');
       diagnosticTests.forEach((diagTest, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
