@@ -775,39 +775,47 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             </Text>
           </View>
         </View>
-        <View
-          style={{
-            backgroundColor: '#f7f8f5',
-            shadowColor: 'rgba(128, 128, 128, 0.3)',
-            shadowOffset: { width: 0, height: 5 },
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-            paddingHorizontal: 20,
-            paddingTop: 14,
-            paddingBottom: 13,
-            flexDirection: 'row',
-          }}
-        >
-          <NotifySymbol />
-          <Text
+        {!!!orderStatusList.find(
+          (item) =>
+            item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
+        ) && (
+          <View
             style={{
-              ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
-              marginLeft: 20,
+              backgroundColor: '#f7f8f5',
+              shadowColor: 'rgba(128, 128, 128, 0.3)',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 5,
+              elevation: 5,
+              paddingHorizontal: 20,
+              paddingTop: 14,
+              paddingBottom: 13,
+              flexDirection: 'row',
             }}
           >
-            {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
-            }}
-          >
-            {isDelivered
-              ? getFormattedDate(isDelivered.statusDate)
-              : tatInfo && getFormattedDate(tatInfo)}
-          </Text>
-        </View>
+            <NotifySymbol />
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
+                marginLeft: 20,
+              }}
+            >
+              {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
+              }}
+            >
+              {isDelivered
+                ? getFormattedDate(isDelivered.statusDate)
+                : tatInfo && getFormattedDate(tatInfo)}
+            </Text>
+          </View>
+        )}
         <View style={{ margin: 20 }}>
           {statusList.map((order, index, array) => {
             return (
