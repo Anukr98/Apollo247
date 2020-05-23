@@ -40,6 +40,8 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   orderStatus: MEDICINE_ORDER_STATUS | null;
   statusDate: any | null;
   hideStatus: boolean | null;
+  statusMessage: string | null;
+  customReason: string | null;
 }
 
 export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderShipments_medicineOrdersStatus {
