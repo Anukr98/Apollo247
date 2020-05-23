@@ -386,7 +386,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'READY_AT_STORE',
   ];
 
-  const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
@@ -483,6 +482,41 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return '';
     }
   };
+  const addRestStatusToShow = () => {
+    if (orderDetailsData) {
+      switch (orderDetailsData.currentStatus) {
+        case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+          return [MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+          return [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY, MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+        case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_PLACED,
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+      }
+    }
+  };
+  const restStatusToShow = addRestStatusToShow();
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -552,6 +586,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               )
           )
         )}
+        {!isLoading &&
+          restStatusToShow &&
+          restStatusToShow.map((status, idx) => (
+            <div id={idx.toString()} className={classes.cardGroup}>
+              <div
+                className={`${classes.statusCard} ${classes.orderStatusActive}${classes.orderStatusCompleted}`}
+              >
+                {getStatus(status)}
+              </div>
+            </div>
+          ))}
       </div>
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
