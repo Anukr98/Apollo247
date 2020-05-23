@@ -446,7 +446,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     return item && item.isPrescriptionNeeded;
   };
 
-  const getOrderDescription = (status: MEDICINE_ORDER_STATUS) => {
+  const getOrderDescription = (status: MEDICINE_ORDER_STATUS, statusMessage: string) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_PLACED:
         return !prescriptionRequired() ? (
@@ -468,7 +468,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
         return `Your order #${orderDetailsData.orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`;
       case MEDICINE_ORDER_STATUS.CANCELLED:
-        return `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`;
+        return statusMessage === ''
+          ? `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`
+          : statusMessage;
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return (
           <>
@@ -579,7 +581,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                   </div>
                   {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
                     <div className={classes.infoText}>
-                      <span>{getOrderDescription(orderDetailsData.currentStatus)}</span>
+                      <span>
+                        {getOrderDescription(
+                          orderDetailsData.currentStatus,
+                          statusInfo.statusMessage
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -605,9 +612,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton> */}
+          </AphButton>
         </div>
       )}
       <Popover
