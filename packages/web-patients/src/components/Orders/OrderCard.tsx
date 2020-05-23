@@ -367,7 +367,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
 
     const firstOrderInfo = orderListData[0];
-    if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
+    if (!isSmallScreen && !props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
       props.setOrderAutoId(firstOrderInfo.orderAutoId);
     }
 
@@ -398,9 +398,11 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                       </div>
                       <div className={classes.itemSection}>
                         <div className={classes.itemName}>Medicines</div>
+                        <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                         <div className={classes.deliveryType}>
                           <span>
-                            {getDeliveryType(orderInfo.deliveryType)} | #{orderInfo.orderAutoId}
+                            {getDeliveryType(orderInfo.deliveryType)}{' '}
+                            {isSmallScreen ? null : `#${orderInfo.orderAutoId}`}
                           </span>
                         </div>
                       </div>
