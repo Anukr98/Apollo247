@@ -1433,6 +1433,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           orderStatus
           statusDate
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineSKU
@@ -2520,6 +2521,6 @@ export const LINK_UHID = gql`
 
 export const UNLINK_UHID = gql`
   mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
-    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids) 
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
   }
 `;
