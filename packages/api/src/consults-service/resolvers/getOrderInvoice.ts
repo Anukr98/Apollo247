@@ -277,36 +277,32 @@ const getOrderInvoice: Resolver<
       .fill('#e7e8ec')
       .moveDown(0.5);
 
-    if (appointmentData[0].actualAmount) {
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#01475b')
-        .text('Apollo 24X7 Online Teleconsultation Fees', margin + 150, doc.y, {
-          lineBreak: false,
-          align: 'right',
-        })
-        .fillColor('#02475b')
-        .text(`Rs ${appointmentData[0].actualAmount}`, margin + 450, doc.y, { align: 'left' })
-        .moveDown(1);
-    }
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#01475b')
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 150, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#02475b')
+      .text(`Rs ${appointmentData[0].actualAmount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1);
 
-    if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
-      const discount: number =
-        (appointmentData[0].actualAmount as number) -
-        (appointmentData[0].discountedAmount as number);
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#0087ba')
-        .text('Discount Applied', margin + 280, doc.y, {
-          lineBreak: false,
-          align: 'right',
-        })
-        .fillColor('#0087ba')
-        .text(`Rs ${discount}`, margin + 450, doc.y, { align: 'left' })
-        .moveDown(1.5);
-    }
+    const discount: number =
+      (appointmentData[0].actualAmount as number) - (appointmentData[0].discountedAmount as number);
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#0087ba')
+      .text('Discount Applied', margin + 280, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#0087ba')
+      .text(`Rs ${discount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1.5);
+
     doc
       .moveTo(margin, doc.y)
       .lineTo(doc.page.width - margin, doc.y)
@@ -314,19 +310,18 @@ const getOrderInvoice: Resolver<
       .fill('#e7e8ec')
       .moveDown(1);
 
-    if (appointmentData[0].discountedAmount) {
-      doc
-        .fontSize(12)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#01475b')
-        .text('Total Amount', margin + 300, doc.y, {
-          lineBreak: false,
-          align: 'right',
-        })
-        .fillColor('#01475b')
-        .text(`Rs ${appointmentData[0].discountedAmount}`, margin + 450, doc.y, { align: 'left' })
-        .moveDown(1);
-    }
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#01475b')
+      .text('Total Amount', margin + 300, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#01475b')
+      .text(`Rs ${appointmentData[0].discountedAmount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1);
+
     doc
       .moveTo(margin, doc.y)
       .lineTo(doc.page.width - margin, doc.y)
