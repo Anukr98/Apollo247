@@ -1747,9 +1747,10 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  let tatDate;
   if (orderDetails.orderTat) {
     if (Date.parse(orderDetails.orderTat.toString())) {
-      const tatDate = new Date(orderDetails.orderTat.toString());
+      tatDate = new Date(orderDetails.orderTat.toString());
       orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
     }
   }
@@ -1757,7 +1758,7 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
   if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
     notificationBody = notificationBody.replace('{2}', atOrederDateTime);
