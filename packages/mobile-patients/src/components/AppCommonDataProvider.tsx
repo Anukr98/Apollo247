@@ -50,6 +50,8 @@ export interface AppCommonDataContextProps {
   setAllNotifications: ((arg0: any[]) => void) | null;
   isSelected: any;
   setisSelected: ((arg0: any[]) => void) | null;
+  isUHID: string[];
+  setisUHID: ((arg0: string[]) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -80,6 +82,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setAllNotifications: null,
   isSelected: [],
   setisSelected: null,
+  isUHID: [],
+  setisUHID: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -162,6 +166,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [allNotifications, setAllNotifications] = useState<any[]>([]);
   const [isSelected, setisSelected] = useState<any[]>([]);
+  const [isUHID, setisUHID] = useState<string[]>([]);
 
   useEffect(() => {
     // update location from async storage the very first time app opened
@@ -213,6 +218,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setAllNotifications,
         isSelected,
         setisSelected,
+        isUHID,
+        setisUHID,
       }}
     >
       {props.children}

@@ -151,8 +151,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const checkForLinkedProfiles = (
     profiles: getPatientByMobileNumber_getPatientByMobileNumber_patients[]
   ) => {
-    let primary;
-    let secondary = [];
+    let primary: any;
+    let secondary: any[] = [];
     let areUhidsLinked = false;
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
@@ -218,7 +218,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         style={[
           { marginHorizontal: 20 },
           profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
-          index == 0 ? { marginTop: 20 } : {margin: 0},
+          index == 0 ? { marginTop: 20 } : { margin: 0 },
         ]}
       >
         {showSecondaryUhids && idSecondaryUHID && (
@@ -279,8 +279,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               isPrimaryUHID
                 ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
                 : { backgroundColor: colors.WHITE },
-              idSecondaryUHID ? styles.secondaryUHIDCard : {display: 'flex'},
-              idSecondaryUHID && !showSecondaryUhids ? { display: 'none' } : {display: 'flex'},
+              idSecondaryUHID ? styles.secondaryUHIDCard : { display: 'flex' },
+              idSecondaryUHID && !showSecondaryUhids ? { display: 'none' } : { display: 'flex' },
             ]}
             key={index}
           >
@@ -532,7 +532,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG >
+      <StickyBottomComponent defaultBG>
         {showLinkUhid && (
           <Button
             title="LINK UHID"
@@ -567,10 +567,13 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     >
       {renderHeader()}
       {renderDisclaimerBanner()}
-      <ScrollView bounces={false} style={showLinkButtons ? { marginBottom: 120 } : {marginBottom: 20}}>
+      <ScrollView
+        bounces={false}
+        style={showLinkButtons ? { marginBottom: 120 } : { marginBottom: 20 }}
+      >
         {renderProfilesDetails()}
       </ScrollView>
-      {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : <></>}
+      {!loading ? showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent() : <></>}
       {bottomPopUP && (
         <BottomPopUp title="Network Error!" description={'Please try again later.'}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
