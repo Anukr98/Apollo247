@@ -171,6 +171,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  findByPatientIds(ids: string[], offset?: number, limit?: number) {
+    return this.find({
+      where: { patient: In(ids), currentStatus: Not(MEDICINE_ORDER_STATUS.QUOTE) },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
+      skip: offset,
+      take: limit,
+      order: {
+        orderDateTime: 'DESC',
+      },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDERS_ERROR, undefined, {
+        error,
+      });
+    });
+  }
+
   getMedicineOrdersList(patientIds: String[]) {
     return this.find({
       where: { patient: In(patientIds) },
