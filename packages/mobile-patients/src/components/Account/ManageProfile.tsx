@@ -133,9 +133,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     setLoading && setLoading(true);
     if (allCurrentPatients) {
       const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
-      // setProfiles(profiles);
       checkForLinkedProfiles(profiles);
-      setLoading && setLoading(false);
     } else {
       getPatientApiCall();
       setLoading && setLoading(true);
@@ -144,7 +142,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   useEffect(() => {
     if (allCurrentPatients) {
-      setLoading && setLoading(false);
+      setLoading && setLoading(true);
       const profiles = allCurrentPatients.filter((item) => item.id !== item.emailAddress);
       checkForLinkedProfiles(profiles);
     }
@@ -188,6 +186,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       setShowSecondaryUHIDs(true);
       setProfiles(profiles);
     }
+    setLoading && setLoading(false);
   };
 
   const renderHeader = () => {
