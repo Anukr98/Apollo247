@@ -104,7 +104,7 @@ export enum REQUEST_ROLES {
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
   SYSTEM = 'SYSTEM',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
 }
 
 export enum TRANSFER_STATUS {
@@ -696,7 +696,7 @@ export enum MEDICINE_UNIT {
 
 export enum AUDIT_STATUS {
   PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED'
+  COMPLETED = 'COMPLETED',
 }
 
 export type CaseSheetMedicinePrescription = {
