@@ -367,13 +367,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatientPastAppointments(
-    patientId: string,
+    ids: string[],
     filter?: CONSULTS_RX_SEARCH_FILTER[],
     offset?: number,
     limit?: number
   ) {
     const whereClause = {
-      patientId,
+      patientId: In(ids),
       //appointmentDateTime: LessThan(new Date()),
       status: STATUS.COMPLETED,
       appointmentType: In([APPOINTMENT_TYPE.ONLINE, APPOINTMENT_TYPE.PHYSICAL]),
