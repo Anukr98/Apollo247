@@ -449,4 +449,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     });
   }
+  getMedicineOrderCancelReasonByCode(reasonCode: String) {
+    return MedicineOrderCancelReason.findOne({
+      where: { reasonCode },
+    }).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
+    });
+  }
 }
