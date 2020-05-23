@@ -7,8 +7,10 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
+import { Patient, MedicineOrders, DiagnosticOrders, PatientNotificationSettings } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
+
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -377,6 +379,7 @@ export async function sendNotification(
   console.log(patientDetails, 'patient details in notification');
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+
   //check for registered device tokens
   //if (patientDetails.patientDeviceTokens.length == 0) return;
 
@@ -409,9 +412,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-        process.env.SMS_LINK_BOOK_APOINTMENT +
-        ' ' +
-        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      process.env.SMS_LINK_BOOK_APOINTMENT +
+      ' ' +
+      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -551,22 +554,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -706,7 +709,21 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
     //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+  } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND) {
+    const appRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
+    const refundsInfo = await appRefRepo.getRefundsByAppointmentId(appointment);
+    if (refundsInfo) {
+      notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
+      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace('{0}', "" + refundsInfo.refundAmount.toFixed(2));
+      notificationBody = notificationBody.replace('{1}', appointment.id)
+      notificationBody = notificationBody.replace('{2}', refundsInfo.refundId)
+
+      sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    } else {
+      return;
+    }
   }
+
 
   //initialize firebaseadmin
   const config = {
@@ -896,6 +913,23 @@ export async function sendNotification(
       },
     };
   }
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Appointment_Canceled_Refund',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
 
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
@@ -1031,12 +1065,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1069,12 +1103,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+          ' ' +
+          facilityDets.streetLine1 +
+          ' ' +
+          facilityDets.city +
+          ' ' +
+          facilityDets.state
         );
       }
     }
@@ -1118,12 +1152,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1317,7 +1351,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
@@ -1879,7 +1913,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),

@@ -225,7 +225,14 @@ const makeAppointmentPayment: Resolver<
       );
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
       paymentInfo.appointment = processingAppointment;
-
+      sendNotification({
+        appointmentId: processingAppointment.id,
+        notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+      }
+        , patientsDb
+        , consultsDb
+        , doctorsDb
+      )
       return {
         appointment: paymentInfo,
         isRefunded: true,
