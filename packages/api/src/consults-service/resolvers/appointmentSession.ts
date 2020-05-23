@@ -35,6 +35,8 @@ export const createAppointmentSessionTypeDefs = gql`
     DOCTOR
     PATIENT
     JUNIOR
+    ADMIN
+    SYSTEM
   }
 
   type AppointmentSession {

@@ -386,7 +386,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'READY_AT_STORE',
   ];
 
-  const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
@@ -447,7 +446,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     return item && item.isPrescriptionNeeded;
   };
 
-  const getOrderDescription = (status: MEDICINE_ORDER_STATUS) => {
+  const getOrderDescription = (status: MEDICINE_ORDER_STATUS, statusMessage: string) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_PLACED:
         return !prescriptionRequired() ? (
@@ -469,7 +468,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
         return `Your order #${orderDetailsData.orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`;
       case MEDICINE_ORDER_STATUS.CANCELLED:
-        return `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`;
+        return statusMessage === ''
+          ? `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`
+          : statusMessage;
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return (
           <>
@@ -483,6 +484,41 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         return '';
     }
   };
+  const addRestStatusToShow = () => {
+    if (orderDetailsData) {
+      switch (orderDetailsData.currentStatus) {
+        case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+          return [MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+          return [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY, MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+        case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_PLACED,
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+      }
+    }
+  };
+  const restStatusToShow = addRestStatusToShow();
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -545,13 +581,29 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                   </div>
                   {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
                     <div className={classes.infoText}>
-                      <span>{getOrderDescription(orderDetailsData.currentStatus)}</span>
+                      <span>
+                        {getOrderDescription(
+                          orderDetailsData.currentStatus,
+                          statusInfo.statusMessage
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>
               )
           )
         )}
+        {!isLoading &&
+          restStatusToShow &&
+          restStatusToShow.map((status, idx) => (
+            <div id={idx.toString()} className={classes.cardGroup}>
+              <div
+                className={`${classes.statusCard} ${classes.orderStatusActive}${classes.orderStatusCompleted}`}
+              >
+                {getStatus(status)}
+              </div>
+            </div>
+          ))}
       </div>
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
@@ -560,9 +612,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton> */}
+          </AphButton>
         </div>
       )}
       <Popover
