@@ -42,6 +42,7 @@ type OptionsObject = {
   value: string | number;
   isPrimary: boolean;
   data?: any;
+  uhid: string;
 };
 
 export interface MaterialMenuProps {
