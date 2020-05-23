@@ -258,7 +258,7 @@ const getOrderInvoice: Resolver<
 
     const formattedDate = format(
       addMinutes(appointmentData[0].appointmentDateTime, 330),
-      'dd MMM yyyy hh:mm a'
+      'dd MMM yyyy'
     );
     renderFourColumnRow(
       'Appointment ID',
@@ -267,31 +267,6 @@ const getOrderInvoice: Resolver<
       `${formattedDate}`,
       doc.y + 10
     );
-
-    if (appointmentData[0].actualAmount) {
-      renderFourColumnRow(
-        _capitalize(appointmentData[0].appointmentType) + ' Consultation Fees',
-        `Rs ${appointmentData[0].actualAmount}`,
-        '',
-        '',
-        doc.y + 50
-      );
-    }
-    if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
-      const discount: number =
-        (appointmentData[0].actualAmount as number) -
-        (appointmentData[0].discountedAmount as number);
-      renderFourColumnRow('Discount Applied', `Rs ${discount}`, '', '', doc.y + 10);
-    }
-    if (appointmentData[0].discountedAmount) {
-      renderFourColumnRow(
-        'Total Amount',
-        `Rs ${appointmentData[0].discountedAmount}`,
-        '',
-        '',
-        doc.y + 10
-      );
-    }
 
     doc.moveDown(4);
 
@@ -311,9 +286,11 @@ const getOrderInvoice: Resolver<
         align: 'right',
       })
       .fillColor('#02475b')
-      .text('replace value', margin + 450, doc.y, { align: 'left' })
+      .text(`Rs ${appointmentData[0].actualAmount}`, margin + 450, doc.y, { align: 'left' })
       .moveDown(1);
 
+    const discount: number =
+      (appointmentData[0].actualAmount as number) - (appointmentData[0].discountedAmount as number);
     doc
       .fontSize(12)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
@@ -323,7 +300,7 @@ const getOrderInvoice: Resolver<
         align: 'right',
       })
       .fillColor('#0087ba')
-      .text('replace value', margin + 450, doc.y, { align: 'left' })
+      .text(`Rs ${discount}`, margin + 450, doc.y, { align: 'left' })
       .moveDown(1.5);
 
     doc
@@ -342,7 +319,7 @@ const getOrderInvoice: Resolver<
         align: 'right',
       })
       .fillColor('#01475b')
-      .text('replace value', margin + 450, doc.y, { align: 'left' })
+      .text(`Rs ${appointmentData[0].discountedAmount}`, margin + 450, doc.y, { align: 'left' })
       .moveDown(1);
 
     doc
