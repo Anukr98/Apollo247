@@ -96,18 +96,18 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5
+    elevation: 3,
   },
   closeButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    top: '31%',
+    right: 60,
     backgroundColor: colors.WHITE,
     padding: 3,
     paddingLeft: 8,
     paddingRight: 8,
     borderRadius: 30,
-    elevation: 6,
+    zIndex: 2,
   },
   secondaryUHIDCard: {
     width:'80%',
@@ -204,7 +204,9 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    // .finally(() => {setLoading && setLoading(false);});
+    .finally(() => {
+      setLoading && setLoading(false);
+    });
   };
 
   const deLinkUhidsApiCall = () => {
@@ -217,7 +219,9 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
       CommonBugFender('LinkUHIDs', e);
       console.log('Error occured ', e);
     })
-    // .finally(() => {setLoading && setLoading(false);});
+    .finally(() => {
+      setLoading && setLoading(false);
+    });
   };
 
   const backDataFunctionality = async () => {
@@ -256,16 +260,16 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         onRequestClose={() => {setShowAlert(false);}}
         onDismiss={()=>{setShowAlert(false);}}
       >
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={() => {
+            setShowAlert(false);
+          }}
+        >
+          <Text style={{ color: theme.colors.APP_YELLOW }}>X</Text>
+        </TouchableOpacity>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                setShowAlert(false);
-              }}
-            >
-              <Text style={{ color: theme.colors.APP_YELLOW}}>X</Text>
-            </TouchableOpacity>
             <Text style={{...fonts.IBMPlexSansRegular(16), marginBottom: 20, color: colors.BLACK_COLOR}}>
               Are you sure you want to 
               {
@@ -317,7 +321,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   ...fonts.IBMPlexSansSemiBold(16)
                 }}
                 onPress={() => {
-                  // setLoading && setLoading(true);
+                  setLoading && setLoading(true);
                   setShowAlert(false);
                   if (action === 'delink') {
                     deLinkUhidsApiCall();
