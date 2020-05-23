@@ -24,6 +24,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  Dimensions,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -88,6 +89,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
   imageView: {
@@ -1008,6 +1012,41 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
+  const renderPlaceorder = () => {
+    if (
+      caseSheetDetails!.medicinePrescription &&
+      caseSheetDetails!.medicinePrescription.length !== 0 &&
+      caseSheetDetails!.doctorType !== 'JUNIOR'
+    ) {
+      return (
+        <View
+          style={{
+            height: 0.1 * windowHeight,
+            backgroundColor: theme.colors.HEX_WHITE,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            style={{
+              height: 0.06 * windowHeight,
+              width: 0.75 * windowWidth,
+              backgroundColor: theme.colors.BUTTON_BG,
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            title={strings.health_records_home.order_medicine}
+            onPress={() => {
+              postWEGEvent('medicine');
+              onAddToCart();
+            }}
+          />
+        </View>
+      );
+    }
+  };
+
   const renderData = () => {
     if (caseSheetDetails)
       return (
@@ -1114,7 +1153,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             {renderDoctorDetails()}
             {renderData()}
           </ScrollView>
-
+          {caseSheetDetails && renderPlaceorder()}
           {displayoverlay && props.navigation.state.params!.DoctorInfo && (
             <OverlayRescheduleView
               setdisplayoverlay={() => setdisplayoverlay(false)}
