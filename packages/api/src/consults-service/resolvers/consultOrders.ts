@@ -45,8 +45,7 @@ export const consultOrdersTypeDefs = gql`
     txnTimestamp: Date
     refundStatus: REFUND_STATUS
     refundId: String
-
-}
+  }
   extend type Query {
     consultOrders(patientId: String): AppointmentsResult
   }
@@ -88,8 +87,7 @@ type ApptRefunds = {
   txnTimestamp: Date;
   refundStatus: REFUND_STATUS;
   refundId: string;
-
-}
+};
 
 const consultOrders: Resolver<
   null,
