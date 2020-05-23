@@ -107,22 +107,25 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
   );
-  await initiateRefund({
-    orderId: appointment.paymentOrderId,
-    txnId: appointment.appointmentPayments[0].paymentRefId,
-    refundAmount: appointment.appointmentPayments[0].amountPaid,
-    appointment: appointment,
-    appointmentPayments: appointment.appointmentPayments[0]
+  if (appointment.appointmentPayments.length && appointment.appointmentPayments[0].amountPaid >= 1) {
+    await initiateRefund({
+      orderId: appointment.paymentOrderId,
+      txnId: appointment.appointmentPayments[0].paymentRefId,
+      refundAmount: appointment.appointmentPayments[0].amountPaid,
+      appointment: appointment,
+      appointmentPayments: appointment.appointmentPayments[0]
 
-  }, consultsDb);
-  sendNotification({
-    appointmentId: appointment.id,
-    notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+    }, consultsDb);
+    sendNotification({
+      appointmentId: appointment.id,
+      notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+    }
+      , patientsDb
+      , consultsDb
+      , doctorsDb
+    )
   }
-    , patientsDb
-    , consultsDb
-    , doctorsDb
-  )
+
 
   //update slot status in ES as open
   const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';

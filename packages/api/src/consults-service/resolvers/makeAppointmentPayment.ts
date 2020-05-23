@@ -213,29 +213,35 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await initiateRefund(
-        {
-          appointment: processingAppointment,
-          appointmentPayments: paymentInfo,
-          refundAmount: paymentInfo.amountPaid,
-          txnId: paymentInfo.paymentRefId,
-          orderId: processingAppointment.paymentOrderId,
-        },
-        consultsDb
-      );
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
-      paymentInfo.appointment = processingAppointment;
-      sendNotification({
-        appointmentId: processingAppointment.id,
-        notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+      let isRefunded: boolean = false;
+      if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
+        await initiateRefund(
+          {
+            appointment: processingAppointment,
+            appointmentPayments: paymentInfo,
+            refundAmount: paymentInfo.amountPaid,
+            txnId: paymentInfo.paymentRefId,
+            orderId: processingAppointment.paymentOrderId,
+          },
+          consultsDb
+        );
+
+        paymentInfo.appointment = processingAppointment;
+        sendNotification({
+          appointmentId: processingAppointment.id,
+          notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND
+        }
+          , patientsDb
+          , consultsDb
+          , doctorsDb
+        )
+        isRefunded = true;
       }
-        , patientsDb
-        , consultsDb
-        , doctorsDb
-      )
+
       return {
         appointment: paymentInfo,
-        isRefunded: true,
+        isRefunded: isRefunded,
       };
     }
 
@@ -251,9 +257,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
     console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -436,8 +442,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
