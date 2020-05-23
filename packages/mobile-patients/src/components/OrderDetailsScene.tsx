@@ -196,6 +196,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
     (item) => item!.isPrescriptionNeeded
   );
+  const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+  );
 
   console.log({ order });
 
@@ -539,7 +542,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
-      isOrderRequirePrescription?: boolean // if any of the order item requires prescription
+      isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
+      orderCancelText?: string
     ) => {
       const orderStatusDescMapping = {
         [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
@@ -558,7 +562,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.CANCELLED]: [
           '',
-          `Your order #${orderAutoId} has been cancelled as per your request.`,
+          orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           'Out for delivery: ',
@@ -832,7 +836,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
                 getOrderDescription={getOrderDescription(
                   orderDetails.currentStatus!,
-                  prescriptionRequired
+                  prescriptionRequired,
+                  (orderCancel && orderCancel.statusMessage) || ''
                 )}
                 status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
