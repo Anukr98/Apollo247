@@ -104,6 +104,7 @@ export enum REQUEST_ROLES {
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
   SYSTEM = 'SYSTEM',
+  ADMIN = 'ADMIN'
 }
 
 export enum TRANSFER_STATUS {
@@ -377,9 +378,6 @@ export class AppointmentPayments extends BaseEntity {
 
   @Column({ nullable: true })
   bankName: string;
-
-  @Column({ nullable: true })
-  refundAmount: number;
 
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
@@ -698,8 +696,9 @@ export enum MEDICINE_UNIT {
 
 export enum AUDIT_STATUS {
   PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
+  COMPLETED = 'COMPLETED'
 }
+
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -1697,4 +1696,3 @@ export interface RxPdfData {
   referralSpecialtyName: string;
   referralSpecialtyDescription: string;
 }
-///////////////////////////////////////////////////////////
