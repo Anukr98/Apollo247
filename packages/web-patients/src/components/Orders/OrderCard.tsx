@@ -19,7 +19,7 @@ import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getStatus } from 'components/Orders/OrderStatusCard';
@@ -279,51 +279,64 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getOrderDeliveryDate = (status: (StatusDetails | null)[]) => {
+  const getOrderStatusDate = (
+    status: (StatusDetails | null)[],
+    currentStatus: MEDICINE_ORDER_STATUS
+  ) => {
     const sortedList = getSortedStatusList(status);
     if (sortedList && sortedList.length > 0) {
-      const firstSortedData = sortedList[0];
+      const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
       return (
-        firstSortedData &&
-        moment(new Date(firstSortedData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+        currentStatusData &&
+        moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
       );
     }
   };
 
   const getDefaultValue = (status: string) => {
     switch (status) {
-      case 'Order Placed':
-        return 80;
-      case 'Order Verified':
-        return 100;
-      case 'Order Initiated':
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         return 60;
-      case 'Order Billed and Packed':
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
         return 120;
-      case 'Order Delivered':
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+        return 180;
+      case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+        return 160;
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+        return 280;
+      case MEDICINE_ORDER_STATUS.DELIVERED:
         return 360;
     }
   };
 
-  const isSliderDisabled = (sliderStatus: string) => {
-    return sliderStatus === 'Return Accepted' || sliderStatus === 'Order Cancelled';
+  const isSliderDisabled = (sliderStatus: MEDICINE_ORDER_STATUS) => {
+    return (
+      sliderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+      sliderStatus === MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+    );
   };
 
-  const getSlider = (status: (StatusDetails | null)[]) => {
-    const sliderStatus = getOrderStatus(status);
-    switch (sliderStatus) {
-      case 'Order Delivered':
-      case 'Order Placed':
-      case 'Order Verified':
-      case 'Order Initiated':
-      case 'Return Accepted':
-      case 'Order Cancelled':
+  const getSlider = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         return (
           <AphTrackSlider
             color="primary"
-            defaultValue={getDefaultValue(sliderStatus)}
+            defaultValue={getDefaultValue(status)}
             getAriaValueText={(value: number) => value.toString()}
-            disabled={isSliderDisabled(sliderStatus)}
+            disabled={isSliderDisabled(status)}
             min={0}
             max={360}
             valueLabelDisplay="off"
@@ -336,6 +349,15 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
+  const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
+    switch (deliveryType) {
+      case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
+        return 'Home Delivery';
+      case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
+        return 'Store Pickup';
+    }
+  };
+
   if (
     data &&
     data.getMedicineOrdersOMSList &&
@@ -345,7 +367,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
 
     const firstOrderInfo = orderListData[0];
-    if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
+    if (!isSmallScreen && !props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
       props.setOrderAutoId(firstOrderInfo.orderAutoId);
     }
 
@@ -378,18 +400,21 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                         <div className={classes.itemName}>Medicines</div>
                         <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                         <div className={classes.deliveryType}>
-                          <span>{orderInfo.deliveryType}</span>
+                          <span>
+                            {getDeliveryType(orderInfo.deliveryType)}{' '}
+                            {isSmallScreen ? null : `#${orderInfo.orderAutoId}`}
+                          </span>
                         </div>
                       </div>
                     </div>
                     <div className={classes.orderTrackSlider}>
-                      {getSlider(orderInfo.medicineOrdersStatus)}
+                      {getSlider(orderInfo.currentStatus)}
                     </div>
                     <div className={classes.orderStatusGroup}>
                       {orderInfo.medicineOrdersStatus && (
                         <div
                           className={
-                            getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                            getStatus(orderInfo.currentStatus) === MEDICINE_ORDER_STATUS.CANCELLED
                               ? `${classes.orderStatusRejected}`
                               : `${classes.orderStatus}`
                           }
@@ -397,9 +422,13 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                           {getOrderStatus(orderInfo.medicineOrdersStatus)}
                         </div>
                       )}
+
                       <div className={classes.statusInfo}>
-                        {orderInfo.medicineOrdersStatus &&
-                          getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                        {orderInfo.currentStatus &&
+                          getOrderStatusDate(
+                            orderInfo.medicineOrdersStatus,
+                            orderInfo.currentStatus
+                          )}
                       </div>
                     </div>
                   </div>
