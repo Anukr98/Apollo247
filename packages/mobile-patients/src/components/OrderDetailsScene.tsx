@@ -66,6 +66,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
@@ -170,7 +171,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     addresses,
     setAddresses,
   } = useShoppingCart();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
     orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
@@ -1267,11 +1268,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             if (cannotCancelOrder) {
               showAphAlert!({
                 title: string.common.uhOh,
-                description: orderStatusList.find(
-                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
-                )
-                  ? 'Once your order is billed, you cannot cancel your order.'
-                  : 'Sorry, we cannot cancel the order now.',
+                description:
+                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'CLICK HERE',
+                    type: 'orange-link',
+                    onPress: () => {
+                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
+                        console.error('An error occurred', err)
+                      );
+                      hideAphAlert!();
+                    },
+                  },
+                ],
               });
             } else {
               getCancellationReasons();
