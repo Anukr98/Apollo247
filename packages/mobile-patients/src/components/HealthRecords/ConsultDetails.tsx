@@ -1036,7 +1036,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            title={strings.health_records_home.order_medicine}
+            title={'ORDER MEDICINES NOW'}
             onPress={() => {
               postWEGEvent('medicine');
               onAddToCart();
