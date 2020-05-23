@@ -314,7 +314,6 @@ const getOrderInvoice: Resolver<
       .fill('#e7e8ec')
       .moveDown(1);
 
-
     if (appointmentData[0].discountedAmount) {
       doc
         .fontSize(12)
