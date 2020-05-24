@@ -337,7 +337,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
                 </div>
               )}
               {orderPayment && (
-                <div className={classes.rightGroup}>
+                <div className={getFormattedDateTime() ? classes.rightGroup : classes.leftGroup}>
                   <label>Payment Method</label>
                   <span>{paymentMethodToDisplay}</span>
                 </div>
