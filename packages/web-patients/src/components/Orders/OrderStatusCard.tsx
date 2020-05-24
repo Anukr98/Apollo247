@@ -156,6 +156,16 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#c5eae1',
       lineHeight: '12px',
     },
+    orderStatusFailed: {
+      marginLeft: 'auto',
+      fontSize: 11,
+      fontWeight: 500,
+      padding: '4px 15px',
+      borderRadius: 10,
+      cursor: 'pointer',
+      backgroundColor: '#FF0000',
+      lineHeight: '12px',
+    },
     expectedDelivery: {
       padding: '14px 20px',
       boxShadow: '0 1px 3px 0 rgba(128, 128, 128, 0.3)',
@@ -333,6 +343,12 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
         .join(' ');
       return statusString;
   }
+};
+
+export const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
+  return (
+    status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+  );
 };
 
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
@@ -519,6 +535,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   };
   const restStatusToShow = addRestStatusToShow();
 
+  const getOrderState = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        return <div className={classes.orderStatusFailed}>Cancelled</div>;
+      case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+        return <div className={classes.orderStatusFailed}>Payment Failed</div>;
+      default:
+        return <div className={classes.orderStatus}>Successful</div>;
+    }
+  };
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -527,7 +554,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             {orderDetailsData.orderAutoId && (
               <div className={classes.orderDetailsRow}>
                 <div className={classes.orderId}>ORDER #{orderDetailsData.orderAutoId}</div>
-                <div className={classes.orderStatus}>Successful</div>
+                {getOrderState(orderDetailsData.currentStatus)}
               </div>
             )}
             {orderDetailsData.patient && (
@@ -543,7 +570,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               <div className={classes.discription}>{getPatientAddress(deliveryAddresses)}</div>
             </div>
           </div>
-          {orderDetailsData.orderTat && (
+          {!isRejectedStatus(orderDetailsData.currentStatus) && orderDetailsData.orderTat && (
             <div className={classes.expectedDelivery}>
               <span>
                 <img src={require('images/notify-symbol.svg')} alt="" />
