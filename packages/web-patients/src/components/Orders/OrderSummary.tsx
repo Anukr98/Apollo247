@@ -8,7 +8,7 @@ import {
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_PAYMENT_TYPE, MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import {
@@ -17,6 +17,7 @@ import {
   GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { deliveredOrderDetails } from './OrderStatusCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -202,11 +203,12 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   const { orderDetailsData, isLoading } = props;
   const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
   const client = useApolloClient();
-  const orderStatus =
+  const orderStatusList =
     orderDetailsData &&
     orderDetailsData.medicineOrdersStatus &&
-    orderDetailsData.medicineOrdersStatus.length > 0 &&
-    orderDetailsData.medicineOrdersStatus[0];
+    orderDetailsData.medicineOrdersStatus.length > 0
+      ? orderDetailsData.medicineOrdersStatus
+      : [];
   const orderItems = (orderDetailsData && orderDetailsData.medicineOrderLineItems) || [];
   const orderPayment =
     orderDetailsData &&
@@ -228,14 +230,25 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     item_quantity = orderItems.length + ' item(s) ';
   }
 
-  const getFormattedDateTime = (orderDetails: OrderDetails) => {
-    const statusDate = orderStatus.statusDate;
-    return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+  const getFormattedDateTime = () => {
+    const orderPlacedExist =
+      orderStatusList &&
+      orderStatusList.find(
+        (statusObject) => statusObject.orderStatus === MEDICINE_ORDER_STATUS.ORDER_PLACED
+      );
+    if (orderPlacedExist) {
+      const statusDate = orderPlacedExist.statusDate;
+      return moment(statusDate).format('ddd, D MMMM, hh:mm A');
+    }
+    return null;
   };
 
-  const getFormattedDate = (orderDetails: OrderDetails) => {
-    const statusDate = orderStatus.statusDate;
-    return moment(statusDate).format('ddd, D MMMM');
+  const getFormattedDate = () => {
+    const deliveredDateDetails = deliveredOrderDetails(orderStatusList);
+    if (deliveredDateDetails) {
+      const statusDate = deliveredDateDetails.statusDate;
+      return moment(statusDate).format('ddd, D MMMM');
+    }
   };
 
   const paymentMethodToDisplay =
@@ -314,22 +327,24 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             </div>
           </div>
         </div>
-        <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
-          <div className={classes.headRow}>
-            {orderStatus && (
-              <div className={classes.leftGroup}>
-                <label>Order Placed</label>
-                <span>{getFormattedDateTime(orderDetailsData)}</span>
-              </div>
-            )}
-            {orderPayment && (
-              <div className={classes.rightGroup}>
-                <label>Payment Method</label>
-                <span>{paymentMethodToDisplay}</span>
-              </div>
-            )}
+        {(getFormattedDateTime() || orderPayment) && (
+          <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
+            <div className={classes.headRow}>
+              {getFormattedDateTime() && (
+                <div className={classes.leftGroup}>
+                  <label>Order Placed</label>
+                  <span>{getFormattedDateTime() || ''}</span>
+                </div>
+              )}
+              {orderPayment && (
+                <div className={getFormattedDateTime() ? classes.rightGroup : classes.leftGroup}>
+                  <label>Payment Method</label>
+                  <span>{paymentMethodToDisplay}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className={classes.addressHead}>
           <span>Shipping Address</span>
         </div>
@@ -345,12 +360,15 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             <span>{getPatientAddress(deliveryAddresses)}</span>
           </div>
         </div>
-        {orderStatus && (
-          <div className={classes.itemsHeader}>
-            <span className={classes.caps}>Item Details</span>
-            <span>Delivered {getFormattedDate(orderDetailsData)}</span>
-          </div>
-        )}
+
+        <div className={classes.itemsHeader}>
+          <span className={classes.caps}>Item Details</span>
+          <span>
+            {orderDetailsData &&
+              orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED &&
+              `Delivered ${getFormattedDate()}`}
+          </span>
+        </div>
         <div className={classes.summaryDetails}>
           <div className={classes.detailsTable}>
             <div className={classes.totalItems}>
