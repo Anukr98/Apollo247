@@ -8,7 +8,6 @@ import { SAVE_PATIENT_ADDRESS, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import axios, { AxiosError, Cancel } from 'axios';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { useMutation } from 'react-apollo-hooks';
