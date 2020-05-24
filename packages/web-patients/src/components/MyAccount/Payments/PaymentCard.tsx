@@ -184,7 +184,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   let paymentStatus,
     paymentRefId = '';
   let amountPaid = 0;
-
+  const appointmentStatus = cardDetails.status;
   const getPaymentStatusText = (paymentStatus: string) => {
     if (paymentStatus === 'TXN_SUCCESS') return 'Payment Successful';
     if (paymentStatus === 'TXN_FAILURE') return 'Payment Failed';
@@ -215,14 +215,24 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           ? classes.pendingCard
           : paymentStatus === 'TXN_FAILURE'
           ? classes.failedCard
+          : appointmentStatus === 'CANCELLED'
+          ? classes.refundCard
           : ''
       }`}
     >
+      {appointmentStatus === 'CANCELLED' && (
+        <div className={classes.notificationText}>
+          Your refund has been initiated. The amount should be credited in your account in 7-14
+          business days.
+        </div>
+      )}
       <div className={classes.boxHeader}>
         <div className={classes.headerIcon}>
           <img
             src={
-              paymentStatus === 'TXN_SUCCESS'
+              appointmentStatus === 'CANCELLED'
+                ? require('images/ic_refund.svg')
+                : paymentStatus === 'TXN_SUCCESS'
                 ? require('images/ic_tick.svg')
                 : paymentStatus === 'TXN_FAILURE'
                 ? require('images/ic_failed.svg')
@@ -233,7 +243,9 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
         </div>
         <div className={classes.headerContent}>
           <div className={classes.topText}>
-            <h3>{getPaymentStatusText(paymentStatus)}</h3>
+            <h3>
+              {appointmentStatus === 'CANCELLED' ? 'REFUND' : getPaymentStatusText(paymentStatus)}
+            </h3>
             <div className={classes.price}>Rs. {amountPaid}</div>
           </div>
           <div className={classes.infoText}>
@@ -256,158 +268,24 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           </span>
         </div>
         <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.open(buttonUrl);
-            }}
-          >
-            {buttonText}
-          </AphButton>
+          {appointmentStatus === 'CANCELLED' ? (
+            <AphButton className={classes.cancelBtn}>CANCELLED</AphButton>
+          ) : (
+            <AphButton
+              color="primary"
+              onClick={() => {
+                window.open(buttonUrl);
+              }}
+            >
+              {buttonText}
+            </AphButton>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-{
-  /* Payment Pending Card */
-}
-{
-  /* <div className={`${classes.root} ${classes.pendingCard}`}>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_exclamation.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Pending</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-        </div>
-      </div> */
-}
-{
-  /* Payment Failed Card */
-}
-{
-  /* <div className={`${classes.root} ${classes.failedCard}`}>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_failed.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Failed</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton color="primary">Try Again</AphButton>
-          </div>
-        </div>
-      </div> */
-}
-{
-  /* Payment Successful Card */
-}
-{
-  /* <div className={classes.root}>
-        <div className={classes.notificationText}>Your pending payment is successful!</div>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_tick.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Successful</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton color="primary">Download Apollo 247 App</AphButton>
-          </div>
-        </div>
-      </div> */
-}
-{
-  /* Payment Failed Card */
-}
-{
-  /* <div className={`${classes.root} ${classes.failedCard}`}>
-        <div className={classes.notificationText}>Your pending payment has failed!</div>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_failed.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Failed</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton color="primary">Try Again</AphButton>
-          </div>
-        </div>
-      </div> */
-}
-{
-  /* Payment Failed Card */
-}
 {
   /* <div className={`${classes.root} ${classes.refundCard}`}>
         <div className={classes.notificationText}>
@@ -439,44 +317,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           </div>
           <div className={classes.bottomActions}>
             <AphButton className={classes.cancelBtn}>Cancelled</AphButton>
-          </div>
-        </div>
-      </div> */
-}
-{
-  /* Payment Successful Card */
-}
-{
-  /* <div className={classes.root}>
-        <div className={classes.notificationText}>
-          We regret to inform you that while your payment is succesful, the appointment slot you
-          selected is not available. Kindly book another slot to continue with your consult.
-        </div>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_tick.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Payment Successful</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton color="primary">Select Appointment Slot</AphButton>
           </div>
         </div>
       </div> */
