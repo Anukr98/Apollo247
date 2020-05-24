@@ -231,9 +231,11 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   }
 
   const getFormattedDateTime = () => {
-    const orderPlacedExist = orderStatusList.find(
-      (statusObject) => statusObject.orderStatus === MEDICINE_ORDER_STATUS.ORDER_PLACED
-    );
+    const orderPlacedExist =
+      orderStatusList &&
+      orderStatusList.find(
+        (statusObject) => statusObject.orderStatus === MEDICINE_ORDER_STATUS.ORDER_PLACED
+      );
     if (orderPlacedExist) {
       const statusDate = orderPlacedExist.statusDate;
       return moment(statusDate).format('ddd, D MMMM, hh:mm A');
@@ -325,22 +327,24 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             </div>
           </div>
         </div>
-        <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
-          <div className={classes.headRow}>
-            {orderStatusList.length > 0 && getFormattedDateTime() && (
-              <div className={classes.leftGroup}>
-                <label>Order Placed</label>
-                <span>{getFormattedDateTime() || ''}</span>
-              </div>
-            )}
-            {orderPayment && (
-              <div className={classes.rightGroup}>
-                <label>Payment Method</label>
-                <span>{paymentMethodToDisplay}</span>
-              </div>
-            )}
+        {(getFormattedDateTime() || orderPayment) && (
+          <div className={`${classes.summaryHeader} ${classes.borderNone}`}>
+            <div className={classes.headRow}>
+              {getFormattedDateTime() && (
+                <div className={classes.leftGroup}>
+                  <label>Order Placed</label>
+                  <span>{getFormattedDateTime() || ''}</span>
+                </div>
+              )}
+              {orderPayment && (
+                <div className={classes.rightGroup}>
+                  <label>Payment Method</label>
+                  <span>{paymentMethodToDisplay}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className={classes.addressHead}>
           <span>Shipping Address</span>
         </div>
