@@ -163,7 +163,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '4px 15px',
       borderRadius: 10,
       cursor: 'pointer',
-      backgroundColor: '#FF0000',
+      backgroundColor: '#890000',
+      color: '#fff',
       lineHeight: '12px',
     },
     expectedDelivery: {
