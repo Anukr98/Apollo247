@@ -389,7 +389,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getAddressDetails = (deliveryAddressId: string, id: string) => {
+  const getAddressDetails = (id: string) => {
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
@@ -425,16 +425,16 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
         );
         const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1} ${
-              selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
-            }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
+          ? `${selectedAddress.addressLine1 || ''} ${selectedAddress.addressLine2 || ''}, ${
+              selectedAddress.city || ''
+            }, ${selectedAddress.state || ''}, ${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
         return '';
       }
     } else {
-      getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
+      getAddressDetails(orderDetailsData.patient.id);
     }
   };
 
