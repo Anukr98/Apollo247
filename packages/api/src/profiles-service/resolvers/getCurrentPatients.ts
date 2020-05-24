@@ -236,6 +236,7 @@ const getCurrentPatients: Resolver<
             mobileNumber,
             uhid: data.UHID,
             dateOfBirth: data.dob == 0 ? undefined : new Date(data.dob),
+            primaryUhid: data.UHID,
           }
         );
       });
@@ -257,6 +258,7 @@ const getCurrentPatients: Resolver<
               gender: undefined,
               mobileNumber,
               uhid: '',
+              primaryUhid: '',
             }
           ),
         ];
