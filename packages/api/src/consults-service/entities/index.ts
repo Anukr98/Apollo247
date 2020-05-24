@@ -104,6 +104,7 @@ export enum REQUEST_ROLES {
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
   SYSTEM = 'SYSTEM',
+  ADMIN = 'ADMIN',
 }
 
 export enum TRANSFER_STATUS {
@@ -360,6 +361,9 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ nullable: true })
   orderId: string;
 
+  @Column('decimal', { precision: 10, scale: 5, nullable: true })
+  refundAmount: number;
+
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
 
@@ -377,9 +381,6 @@ export class AppointmentPayments extends BaseEntity {
 
   @Column({ nullable: true })
   bankName: string;
-
-  @Column({ nullable: true })
-  refundAmount: number;
 
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
@@ -700,6 +701,7 @@ export enum AUDIT_STATUS {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
 }
+
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -779,6 +781,9 @@ export class CaseSheet extends BaseEntity {
   @Index('CaseSheet_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true, default: false })
+  isJdConsultStarted: Boolean;
 
   @Column({ nullable: true, type: 'json' })
   medicinePrescription: string;
@@ -1694,4 +1699,3 @@ export interface RxPdfData {
   referralSpecialtyName: string;
   referralSpecialtyDescription: string;
 }
-///////////////////////////////////////////////////////////

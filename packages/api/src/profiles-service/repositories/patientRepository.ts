@@ -16,7 +16,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
 
@@ -291,7 +291,8 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
+    const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
+    const currentTimeStamp = getUnixTime(new Date());
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
@@ -303,7 +304,7 @@ export class PatientRepository extends Repository<Patient> {
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
-      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+      category: category,
       filename: documentName,
     };
 
@@ -329,14 +330,14 @@ export class PatientRepository extends Repository<Patient> {
         dLogger(
           reqStartTime,
           'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${url} --- ${formData} --- ${JSON.stringify(error)}`
+          `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
     dLogger(
       reqStartTime,
       'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-      `${url} --- ${formData} --- ${JSON.stringify(uploadResult)}`
+      `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(uploadResult)}`
     );
 
     if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {

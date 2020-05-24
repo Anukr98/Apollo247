@@ -577,7 +577,7 @@ export const MedicineCart: React.FC = (props) => {
     setValidateCouponResult,
   ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
-  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -732,15 +732,19 @@ export const MedicineCart: React.FC = (props) => {
         .then((res: any) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
-            if (
-              couponValidateResult.validityStatus &&
-              couponValidateResult.discountedTotals.couponDiscount > 0
-            ) {
-              setValidateCouponResult(couponValidateResult);
-              setShowErrorMessage(false);
+            if (couponValidateResult.validityStatus) {
+              if (couponValidateResult.discountedTotals.couponDiscount > 0) {
+                setValidateCouponResult(couponValidateResult);
+                setErrorMessage('');
+              } else {
+                setValidateCouponResult(null);
+                setErrorMessage(
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
+                );
+              }
             } else {
               setValidateCouponResult(null);
-              setShowErrorMessage(true);
+              setErrorMessage(couponValidateResult.reasonForInvalidStatus);
             }
           }
         })
@@ -926,7 +930,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1215,7 +1219,15 @@ export const MedicineCart: React.FC = (props) => {
                 </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div
-                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    onClick={() => {
+                      if (couponCode === '') {
+                        setIsApplyCouponDialogOpen(true);
+                      } else {
+                        setValidateCouponResult(null);
+                        setErrorMessage('');
+                        setCouponCode && setCouponCode('');
+                      }
+                    }}
                     className={`${classes.serviceType}`}
                   >
                     <div className={classes.couponTopGroup}>
@@ -1257,10 +1269,8 @@ export const MedicineCart: React.FC = (props) => {
                           on the bill
                         </div>
                       )}
-                    {showErrorMessage && (
-                      <div className={classes.higherDiscountText}>
-                        Higher discounts already applied
-                      </div>
+                    {errorMessage.length > 0 && (
+                      <div className={classes.higherDiscountText}>{errorMessage}</div>
                     )}
                   </div>
                 </div>
@@ -1472,7 +1482,6 @@ export const MedicineCart: React.FC = (props) => {
         <ApplyCoupon
           couponCode={couponCode}
           setValidateCouponResult={setValidateCouponResult}
-          setShowErrorMessage={setShowErrorMessage}
           close={(isApplyCouponDialogOpen: boolean) => {
             setIsApplyCouponDialogOpen(isApplyCouponDialogOpen);
           }}

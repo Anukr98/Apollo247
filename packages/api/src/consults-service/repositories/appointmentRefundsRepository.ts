@@ -1,6 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 
-import { AppointmentRefunds } from 'consults-service/entities';
+import { AppointmentRefunds, REFUND_STATUS } from 'consults-service/entities';
 
 import { PaytmHeadBody } from 'consults-service/helpers/refundHelper';
 
@@ -20,7 +20,6 @@ export class AppointmentRefundsRepository extends Repository<AppointmentRefunds>
   }
 
   async raiseRefundRequestWithPaytm(paytmBody: PaytmHeadBody, paytmUrl: string) {
-    console.log('paytm final', paytmBody);
     try {
       const response = await fetch(paytmUrl, {
         method: 'POST',
@@ -33,6 +32,18 @@ export class AppointmentRefundsRepository extends Repository<AppointmentRefunds>
     }
   }
 
+  async getRefundsByAppointmentId(id: AppointmentRefunds['appointment']) {
+    try {
+      return this.findOne({
+        where: { appointment: id, refundStatus: REFUND_STATUS.REFUND_REQUEST_RAISED },
+        order: { txnTimestamp: 'DESC' },
+      });
+    } catch (getRefundError) {
+      throw new AphError(AphErrorMessages.GET_REFUND_ERROR, undefined, {
+        getRefundError,
+      });
+    }
+  }
   updateRefund(refId: AppointmentRefunds['refId'], refundObj: Partial<AppointmentRefunds>) {
     return this.update(refId, refundObj).catch((updateRefundError) => {
       throw new AphError(AphErrorMessages.UPDATE_REFUND_ERROR, undefined, {

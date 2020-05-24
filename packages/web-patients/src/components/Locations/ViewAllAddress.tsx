@@ -281,8 +281,6 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                             control={<AphRadio color="primary" />}
                             label={props.formatAddress(addressDetails)}
                             onChange={() => {
-                              // setLocalDeliveryAddressId(addressId);
-                              // setLocalZipCode(addressDetails.zipcode || '');
                               checkLatLongStateCodeAvailability(addressDetails);
                             }}
                           />

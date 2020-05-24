@@ -48,7 +48,7 @@ const pharmaPaymentStatus: Resolver<
     'consultServiceLogger',
     `pharma payment - orderId - ${args.orderId}`,
     'pharmaPaymentStatus()',
-    `response: ${response}`,
+    `response: ${JSON.stringify(response)}`,
     ''
   );
 
