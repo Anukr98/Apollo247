@@ -213,13 +213,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? 'Prepaid'
       : 'No Payment';
 
-  const { currentPatient } = useAllCurrentPatients();
-  const { addresses } = useShoppingCart();
-
-  const selectedAddressIndex = addresses.find(
-    (address) => address.id == orderDetails.patientAddressId
-  );
-
   const renderMedicineRow = (
     item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
   ) => {
@@ -325,7 +318,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.address} </Text>
-              <Text style={[styles.nameStyle, { paddingRight: 31 }]}>{addressData}</Text>
+              <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
         </View>

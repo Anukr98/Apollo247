@@ -1343,7 +1343,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             <ScrollView bounces={false}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()
-                : renderOrderSummary()}
+                : !loading && renderOrderSummary()}
             </ScrollView>
           </>
         )}
