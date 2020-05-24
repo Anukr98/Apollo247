@@ -27,8 +27,8 @@ interface PaymentHistoryCardProps {
 const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   useEffect(() => {}, []);
   const renderHeader = () => {
-    const { status, appointmentDateTime } = item;
-    if (status === 'PAYMENT_REFUND' || !appointmentDateTime) {
+    const { status, appointmentRefunds } = item;
+    if (status === 'CANCELLED' || appointmentRefunds.length) {
       return <PaymentCardHeader status={status} />;
     }
   };

@@ -33,10 +33,21 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     let price = 0;
     let orderID = '';
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount, displayId, discountedAmount } = item;
+      const {
+        appointmentPayments,
+        actualAmount,
+        displayId,
+        discountedAmount,
+        appointmentRefunds,
+      } = item;
       orderID = 'Order ID: ' + String(displayId);
       if (!appointmentPayments.length) {
         status = 'PENDING';
+      } else if (appointmentRefunds.length) {
+        const { paymentRefId, amountPaid } = appointmentPayments[0];
+        refId = paymentRefId;
+        price = amountPaid;
+        status = REFUND;
       } else {
         const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
         status = paymentStatus;
@@ -108,7 +119,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
   };
 
   const { icon, cardColor, statusText, textColor } = getStatusItems();
-  const { refId, price, orderID } = statusItemValues();
+  const { refId, price, orderID, status } = statusItemValues();
   const payRefId = 'Payment Ref. Number - ';
   return (
     <View style={[styles.statusCardStyle, { backgroundColor: cardColor }]}>
@@ -126,7 +137,12 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         {textComponent(payRefId, undefined, theme.colors.SHADE_GREY, false)}
         {textComponent(refId, undefined, theme.colors.SHADE_GREY, false)}
       </View>
-      <ViewInvoice item={props.item} paymentFor={props.paymentFor} patientId={props.patientId} />
+      <ViewInvoice
+        status={status}
+        item={props.item}
+        paymentFor={props.paymentFor}
+        patientId={props.patientId}
+      />
     </View>
   );
 };

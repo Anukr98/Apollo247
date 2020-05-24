@@ -21,9 +21,11 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
     let status = 'PENDING';
     let orderID = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments } = item;
+      const { appointmentPayments, appointmentRefunds } = item;
       if (!appointmentPayments.length) {
         status = 'PENDING';
+      } else if (appointmentRefunds.length) {
+        status = REFUND;
       } else {
         status = appointmentPayments[0].paymentStatus;
       }
