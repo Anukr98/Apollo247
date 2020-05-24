@@ -239,11 +239,12 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   };
 
   const paymentMethodToDisplay =
-    orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD
+    orderPayment &&
+    (orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD
       ? 'COD'
       : orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
       ? 'Prepaid'
-      : 'No Payment';
+      : 'No Payment');
 
   const getAddressDetails = (deliveryAddressId: string, id: string) => {
     client
