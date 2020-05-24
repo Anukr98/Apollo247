@@ -16,7 +16,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, getMilliseconds } from 'date-fns';
+import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
 
@@ -292,8 +292,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    //const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
-    const currentTimeStamp = getMilliseconds(new Date());
+    const currentTimeStamp = getUnixTime(new Date());
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
