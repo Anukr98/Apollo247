@@ -2431,6 +2431,11 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         status
         appointmentType
         discountedAmount
+        appointmentRefunds {
+          refundAmount
+          txnTimestamp
+          refundStatus
+        }
         appointmentPayments {
           paymentRefId
           paymentStatus

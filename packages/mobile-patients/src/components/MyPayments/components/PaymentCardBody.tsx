@@ -31,13 +31,19 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
   useEffect(() => {}, []);
   const statusItemValues = () => {
     const { paymentFor, item } = props;
+    const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
     let status = 'PENDING';
     let refId = '';
     let price = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount, discountedAmount } = item;
+      const { appointmentPayments, actualAmount, discountedAmount, appointmentRefunds } = item;
       if (!appointmentPayments.length) {
         status = 'PENDING';
+      } else if (appointmentRefunds.length) {
+        const { paymentRefId, amountPaid } = appointmentPayments[0];
+        refId = paymentRefId;
+        price = amountPaid;
+        status = REFUND;
       } else {
         const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
         status = paymentStatus;
