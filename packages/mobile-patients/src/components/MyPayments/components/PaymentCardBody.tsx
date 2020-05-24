@@ -28,6 +28,12 @@ interface PaymentCardBodyProps {
   patientId?: string;
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
+  const RefundTypes = {
+    REFUND_REQUEST_RAISED: 'REFUND INITIATED',
+    REFUND_FAILED: 'REFUND FAILED',
+    REFUND_SUCCESSFUL: 'REFUND SUCCESSFUL',
+    REFUND_REQUEST_NOT_RAISED: 'REFUND NOT INITIATED',
+  };
   useEffect(() => {}, []);
   const statusItemValues = () => {
     const { paymentFor, item } = props;
