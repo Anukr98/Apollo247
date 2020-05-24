@@ -32,6 +32,7 @@ import {
   BOOKING_SOURCE,
   NonCartOrderOMSCity,
   CODCity,
+  PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -893,7 +894,7 @@ export const MedicineCart: React.FC = (props) => {
           variables: {
             UploadDocumentInput: {
               base64FileInput: baseFormatSplitArry[1],
-              category: 'HealthChecks',
+              category: PRISM_DOCUMENT_CATEGORY.OpSummary,
               fileType:
                 item.fileType == 'jpg'
                   ? UPLOAD_FILE_TYPES.JPEG
