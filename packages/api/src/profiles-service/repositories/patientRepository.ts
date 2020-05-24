@@ -292,9 +292,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    //const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
     const currentTimeStamp = getUnixTime(new Date());
-    console.log('currentTimeStamp...', currentTimeStamp);
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
