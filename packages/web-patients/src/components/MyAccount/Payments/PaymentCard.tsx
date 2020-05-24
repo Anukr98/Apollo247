@@ -285,39 +285,3 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
     </div>
   );
 };
-
-{
-  /* <div className={`${classes.root} ${classes.refundCard}`}>
-        <div className={classes.notificationText}>
-          Your refund has been initiated. The amount should be credited in your account in 7-14
-          business days.
-        </div>
-        <div className={classes.boxHeader}>
-          <div className={classes.headerIcon}>
-            <img src={require('images/ic_refund.svg')} alt="" />
-          </div>
-          <div className={classes.headerContent}>
-            <div className={classes.topText}>
-              <h3>Refund</h3>
-              <div className={classes.price}>Rs. 499</div>
-            </div>
-            <div className={classes.infoText}>
-              <span>Payment Ref Number - 123456</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className={classes.boxContent}>
-          <div className={classes.doctorName}>Dr. Sushila Dixit</div>
-          <div className={classes.consultDate}>
-            <span>27 Jul 2019, 6:30 PM</span>
-            <span className={classes.consultType}> (Clinic Visit)</span>
-          </div>
-          <div className={classes.bottomActions}>
-            <AphButton className={classes.cancelBtn}>Cancelled</AphButton>
-          </div>
-        </div>
-      </div> */
-}
