@@ -2,7 +2,13 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, Mascot, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  Mascot,
+  DropdownGreen,
+  PrimaryIcon,
+  LinkedUhidIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -145,13 +151,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   showPopUp: {
-    backgroundColor: 'rgba(0,0,0,0.01)',
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.15)',
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
     bottom: 0,
-    elevation: 5,
+    elevation: 160,
   },
   container: {
     justifyContent: 'flex-end',
@@ -491,6 +497,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         try {
           setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PAST_DOCTOR_SEARCH] = {
+              'Patient UHID': g(currentPatient, 'uhid'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+              'Customer ID': g(currentPatient, 'id'),
+              'Past Searches': data.getPatientPastSearches,
+            };
+            postWebEngageEvent(WebEngageEventName.PAST_DOCTOR_SEARCH, eventAttributes);
             console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
@@ -1226,6 +1239,17 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 <Text style={styles.nameTextStyle} numberOfLines={1}>
                   {(currentPatient && currentPatient!.firstName) || ''}
                 </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <LinkedUhidIcon
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 26 : 30,
+                    }}
+                    resizeMode={'contain'}
+                  />
+                ) : null}
                 <View style={{ paddingTop: 28 }}>
                   <DropdownGreen />
                 </View>

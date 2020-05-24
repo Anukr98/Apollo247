@@ -41,6 +41,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mp."paymentStatus"',
         'mp."bankTxnId"',
         'mo."orderAutoId"',
+        'mo."orderDateTime"',
         'mp."paymentMode"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })

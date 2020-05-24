@@ -5,17 +5,29 @@ export const GET_CURRENT_PATIENTS = gql`
     getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
-        mobileNumber
+        uhid
         firstName
         lastName
-        relation
-        uhid
-        gender
+        mobileNumber
         dateOfBirth
         emailAddress
         gender
-        dateOfBirth
+        relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies
@@ -377,7 +389,6 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
-        noShowReason
         doctorInfo {
           awards
           city
@@ -1409,6 +1420,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         id
         orderAutoId
         devliveryCharges
+        couponDiscount
+        productDiscount
         estimatedAmount
         prescriptionImageUrl
         orderTat
@@ -1420,6 +1433,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           orderStatus
           statusDate
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineSKU
@@ -1560,6 +1574,7 @@ export const GET_PHARMA_COUPON_LIST = gql`
         description
         id
         isActive
+        displayStatus
       }
     }
   }
@@ -2345,6 +2360,20 @@ export const GET_PATIENTS_MOBILE = gql`
         gender
         relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies
@@ -2356,6 +2385,10 @@ export const GET_PATIENTS_MOBILE = gql`
           temperature
           weight
         }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
       }
     }
   }
@@ -2381,6 +2414,7 @@ export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
       appointment {
+        paymentRefId
         displayId
         bankTxnId
         paymentStatus
@@ -2415,6 +2449,8 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       amountPaid
       paymentStatus
       paymentDateTime
+      orderDateTime
+      paymentMode
     }
   }
 `;
@@ -2468,6 +2504,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           paymentDateTime
+          paymentMode
           amountPaid
         }
       }
@@ -2478,5 +2515,17 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
 export const CONSULT_ORDER_INVOICE = gql`
   query getOrderInvoice($patientId: String!, $appointmentId: String!) {
     getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  }
+`;
+
+export const LINK_UHID = gql`
+  mutation linkUhids($primaryUhid: String!, $linkedUhids: [String]) {
+    linkUhids(primaryUhid: $primaryUhid, linkedUhids: $linkedUhids)
+  }
+`;
+
+export const UNLINK_UHID = gql`
+  mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
   }
 `;

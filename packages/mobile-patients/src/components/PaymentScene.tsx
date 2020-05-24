@@ -85,6 +85,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       { text: 'No' },
       { text: 'Yes', onPress: () => props.navigation.goBack() },
     ]);
+    return true;
   };
 
   // useEffect(() => {
@@ -101,6 +102,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   //     _willBlurSubscription && _willBlurSubscription.remove();
   //   };
   // }, []);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {

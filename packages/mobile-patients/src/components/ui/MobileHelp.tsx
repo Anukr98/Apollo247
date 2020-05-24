@@ -102,6 +102,10 @@ const styles = StyleSheet.create({
   resetButtonTextStyle: {
     color: '#fc9916',
   },
+  resetButtonDisabledTextStyle: {
+    color: '#fc9916',
+    opacity: 0.5,
+  },
   submitButtonStyle: {
     flex: 1,
   },
@@ -121,8 +125,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [helpCategory, setHelpCategory] = useState<string>('');
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const [showSpinner, setShowSpinner] = useState<boolean>(false);
-  const [mobileFollowup, setMobileFollowup] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
@@ -344,7 +347,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       showAlert();
       return;
     }
-    setShowSpinner(true);
+    setLoading(true);
     // submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email);
 
     const helpEmail = {
@@ -363,18 +366,35 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         },
       })
       .then(() => {
-        setShowSpinner(false);
-        setMobileFollowup(true);
+        setLoading(false);
+        showAphAlert!({
+          title: 'Hi:)',
+          description:
+            needHelpToContactInMessage ||
+            'Thank you for reaching out. Our team will call you back shortly.',
+          unDismissable: true,
+          onPressOk: () => {
+            hideAphAlert && hideAphAlert();
+            CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            );
+          },
+        });
       })
       .catch((e) => {
         CommonBugFender('MobileHelp_onSubmit', e);
-        setShowSpinner(false);
+        setLoading(false);
         props.navigation.goBack();
         handleGraphQlError(e);
       });
   };
 
-  const isInitialState = !(helpCategory || selectedQuery || comment);
+  const isInitialState = !(helpCategory || email || selectedQuery || comment);
   const onReset = () => {
     if (isInitialState) {
       CommonLogEvent(AppRoutes.MobileHelp, 'Go back clicked');
@@ -392,9 +412,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       <View style={styles.buttonsWrapperStyle}>
         <Button
           onPress={() => onReset()}
-          title={isInitialState ? 'GO BACK' : 'RESET'}
+          title={'RESET'}
+          disabled={isInitialState}
           style={styles.resetButtonStyle}
-          titleTextStyle={styles.resetButtonTextStyle}
+          disabledStyle={styles.resetButtonStyle}
+          titleTextStyle={
+            isInitialState ? styles.resetButtonDisabledTextStyle : styles.resetButtonTextStyle
+          }
         />
         <View style={{ width: 16 }} />
         <Button
@@ -421,67 +445,25 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   };
 
   return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      {renderHeader()}
-      {showSpinner && <Spinner />}
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          style={styles.subViewPopup}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
-          <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
-            {'What do you need help with?'}
-          </Text>
-          <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
-        </ScrollView>
-        {renderButtons()}
-      </View>
-
-      {mobileFollowup && (
-        <BottomPopUp
-          title={'Hi:)'}
-          description={
-            needHelpToContactInMessage ||
-            'Thank you for reaching out. Our team will call you back shortly.'
-          }
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setMobileFollowup(false);
-                CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                  })
-                );
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )}
-    </SafeAreaView>
+    <View style={theme.viewStyles.container}>
+      {loading && <Spinner />}
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            style={styles.subViewPopup}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.hiTextStyle}>{'Hi! :)'}</Text>
+            <Text style={[styles.fieldLabel, { marginHorizontal: 20 }]}>
+              {'What do you need help with?'}
+            </Text>
+            <KeyboardAwareScrollView bounces={false}>{renderContent()}</KeyboardAwareScrollView>
+          </ScrollView>
+          {renderButtons()}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };

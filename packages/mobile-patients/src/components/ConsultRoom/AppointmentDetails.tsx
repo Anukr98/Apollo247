@@ -174,6 +174,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -317,11 +318,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       doctorId: doctorDetails.id,
       newDateTimeslot: availability,
       initiatedBy:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? TRANSFER_INITIATED_TYPE.DOCTOR
           : TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? doctorDetails.id
           : data.patientId,
       patientId: data.patientId,
@@ -499,7 +502,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
-      dateIsAfter || isAwaitingReschedule ? true : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
+      dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
       <View
         style={{
@@ -627,7 +630,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 opacity:
                   isAwaitingReschedule ||
                   dateIsAfter ||
-                  data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                  (data.status == STATUS.PENDING && minutes <= -30)
                     ? 1
                     : 0.5,
               }}
@@ -646,7 +649,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   try {
                     isAwaitingReschedule ||
                     dateIsAfter ||
-                    data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    (data.status == STATUS.PENDING && minutes <= -30)
                       ? NextAvailableSlotAPI()
                       : null;
                   } catch (error) {

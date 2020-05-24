@@ -105,7 +105,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [EPrescriptions, setEPrescriptions] = useState<EPrescription[]>(ePrescriptionsProp);
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-  const { setLoading, showAphAlert } = useUIElements();
+  const { setLoading, loading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const {
@@ -251,6 +251,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const onPressSubmit = () => {
+    setLoading!(true);
     const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
@@ -272,7 +273,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ) {
       proceed();
     } else {
-      setLoading!(true);
       updateAddressLatLong(selectedAddress!, proceed);
     }
   };
@@ -341,7 +341,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     showAphAlert!({
       title: 'Hi:)',
       description:
-        'Your prescriptions have been submitted successfully. We will notify you when the items are in your cart.\n\n\nIf we need any clarificaitons, we will call you within 1 hour.',
+        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
       unDismissable: true,
     });
 
@@ -536,7 +536,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         <Button
           disabled={
             !(PhysicalPrescriptions.length || EPrescriptions.length) ||
-            !(storeId || deliveryAddressId)
+            !(storeId || deliveryAddressId) ||
+            loading
           }
           title={'SUBMIT PRESCRIPTION'}
           onPress={onPressSubmit}

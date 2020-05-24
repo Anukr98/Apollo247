@@ -34,6 +34,7 @@ import {
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -45,6 +46,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [refNo, setrefNo] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
+  const [paymentMode, setPaymentMode] = useState<string>('');
   // const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   // const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
 
@@ -62,8 +64,22 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     CC: 'Credit Card',
     NB: 'Net Banking',
     UPI: 'UPI',
-    PPI: 'PayTm',
+    PPI: 'Paytm Wallet',
+    PAYTM_DIGITAL_CREDIT:'Paytm Postpaid',
+    EMI:'EMI'
   };
+
+  const Modes: any = {
+    DEBIT_CARD: 'Debit Card',
+    CREDIT_CARD: 'Credit Card',
+    NET_BANKING: 'Net Banking',
+    PAYTM_WALLET: 'Paytm Wallet',
+    EMI: 'EMI',
+    UPI: 'UPI',
+    PAYTM_POSTPAID: 'Paytm Postpaid',
+    COD: 'COD',
+  };
+
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -89,10 +105,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-        setorderDateTime(res.data.pharmaPaymentStatus.paymentDateTime);
-        setrefNo(res.data.pharmaPaymentStatus.bankTxnId);
+        setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
+        setrefNo(res.data.pharmaPaymentStatus.paymentRefId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
-
+        setPaymentMode(res.data.pharmaPaymentStatus.paymentMode);
         setLoading(false);
       })
       .catch((error) => {
@@ -135,6 +151,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
           marginHorizontal: needStyle ? 0.1 * windowWidth : undefined,
         }}
         numberOfLines={numOfLines}
+        selectable={true}
       >
         {message}
       </Text>
@@ -165,7 +182,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
 
   const renderStatusCard = () => {
-    const refNumberText = 'Ref.No : ' + String(refNo != '' && refNo != null ? refNo : '--');
+    const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
     const priceText = 'Rs. ' + String(totalAmount);
     return (
@@ -182,7 +199,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View
           style={{
-            flex: 0.18,
+            flex: 0.16,
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}
@@ -191,15 +208,16 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         </View>
         <View
           style={{
-            flex: 0.18,
+            flex: 0.16,
             alignItems: 'center',
             justifyContent: 'flex-start',
           }}
         >
-          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
-        </View>
-        <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
           {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
+        </View>
+        <View style={{ flex: 0.29, justifyContent: 'flex-start', alignItems: 'center' }}>
+          {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
+          {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
       </View>
     );
@@ -213,15 +231,21 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     );
   };
 
-  const getdate = () => {
+  const getdateTime = () => {
     const newdate = new Date(orderDateTime);
     newdate.setHours(newdate.getHours() - 5);
     newdate.setMinutes(newdate.getMinutes() - 30);
-    return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
+    return getDate(String(newdate));
+    // return newdate.toDateString() + '  ' + newdate.toLocaleTimeString();
   };
-  const orderCard = () => {
-    const date = String(orderDateTime != '' && orderDateTime != null ? getdate() : '--');
 
+  const orderCard = () => {
+    const date = String(
+      orderDateTime != '' && orderDateTime != null ? getDate(String(orderDateTime)) : '--'
+    );
+    const paymenttype = String(
+      paymentMode != '' && paymentMode != null ? Modes[paymentMode] : PaymentModes[paymentTypeID]
+    );
     return (
       <View style={styles.orderCardStyle}>
         <View style={{ flex: 0.6, paddingTop: 0.05 * windowWidth }}>
@@ -237,12 +261,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-            {textComponent(
-              PaymentModes[paymentTypeID],
-              undefined,
-              theme.colors.SHADE_CYAN_BLUE,
-              false
-            )}
+            {textComponent(paymenttype, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
           </View>
         </View>
       </View>
@@ -340,7 +359,7 @@ const styles = StyleSheet.create({
     height: 45,
   },
   statusCardStyle: {
-    height: 0.27 * windowHeight,
+    height: 0.3 * windowHeight,
     margin: 0.06 * windowWidth,
     flex: 1,
     borderRadius: 10,

@@ -206,7 +206,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-
+  const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -370,11 +370,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       doctorId: doctorDetails.id,
       newDateTimeslot: availability,
       initiatedBy:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? TRANSFER_INITIATED_TYPE.DOCTOR
           : TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? doctorDetails.id
           : data.patientId,
       patientId: data.patientId,
@@ -539,7 +541,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
-      dateIsAfter || isAwaitingReschedule ? true : data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN;
+      dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -644,7 +646,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 opacity:
                   isAwaitingReschedule ||
                   dateIsAfter ||
-                  data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                  (data.status == STATUS.PENDING && minutes <= -30)
                     ? 1
                     : 0.5,
               }}
@@ -664,7 +666,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   try {
                     isAwaitingReschedule ||
                     dateIsAfter ||
-                    data.noShowReason === NOSHOW_REASON.NOSHOW_30MIN
+                    (data.status == STATUS.PENDING && minutes <= -30)
                       ? NextAvailableSlotAPI()
                       : null;
                   } catch (error) {

@@ -274,12 +274,6 @@ export enum MedicalTestUnit {
   _PERCENT_ = "_PERCENT_",
 }
 
-export enum NOSHOW_REASON {
-  NOSHOW_30MIN = "NOSHOW_30MIN",
-  NOSHOW_DOCTOR = "NOSHOW_DOCTOR",
-  NOSHOW_PATIENT = "NOSHOW_PATIENT",
-}
-
 export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
@@ -297,9 +291,21 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PAYMENT_METHODS {
+  CC = "CC",
+  COD = "COD",
+  DC = "DC",
+  EMI = "EMI",
+  NB = "NB",
+  PAYTMCC = "PAYTMCC",
+  PPI = "PPI",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
+  TestReports = "TestReports",
 }
 
 export enum PharmaDiscountApplicableOn {
@@ -461,6 +467,9 @@ export interface AppointmentPaymentInput {
   responseMessage: string;
   bankTxnId?: string | null;
   orderId?: string | null;
+  bankName?: string | null;
+  refundAmount?: number | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface BookAppointmentInput {
@@ -614,6 +623,7 @@ export interface FilterDoctorInput {
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
   pincode?: string | null;
+  sort?: string | null;
 }
 
 export interface Geolocation {
@@ -670,6 +680,7 @@ export interface MedicineOrderCancelInput {
 export interface MedicineOrderCancelOMSInput {
   orderNo?: number | null;
   cancelReasonCode?: string | null;
+  cancelReasonText?: string | null;
 }
 
 export interface MedicinePaymentMqInput {
@@ -687,6 +698,7 @@ export interface MedicinePaymentMqInput {
   email?: string | null;
   CODCity?: CODCity | null;
   orderId?: string | null;
+  paymentMode?: PAYMENT_METHODS | null;
 }
 
 export interface MessageInput {

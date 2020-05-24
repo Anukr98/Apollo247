@@ -1,105 +1,105 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
   Ambulance,
-  Scan,
   CartIcon,
   ConsultationRoom,
+  CovidExpert,
+  CovidRiskLevel,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  LatestArticle,
+  LinkedUhidIcon,
+  Mascot,
+  MedicineIcon,
   MyHealth,
+  NotificationIcon,
   Person,
   PrescriptionMenu,
+  PrimaryIcon,
+  Scan,
   Symptomtracker,
   TestsCartIcon,
   TestsCartMedicineIcon,
   TestsIcon,
-  MedicineIcon,
-  NotificationIcon,
-  CovidRiskLevel,
-  CovidExpert,
-  CovidHealthScan,
-  LatestArticle,
-  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
-  DeviceHelper,
   CommonBugFender,
+  CommonLogEvent,
   CommonSetUserBugsnag,
+  DeviceHelper,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  GET_DIAGNOSTICS_CITES,
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
-  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
+  doRequestAndAccessLocationModified,
   g,
   postWebEngageEvent,
   UnInstallAppsFlyer,
-  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  PatientInfo,
+  PatientInfoWithSource,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   ImageBackground,
   Linking,
+  NativeModules,
   Platform,
-  Image,
   SafeAreaView,
   StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableOpacityProps,
   View,
   ViewStyle,
-  NativeModules,
-  TouchableOpacityProps,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-  PatientInfo,
-  PatientInfoWithSource,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import moment from 'moment';
 import WebEngage from 'react-native-webengage';
-import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
-import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  getDiagnosticsCites,
-  getDiagnosticsCitesVariables,
-  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { NavigationScreenProps } from 'react-navigation';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -285,6 +285,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
+  const [serviceable, setserviceable] = useState<String>('');
   const webengage = new WebEngage();
 
   const updateLocation = () => {
@@ -298,6 +299,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
       return;
@@ -366,8 +368,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
+  async function isserviceable() {
+    if (locationDetails && locationDetails.pincode) {
+      await pinCodeServiceabilityApi(locationDetails.pincode!)
+        .then(({ data: { Availability } }) => {
+          if (Availability) {
+            setserviceable('Yes');
+          } else {
+            setserviceable('No');
+          }
+        })
+        .catch((e) => {
+          setserviceable('No');
+          console.log('pincode_checkServicability', e);
+        });
+    }
+  }
+
   useEffect(() => {
     if (locationDetails && locationDetails.pincode) {
+      isserviceable();
       if (!isCurrentLocationFetched) {
         setCurrentLocationFetched!(true);
         updateLocation();
@@ -418,6 +438,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         eventName == WebEngageEventName.NEED_HELP)
     ) {
       (eventAttributes as PatientInfoWithSource)['Source'] = source;
+      if (locationDetails && locationDetails.pincode) {
+        (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
+        (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      }
     }
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -456,7 +480,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
-  const menuOptions: menuOptions[] = [
+  const listValues: menuOptions[] = [
     {
       id: 1,
       title: 'Book Doctor Appointment',
@@ -514,7 +538,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
   ];
 
-  const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
+  // const [listValues, setListValues] = useState<menuOptions[]>(menuOptions);
 
   useEffect(() => {
     if (enableCM) {
@@ -878,7 +902,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
+                  postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
@@ -950,13 +975,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           >
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
-              <Text style={styles.nameTextStyle} numberOfLines={1}>
-                {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-              </Text>
-              <View style={styles.seperatorStyle} />
-            </View>
-            <View style={{ paddingTop: 15 }}>
-              <DropdownGreen />
+              <View style={{ flexDirection: 'row', flex: 1 }}>
+                <Text
+                  style={[
+                    styles.nameTextStyle,
+                    { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                </Text>
+                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                  <LinkedUhidIcon
+                    style={{
+                      width: 22,
+                      height: 20,
+                      marginLeft: 5,
+                      marginTop: Platform.OS === 'ios' ? 16 : 20,
+                    }}
+                    resizeMode={'contain'}
+                  />
+                ) : null}
+                <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+              {currentPatient && <View style={styles.seperatorStyle} />}
             </View>
           </View>
         }
@@ -1025,8 +1069,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
-          marginLeft: 20,
-          marginRight: 8,
+          marginLeft: 16,
           marginTop: 16,
           marginBottom: 8,
         }}
@@ -1042,7 +1085,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     elevation: 15,
                     flexDirection: 'row',
                     minHeight: 59,
-                    width: width / 2 - 28,
+                    width: width / 2 - 22,
                     marginRight: 12,
                     marginBottom: 12,
                   }}
@@ -1061,7 +1104,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     style={{
                       alignItems: 'flex-start',
                       justifyContent: 'center',
-                      marginRight: 10,
+                      marginRight: 6,
                       flex: 1,
                     }}
                   >
@@ -1256,12 +1299,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressReadArticle = () => {
+    postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
     });
   };
 
   const onPressRiskLevel = () => {
+    postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
     });
@@ -1455,7 +1500,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
+            onPress={() => {
+              postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
+              props.navigation.navigate(AppRoutes.NotificationScreen);
+            }}
           >
             <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
             {notificationCount > 0 && renderBadge(notificationCount, {})}

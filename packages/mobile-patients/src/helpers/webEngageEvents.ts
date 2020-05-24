@@ -2,6 +2,7 @@ import {
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { string } from '../strings/string';
 
 type YesOrNo = { value: 'Yes' | 'No' };
 
@@ -24,6 +25,7 @@ export enum WebEngageEventName {
   NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
+  PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
   BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
@@ -42,6 +44,7 @@ export enum WebEngageEventName {
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
+  CONSULT_SORT = 'Consult Sort',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
@@ -49,12 +52,14 @@ export enum WebEngageEventName {
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
+  PAST_DOCTOR_SEARCH = 'Past Doctor Search',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
   PHARMACY_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Add New Address Click', // (Once user clicks on Save)
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
+  PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -63,10 +68,14 @@ export enum WebEngageEventName {
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
   CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
+  LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
+  CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
+  NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
+  TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
 
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
@@ -105,6 +114,11 @@ export enum WebEngageEventName {
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
 
+  // Medicine Events
+  PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
+  PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
+  PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
+
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
@@ -120,8 +134,16 @@ export interface PatientInfo {
   'Customer ID': string;
 }
 
+export interface UserInfo {
+  'Patient UHID': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+}
+
 export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
+  Pincode?: String;
+  Serviceability?: String;
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -171,10 +193,20 @@ export interface WebEngageEvents {
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
   [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
   [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
+  [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
+  [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
+  [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
+  [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
+  [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
+    'Patient UHID': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    'Past Searches': any;
+  };
 
   // ********** PharmacyEvents ********** \\
 
@@ -210,6 +242,7 @@ export interface WebEngageEvents {
     'category ID': string;
     Source: 'Home'; // Home
     'Section Name': string;
+    imageUrl: string;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
@@ -228,6 +261,7 @@ export interface WebEngageEvents {
     'Brand ID'?: string;
     'category name'?: string;
     'category ID'?: string;
+    Section?: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -236,6 +270,13 @@ export interface WebEngageEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
+  [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
+    'product name': string;
+    'product id': string;
+    pincode: string;
+    'Mobile Number': string;
+  };
+
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -376,6 +417,16 @@ export interface WebEngageEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
+  [WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED]: {
+    'Patient UHID': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    Serviceable: string;
+    Keyword: string;
+    Source: string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -572,6 +623,13 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
+    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Address': string;
+    Pincode: string;
+  };
+
+  [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
+    'TAT Displayed'?: string;
     'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;

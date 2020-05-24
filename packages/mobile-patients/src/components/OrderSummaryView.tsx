@@ -3,18 +3,21 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import {
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_patient_addressList,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { g, postWEGNeedHelpEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { colors } from '../theme/colors';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+} from '../graphql/types/getMedicineOrderOMSDetails';
 const styles = StyleSheet.create({
   horizontalline: {
     borderBottomColor: '#02475b',
@@ -172,14 +175,23 @@ const styles = StyleSheet.create({
 });
 
 export interface OrderSummaryViewProps extends NavigationScreenProps {
-  orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
+  orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   isTest?: boolean;
+  addressData?: string;
 }
 {
 }
 
-export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
+export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
+  orderDetails,
+  isTest,
+  addressData,
+}) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
+  const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
+  const deliveredOrder = medicineOrderStatus.find(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  );
   let item_quantity: string;
   if (medicineOrderLineItems.length == 1) {
     item_quantity = medicineOrderLineItems.length + ' item ';
@@ -191,6 +203,8 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     0
   );
   const discount = orderDetails!.devliveryCharges! + mrpTotal - orderDetails.estimatedAmount!;
+  const product_discount = orderDetails.productDiscount || 0;
+  const coupon_discount = orderDetails.couponDiscount || 0;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
   const paymentMethodToDisplay =
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
@@ -205,12 +219,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   const selectedAddressIndex = addresses.find(
     (address) => address.id == orderDetails.patientAddressId
   );
-  const addressData = selectedAddressIndex
-    ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-    : '';
 
   const renderMedicineRow = (
-    item: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems
+    item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
   ) => {
     const isTablet = (item.medicineName || '').includes('TABLET');
     const medicineName = `${item.medicineName}${
@@ -255,16 +266,15 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     );
   };
 
-  const getFormattedDate = (
-    orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails
+  const getDeliveredDate = (
+    medicineOrderStatus: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus
   ) => {
-    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
-    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    const statusDate = g(medicineOrderStatus, 'statusDate');
     return moment(statusDate).format('ddd, D MMMM');
   };
 
   const getFormattedDateTime = (
-    orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails
+    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
   ) => {
     const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
     const statusDate = g(medicineOrdersStatus[0], 'statusDate');
@@ -350,13 +360,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             >
               {'ITEM DETAILS'}
             </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#01475b'),
-              }}
-            >
-              {'Delivered ' + getFormattedDate(orderDetails)}
-            </Text>
+            {!!deliveredOrder && (
+              <Text style={theme.viewStyles.text('M', 13, '#01475b')}>
+                {'Delivered ' + getDeliveredDate(deliveredOrder)}
+              </Text>
+            )}
           </View>
           <View style={styles.horizontalline} />
           <View
@@ -430,11 +438,19 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
                 {mrpTotal.toFixed(2)}
               </Text>
             </View>
-            {discount > 0 && (
+            {product_discount > 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs.{discount.toFixed(2)}
+                  - Rs.{product_discount.toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {coupon_discount > 0 && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs.{coupon_discount.toFixed(2)}
                 </Text>
               </View>
             )}

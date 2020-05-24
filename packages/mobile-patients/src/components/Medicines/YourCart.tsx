@@ -10,7 +10,6 @@ import {
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -51,6 +50,7 @@ import {
   Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -82,6 +82,7 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -203,6 +204,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
+  // To remove applied coupon from cart when user goes back.
+  useEffect(() => {
+    return () => {
+      setCoupon!(null);
+    };
+  }, []);
+
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
@@ -284,7 +292,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             if (Availability) {
               setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
             } else {
-              postPhamracyCartAddressSelectedSuccess(
+              postPhamracyCartAddressSelectedFailure(
                 addresses[selectedAddressIndex].zipcode!,
                 formatAddress(addresses[selectedAddressIndex]),
                 'No'
@@ -597,9 +605,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                if (props.navigation.getParam('isComingFromConsult'))
+                if (props.navigation.getParam('isComingFromConsult')) {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                else {
+                  setCoupon!(null);
+                } else {
                   CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
                   if (navigatedFrom === 'registration') {
                     props.navigation.dispatch(
@@ -758,7 +767,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
-          postPhamracyCartAddressSelectedSuccess(address.zipcode!, formatAddress(address), 'No');
+          postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
@@ -1053,6 +1062,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             });
           } else {
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
+            setCoupon!(null);
           }
         }}
       >
@@ -1128,7 +1138,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                Savings of Rs. {couponDiscount.toFixed(2)} on the bill
+                {coupon.discountedTotals!.couponDiscount > 0
+                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
+                  : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
               </Text>
             </View>
           )}

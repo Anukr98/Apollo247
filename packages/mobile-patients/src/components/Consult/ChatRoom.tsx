@@ -971,6 +971,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     endCallSessionAppointment(client, appointmentData.id, status, REQUEST_ROLES.DOCTOR)
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
+        setStatus(STATUS.COMPLETED);
         AsyncStorage.setItem('endAPICalled', 'true');
       })
       .catch((e) => {
@@ -2469,16 +2470,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
-              {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+              {`Hello ${userName},\nHope your consultation went well. Here is your prescription. View and order medicines now`}
             </Text>
             <StickyBottomComponent
               style={{
                 paddingHorizontal: 0,
+                marginBottom: 4,
                 backgroundColor: 'transparent',
                 shadowColor: 'transparent',
               }}
             >
-              <Button
+              {/* <Button
                 title={'DOWNLOAD'}
                 style={{
                   flex: 0.5,
@@ -2557,11 +2559,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
                   }
                 }}
-              />
+              /> */}
 
               <Button
-                title={'VIEW'}
-                style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                title={'VIEW PRESCRIPTION'}
+                style={{ flex: 1, marginRight: 16, marginLeft: 16 }}
                 onPress={() => {
                   try {
                     postAppointmentWEGEvent(
@@ -2998,7 +3000,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const openPopUp = (rowData: any) => {
     setLoading(true);
-    if (rowData.url.match(/\.(pdf)$/)) {
+    if (rowData.url.match(/\.(pdf)$/) || rowData.fileType === 'pdf') {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
@@ -3017,7 +3019,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         setShowPDF(true);
       }
-    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/)) {
+    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image') {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
@@ -3118,7 +3120,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View>
           {rowData.message === imageconsult ? (
             <View>
-              {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
+              {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image' ? (
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
@@ -3178,30 +3180,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <Image
-                      placeholderStyle={{
-                        height: 180,
-                        width: '100%',
-                        alignItems: 'center',
-                        backgroundColor: 'transparent',
-                      }}
-                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                      source={{ uri: rowData.url }}
-                      style={{
-                        resizeMode: 'stretch',
-                        width: 180,
-                        height: 180,
-                        borderRadius: 10,
-                      }}
-                    />
-                    {/* <FileBig
+                    <FileBig
                       style={{
                         resizeMode: 'stretch',
                         width: 200,
                         height: 200,
                         borderRadius: 10,
                       }}
-                    /> */}
+                    />
                   </View>
                 </TouchableOpacity>
               )}
@@ -5388,7 +5374,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   const text = {
                     id: patientId,
                     message: imageconsult,
-                    fileType: 'image',
+                    fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
+                      ? 'pdf'
+                      : 'image',
                     prismId: prismFeildId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
@@ -5574,7 +5562,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   const text = {
                     id: patientId,
                     message: imageconsult,
-                    fileType: 'image',
+                    fileType: item.match(/\.(pdf)$/) ? 'pdf' : 'image',
                     prismId: (prism && prism[index]) || '',
                     url: item,
                     messageDate: new Date(),
