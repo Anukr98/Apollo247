@@ -1,12 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
-import {
-  AphTrackSlider,
-  AphOnHoldSlider,
-  AphDelayedSlider,
-  AphDeliveredSlider,
-} from '@aph/web-ui-components';
+import React from 'react';
+import { AphTrackSlider } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
   getMedicineOrdersOMSList,
@@ -22,7 +17,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getStatus } from 'components/Orders/OrderStatusCard';
+import { getStatus, isRejectedStatus } from './OrderStatusCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -409,7 +404,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                         {orderInfo.medicineOrdersStatus && (
                           <div
                             className={
-                              getStatus(orderInfo.currentStatus) === MEDICINE_ORDER_STATUS.CANCELLED
+                              isRejectedStatus(orderInfo.currentStatus)
                                 ? `${classes.orderStatusRejected}`
                                 : `${classes.orderStatus}`
                             }
