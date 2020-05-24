@@ -291,6 +291,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
+    const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
     const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
@@ -303,7 +304,7 @@ export class PatientRepository extends Repository<Patient> {
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
-      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+      category: category,
       filename: documentName,
     };
 
