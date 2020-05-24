@@ -156,6 +156,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#c5eae1',
       lineHeight: '12px',
     },
+    orderStatusFailed: {
+      marginLeft: 'auto',
+      fontSize: 11,
+      fontWeight: 500,
+      padding: '4px 15px',
+      borderRadius: 10,
+      cursor: 'pointer',
+      backgroundColor: '#890000',
+      color: '#fff',
+      lineHeight: '12px',
+    },
     expectedDelivery: {
       padding: '14px 20px',
       boxShadow: '0 1px 3px 0 rgba(128, 128, 128, 0.3)',
@@ -335,6 +346,12 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
   }
 };
 
+export const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
+  return (
+    status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+  );
+};
+
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
@@ -389,7 +406,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getAddressDetails = (deliveryAddressId: string, id: string) => {
+  const getAddressDetails = (id: string) => {
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
@@ -425,16 +442,16 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
           (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
         );
         const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1} ${
-              selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
-            }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
+          ? `${selectedAddress.addressLine1 || ''} ${selectedAddress.addressLine2 || ''}, ${
+              selectedAddress.city || ''
+            }, ${selectedAddress.state || ''}, ${selectedAddress.zipcode || ''}`
           : '';
         return addressData;
       } else {
         return '';
       }
     } else {
-      getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
+      getAddressDetails(orderDetailsData.patient.id);
     }
   };
 
@@ -446,7 +463,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     return item && item.isPrescriptionNeeded;
   };
 
-  const getOrderDescription = (status: MEDICINE_ORDER_STATUS) => {
+  const getOrderDescription = (status: MEDICINE_ORDER_STATUS, statusMessage: string) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_PLACED:
         return !prescriptionRequired() ? (
@@ -468,7 +485,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
         return `Your order #${orderDetailsData.orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`;
       case MEDICINE_ORDER_STATUS.CANCELLED:
-        return `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`;
+        return statusMessage === ''
+          ? `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`
+          : statusMessage;
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return (
           <>
@@ -517,6 +536,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   };
   const restStatusToShow = addRestStatusToShow();
 
+  const getOrderState = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        return <div className={classes.orderStatusFailed}>Cancelled</div>;
+      case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+        return <div className={classes.orderStatusFailed}>Payment Failed</div>;
+      default:
+        return <div className={classes.orderStatus}>Successful</div>;
+    }
+  };
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -525,7 +555,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             {orderDetailsData.orderAutoId && (
               <div className={classes.orderDetailsRow}>
                 <div className={classes.orderId}>ORDER #{orderDetailsData.orderAutoId}</div>
-                <div className={classes.orderStatus}>Successful</div>
+                {getOrderState(orderDetailsData.currentStatus)}
               </div>
             )}
             {orderDetailsData.patient && (
@@ -541,7 +571,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               <div className={classes.discription}>{getPatientAddress(deliveryAddresses)}</div>
             </div>
           </div>
-          {orderDetailsData.orderTat && (
+          {!isRejectedStatus(orderDetailsData.currentStatus) && orderDetailsData.orderTat && (
             <div className={classes.expectedDelivery}>
               <span>
                 <img src={require('images/notify-symbol.svg')} alt="" />
@@ -579,7 +609,12 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                   </div>
                   {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
                     <div className={classes.infoText}>
-                      <span>{getOrderDescription(orderDetailsData.currentStatus)}</span>
+                      <span>
+                        {getOrderDescription(
+                          orderDetailsData.currentStatus,
+                          statusInfo.statusMessage
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -605,9 +640,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          {/* <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
             Rate your delivery experience
-          </AphButton> */}
+          </AphButton>
         </div>
       )}
       <Popover
