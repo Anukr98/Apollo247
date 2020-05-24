@@ -107,7 +107,7 @@ const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+  /*if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     await client
       .deleteContainer()
       .then((res) => console.log(res))
@@ -127,7 +127,7 @@ const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
   await client
     .testStorageConnection()
     .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
+    .catch((error) => console.log('error testing', error)); */
 
   const localFilePath = assetsDir + '/' + fileName;
   const readmeBlob = await client

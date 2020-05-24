@@ -99,9 +99,12 @@ export class PatientRepository extends Repository<Patient> {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
+        } else if (patient.primaryPatientId == null) {
+          this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
     }
+
     return this.find({
       where: { mobileNumber, isActive: true },
       relations: [
@@ -291,8 +294,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    const currentTimeStamp = getUnixTime(new Date());
+    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
+    category =
+      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
+        ? PRISM_DOCUMENT_CATEGORY.OpSummary
+        : category;
+    const currentTimeStamp = getUnixTime(new Date()) * 1000;
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
@@ -300,7 +307,7 @@ export class PatientRepository extends Repository<Patient> {
       file: docInput.base64FileInput,
       authtoken: prismAuthToken,
       format: fileFormat,
-      tag: docInput.category,
+      tag: category,
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
