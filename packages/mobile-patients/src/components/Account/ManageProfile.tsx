@@ -328,10 +328,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 <TouchableOpacity onPress={() => setShowSecondaryUHIDs(!showSecondaryUhids)}>
                   <PrimaryUHIDIconBlue
                     style={{
-                      width: 20,
-                      height: 20,
-                      marginRight: 16,
-                      marginTop: 16,
+                      resizeMode: 'contain',
+                      width: 25,
+                      height: 25,
+                      marginRight: 15,
+                      marginTop: 12,
                       alignSelf: 'center',
                     }}
                   />
@@ -450,15 +451,17 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           ...viewStyles.cardViewStyle,
           ...viewStyles.shadowStyle,
           padding: 16,
+          paddingBottom: 24,
           backgroundColor: colors.LIGHT_BLUE,
           flexDirection: 'row',
         }}
       >
         {showLinkButtons ? (
           <Text style={styles.bannerText}>
-            Your UHID are linked.Click on{' '}
+            Your UHID are linked. Click on{' '}
             <PrimaryUHIDIconWhite
               style={{
+                resizeMode: 'contain',
                 width: 20,
                 height: 20,
               }}
@@ -511,7 +514,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               marginHorizontal: 20,
               width: '60%',
               alignSelf: 'center',
-              marginBottom: 20,
+              marginBottom: 15,
             }}
             onPress={() => {
               props.navigation.navigate(AppRoutes.EditProfile, {
@@ -563,11 +566,27 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG>
+      <StickyBottomComponent defaultBG style={{ minHeight: 120 }}>
         {showLinkUhid && (
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 10,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
           <Button
             title="LINK UHID"
-            style={{ flex: 1, marginHorizontal: 10 }}
+            style={{
+              flex: 1,
+              marginHorizontal: 20,
+              width: '35%',
+              alignSelf: 'center',
+              marginBottom: 15,
+            }}
             onPress={() => {
               props.navigation.navigate(AppRoutes.LinkUHID, {
                 action: 'firstlink',
@@ -575,17 +594,24 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               });
             }}
           />
+          <Button
+            title="ADD NEW PROFILE"
+            style={{
+              flex: 1,
+              marginHorizontal: 20,
+              width: '75%',
+              alignSelf: 'center',
+              backgroundColor: theme.colors.LIGHT_BLUE,
+            }}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              });
+            }}
+          />
+          </View>
         )}
-        <Button
-          title="ADD NEW PROFILE"
-          style={{ flex: 1, marginHorizontal: 10 }}
-          onPress={() => {
-            props.navigation.navigate(AppRoutes.EditProfile, {
-              isEdit: false,
-              mobileNumber: currentPatient && currentPatient!.mobileNumber,
-            });
-          }}
-        />
       </StickyBottomComponent>
     );
   };

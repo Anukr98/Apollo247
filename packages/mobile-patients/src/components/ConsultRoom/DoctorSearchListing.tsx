@@ -217,7 +217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(false);
+  const [value, setValue] = useState<boolean>(true);
 
   useEffect(() => {
     if (!currentPatient) {

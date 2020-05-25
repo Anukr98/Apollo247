@@ -647,6 +647,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
           </Text>
         </TouchableOpacity>
+        <Spearator style={styles.separatorStyle} />
+        <Text style={styles.checkboxTextStyle}>{'Payment Mode: Cash on Delivery'}</Text>
       </>
     );
   };
