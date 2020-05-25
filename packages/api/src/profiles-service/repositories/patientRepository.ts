@@ -516,8 +516,8 @@ export class PatientRepository extends Repository<Patient> {
     const fieldToUpdate: Partial<Patient> = { [column]: flag };
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.primaryUhid = undefined;
-        fieldToUpdate.primaryPatientId = undefined;
+        fieldToUpdate.primaryUhid = fieldToUpdate.uhid;
+        fieldToUpdate.primaryPatientId = fieldToUpdate.id;
       } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
