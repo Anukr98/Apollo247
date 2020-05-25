@@ -514,21 +514,33 @@ export class PatientRepository extends Repository<Patient> {
     primaryPatientId?: string
   ) {
     const fieldToUpdate: Partial<Patient> = { [column]: flag };
+    let check = true;
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.primaryUhid = fieldToUpdate.uhid;
-        fieldToUpdate.primaryPatientId = fieldToUpdate.id;
+        check = false;
       } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }
     }
 
-    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
-      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
-        updatePatientError,
+    if (check) {
+      return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+        throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+          updatePatientError,
+        });
       });
-    });
+    } else {
+      return this.createQueryBuilder('patient')
+        .update()
+        .set({
+          primaryUhid: () => 'patient.uhid',
+          primaryPatientId: () => 'patient.id',
+          ...fieldToUpdate,
+        })
+        .where('id IN (:...ids)', { ids })
+        .execute();
+    }
   }
 
   updateToken(id: string, athsToken: string) {
