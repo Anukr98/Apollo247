@@ -7,8 +7,13 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       backgroundColor: '#fff',
       display: 'flex',
-      padding: '16px 20px',
+      padding: '0 0 16px',
+      margin: '0 0 16px',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 20px',
+        margin: 0,
+      }
     },
     linkItem: {
       display: 'flex',
@@ -19,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 90,
       '& img': {
         verticalAlign: 'middle',
-        paddingRight: 4,
+        marginRight: 5,
       },
     },
   };
