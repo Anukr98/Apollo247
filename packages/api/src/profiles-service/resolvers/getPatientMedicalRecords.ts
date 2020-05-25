@@ -237,6 +237,7 @@ const getPatientPrismMedicalRecords: Resolver<
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   let uhid = '';
+  console.log(patientDetails.primaryUhid, 'primary uhid', args.patientId);
   if (patientDetails.primaryUhid) {
     uhid = patientDetails.primaryUhid;
   } else {
@@ -256,6 +257,7 @@ const getPatientPrismMedicalRecords: Resolver<
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
   const formattedLabResults: LabTestResult[] = [];
+  console.log(uhid, 'patient lab results input in medical records');
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismUHIDAuthToken);
   const labResultLog = {
     message: 'LabResults API Response',
@@ -312,6 +314,7 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHealthChecks: HealthCheckResult[] = [];
+  console.log(uhid, 'getPatientHealthChecks in medical records');
   const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismUHIDAuthToken);
   const healthChecksLog = {
     message: 'HealthChecks API Response',
@@ -343,6 +346,7 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHospitalizations: HospitalizationResult[] = [];
+  console.log(uhid, 'getPatientHospitalizations in medical records');
   const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismUHIDAuthToken);
   const hospitalizationsLog = {
     message: 'Hospitalizations API Response',

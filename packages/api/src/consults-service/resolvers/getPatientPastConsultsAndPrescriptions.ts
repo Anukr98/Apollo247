@@ -169,7 +169,7 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   let patientAppointments: ConsultRecord[] = [];
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(patient);
-
+  console.log(primaryPatientIds, 'primaryPatientIds');
   if (
     hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
     hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)
@@ -221,7 +221,7 @@ const getPatientLabResults: Resolver<
 
   //get users list for the mobile number
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-  console.log(prismUserList);
+  console.log(prismUserList, 'prismUserList');
 
   const patientDetails = await patientsRepo.findById(args.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -238,8 +238,8 @@ const getPatientLabResults: Resolver<
   }
 
   //just call get prism user details with the corresponding uhid
+  console.log(uhid, 'patient lab results input');
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
-
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
   console.log(labResults);
   return false;
