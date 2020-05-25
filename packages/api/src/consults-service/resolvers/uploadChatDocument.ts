@@ -106,7 +106,7 @@ const uploadChatDocument: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  /*if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
+  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     console.log('deleting container...');
     await client
       .deleteContainer()
@@ -126,11 +126,11 @@ const uploadChatDocument: Resolver<
       .catch((error) => console.log('error creating', error));
   }
 
-  console.log('testing storage connection...'); 
+  console.log('testing storage connection...');
   await client
     .testStorageConnection()
     .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));*/
+    .catch((error) => console.log('error testing', error));
 
   const localFilePath = assetsDir + '/' + fileName;
   console.log(`uploading ${localFilePath}`);
