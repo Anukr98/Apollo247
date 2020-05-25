@@ -280,10 +280,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
     // AsyncStorage.setItem('allNotification', JSON.stringify(notificationArray));
     // AsyncStorage.removeItem('allNotification');
-
-    if (data.type === 'Appointment_Canceled_Refund') {
-      props.navigation.navigate(AppRoutes.MyPaymentsScreen, {});
-    }
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
