@@ -143,7 +143,7 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients;
-
+  mobileNumber = '+918019677999';
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
     let isPrismWorking = 1,
@@ -242,6 +242,7 @@ const getCurrentPatients: Resolver<
       });
     } else {
       isPrismWorking = 0;
+      isUserDetails = 1;
     }
 
     //if prism is not working - process with 24x7 database
