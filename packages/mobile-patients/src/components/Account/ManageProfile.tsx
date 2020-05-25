@@ -451,6 +451,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           ...viewStyles.cardViewStyle,
           ...viewStyles.shadowStyle,
           padding: 16,
+          paddingBottom: 25,
           backgroundColor: colors.LIGHT_BLUE,
           flexDirection: 'row',
         }}
