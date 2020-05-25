@@ -212,9 +212,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         CommonBugFender('LinkUHIDs', e);
         console.log('Error occured ', e);
       })
-      .finally(() => {
-        setLoading && setLoading(false);
-      });
   };
 
   const deLinkUhidsApiCall = () => {
@@ -227,9 +224,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         CommonBugFender('LinkUHIDs', e);
         console.log('Error occured ', e);
       })
-      .finally(() => {
-        setLoading && setLoading(false);
-      });
   };
 
   const backDataFunctionality = async () => {
