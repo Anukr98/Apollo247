@@ -587,10 +587,10 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   <TouchableOpacity>
                     <PrimaryUHIDIconBlue style={{
                       resizeMode: 'contain',
-                      width: 20,
-                      height: 20,
-                      marginRight: 16,
-                      marginTop: 16,
+                      width: 25,
+                      height: 25,
+                      marginRight: 15,
+                      marginTop: 12,
                       alignSelf: 'center'
                     }} />
                   </TouchableOpacity>
