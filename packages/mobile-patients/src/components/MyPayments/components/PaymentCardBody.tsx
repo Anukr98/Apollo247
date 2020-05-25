@@ -28,16 +28,28 @@ interface PaymentCardBodyProps {
   patientId?: string;
 }
 const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
+  const RefundTypes = {
+    REFUND_REQUEST_RAISED: 'REFUND INITIATED',
+    REFUND_FAILED: 'REFUND FAILED',
+    REFUND_SUCCESSFUL: 'REFUND SUCCESSFUL',
+    REFUND_REQUEST_NOT_RAISED: 'REFUND NOT INITIATED',
+  };
   useEffect(() => {}, []);
   const statusItemValues = () => {
     const { paymentFor, item } = props;
+    const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
     let status = 'PENDING';
     let refId = '';
     let price = 0;
     if (paymentFor === 'consult') {
-      const { appointmentPayments, actualAmount, discountedAmount } = item;
+      const { appointmentPayments, actualAmount, discountedAmount, appointmentRefunds } = item;
       if (!appointmentPayments.length) {
         status = 'PENDING';
+      } else if (appointmentRefunds.length) {
+        const { paymentRefId, amountPaid } = appointmentPayments[0];
+        refId = paymentRefId;
+        price = amountPaid;
+        status = REFUND;
       } else {
         const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
         status = paymentStatus;

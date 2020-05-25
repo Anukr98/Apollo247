@@ -176,10 +176,20 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     }
   };
   const renderButton = () => {
+    const { paymentFor, item } = props;
     const { status } = statusItemValues();
     const { buttonTitle } = getTitle();
-    if (status === SUCCESS || status === FAILED) {
-      return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
+    if (paymentFor === 'consult') {
+      const { appointmentRefunds } = item;
+      if ((status === SUCCESS || status === FAILED) && appointmentRefunds.length < 1) {
+        return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
+      } else {
+        return null;
+      }
+    } else {
+      if (status === SUCCESS || status === FAILED) {
+        return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
+      }
     }
   };
 

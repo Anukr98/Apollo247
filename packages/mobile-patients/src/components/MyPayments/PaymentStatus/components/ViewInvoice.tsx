@@ -22,6 +22,7 @@ interface ViewInvoiceProps {
   paymentFor: string;
   navigationProps?: any;
   patientId?: string;
+  status?: string;
 }
 const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
@@ -107,8 +108,7 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
       });
   };
 
-  const { paymentFor } = props;
-  const { status } = statusItemValues();
+  const { paymentFor, status } = props;
   return status === SUCCESS && paymentFor === 'consult' ? (
     <TouchableOpacity
       onPress={() => {
