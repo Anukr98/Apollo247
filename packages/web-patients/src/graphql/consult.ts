@@ -118,9 +118,6 @@ export const CONSULT_COUPONS_LIST = gql`
           successMessage
         }
         couponConsultRule {
-          couponApplicability
-          createdDate
-          id
           isActive
         }
         createdDate

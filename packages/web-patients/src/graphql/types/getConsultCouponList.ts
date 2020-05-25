@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { CouponCategoryApplicable, PharmaDiscountApplicableOn, AppointmentType } from "./globalTypes";
+import { CouponCategoryApplicable, PharmaDiscountApplicableOn } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getConsultCouponList
@@ -18,9 +18,6 @@ export interface getConsultCouponList_getConsultCouponList_coupons_couponPharmaR
 
 export interface getConsultCouponList_getConsultCouponList_coupons_couponConsultRule {
   __typename: "CouponConsultRule";
-  couponApplicability: AppointmentType | null;
-  createdDate: any | null;
-  id: string | null;
   isActive: boolean | null;
 }
 
