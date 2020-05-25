@@ -328,10 +328,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 <TouchableOpacity onPress={() => setShowSecondaryUHIDs(!showSecondaryUhids)}>
                   <PrimaryUHIDIconBlue
                     style={{
-                      width: 20,
-                      height: 20,
-                      marginRight: 16,
-                      marginTop: 16,
+                      resizeMode: 'contain',
+                      width: 25,
+                      height: 25,
+                      marginRight: 15,
+                      marginTop: 12,
                       alignSelf: 'center',
                     }}
                   />
@@ -456,9 +457,10 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       >
         {showLinkButtons ? (
           <Text style={styles.bannerText}>
-            Your UHID are linked.Click on{' '}
+            Your UHID are linked. Click on{' '}
             <PrimaryUHIDIconWhite
               style={{
+                resizeMode: 'contain',
                 width: 20,
                 height: 20,
               }}
