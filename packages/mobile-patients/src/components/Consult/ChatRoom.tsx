@@ -949,7 +949,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (status === STATUS.COMPLETED) return;
 
       console.log('API Called');
-      // endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
       endCallAppointmentSessionAPI(STATUS.NO_SHOW);
     }
   };
@@ -1394,8 +1393,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 if (abondmentStarted == false) {
                   if (startConsultResult.length > 0) {
                     console.log('callAbondmentMethod', abondmentStarted);
-                    //   abondmentStarted = true;
-                    //   APIForUpdateAppointmentData(false);
                   } else {
                     if (diffInMins < 15) {
                       // console.log('doctorNoshow', abondmentStarted);
@@ -1464,9 +1461,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
       if (status === STATUS.COMPLETED) return;
-
-      // abondmentStarted = true;
-      // startCallAbondmentTimer(620, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1504,13 +1498,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTransferData(appointmentData);
 
         if (isCallAbandment) {
-          // setIsDoctorNoShow(true);
         } else {
           setShowDoctorNoShowAlert(true);
           endCallAppointmentSessionAPI(STATUS.NO_SHOW);
-          // endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
         }
-        // throw Error;
       });
     } catch (error) {
       CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
