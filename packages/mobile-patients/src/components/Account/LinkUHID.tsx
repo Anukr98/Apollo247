@@ -704,8 +704,17 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         }}
       >
         <Text style={styles.bannerText}>
-          {enableSelectPrimary && 'Create your primary UHID by selecting any one of your own profile from below.'}
-          {enableSelectSecondary && 'Select your own UHID’s to link to your primary UHID.'}
+          {
+            (action === 'delink') ? (
+              'Select the UHID to DELINK from primary UHID.'
+            ) : (
+              <>
+                {enableSelectPrimary && 'Create your primary UHID by selecting any one of your own profile from below.'}
+                {enableSelectSecondary && 'Select your own UHID’s to link to your primary UHID.'}
+              </>
+            )
+          }
+          
         </Text>
       </View>
     )
