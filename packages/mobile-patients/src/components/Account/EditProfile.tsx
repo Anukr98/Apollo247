@@ -490,7 +490,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
-        setLoading && setLoading(true);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
