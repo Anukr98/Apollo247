@@ -934,7 +934,7 @@ app.get('/processOmsOrders', (req, res) => {
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
     process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME,
-    process.env.AZURE_SERVICE_BUS_SUBSCRIBER,
+    process.env.AZURE_SERVICE_BUS_OMS_SUBSCRIBER,
     { isPeekLock: false },
     (subscriptionError, result) => {
       if (subscriptionError) {
