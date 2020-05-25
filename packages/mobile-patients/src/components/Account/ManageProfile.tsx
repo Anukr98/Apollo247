@@ -292,7 +292,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 //  marginTop: i === 0 ? 16 : 8,
               },
               isPrimaryUHID
-                ? { backgroundColor: theme.colors.APP_YELLOW_COLOR, marginBottom: -15 }
+                ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
                 : { backgroundColor: colors.WHITE },
               isSecondaryUHID ? styles.secondaryUHIDCard : {display: 'flex'},
               isSecondaryUHID && !showSecondaryUhids ? { display: 'none' } : {display: 'flex'},
