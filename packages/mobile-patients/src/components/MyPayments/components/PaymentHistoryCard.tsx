@@ -28,8 +28,10 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   useEffect(() => {}, []);
   const renderHeader = () => {
     const { status, appointmentRefunds } = item;
-    if (status === 'CANCELLED' || appointmentRefunds.length) {
+    if (paymentFor === 'consult' && (status === 'CANCELLED' || appointmentRefunds.length)) {
       return <PaymentCardHeader status={status} />;
+    } else {
+      return null;
     }
   };
   const { id, item, lastIndex, index, paymentFor, patientId } = props;
