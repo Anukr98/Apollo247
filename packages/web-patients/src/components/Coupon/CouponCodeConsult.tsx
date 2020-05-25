@@ -299,7 +299,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   {availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
-                        couponDetails && couponDetails.isActive && (
+                        couponDetails && couponDetails.couponConsultRule && couponDetails.couponConsultRule.isActive && (
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
