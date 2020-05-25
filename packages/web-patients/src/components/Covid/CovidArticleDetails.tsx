@@ -152,8 +152,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComments] = useState('');
 
-  // const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
-  const covidArticleDetailUrl = 'https://uatcms.apollo247.com/api/article-details';
+  const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
+  // const covidArticleDetailUrl = 'https://uatcms.apollo247.com/api/article-details';
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
