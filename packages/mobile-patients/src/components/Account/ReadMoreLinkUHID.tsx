@@ -319,6 +319,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
               <Text style={styles.instructionText}>
                 Click on the icon <PrimaryUHIDIconBlue
                   style={{
+                    resizeMode: 'contain',
                     width: 10,
                     height: 10,
                   }} /> and view all your
