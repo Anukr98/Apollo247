@@ -85,7 +85,8 @@ type CustomNotificationType =
   | 'Patient_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled'
   | 'PRESCRIPTION_READY'
-  | 'doctor_Noshow_Reschedule_Appointment';
+  | 'doctor_Noshow_Reschedule_Appointment'
+  | 'Appointment_Canceled_Refund';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -280,6 +281,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     // AsyncStorage.setItem('allNotification', JSON.stringify(notificationArray));
     // AsyncStorage.removeItem('allNotification');
 
+    if (data.type === 'Appointment_Canceled_Refund') {
+      props.navigation.navigate(AppRoutes.MyPaymentsScreen, {});
+    }
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||

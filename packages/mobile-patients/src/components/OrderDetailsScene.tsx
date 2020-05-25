@@ -767,8 +767,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               {string.OrderSummery.name}
             </Text>
             <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
-              {orderDetails.patient?.firstName}
-              {orderDetails.patient?.lastName}
+              {orderDetails.patient?.firstName} {orderDetails.patient?.lastName}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
