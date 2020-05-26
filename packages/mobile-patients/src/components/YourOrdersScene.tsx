@@ -25,9 +25,15 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
+import { GET_MEDICINE_ORDERS_OMS__LIST } from '../graphql/profiles';
 import { useUIElements } from './UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus,
+} from '../graphql/types/getMedicineOrdersOMSList';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -39,30 +45,75 @@ const styles = StyleSheet.create({
   },
 });
 type OrderRefetch = (
-  variables?: GetMedicineOrdersListVariables
-) => Promise<ApolloQueryResult<GetMedicineOrdersList>>;
+  variables?: getMedicineOrdersOMSListVariables
+) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
 
-export interface YourOrdersSceneProps extends NavigationScreenProps {
-  refetch: OrderRefetch;
-}
-{
-}
+const getOrderDescription = (
+  status: MEDICINE_ORDER_STATUS,
+  isOrderRequirePrescription?: boolean // if any of the order item requires prescription
+) => {
+  const orderStatusDescMapping = {
+    [MEDICINE_ORDER_STATUS.ORDER_PLACED]: isOrderRequirePrescription
+      ? ['', '']
+      : [
+          'Verification Pending: ',
+          'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+        ],
+    [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]: [
+      'Store Assigned: ',
+      'Your order has been assigned to our pharmacy.',
+    ],
+    [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
+      '',
+      'Your order #{{orderId}} has been packed. Soon would be dispatched from our pharmacy.',
+    ],
+    [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
+      'Out for delivery: ',
+      'Your order #A2472707936 would be reaching your doorstep soon.',
+    ],
+    [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
+      '',
+      'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
+    ],
+  };
+
+  const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
+
+  return isStatusAvailable
+    ? {
+        heading: g(orderStatusDescMapping, status as any, '0'),
+        description: g(orderStatusDescMapping, status as any, '1'),
+      }
+    : null;
+};
+
+export interface YourOrdersSceneProps
+  extends NavigationScreenProps<{
+    refetch: OrderRefetch;
+    isTest: boolean;
+    orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[];
+    error: object;
+    header: string;
+  }> {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const isTest = props.navigation.getParam('isTest');
-  const ordersFetched = props.navigation.getParam('orders');
+  // const ordersFetched = props.navigation.getParam('orders');
   const [orders, setOrders] = useState<
-    GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
+    getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
   >(props.navigation.getParam('orders'));
   const refetch: OrderRefetch =
     props.navigation.getParam('refetch') ||
-    useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }).refetch;
+    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
+      GET_MEDICINE_ORDERS_OMS__LIST,
+      {
+        variables: { patientId: currentPatient && currentPatient.id },
+        fetchPolicy: 'cache-first',
+      }
+    ).refetch;
   const error = props.navigation.getParam('error');
   // const loading = props.navigation.getParam('loading');
   const [isChanged, setisChanged] = useState<boolean>(false);
@@ -71,7 +122,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     refetch &&
       refetch()
         .then(({ data }) => {
-          const _orders = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || []).filter(
+          const _orders = (g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList')! || []).filter(
             (item) =>
               !(
                 (item!.medicineOrdersStatus || []).length == 1 &&
@@ -79,7 +130,9 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
               )
           );
           setLoading!(false);
-          setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
+          setOrders(
+            _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
+          );
           setisChanged(!isChanged);
         })
         .catch((e) => {
@@ -151,7 +204,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const getSortedList = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
     return orderStatusList.sort(
       (a, b) =>
@@ -165,14 +218,14 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const getStatusType = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
     const sortedList = getSortedList(orderStatusList);
     return g(sortedList[0], 'orderStatus')!;
   };
 
   const getStatusDesc = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
     const sortedList = getSortedList(orderStatusList);
     return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
@@ -183,7 +236,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const renderOrder = (
-    order: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
+    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
     index: number
   ) => {
     return (
@@ -194,14 +247,14 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        key={`${order!.orderAutoId}`}
-        orderId={`#${order!.orderAutoId}`}
+        key={`${order.orderAutoId}`}
+        orderId={`#${order.orderAutoId}`}
         onPress={() => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-            orderAutoId: order!.orderAutoId,
-            orderDetails: order!.medicineOrdersStatus,
+            orderAutoId: order.orderAutoId,
+            orderDetails: order.medicineOrdersStatus,
             setOrders: (
-              orders: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
+              orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
             ) => {
               setOrders(orders);
               setisChanged(!isChanged);
@@ -210,10 +263,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           });
         }}
         title={'Medicines'}
-        description={getDeliverType(order!.deliveryType)}
+        description={getDeliverType(order.deliveryType)}
         statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
-        status={getStatusType(g(order, 'medicineOrdersStatus')!)!}
-        dateTime={getFormattedTime(g(order!.medicineOrdersStatus![0]!, 'statusDate'))}
+        status={getStatusType(g(order, 'medicineOrdersStatus')!)}
+        dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
       />
     );
   };

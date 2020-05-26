@@ -2,18 +2,19 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import {
+  ConsultMode,
   DoctorType,
   SEARCH_TYPE,
-  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -30,7 +31,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   doctorView: {

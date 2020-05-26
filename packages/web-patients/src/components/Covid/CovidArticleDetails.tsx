@@ -133,6 +133,17 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    hideWeb: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
+    hideMobile: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    }
   };
 });
 
@@ -208,49 +219,54 @@ export const CovidArticleDetails: React.FC = (props: any) => {
               <CircularProgress size={30} />
             </div>
           ) : (
-            <>
-              <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
-              <div className={classes.imageBanner}>
-                <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
-                <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
-              </div>
-              {/* <FeedbackWidget /> */}
-              <div className={classes.sectionGroup}>
-                <div className={classes.mainContent}>
-                  <div
-                    className={classes.htmlContent}
-                    dangerouslySetInnerHTML={{ __html: htmlData }}
-                  />
-                  {sourceUrl && sourceUrl.length && (
-                    <>
-                      <a href={sourceUrl} target="_blank">
-                        <div>SOURCE</div>
-                        <div className={classes.sourceUrl}>{sourceUrl}</div>
-                      </a>
-                    </>
-                  )}
-                  <div className={classes.expertsContainer}>
-                    <CallOurExperts />
-                  </div>
+              <>
+                <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
+                <div className={classes.imageBanner}>
+                  <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
+                  <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
                 </div>
-                <div className={classes.rightSidebar}>
-                  <div className={classes.formCard}>
-                    <CommentsForm titleId={titleId} />
-                    <CommentsList
-                      titleId={titleId}
-                      commentData={comments}
-                      totalComments={totalComments}
+                <div className={classes.hideWeb}>
+                  <FeedbackWidget />
+                </div>
+                <div className={classes.sectionGroup}>
+                  <div className={classes.mainContent}>
+                    <div
+                      className={classes.htmlContent}
+                      dangerouslySetInnerHTML={{ __html: htmlData }}
                     />
+                    {sourceUrl && sourceUrl.length && (
+                      <>
+                        <a href={sourceUrl} target="_blank">
+                          <div>SOURCE</div>
+                          <div className={classes.sourceUrl}>{sourceUrl}</div>
+                        </a>
+                      </>
+                    )}
+                    <div className={classes.expertsContainer}>
+                      <CallOurExperts />
+                    </div>
                   </div>
-                  {/* <div className={classes.bottomActions}>
+                  <div className={classes.rightSidebar}>
+                    <div className={classes.formCard}>
+                      <div className={classes.hideMobile}>
+                        <FeedbackWidget />
+                      </div>
+                      <CommentsForm titleId={titleId} />
+                      <CommentsList
+                        titleId={titleId}
+                        commentData={comments}
+                        totalComments={totalComments}
+                      />
+                    </div>
+                    {/* <div className={classes.bottomActions}>
                     <AphButton color="primary">Share this article</AphButton>
                   </div> */}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
