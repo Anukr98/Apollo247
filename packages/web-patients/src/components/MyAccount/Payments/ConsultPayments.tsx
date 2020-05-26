@@ -84,6 +84,12 @@ export const ConsultPayments: React.FC = (props) => {
         </div>
         <div>You have no payment history!</div>
       </div>
+<<<<<<< HEAD
+      {data.consultOrders.appointments.map((appointmentDetails) => (
+        <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
+      ))}
+=======
+>>>>>>> d32501eb58cda6308a09e0cd89ad4d9a25b6b2c0
     </div>
   );
 };
