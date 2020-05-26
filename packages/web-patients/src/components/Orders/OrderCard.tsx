@@ -299,7 +299,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return 180;
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
-        return 160;
+        return 240;
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return 280;
       case MEDICINE_ORDER_STATUS.DELIVERED:
@@ -329,7 +329,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return (
           <AphTrackSlider
             color="primary"
-            defaultValue={getDefaultValue(status)}
+            value={getDefaultValue(status)}
             getAriaValueText={(value: number) => value.toString()}
             disabled={isSliderDisabled(status)}
             min={0}
