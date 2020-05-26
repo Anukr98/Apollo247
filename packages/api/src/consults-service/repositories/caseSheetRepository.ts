@@ -73,6 +73,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment IN (:...ids)', { ids })
+      .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
       .getMany()
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
