@@ -14,6 +14,8 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { CommentsForm } from 'components/Covid/CommentsForm';
 import { CommentsList } from 'components/Covid/CommentsList';
 import { AphButton } from '@aph/web-ui-components';
+import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     pageContainer: {
-      paddingBottom: 20,
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
@@ -143,7 +144,21 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
-    }
+    },
+    bannerGroup: {
+      position: 'relative',
+    },
+    riskLevelWrap: {
+      [theme.breakpoints.down('xs')]: {
+        margin: 20,
+        marginTop: 0,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginTop: 0,
+        }
+      },
+    },
   };
 });
 
@@ -220,10 +235,12 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             </div>
           ) : (
               <>
-                <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
-                <div className={classes.imageBanner}>
-                  <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
-                  <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
+                <div className={classes.bannerGroup}>
+                  <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
+                  <div className={classes.imageBanner}>
+                    <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
+                    <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
+                  </div>
                 </div>
                 <div className={classes.hideWeb}>
                   <FeedbackWidget />
@@ -242,9 +259,6 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                         </a>
                       </>
                     )}
-                    <div className={classes.expertsContainer}>
-                      <CallOurExperts />
-                    </div>
                   </div>
                   <div className={classes.rightSidebar}>
                     <div className={classes.formCard}>
@@ -258,15 +272,17 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                         totalComments={totalComments}
                       />
                     </div>
-                    {/* <div className={classes.bottomActions}>
-                    <AphButton color="primary">Share this article</AphButton>
-                  </div> */}
                   </div>
                 </div>
               </>
             )}
         </div>
+        <div className={classes.riskLevelWrap}>
+          <CheckRiskLevel />
+        </div>
       </div>
+      <BottomLinks />
+      <NavigationBottom />
     </div >
   );
 };
