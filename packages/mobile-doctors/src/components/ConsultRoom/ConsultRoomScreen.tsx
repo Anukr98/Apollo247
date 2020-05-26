@@ -19,6 +19,7 @@ import {
   Down,
   RoundCallIcon,
   RoundVideoIcon,
+  RoundChatIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
@@ -170,7 +171,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup } = useUIElements();
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -1977,11 +1978,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             isAudioCall ||
             isCall
               ? (appointmentData || {}).status == 'COMPLETED' || showEditPreviewButtons
-                ? -30
-                : 0
-              : 20,
+                ? -10
+                : 40
+              : 40,
         }}
         rightIcons={[
+          {
+            icon: (
+              <View
+                style={{
+                  marginTop: 0,
+                }}
+              >
+                {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ? (
+                  <RoundChatIcon size="sm" />
+                ) : null}
+              </View>
+            ),
+            onPress: () => {
+              showPopup({
+                description:
+                  strings.popUP.awaiting_reschedule
+              });
+            },
+          },
           {
             icon: (
               <View
@@ -1990,7 +2010,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   opacity: startConsult ? 1 : 0.5,
                 }}
               >
-                {(appointmentData || {}).status == 'COMPLETED' || showEditPreviewButtons ? null : (
+                {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
+                (appointmentData || {}).status == 'COMPLETED' ||
+                showEditPreviewButtons ? null : (
                   <Call />
                 )}
               </View>
@@ -2010,11 +2032,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <View
                   style={{
                     marginTop: 0,
-                    //opacity: startConsult ? 1 : 0.5,
+                    opacity:
+                      (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ? 0.5 : 1,
                   }}
                 >
-                  {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
-                  (appointmentData || {}).status == 'COMPLETED' ||
+                  {(appointmentData || {}).status == 'COMPLETED' ||
                   showEditPreviewButtons ||
                   isAudioCall ||
                   isCall ? null : (
@@ -2023,7 +2045,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 </View>
               </>
             ),
-            onPress: () => setDropdownShow(!dropdownShow), //startConsult && setDropdownShow(!dropdownShow),
+            onPress: () =>
+              (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE'
+                ? null
+                : setDropdownShow(!dropdownShow), //startConsult && setDropdownShow(!dropdownShow),
           },
         ]}
       />

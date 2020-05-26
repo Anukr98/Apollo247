@@ -89,6 +89,9 @@
     "no_internet": "There is no internet. Please check your internet connection.",
     "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab."
   },
+  "popUP": {
+    "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
+  },
   "buttons": {
     "done": "DONE",
     "cancel": "CANCEL",
