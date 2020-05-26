@@ -232,7 +232,9 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         key={index}
         style={[
           { marginHorizontal: 20 },
-          profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
+          profiles && index < profiles.length - 1 ?
+            { marginBottom: isSecondaryUHID && !showSecondaryUhids ? 0 : 8 } :
+            { marginBottom: 80 },
           index == 0 ? { marginTop: 20 } : {margin: 0},
         ]}
       >
@@ -294,8 +296,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               isPrimaryUHID
                 ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
                 : { backgroundColor: colors.WHITE },
-              isSecondaryUHID ? styles.secondaryUHIDCard : {display: 'flex'},
-              isSecondaryUHID && !showSecondaryUhids ? { display: 'none' } : {display: 'flex'},
+              isSecondaryUHID ? styles.secondaryUHIDCard : { display: 'flex' },
+              isSecondaryUHID && !showSecondaryUhids ? { display: 'none' } : { display: 'flex' },
             ]}
             key={index}
           >
