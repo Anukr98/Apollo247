@@ -365,7 +365,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   ) => {
     const isSelectedPrimaryUHID = enableSelectSecondary && (profile!.uhid === selectedPrimary);
     const indexOfId = selectedSecondary.indexOf(profiles[index].uhid);
-    const isRelinked = relinkSecondaryUHIDs.indexOf(profile!.uhid) > -1;
 
     const isPrimaryUHID = primaryUHIDs === profile!.uhid;
     const isSecondaryUHID = secondaryUHIDs.indexOf(profile!.uhid) > -1;
@@ -433,21 +432,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               return false;
             } else if (action === 'link') {
               if (enableSelect) {
-                setSecondaryUHIDs([...secondaryUHIDs, profiles[index].uhid]);
                 setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
                 setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
-
-                const secondaryids = [...secondaryUHIDs];
-                secondaryids.push(profiles[index].uhid);
-                const filteredArray = allProfiles!.filter((item) => {
-                  return !item!.isUhidPrimary && !secondaryids.includes(item!.uhid);
-                });
-                const primaryArray = allProfiles!.filter((item) => item!.isUhidPrimary);
-                const secondaryArray = allProfiles!.filter((item) =>
-                  secondaryids.includes(item!.uhid)
-                );
-                const profileArray = [...primaryArray, ...secondaryArray, ...filteredArray];
-                setProfiles(profileArray);
               }
             } else if (action === 'delink' && isSecondaryUHID) {
               if (enableSelect) {
@@ -591,7 +577,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 )
               }
               {
-                (isSecondaryUHID && action !== 'firstlink' && !isRelinked) && (
+                (isSecondaryUHID && action !== 'firstlink') && (
                   <View style={{marginRight: 16, marginTop: 5}}>
                     <SecondaryUHIDIconBlue style={{
                       resizeMode: 'contain',
@@ -736,7 +722,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 title="LINK"
                 style={{ flex: 1, marginHorizontal: 10 }}
                 onPress={() => {
-                  if (selectedSecondary.length) setShowAlert(true);
+                  if (relinkSecondaryUHIDs.length) setShowAlert(true);
                 }}
               />
             </>
