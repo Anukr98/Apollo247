@@ -2,7 +2,7 @@ import { BottomPopUp } from '@aph/mobile-doctors/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import UIElementsProviderStyles from '@aph/mobile-doctors/src/components/ui/UIElementsProvider.styles';
+import { UIElementsProviderStyles } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider.styles';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
@@ -23,6 +23,8 @@ export interface UIElementsContextProps {
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
+  showPopup: (params: PopUpParams) => void;
+  hidePopup: () => void;
   showNeedHelp: boolean;
   setShowNeedHelp: (show: boolean) => void;
 }
@@ -32,6 +34,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
+  showPopup: (params) => {},
+  hidePopup: () => {},
   showNeedHelp: false,
   setShowNeedHelp: (show) => {},
 });
@@ -57,11 +61,27 @@ type AphAlertParams = {
   onPressOk?: () => void;
 };
 
+type PopUpParams = {
+  title?: string;
+  description?: string;
+  okText?: string;
+  unDismissable?: boolean;
+  titleStyle?: StyleProp<TextStyle>;
+  descriptionTextStyle?: StyleProp<TextStyle>;
+  okTextStyle?: StyleProp<TextStyle>;
+  okContainerStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  popUpPointerStyle?: StyleProp<ViewStyle>;
+  onPressOk?: () => void;
+};
+
 export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
   const [alertParams, setAlertParams] = useState<AphAlertParams>({});
   const [showNeedHelp, setShowNeedHelp] = useState<boolean>(false);
+  const [isPopUpVisible, setIsPopUpVisible] = useState(false);
+  const [popUpData, setPopUpData] = useState<PopUpParams>({});
 
   useEffect(() => {
     if (isAlertVisible || loading) {
@@ -170,6 +190,56 @@ export const UIElementsProvider: React.FC = (props) => {
   const renderNeedHelp = () => {
     return showNeedHelp && <NeedHelpCard onPress={() => setShowNeedHelp(false)} />;
   };
+  const renderPopUp = () => {
+    const {
+      title,
+      description,
+      okText,
+      unDismissable,
+      titleStyle,
+      descriptionTextStyle,
+      okTextStyle,
+      okContainerStyle,
+      style,
+      onPressOk,
+      popUpPointerStyle,
+    } = popUpData;
+    return (
+      isPopUpVisible && (
+        <TouchableOpacity
+          style={styles.popUpContainer}
+          activeOpacity={1}
+          onPress={() => (unDismissable ? null : hidePopup())}
+        >
+          <View style={[styles.popUpMainContainer, style]}>
+            <View style={[styles.popUpPointer, popUpPointerStyle]} />
+            {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
+            {description && (
+              <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>{description}</Text>
+            )}
+            <TouchableOpacity
+              style={[styles.okContainer, okContainerStyle]}
+              activeOpacity={1}
+              onPress={() => (onPressOk ? onPressOk() : hidePopup())}
+            >
+              <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )
+    );
+  };
+
+  const showPopup = (params: PopUpParams) => {
+    setPopUpData(params);
+    setIsPopUpVisible(true);
+  };
+
+  const hidePopup = () => {
+    setIsPopUpVisible(false);
+    setPopUpData({});
+  };
+
   return (
     <UIElementsContext.Provider
       value={{
@@ -177,11 +247,14 @@ export const UIElementsProvider: React.FC = (props) => {
         setLoading,
         showAphAlert,
         hideAphAlert,
+        showPopup,
+        hidePopup,
         showNeedHelp,
         setShowNeedHelp,
       }}
     >
       <View style={{ flex: 1 }}>
+        {renderPopUp()}
         <View style={{ flex: 1 }} pointerEvents={loading ? 'none' : 'auto'}>
           {props.children}
           {renderNeedHelp()}
