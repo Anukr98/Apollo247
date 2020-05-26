@@ -10,82 +10,50 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 16,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
-      marginTop: 20,
+      marginTop: 30,
+      marginBottom: 10,
       fontSize: 14,
       lineHeight: '18px',
       color: '#01475b',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         alignItems: 'center',
-        borderRadius: '10px 10px 0 0',
-        padding: 20,
+        backgroundColor: '#00485d',
+        borderRadius: 0,
+        color: '#fff',
       },
-    },
-    leftIcon: {
-      paddingRight: 40,
-      [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-        alignItems: 'center',
-      },
-      '& img': {
-        [theme.breakpoints.down('xs')]: {
-          marginRight: 16,
-        },
-      },
-      '& h3': {
+      '& button': {
+        minWidth: 288,
         [theme.breakpoints.up('sm')]: {
-          display: 'none',
-        },
-      },
-    },
-    boxContent: {
-      color: '#01475b',
-      '& h3': {
-        fontSize: 16,
-        lineHeight: '22px',
-        margin: 0,
-        display: 'none',
-        [theme.breakpoints.up('sm')]: {
-          display: 'block',
+          minWidth: 'auto',
+          marginLeft: 'auto',
         },
       },
       '& p': {
-        fontSize: 14,
-        lineHeight: '18px',
-        opacity: 0.6,
+        fontWeight: 500,
+        marginTop: 5,
+        [theme.breakpoints.up('sm')]: {
+          margin: 0,
+          paddingLeft: 10,
+        },
       },
     },
-    rightActions: {
-      paddingLeft: 40,
-      marginLeft: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 0,
-        marginLeft: 0,
+    mobileImg: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
       },
-      '& button': {
-        minWidth: 260,
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: 13,
-        textTransform: 'none',
-        justifyContent: 'normal',
-        fontWeight: 600,
-        borderRadius: 10,
-        [theme.breakpoints.down('xs')]: {
-          minWidth: '100%',
-        },
-        '&:first-child': {
-          backgroundColor: '#00485d',
-          color: '#fff',
-          marginBottom: 16,
-        },
-        '&:last-child': {
-          border: '1px solid #00485d',
-        },
-        '& img': {
-          verticalAlign: 'middle',
-          marginRight: 16,
-        },
+    },
+    desktopImg: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    riskButton: {
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        minWidth: '0 !important',
       },
     },
   };
@@ -96,34 +64,18 @@ export const CheckRiskLevel: React.FC = (props) => {
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   return (
     <div className={classes.root}>
-      <div className={classes.leftIcon}>
-        <span>
-          <img src={require('images/undraw-feeling-blue.svg')} alt="" />
-        </span>
-        <h3>Worried about being at risk for COVID-19?</h3>
-      </div>
-      <div className={classes.boxContent}>
-        <h3>Worried about being at risk for COVID-19?</h3>
-        <p>Assess your symptoms and determine if you're at risk for coronavirus disease and get guidance on when to seek medical care and what to do in the meantime. You can also all our experts for advice.</p>
-      </div>
-      <div className={classes.rightActions}>
-        <AphButton
-          onClick={() => window.open(covidScannerUrl)}
-        >
-          <span>
-            <img src={require('images/ic_covid-white.svg')} alt="" />
-          </span>
-          <span>Check your Covid-19 risk level</span>
-        </AphButton>
-        <AphButton
-          onClick={() => window.open(covidScannerUrl)}
-        >
-          <span>
-            <img src={require('images/call-24.svg')} alt="" />
-          </span>
-          <span>Call our Coronavirus Experts</span>
-        </AphButton>
-      </div>
+      <span>
+        <img className={classes.mobileImg} src={require('images/ic_warning.svg')} alt="" />
+        <img className={classes.desktopImg} src={require('images/ic_warning_white.svg')} alt="" />
+      </span>
+      <p>Worried about symptoms? Check your COVID-19 risk level.</p>
+      <AphButton
+        className={classes.riskButton}
+        color="primary"
+        onClick={() => window.open(covidScannerUrl)}
+      >
+        Check your risk level
+      </AphButton>
     </div>
   );
 };
