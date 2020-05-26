@@ -21,6 +21,7 @@ import {
   TouchableOpacity,
   View,
   PixelRatio,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { GET_PATIENTS_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
@@ -123,6 +124,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const client = useApolloClient();
   const { loading, setLoading } = useUIElements();
   const pixelRatio = PixelRatio.get();
+  const { height } = Dimensions.get("window");
+  const heightPercent = Math.round((5 * height) / 100);
 
   const [profiles, setProfiles] = useState<
     (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
@@ -239,34 +242,40 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         {showSecondaryUhids && isSecondaryUHID && (
           <View>
             <View
-              style={{
-                position: 'absolute',
-                top: isFirstSecondaryId ? -10 : -80,
-                left: 30,
-                width: 40,
-                height: isFirstSecondaryId ? 80 : 150,
-                borderColor: theme.colors.LIGHT_BLUE,
-                borderLeftWidth: 1,
-                borderBottomWidth: 1,
-                zIndex: 0,
-              }}
+              style={[
+                  {
+                  position: 'absolute',
+                  top: isFirstSecondaryId ? -10 : -80,
+                  left: 30,
+                  width: 40,
+                  height: isFirstSecondaryId ? 80 : 150,
+                  borderColor: theme.colors.LIGHT_BLUE,
+                  borderLeftWidth: 1,
+                  borderBottomWidth: 1,
+                  zIndex: 0,
+                },
+                heightPercent <= 30 ? { width: 30 } : { width: 40 }
+              ]}
             />
             <View
-              style={{
-                position: 'absolute',
-                top: 60,
-                left: 58,
-                width: 16,
-                height: 16,
-                borderRadius: 8,
-                borderColor: theme.colors.LIGHT_BLUE,
-                borderTopWidth: 2,
-                borderLeftWidth: 2,
-                borderBottomWidth: 2,
-                borderRightWidth: 2,
-                backgroundColor: theme.colors.WHITE,
-                zIndex: 2,
-              }}
+              style={[
+                {
+                  position: 'absolute',
+                  top: 60,
+                  left: 58,
+                  width: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  borderColor: theme.colors.LIGHT_BLUE,
+                  borderTopWidth: 2,
+                  borderLeftWidth: 2,
+                  borderBottomWidth: 2,
+                  borderRightWidth: 2,
+                  backgroundColor: theme.colors.WHITE,
+                  zIndex: 2,
+                },
+                heightPercent <= 30 ? { left: 48 } : { left: 58 }
+              ]}
             />
           </View>
         )}
@@ -451,7 +460,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           ...viewStyles.cardViewStyle,
           ...viewStyles.shadowStyle,
           padding: 16,
-          paddingBottom: 24,
           backgroundColor: colors.LIGHT_BLUE,
           flexDirection: 'row',
         }}
@@ -470,7 +478,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           </Text>
         ) : (
           <>
-            <Text style={[styles.bannerText, pixelRatio <= 2 ? {...fonts.IBMPlexSansMedium(13)} : {...fonts.IBMPlexSansMedium(15)}]}>
+            <Text style={[styles.bannerText, heightPercent <= 30 ? {...fonts.IBMPlexSansMedium(13)} : {...fonts.IBMPlexSansMedium(15)}]}>
               Create your primary UHID by selecting any one of your own profile from below.
             </Text>
             <TouchableOpacity
@@ -483,7 +491,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               <Text 
                 style={[
                   styles.readMoreText,
-                  pixelRatio <= 2 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(11)}
+                  heightPercent <= 30 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(11)}
                 ]}>
                   Read More
                 </Text>
