@@ -176,7 +176,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     patientLogSortData: patientLogSort,
     offset = 0
   ) => {
-    if (offset !== totalResultCount) {
+    if (offset !== totalResultCount || totalResultCount <= 0) {
       !offset && setshowSpinner(true);
       offset && setloadMoreSpinner(true);
       client
