@@ -329,7 +329,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return (
           <AphTrackSlider
             color="primary"
-            defaultValue={getDefaultValue(status)}
+            value={getDefaultValue(status)}
             getAriaValueText={(value: number) => value.toString()}
             disabled={isSliderDisabled(status)}
             min={0}
@@ -352,6 +352,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         return 'Store Pickup';
     }
   };
+
   if (data && data.getMedicineOrdersOMSList && data.getMedicineOrdersOMSList.medicineOrdersList) {
     if (data.getMedicineOrdersOMSList.medicineOrdersList.length > 0) {
       const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
