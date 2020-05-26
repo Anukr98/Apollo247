@@ -10,6 +10,7 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { TabsComponent } from '../ui/TabsComponent';
@@ -20,7 +21,9 @@ import { IPatientDetails } from '@aph/mobile-patients/src/models/IPatientDetails
 
 interface MyPaymentsScreenProps extends NavigationScreenProps<{}> {}
 const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
+  const { currentPatient } = useAllCurrentPatients();
   const patientInfo: IPatientDetails = props.navigation.getParam('patientId');
+  const fromNotification = props.navigation.getParam('fromNotification');
   const tabs = [{ title: 'Consult Payments' }, { title: 'Pharmacy Payments' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   useEffect(() => {}, []);
@@ -58,11 +61,17 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
   };
 
   const getPaymentsList = () => {
-    const { id } = patientInfo;
+    const { id } = currentPatient;
     if (selectedTab === 'Pharmacy Payments') {
       return <PharmacyPaymentsList patientId={id} navigationProps={props.navigation} />;
     }
-    return <ConsultPaymentsList patientId={id} navigationProps={props.navigation} />;
+    return (
+      <ConsultPaymentsList
+        fromNotification={fromNotification}
+        patientId={id}
+        navigationProps={props.navigation}
+      />
+    );
   };
   return (
     <View style={styles.mainContainer}>

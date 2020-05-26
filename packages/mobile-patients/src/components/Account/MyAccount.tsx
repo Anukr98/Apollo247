@@ -490,6 +490,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // error: ordersError,
               // loading: ordersLoading,
               patientId: currentPatient,
+              fromNotification: false,
             });
           }}
         />
