@@ -87,7 +87,8 @@
     "instruction_already_added": "This instruction already added",
     "oops": "Oops!",
     "no_internet": "There is no internet. Please check your internet connection.",
-    "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab."
+    "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
+    "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed"
   },
   "popUP": {
     "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."

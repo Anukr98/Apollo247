@@ -690,11 +690,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Doctor', errorMessage, error);
-          if (errorMessage.search('INVALID_REFERRAL_DESCRIPTION')) {
+          if (errorMessage.search('INVALID_REFERRAL_DESCRIPTION') > -1) {
             showAphAlert &&
               showAphAlert({
                 title: strings.common.alert,
                 description: strings.alerts.missing_referral_description,
+              });
+          } else if (errorMessage.search('CASESHEET_SENT_TO_PATIENT_ALREADY') > -1) {
+            showAphAlert &&
+              showAphAlert({
+                title: strings.common.uh_oh,
+                description: strings.alerts.casesheet_already_send,
+                onPressOk: () => {
+                  hideAphAlert && hideAphAlert();
+                  getCaseSheetAPI();
+                  setCaseSheetEdit(false);
+                },
               });
           } else {
             showAphAlert &&
