@@ -239,7 +239,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
     CANCEL_APPOINTMENT
   );
-
+  const { doctorDetails, specialties, getSpecialties } = useAuth();
   const {
     favList,
     // favListError,
@@ -253,6 +253,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   } = CaseSheetAPI();
 
   useEffect(() => {
+    getSpecialties();
     console.log(appointmentData, 'appointmentData');
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
@@ -976,7 +977,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  const { doctorDetails, specialties } = useAuth();
   // let dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
 
   const consultTime =
@@ -1997,8 +1997,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             ),
             onPress: () => {
               showPopup({
-                description:
-                  strings.popUP.awaiting_reschedule
+                description: strings.popUP.awaiting_reschedule,
               });
             },
           },
