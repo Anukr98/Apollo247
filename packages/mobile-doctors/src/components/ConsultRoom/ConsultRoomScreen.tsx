@@ -423,6 +423,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
     setTests(
       (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
+        .filter(
+          (item, index, self) =>
+            index ===
+            self.findIndex(
+              (t) =>
+                t &&
+                item &&
+                (t.itemname || '').toLowerCase() === (item.itemname || '').toLowerCase()
+            )
+        )
         .map((i) => {
           if (i) {
             return { itemname: i.itemname || '', isSelected: true };
@@ -434,6 +444,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
     setAddedAdvices(
       (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
+        .filter(
+          (item, index, self) =>
+            index ===
+            self.findIndex(
+              (t) =>
+                t &&
+                item &&
+                (t.instruction || '').toLowerCase() === (item.instruction || '').toLowerCase()
+            )
+        )
         .map((i) => {
           if (i) {
             return { key: i.instruction || '', value: i.instruction || '' };
@@ -445,20 +465,40 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
     setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
     setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
-    setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
+    setDiagnosisData(
+      (g(caseSheet, 'caseSheetDetails', 'diagnosis') || []).filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex(
+            (t) => t && item && (t.name || '').toLowerCase() === (item.name || '').toLowerCase()
+          )
+      )
+    );
     // setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
     // setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
     setMedicinePrescriptionData(
-      (g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || []).map((i) => {
-        if (i) {
-          if (i.externalId || (i.id && i.id !== '')) {
-            return { ...i, externalId: i.externalId || i.id };
-          } else {
-            return { ...i, externalId: i.medicineName };
+      (g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+        .filter(
+          (item, index, self) =>
+            index ===
+            self.findIndex(
+              (t) =>
+                t &&
+                item &&
+                (t.externalId || t.id || '').toLowerCase() ===
+                  (item.externalId || t.id || '').toLowerCase()
+            )
+        )
+        .map((i) => {
+          if (i) {
+            if (i.externalId || (i.id && i.id !== '')) {
+              return { ...i, externalId: i.externalId || i.id };
+            } else {
+              return { ...i, externalId: i.medicineName };
+            }
           }
-        }
-        return i;
-      })
+          return i;
+        })
     );
     setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
       .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
@@ -550,16 +590,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           : null,
       notes: doctorNotes || '',
       diagnosis:
-        diagnosisData &&
-        diagnosisData
-          .map((i) => {
-            if (i) {
-              return { name: i.name || '' };
-            } else {
-              return '';
-            }
-          })
-          .filter((i) => i !== ''),
+        diagnosisData && diagnosisData.length > 0
+          ? diagnosisData
+              .map((i) => {
+                if (i) {
+                  return { name: i.name || '' };
+                } else {
+                  return '';
+                }
+              })
+              .filter((i) => i !== '')
+          : null,
       diagnosticPrescription:
         tests && tests.length > 0 && tests.filter((i) => i.isSelected).length > 0
           ? tests
