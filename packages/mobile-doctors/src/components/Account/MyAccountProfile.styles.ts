@@ -1,8 +1,9 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
-export default StyleSheet.create({
+const { width } = Dimensions.get('screen');
+export const MyAccountProfileStyles = StyleSheet.create({
   buttonendStyle: {
     width: '45%',
     height: 40,
@@ -78,8 +79,18 @@ export default StyleSheet.create({
     ...theme.viewStyles.whiteRoundedCornerCard,
   },
   imageview: {
-    height: 141,
-    marginBottom: 16,
+    minHeight: 141,
+    maxHeight: width - 32,
+    width: width - 32,
+    resizeMode: 'contain',
+  },
+  profileContainerStyle: {
+    overflow: 'hidden',
+    minHeight: 141,
+    maxHeight: width - 32,
+    width: width - 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   drname: {
     ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -94,7 +105,7 @@ export default StyleSheet.create({
   starIconStyle: {
     position: 'absolute',
     right: 16,
-    top: 141 - 28,
+    bottom: -20,
   },
   columnContainer: {
     flexDirection: 'column',
@@ -137,7 +148,12 @@ export default StyleSheet.create({
     marginTop: 16,
     marginBottom: 18,
   },
-  photourl: { overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 },
+  photourl: {
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   login: {
     ...theme.fonts.IBMPlexSansSemiBold(16),
     letterSpacing: 0.06,

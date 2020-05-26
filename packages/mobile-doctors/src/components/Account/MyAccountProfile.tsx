@@ -32,7 +32,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import MyAccountProfileStyles from '../../components/Account/MyAccountProfile.styles';
+import { MyAccountProfileStyles } from '../../components/Account/MyAccountProfile.styles';
 
 const styles = MyAccountProfileStyles;
 
@@ -243,15 +243,17 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           <SquareCardWithTitle title={strings.account.your_profile}>
             <View style={styles.cardView}>
               <View style={styles.photourl}>
-                {profileData.photoUrl ? (
-                  <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
-                ) : (
-                  <UserPlaceHolder style={styles.imageview} />
-                )}
+                <View style={styles.profileContainerStyle}>
+                  {profileData.photoUrl ? (
+                    <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
+                  ) : (
+                    <UserPlaceHolder style={styles.imageview} />
+                  )}
+                </View>
+                {profileData.doctorType == 'STAR_APOLLO' ? (
+                  <Star style={styles.starIconStyle}></Star>
+                ) : null}
               </View>
-              {profileData.doctorType == 'STAR_APOLLO' ? (
-                <Star style={styles.starIconStyle}></Star>
-              ) : null}
               <View style={styles.columnContainer}>
                 <Text style={[styles.drname]} numberOfLines={1}>
                   {`${strings.common.dr} ${profileData.firstName} ${profileData.lastName}`}
