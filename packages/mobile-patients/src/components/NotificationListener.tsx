@@ -639,7 +639,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
     }
   };
-
+  const cancelledAndRefundNotifHandler = (notification: any) => {
+    console.log('background notificationOpen===>', notification);
+    const cancelledType = 'Patient_Cancel_Appointment';
+    const refundType = 'Appointment_Canceled_Refund';
+    const { _data } = notification;
+    const { type, appointmentId } = _data;
+    if (type === cancelledType || type === refundType) {
+      props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+        patientId: currentPatient,
+        fromNotification: true,
+        appointmentId: appointmentId,
+      });
+    }
+  };
   useEffect(() => {
     console.log('createNotificationListeners');
     /*
@@ -674,6 +687,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .then(async (_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
           aphConsole.log('_notificationOpen');
+          cancelledAndRefundNotifHandler(_notificationOpen.notification);
           const notification = _notificationOpen.notification;
           const lastNotification = await AsyncStorage.getItem('lastNotification');
           if (lastNotification !== notification.notificationId) {
@@ -721,7 +735,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .onNotificationOpened((notificationOpen: NotificationOpen) => {
         if (notificationOpen) {
           aphConsole.log('notificationOpen');
-
+          cancelledAndRefundNotifHandler(notificationOpen.notification);
           const notification: Notification = notificationOpen.notification;
           processNotification(notification);
         }

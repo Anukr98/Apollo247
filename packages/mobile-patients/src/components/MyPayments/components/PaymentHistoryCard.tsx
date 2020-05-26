@@ -23,13 +23,29 @@ interface PaymentHistoryCardProps {
   paymentFor: string;
   navigationProps: any;
   patientId?: string;
+  fromNotification?: boolean;
 }
 const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (props.fromNotification) {
+      const { id, item, lastIndex, index, paymentFor, patientId } = props;
+      const appointmentId = props.navigationProps.getParam('appointmentId');
+      if (id === appointmentId) {
+        props.navigationProps.navigate(AppRoutes.PaymentStatusScreen, {
+          item: item,
+          paymentFor: paymentFor,
+          status: 'TXN_REFUND',
+          patientId: patientId,
+        });
+      }
+    }
+  }, []);
   const renderHeader = () => {
-    const { status, appointmentRefunds } = item;
-    if (paymentFor === 'consult' && (status === 'CANCELLED' || appointmentRefunds.length)) {
-      return <PaymentCardHeader status={status} />;
+    if (paymentFor === 'consult') {
+      const { status, appointmentRefunds } = item;
+      if (status === 'CANCELLED' && appointmentRefunds.length) {
+        return <PaymentCardHeader status={status} />;
+      }
     } else {
       return null;
     }
