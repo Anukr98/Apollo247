@@ -75,12 +75,6 @@ export const PharmacyPayments: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.noData}>
-        <div className={classes.icon}>
-          <img src={require('images/transaction_history.svg')} alt="" />
-        </div>
-        <div>You have no payment history!</div>
-      </div>
       {data.pharmacyOrders.pharmaOrders.map((orderDetails) => {
         return <PaymentCardPharmacy cardDetails={orderDetails} key={orderDetails.orderAutoId} />;
       })}
