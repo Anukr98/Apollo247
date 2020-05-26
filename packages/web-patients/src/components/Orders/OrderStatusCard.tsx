@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Typography, Link } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -8,12 +8,9 @@ import {
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
-
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import {
   GetPatientAddressList,
@@ -159,6 +156,17 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#c5eae1',
       lineHeight: '12px',
     },
+    orderStatusFailed: {
+      marginLeft: 'auto',
+      fontSize: 11,
+      fontWeight: 500,
+      padding: '4px 15px',
+      borderRadius: 10,
+      cursor: 'pointer',
+      backgroundColor: '#890000',
+      color: '#fff',
+      lineHeight: '12px',
+    },
     expectedDelivery: {
       padding: '14px 20px',
       boxShadow: '0 1px 3px 0 rgba(128, 128, 128, 0.3)',
@@ -185,9 +193,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       paddingLeft: 5,
       lineHeight: '13px',
-      '& span': {
-        color: '#00b38e',
-      },
+    },
+    labelStatus: {
+      color: '#00b38e',
     },
     bottomNotification: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -254,83 +262,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
-    deliveryDetails: {
-      background: '#f7f8f5',
-      padding: 20,
-      display: 'flex',
-      alignItems: 'center',
-      margin: '20px 0',
-    },
-    iconContainer: {
-      width: 40,
-      height: 40,
-      background: '#fff',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 20px 0 0',
-    },
-    feedbackList: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '20px 0',
-      listStyle: 'none',
-      padding: 0,
-      '& li': {
-        fontSize: 12,
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        textAlign: 'center',
-      },
-    },
-    suggestion: {
-      margin: '20px 0 0',
-      padding: '20px 0 0',
-      borderTop: '1px solid rgba(2, 71, 91, .2)',
-      '& h4': {
-        fontSize: 14,
-        fontWeight: 'bold',
-      },
-      '& button': {
-        display: 'block',
-        background: '#fc9916',
-        color: '#fff',
-        fontSize: 14,
-        textTransform: 'uppercase',
-        padding: 10,
-        borderRadius: 10,
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        width: 160,
-        margin: '0px auto',
-        fontWeight: 'bold',
-      },
-    },
-    textInput: {
-      margin: '10px 0 30px',
-      width: '100%',
-    },
-    thankyou: {
-      '& h3': {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#02475b',
-        margin: '0 0 10px',
-      },
-      '& h4': {
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: '#0087ba',
-        margin: '0 0 20px',
-      },
-      '& a': {
-        fontSize: 14,
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-        textAlign: 'right',
-      },
-    },
   };
 });
 
@@ -339,7 +270,28 @@ interface OrderStatusCardProps {
   isLoading: boolean;
 }
 
+export const deliveredOrderDetails = (orderStatusList: StatusDetails[]) => {
+  return (
+    orderStatusList &&
+    orderStatusList.find(
+      (statusDetails: StatusDetails) =>
+        statusDetails.orderStatus === MEDICINE_ORDER_STATUS.DELIVERED
+    )
+  );
+};
+
+export const getDeliveredDateTime = (orderStatusList: StatusDetails[]) => {
+  const deliveredData = deliveredOrderDetails(orderStatusList);
+  if (deliveredData) {
+    const time = deliveredData.statusDate;
+    const finalDateTime =
+      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
+    return finalDateTime;
+  }
+};
+
 export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+  let statusString = '';
   switch (status) {
     case MEDICINE_ORDER_STATUS.CANCELLED:
       return 'Order Cancelled';
@@ -349,8 +301,10 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Order Delivered';
     case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
       return 'Items Returned';
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      return 'Order Initiated';
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
-      return 'Order Billed';
+      return 'Order Billed and Packed';
     case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
       return 'Order Confirmed';
     case MEDICINE_ORDER_STATUS.ORDER_FAILED:
@@ -360,7 +314,7 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
     case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
       return 'Order Verified';
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      return 'Order Shipped';
+      return 'Order Dispatched';
     case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
       return 'Payment Failed';
     case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
@@ -373,19 +327,29 @@ export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
       return 'Prescription Cart Ready';
     case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
       return 'Prescription Uploaded';
-    case MEDICINE_ORDER_STATUS.QUOTE:
-      return 'Quote';
     case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
       return 'Return Accepted';
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       return 'Return Requested';
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      return 'Order Initiated';
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       return 'Ready At Store';
+    // case MEDICINE_ORDER_STATUS.QUOTE:
+    //   return 'Quote';
     case 'TO_BE_DELIVERED' as any:
       return 'Expected Order Delivery';
+    default:
+      statusString = status
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+      return statusString;
   }
+};
+
+export const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
+  return (
+    status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+  );
 };
 
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
@@ -412,16 +376,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const orderStatusList =
     orderDetailsData && getSortedstatusList(orderDetailsData.medicineOrdersStatus || []);
 
-  const isDelivered =
-    orderStatusList &&
-    orderStatusList.find((status) => status.orderStatus === MEDICINE_ORDER_STATUS.DELIVERED);
-
-  const getFormattedDateTime = (time: string) => {
-    const finalDateTime =
-      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
-    return finalDateTime;
-  };
-
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMMM, YYYY');
   };
@@ -435,21 +389,24 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     'ORDER_FAILED',
     'ORDER_INITIATED',
     'ORDER_PLACED',
+    'ORDER_BILLED',
     'ORDER_VERIFIED',
     'OUT_FOR_DELIVERY',
+    'PAYMENT_FAILED',
+    'PAYMENT_PENDING',
     'PAYMENT_SUCCESS',
     'PICKEDUP',
     'PRESCRIPTION_CART_READY',
     'PRESCRIPTION_UPLOADED',
     'RETURN_ACCEPTED',
     'RETURN_INITIATED',
+    'READY_AT_STORE',
   ];
 
-  const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getAddressDetails = (deliveryAddressId: string, id: string) => {
+  const getAddressDetails = (id: string) => {
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
@@ -479,18 +436,22 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   };
 
   const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
-    if (deliveryAddresses.length > 0 && orderDetailsData && orderDetailsData.patientAddressId) {
-      const selectedAddress = deliveryAddresses.find(
-        (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
-      );
-      const addressData = selectedAddress
-        ? `${selectedAddress.addressLine1} ${
-            selectedAddress.addressLine2 ? selectedAddress.addressLine2 : ''
-          }, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`
-        : '';
-      return addressData;
+    if (deliveryAddresses.length > 0) {
+      if (orderDetailsData && orderDetailsData.patientAddressId) {
+        const selectedAddress = deliveryAddresses.find(
+          (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
+        );
+        const addressData = selectedAddress
+          ? `${selectedAddress.addressLine1 || ''} ${selectedAddress.addressLine2 || ''}, ${
+              selectedAddress.city || ''
+            }, ${selectedAddress.state || ''}, ${selectedAddress.zipcode || ''}`
+          : '';
+        return addressData;
+      } else {
+        return '';
+      }
     } else {
-      getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
+      getAddressDetails(orderDetailsData.patient.id);
     }
   };
 
@@ -502,14 +463,14 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
     return item && item.isPrescriptionNeeded;
   };
 
-  const getOrderDescription = (status: MEDICINE_ORDER_STATUS) => {
+  const getOrderDescription = (status: MEDICINE_ORDER_STATUS, statusMessage: string) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_PLACED:
         return !prescriptionRequired() ? (
           ''
         ) : (
           <>
-            <span>Verification Pending:</span>
+            <span className={classes.labelStatus}>Verification Pending: </span>
             Your order is being verified by our pharmacists. Our pharmacists might be required to
             call you for order verification.
           </>
@@ -517,21 +478,75 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
         return (
           <>
-            <span>Store Assigned:</span> Your order has been assigned to our pharmacy.
+            <span className={classes.labelStatus}>Store Assigned: </span> Your order has been
+            assigned to our pharmacy.
           </>
         );
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
         return `Your order #${orderDetailsData.orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`;
       case MEDICINE_ORDER_STATUS.CANCELLED:
-        return `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`;
+        return statusMessage === ''
+          ? `Your order #${orderDetailsData.orderAutoId} has been cancelled as per your request.`
+          : statusMessage;
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-        return `Out for delivery: Your order #${orderDetailsData.orderAutoId} would be reaching your doorstep soon.`;
+        return (
+          <>
+            <span className={classes.labelStatus}>Out for delivery: </span> Your order #
+            {orderDetailsData.orderAutoId} would be reaching your doorstep soon.
+          </>
+        );
       case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
         return `Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).`;
       default:
         return '';
     }
   };
+  const addRestStatusToShow = () => {
+    if (orderDetailsData) {
+      switch (orderDetailsData.currentStatus) {
+        case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+          return [MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+          return [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY, MEDICINE_ORDER_STATUS.DELIVERED];
+        case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+        case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+        case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+          return [
+            MEDICINE_ORDER_STATUS.ORDER_PLACED,
+            MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+            MEDICINE_ORDER_STATUS.ORDER_BILLED,
+            MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+            MEDICINE_ORDER_STATUS.DELIVERED,
+          ];
+      }
+    }
+  };
+  const restStatusToShow = addRestStatusToShow();
+
+  const getOrderState = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        return <div className={classes.orderStatusFailed}>Cancelled</div>;
+      case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+        return <div className={classes.orderStatusFailed}>Payment Failed</div>;
+      default:
+        return <div className={classes.orderStatus}>Successful</div>;
+    }
+  };
+
   return (
     <div className={classes.orderStatusGroup}>
       {!isLoading && orderDetailsData && (
@@ -540,7 +555,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             {orderDetailsData.orderAutoId && (
               <div className={classes.orderDetailsRow}>
                 <div className={classes.orderId}>ORDER #{orderDetailsData.orderAutoId}</div>
-                <div className={classes.orderStatus}>Successful</div>
+                {getOrderState(orderDetailsData.currentStatus)}
               </div>
             )}
             {orderDetailsData.patient && (
@@ -556,7 +571,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
               <div className={classes.discription}>{getPatientAddress(deliveryAddresses)}</div>
             </div>
           </div>
-          {orderDetailsData.orderTat && (
+          {!isRejectedStatus(orderDetailsData.currentStatus) && orderDetailsData.orderTat && (
             <div className={classes.expectedDelivery}>
               <span>
                 <img src={require('images/notify-symbol.svg')} alt="" />
@@ -581,10 +596,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 <div id={statusInfo.id} className={classes.cardGroup}>
                   <div
                     className={`${classes.statusCard} ${
-                      statusInfo.orderStatus &&
-                      completedStatusArray.includes(statusInfo.orderStatus)
-                        ? `${classes.orderStatusCompleted}${classes.orderStatusActive}`
-                        : classes.orderStatusActive
+                      statusInfo.orderStatus && statusArray.includes(statusInfo.orderStatus)
+                        ? classes.orderStatusActive
+                        : `${classes.orderStatusActive}${classes.orderStatusCompleted}`
                     }`}
                   >
                     {statusInfo.orderStatus && getStatus(statusInfo.orderStatus)}
@@ -593,23 +607,37 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                       <span>{moment(new Date(statusInfo.statusDate)).format('hh:mm a')}</span>
                     </div>
                   </div>
-
-                  <div className={classes.infoText}>
-                    {/* <span>Verification Pending :</span> Your order is being verified by our
-                      pharmacists. Our Pharmacists might be required to call you for order
-                      verification. */}
-                    <span>{getOrderDescription(statusInfo.orderStatus)}</span>
-                  </div>
+                  {orderDetailsData && statusInfo.orderStatus === orderDetailsData.currentStatus && (
+                    <div className={classes.infoText}>
+                      <span>
+                        {getOrderDescription(
+                          orderDetailsData.currentStatus,
+                          statusInfo.statusMessage
+                        )}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )
           )
         )}
+        {!isLoading &&
+          restStatusToShow &&
+          restStatusToShow.map((status, idx) => (
+            <div id={idx.toString()} className={classes.cardGroup}>
+              <div
+                className={`${classes.statusCard} ${classes.orderStatusActive}${classes.orderStatusCompleted}`}
+              >
+                {getStatus(status)}
+              </div>
+            </div>
+          ))}
       </div>
-      {isDelivered && (
+      {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
           <p>
-            Your order no.#{orderDetailsData.orderAutoId} is successfully delivered on{' '}
-            {orderDetailsData.orderTat && getFormattedDateTime(orderDetailsData.orderTat)}.
+            Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
+            delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
           <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
@@ -630,7 +658,17 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
         }}
         classes={{ paper: classes.bottomPopover }}
       >
-        <OrderFeedback setIsPopoverOpen={setIsPopoverOpen} />
+        <div className={classes.feedbackPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderFeedback
+              setIsPopoverOpen={setIsPopoverOpen}
+              orderDetailsData={orderDetailsData}
+            />
+          </div>
+        </div>
       </Popover>
     </div>
   );

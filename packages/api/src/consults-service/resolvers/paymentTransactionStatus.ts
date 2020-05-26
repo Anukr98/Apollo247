@@ -5,8 +5,15 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
+import { REFUND_STATUS } from 'consults-service/entities';
 
 export const paymentTransactionStatusTypeDefs = gql`
+  enum REFUND_STATUS {
+    REFUND_REQUEST_RAISED
+    REFUND_FAILED
+    REFUND_SUCCESSFUL
+    REFUND_REQUEST_NOT_RAISED
+  }
   type AppointmentPaymentResponse {
     appointment: AppointmentPaymentDetails
   }
@@ -20,6 +27,9 @@ export const paymentTransactionStatusTypeDefs = gql`
     paymentDateTime: DateTime
     displayId: Int
     paymentMode: String
+    refundStatus: REFUND_STATUS
+    refundId: String
+    refundAmount: Int
   }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse
@@ -40,6 +50,15 @@ type AppointmentPaymentDetails = {
   paymentDateTime: Date | null;
   displayId: number;
   paymentMode: string;
+  refundStatus: REFUND_STATUS;
+  refundId: String;
+  refundAmount: number;
+};
+
+type RefundDetails = {
+  refundStatus: REFUND_STATUS;
+  refundId: String;
+  refundAmount: number;
 };
 
 const paymentTransactionStatus: Resolver<
@@ -62,10 +81,24 @@ const paymentTransactionStatus: Resolver<
     `The response received: ${JSON.stringify(response)}`,
     'true'
   );
+
   const appointmentPaymentsResponse =
     response.appointmentPayments && response.appointmentPayments[0]
       ? response.appointmentPayments[0]
       : null;
+  const appointmentRefundsResponse = response.appointmentRefunds;
+  const refundData: Partial<RefundDetails> = {};
+
+  if (appointmentRefundsResponse) {
+    appointmentRefundsResponse.forEach((val) => {
+      if (val.refundStatus !== REFUND_STATUS.REFUND_REQUEST_NOT_RAISED) {
+        if (refundData.refundAmount) refundData.refundAmount += val.refundAmount;
+        else refundData.refundAmount = val.refundAmount;
+        refundData.refundId = val.refundId;
+        refundData.refundStatus = val.refundStatus;
+      }
+    });
+  }
   const returnResponse: AppointmentPaymentDetails = {
     displayId: response.displayId,
     paymentStatus: response.status,
@@ -78,6 +111,11 @@ const paymentTransactionStatus: Resolver<
       ? appointmentPaymentsResponse.paymentDateTime
       : null,
     paymentMode: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentMode : '',
+    refundAmount: refundData.refundAmount ? refundData.refundAmount : 0,
+    refundId: refundData.refundId ? refundData.refundId : '',
+    refundStatus: refundData.refundStatus
+      ? refundData.refundStatus
+      : REFUND_STATUS.REFUND_REQUEST_NOT_RAISED,
   };
 
   if (appointmentPaymentsResponse) {

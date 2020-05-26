@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { getTime, format } from 'date-fns';
+import { getTime, format, addMinutes } from 'date-fns';
 
 export const getOrderInvoiceTypeDefs = gql`
   extend type Query {
@@ -87,10 +87,15 @@ const getOrderInvoice: Resolver<
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
   const patientsRep = patientsDb.getCustomRepository(PatientRepository);
   const patientResponse = await apptsRepo.findByAppointmentId(args.appointmentId);
-  // console.log('orders Response', JSON.stringify(response, null, 2));
+  if (
+    patientResponse == null ||
+    patientResponse.length == 0 ||
+    !process.env.AZURE_STORAGE_INVOICES_CONTAINER_NAME
+  ) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
 
   const patientDetails = await patientsRep.findById(args.patientId);
-  // console.log('orders Response', JSON.stringify(patientDetails, null, 2));
 
   const docResponse = await docConsultRep.findDoctorByIdWithoutRelations(
     patientResponse[0].doctorId
@@ -111,120 +116,98 @@ const getOrderInvoice: Resolver<
   const margin = 35;
   const doc = new PDFDocument({ margin, bufferPages: true });
 
-  const drawHorizontalDivider = (y: number) => {
+  const renderFourColumnRow = (
+    labelText1: string,
+    labelValue1: string,
+    labelText2: string,
+    labelValue2: string,
+    y?: number
+  ) => {
     return doc
-      .moveTo(margin, y)
-      .lineTo(doc.page.width - margin, y)
-      .lineWidth(1)
-      .opacity(0.15)
-      .fill('#02475b');
-  };
-
-  const setY = (y: number) => {
-    const up = doc.y > y;
-    if (up) while (doc.y > y) doc.moveUp(0.01);
-    else while (doc.y < y) doc.moveDown(0.01);
-    return doc;
-  };
-
-  const pageBreak = () => {
-    //doc.flushPages();
-    setY(doc.page.height);
-    doc
-      .fontSize(10)
-      .fillColor('#02475b')
-      .text('')
-      .moveDown(0.01);
-    return doc;
-  };
-
-  const renderSectionHeader = (headerText: string, y?: number) => {
-    if (doc.y > doc.page.height - 150) {
-      pageBreak();
-    }
-    return doc
-      .moveTo(margin, doc.y)
-      .lineTo(doc.page.width - margin, doc.y)
-      .lineTo(doc.page.width - margin, doc.y + 30)
-      .lineTo(margin, doc.y + 30)
-      .lineTo(margin, doc.y)
-      .fill('#f7f7f7')
-      .opacity(0.7)
-      .fillColor('#000')
       .fontSize(11)
-      .text(_capitalize(headerText), margin + 100, doc.y + 10, { fill: true })
-      .moveDown(2);
-  };
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#01475b')
+      .text(labelText1, margin + 10, y, { lineBreak: false })
 
-  const renderDetailsRow = (labelText: string, labelValue: string, y?: number) => {
-    doc
-      .fontSize(9)
-      .fillColor('#000000')
-      .text(labelText, margin + 10, y, { lineBreak: false });
-    return doc
-      .fontSize(labelText === 'Patient' ? 10 : 9)
-      .fillColor('#02475b')
-      .text(`${labelValue}`, 200, y)
-      .opacity(0.6)
+      .fontSize(11)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#6d7278')
+      .text(`${labelValue1}`, 150, y, { lineBreak: false })
+      .moveDown(0.5)
+
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#01475b')
+      .text(labelText2, margin + 300, y, { lineBreak: false })
+
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+      .fillColor('#6d7278')
+      .text(`${labelValue2}`, 450, y)
+
       .moveDown(0.5);
   };
+
+  const todayDate = 'Date : ' + format(new Date(), 'dd MMM yyyy');
 
   const renderHeader = (
     doctorInfo: AppointmentsResult['doctor'],
     hospitalAddress: AppointmentsResult['hospitalAddress']
   ) => {
-    doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
-
-    //Doctor Details
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
-    const specialty = doctorInfo.specialization;
-    const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
-
     doc
-      .fontSize(10)
-      .fillColor('#02475b')
-      .text(nameLine, 370, margin);
+      .moveTo(0, 1)
+      .lineTo(doc.page.width, 1)
+      .lineTo(doc.page.width, 140)
+      .lineTo(doc.page.width, 140)
+      .lineTo(0, 140)
 
-    doc
-      .moveDown(0.3)
-      .fontSize(9)
-      .fillColor('#02475b')
-      .text(`${specialty} | ${registrationLine}`);
-
-    //Doctor Address Details
-    const addressLastLine = `${hospitalAddress.city}  ${
-      hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
-
-    doc
-      .moveDown(1)
-      .fontSize(8)
-      .fillColor('#000000')
-      .text(hospitalAddress.name);
-
-    doc.moveDown(0.2).text(hospitalAddress.streetLine1);
-    if (hospitalAddress.streetLine2) doc.moveDown(0.2).text(hospitalAddress.streetLine2);
-    doc.moveDown(0.2).text(addressLastLine);
-
+      .fill('#fbfbfb');
     doc.moveDown(2);
-  };
 
-  const renderFooter = () => {
-    drawHorizontalDivider(doc.page.height - 80);
-    const disclaimerText = 'This is a computer generated Receipt. No signature required.';
     doc
-      .fontSize(10)
-      .fillColor('#000000')
-      .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 80, { align: 'left' });
-    return doc;
+      .opacity(1)
+      .image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65, align: 'center' });
+
+    doc
+      .fontSize(11)
+      .fillColor('#01475b')
+      .text('Apollo 24X7', 370, margin, { align: 'right' })
+      .moveDown(0.3)
+
+      .fillColor('#828691')
+      .text('Apollo Hospitals Enterprise Ltd.,', { align: 'right' })
+      .moveDown(0.3)
+
+      .text('Redg Off : 19, Bishop Gardens,', { align: 'right' })
+      .moveDown(0.3)
+
+      .text(' RA Puram, Chennai - 600028', { align: 'right' })
+      .moveDown(1)
+
+      .text(`${todayDate}`, { align: 'right' });
+    doc.moveDown(2);
   };
 
   const renderpatients = (
     patientInfo: AppointmentsResult['patient'],
-    appointmentData: AppointmentsResult['appointments']
+    appointmentData: AppointmentsResult['appointments'],
+    doctorInfo: AppointmentsResult['doctor']
   ) => {
-    renderSectionHeader('PAYMENT RECEIPT');
+    doc.moveDown(1.5);
+    doc
+      .fontSize(16)
+      .fillColor('#01475b')
+      .text('PAYMENT RECEIPT', margin, doc.y, { align: 'center' })
+      .moveDown(1.5);
+
+    doc
+      .moveTo(margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y + 170)
+      .lineTo(margin, doc.y + 170)
+      .lineTo(margin, doc.y)
+
+      .fill('#fbfbfb');
 
     const textArray = [];
     let patientName = '';
@@ -234,110 +217,171 @@ const getOrderInvoice: Resolver<
       else patientName = patientInfo.lastName;
     }
     if (patientName) textArray.push(`${patientName}`);
-    // console.log('text Array ', textArray);
-    if (textArray.length > 0) {
-      renderDetailsRow('Patient Name', `${textArray.join('   |   ')}`, doc.y);
-    }
 
-    if (patientInfo.uhid) {
-      renderDetailsRow('Patient UHID', `${patientInfo.uhid}`, doc.y);
+    if (textArray.length > 0) {
+      renderFourColumnRow(
+        'Patient Name',
+        `${textArray.join('   |   ')}`,
+        'Patient UHID',
+        `${patientInfo.uhid}`,
+        doc.y + 10
+      );
     }
     if (patientInfo.mobileNumber) {
-      renderDetailsRow('Mobile Number', `${patientInfo.mobileNumber}`, doc.y);
-    }
-    if (patientInfo.emailAddress) {
-      renderDetailsRow('Email Address', `${patientInfo.emailAddress}`, doc.y);
-    }
-    if (appointmentData[0].displayId) {
-      renderDetailsRow('Appointment ID', `${appointmentData[0].displayId}`, doc.y);
+      renderFourColumnRow(
+        'Contact No.',
+        `${patientInfo.mobileNumber.slice(3)}`,
+        'Email ID',
+        `${patientInfo.emailAddress ? patientInfo.emailAddress : '-'}`,
+        doc.y + 10
+      );
     }
 
-    if (appointmentData[0].appointmentDateTime) {
-      const formattedDate = format(appointmentData[0].appointmentDateTime, 'dd MMM yyyy hh:mm a');
-      renderDetailsRow('Consult Date', `${formattedDate}`, doc.y);
-    }
+    renderFourColumnRow(
+      'Service Name',
+      'Medical Consult',
+      'Service Type',
+      `${_capitalize(appointmentData[0].appointmentType)}`,
+      doc.y + 10
+    );
 
-    if (appointmentData[0].appointmentType) {
-      renderDetailsRow('Consult Type', `${appointmentData[0].appointmentType}`, doc.y);
-    }
-    if (
-      appointmentData[0].appointmentPayments &&
-      appointmentData[0].appointmentPayments.length > 0
-    ) {
-      renderDetailsRow(
-        'Payment Reference Number',
-        `${appointmentData[0].appointmentPayments[0].paymentRefId}`,
-        doc.y
-      );
-    }
-    if (
-      appointmentData[0].appointmentPayments &&
-      appointmentData[0].appointmentPayments.length > 0
-    ) {
-      renderDetailsRow(
-        'Payment Status',
-        `${appointmentData[0].appointmentPayments[0].paymentStatus}`,
-        doc.y
-      );
-    }
-    if (appointmentData[0].actualAmount) {
-      renderDetailsRow(
-        appointmentData[0].appointmentType + ' Consultation Fees',
-        `${appointmentData[0].actualAmount}`,
-        doc.y
-      );
-    }
-    if (appointmentData[0].discountedAmount) {
-      renderDetailsRow('Discount Applied', ` - ${appointmentData[0].discountedAmount}`, doc.y);
-    }
-    if (appointmentData[0].discountedAmount && appointmentData[0].actualAmount) {
-      const totalAmount: number =
-        (appointmentData[0].actualAmount as number) -
-        (appointmentData[0].discountedAmount as number);
-      renderDetailsRow('Total Amount', `${totalAmount}`, doc.y);
-    }
+    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+
+    const specialty = doctorInfo.specialization;
+    renderFourColumnRow(
+      'Doctor Name',
+      `${nameLine}`,
+      'Doctor Speciality',
+      `${specialty}`,
+      doc.y + 20
+    );
+
+    const formattedDate = format(
+      addMinutes(appointmentData[0].appointmentDateTime, 330),
+      'dd MMM yyyy'
+    );
+    renderFourColumnRow(
+      'Appointment ID',
+      `${appointmentData[0].displayId}`,
+      'Date of Appointment',
+      `${formattedDate}`,
+      doc.y + 10
+    );
+
+    doc.moveDown(4);
+
+    doc
+      .moveTo(margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y)
+      .lineWidth(1)
+      .fill('#e7e8ec')
+      .moveDown(0.5);
+
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#01475b')
+      .text('Apollo 24X7 Online Teleconsultation Fees', margin + 150, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#02475b')
+      .text(`Rs ${appointmentData[0].actualAmount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1);
+
+    const discount: number =
+      (appointmentData[0].actualAmount as number) - (appointmentData[0].discountedAmount as number);
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#0087ba')
+      .text('Discount Applied', margin + 280, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#0087ba')
+      .text(`Rs ${discount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1.5);
+
+    doc
+      .moveTo(margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y)
+      .lineWidth(1)
+      .fill('#e7e8ec')
+      .moveDown(1);
+
+    doc
+      .fontSize(12)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#01475b')
+      .text('Total Amount', margin + 300, doc.y, {
+        lineBreak: false,
+        align: 'right',
+      })
+      .fillColor('#01475b')
+      .text(`Rs ${appointmentData[0].discountedAmount}`, margin + 450, doc.y, { align: 'left' })
+      .moveDown(1);
+
+    doc
+      .moveTo(margin, doc.y)
+      .lineTo(doc.page.width - margin, doc.y)
+      .lineWidth(1)
+      .fill('#e7e8ec')
+      .moveDown(4);
+
+    doc
+      .fontSize(11)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#01475b')
+      .text('SUPPORT', margin + 15, doc.y)
+      .moveDown(1);
+
+    doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#6d7278')
+      .text('help@apollo247.org', margin + 15, doc.y, {
+        lineBreak: false,
+        align: 'center',
+      })
+      .fontSize(11)
+      .fillColor('#6d7278')
+      .text('This is a computer generated Receipt. No signature required.', 200, doc.y, {
+        align: 'right',
+      })
+      .moveDown(0.5);
   };
   if (AppointmentsResult.doctor && AppointmentsResult.doctor == null)
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
   doc.on('pageAdded', () => {
-    renderFooter();
+    //renderFooter();
     if (AppointmentsResult.doctor && AppointmentsResult.hospitalAddress) {
       renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
     }
   });
 
-  renderFooter();
+  //renderFooter();
   if (AppointmentsResult.doctor && AppointmentsResult.hospitalAddress) {
     renderHeader(AppointmentsResult.doctor, AppointmentsResult.hospitalAddress);
   }
   if (!_isEmpty(AppointmentsResult.patient)) {
-    if (AppointmentsResult.patient) {
-      renderpatients(AppointmentsResult.patient, AppointmentsResult.appointments);
+    if (AppointmentsResult.patient && AppointmentsResult.doctor) {
+      renderpatients(
+        AppointmentsResult.patient,
+        AppointmentsResult.appointments,
+        AppointmentsResult.doctor
+      );
       doc.moveDown(1.5);
     }
   }
-  let i;
-  let end;
-  const range = doc.bufferedPageRange();
-  for (i = range.start, end = range.start + range.count, range.start <= end; i < end; i++) {
-    doc.switchToPage(i);
-    doc
-      .fontSize(8)
-      .fillColor('#02475b')
-      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
-  }
+
   doc.end();
-  if (
-    patientResponse &&
-    patientResponse.length > 0 &&
+
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_INVOICES_CONTAINER_NAME
-  ) {
-    const client = new AphStorageClient(
-      process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-      process.env.AZURE_STORAGE_INVOICES_CONTAINER_NAME
-    );
-    return await uploadRxPdf(client, patientResponse[0].id, doc);
-  } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  );
+  return await uploadRxPdf(client, patientResponse[0].id, doc);
 };
 
 export const uploadRxPdf = async (
@@ -352,11 +396,7 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  // console.log('blobUrl===', blobUrl);
-  // const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
-  //const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
-  // return uploadData;
   return blobUrl;
 
   function delay(ms: number) {

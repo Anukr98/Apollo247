@@ -294,12 +294,12 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}
-                {/* <div className={classes.sectionHeader}>Coupons For You</div> */}
-                {/* <ul>
+                <div className={classes.sectionHeader}>Coupons For You</div>
+                <ul>
                   {availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
-                        couponDetails && (
+                        couponDetails && couponDetails.couponConsultRule && couponDetails.couponConsultRule.isActive && (
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
@@ -332,7 +332,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   ) : (
                     <div className={classes.noCoupons}>No available Coupons</div>
                   )}
-                </ul> */}
+                </ul>
               </div>
             </div>
           </div>

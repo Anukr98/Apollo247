@@ -499,7 +499,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     patientAddress: {
                       patientId: currentPatientId,
                       addressLine1: address1,
-                      // addressLine2: address2,
+                      addressLine2: address2,
                       city: city,
                       state: state,
                       zipcode: pincode,

@@ -60,7 +60,23 @@ export const ConsultPayments: React.FC = (props) => {
 
   if (error) return <div className={classes.circlularProgress}>No data is available</div>;
 
-  return data && data.consultOrders && data.consultOrders.appointments ? (
+  if (
+    data &&
+    data.consultOrders &&
+    data.consultOrders.appointments &&
+    data.consultOrders.appointments.length
+  ) {
+    const appointmentData = data.consultOrders.appointments;
+    const dataReversed = [...appointmentData].reverse();
+    return (
+      <div className={classes.root}>
+        {dataReversed.map((appointmentDetails) => (
+          <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
+        ))}
+      </div>
+    );
+  }
+  return (
     <div className={classes.root}>
       <div className={classes.noData}>
         <div className={classes.icon}>
@@ -68,11 +84,12 @@ export const ConsultPayments: React.FC = (props) => {
         </div>
         <div>You have no payment history!</div>
       </div>
+<<<<<<< HEAD
       {data.consultOrders.appointments.map((appointmentDetails) => (
         <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
       ))}
+=======
+>>>>>>> d32501eb58cda6308a09e0cd89ad4d9a25b6b2c0
     </div>
-  ) : (
-    <></>
   );
 };

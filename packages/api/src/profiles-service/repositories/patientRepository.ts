@@ -16,7 +16,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
 
@@ -99,9 +99,12 @@ export class PatientRepository extends Repository<Patient> {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
+        } else if (patient.primaryPatientId == null) {
+          this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
     }
+
     return this.find({
       where: { mobileNumber, isActive: true },
       relations: [
@@ -291,7 +294,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
+    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
+    category =
+      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
+        ? PRISM_DOCUMENT_CATEGORY.OpSummary
+        : category;
+    const currentTimeStamp = getUnixTime(new Date()) * 1000;
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
@@ -299,11 +307,11 @@ export class PatientRepository extends Repository<Patient> {
       file: docInput.base64FileInput,
       authtoken: prismAuthToken,
       format: fileFormat,
-      tag: docInput.category,
+      tag: category,
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
-      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+      category: category,
       filename: documentName,
     };
 
@@ -329,14 +337,14 @@ export class PatientRepository extends Repository<Patient> {
         dLogger(
           reqStartTime,
           'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${url} --- ${formData} --- ${JSON.stringify(error)}`
+          `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(error)}`
         );
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
     dLogger(
       reqStartTime,
       'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-      `${url} --- ${formData} --- ${JSON.stringify(uploadResult)}`
+      `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(uploadResult)}`
     );
 
     if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {

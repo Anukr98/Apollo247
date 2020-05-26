@@ -499,14 +499,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    if (doctorInfo.qualifications) {
+    /*if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }
+    }*/
 
     doc
       .fontSize(9)
@@ -541,7 +541,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fill('#d9e3e6');
 
     const disclaimerText =
-      'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue for upto 90 days(for the specific period / dosage of each medicine as advised).';
+      'This prescription is issued on the basis of your inputs during teleconsultation. It is valid from the date of issue until the specific period/dosage of each medicine as advised.';
 
     doc
       .fontSize(10)
@@ -659,12 +659,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         if (doc.y > doc.page.height - 150) {
           pageBreak();
         }
-        doc
-          .fontSize(11)
-          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-          .fillColor('#666666')
-          .text(`Instructions: ${prescription.instructions} `, margin + 30)
-          .moveDown(0.8);
+        const instructionsArray = prescription.instructions.split('\n');
+        instructionsArray.forEach((instruction) => {
+          if (doc.y > doc.page.height - 150) {
+            pageBreak();
+          }
+          doc
+            .fontSize(11)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`Instructions: ${instruction} `, margin + 30)
+            .moveDown(0.8);
+        });
       }
     });
   };
@@ -682,18 +688,24 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           pageBreak();
         }
 
+        const instructionsArray = advice.instruction.split('\n');
         const labelText = index == 0 ? "Doctor's Advice" : ' ';
-        doc
-          .fontSize(10)
-          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-          .fillColor('#7f7f7f')
-          .text(`${labelText}`, margin + 15, doc.y, { lineBreak: false })
+        instructionsArray.forEach((instruction) => {
+          if (doc.y > doc.page.height - 150) {
+            pageBreak();
+          }
+          doc
+            .fontSize(10)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#7f7f7f')
+            .text(`${labelText}`, margin + 15, doc.y, { lineBreak: false })
 
-          .fontSize(11)
-          .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
-          .fillColor('#666666')
-          .text(`${advice.instruction}`, 150, doc.y)
-          .moveDown(0.5);
+            .fontSize(11)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`${instruction}`, 150, doc.y)
+            .moveDown(0.5);
+        });
       });
       if (followUpData) {
         if (doc.y > doc.page.height - 150) {
@@ -764,7 +776,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnosticTest = (diagnosticTests: RxPdfData['diagnosesTests']) => {
     if (diagnosticTests) {
-      renderSectionHeader('Diagnostic Tests Prescribed', 'ic-microscope-solid.png');
+      renderSectionHeader('Diagnostic Tests', 'ic-microscope-solid.png');
       diagnosticTests.forEach((diagTest, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
@@ -873,14 +885,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      if (doctorInfo.qualifications) {
+      /*if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      }
+      } */
 
       doc
         .fontSize(9)
