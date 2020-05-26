@@ -521,7 +521,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       where: {
         doctorId,
         appointmentDateTime: Between(startDate, endDate),
-        status: Not(STATUS.CANCELLED),
+        status: STATUS.COMPLETED,
       },
     });
     let count: number = 0;
