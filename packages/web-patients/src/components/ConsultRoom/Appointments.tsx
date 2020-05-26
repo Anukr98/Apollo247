@@ -386,7 +386,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [appointmentType, setAppointmentType] = React.useState<string>('');
   const [doctorDetail, setDoctorDetail] = React.useState<any>({});
   const [paymentStatus, setPaymentStatus] = React.useState<string>('');
-  const [bankTxnId, setBankTxnId] = React.useState<string>('');
+  const [paymentRefId, setPaymentRefId] = React.useState<string>('');
   const [displayId, setDisplayId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const [doctorId, setDoctorId] = React.useState<string>('');
@@ -463,12 +463,12 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
     if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
       const { appointmentDateTime, appointmentType, doctorInfo, doctorId } = appointmentData;
-      const { paymentStatus, bankTxnId, displayId, amountPaid } = paymentData;
+      const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
       setAppointmentDateTime(appointmentDateTime);
       setAppointmentType(appointmentType);
       setDoctorDetail(doctorInfo);
       setPaymentStatus(paymentStatus);
-      setBankTxnId(bankTxnId);
+      setPaymentRefId(paymentRefId);
       setDoctorId(doctorId);
 
       setDisplayId(displayId);
@@ -908,7 +908,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 orderId={displayId}
                 amountPaid={amountPaid}
                 doctorDetail={doctorDetail}
-                paymentRefId={bankTxnId}
+                paymentRefId={paymentRefId}
                 bookingDateTime={moment(appointmentDateTime)
                   .format('DD MMMM YYYY[,] LT')
                   .replace(/(A|P)(M)/, '$1.$2.')

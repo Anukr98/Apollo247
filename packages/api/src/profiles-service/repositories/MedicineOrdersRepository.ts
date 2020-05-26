@@ -41,6 +41,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'mp."paymentStatus"',
         'mp."bankTxnId"',
         'mo."orderAutoId"',
+        'mo."orderDateTime"',
         'mp."paymentMode"',
       ])
       .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
@@ -157,6 +158,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   findByPatientId(patient: string, offset?: number, limit?: number) {
     return this.find({
       where: { patient, currentStatus: Not(MEDICINE_ORDER_STATUS.QUOTE) },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
+      skip: offset,
+      take: limit,
+      order: {
+        orderDateTime: 'DESC',
+      },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDERS_ERROR, undefined, {
+        error,
+      });
+    });
+  }
+
+  findByPatientIds(ids: string[], offset?: number, limit?: number) {
+    return this.find({
+      where: { patient: In(ids), currentStatus: Not(MEDICINE_ORDER_STATUS.QUOTE) },
       relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
       skip: offset,
       take: limit,
@@ -427,6 +444,15 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   getMedicineOrderCancelReasons() {
     return MedicineOrderCancelReason.find({}).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
+    });
+  }
+  getMedicineOrderCancelReasonByCode(reasonCode: String) {
+    return MedicineOrderCancelReason.findOne({
+      where: { reasonCode },
+    }).catch((medicineOrderError) => {
       throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
         medicineOrderError,
       });

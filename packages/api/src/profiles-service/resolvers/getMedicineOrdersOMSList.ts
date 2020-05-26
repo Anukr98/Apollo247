@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { MedicineOrders } from 'profiles-service/entities';
+import { MedicineOrders, MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -32,6 +32,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     prismPrescriptionFileId: String
     pharmaRequest: String
     orderTat: String
+    couponDiscount: Float
+    productDiscount: Float
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -49,8 +51,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: Int
     mrp: Float
     isPrescriptionNeeded: Int
-    prescriptionImageUrl: String
-    prismPrescriptionFileId: String
     mou: Int
     isMedicine: String
   }
@@ -81,6 +81,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
     statusDate: DateTime
+    statusMessage: String
+    customReason: String
     hideStatus: Boolean
   }
 
@@ -156,6 +158,23 @@ const getMedicineOrderOMSDetails: Resolver<
   }
   if (!medicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+  if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+    const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj) => {
+      return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+    });
+    if (reasonCode) {
+      try {
+        const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+          reasonCode.statusMessage
+        );
+        if (cancellationReasons) {
+          reasonCode.statusMessage = cancellationReasons.displayMessage;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
   }
   return { medicineOrderDetails };
 };

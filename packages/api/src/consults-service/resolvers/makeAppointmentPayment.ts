@@ -10,6 +10,7 @@ import {
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
 } from 'consults-service/entities';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -75,6 +76,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
 
   type AppointmentPaymentResult {
     appointment: AppointmentPayment
+    isRefunded: Boolean
   }
 
   extend type Mutation {
@@ -84,6 +86,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
 
 type AppointmentPaymentResult = {
   appointment: AppointmentPayment;
+  isRefunded: boolean;
 };
 
 type AppointmentPayment = {
@@ -156,8 +159,8 @@ const makeAppointmentPayment: Resolver<
   //insert payment details
 
   let paymentInfo = await apptsRepo.findAppointmentPayment(processingAppointment.id);
-
-  const paymentMode: string = PAYMENT_METHODS[paymentInput.paymentMode];
+  let paymentMode: string = '';
+  if (paymentInput.paymentMode) paymentMode = PAYMENT_METHODS[paymentInput.paymentMode];
   if (paymentInfo) {
     log(
       'consultServiceLogger',
@@ -172,7 +175,7 @@ const makeAppointmentPayment: Resolver<
       processingAppointment.status !== STATUS.PAYMENT_PENDING_PG
     ) {
       paymentInfo.appointment = processingAppointment;
-      return { appointment: paymentInfo };
+      return { appointment: paymentInfo, isRefunded: false };
     }
     const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
     paymentInputUpdates.responseCode = paymentInfo.responseCode;
@@ -182,13 +185,13 @@ const makeAppointmentPayment: Resolver<
     paymentInputUpdates.bankTxnId = paymentInfo.bankTxnId;
     paymentInputUpdates.paymentDateTime = paymentInfo.paymentDateTime;
     paymentInputUpdates.orderId = paymentInfo.orderId;
-    paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode) paymentInputUpdates.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
     apptPaymentAttrs.appointment = processingAppointment;
     apptPaymentAttrs.paymentType = APPOINTMENT_PAYMENT_TYPE.ONLINE;
-    apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
+    if (paymentMode) apptPaymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
     paymentInfo = await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
   }
   delete paymentInfo.appointment;
@@ -210,7 +213,37 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+      await apptsRepo.systemCancelAppointment(processingAppointment.id);
+      let isRefunded: boolean = false;
+      if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
+        await initiateRefund(
+          {
+            appointment: processingAppointment,
+            appointmentPayments: paymentInfo,
+            refundAmount: paymentInfo.amountPaid,
+            txnId: paymentInfo.paymentRefId,
+            orderId: processingAppointment.paymentOrderId,
+          },
+          consultsDb
+        );
+
+        paymentInfo.appointment = processingAppointment;
+        sendNotification(
+          {
+            appointmentId: processingAppointment.id,
+            notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+          },
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+        isRefunded = true;
+      }
+
+      return {
+        appointment: paymentInfo,
+        isRefunded: isRefunded,
+      };
     }
 
     const slotApptDt =
@@ -308,7 +341,7 @@ const makeAppointmentPayment: Resolver<
     });
   }
   paymentInfo.appointment = processingAppointment;
-  return { appointment: paymentInfo };
+  return { appointment: paymentInfo, isRefunded: false };
 };
 
 const sendPatientAcknowledgements = async (

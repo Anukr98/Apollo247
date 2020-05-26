@@ -32,6 +32,7 @@ import {
   BOOKING_SOURCE,
   NonCartOrderOMSCity,
   CODCity,
+  PRISM_DOCUMENT_CATEGORY,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -507,6 +508,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       marginTop: 5,
     },
+    higherDiscountText: {
+      marginTop: 10,
+      color: '#890000',
+      borderRadius: 3,
+      border: 'solid 1px #890000',
+      padding: '4px 10px',
+    },
   };
 });
 
@@ -529,6 +537,7 @@ export const MedicineCart: React.FC = (props) => {
     setUploadedEPrescription,
     cartTat,
     couponCode,
+    setCouponCode,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -569,6 +578,7 @@ export const MedicineCart: React.FC = (props) => {
     setValidateCouponResult,
   ] = useState<validatePharmaCoupon_validatePharmaCoupon | null>(null);
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -662,14 +672,14 @@ export const MedicineCart: React.FC = (props) => {
             medicineSKU: cartItemDetails.sku,
             medicineName: cartItemDetails.name,
             price:
-              couponCode.length > 0
+              couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
             itemDiscount:
               cartItemDetails.quantity *
-              (couponCode.length > 0
+              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
                 : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
             mrp: cartItemDetails.price,
@@ -724,7 +734,18 @@ export const MedicineCart: React.FC = (props) => {
           if (res && res.data && res.data.validatePharmaCoupon) {
             const couponValidateResult = res.data.validatePharmaCoupon;
             if (couponValidateResult.validityStatus) {
-              setValidateCouponResult(couponValidateResult);
+              if (couponValidateResult.discountedTotals.couponDiscount > 0) {
+                setValidateCouponResult(couponValidateResult);
+                setErrorMessage('');
+              } else {
+                setValidateCouponResult(null);
+                setErrorMessage(
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
+                );
+              }
+            } else {
+              setValidateCouponResult(null);
+              setErrorMessage(couponValidateResult.reasonForInvalidStatus);
             }
           }
         })
@@ -737,7 +758,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!nonCartFlow && couponCode.length > 0 && cartItems.length > 0) {
+    if (!nonCartFlow && cartItems.length > 0 && couponCode.length > 0) {
       validateCoupon();
     }
   }, [couponCode, cartItems]);
@@ -873,7 +894,7 @@ export const MedicineCart: React.FC = (props) => {
           variables: {
             UploadDocumentInput: {
               base64FileInput: baseFormatSplitArry[1],
-              category: 'HealthChecks',
+              category: PRISM_DOCUMENT_CATEGORY.OpSummary,
               fileType:
                 item.fileType == 'jpg'
                   ? UPLOAD_FILE_TYPES.JPEG
@@ -1199,7 +1220,15 @@ export const MedicineCart: React.FC = (props) => {
                 </div>
                 <div className={`${classes.sectionGroup}`}>
                   <div
-                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    onClick={() => {
+                      if (couponCode === '') {
+                        setIsApplyCouponDialogOpen(true);
+                      } else {
+                        setValidateCouponResult(null);
+                        setErrorMessage('');
+                        setCouponCode && setCouponCode('');
+                      }
+                    }}
                     className={`${classes.serviceType}`}
                   >
                     <div className={classes.couponTopGroup}>
@@ -1207,7 +1236,7 @@ export const MedicineCart: React.FC = (props) => {
                         <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
                       </span>
                       <div className={classes.couponRight}>
-                        {couponCode === '' ? (
+                        {!validateCouponResult ? (
                           <div className={classes.applyCoupon}>
                             <span className={classes.linkText}>Apply Coupon</span>
                             <span className={classes.rightArrow}>
@@ -1241,6 +1270,9 @@ export const MedicineCart: React.FC = (props) => {
                           on the bill
                         </div>
                       )}
+                    {errorMessage.length > 0 && (
+                      <div className={classes.higherDiscountText}>{errorMessage}</div>
+                    )}
                   </div>
                 </div>
                 <div className={`${classes.sectionGroup}`}>
@@ -1267,7 +1299,7 @@ export const MedicineCart: React.FC = (props) => {
                       <div className={classes.priceRow}>
                         <span>Delivery Charges</span>
                         <span className={classes.priceCol}>
-                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
+                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0.00'}
                         </span>
                       </div>
                       {/* <div className={classes.priceRow}>

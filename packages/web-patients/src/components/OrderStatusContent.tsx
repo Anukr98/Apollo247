@@ -79,6 +79,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         width: '100%',
+        padding: '30px 0 0',
+        borderRadius: 0,
       },
     },
     modalHeader: {

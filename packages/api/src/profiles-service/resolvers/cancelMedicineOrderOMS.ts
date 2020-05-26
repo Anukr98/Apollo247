@@ -20,6 +20,7 @@ export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
     orderNo: Int
     cancelReasonCode: String
+    cancelReasonText: String
   }
 
   type MedicineOrderCancelOMSResult {
@@ -36,6 +37,7 @@ export const medicineOrderCancelOMSTypeDefs = gql`
 type MedicineOrderCancelOMSInput = {
   orderNo: number;
   cancelReasonCode: string;
+  cancelReasonText: string;
 };
 
 type MedicineOrderCancelOMSResult = {
@@ -62,7 +64,6 @@ const cancelMedicineOrderOMS: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
   // check whether order is pushed to oms or not
-  console.log(orderDetails);
   if (orderDetails.referenceNo) {
     const shipmentDetails = orderDetails.medicineOrderShipments;
     if (shipmentDetails && shipmentDetails.length > 0) {
@@ -157,6 +158,7 @@ const updateOrderCancelled = async (
     medicineOrders: orderDetails,
     statusDate: new Date(),
     statusMessage: medicineOrderCancelOMSInput.cancelReasonCode,
+    customReason: medicineOrderCancelOMSInput.cancelReasonText,
   };
   await medicineOrdersStatusRepo.saveMedicineOrderStatus(
     orderStatusAttrs,

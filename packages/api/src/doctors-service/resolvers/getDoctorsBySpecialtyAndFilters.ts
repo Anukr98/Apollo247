@@ -59,6 +59,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     geolocation: Geolocation
     consultMode: ConsultMode
     pincode: String
+    sort: String
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -101,6 +102,7 @@ export type FilterDoctorInput = {
   geolocation: Geolocation;
   consultMode: ConsultMode;
   pincode: string;
+  sort: string;
 };
 
 export type ConsultModeAvailability = {
@@ -282,7 +284,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
   //   searchLogger('GEOLOCATION_API_CALL___END');
   // }
-  if (args.filterInput.geolocation) {
+
+  if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
         facilityLatLongs[index][0],

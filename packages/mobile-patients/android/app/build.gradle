@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 34
-        versionName "2.31"
+        versionCode 35
+        versionName "2.41"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -200,6 +200,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sms-retriever')
     implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-fbsdk')
     implementation project(':react-native-appsflyer')

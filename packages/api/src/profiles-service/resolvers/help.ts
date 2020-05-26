@@ -242,7 +242,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     JSON.stringify(mailStatus),
     ''
   );
-  return mailStatus.message;
+  return JSON.stringify(mailStatus);
 };
 
 export const helpResolvers = {

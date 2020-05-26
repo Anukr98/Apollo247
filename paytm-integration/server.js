@@ -1016,10 +1016,10 @@ app.get('/processOmsOrders', (req, res) => {
                     };
                     orderLineItems.push(lineItem);
                   });
-                  const pharmaItems = orderDetails.medicineOrderLineItems.find((item) => {
+                  const pharmaItems = orderDetails.medicineOrderLineItems.filter((item) => {
                     return item.isMedicine == '1';
                   });
-                  if (pharmaItems.length > 0) {
+                  if (pharmaItems && pharmaItems.length > 0) {
                     orderType = 'Pharma';
                   }
                   if (orderDetails.devliveryCharges > 0) {
@@ -1036,7 +1036,9 @@ app.get('/processOmsOrders', (req, res) => {
                     });
                   }
                 }
-                const paymentDetails = orderDetails.medicineOrderPayments;
+                const paymentDetails =
+                  (orderDetails.medicineOrderPayments && orderDetails.medicineOrderPayments[0]) ||
+                  {};
                 const patientDetails = orderDetails.patient;
                 let patientAge = 30;
                 if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
@@ -1072,11 +1074,14 @@ app.get('/processOmsOrders', (req, res) => {
                   VendorName: 'Apollo247',
                   shippingmethod:
                     orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
-                  paymentmethod: paymentDetails[0].paymentType,
+                  paymentmethod: paymentDetails.paymentType === 'CASHLESS' ? 'PREPAID' : 'COD',
                   prefferedsite: '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
-                  deliverydate: tatDate ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss') : '',
+                  deliverydate:
+                    tatDate && Date.parse(tatDate)
+                      ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss')
+                      : '',
                   timeslot: timeslot,
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
@@ -1106,13 +1111,13 @@ app.get('/processOmsOrders', (req, res) => {
                     longitude: long,
                   },
                   paymentdetails:
-                    paymentDetails[0].paymentType === 'CASHLESS'
+                    paymentDetails.paymentType === 'CASHLESS'
                       ? [
                           {
                             paymentsource: 'paytm',
                             transactionstatus: 'TRUE',
-                            paymenttransactionid: paymentDetails[0].paymentRefId,
-                            amount: paymentDetails[0].amountPaid,
+                            paymenttransactionid: paymentDetails.paymentRefId,
+                            amount: paymentDetails.amountPaid,
                           },
                         ]
                       : [],

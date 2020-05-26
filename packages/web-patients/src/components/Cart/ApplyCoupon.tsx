@@ -230,7 +230,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             data.getPharmaCouponList.coupons &&
             data.getPharmaCouponList.coupons.length > 0
           ) {
-            setAvailableCoupons(data.getPharmaCouponList.coupons);
+            const visibleCoupons = data.getPharmaCouponList.coupons.filter(
+              (coupon) => coupon.displayStatus
+            );
+            setAvailableCoupons(visibleCoupons);
             setIsLoading(false);
           }
         })
@@ -249,10 +252,19 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             const couponValidateResult = res.data.validatePharmaCoupon;
             props.setValidityStatus(couponValidateResult.validityStatus);
             if (couponValidateResult.validityStatus) {
-              props.close(false);
-              props.setValidateCouponResult(couponValidateResult);
+              if (couponValidateResult.discountedTotals.couponDiscount > 0) {
+                props.setValidateCouponResult(couponValidateResult);
+                setCouponCode && setCouponCode(selectCouponCode);
+                props.close(false);
+              } else {
+                // setSelectCouponCode('');
+                props.setValidateCouponResult(null);
+                setErrorMessage(
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
+                );
+                setCouponCode && setCouponCode('');
+              }
               setMuationLoading(false);
-              setCouponCode && setCouponCode(selectCouponCode);
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);

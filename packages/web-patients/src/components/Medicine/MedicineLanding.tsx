@@ -364,6 +364,9 @@ export const MedicineLanding: React.FC = (props) => {
     ) {
       clearCartInfo && clearCartInfo();
     }
+    if (localStorage.getItem('pharmaCoupon')) {
+      localStorage.removeItem('pharmaCoupon');
+    }
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);

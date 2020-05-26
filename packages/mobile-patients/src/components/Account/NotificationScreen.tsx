@@ -121,11 +121,8 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
       if (arrayNotification !== null) {
         setMessages([...arrayNotification]);
       } else {
-        console.log('isSelected.......', allNotifications);
-
         setMessages([...allNotifications]);
       }
-      console.log('arrayNotification.......', arrayNotification);
       setLoader(false);
     }
     fetchData();
@@ -424,9 +421,14 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
 
   const ctaNamesMethod = (event: any) => {
     let route;
-    route = event.actionLink.replace('apollopatients://', '');
+
+    const actionLink = decodeURIComponent(event.actionLink);
+
+    route = actionLink.replace('apollopatients://', '');
+    route = route.replace('w://p/open_url_in_browser/', '');
     const data = route.split('?');
     route = data[0];
+
     let CTAName;
 
     switch (route) {
@@ -466,7 +468,10 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     if (event) {
       const CTAName = ctaNamesMethod(event);
 
-      let routing = event.actionLink.replace('apollopatients://', '');
+      const actionLink = decodeURIComponent(event.actionLink);
+
+      let routing = actionLink.replace('apollopatients://', '');
+      routing = routing.replace('w://p/open_url_in_browser/', '');
       const data = routing.split('?');
       routing = data[0];
 
@@ -501,12 +506,14 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
       // console.log('event', event);
       let route;
 
-      route = event.replace('apollopatients://', '');
+      const actionLink = decodeURIComponent(event);
 
+      route = actionLink.replace('apollopatients://', '');
+      route = route.replace('w://p/open_url_in_browser/', '');
       const data = route.split('?');
       route = data[0];
 
-      // console.log(data, 'data');
+      console.log(route, 'route');
 
       switch (route) {
         case 'Consult':
@@ -538,9 +545,15 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
           console.log('MedicineSearch handleopen');
           pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
           break;
+
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
           pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
+          break;
+
+        case 'MedicineCart':
+          console.log('MedicineCart handleopen');
+          pushTheView('MedicineCart');
           break;
 
         default:
@@ -609,6 +622,13 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });
         }
+        break;
+
+      case 'MedicineCart':
+        console.log('MedicineCart handleopen');
+        props.navigation.navigate(AppRoutes.YourCart, {
+          movedFrom: 'splashscreen',
+        });
         break;
 
       default:

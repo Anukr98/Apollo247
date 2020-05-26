@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { customerCareNumber } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,7 +56,7 @@ export const CallOurExperts: React.FC = () => {
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   return (
     <>
-      <a href={isDesktopOnly ? '#' : 'tel:08047192606'}>
+      <a href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
         <div
           onClick={() => {
             isDesktopOnly ? setIscoronaDialogOpen(true) : '';
@@ -73,7 +74,7 @@ export const CallOurExperts: React.FC = () => {
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
           <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href="tel:08047192606">Call 08047192606 in emergency</a>
+          <a href={`tel:${customerCareNumber}`}>Call {customerCareNumber} in emergency</a>
           <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
             Ok, Got It
           </AphButton>

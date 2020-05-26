@@ -490,7 +490,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         setLoading && setLoading(false);
         getPatientApiCall();
         props.navigation.goBack();
-        setLoading && setLoading(true);
         // if (relation!.key === Relation.ME) {
         //   setCurrentPatientId(data!.data!.addNewProfile!.patient!.id);
         //   AsyncStorage.setItem('selectUserId', profileData!.id);
@@ -564,7 +563,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={isEdit ? 'EDIT PROFILE' : 'ADD NEW PROFILE'}
+        title={isEdit ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
         onPressLeftIcon={() => props.navigation.goBack()}
       />

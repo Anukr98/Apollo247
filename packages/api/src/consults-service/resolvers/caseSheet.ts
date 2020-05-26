@@ -737,6 +737,11 @@ const modifyCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  //stop updating data if PDF is generated already.
+  if (getCaseSheetData.blobName && getCaseSheetData.blobName.length > 0)
+    throw new AphError(AphErrorMessages.CASESHEET_SENT_TO_PATIENT_ALREADY);
+
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);
   const seniorDoctorDetails = await doctorRepository.findById(

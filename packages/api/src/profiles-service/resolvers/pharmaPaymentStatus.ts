@@ -15,6 +15,7 @@ export const paymentStatusTypeDefs = gql`
     paymentStatus: String!
     paymentDateTime: DateTime
     paymentMode: String
+    orderDateTime: DateTime!
   }
 
   extend type Query {
@@ -29,6 +30,7 @@ type PharmaPaymentResponse = {
   paymentStatus: PAYMENT_STATUS_MAP;
   paymentDateTime: Date;
   paymentMode: string;
+  orderDateTime: Date;
 };
 
 const pharmaPaymentStatus: Resolver<
@@ -46,7 +48,7 @@ const pharmaPaymentStatus: Resolver<
     'consultServiceLogger',
     `pharma payment - orderId - ${args.orderId}`,
     'pharmaPaymentStatus()',
-    `response: ${response}`,
+    `response: ${JSON.stringify(response)}`,
     ''
   );
 

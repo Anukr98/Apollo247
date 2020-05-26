@@ -167,12 +167,15 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
 
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let patientAppointments: ConsultRecord[] = [];
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patient);
+
   if (
     hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
     hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)
   ) {
     patientAppointments = await apptsRepo.getPatientPastAppointments(
-      patient,
+      primaryPatientIds,
       filter,
       offset,
       limit
@@ -183,7 +186,11 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
-    patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
+    patientMedicineOrders = await medicineOrdersRepo.findByPatientIds(
+      primaryPatientIds,
+      offset,
+      limit
+    );
 
     //filtering the medicine orders by unique prescription url
     const prescriptionUrls: string[] = [];

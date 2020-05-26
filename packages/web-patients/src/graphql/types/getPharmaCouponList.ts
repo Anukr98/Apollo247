@@ -21,6 +21,7 @@ export interface getPharmaCouponList_getPharmaCouponList_coupons {
   __typename: "ConsultCoupon";
   code: string | null;
   couponPharmaRule: getPharmaCouponList_getPharmaCouponList_coupons_couponPharmaRule | null;
+  displayStatus: boolean | null;
   createdDate: any | null;
   description: string | null;
   id: string | null;

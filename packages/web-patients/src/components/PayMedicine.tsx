@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { paymentInstrumentClickTracking } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
@@ -172,6 +173,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span': {
         fontSize: 13,
         fontWeight: 700,
+        '&:first-child': {
+          color: '#00b38e',
+        },
+        '&:last-child': {
+          color: '#084c60',
+        },
+      },
+      '&$checked': {
+        color: '#084c60',
       },
     },
     paymentOptions: {
@@ -236,7 +246,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fcb716',
       display: 'block',
       border: 'none',
-      width: 200,
+      width: 'auto',
     },
     chargesContainer: {
       [theme.breakpoints.down('xs')]: {
@@ -351,6 +361,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 3,
       },
     },
+    hideButton: {
+      display: 'none !important',
+    },
   };
 });
 
@@ -371,6 +384,8 @@ export const PayMedicine: React.FC = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
+  const [showZeroPaymentButton, setShowZeroPaymentButton] = React.useState<boolean>(true);
+
   const [
     validateConsultCouponResult,
     setValidateConsultCouponResult,
@@ -428,7 +443,7 @@ export const PayMedicine: React.FC = (props) => {
     appointmentDateTime,
     appointmentType,
     consultCouponCodeInitial,
-    consultCouponValue,
+    consultCouponValue = 0,
     doctorId,
     hospitalId,
     patientId,
@@ -456,7 +471,8 @@ export const PayMedicine: React.FC = (props) => {
 
   useEffect(() => {
     if (params.payType === 'consults') {
-      setRevisedAmount(Number(amount) - Number(consultCouponValue || 0));
+      const amountPayble: number = Number(amount) - Number(consultCouponValue);
+      setRevisedAmount(amountPayble);
       if (!consultCouponCode && consultCouponCodeInitial && consultCouponCodeInitial.length) {
         setConsultCouponCode(consultCouponCodeInitial || '');
         setValidityStatus(true);
@@ -495,32 +511,32 @@ export const PayMedicine: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-          return {
-            medicineSKU: cartItemDetails.sku,
-            medicineName: cartItemDetails.name,
-            price:
-              couponCode && couponCode.length > 0
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : Number(getItemSpecialPrice(cartItemDetails)),
-            quantity: cartItemDetails.quantity,
-            itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount:
-              cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
-            mrp: cartItemDetails.price,
-            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              cartItemDetails.type_id === 'Pharma'
-                ? '1'
-                : cartItemDetails.type_id === 'Fmcg'
+        return {
+          medicineSKU: cartItemDetails.sku,
+          medicineName: cartItemDetails.name,
+          price:
+            couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+              ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+              : Number(getItemSpecialPrice(cartItemDetails)),
+          quantity: cartItemDetails.quantity,
+          itemValue: cartItemDetails.quantity * cartItemDetails.price,
+          itemDiscount:
+            cartItemDetails.quantity *
+            (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+              ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+              : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+          mrp: cartItemDetails.price,
+          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+          mou: parseInt(cartItemDetails.mou),
+          isMedicine:
+            cartItemDetails.type_id === 'Pharma'
+              ? '1'
+              : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
-          };
-        })
+          specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+        };
+      })
       : [];
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
@@ -602,7 +618,8 @@ export const PayMedicine: React.FC = (props) => {
       });
   };
 
-  const onClickPay = (value: string) => {
+  const onClickPay = (value: string, displayName?: string) => {
+    localStorage.setItem('selectedPaymentMode', displayName);
     setIsLoading(true);
     /**Gtm code start  */
     gtmTracking({
@@ -625,21 +642,30 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
         });
         /**Gtm code end  */
+
         if (res && res.data && res.data.saveMedicineOrderOMS) {
           const { orderId, orderAutoId, errorMessage } = res.data.saveMedicineOrderOMS;
           const currentPatiendId = currentPatient ? currentPatient.id : '';
+          /* Webengage Code Start */
+          paymentInstrumentClickTracking({
+            paymentMode: value,
+            orderId,
+            orderAutoId,
+            type: 'Pharmacy',
+          });
+          /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
             const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalWithCouponDiscount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            sessionStorage.removeItem('cartValues');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
             setAlertMessage('Something went wrong, please try later.');
           }
           setIsLoading(false);
-          sessionStorage.setItem('cartValues', '');
         }
       })
       .catch((e) => {
@@ -663,6 +689,8 @@ export const PayMedicine: React.FC = (props) => {
   );
 
   const onClickConsultPay = (value: string) => {
+    setShowZeroPaymentButton(false);
+
     setIsLoading(true);
     paymentMutationConsult({
       variables: {
@@ -674,6 +702,7 @@ export const PayMedicine: React.FC = (props) => {
           appointmentType: appointmentType,
           hospitalId: hospitalId,
           couponCode: consultCouponCode,
+          deviceType: getDeviceType(),
           // couponDiscount: couponValue,
         },
       },
@@ -725,9 +754,9 @@ export const PayMedicine: React.FC = (props) => {
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
-            }&patientId=${
+              }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
+              }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -755,8 +784,8 @@ export const PayMedicine: React.FC = (props) => {
                 params.payType === 'pharmacy'
                   ? clientRoutes.medicinesCart()
                   : appointmentType.toLowerCase() === 'online'
-                  ? clientRoutes.payOnlineConsult()
-                  : clientRoutes.payOnlineClinicConsult()
+                    ? clientRoutes.payOnlineConsult()
+                    : clientRoutes.payOnlineClinicConsult()
               }
             >
               <div className={classes.backArrow}>
@@ -789,41 +818,41 @@ export const PayMedicine: React.FC = (props) => {
                       color="secondary"
                     />
                   ) : (
-                    <ul className={classes.paymentOptions}>
-                      {paymentOptions.length > 0 &&
-                        paymentOptions.map((payType, index) => {
-                          return (
-                            <li
-                              key={index}
-                              onClick={() =>
-                                params.payType === 'pharmacy'
-                                  ? onClickPay(payType.paymentMode)
-                                  : onClickConsultPay(payType.paymentMode)
-                              }
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <img
-                                src={payType.imageUrl}
-                                alt=""
-                                style={{ height: 30, width: 30 }}
+                      <ul className={classes.paymentOptions}>
+                        {paymentOptions.length > 0 &&
+                          paymentOptions.map((payType, index) => {
+                            return (
+                              <li
+                                key={index}
+                                onClick={() =>
+                                  params.payType === 'pharmacy'
+                                    ? onClickPay(payType.paymentMode, payType.name)
+                                    : onClickConsultPay(payType.paymentMode)
+                                }
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <img
+                                  src={payType.imageUrl}
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
+                                />
+                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              </li>
+                            );
+                          })}
+                        {params.payType === 'pharmacy' && (
+                          <li>
+                            <FormGroup>
+                              <FormControlLabel
+                                className={classes.checkbox}
+                                control={<Checkbox onChange={handleChange} name="checked" />}
+                                label="Cash On Delivery"
                               />
-                              <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                            </li>
-                          );
-                        })}
-                      {params.payType === 'pharmacy' && (
-                        <li>
-                          <FormGroup>
-                            <FormControlLabel
-                              className={classes.checkbox}
-                              control={<Checkbox onChange={handleChange} name="checked" />}
-                              label="Cash On Delivery"
-                            />
-                          </FormGroup>
-                        </li>
-                      )}
-                    </ul>
-                  )}
+                            </FormGroup>
+                          </li>
+                        )}
+                      </ul>
+                    )}
                   {checked && (
                     <AphButton
                       className={classes.payBtn}
@@ -834,9 +863,21 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay RS. ${totalWithCouponDiscount.toFixed(2)} On delivery`
-                      )}
+                          `Pay Rs.${totalWithCouponDiscount.toFixed(2)} on delivery`
+                        )}
                     </AphButton>
+                  )}
+                  {params.payType === 'consults' && revisedAmount === 0 && (
+                    <div className={!showZeroPaymentButton ? classes.hideButton : ''}>
+                      <AphButton
+                        className={classes.payBtn}
+                        onClick={() => onClickConsultPay('PREPAID')}
+                        color="primary"
+                        fullWidth
+                      >
+                        Confirm Booking
+                      </AphButton>
+                    </div>
                   )}
                 </Paper>
               </Grid>
@@ -859,29 +900,31 @@ export const PayMedicine: React.FC = (props) => {
                             </span>
                           </div>
                         ) : (
-                          <>
-                            <div className={classes.appliedCoupon}>
-                              <span className={classes.linkText}>
-                                <span>{consultCouponCode}</span> applied
+                            <>
+                              <div className={classes.appliedCoupon}>
+                                <span className={classes.linkText}>
+                                  <span>{consultCouponCode}</span> applied
                               </span>
-                              <span className={classes.rightArrow}>
-                                <img src={require('images/ic_arrow_right.svg')} alt="" />
-                              </span>
-                            </div>
-                            <div className={classes.couponText}>
-                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
-                            </div>
-                          </>
-                        )}
+                                <span className={classes.rightArrow}>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </span>
+                              </div>
+                              <div className={classes.couponText}>
+                                {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                              </div>
+                            </>
+                          )}
                       </div>
                     </div>
                     {consultCouponCode.length > 0 && (
                       <div className={classes.discountTotal}>
                         Savings of Rs.{' '}
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(onlineConsultationFees) -
+                          ? (
+                            parseFloat(onlineConsultationFees) -
                             parseFloat(validateConsultCouponResult.revisedAmount)
-                          : parseFloat(consultCouponValue)}{' '}
+                          ).toFixed(2)
+                          : parseFloat(consultCouponValue).toFixed(2)}{' '}
                         on the bill
                       </div>
                     )}
@@ -897,13 +940,18 @@ export const PayMedicine: React.FC = (props) => {
                       <p>MRP Total</p> <p>Rs.{mrpTotal && mrpTotal.toFixed(2)}</p>
                     </div>
                     <div className={`${classes.charges} ${classes.discount}`}>
-                      <p>Product Discount</p> <p>- Rs.{productDiscount}</p>
+                      <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
+                    </div>
+                    {couponCode != '' && couponValue ? (
+                      <div className={`${classes.charges} ${classes.discount}`}>
+                        <p>Coupon Discount</p> <p>- Rs.{couponValue}</p>
+                      </div>
+                    ) : null}
+                    <div className={classes.charges}>
+                      <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges.toFixed(2)}</p>
                     </div>
                     <div className={classes.charges}>
-                      <p>Delivery Charges</p> <p>+ Rs.{deliveryCharges}</p>
-                    </div>
-                    <div className={classes.charges}>
-                      <p>Packing Charges</p> <p>+ Rs.0</p>
+                      <p>Packing Charges</p> <p>+ Rs. 0.00</p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
                       <p>To Pay</p>{' '}
@@ -911,32 +959,34 @@ export const PayMedicine: React.FC = (props) => {
                     </div>
                   </Paper>
                 ) : (
-                  <Paper className={classes.paper}>
-                    <div className={classes.charges}>
-                      {' '}
-                      <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
-                    </div>
-                    <div className={`${classes.charges} ${classes.discount}`}>
-                      <p>Coupon Applied</p>{' '}
-                      <p>
-                        - Rs.
+                    <Paper className={classes.paper}>
+                      <div className={classes.charges}>
+                        {' '}
+                        <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
+                      </div>
+                      <div className={`${classes.charges} ${classes.discount}`}>
+                        <p>Coupon Applied</p>{' '}
+                        <p>
+                          - Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? parseFloat(amount) -
-                            parseFloat(validateConsultCouponResult.revisedAmount)
-                          : consultCouponValue || 0}
-                      </p>
-                    </div>
-                    <div className={`${classes.charges} ${classes.total}`}>
-                      <p>To Pay</p>{' '}
-                      <p>
-                        Rs.
+                            ? (
+                              parseFloat(amount) -
+                              parseFloat(validateConsultCouponResult.revisedAmount)
+                            ).toFixed(2)
+                            : parseFloat(consultCouponValue).toFixed(2) || 0}
+                        </p>
+                      </div>
+                      <div className={`${classes.charges} ${classes.total}`}>
+                        <p>To Pay</p>{' '}
+                        <p>
+                          Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                          ? validateConsultCouponResult.revisedAmount
-                          : revisedAmount && revisedAmount.toFixed(2)}
-                      </p>
-                    </div>
-                  </Paper>
-                )}
+                            ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
+                            : revisedAmount.toFixed(2)}
+                        </p>
+                      </div>
+                    </Paper>
+                  )}
               </Grid>
             </Grid>
           </div>
@@ -969,6 +1019,6 @@ export const PayMedicine: React.FC = (props) => {
         setIsAlertOpen={setIsAlertOpen}
         consult={consult}
       />
-    </div>
+    </div >
   );
 };

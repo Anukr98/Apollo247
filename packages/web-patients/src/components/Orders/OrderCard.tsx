@@ -1,28 +1,23 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
-import {
-  AphTrackSlider,
-  AphOnHoldSlider,
-  AphDelayedSlider,
-  AphDeliveredSlider,
-} from '@aph/web-ui-components';
+import React from 'react';
+import { AphTrackSlider } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList as ordersList,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus as statusDetails,
-} from 'graphql/types/GetMedicineOrdersList';
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList as OrdersList,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus as StatusDetails,
+} from 'graphql/types/getMedicineOrdersOMSList';
 
 import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
+import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getStatus } from 'components/Orders/OrderStatusCard';
+import { getStatus, isRejectedStatus } from './OrderStatusCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,15 +219,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-function valuetext(value: number) {
-  return `${value}`;
-}
-
-type OrderCardProps = {
+interface OrderCardProps {
   setOrderAutoId: (orderAutoId: number) => void;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
   orderAutoId: number;
-};
+}
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
@@ -240,9 +231,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const { data, error, loading } = useQueryWithSkip<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+    getMedicineOrdersOMSList,
+    getMedicineOrdersOMSListVariables
+  >(GET_MEDICINE_ORDERS_OMS_LIST, {
     variables: {
       patientId: currentPatient && currentPatient.id,
     },
@@ -255,9 +246,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   if (error) return <div>Error :(</div>;
 
-  const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
-    if (statusList && statusList.length > 0) {
-      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+  const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
+    const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+    if (filteredStatusList && filteredStatusList.length > 0) {
       return (
         filteredStatusList.sort(
           (a, b) =>
@@ -273,8 +264,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     return null;
   };
 
-  const getOrderStatus = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderStatus = (statusList: (StatusDetails | null)[]) => {
+    const sortedList = getSortedStatusList(statusList);
     if (sortedList && sortedList.length > 0) {
       const firstSortedData = sortedList[0];
       if (firstSortedData && firstSortedData.orderStatus) {
@@ -283,50 +274,64 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getOrderDeliveryDate = (status: (statusDetails | null)[]) => {
-    const sortedList = getSortedstatusList(status);
+  const getOrderStatusDate = (
+    status: (StatusDetails | null)[],
+    currentStatus: MEDICINE_ORDER_STATUS
+  ) => {
+    const sortedList = getSortedStatusList(status);
     if (sortedList && sortedList.length > 0) {
-      const firstSortedData = sortedList[0];
+      const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
       return (
-        firstSortedData &&
-        moment(new Date(firstSortedData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+        currentStatusData &&
+        moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
       );
     }
   };
 
-  const getSlider = (status: (statusDetails | null)[]) => {
-    const sliderStatus = getOrderStatus(status);
-    switch (sliderStatus) {
-      case 'Order Placed':
+  const getDefaultValue = (status: string) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        return 60;
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+        return 120;
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+        return 180;
+      case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+        return 160;
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+        return 280;
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+        return 360;
+    }
+  };
+
+  const isSliderDisabled = (sliderStatus: MEDICINE_ORDER_STATUS) => {
+    return (
+      sliderStatus === MEDICINE_ORDER_STATUS.CANCELLED ||
+      sliderStatus === MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+    );
+  };
+
+  const getSlider = (status: MEDICINE_ORDER_STATUS) => {
+    switch (status) {
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         return (
           <AphTrackSlider
             color="primary"
-            defaultValue={80}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Order Delivered':
-        return (
-          <AphDeliveredSlider
-            color="primary"
-            defaultValue={360}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Return Accepted' || 'Order Cancelled':
-        return (
-          <AphTrackSlider
-            color="primary"
-            getAriaValueText={valuetext}
-            disabled
+            defaultValue={getDefaultValue(status)}
+            getAriaValueText={(value: number) => value.toString()}
+            disabled={isSliderDisabled(status)}
             min={0}
             max={360}
             valueLabelDisplay="off"
@@ -334,51 +339,31 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           />
         );
 
-      case 'Order Verified':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={100}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
-      case 'Order Initiated':
-        return (
-          <AphTrackSlider
-            color="primary"
-            defaultValue={60}
-            getAriaValueText={valuetext}
-            min={0}
-            max={360}
-            valueLabelDisplay="off"
-            step={null}
-          />
-        );
       default:
         return null;
     }
   };
 
-  if (
-    data &&
-    data.getMedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList &&
-    data.getMedicineOrdersList.MedicineOrdersList.length > 0
-  ) {
-    const orderListData = data.getMedicineOrdersList.MedicineOrdersList;
-
-    const firstOrderInfo = orderListData[0];
-    if (!props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
-      props.setOrderAutoId(firstOrderInfo.orderAutoId);
+  const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
+    switch (deliveryType) {
+      case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
+        return 'Home Delivery';
+      case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
+        return 'Store Pickup';
     }
+  };
+  if (data && data.getMedicineOrdersOMSList && data.getMedicineOrdersOMSList.medicineOrdersList) {
+    if (data.getMedicineOrdersOMSList.medicineOrdersList.length > 0) {
+      const orderListData = data.getMedicineOrdersOMSList.medicineOrdersList;
 
-    return (
-      <div className={classes.orderListing}>
-        <div className={classes.customScroll}>
+      const firstOrderInfo = orderListData[0];
+      if (!isSmallScreen && !props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
+        props.setOrderAutoId(firstOrderInfo.orderAutoId);
+      }
+
+      return (
+        <div className={classes.orderListing}>
+          <div className={classes.customScroll}>
             {orderListData && orderListData.length > 0 ? (
               orderListData.map(
                 (orderInfo) =>
@@ -405,18 +390,21 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                           <div className={classes.itemName}>Medicines</div>
                           <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                           <div className={classes.deliveryType}>
-                            <span>{orderInfo.deliveryType}</span>
+                            <span>
+                              {getDeliveryType(orderInfo.deliveryType)}{' '}
+                              {isSmallScreen ? null : `#${orderInfo.orderAutoId}`}
+                            </span>
                           </div>
                         </div>
                       </div>
                       <div className={classes.orderTrackSlider}>
-                        {getSlider(orderInfo.medicineOrdersStatus)}
+                        {getSlider(orderInfo.currentStatus)}
                       </div>
                       <div className={classes.orderStatusGroup}>
                         {orderInfo.medicineOrdersStatus && (
                           <div
                             className={
-                              getOrderStatus(orderInfo.medicineOrdersStatus) === 'Order Cancelled'
+                              isRejectedStatus(orderInfo.currentStatus)
                                 ? `${classes.orderStatusRejected}`
                                 : `${classes.orderStatus}`
                             }
@@ -424,9 +412,13 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                             {getOrderStatus(orderInfo.medicineOrdersStatus)}
                           </div>
                         )}
+
                         <div className={classes.statusInfo}>
-                          {orderInfo.medicineOrdersStatus &&
-                            getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
+                          {orderInfo.currentStatus &&
+                            getOrderStatusDate(
+                              orderInfo.medicineOrdersStatus,
+                              orderInfo.currentStatus
+                            )}
                         </div>
                       </div>
                     </div>
@@ -442,8 +434,19 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               </div>
             )}
           </div>
-      </div>
-    );
+        </div>
+      );
+    } else if (data.getMedicineOrdersOMSList.medicineOrdersList.length === 0) {
+      return (
+        <div className={classes.noOrdersWrapper}>
+          <div>Uh oh! :)</div>
+          <div className={classes.noOrdersText}>No Orders Found!</div>
+          <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
+            Order Now
+          </Link>
+        </div>
+      );
+    }
   }
   return null;
 };

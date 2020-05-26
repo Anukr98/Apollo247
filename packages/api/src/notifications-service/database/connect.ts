@@ -3,6 +3,7 @@ import {
   Appointment,
   AppointmentCallDetails,
   AppointmentDocuments,
+  AppointmentRefunds,
   AppointmentNoShow,
   AppointmentPayments,
   AppointmentSessions,
@@ -18,6 +19,7 @@ import {
   AuditHistory,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -91,6 +93,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         AppointmentDocuments,
         AppointmentNoShow,
+        AppointmentRefunds,
         AppointmentPayments,
         AppointmentSessions,
         AuditHistory,
@@ -105,6 +108,7 @@ export const connect = async () => {
         RescheduleAppointmentDetails,
         SdDashboardSummary,
         TransferAppointmentDetails,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
