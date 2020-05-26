@@ -346,13 +346,33 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 }}
               />
             </View>
-            <Text
-              style={{ ...fonts.IBMPlexSansRegular(12), marginTop: 20, color: colors.BLACK_COLOR }}
-            >
-              Once you link your UHID’s to your
-              <Text style={{ ...fonts.IBMPlexSansSemiBold(12) }}> Primary UHID, </Text>
-              you can always Delink them later.
-            </Text>
+            {
+              action === 'delink' ? (
+                <Text
+                  style={{ 
+                    ...fonts.IBMPlexSansRegular(12),
+                    marginTop: 20,
+                    color: colors.BLACK_COLOR
+                  }}
+                >
+                  Once you delink your UHID’s to your
+                  <Text style={{ ...fonts.IBMPlexSansSemiBold(12) }}> Primary UHID, </Text>
+                  you can always link them back later.
+                </Text>
+              ) : (
+                <Text
+                  style={{
+                    ...fonts.IBMPlexSansRegular(12),
+                    marginTop: 20,
+                    color: colors.BLACK_COLOR
+                  }}
+                >
+                  Once you link your UHID’s to your
+                  <Text style={{ ...fonts.IBMPlexSansSemiBold(12) }}> Primary UHID, </Text>
+                  you can always Delink them later.
+                </Text>
+              )
+            }
           </View>
         </View>
       </Modal>
