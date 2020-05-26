@@ -213,22 +213,36 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await initiateRefund(
-        {
-          appointment: processingAppointment,
-          appointmentPayments: paymentInfo,
-          refundAmount: paymentInfo.amountPaid,
-          txnId: paymentInfo.paymentRefId,
-          orderId: processingAppointment.paymentOrderId,
-        },
-        consultsDb
-      );
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
-      paymentInfo.appointment = processingAppointment;
+      let isRefunded: boolean = false;
+      if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
+        await initiateRefund(
+          {
+            appointment: processingAppointment,
+            appointmentPayments: paymentInfo,
+            refundAmount: paymentInfo.amountPaid,
+            txnId: paymentInfo.paymentRefId,
+            orderId: processingAppointment.paymentOrderId,
+          },
+          consultsDb
+        );
+
+        paymentInfo.appointment = processingAppointment;
+        sendNotification(
+          {
+            appointmentId: processingAppointment.id,
+            notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+          },
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+        isRefunded = true;
+      }
 
       return {
         appointment: paymentInfo,
-        isRefunded: true,
+        isRefunded: isRefunded,
       };
     }
 

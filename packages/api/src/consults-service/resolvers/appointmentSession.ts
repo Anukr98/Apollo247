@@ -28,12 +28,15 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
     DOCTOR
     PATIENT
     JUNIOR
+    ADMIN
+    SYSTEM
   }
 
   type AppointmentSession {
@@ -237,6 +240,7 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.appointmentId
   );
 
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   if (apptSessionDets) {
     const doctorTokenExpiryDate = apptSessionDets.doctorToken
       ? await getExpirationTime(apptSessionDets.doctorToken)
@@ -269,6 +273,7 @@ const createAppointmentSession: Resolver<
       notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
     };
     if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+      caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
       pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
     }
     const notificationResult = await sendNotification(
@@ -316,6 +321,7 @@ const createAppointmentSession: Resolver<
     notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
   };
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
     pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
   }
   const notificationResult = await sendNotification(

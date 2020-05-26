@@ -23,6 +23,21 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    noData: {
+      paddingTop: 30,
+      paddingBottom: 30,
+      textAlign: 'center',
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    icon: {
+      paddingBottom: 10,
+      '& img': {
+        maxWidth: 34,
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -45,13 +60,30 @@ export const ConsultPayments: React.FC = (props) => {
 
   if (error) return <div className={classes.circlularProgress}>No data is available</div>;
 
-  return data && data.consultOrders && data.consultOrders.appointments ? (
+  if (
+    data &&
+    data.consultOrders &&
+    data.consultOrders.appointments &&
+    data.consultOrders.appointments.length
+  ) {
+    const appointmentData = data.consultOrders.appointments;
+    const dataReversed = [...appointmentData].reverse();
+    return (
+      <div className={classes.root}>
+        {dataReversed.map((appointmentDetails) => (
+          <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
+        ))}
+      </div>
+    );
+  }
+  return (
     <div className={classes.root}>
-      {data.consultOrders.appointments.map((appointmentDetails) => (
-        <PaymentCard cardDetails={appointmentDetails} key={appointmentDetails.id} />
-      ))}
+      <div className={classes.noData}>
+        <div className={classes.icon}>
+          <img src={require('images/transaction_history.svg')} alt="" />
+        </div>
+        <div>You have no payment history!</div>
+      </div>
     </div>
-  ) : (
-    <></>
   );
 };

@@ -711,6 +711,9 @@ export class AdminUsers extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Column({ default: false })
+  readOnly: Boolean;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

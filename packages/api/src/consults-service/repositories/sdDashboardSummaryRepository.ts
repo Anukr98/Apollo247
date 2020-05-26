@@ -524,7 +524,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: Not(STATUS.CANCELLED),
       },
     });
-    console.log('appointmentsList>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
       return new Promise<number>((resolve, reject) => {
@@ -532,31 +531,24 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           const calldetails = await AppointmentCallDetails.findOne({
             where: { appointment: appt.id, doctorType: Not('JUNIOR') },
           });
-          console.log('callDetalis==>', calldetails);
           if (calldetails) {
             const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
             const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
             const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
             const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
-            console.log(
-              'datesss=>',
-              apptFormat,
-              callStartTimeFormat,
-              addingFiveMinutes,
-              addingFiveMinutesFormat
-            );
-            const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
-              start: new Date(apptFormat),
-              end: new Date(addingFiveMinutesFormat),
-            });
-            console.log('isWithInInterval=>', withInTime);
+            const withInTime =
+              isWithinInterval(new Date(callStartTimeFormat), {
+                start: new Date(apptFormat),
+                end: new Date(addingFiveMinutesFormat),
+              }) || calldetails.startTime <= appt.appointmentDateTime;
             if (withInTime) {
               count = count + 1;
             }
-            console.log('count==>', count);
           }
           if (index + 1 === array.length) {
-            resolve(count);
+            setInterval(() => {
+              resolve(count);
+            }, 3000);
           }
         });
       });
