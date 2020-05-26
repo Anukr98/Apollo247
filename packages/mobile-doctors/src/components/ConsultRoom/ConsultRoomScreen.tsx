@@ -1239,26 +1239,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
-            } else {
-              console.log(
-                'Call ab',
-                !abondmentStarted && patientJoined,
-                patientJoined,
-                abondmentStarted
-              );
-              if (
-                !abondmentStarted &&
-                patientJoined &&
-                ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
-                  (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
-                )
-              ) {
-                abondmentStarted = true;
-                startNoShow(600, () => {
-                  callAbandonmentCall();
-                });
-              }
             }
+            // else {
+            //   console.log(
+            //     'Call ab',
+            //     !abondmentStarted && patientJoined,
+            //     patientJoined,
+            //     abondmentStarted
+            //   );
+            //   if (
+            //     !abondmentStarted &&
+            //     patientJoined &&
+            //     ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
+            //       (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
+            //     )
+            //   ) {
+            //     abondmentStarted = true;
+            //     startNoShow(600, () => {
+            //       callAbandonmentCall();
+            //     });
+            //   }
+            // }
             // const PatientConsultStartedMessage = insertText.filter((obj: any) => {
             //   return obj.message === messageCodes.consultPatientStartedMsg;
             // });
@@ -1464,11 +1465,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   if (response) {
                     startMissedCallTimer(45, () => {
                       stopAllCalls();
-                      if (missedCallCounter < 2) {
-                        setMissedCallCounter(missedCallCounter + 1);
-                      } else {
-                        callAbandonmentCall();
-                      }
+                      // if (missedCallCounter < 2) {
+                      setMissedCallCounter(missedCallCounter + 1);
+                      // } else {
+                      //   callAbandonmentCall();
+                      // }
                     });
                   }
                 }
@@ -1535,11 +1536,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   if (response) {
                     startMissedCallTimer(45, () => {
                       stopAllCalls();
-                      if (missedCallCounter < 2) {
-                        setMissedCallCounter(missedCallCounter + 1);
-                      } else {
-                        callAbandonmentCall();
-                      }
+                      // if (missedCallCounter < 2) {
+                      setMissedCallCounter(missedCallCounter + 1);
+                      // } else {
+                      //   callAbandonmentCall();
+                      // }
                     });
                     // startNoShow(45, () => {
                     //   stopAllCalls();
