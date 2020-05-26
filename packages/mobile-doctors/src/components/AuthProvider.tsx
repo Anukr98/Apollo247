@@ -250,13 +250,13 @@ export const AuthProvider: React.FC = (props) => {
 
   const getSpecialties = async () => {
     const storedDate = await AsyncStorage.getItem('SpecialistAPICalledDate');
-    const specialistData = await AsyncStorage.getItem('SpecialistData');
+    const specialistData = JSON.parse((await AsyncStorage.getItem('SpecialistData')) || '[]');
     if (storedDate) {
       if (storedDate !== moment(new Date()).format('DDMMYYYY')) {
         fetchSpecialities();
       } else {
-        if (specialistData) {
-          setSpecialties(JSON.parse(specialistData));
+        if (specialistData && specialistData.length > 0) {
+          setSpecialties(specialistData);
         } else {
           fetchSpecialities();
         }
