@@ -1007,6 +1007,7 @@ export const PayMedicine: React.FC = (props) => {
               cartValue={onlineConsultationFees}
               validityStatus={validityStatus}
               setValidityStatus={setValidityStatus}
+              speciality={speciality}
             />
           </AphDialog>
         </div>

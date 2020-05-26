@@ -453,7 +453,7 @@ export const OnlineCheckout: React.FC = () => {
     //     doctorDetails.getDoctorDetailsById.doctorHospital &&
     //     doctorDetails.getDoctorDetailsById.doctorHospital[0].facility) ||
     //   null;
-
+    
     return (
       <div>
         <div className={classes.pageTopHeader}>
@@ -649,6 +649,7 @@ export const OnlineCheckout: React.FC = () => {
               cartValue={onlineConsultationFees}
               validityStatus={validityStatus}
               setValidityStatus={setValidityStatus}
+              speciality={speciality}
             />
           </AphDialog>
         </div>
