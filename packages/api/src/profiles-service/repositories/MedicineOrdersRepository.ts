@@ -383,6 +383,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
+    console.log('orderAutoId=>', ordersList[0].orderAutoId);
     console.log('ordersList====>', ordersList);
     let totalCount = 0,
       deliveryCount = 0,
@@ -403,12 +404,22 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           } else {
             vdcCount++;
           }
+          console.log('counts==>', totalCount, vdcCount);
           if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+            console.log('inside condition');
             const orderStatusDetails = await MedicineOrdersStatus.findOne({
               where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
             });
             console.log('orderStatusDetails=>', orderStatusDetails);
             if (orderStatusDetails) {
+              console.log('inside orderStatusDetails');
+              console.log(orderStatusDetails.statusDate, orderDetails.createdDate);
+              console.log(
+                'difference==>',
+                Math.abs(
+                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
+                )
+              );
               const deliveryTat = Math.floor(
                 Math.abs(
                   differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
@@ -420,6 +431,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
               } else {
                 vdcDeliveryCount++;
               }
+              console.log('delivery,VdcCounts=>', deliveryCount, vdcCount);
             }
           }
         }

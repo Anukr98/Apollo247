@@ -527,6 +527,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     console.log('appointmentList==>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
+      console.log('inside the consdition');
       return new Promise<number>((resolve, reject) => {
         appointmentList.forEach(async (appt, index, array) => {
           const calldetails = await AppointmentCallDetails.find({
