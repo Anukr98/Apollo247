@@ -355,7 +355,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                     color: colors.BLACK_COLOR
                   }}
                 >
-                  Once you delink your UHID’s to your
+                  Once you delink your UHID’s from your
                   <Text style={{ ...fonts.IBMPlexSansSemiBold(12) }}> Primary UHID, </Text>
                   you can always link them back later.
                 </Text>
