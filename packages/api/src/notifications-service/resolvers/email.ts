@@ -13,22 +13,26 @@ export const emailTypeDefs = gql`
 export async function sendMail(emailContent: EmailMessage) {
   let ccEmailList = [];
   ccEmailList = emailContent.ccEmail.split(',');
-  const lib = require('pepipost');
-  const controller = lib.EmailController;
-  const apiKey = ApiConstants.PEPIPOST_API_KEY;
-  const body = new lib.EmailBody();
-  body.personalizations = [];
-  body.personalizations[0] = new lib.Personalizations();
-  body.personalizations[0].recipient = emailContent.toEmail;
-  body.personalizations[0].recipientCc = ccEmailList;
-  body.from = new lib.From();
-  body.from.fromEmail = emailContent.fromEmail;
-  body.from.fromName = emailContent.fromName;
-  body.subject = emailContent.subject;
-  body.content = emailContent.messageContent;
-  const mailStatus = await controller.createSendEmail(apiKey, body);
-  console.log(mailStatus, 'status of mail');
-  return mailStatus;
+  let sendgrid = require('@sendgrid/mail');
+  sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+  sendgrid.send(
+    {
+      to: emailContent.toEmail,
+      cc: ccEmailList,
+      from: emailContent.fromEmail,
+      fromname: emailContent.fromName,
+      subject: emailContent.subject,
+      text: emailContent.messageContent,
+      html: emailContent.messageContent,
+    },
+    function(err: any, json: any) {
+      if (err) {
+        return console.error(err);
+      }
+      let statusCode: { status: string } = { status: json.request.statusCode };
+      return statusCode;
+    }
+  );
 }
 
 const sendEmailMessage: Resolver<null, {}, NotificationsServiceContext, string> = async (

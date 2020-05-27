@@ -6,7 +6,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
-import { STATUS } from 'consults-service/entities';
+import { STATUS, REFUND_STATUS } from 'consults-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const consultOrdersTypeDefs = gql`
@@ -22,6 +22,7 @@ export const consultOrdersTypeDefs = gql`
     discountedAmount: Float
     appointmentType: String
     appointmentPayments: [ApptPayment]
+    appointmentRefunds: [ApptRefunds]
     status: STATUS
     doctorId: String
     doctor: DoctorResponse
@@ -39,6 +40,12 @@ export const consultOrdersTypeDefs = gql`
     paymentType: String
     responseMessage: String
   }
+  type ApptRefunds {
+    refundAmount: Float
+    txnTimestamp: Date
+    refundStatus: REFUND_STATUS
+    refundId: String
+  }
   extend type Query {
     consultOrders(patientId: String): AppointmentsResult
   }
@@ -52,6 +59,7 @@ type ApptResponse = {
   discountedAmount: number;
   appointmentType: string;
   appointmentPayments: ApptPayment[];
+  appointmentRefunds: ApptRefunds[];
   status: STATUS;
   doctorId: string;
   doctor: DoctorResponse;
@@ -72,6 +80,13 @@ type ApptPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
+};
+
+type ApptRefunds = {
+  refundAmount: number;
+  txnTimestamp: Date;
+  refundStatus: REFUND_STATUS;
+  refundId: string;
 };
 
 const consultOrders: Resolver<
@@ -107,6 +122,7 @@ const consultOrders: Resolver<
           appointmentDateTime: val.appointmentDateTime,
           appointmentType: val.appointmentType,
           appointmentPayments: val.appointmentPayments,
+          appointmentRefunds: val.appointmentRefunds,
           id: val.id,
           doctorId: val.doctorId,
           status: val.status,

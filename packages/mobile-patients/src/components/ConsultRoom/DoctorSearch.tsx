@@ -1240,28 +1240,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   {(currentPatient && currentPatient!.firstName) || ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <PrimaryIcon
+                  <LinkedUhidIcon
                     style={{
                       width: 22,
                       height: 20,
                       marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 16 : 20,
+                      marginTop: Platform.OS === 'ios' ? 26 : 30,
                     }}
                     resizeMode={'contain'}
                   />
-                ) : (
-                  currentPatient && (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 16 : 20,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  )
-                )}
+                ) : null}
                 <View style={{ paddingTop: 28 }}>
                   <DropdownGreen />
                 </View>

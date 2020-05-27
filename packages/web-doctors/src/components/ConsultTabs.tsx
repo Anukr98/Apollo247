@@ -1352,30 +1352,42 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e) => {
+          const networkErrorMessage = e.networkError ? e.networkError.message : null;
+          const allMessages = e.graphQLErrors
+            .map((error: any) => error.message)
+            .concat(networkErrorMessage ? networkErrorMessage : []);
+          const isCasesheetSentToPAtientAlready = allMessages.includes(
+            AphErrorMessages.CASESHEET_SENT_TO_PATIENT_ALREADY
+          );
           setSaving(false);
+          if (isCasesheetSentToPAtientAlready) {
+            alert('Case sheet cannot be modified now as the consult is already completed');
+            window.location.reload();
+          } else {
+            const error = e
+              ? JSON.parse(JSON.stringify(e))
+              : 'Error occured while update casesheet';
+            const errorMessage = e ? error.message : error;
 
-          const error = e ? JSON.parse(JSON.stringify(e)) : 'Error occured while update casesheet';
-          const errorMessage = e ? error.message : error;
+            console.error('Error occured while update casesheet', e);
+            console.log(errorMessage);
+            alert(errorMessage);
+            const logObject = {
+              api: 'ModifyCaseSheet',
+              inputParam: JSON.stringify(inputVariables),
+              appointmentId: appointmentId,
+              doctorId: currentPatient!.id,
+              doctorDisplayName: currentPatient!.displayName,
+              patientId: params.patientId,
+              currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+              appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+                'MMMM DD YYYY h:mm:ss a'
+              ),
+              error: e ? JSON.stringify(e) : 'Error occured while update casesheet',
+            };
 
-          console.error('Error occured while update casesheet', e);
-          console.log(errorMessage);
-          alert(errorMessage);
-
-          const logObject = {
-            api: 'ModifyCaseSheet',
-            inputParam: JSON.stringify(inputVariables),
-            appointmentId: appointmentId,
-            doctorId: currentPatient!.id,
-            doctorDisplayName: currentPatient!.displayName,
-            patientId: params.patientId,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-            appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            ),
-            error: e ? JSON.stringify(e) : 'Error occured while update casesheet',
-          };
-
-          sessionClient.notify(JSON.stringify(logObject));
+            sessionClient.notify(JSON.stringify(logObject));
+          }
         });
     } catch (error) {
       setSaving(false);

@@ -241,7 +241,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 {profileDetails.firstName} {profileDetails.lastName}
               </Text>
               {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                <PrimaryIcon
+                <LinkedUhidIcon
                   style={{
                     width: 22,
                     height: 20,
@@ -250,19 +250,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                   }}
                   resizeMode={'contain'}
                 />
-              ) : (
-                currentPatient && (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 5 : 8,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                )
-              )}
+              ) : null}
             </View>
             <View style={styles.separatorStyle} />
             <View

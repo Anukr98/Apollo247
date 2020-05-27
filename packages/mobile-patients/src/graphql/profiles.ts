@@ -1433,6 +1433,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           orderStatus
           statusDate
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineSKU
@@ -2449,6 +2450,7 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
       paymentStatus
       paymentDateTime
       orderDateTime
+      paymentMode
     }
   }
 `;
@@ -2465,6 +2467,11 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
         status
         appointmentType
         discountedAmount
+        appointmentRefunds {
+          refundAmount
+          txnTimestamp
+          refundStatus
+        }
         appointmentPayments {
           paymentRefId
           paymentStatus
@@ -2519,6 +2526,6 @@ export const LINK_UHID = gql`
 
 export const UNLINK_UHID = gql`
   mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
-    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids) 
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
   }
 `;

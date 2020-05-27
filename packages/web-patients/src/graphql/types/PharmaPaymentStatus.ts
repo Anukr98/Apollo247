@@ -15,6 +15,7 @@ export interface PharmaPaymentStatus_pharmaPaymentStatus {
   paymentStatus: string;
   paymentDateTime: any | null;
   paymentMode: string | null;
+  orderDateTime: any;
 }
 
 export interface PharmaPaymentStatus {

@@ -44,6 +44,7 @@ export enum WebEngageEventName {
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
+  CONSULT_SORT = 'Consult Sort',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',

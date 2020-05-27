@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  PixelRatio,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -22,12 +23,17 @@ import moment from 'moment';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { PatientDefaultImage, PrimaryUHIDIconBlue, SecondaryUHIDIconBlue } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  PatientDefaultImage,
+  PrimaryUHIDIconBlue,
+  SecondaryUHIDIconBlue
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { linkUHIDs, deLinkUHIDs } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useApolloClient } from 'react-apollo-hooks/lib/ApolloContext';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -80,37 +86,35 @@ const styles = StyleSheet.create({
   centeredView: {
     backgroundColor: 'rgba(100,100,100, 0.5)',
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalView: {
     margin: 90,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 20,
     padding: 25,
-    alignItems: "center",
-    shadowColor: "#000",
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5
+    elevation: 3,
   },
   closeButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
     backgroundColor: colors.WHITE,
     padding: 3,
     paddingLeft: 8,
     paddingRight: 8,
     borderRadius: 30,
-    elevation: 6,
+    zIndex: 2,
   },
   secondaryUHIDCard: {
-    width:'80%',
+    width: '80%',
     alignSelf: 'flex-end',
     minHeight: 130,
     padding: 10,
@@ -120,13 +124,12 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderBottomWidth: 1,
     borderRightWidth: 1,
-  }
+  },
 });
 
-export interface LinkUHIDProps extends NavigationScreenProps { }
+export interface LinkUHIDProps extends NavigationScreenProps {}
 
 export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
-
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { loading, setLoading } = useUIElements();
@@ -146,16 +149,21 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   const [selectedSecondary, setSelectedSecondary] = useState<string[]>([]);
   const [enableSelectPrimary, setEnableSelectPrimary] = useState<boolean>(true);
   const [enableSelectSecondary, setEnableSelectSecondary] = useState<boolean>(false);
+  const [enableSelect, setEnableSelect] = useState<boolean>(false);
 
   const [primaryUHIDs, setPrimaryUHIDs] = useState<string>('');
   const [secondaryUHIDs, setSecondaryUHIDs] = useState<string[]>([]);
   const [firstSecondaryUHID, setFirstSecondaryUHID] = useState<string>('');
   const [delinkSecondaryUHIDs, setDelinkSecondaryUHIDs] = useState<string[]>([]);
   const [relinkSecondaryUHIDs, setRelinkSecondaryUHIDs] = useState<string[]>([]);
-  const {action} = props.navigation.state.params;
+  const action = props.navigation.getParam('action') || '';
+
+  const { setisUHID } = useAppCommonData();
+
+  const pixelRatio = PixelRatio.get();
 
   useEffect(() => {
-    checkForLinkedProfiles()
+    checkForLinkedProfiles();
   }, [allProfiles]);
 
   const checkForLinkedProfiles = () => {
@@ -170,14 +178,14 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         setEnableSelectSecondary(true);
         primary = profile;
         areUhidsLinked = true;
-      }
-      else if(profile!.isLinked) {
+      } else if (profile!.isLinked) {
         secondary.push(profile!.uhid);
         areUhidsLinked = true;
       }
     });
 
-    if (areUhidsLinked) { // shuffle array as [primary, [...secondary], [...unlined]]
+    if (areUhidsLinked) {
+      // shuffle array as [primary, [...secondary], [...unlined]]
       setSecondaryUHIDs(secondary);
       setSelectedSecondary(secondary);
       setFirstSecondaryUHID(secondary[0]);
@@ -194,29 +202,28 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   };
 
   const linkUhidsApiCall = () => {
+    setisUHID && setisUHID([...selectedSecondary]);
     linkUHIDs(client, selectedPrimary, selectedSecondary)
-    .then((data) => {
-      getPatientApiCall();
-      props.navigation.navigate(AppRoutes.ManageProfile);
-    })
-    .catch((e) => {
-      CommonBugFender('LinkUHIDs', e);
-      console.log('Error occured ', e);
-    })
-    // .finally(() => {setLoading && setLoading(false);});
+      .then((data) => {
+        getPatientApiCall();
+        props.navigation.navigate(AppRoutes.ManageProfile);
+      })
+      .catch((e) => {
+        CommonBugFender('LinkUHIDs', e);
+        console.log('Error occured ', e);
+      })
   };
 
   const deLinkUhidsApiCall = () => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
-    .then((data) => {
-      getPatientApiCall();
-      props.navigation.navigate(AppRoutes.ManageProfile);
-    })
-    .catch((e) => {
-      CommonBugFender('LinkUHIDs', e);
-      console.log('Error occured ', e);
-    })
-    // .finally(() => {setLoading && setLoading(false);});
+      .then((data) => {
+        getPatientApiCall();
+        props.navigation.navigate(AppRoutes.ManageProfile);
+      })
+      .catch((e) => {
+        CommonBugFender('LinkUHIDs', e);
+        console.log('Error occured ', e);
+      })
   };
 
   const backDataFunctionality = async () => {
@@ -252,39 +259,52 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         animationType="slide"
         transparent={true}
         visible={showAlert}
-        onRequestClose={() => {setShowAlert(false);}}
-        onDismiss={()=>{setShowAlert(false);}}
+        onRequestClose={() => {
+          setShowAlert(false);
+        }}
+        onDismiss={() => {
+          setShowAlert(false);
+        }}
       >
+        <TouchableOpacity
+          style={[
+            styles.closeButton,
+            pixelRatio <= 2 ?
+              { top: 160, right: 40 } :
+              { top: '31%', right: 60 }
+          ]}
+          onPress={() => {
+            setShowAlert(false);
+          }}
+        >
+          <Text style={{ color: theme.colors.APP_YELLOW }}>X</Text>
+        </TouchableOpacity>
         <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                setShowAlert(false);
+          <View
+            style={[
+              styles.modalView,
+              pixelRatio <= 2 ? { margin: 70 } : { margin: 90 },
+            ]}>
+            <Text
+              style={{
+                ...fonts.IBMPlexSansRegular(16),
+                marginBottom: 20,
+                color: colors.BLACK_COLOR,
               }}
             >
-              <Text style={{ color: theme.colors.APP_YELLOW}}>X</Text>
-            </TouchableOpacity>
-            <Text style={{...fonts.IBMPlexSansRegular(16), marginBottom: 20, color: colors.BLACK_COLOR}}>
-              Are you sure you want to 
-              {
-                action === 'delink' ? (
-                  <Text 
-                    style={{...fonts.IBMPlexSansSemiBold(16)}}
-                  > Delink your UHID’s.</Text>
-                ) : (
-                  <Text 
-                    style={{...fonts.IBMPlexSansSemiBold(16)}}
-                  > link your UHID’s.</Text>
-                )
-              }
+              Are you sure you want to
+              {action === 'delink' ? (
+                <Text style={{ ...fonts.IBMPlexSansSemiBold(16) }}> Delink your UHID’s.</Text>
+              ) : (
+                <Text style={{ ...fonts.IBMPlexSansSemiBold(16) }}> link your UHID’s.</Text>
+              )}
             </Text>
             <View
               style={{
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-around',
-                width: '90%',
+                width: '100%',
               }}
             >
               <Button
@@ -293,12 +313,12 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   alignContent: 'center',
                   width: '40%',
                   backgroundColor: colors.WHITE,
-                  paddingLeft: 15,
-                  paddingRight: 15,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                 }}
                 titleTextStyle={{
                   color: theme.colors.BUTTON_BG,
-                  ...fonts.IBMPlexSansSemiBold(16)
+                  ...fonts.IBMPlexSansSemiBold(16),
                 }}
                 onPress={() => {
                   setShowAlert(false);
@@ -309,14 +329,14 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 style={{
                   alignContent: 'center',
                   width: '40%',
-                  paddingLeft: 15,
-                  paddingRight: 15,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                 }}
                 titleTextStyle={{
-                  ...fonts.IBMPlexSansSemiBold(16)
+                  ...fonts.IBMPlexSansSemiBold(16),
                 }}
                 onPress={() => {
-                  // setLoading && setLoading(true);
+                  setLoading && setLoading(true);
                   setShowAlert(false);
                   if (action === 'delink') {
                     deLinkUhidsApiCall();
@@ -326,17 +346,17 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 }}
               />
             </View>
-            <Text style={{...fonts.IBMPlexSansRegular(12), marginTop: 20, color: colors.BLACK_COLOR}}>
+            <Text
+              style={{ ...fonts.IBMPlexSansRegular(12), marginTop: 20, color: colors.BLACK_COLOR }}
+            >
               Once you link your UHID’s to your
-                <Text 
-                  style={{...fonts.IBMPlexSansSemiBold(12)}}
-                > Primary UHID, </Text>
+              <Text style={{ ...fonts.IBMPlexSansSemiBold(12) }}> Primary UHID, </Text>
               you can always Delink them later.
             </Text>
           </View>
         </View>
       </Modal>
-    )
+    );
   };
 
   const renderProfile = (
@@ -345,44 +365,48 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
   ) => {
     const isSelectedPrimaryUHID = enableSelectSecondary && (profile!.uhid === selectedPrimary);
     const indexOfId = selectedSecondary.indexOf(profiles[index].uhid);
+    const isRelinked = relinkSecondaryUHIDs.indexOf(profile!.uhid) > -1;
 
     const isPrimaryUHID = primaryUHIDs === profile!.uhid;
-    const idSecondaryUHID = secondaryUHIDs.indexOf(profile!.uhid) > -1;
+    const isSecondaryUHID = secondaryUHIDs.indexOf(profile!.uhid) > -1;
     const isFirstSecondaryId = firstSecondaryUHID === profile!.uhid ? true : false;
 
     const indexOfDelink = delinkSecondaryUHIDs.indexOf(profile!.uhid);
-    const isDeSelected = (action === 'delink' && (indexOfDelink > -1)) ? true : false;
-    const isLinkDelink = (action === 'link' || action === 'delink');
+    const isDelink = action === 'delink';
+    const isDeSelected = (isDelink && (indexOfDelink > -1)) ? true : false;
     return (
       <View
         key={index}
         style={[
           { marginHorizontal: 20 },
           profiles && index < profiles.length - 1 ? { marginBottom: 8 } : { marginBottom: 80 },
-          index == 0 ? { marginTop: 20 } : {},
+          index == 0 ? { marginTop: 20 } : { margin: 0 },
         ]}
       >
-        {
-          idSecondaryUHID && (
-            <View style={{zIndex: 1}}>
-              <View
-                style={{
+        {isSecondaryUHID && (
+          <View style={{ zIndex: 1 }}>
+            <View
+              style={[
+                {
                   position: 'absolute',
                   top: isFirstSecondaryId ? -10 : -80,
                   left: 30,
-                  width: isDeSelected ? 60 : 40,
                   height: isFirstSecondaryId ? 80 : 150,
                   borderColor: theme.colors.LIGHT_BLUE,
                   borderLeftWidth: 1,
                   borderBottomWidth: 1,
                   zIndex: 0,
-                }}
-              />
-              <View
-                style={{
+                },
+                pixelRatio <= 2 ?
+                  { width: isDeSelected ? 40 : 30 } :
+                  { width: isDeSelected ? 60 : 40 },
+              ]}
+            />
+            <View
+              style={[
+                  {
                   position: 'absolute',
                   top: 60,
-                  left: isDeSelected ? 78 : 58,
                   width: 16,
                   height: 16,
                   borderRadius: 8,
@@ -393,30 +417,49 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                   borderRightWidth: 2,
                   backgroundColor: isDeSelected ? theme.colors.LIGHT_BLUE : theme.colors.WHITE,
                   zIndex: 2,
-                }}
-              />
-            </View>
-          )
-        }
+                },
+                pixelRatio <= 2 ?
+                  { left: isDeSelected ? 65 : 48 } :
+                  { left: isDeSelected ? 78 : 58 }
+              ]}
+            />
+          </View>
+        )}
         <TouchableOpacity
           activeOpacity={1}
           key={index}
           onPress={() => {
-            if (action === 'link' && (isPrimaryUHID || idSecondaryUHID)) {
+            if (action === 'link' && (isPrimaryUHID || isSecondaryUHID)) {
               return false;
             } else if (action === 'link') {
-              setSecondaryUHIDs([...secondaryUHIDs, profiles[index].uhid]);
-              setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
-              setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
-            } else if (action === 'delink' && idSecondaryUHID) {
-              if (indexOfDelink > -1) {
-                delinkSecondaryUHIDs.splice(indexOfDelink, 1);
-              } else {
-                setDelinkSecondaryUHIDs([...delinkSecondaryUHIDs, profiles[index].uhid]);
+              if (enableSelect) {
+                setSecondaryUHIDs([...secondaryUHIDs, profiles[index].uhid]);
+                setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
+                setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
+
+                const secondaryids = [...secondaryUHIDs];
+                secondaryids.push(profiles[index].uhid);
+                const filteredArray = allProfiles!.filter((item) => {
+                  return !item!.isUhidPrimary && !secondaryids.includes(item!.uhid);
+                });
+                const primaryArray = allProfiles!.filter((item) => item!.isUhidPrimary);
+                const secondaryArray = allProfiles!.filter((item) =>
+                  secondaryids.includes(item!.uhid)
+                );
+                const profileArray = [...primaryArray, ...secondaryArray, ...filteredArray];
+                setProfiles(profileArray);
               }
-              setRefreshFlatList(!refreshFlatList);
+            } else if (action === 'delink' && isSecondaryUHID) {
+              if (enableSelect) {
+                if (indexOfDelink > -1) {
+                  delinkSecondaryUHIDs.splice(indexOfDelink, 1);
+                } else {
+                  setDelinkSecondaryUHIDs([...delinkSecondaryUHIDs, profiles[index].uhid]);
+                }
+                setRefreshFlatList(!refreshFlatList);
+              }
             } else if (enableSelectSecondary) {
-              if (profiles) {
+              if (profiles && enableSelect) {
                 if (indexOfId > -1) {
                   selectedSecondary.splice(indexOfId, 1);
                 } else {
@@ -424,8 +467,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 }
                 setRefreshFlatList(!refreshFlatList);
               }
-            }
-            else if (enableSelectPrimary) {
+            } else if (enableSelectPrimary) {
               if (profiles) {
                 setSelectedPrimary(profiles[index].uhid);
                 setRefreshFlatList(!refreshFlatList);
@@ -442,19 +484,21 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           <View
             style={[
               {
-              ...viewStyles.cardViewStyle,
-              ...viewStyles.shadowStyle,
-              padding: 16,
-              flexDirection: 'row',
-              minHeight: 145,
-              //  marginTop: i === 0 ? 16 : 8,
+                ...viewStyles.cardViewStyle,
+                ...viewStyles.shadowStyle,
+                padding: 16,
+                flexDirection: 'row',
+                minHeight: 145,
+                //  marginTop: i === 0 ? 16 : 8,
               },
-              {backgroundColor: theme.colors.APP_YELLOW_COLOR},
+              { backgroundColor: theme.colors.APP_YELLOW_COLOR },
               // isSelectedPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
-              isPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR, zIndex: 6} : {backgroundColor: colors.WHITE},
-              idSecondaryUHID ? styles.secondaryUHIDCard : {},
-              isDeSelected ? {minHeight: 50, width: '75%', padding: 10} : {}
-          ]}
+              isPrimaryUHID
+                ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
+                : { backgroundColor: colors.WHITE },
+              isSecondaryUHID ? styles.secondaryUHIDCard : { display: 'flex' },
+              isDeSelected ? { minHeight: 50, width: '75%', padding: 10 } : { display: 'flex' },
+            ]}
             key={index}
           >
             {
@@ -481,19 +525,24 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               </View>
             }
             {
-              (enableSelectSecondary && !isSelectedPrimaryUHID && !idSecondaryUHID && !isPrimaryUHID && !isLinkDelink) && 
+              (enableSelectSecondary &&
+                enableSelect &&
+                !isSelectedPrimaryUHID &&
+                !isSecondaryUHID &&
+                !isPrimaryUHID &&
+                !isDelink) && 
               <View 
                 style={[
                   styles.circle,
-                  (indexOfId > -1) ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {},
+                  (indexOfId > -1) ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {backgroundColor: theme.colors.WHITE},
                 ]} />
             }
             {
-              (enableSelectPrimary && !idSecondaryUHID && !isPrimaryUHID) &&
+              (enableSelectPrimary && !isSecondaryUHID && !isPrimaryUHID) &&
               <View 
                 style={[
                   styles.circle,
-                  profile!.uhid === selectedPrimary ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {},
+                  profile!.uhid === selectedPrimary ? {backgroundColor: theme.colors.INPUT_CURSOR_COLOR} : {backgroundColor: theme.colors.WHITE},
                 ]} />
             }
             <View
@@ -505,14 +554,14 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
             >
               <View style={[
                 styles.imageView,
-                isDeSelected ? styles.imageViewSmall : {}
+                isDeSelected ? styles.imageViewSmall : {display: 'flex'}
               ]}>
                 {profile!.photoUrl &&
                 profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                   <Image
                     style={[
                       styles.profileImageStyle,
-                      isDeSelected ? styles.profileImageStyleSmall : {}
+                      isDeSelected ? styles.profileImageStyleSmall : {display: 'flex'}
                     ]}
                     source={{
                       uri: profile!.photoUrl,
@@ -520,7 +569,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                     // resizeMode={'contain'}
                   />
                 ) : (
-                  <PatientDefaultImage style={styles.profileImageStyle} />
+                  <PatientDefaultImage style={[styles.profileImageStyle, isDeSelected ? styles.profileImageStyleSmall : {display: 'flex'}]} />
                 )}
                 {/* {profile.photoUrl &&
         profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
@@ -531,17 +580,18 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 (isPrimaryUHID && action !== 'firstlink') && (
                   <TouchableOpacity>
                     <PrimaryUHIDIconBlue style={{
-                      width: 20,
-                      height: 20,
-                      marginRight: 16,
-                      marginTop: 16,
+                      resizeMode: 'contain',
+                      width: 25,
+                      height: 25,
+                      marginRight: 15,
+                      marginTop: 12,
                       alignSelf: 'center'
                     }} />
                   </TouchableOpacity>
                 )
               }
               {
-                (idSecondaryUHID && action !== 'firstlink') && (
+                (isSecondaryUHID && action !== 'firstlink' && !isRelinked) && (
                   <View style={{marginRight: 16, marginTop: 5}}>
                     <SecondaryUHIDIconBlue style={{
                       resizeMode: 'contain',
@@ -557,23 +607,25 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
             <View style={{ flex: 1, justifyContent: 'space-between' }}>
               <Text
-                style={{
+                style={[{
                   color: isSelectedPrimaryUHID ? colors.WHITE : colors.LIGHT_BLUE,
                   textAlign: 'left',
-                  ...fonts.IBMPlexSansSemiBold(18),
                   top: 8,
                   marginBottom: 8,
-                }}
+                },
+                isDeSelected ? {...fonts.IBMPlexSansSemiBold(16)} : {...fonts.IBMPlexSansSemiBold(18)}
+                ]}
               >
                 {profile!.firstName + ' ' + profile!.lastName}
               </Text>
               <View style={styles.separatorStyle} />
               <Text
-                style={{
+                style={[{
                   color: isSelectedPrimaryUHID ? colors.WHITE : '#0087ba',
                   textAlign: 'left',
-                  ...fonts.IBMPlexSansMedium(12),
-                }}
+                },
+                isDeSelected ? {...fonts.IBMPlexSansSemiBold(10)} : {...fonts.IBMPlexSansSemiBold(12)}
+                ]}
               >
                 {profile!.relation === Relation.ME ? 'SELF' : profile!.relation}
                 {profile!.relation && ' | '}
@@ -583,20 +635,23 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               </Text>
               <View style={styles.separatorStyle} />
               <Text
-                style={{
+                style={[{
                   color: isSelectedPrimaryUHID ? colors.WHITE : '#02475b',
                   textAlign: 'left',
-                  ...fonts.IBMPlexSansMedium(12),
-                }}
+                },
+                isDeSelected ? {...fonts.IBMPlexSansSemiBold(10)} : {...fonts.IBMPlexSansSemiBold(12)}
+                ]}
               >
                 UHID : {profile!.uhid}
               </Text>
               <Text
-                style={{
+                style={[{
                   color: isSelectedPrimaryUHID ? colors.WHITE : '#02475b',
                   textAlign: 'left',
                   ...fonts.IBMPlexSansMedium(12),
-                }}
+                },
+                isDeSelected ? {...fonts.IBMPlexSansMedium(10)} : {...fonts.IBMPlexSansMedium(12)}
+                ]}
               >
                 DOB :{' '}
                 {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
@@ -649,8 +704,17 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         }}
       >
         <Text style={styles.bannerText}>
-          {enableSelectPrimary && 'Create your primary UHID by selecting any one of your own profile from below.'}
-          {enableSelectSecondary && 'Select your own UHID’s to link to your primary UHID.'}
+          {
+            (action === 'delink') ? (
+              'Select the UHID to DELINK from primary UHID.'
+            ) : (
+              <>
+                {enableSelectPrimary && 'Create your primary UHID by selecting any one of your own profile from below.'}
+                {enableSelectSecondary && 'Select your own UHID’s to link to your primary UHID.'}
+              </>
+            )
+          }
+          
         </Text>
       </View>
     )
@@ -658,15 +722,15 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG style={{}}>
+      <StickyBottomComponent defaultBG >
         {
           (action === 'link') && (
             <>
               <Button
                 title="SELECT"
-                style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
+                style={{ flex: 1, marginHorizontal: 10, backgroundColor: enableSelect ? theme.colors.DEFAULT_BACKGROUND_COLOR : theme.colors.WHITE }}
                 titleTextStyle={{color: theme.colors.APP_YELLOW}}
-                onPress={() => {}}
+                onPress={() => {setEnableSelect(true)}}
               />
               <Button
                 title="LINK"
@@ -683,9 +747,9 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
             <>
               <Button
                 title="SELECT"
-                style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
+                style={{ flex: 1, marginHorizontal: 10, backgroundColor: enableSelect ? theme.colors.DEFAULT_BACKGROUND_COLOR : theme.colors.WHITE }}
                 titleTextStyle={{color: theme.colors.APP_YELLOW}}
-                onPress={() => {}}
+                onPress={() => {setEnableSelect(true)}}
               />
               <Button
                 title="DELINK"
@@ -724,9 +788,9 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           (action === 'firstlink' && enableSelectSecondary) && (
             <Button
               title="SELECT"
-              style={{ flex: 1, marginHorizontal: 10, backgroundColor: theme.colors.WHITE, }}
+              style={{ flex: 1, marginHorizontal: 10, backgroundColor: enableSelect ? theme.colors.DEFAULT_BACKGROUND_COLOR : theme.colors.WHITE }}
               titleTextStyle={{color: theme.colors.APP_YELLOW}}
-              onPress={() => {}}
+              onPress={() => {setEnableSelect(true)}}
             />
           )
         }

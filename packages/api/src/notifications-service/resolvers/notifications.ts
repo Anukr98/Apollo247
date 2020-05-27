@@ -7,8 +7,15 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
+import {
+  Patient,
+  MedicineOrders,
+  DiagnosticOrders,
+  PatientNotificationSettings,
+} from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
+
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -706,6 +713,24 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
     //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND
+  ) {
+    const appRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
+    const refundsInfo = await appRefRepo.getRefundsByAppointmentId(appointment);
+    if (refundsInfo) {
+      notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
+      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace(
+        '{0}',
+        '' + refundsInfo.refundAmount.toFixed(2)
+      );
+      notificationBody = notificationBody.replace('{1}', appointment.id);
+      notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
+
+      sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    } else {
+      return;
+    }
   }
 
   //initialize firebaseadmin
@@ -893,6 +918,23 @@ export async function sendNotification(
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         doctorType: 'JUNIOR',
+      },
+    };
+  }
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Appointment_Canceled_Refund',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -1713,9 +1755,10 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  let tatDate;
   if (orderDetails.orderTat) {
     if (Date.parse(orderDetails.orderTat.toString())) {
-      const tatDate = new Date(orderDetails.orderTat.toString());
+      tatDate = new Date(orderDetails.orderTat.toString());
       orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
     }
   }
@@ -1723,7 +1766,7 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
   if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
     notificationBody = notificationBody.replace('{2}', atOrederDateTime);

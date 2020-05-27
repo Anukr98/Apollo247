@@ -19,7 +19,11 @@ import {
   CommonLogEvent,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -56,6 +60,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
@@ -380,6 +385,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       'Mobile Number': phoneNumberFromParams,
     };
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
   };
 
   const onClickOk = (readOtp?: string) => {

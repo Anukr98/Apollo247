@@ -103,6 +103,7 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
 
   const [selectedReasonCode, setSelectedReasonCode] = React.useState<string>('placeholder');
   const [showLoader, setShowLoader] = React.useState<boolean>(false);
+  const [cancelOtherReasonText, setCancelOtherReasonText] = React.useState<string>('');
 
   const cancelOrderMutation = useMutation<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>(
     CANCEL_MEDICINE_ORDER
@@ -142,6 +143,9 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                       const reasonCodeDetails = cancelReasonList.find(
                         (reasonDetails) => reasonDetails.reasonCode === reasonCode
                       );
+                      if (cancelOtherReasonText.length > 0 && reasonCode !== 'R000188') {
+                        setCancelOtherReasonText('');
+                      }
                       setSelectedReasonCode(reasonCode);
                       props.setCancelOrderReasonText(reasonCodeDetails.displayMessage);
                     }}
@@ -175,6 +179,16 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                     ))}
                   </AphSelect>
                 </div>
+                {selectedReasonCode === 'R000188' && (
+                  <div className={classes.formGroup}>
+                    <label>Reason for cancelling this order</label>
+                    <AphTextField
+                      onChange={(e) => setCancelOtherReasonText(e.target.value)}
+                      placeholder="Write your reason"
+                      inputProps={{ maxLength: 500 }}
+                    />
+                  </div>
+                )}
                 <div className={classes.formGroup}>
                   <label>Add Comments (Optional)</label>
                   <AphTextField placeholder="Enter your comments here…" />
@@ -187,7 +201,10 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
       <div className={classes.dialogActions}>
         <AphButton
           disabled={
-            selectedReasonCode.length === 0 || selectedReasonCode === 'placeholder' || showLoader
+            selectedReasonCode.length === 0 ||
+            (selectedReasonCode === 'R000188' && cancelOtherReasonText.trim().length === 0) ||
+            selectedReasonCode === 'placeholder' ||
+            showLoader
           }
           className={selectedReasonCode.length === 0 ? classes.buttonDisable : ''}
           onClick={() => {
@@ -197,6 +214,7 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                 medicineOrderCancelOMSInput: {
                   orderNo: props.orderAutoId,
                   cancelReasonCode: selectedReasonCode,
+                  cancelReasonText: cancelOtherReasonText,
                 },
               },
             })

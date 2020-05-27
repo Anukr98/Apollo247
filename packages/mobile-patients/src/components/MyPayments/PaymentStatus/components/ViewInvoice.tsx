@@ -22,6 +22,7 @@ interface ViewInvoiceProps {
   paymentFor: string;
   navigationProps?: any;
   patientId?: string;
+  status?: string;
 }
 const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentConstants;
@@ -67,15 +68,18 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
+        let fileName: string = 'Apollo_Consult_Invoice' + String(new Date()) + '.pdf';
         const downloadPath =
           Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + 'Apollo_Consult_Invoice.pdf'
-            : dirs.DownloadDir + '/' + 'Apollo_Consult_Invoice.pdf';
+            ? (dirs.DocumentDir || dirs.MainBundleDir) +
+              '/' +
+              (fileName || 'Apollo_Consult_Invoice.pdf')
+            : dirs.DownloadDir + '/' + (fileName || 'Apollo_Consult_Invoice.pdf');
         RNFetchBlob.config({
           fileCache: true,
           path: downloadPath,
           addAndroidDownloads: {
-            title: 'Apollo_Consult_Invoice.pdf',
+            title: fileName,
             useDownloadManager: true,
             notification: true,
             path: downloadPath,
@@ -107,8 +111,7 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
       });
   };
 
-  const { paymentFor } = props;
-  const { status } = statusItemValues();
+  const { paymentFor, status } = props;
   return status === SUCCESS && paymentFor === 'consult' ? (
     <TouchableOpacity
       onPress={() => {

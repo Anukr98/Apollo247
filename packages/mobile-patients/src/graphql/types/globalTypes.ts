@@ -313,10 +313,19 @@ export enum PharmaDiscountApplicableOn {
   SPECIAL_PRICE = "SPECIAL_PRICE",
 }
 
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
+}
+
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum ROUTE_OF_ADMINISTRATION {
@@ -680,6 +689,7 @@ export interface MedicineOrderCancelInput {
 export interface MedicineOrderCancelOMSInput {
   orderNo?: number | null;
   cancelReasonCode?: string | null;
+  cancelReasonText?: string | null;
 }
 
 export interface MedicinePaymentMqInput {

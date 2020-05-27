@@ -217,7 +217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(false);
+  const [value, setValue] = useState<boolean>(true);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -444,6 +444,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     } catch (e) {
       CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
+      setshowSpinner(false);
     }
   };
 
@@ -1190,26 +1191,33 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View>
             <View style={styles.viewRowStyle}>
               <Text style={[styles.textStyle, { opacity: value ? 0.6 : 1 }]}>Sort by Distance</Text>
-              {value && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue(!value);
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  setValue(!value);
+                  setshowSpinner(true);
+                  if (value) {
+                    postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                      'Sort By': 'distance',
+                    });
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
-                  }}
-                >
-                  <ToggleOn style={{ marginHorizontal: 10, height: 32, width: 32 }} />
-                </TouchableOpacity>
-              )}
-              {!value && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue(!value);
+                  } else {
+                    postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                      'Sort By': 'availability',
+                    });
                     fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+                  }
+                }}
+              >
+                <ToggleOn
+                  style={{
+                    marginHorizontal: 10,
+                    height: 32,
+                    width: 32,
+                    transform: [{ rotate: value ? '0deg' : '180deg' }],
                   }}
-                >
-                  <ToggleOff style={{ marginHorizontal: 10, height: 32, width: 32 }} />
-                </TouchableOpacity>
-              )}
+                />
+              </TouchableOpacity>
               <Text style={[styles.textStyle, { opacity: value ? 1 : 0.6 }]}>
                 Sort by Availability
               </Text>

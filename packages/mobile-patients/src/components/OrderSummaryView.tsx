@@ -1,19 +1,20 @@
-import { Delivery, Pharamacy } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { g, postWEGNeedHelpEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { colors } from '../theme/colors';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAllCurrentPatients } from '../hooks/authHooks';
-import { NavigationScreenProps } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
-} from '../graphql/types/getMedicineOrderOMSDetails';
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+
 const styles = StyleSheet.create({
   horizontalline: {
     borderBottomColor: '#02475b',
@@ -21,9 +22,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     height: 1,
   },
-  orderName: { ...theme.fonts.IBMPlexSansMedium(12), color: '#01475b' },
-  hideText: { opacity: 0.6, paddingLeft: 10 },
-  subView: { flexDirection: 'row', marginBottom: 8 },
   medicineText: {
     ...theme.fonts.IBMPlexSansMedium(11),
     color: '#01475b',
@@ -34,55 +32,6 @@ const styles = StyleSheet.create({
     color: '#01475b',
     letterSpacing: 0,
     // lineHeight: 20,
-  },
-  medicineView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 23,
-    paddingLeft: 11,
-    paddingRight: 16,
-  },
-  medicineOrders: {
-    //backgroundColor: '#f0f1ec',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-    paddingLeft: 11,
-    paddingRight: 16,
-    flex: 0.5,
-  },
-  medicineSubView: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    flex: 0.5,
-    alignSelf: 'flex-end',
-  },
-  commonText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#01475b',
-    marginBottom: 5,
-    marginTop: 5,
-    paddingRight: 60,
-  },
-  commonTax: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    //flex: 0.5,
-    alignSelf: 'flex-end',
-    marginHorizontal: 25,
-  },
-  paid: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#01475b',
-    marginRight: 5,
-    marginBottom: 5,
-    marginTop: 5,
-  },
-  deliveryText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: '#0087ba',
-    marginHorizontal: 25,
-    marginBottom: 14.5,
   },
   orderStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -170,15 +119,22 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface OrderSummaryViewProps extends NavigationScreenProps {
+export interface OrderSummaryViewProps {
   orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   isTest?: boolean;
-}
-{
+  addressData?: string;
 }
 
-export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
-  const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
+export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
+  orderDetails,
+  isTest,
+  addressData,
+}) => {
+  const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
+  const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
+  const deliveredOrder = medicineOrderStatus.find(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  );
   let item_quantity: string;
   if (medicineOrderLineItems.length == 1) {
     item_quantity = medicineOrderLineItems.length + ' item ';
@@ -189,7 +145,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
-  const discount = orderDetails!.devliveryCharges! + mrpTotal - orderDetails.estimatedAmount!;
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
@@ -199,16 +154,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
       : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
       ? 'Prepaid'
       : 'No Payment';
-
-  const { currentPatient } = useAllCurrentPatients();
-  const { addresses } = useShoppingCart();
-
-  const selectedAddressIndex = addresses.find(
-    (address) => address.id == orderDetails.patientAddressId
-  );
-  const addressData = selectedAddressIndex
-    ? `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
-    : '';
 
   const renderMedicineRow = (
     item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
@@ -256,11 +201,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
     );
   };
 
-  const getFormattedDate = (
-    orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  const getDeliveredDate = (
+    medicineOrderStatus: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus
   ) => {
-    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
-    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    const statusDate = g(medicineOrderStatus, 'statusDate');
     return moment(statusDate).format('ddd, D MMMM');
   };
 
@@ -316,7 +260,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.address} </Text>
-              <Text style={[styles.nameStyle, { paddingRight: 31 }]}>{addressData}</Text>
+              <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
         </View>
@@ -351,13 +295,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
             >
               {'ITEM DETAILS'}
             </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#01475b'),
-              }}
-            >
-              {'Delivered ' + getFormattedDate(orderDetails)}
-            </Text>
+            {!!deliveredOrder && (
+              <Text style={theme.viewStyles.text('M', 13, '#01475b')}>
+                {'Delivered ' + getDeliveredDate(deliveredOrder)}
+              </Text>
+            )}
           </View>
           <View style={styles.horizontalline} />
           <View

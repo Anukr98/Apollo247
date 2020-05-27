@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, Typography, Tabs, Tab } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
+import { OrderStatusCard, isRejectedStatus } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
 import { OrdersSummary } from 'components/Orders/OrderSummary';
@@ -253,7 +253,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
     if (
       orderStatus &&
-      (orderStatus.orderStatus == 'CANCELLED' || orderStatus.orderStatus == 'DELIVERED')
+      (isRejectedStatus(orderStatus.orderStatus) ||
+        orderStatus.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
     ) {
       isDisable = true;
     }

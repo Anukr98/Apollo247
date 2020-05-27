@@ -16,22 +16,17 @@ const PaymentCardHeader: FC<PaymentCardHeaderProps> = (props) => {
   const getPaymentStatusText = (type: string) => {
     const { refundInitiated } = LocalStrings;
     const { REFUND } = PaymentStatusConstants;
-    switch (type) {
-      case REFUND:
-        return (
-          <View style={styles.mainContainer}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 13, colors.ASTRONAUT_BLUE, 1, 20),
-              }}
-            >
-              {refundInitiated}
-            </Text>
-          </View>
-        );
-      default:
-        return null;
-    }
+    return (
+      <View style={styles.mainContainer}>
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 13, colors.ASTRONAUT_BLUE, 1, 20),
+          }}
+        >
+          {refundInitiated}
+        </Text>
+      </View>
+    );
   };
   const { status } = props;
   return getPaymentStatusText(status);
