@@ -378,8 +378,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
       console.log(latlng, 'latlng []');
 
-      fetchSpecialityFilterData(filterMode, FilterData, latlng);
       // checkTime();
+      fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
