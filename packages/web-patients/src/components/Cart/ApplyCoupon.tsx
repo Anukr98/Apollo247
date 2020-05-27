@@ -17,6 +17,7 @@ import {
 } from 'graphql/types/validatePharmaCoupon';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -256,6 +257,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 props.setValidateCouponResult(couponValidateResult);
                 setCouponCode && setCouponCode(selectCouponCode);
                 props.close(false);
+                 /*GTM TRACKING START */
+                 gtmTracking({
+                  category: 'Consultations',
+                  action: 'Order',
+                  label: `Coupon Applied - ${selectCouponCode}`,
+                  value: couponValidateResult.discountedTotals.couponDiscount,
+                });
+                /*GTM TRACKING START */
               } else {
                 // setSelectCouponCode('');
                 props.setValidateCouponResult(null);

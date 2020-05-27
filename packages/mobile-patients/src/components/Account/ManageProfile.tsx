@@ -626,7 +626,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     >
       {renderHeader()}
       {renderDisclaimerBanner()}
-      <ScrollView bounces={false} style={showLinkButtons ? { marginBottom: 120 } : {marginBottom: 20}}>
+      <ScrollView bounces={false} style={showLinkButtons ? { marginBottom: 120 } : { marginBottom: 90 }}>
         {renderProfilesDetails()}
       </ScrollView>
       {!loading ? (showLinkButtons ? renderLinkingButtons() : renderBottomStickyComponent()) : <></>}
