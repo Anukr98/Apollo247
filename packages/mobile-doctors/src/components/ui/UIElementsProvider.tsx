@@ -84,7 +84,7 @@ export const UIElementsProvider: React.FC = (props) => {
   const [popUpData, setPopUpData] = useState<PopUpParams>({});
 
   useEffect(() => {
-    if (isAlertVisible || loading) {
+    if (isAlertVisible || loading || isPopUpVisible) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     } else {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -92,13 +92,16 @@ export const UIElementsProvider: React.FC = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [isAlertVisible, loading]);
+  }, [isAlertVisible, loading, isPopUpVisible]);
 
   const handleBack = async () => {
     console.log('handleBack Called');
     if (!alertParams.unDismissable) {
       // setLoading(false);
       hideAphAlert();
+    }
+    if (!popUpData.unDismissable) {
+      hidePopup();
     }
     return true;
   };
@@ -206,26 +209,30 @@ export const UIElementsProvider: React.FC = (props) => {
     } = popUpData;
     return (
       isPopUpVisible && (
-        <TouchableOpacity
-          style={styles.popUpContainer}
-          activeOpacity={1}
-          onPress={() => (unDismissable ? null : hidePopup())}
-        >
-          <View style={[styles.popUpMainContainer, style]}>
-            <View style={[styles.popUpPointer, popUpPointerStyle]} />
-            {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
-            {description && (
-              <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>{description}</Text>
-            )}
-            <TouchableOpacity
-              style={[styles.okContainer, okContainerStyle]}
-              activeOpacity={1}
-              onPress={() => (onPressOk ? onPressOk() : hidePopup())}
-            >
-              <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.popUpContainer}>
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={() => (unDismissable ? null : hidePopup())}
+          >
+            <View style={[styles.popUpMainContainer, style]}>
+              <View style={[styles.popUpPointer, popUpPointerStyle]} />
+              {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
+              {description && (
+                <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
+                  {description}
+                </Text>
+              )}
+              <TouchableOpacity
+                style={[styles.okContainer, okContainerStyle]}
+                activeOpacity={1}
+                onPress={() => (onPressOk ? onPressOk() : hidePopup())}
+              >
+                <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
       )
     );
   };
@@ -254,11 +261,11 @@ export const UIElementsProvider: React.FC = (props) => {
       }}
     >
       <View style={{ flex: 1 }}>
-        {renderPopUp()}
         <View style={{ flex: 1 }} pointerEvents={loading ? 'none' : 'auto'}>
           {props.children}
           {renderNeedHelp()}
           {renderLoading()}
+          {renderPopUp()}
         </View>
         {renderAphAlert()}
       </View>
