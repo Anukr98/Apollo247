@@ -16,7 +16,6 @@ import {
   MedicalIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -47,7 +46,6 @@ import {
   g,
   getNewOrderStatusText,
   handleGraphQlError,
-  postWEGNeedHelpEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -76,12 +74,9 @@ import {
   StackActions,
 } from 'react-navigation';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '../graphql/types/GetMedicineOrdersList';
-import {
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
 } from '../graphql/types/getMedicineOrdersOMSList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
@@ -97,6 +92,7 @@ import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
 } from '../graphql/types/GetMedicineOrderCancelReasons';
+import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -123,27 +119,23 @@ const styles = StyleSheet.create({
   },
 });
 
-const cancelOptions: [string, string][] = [
-  ['MCCR0036', 'Placed order by mistake'],
-  ['MCCR0040', 'Higher discounts available on other app'],
-  ['MCCR0046', 'Delay in delivery'],
-  ['MCCR0047', 'Delay in order confirmation'],
-  ['MCCR0048', 'Do not require medicines any longer'],
-  ['MCCR0049', 'Already purchased'],
-];
-
 type OrderRefetch = (
   variables?: getMedicineOrdersOMSListVariables
 ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
 
-export interface OrderDetailsSceneProps extends NavigationScreenProps {
-  orderAutoId?: string;
-  showOrderSummaryTab?: boolean;
-  goToHomeOnBack?: boolean;
-  refetchOrders: OrderRefetch;
-}
-{
-}
+export interface OrderDetailsSceneProps
+  extends NavigationScreenProps<{
+    orderAutoId?: string;
+    showOrderSummaryTab?: boolean;
+    goToHomeOnBack?: boolean;
+    refetchOrders: OrderRefetch;
+    setOrders: (
+      orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
+    ) => void;
+    refetch: (
+      variables?: getMedicineOrdersOMSListVariables | undefined
+    ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
+  }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
@@ -151,7 +143,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
   const [cancellationReasons, setCancellationReasons] = useState<
-    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[] | null
+    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
 
@@ -162,7 +154,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
   const { currentPatient } = useAllCurrentPatients();
-  const { getPatientApiCall } = useAuth();
   const {
     cartItems,
     setCartItems,
@@ -174,7 +165,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
+    orderAutoId: Number(orderAutoId),
   };
   const refetchOrders: OrderRefetch =
     props.navigation.getParam('refetch') ||
@@ -185,7 +176,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         fetchPolicy: 'cache-first',
       }
     ).refetch;
-  console.log(JSON.stringify(vars));
   const { data, loading, refetch } = useQuery<
     getMedicineOrderOMSDetails,
     getMedicineOrderOMSDetailsVariables
@@ -200,8 +190,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-
-  console.log({ order });
 
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
@@ -229,10 +217,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             data.data.getPatientAddressList.addressList &&
             addresses !== data.data.getPatientAddressList.addressList
           ) {
-            setAddresses && setAddresses(data.data.getPatientAddressList.addressList);
+            setAddresses &&
+              setAddresses(
+                data.data.getPatientAddressList
+                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
+              );
             selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
               (address) => address.id == order!.patientAddressId
-            );
+            ) as savePatientAddress_savePatientAddress_patientAddress;
             if (selectedAddressIndex) {
               console.log('if selectedAddressIndex', selectedAddressIndex);
               if (!selectedAddressIndex.addressLine1) {
@@ -511,32 +503,32 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const tatInfo = orderDetails.orderTat;
     const expectedDeliveryDiff = moment.duration(
       moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
-      // moment('27-JAN-2020 10:51 AM').diff(moment())
     );
     const hours = expectedDeliveryDiff.asHours();
-    // const formattedDateDeliveryTime =
-    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
-    let orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
+    const orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
       isDelivered.statusDate &&
       getFormattedDateTime(isDelivered.statusDate)}.`;
     let capsuleViewBGColor: string;
     let capsuleTextColor: string;
     let capsuleText: string;
-    if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-      capsuleText = 'Cancelled';
+    if (
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+    ) {
+      capsuleText =
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ? 'Cancelled' : 'Failed';
       capsuleTextColor = '#FFF';
       capsuleViewBGColor = '#890000';
-    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED) {
-      capsuleText = 'Return Initiated';
-      capsuleTextColor = '#01475b';
-      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
-    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED) {
-      capsuleText = 'Returned';
-
-      capsuleTextColor = '#01475b';
-      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
     } else {
-      capsuleText = 'Successful';
+      capsuleText =
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
+          ? 'Pending'
+          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED
+          ? 'Return Initiated'
+          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+          ? 'Returned'
+          : 'Successful';
       capsuleTextColor = '#01475b';
       capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
     }
@@ -613,27 +605,27 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY as any,
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
@@ -645,23 +637,23 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY as any,
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
@@ -673,17 +665,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY as any,
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
@@ -695,12 +687,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY as any,
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
@@ -712,7 +704,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED as any,
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
@@ -1083,13 +1075,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <View>
         <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
         <View style={{ marginTop: 30 }} />
-        {/* <NeedHelpAssistant
-          onNeedHelpPress={() => {
-            postWEGNeedHelpEvent(currentPatient, 'Medicines');
-          }}
-          containerStyle={{ marginTop: 30, marginBottom: 30 }}
-          navigation={props.navigation}
-        /> */}
       </View>
     );
   };
@@ -1152,7 +1137,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     )
                 );
                 console.log(_orders, 'hdub');
-                setOrders(_orders);
+                setOrders(
+                  _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
+                );
               })
               .catch((e) => {
                 CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
@@ -1167,30 +1154,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         handleGraphQlError(e);
       });
   };
-
-  // const onPressCancelOrder = () => {
-  // const isDelivered = orderStatusList.find(
-  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-  // );
-  // const isCancelled = orderStatusList.find(
-  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-  // );
-  // const isPrescriptionOrder = orderStatusList.find(
-  //   (item) =>
-  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-  // );
-  // if (isDelivered) {
-  //   showErrorPopup('You cannot cancel the order wich is delivered.');
-  //   // Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
-  // } else if (isCancelled) {
-  //   showErrorPopup('Order is already cancelled.');
-  //   // Alert.alert('Alert', 'Order is already cancelled.');
-  // } else {
-  //   setCancelVisible(true);
-  // }
-  // setCancelVisible(true);
-  // };
 
   const getCancellationReasons = () => {
     setShowSpinner(true);
@@ -1233,21 +1196,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const hideMenuIcon = !!orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
     );
     const cannotCancelOrder = orderStatusList.find(
-      (item) =>
-        // item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
-        // item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        // item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-        // item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
+      // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
     );
-    // const isCancelOrderAllowed = orderStatusList.find(
-    //   (item) =>
-    //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-    //     item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
-    // );
     if (hideMenuIcon || !orderStatusList.length) return null;
     return (
       <MaterialMenu

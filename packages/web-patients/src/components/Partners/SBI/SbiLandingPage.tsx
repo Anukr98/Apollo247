@@ -1,10 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { customerCareNumber } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -13,315 +12,220 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: -60,
       },
     },
-    mainContent: {},
-    banner: {
-      padding: 20,
-      background: '#fff',
-      overflow: 'hidden',
+    partnerWrapper: {
       backgroundColor: '#fff',
+      padding: '8px 0 0 20px',
       marginTop: -93,
       [theme.breakpoints.down('xs')]: {
         marginTop: -80,
       },
     },
-    sbi: {
-      margin: '0 0 0 20px',
-    },
-    bannerContent: {
-      display: 'flex',
-      alignItems: 'center',
-      position: 'relative',
-      padding: '20px 0 0',
-      '& div': {
-        width: '65%',
-      },
-      '& h1': {
-        fontSize: 18,
-        color: '#02475b',
-        margin: '0 0 10px',
-      },
-      '& p': {
-        fontSize: 12,
-        color: 'rgba(0,0,0,0.5)',
-      },
-      '& p span': {
-        fontSize: 12,
-        color: '#000',
-        fontWeight: 'bold',
-      },
-      '& img': {
-        position: 'absolute',
-        right: -22,
-        top: -16,
-        width: 136,
-      },
-    },
-    primaryButton: {
-      padding: '10px 20px',
+    partnerName: {
+      backgroundColor: '#f9fafa',
+      padding: '12px 20px',
       textAlign: 'center',
-      color: '#fff',
-      background: '#fcb716',
-      borderRadius: 10,
-      border: 'none',
-      boxShadow: 'none',
-      margin: '20px 0 0',
+      borderRadius: 8,
       fontSize: 14,
-      textTransform: 'uppercase',
-      fontWeight: 'bold',
+      color: '#000',
+      opacity: 0.5,
     },
-    sbiBenefits: {
+    imagesWrapper: {
+      display: 'flex',
+      marginTop: 15,
+      alignItems: 'center',
+      '& img': {
+        maxHeight: 40,
+        marginRight: 20,
+      },
+    },
+    appLogo: {
+      maxHeight: '45px !important',
+    },
+    partnerContent: {
+      display: 'flex',
+    },
+    bannerDiv: {
+      minHeight: 186,
+      minWidth: 170,
+      marginLeft: 'auto',
+      position: 'relative',
+    },
+    bannerDivImg: {
+      position: 'absolute',
+      right: 0,
+      bottom: -5,
+    },
+    partnerText: {
+      fontWeight: 600,
+      color: '#02475b',
+      fontSize: 20,
+      marginTop: 17,
+      marginBottom: 24,
+    },
+    getStartedBtn: {
+      padding: '9px 13px',
+      minWidth: 140,
+      borderRadius: 10,
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      textTransform: 'uppercase',
+      display: 'inline-block',
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 'bold',
+      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+    },
+    scrollbar: {
+      marginTop: 100,
+    },
+    landingContent: {
       padding: 20,
     },
-    card: {
+    cards: {
+      padding: '16px 14px 16px 0',
+      backgroundColor: '#fff',
+      display: 'flex',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginBottom: 12,
       borderRadius: 10,
-      background: '#ffffff',
-      margin: '0 0 20px',
-      overflow: 'hidden',
-    },
-    cardContent: {
-      padding: 16,
-      display: 'flex',
-      alignItems: 'center',
-      '-webkit-box-shadow': '0px 5px 20px 0px rgba(50, 50, 50, 0.5)',
-      '-moz-box-shadow': '0px 5px 20px 0px rgba(50, 50, 50, 0.5)',
-      'box-shadow': '0px 5px 20px 0px rgba(50, 50, 50, 0.5)',
-    },
-    cardDetails: {
-      width: '70%',
-      padding: '0 0 0 10px',
-      '& h6': {
-        fontSize: 15,
-        margin: '0 0 8px',
-        color: '#fcb716',
-      },
-      '& p': {
-        fontSize: 12,
-        margin: 0,
-        color: 'rgba(0,0,0,0.5)',
-      },
-    },
-    imgContainer: {
-      width: '30%',
       '& img': {
-        width: 100,
+        maxWidth: 97,
       },
     },
-    strikeText: {
-      textDecoration: 'line-through',
+    cardsImage: {
+      marginLeft: -11,
     },
-    cardExt: {
-      background: '#0087ba',
-      padding: 16,
-      position: 'relative',
-      '& p': {
-        fontSize: 12,
-        margin: '0 0 10px',
-        color: '#ffffff',
-      },
-      '& p:last-child': {
-        margin: 0,
-      },
-      '&  p span': {
-        fontWeight: 'bold',
-      },
-
-      '&:before': {
-        content: '""',
-        position: 'absolute',
-        top: '30%',
-        width: 20,
-        height: 20,
-        borderRadius: '50%',
-        background: '#e7e9df',
-        left: -16,
-        right: 'auto',
-      },
-      '&:after': {
-        content: '""',
-        position: 'absolute',
-        top: '30%',
-        width: 20,
-        height: 20,
-        borderRadius: '50%',
-        background: '#e7e9df',
-        right: -16,
-        left: 'auto',
-      },
+    anytimeCardContent: {
+      marginLeft: 11,
     },
-    dedicated: {
-      padding: '16px 16px 0 16px',
+    healthCardContent: {
+      marginLeft: 6,
     },
-    cardHeader: {
-      padding: '0 0 20px',
+    healthCardImage: {
+      marginLeft: -6,
+    },
+    blackCard: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      color: '#fff',
+      paddingLeft: 14,
+      paddingRight: 0,
+      paddingTop: 0,
+      paddingBottom: 0,
+      overflow: 'hidden',
+      padding: '16px 14px 16px 0',
       display: 'flex',
-      alignItems: 'center',
-      borderBottom: '1px solid #02475b',
-      '& h2': {
-        fontSize: 18,
-        color: '#02475b',
-        margin: '0 0 0 20px',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginBottom: 12,
+      borderRadius: 10,
+      '& div': {
+        color: '#fff',
       },
     },
-    cardBody: {
-      padding: '4px 0',
+    blackCardContent: {
+      padding: '20px 0',
     },
-    serviceDetails: {
-      padding: '10px 0',
-      '& h6': {
-        fontSize: 12,
-        color: '#02475b',
-        margin: '0 0 5px',
-      },
-      '& p': {
-        fontSize: 12,
-        margin: '4px 0',
-        color: '#000',
+    code: {
+      fontWeight: 'bold',
+    },
+    discountPrice: {
+      fontWeight: 600,
+    },
+    healthImage: {
+      marginRight: -35,
+      marginLeft: 'auto',
+      '& img': {
+        maxHeight: 100,
       },
     },
-    dedicatedImg: {
-      width: 48,
+    cardsHeader: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#02475b',
+      marginBottom: 12,
+    },
+    cardsBody: {
+      fontSize: 12,
+      color: '#000000',
     },
   };
 });
 
 export const SbiLandingPage: React.FC = (props) => {
   const classes = useStyles({});
-
+  // const utmSource = 'sbi';
+  // const utmMedium = 'banner';
+  // const utmCampaign = 'apollo247_econsults';
+  // const utmContent = '';
+  // const urlParams = `?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}&utm_content=${utmContent}&tp_ref_code=${tpRefCode}`;
   const tpRefCode = 'SBIYONO';
   const urlParams = `?tp_ref_code=${tpRefCode}`;
   const homePageUrl = clientRoutes.welcome();
-  const doctorsLanding = clientRoutes.doctorsLanding();
-  const pharmacyLanding = clientRoutes.medicines();
-  const diagnosticsUrl = 'https://apollo247.onelink.me/775G/extsbi';
   const { currentPatient } = useAllCurrentPatients();
 
   return (
     <div className={classes.root}>
-      <div className={classes.mainContent}>
-        <div className={classes.banner}>
+      <div className={classes.partnerWrapper}>
+        <div className={classes.imagesWrapper}>
+          <img className={classes.appLogo} src={require('images/ic_logo.png')} />
+          <img src={require('images/sbi_yono_logo.png')} />
+        </div>
+        <div className={classes.partnerContent}>
           <div>
-            <Link to={`${homePageUrl}${urlParams}`}>
-              <img src={require('images/apollo.svg')} alt="logo" />
+            <div className={classes.partnerText}>An entire hospital now on your phone</div>
+            <Link
+              to={currentPatient && currentPatient.id ? homePageUrl : `${homePageUrl}${urlParams}`}
+              className={classes.getStartedBtn}
+              color="primary"
+            >
+              Get Started
             </Link>
-            <a href="javascript:void(0)" className={classes.sbi}>
-              <img src={require('images/sbi_yono.png')} width="40" alt="logo" />
-            </a>
           </div>
-          <div className={classes.bannerContent}>
-            <div>
-              <h1>India, let’s take care of your biggest asset: Your Health</h1>
-              <p>
-                Avail these offers till <span>19th May</span>
-              </p>
-              <Link to={`${homePageUrl}${urlParams}`}>
-                <button className={classes.primaryButton}>Get Started</button>
-              </Link>
+          <div className={classes.bannerDiv}>
+            <div className={classes.bannerDivImg}>
+              <img src={require('images/holding-phone-mockup.png')} />
             </div>
-            <img src={require('images/india-health.png')} />
           </div>
         </div>
-        <div className={classes.sbiBenefits}>
-          <Link to={`${doctorsLanding}${urlParams}`}>
-            <div className={classes.card}>
-              <div className={classes.cardContent}>
-                <div className={classes.imgContainer}>
-                  <img src={require('images/consult.png')} />
-                </div>
-                <div className={classes.cardDetails}>
-                  <h6>Consult Apollo Doctors</h6>
-                  <p>Round-the-clock consultations with Apollo Doctors over chat, audio, video</p>
-                </div>
-              </div>
-              <div className={classes.cardExt}>
-                <p>
-                  Use coupon code <span>‘TRYAPOLLO’</span> and get <span>Rs.999 off</span>
-                </p>
-              </div>
-            </div>
-          </Link>
-          <Link to={`${pharmacyLanding}${urlParams}`}>
-            <div className={classes.card}>
-              <div className={classes.cardContent}>
-                <div className={classes.imgContainer}>
-                  <img src={require('images/pharmacy.png')} />
-                </div>
-                <div className={classes.cardDetails}>
-                  <h6>Pharmacy at your doorstep</h6>
-                  <p>Order medicines, tests and health checkups from the comfort of your home</p>
-                </div>
-              </div>
-              <div className={classes.cardExt}>
-                <p>
-                  2 sets of 3-ply mask and a hand sanitiser <span>FREE</span> with every prescribed
-                  medicine order worth <span>Rs.600</span> or more
-                </p>
-                <p>
-                  Get <span>10% off</span> on all chronic medicines
-                </p>
-                <p>
-                  *Pharmacy offer is available till 19th May in selected cities- Hyderabad, Chennai,
-                  Bengaluru, Kolkata, Delhi, Gurugram, Noida, Jaipur & Vizag
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          <div className={classes.card} onClick={() => window.open(diagnosticsUrl, '_self')}>
-            <div className={classes.cardContent}>
-              <div className={classes.imgContainer}>
-                <img src={require('images/test.png')} />
-              </div>
-              <div className={classes.cardDetails}>
-                <h6>Tests and Health Check</h6>
-                <p>Most trusted diagnostics from the comfort of your home: download Apollo 24|7</p>
-              </div>
-            </div>
-            <div className={classes.cardExt}>
-              <p>
-                Special immunity-check package at <span className={classes.strikeText}>Rs.800</span>{' '}
-                <span>Rs.499</span> covering: CBC, CRP (Quantitative), Glucose (Random)
-              </p>
-
-              <p>
-                Special Comprehensive health-check package at
-                <span className={classes.strikeText}> Rs.2400</span> <span>Rs.899 </span>covering:
-                Lipid Profile, Liver Function Test, Urea (serum), Creatinine (serum), TSH,
-                Haemoglobin
-              </p>
-              <p>
-                *Offer is available in selected cities- Hyderabad, Chennai, Bengaluru, Kolkata &
-                Pune & can be booked on Apollo 24|7 App only
-              </p>
+      </div>
+      <div className={classes.landingContent}>
+        <div className={classes.blackCard}>
+          <div className={classes.blackCardContent}>
+            <div className={classes.cardsHeader}>Bank on us with your health.</div>
+            <div className={classes.cardsBody}>
+              Use coupon code <span className={classes.code}>‘YONO299’</span> for{' '}
+              <span className={classes.discountPrice}>Rs.299</span> off on your doctor consultation
             </div>
           </div>
-
-          <div className={`${classes.card} ${classes.dedicated}`}>
-            <div className={classes.cardHeader}>
-              <img className={classes.dedicatedImg} src={require('images/mascot.png')} />
-              <h2>Dedicated Service for YOU</h2>
+          <div className={classes.healthImage}>
+            <img src={require('images/ic_bank_health.svg')} />
+          </div>
+        </div>
+        <div className={classes.cards}>
+          <div className={classes.cardsImage}>
+            <img src={require('images/ic_anytime.svg')} />
+          </div>
+          <div>
+            <div className={classes.cardsHeader}>Consult Apollo Doctors</div>
+            <div className={classes.cardsBody}>
+              Round-the-clock consultations with Apollo Doctors over chat, audio, video
             </div>
-            <div className={classes.cardBody}>
-              <a href="mailto:corporate@apollo247.org">
-                <div className={classes.serviceDetails}>
-                  <h6>2-hour redressal for all your queries</h6>
-                  <p>
-                    Email us at <b>corporate@apollo247.org</b>&nbsp; between
-                    <br /> 8am – 8pm
-                  </p>
-                </div>
-              </a>
-              <a href={`tel:${customerCareNumber}`}>
-                <div className={classes.serviceDetails}>
-                  <h6>Talk to experts about COVID-19</h6>
-                  <p>
-                    Dedicated helpline made available to resolve all queries on <b>Apollo24|7</b>
-                  </p>
-                </div>
-              </a>
-              <div className={classes.serviceDetails}>
-                <h6>Getting super-specialties is super-easy</h6>
-                <p>Super specialty doctors made available everyday for you</p>
-              </div>
+          </div>
+        </div>
+        <div className={classes.cards}>
+          <img src={require('images/ic_bike.svg')} />
+          <div>
+            <div className={classes.cardsHeader}>Pharmacy at your doorstep</div>
+            <div className={classes.cardsBody}>Order medicines from the comfort of your home</div>
+          </div>
+        </div>
+        <div className={classes.cards}>
+          <div className={classes.healthCardImage}>
+            <img src={require('images/ic_health_records.svg')} />
+          </div>
+          <div>
+            <div className={classes.cardsHeader}>Medical records vault</div>
+            <div className={classes.cardsBody}>
+              Keep all your medical records safe and accessible in our digital vault
             </div>
           </div>
         </div>
