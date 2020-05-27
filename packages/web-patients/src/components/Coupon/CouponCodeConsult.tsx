@@ -239,10 +239,9 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 action: props.speciality,
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: couponValidateResult && couponValidateResult.revisedAmount
-                  ? (
-                    props.cartValue -
-                    parseFloat(couponValidateResult.revisedAmount)
-                  ).toFixed(2) : null
+                  ? Number((props.cartValue -
+                  parseFloat(couponValidateResult.revisedAmount)
+                ).toFixed(2)) : null
               });
               /*GTM TRACKING END */
             } else {
