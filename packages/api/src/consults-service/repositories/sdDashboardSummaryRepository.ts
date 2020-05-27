@@ -524,6 +524,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: STATUS.COMPLETED,
       },
     });
+    console.log('appointmentList==>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
       return new Promise<number>((resolve, reject) => {
@@ -533,11 +534,13 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
             order: { startTime: 'ASC' },
             take: 1,
           });
+          console.log('calldetails==>', calldetails);
           if (calldetails) {
             const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
             const callStartTimeFormat = format(calldetails[0].startTime, 'yyyy-MM-dd HH:mm');
             const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
             const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
+            console.log('dates', apptFormat, callStartTimeFormat, addingFiveMinutesFormat);
             const withInTime =
               isWithinInterval(new Date(callStartTimeFormat), {
                 start: new Date(apptFormat),
