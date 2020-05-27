@@ -416,9 +416,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-        process.env.SMS_LINK_BOOK_APOINTMENT +
-        ' ' +
-        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      process.env.SMS_LINK_BOOK_APOINTMENT +
+      ' ' +
+      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -558,22 +558,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -722,7 +722,7 @@ export async function sendNotification(
       notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
       notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace(
         '{0}',
-        '' + refundsInfo.refundAmount.toFixed(2)
+        Number(refundsInfo.refundAmount).toFixed(2)
       );
       notificationBody = notificationBody.replace('{1}', appointment.id);
       notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
@@ -1073,12 +1073,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1111,12 +1111,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+          ' ' +
+          facilityDets.streetLine1 +
+          ' ' +
+          facilityDets.city +
+          ' ' +
+          facilityDets.state
         );
       }
     }
@@ -1160,12 +1160,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-              ' ' +
-              facilityDets.streetLine1 +
-              ' ' +
-              facilityDets.city +
-              ' ' +
-              facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
           );
         }
       }
@@ -1359,7 +1359,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
@@ -1921,7 +1921,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),

@@ -16,6 +16,7 @@ import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,10 +30,6 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
-        borderRadius: '0 0 10px 10px',
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#f7f8f5',
-        paddingBottom: 20,
         marginTop: 0,
       },
     },
@@ -47,28 +44,20 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     panelRoot: {
-      backgroundColor: theme.palette.common.white,
+      backgroundColor: '#f7f8f5',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
-      marginBottom: '10px !important',
+      marginBottom: '20px !important',
       marginTop: '0 !important',
       width: '100%',
       '&:before': {
         display: 'none',
       },
-      [theme.breakpoints.up('sm')]: {
-        borderRadius: '0 !important',
-        boxShadow: 'none',
-        marginBottom: '0 !important',
-      },
     },
     panelsGroup: {
-      '& >div:last-child': {
-        marginBottom: '0 !important',
-      },
       [theme.breakpoints.up('sm')]: {
-        '& >div:nth-child(even)': {
-          backgroundColor: 'transparent',
+        '& >div:first-child': {
+          borderRadius: '0 0 10px 10px',
         },
       },
     },
@@ -79,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       alignItems: 'flex-start',
       [theme.breakpoints.up('sm')]: {
-        padding: 20,
+        padding: 40,
       },
     },
     summaryContent: {
@@ -119,12 +108,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       display: 'inherit',
       [theme.breakpoints.up('sm')]: {
-        padding: '20px 0',
-        margin: '0 20px',
+        padding: '40px 0',
+        margin: '0 40px',
       },
     },
     bottomActions: {
       textAlign: 'center',
+      [theme.breakpoints.up('sm')]: {
+        paddingTop: 20,
+      },
     },
     viewmoreBtn: {
       backgroundColor: 'transparent',
@@ -456,6 +448,7 @@ export const CovidLanding: React.FC = (props: any) => {
           </Modal>
         </div>
       </div>
+      <BottomLinks />
       {!isWebView && <NavigationBottom />}
     </div>
   );
