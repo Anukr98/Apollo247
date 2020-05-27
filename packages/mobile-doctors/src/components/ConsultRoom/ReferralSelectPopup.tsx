@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = ReferralSelectPopupStyles;
 
@@ -106,15 +107,17 @@ export const ReferralSelectPopup: React.FC<ReferralSelectPopupProps> = (props) =
   };
 
   const onSearch = (text: string) => {
-    setSearchText(text);
-    setProcessedData(
-      data.filter((i) =>
-        i.value
-          .toString()
-          .toLowerCase()
-          .includes(text.toLowerCase())
-      )
-    );
+    if (isValidSearch(text)) {
+      setSearchText(text);
+      setProcessedData(
+        data.filter((i) =>
+          i.value
+            .toString()
+            .toLowerCase()
+            .includes(text.toLowerCase())
+        )
+      );
+    }
   };
 
   const renderSearchInput = () => {
