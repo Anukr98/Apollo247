@@ -363,6 +363,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
+    console.log(url, 'getuser lab results');
     const reqStartTime = new Date();
     const labResults = await fetch(url, prismHeaders)
       .then((res) => {
@@ -392,7 +393,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser health checks');
     const reqStartTime = new Date();
     const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
@@ -422,7 +423,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser hospitalizations');
     const reqStartTime = new Date();
     const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
@@ -452,7 +453,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser patient op prescriptions');
     const reqStartTime = new Date();
     const opPrescriptions = await fetch(url, prismHeaders)
       .then((res) => {

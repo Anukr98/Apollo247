@@ -143,7 +143,6 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients;
-
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
     let isPrismWorking = 1,
