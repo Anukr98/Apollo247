@@ -80,6 +80,7 @@ import {
   g,
   medicineDescription,
   messageCodes,
+  isValidSearch,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -828,7 +829,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderFields = (
     heading: string,
     data: string,
-    onChange?: (text: string) => void,
+    onChange: (text: string) => void,
+    placeHolder?: string,
     multiline?: boolean
   ) => {
     return (
@@ -861,6 +863,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }}
             value={data}
             multiline={multiline}
+            placeholder={placeHolder || ''}
+            placeholderTextColor={theme.colors.darkBlueColor(1)}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
@@ -892,13 +896,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.weight,
-              (medicalHistory && medicalHistory.weight) || '',
+              medicalHistory
+                ? (medicalHistory.weight || '').toLowerCase() === 'no idea'
+                  ? ''
+                  : ((medicalHistory.weight || '').match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [''])[0]
+                : '',
               (text) => {
-                setMedicalHistory({
-                  ...medicalHistory,
-                  weight: text,
-                } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
-              }
+                if (/^[0-9]+\.{0,1}[0-9]{0,3}$/.test(text) || text === '') {
+                  setMedicalHistory({
+                    ...medicalHistory,
+                    weight: text,
+                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+                }
+              },
+              medicalHistory
+                ? (medicalHistory.weight || '').toLowerCase() === 'no idea'
+                  ? 'No Idea'
+                  : ((medicalHistory.weight || '').match(/^[0-9]+\.{0,1}[0-9]{0,3}$/) || [
+                      '',
+                    ])[0] === ''
+                  ? 'No Idea'
+                  : ''
+                : ''
             )}
             {renderFields(
               strings.case_sheet.bp,
@@ -944,6 +963,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   pastMedicalHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
+              '',
               true
             )}
             {renderFields(
@@ -955,6 +975,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   medicationHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
+              '',
               true
             )}
             {renderFields(
@@ -966,6 +987,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   pastSurgicalHistory: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
+              '',
               true
             )}
             {renderFields(
@@ -977,6 +999,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   drugAllergies: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
+              '',
               true
             )}
             {renderFields(
@@ -988,6 +1011,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   dietAllergies: text,
                 } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
               },
+              '',
               true
             )}
             {renderFields(
@@ -1002,6 +1026,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   },
                 ] as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]);
               },
+              '',
               true
             )}
             {renderFields(
@@ -1016,6 +1041,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   },
                 ] as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle[]);
               },
+              '',
               true
             )}
             {(patientDetails &&
@@ -1032,6 +1058,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       menstrualHistory: text,
                     } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
                   },
+                  '',
                   true
                 )
               : null}
@@ -1041,6 +1068,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               (text) => {
                 setFamilyValues(text);
               },
+              '',
               true
             )}
           </View>
@@ -2617,8 +2645,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               'Reason',
               referralReason,
               (text) => {
-                setReferralReason(text);
+                if (isValidSearch(text)) {
+                  setReferralReason(text);
+                }
               },
+              '',
               true
             )}
           </View>
