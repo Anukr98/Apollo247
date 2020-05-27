@@ -256,7 +256,6 @@ const getPatientPrismMedicalRecords: Resolver<
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
   const formattedLabResults: LabTestResult[] = [];
-  console.log(uhid, 'patient lab results input in medical records');
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismUHIDAuthToken);
   const labResultLog = {
     message: 'LabResults API Response',
