@@ -45,12 +45,7 @@ import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepos
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import {
-  sendNotificationSMS,
-  sendNotification,
-  sendBrowserNotitication,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 
 export type DiagnosisJson = {
@@ -742,11 +737,6 @@ const modifyCaseSheet: Resolver<
   if (getCaseSheetData.blobName && getCaseSheetData.blobName.length > 0)
     throw new AphError(AphErrorMessages.CASESHEET_SENT_TO_PATIENT_ALREADY);
 
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);
-  const seniorDoctorDetails = await doctorRepository.findById(
-    getCaseSheetData.appointment.doctorId
-  );
   if (!(inputArguments.symptoms === undefined)) {
     if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
       throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);

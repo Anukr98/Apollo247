@@ -2,7 +2,6 @@ import {
   EntityRepository,
   Repository,
   Between,
-  LessThan,
   Brackets,
   Not,
   Connection,
@@ -22,7 +21,6 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
-  REFUND_STATUS,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
