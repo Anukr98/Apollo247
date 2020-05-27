@@ -242,6 +242,7 @@ const getCurrentPatients: Resolver<
       });
     } else {
       isPrismWorking = 0;
+      isUserDetails = 1;
     }
 
     //if prism is not working - process with 24x7 database
