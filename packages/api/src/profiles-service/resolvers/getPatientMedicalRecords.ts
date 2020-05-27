@@ -237,7 +237,6 @@ const getPatientPrismMedicalRecords: Resolver<
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   let uhid = '';
-  console.log(patientDetails.primaryUhid, 'primary uhid', args.patientId);
   if (patientDetails.primaryUhid) {
     uhid = patientDetails.primaryUhid;
   } else {
@@ -314,7 +313,6 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHealthChecks: HealthCheckResult[] = [];
-  console.log(uhid, 'getPatientHealthChecks in medical records');
   const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismUHIDAuthToken);
   const healthChecksLog = {
     message: 'HealthChecks API Response',
@@ -346,7 +344,6 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   const formattedHospitalizations: HospitalizationResult[] = [];
-  console.log(uhid, 'getPatientHospitalizations in medical records');
   const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismUHIDAuthToken);
   const hospitalizationsLog = {
     message: 'Hospitalizations API Response',
