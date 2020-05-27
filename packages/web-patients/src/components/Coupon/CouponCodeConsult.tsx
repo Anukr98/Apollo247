@@ -15,6 +15,7 @@ import {
   ValidateConsultCoupon_validateConsultCoupon,
   ValidateConsultCoupon,
 } from 'graphql/types/ValidateConsultCoupon';
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,6 +169,7 @@ interface ApplyCouponProps {
   appointmentDateTime: string;
   validityStatus: boolean;
   setValidityStatus: (validityStatus: boolean) => void;
+  speciality?: string
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
@@ -231,6 +233,18 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
+              /*GTM TRACKING START */
+              gtmTracking({
+                category: 'Consultations',
+                action: props.speciality,
+                label: `Coupon Applied - ${selectCouponCode}`,
+                value: couponValidateResult && couponValidateResult.revisedAmount
+                  ? (
+                    props.cartValue -
+                    parseFloat(couponValidateResult.revisedAmount)
+                  ).toFixed(2) : null
+              });
+              /*GTM TRACKING END */
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);
@@ -294,12 +308,12 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}
-                {/* <div className={classes.sectionHeader}>Coupons For You</div> */}
-                {/* <ul>
+                <div className={classes.sectionHeader}>Coupons For You</div>
+                <ul>
                   {availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
-                        couponDetails && (
+                        couponDetails && couponDetails.couponConsultRule && couponDetails.couponConsultRule.isActive && (
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
@@ -332,7 +346,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   ) : (
                     <div className={classes.noCoupons}>No available Coupons</div>
                   )}
-                </ul> */}
+                </ul>
               </div>
             </div>
           </div>

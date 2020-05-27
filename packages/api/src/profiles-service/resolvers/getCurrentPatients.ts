@@ -143,7 +143,6 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients;
-
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
     let isPrismWorking = 1,
@@ -236,11 +235,13 @@ const getCurrentPatients: Resolver<
             mobileNumber,
             uhid: data.UHID,
             dateOfBirth: data.dob == 0 ? undefined : new Date(data.dob),
+            primaryUhid: data.UHID,
           }
         );
       });
     } else {
       isPrismWorking = 0;
+      isUserDetails = 1;
     }
 
     //if prism is not working - process with 24x7 database
@@ -257,6 +258,7 @@ const getCurrentPatients: Resolver<
               gender: undefined,
               mobileNumber,
               uhid: '',
+              primaryUhid: '',
             }
           ),
         ];
