@@ -415,6 +415,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             renderErrorPopup(
               `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
             );
+          } else if (message === 'OUT_OF_CONSULT_HOURS') {
+            renderErrorPopup(
+              `Slot you are trying to book is no longer available. Please try a different slot.`
+            );
           } else {
             renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
           }
