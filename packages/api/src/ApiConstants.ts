@@ -111,7 +111,6 @@ export enum ApiConstants {
   //physical book appointment sucessfull
   PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better. You may be required to pay additional fees for registration at Hospital for Visit Clinic appointments.',
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-  DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
@@ -120,8 +119,6 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_TITLE = 'Medicine order payment failed',
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
-  //case sheet submitted
-  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you.',
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
   ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',

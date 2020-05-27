@@ -7,12 +7,7 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import {
-  Patient,
-  MedicineOrders,
-  DiagnosticOrders,
-  PatientNotificationSettings,
-} from 'profiles-service/entities';
+import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
 
@@ -416,9 +411,9 @@ export async function sendNotification(
     notificationBody = notificationBody.replace('{3}', apptDate);
     let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
       ? ' Click here ' +
-      process.env.SMS_LINK_BOOK_APOINTMENT +
-      ' ' +
-      ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+        process.env.SMS_LINK_BOOK_APOINTMENT +
+        ' ' +
+        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
       : '';
     cancelApptSMS = notificationBody + cancelApptSMS;
 
@@ -558,22 +553,22 @@ export async function sendNotification(
           content = content.replace(
             '{4}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
           smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -597,12 +592,6 @@ export async function sendNotification(
     //send sms
     console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-    //send sms to doctor
-    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
-    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
@@ -1073,12 +1062,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{2}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -1111,12 +1100,12 @@ export async function sendReminderNotification(
         notificationBody = notificationBody.replace(
           '{1}',
           facilityDets.name +
-          ' ' +
-          facilityDets.streetLine1 +
-          ' ' +
-          facilityDets.city +
-          ' ' +
-          facilityDets.state
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
         );
       }
     }
@@ -1160,12 +1149,12 @@ export async function sendReminderNotification(
           notificationBody = notificationBody.replace(
             '{1}',
             facilityDets.name +
-            ' ' +
-            facilityDets.streetLine1 +
-            ' ' +
-            facilityDets.city +
-            ' ' +
-            facilityDets.state
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
           );
         }
       }
@@ -1359,7 +1348,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
@@ -1921,7 +1910,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
