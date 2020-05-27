@@ -427,7 +427,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                           : acc,
                       serviceableItems[0]
                     );
-                    setdeliveryTime(moment(tatDate, 'D-MMM-YYYY HH:mm a').toString());
+                    setdeliveryTime(tatDate);
                     postPhamracyCartAddressSelectedSuccess(
                       selectedAddress.zipcode!,
                       formatAddress(selectedAddress),
