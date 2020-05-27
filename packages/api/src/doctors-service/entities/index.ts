@@ -421,6 +421,12 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ default: true })
+  isJdAllowed: Boolean;
+
+  @Column({ default: true })
+  isApolloJdRequired: Boolean;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -738,6 +744,9 @@ export class AdminUsers extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ default: false })
+  readOnly: Boolean;
 
   @BeforeUpdate()
   updateDateUpdate() {
