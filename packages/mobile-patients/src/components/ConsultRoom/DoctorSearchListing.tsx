@@ -217,7 +217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(true);
+  const [value, setValue] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -280,6 +280,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         if (status) {
           // fetchCurrentLocation();
           fetchSpecialityFilterData(filterMode, FilterData);
+          // checkTime();
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -378,6 +379,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       console.log(latlng, 'latlng []');
 
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
+      // checkTime();
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
@@ -387,6 +389,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
+
+  const checkTime = () => {
+    const currentTime = moment().format('HH');
+    console.log('currentTime', currentTime);
+
+    if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
+      setValue(true);
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+    } else {
+      setValue(false);
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
+    }
+  };
 
   // const fetchNextSlots = (doctorIds: (string | null)[]) => {
   //   const todayDate = new Date().toISOString().slice(0, 10);
