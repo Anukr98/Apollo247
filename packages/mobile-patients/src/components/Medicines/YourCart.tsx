@@ -150,11 +150,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourCartProps extends NavigationScreenProps {
-  isComingFromConsult: boolean;
-}
-{
-}
+export interface YourCartProps extends NavigationScreenProps {}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
   const {
@@ -605,26 +601,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                if (props.navigation.getParam('isComingFromConsult')) {
+                if (navigatedFrom === 'registration') {
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [
+                        NavigationActions.navigate({
+                          routeName: AppRoutes.ConsultRoom,
+                        }),
+                      ],
+                    })
+                  );
+                } else {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
                   setCoupon!(null);
-                } else {
-                  CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
-                  if (navigatedFrom === 'registration') {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [
-                          NavigationActions.navigate({
-                            routeName: AppRoutes.ConsultRoom,
-                          }),
-                        ],
-                      })
-                    );
-                  } else {
-                    props.navigation.goBack();
-                  }
                 }
               }}
             >

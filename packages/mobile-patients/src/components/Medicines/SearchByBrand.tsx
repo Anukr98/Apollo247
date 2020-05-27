@@ -263,7 +263,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.MedAndTestCart);
+                props.navigation.navigate(
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                );
               }}
             >
               <CartIcon />
