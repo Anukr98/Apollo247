@@ -278,7 +278,7 @@ export const validatePharmaCoupon: Resolver<
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
 
   const discountedTotals = {
-    couponDiscount: Number(discountedPriceTotal.toFixed(2)) - productDiscount,
+    couponDiscount: Number((Number(discountedPriceTotal.toFixed(2)) - productDiscount).toFixed(2)),
     mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };
