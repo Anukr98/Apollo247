@@ -153,6 +153,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
+  const [scrollYValue, setScrollYValue] = useState(0);
+  const scrollViewRef = React.useRef<any>(null);
+  const scrollToSlots = () => {
+    scrollViewRef.current &&
+      scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
+  };
+
   const { currentPatient } = useAllCurrentPatients();
   const {
     cartItems,
@@ -492,22 +499,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const renderOrderHistory = () => {
+  const renderOrderTrackTopView = () => {
     const isDelivered = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
     );
-    const isCancelled = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-    );
-    const isDeliveryOrder = orderDetails.patientAddressId;
-    const tatInfo = orderDetails.orderTat;
-    const expectedDeliveryDiff = moment.duration(
-      moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
-    );
-    const hours = expectedDeliveryDiff.asHours();
-    const orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
-      isDelivered.statusDate &&
-      getFormattedDateTime(isDelivered.statusDate)}.`;
     let capsuleViewBGColor: string;
     let capsuleTextColor: string;
     let capsuleText: string;
@@ -532,6 +527,129 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       capsuleTextColor = '#01475b';
       capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
     }
+    const tatInfo = orderDetails.orderTat;
+
+    const renderCapsuleView = (backgroundColor: string, capsuleText: string, textColor: string) => {
+      return (
+        <View
+          style={{
+            alignSelf: 'flex-end',
+            backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
+            borderRadius: 16,
+            paddingHorizontal: 15,
+            paddingTop: 4,
+            paddingBottom: 3,
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
+        </View>
+      );
+    };
+
+    return (
+      <View>
+        <View
+          style={{
+            borderBottomColor: 'rgba(2,71,91,0.3)',
+            borderBottomWidth: 0.5,
+            paddingTop: 16,
+            paddingBottom: 6,
+            paddingHorizontal: 20,
+            marginBottom: 13,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5),
+                // alignSelf: 'center',
+                paddingTop: 2,
+              }}
+            >{`ORDER #${orderAutoId}`}</Text>
+            {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 12 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
+              {string.OrderSummery.name}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
+              {orderDetails.patient && orderDetails.patient.firstName}{' '}
+              {orderDetails.patient && orderDetails.patient.lastName}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
+              {string.OrderSummery.address}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
+              {addressData}
+            </Text>
+          </View>
+        </View>
+        {!!!orderStatusList.find(
+          (item) =>
+            item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
+        ) && (
+          <View
+            style={{
+              backgroundColor: '#f7f8f5',
+              shadowColor: 'rgba(128, 128, 128, 0.3)',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 5,
+              elevation: 5,
+              paddingHorizontal: 20,
+              paddingTop: 14,
+              paddingBottom: 13,
+              flexDirection: 'row',
+            }}
+          >
+            <NotifySymbol />
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
+                marginLeft: 20,
+              }}
+            >
+              {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
+              }}
+            >
+              {isDelivered
+                ? getFormattedDate(isDelivered.statusDate)
+                : tatInfo && getFormattedDate(tatInfo)}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderOrderHistory = () => {
+    const isDelivered = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+    const isCancelled = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+    );
+    const isDeliveryOrder = orderDetails.patientAddressId;
+    const tatInfo = orderDetails.orderTat;
+    const expectedDeliveryDiff = moment.duration(
+      moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
+      // moment('27-JAN-2020 10:51 AM').diff(moment())
+    );
+    const hours = expectedDeliveryDiff.asHours();
+    // const formattedDateDeliveryTime =
+    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
+    let orderCompleteText = `Your order no. #${orderAutoId} is successfully delivered on ${isDelivered &&
+      isDelivered.statusDate &&
+      getFormattedDateTime(isDelivered.statusDate)}.`;
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
@@ -585,6 +703,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
+    scrollToSlots();
 
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -596,6 +715,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
         .filter(
@@ -628,6 +748,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
@@ -656,6 +777,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
         .filter(
@@ -678,6 +800,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
         .filter(
@@ -695,6 +818,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
@@ -707,115 +831,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
+      scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
       statusList = orderStatusList
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
+      scrollToSlots();
     }
-
-    const renderCapsuleView = (backgroundColor: string, capsuleText: string, textColor: string) => {
-      return (
-        <View
-          style={{
-            alignSelf: 'flex-end',
-            backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
-            borderRadius: 16,
-            paddingHorizontal: 15,
-            paddingTop: 4,
-            paddingBottom: 3,
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
-        </View>
-      );
-    };
 
     return (
       <View>
-        <View
-          style={{
-            borderBottomColor: 'rgba(2,71,91,0.3)',
-            borderBottomWidth: 0.5,
-            paddingTop: 16,
-            paddingBottom: 6,
-            paddingHorizontal: 20,
-            marginBottom: 13,
-          }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5),
-                // alignSelf: 'center',
-                paddingTop: 2,
-              }}
-            >{`ORDER #${orderAutoId}`}</Text>
-            {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
-          </View>
-          <View style={{ flexDirection: 'row', marginTop: 12 }}>
-            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
-              {string.OrderSummery.name}
-            </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
-              {orderDetails.patient?.firstName} {orderDetails.patient?.lastName}
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
-            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
-              {string.OrderSummery.address}
-            </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
-              {addressData}
-            </Text>
-          </View>
-        </View>
-        {!!!orderStatusList.find(
-          (item) =>
-            item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
-            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
-        ) && (
-          <View
-            style={{
-              backgroundColor: '#f7f8f5',
-              shadowColor: 'rgba(128, 128, 128, 0.3)',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 5,
-              elevation: 5,
-              paddingHorizontal: 20,
-              paddingTop: 14,
-              paddingBottom: 13,
-              flexDirection: 'row',
-            }}
-          >
-            <NotifySymbol />
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
-                marginLeft: 20,
-              }}
-            >
-              {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
-            </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
-              }}
-            >
-              {isDelivered
-                ? getFormattedDate(isDelivered.statusDate)
-                : tatInfo && getFormattedDate(tatInfo)}
-            </Text>
-          </View>
-        )}
         <View style={{ margin: 20 }}>
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
+                onLayout={(event) => {
+                  const layout = event.nativeEvent.layout;
+                  if (orderDetails.currentStatus == order!.orderStatus) {
+                    setScrollYValue(layout.y);
+                  }
+                }}
                 style={index < array.length - 1 ? { marginBottom: 8 } : {}}
                 key={index}
                 description={
@@ -1295,7 +1332,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
               selectedTab={selectedTab}
             />
-            <ScrollView bounces={false}>
+            {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()
                 : !loading && renderOrderSummary()}
