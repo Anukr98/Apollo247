@@ -1063,7 +1063,10 @@ app.get('/processOmsOrders', (req, res) => {
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
                 }
-                const orderTat = orderDetails.orderTat ? new Date(orderDetails.orderTat) : '';
+                const orderTat =
+                  orderDetails.orderTat && Date.parse(orderDetails.orderTat)
+                    ? new Date(orderDetails.orderTat)
+                    : '';
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
