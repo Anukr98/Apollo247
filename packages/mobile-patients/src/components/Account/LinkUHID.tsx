@@ -273,7 +273,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           style={[
             styles.closeButton,
             heightPercent <= 30 ?
-              { top: 160, right: 40 } :
+              { top: 140, right: 40 } :
               { top: '31%', right: 60 }
           ]}
           onPress={() => {
