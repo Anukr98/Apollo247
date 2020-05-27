@@ -457,7 +457,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 {doctorDetails.specialty && doctorDetails.specialty.name
                   ? doctorDetails.specialty.name
                   : ''}{' '}
-                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'} EXP
+                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}{' '}
+                EXP
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
@@ -575,12 +576,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         >
                           {/* {clinic.image && ( */}
                           <Image
-                            source={{
-                              uri:
-                                item && item.facility && item.facility.imageUrl
-                                  ? item.facility.imageUrl
-                                  : 'https://via.placeholder.com/328x136',
-                            }}
+                            source={
+                              item && item.facility && item.facility.imageUrl
+                                ? {
+                                    uri: item.facility.imageUrl,
+                                  }
+                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.png')
+                            }
                             style={{
                               height: 136,
                               width: '100%',
