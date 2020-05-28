@@ -647,7 +647,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title={'RESEND PRESCRIPTION'}
               onPress={() => {
-                sendToPatientAction();
+                followUpMessage();
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Hi',
+                    description: 'Prescription has been sent to patient successfully',
+                    onPressOk: () => {
+                      props.navigation.popToTop();
+                      hideAphAlert && hideAphAlert();
+                    },
+                    unDismissable: true,
+                  });
               }}
               variant="white"
             />
