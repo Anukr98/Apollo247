@@ -261,8 +261,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
-      if (doctor['earliestSlotavailableInMinutes'] < 1441) {
-        if (doctor.facility[0].name.includes('Apollo')) {
+      if (doctor['earliestSlotavailableInMinutes'] < 241) {
+        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloDoctors.push(doctor);
         } else {
           earlyAvailableNonApolloDoctors.push(doctor);
@@ -302,7 +302,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       }
     }
     for (const doctor of docs) {
-      if (doctor.facility[0].name.includes('Apollo')) {
+      if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
         if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
           nearByApolloDoctors.push(doctor);
         } else {
