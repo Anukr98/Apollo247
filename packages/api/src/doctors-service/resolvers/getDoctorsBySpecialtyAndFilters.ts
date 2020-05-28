@@ -26,6 +26,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorsNextAvailability: [DoctorSlotAvailability]
     doctorsAvailability: [DoctorConsultModeAvailability]
     specialty: DoctorSpecialty
+    defaultSort: String
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -71,6 +72,7 @@ type FilterDoctorsResult = {
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty?: DoctorSpecialty;
+  defaultSort: string;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -284,7 +286,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
   //   searchLogger('GEOLOCATION_API_CALL___END');
   // }
-
+  args.filterInput.sort = args.filterInput.sort || defaultSort();
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
@@ -373,9 +375,17 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
+    defaultSort: defaultSort(),
   };
 };
-
+function defaultSort() {
+  const ISTOffset: number = 330;
+  const currentTime: Date = new Date();
+  const ISTTime: Date = new Date(
+    currentTime.getTime() + (currentTime.getTimezoneOffset() + ISTOffset) * 6000
+  );
+  return ISTTime.getHours() > 7 || ISTTime.getHours() < 16 ? 'distance' : 'availability';
+}
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
