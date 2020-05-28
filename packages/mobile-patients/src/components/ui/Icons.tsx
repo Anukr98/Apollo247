@@ -761,6 +761,10 @@ export const TestsCartMedicineIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const DriveWayIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/driveway.png')} />
+);
+
 export const EditIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_edit.png')} />
 );

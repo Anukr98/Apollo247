@@ -55,7 +55,7 @@ const PharmaApiConfig = {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
     MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],

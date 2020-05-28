@@ -93,6 +93,9 @@ import {
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { TextInputComponent } from '../ui/TextInputComponent';
+import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
+import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -163,6 +166,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     deliveryAddressId,
     storeId,
     setStoreId,
+    showPrescriptionAtStore,
     deliveryCharges,
     cartTotal,
     couponDiscount,
@@ -193,6 +197,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
+  const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const { locationDetails } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
@@ -930,77 +935,64 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const renderStorePickup = () => {
     return (
-      <View style={{ margin: 16, marginTop: 20 }}>
-        <Text
-          style={{
-            paddingTop: 10,
-            ...theme.fonts.IBMPlexSansMedium(16),
-            lineHeight: 24,
-            color: '#0087ba',
-          }}
-        >
-          Sorry! We are not taking Store Pickup Orders currently as we cannot guarantee inventory
-          availability. You can directly visit your nearby store to check availability.
-        </Text>
+      <View style={{}}>
+        {!!slicedStoreList.length && !!storeId && (
+          <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
+        )}
+        <View style={{ margin: 16 }}>
+          <TextInputComponent
+            value={`${pinCode}`}
+            maxLength={6}
+            onChangeText={(pincode) => fetchStorePickup(pincode)}
+            placeholder={'Enter Pincode'}
+          />
+          {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
+          {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+            <Text
+              style={{
+                paddingTop: 10,
+                ...theme.fonts.IBMPlexSansMedium(16),
+                lineHeight: 24,
+                color: '#0087ba',
+              }}
+            >
+              Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
+              from a nearby store, or change the pincode.
+            </Text>
+          )}
+          {slicedStoreList.map((store, index, array) => (
+            <RadioSelectionItem
+              key={store.storeid}
+              title={`${store.storename}\n${store.address}`}
+              isSelected={storeId === store.storeid}
+              onPress={() => {
+                CommonLogEvent(AppRoutes.YourCart, 'Set store id');
+                setStoreId && setStoreId(store.storeid);
+                setShowDriveWayPopup(true);
+              }}
+              containerStyle={{ marginTop: 16 }}
+              hideSeparator={index == array.length - 1}
+            />
+          ))}
+          <View>
+            {stores.length > 2 && (
+              <Text
+                style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.StorPickupScene, {
+                    pincode: pinCode,
+                    stores: stores,
+                  })
+                }
+              >
+                VIEW ALL
+              </Text>
+            )}
+          </View>
+        </View>
       </View>
     );
   };
-
-  // const renderStorePickup = () => {
-  //   return (
-  //     <View style={{ margin: 16, marginTop: 20 }}>
-  //       <TextInputComponent
-  //         value={`${pinCode}`}
-  //         maxLength={6}
-  //         onChangeText={(pincode) => fetchStorePickup(pincode)}
-  //         placeholder={'Enter Pincode'}
-  //       />
-  //       {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-  //       {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
-  //         <Text
-  //           style={{
-  //             paddingTop: 10,
-  //             ...theme.fonts.IBMPlexSansMedium(16),
-  //             lineHeight: 24,
-  //             color: '#0087ba',
-  //           }}
-  //         >
-  //           Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-  //           from a nearby store, or change the pincode.
-  //         </Text>
-  //       )}
-
-  //       {slicedStoreList.map((store, index, array) => (
-  //         <RadioSelectionItem
-  //           key={store.storeid}
-  //           title={`${store.storename}\n${store.address}`}
-  //           isSelected={storeId === store.storeid}
-  //           onPress={() => {
-  //             CommonLogEvent(AppRoutes.YourCart, 'Set store id');
-  //             setStoreId && setStoreId(store.storeid);
-  //           }}
-  //           containerStyle={{ marginTop: 16 }}
-  //           hideSeparator={index == array.length - 1}
-  //         />
-  //       ))}
-  //       <View>
-  //         {stores.length > 2 && (
-  //           <Text
-  //             style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
-  //             onPress={() =>
-  //               props.navigation.navigate(AppRoutes.StorPickupScene, {
-  //                 pincode: pinCode,
-  //                 stores: stores,
-  //               })
-  //             }
-  //           >
-  //             VIEW ALL
-  //           </Text>
-  //         )}
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   const renderDelivery = () => {
     return (
@@ -1289,7 +1281,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     !cartItems.find((item) => item.unserviceable) &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
-      ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
+      ? (storeId && showPrescriptionAtStore) ||
+        physicalPrescriptions.length > 0 ||
+        ePrescriptions.length > 0
       : true)
   );
 
@@ -1534,8 +1528,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderDelivery()}
+            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
@@ -1562,6 +1556,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showDriveWayPopup && !!storeId && (
+        <StoreDriveWayPickupPopup
+          store={stores.find((item) => item.storeid == storeId)!}
+          onPressOkGotIt={() => setShowDriveWayPopup(false)}
+        />
+      )}
     </View>
   );
 };

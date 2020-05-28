@@ -13,6 +13,10 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
+import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { SearchSendIcon } from '../ui/Icons';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -47,7 +51,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.WHITE,
     margin: 20,
-    padding: 16,
+    paddingTop: 16,
   },
 });
 
@@ -63,6 +67,8 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
   const { storeId, setStoreId, pinCode, setStores, stores, setPinCode } = useShoppingCart();
   const [selectedStore, setSelectedStore] = useState<string>(storeId || '');
+  const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
+
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
       setPinCode && setPinCode(pincode);
@@ -80,6 +86,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
           });
       } else {
         setStoreId && setStoreId('');
+        setSelectedStore('');
         setStores && setStores([]);
       }
     }
@@ -101,9 +108,26 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
     );
   };
 
+  const rightIconView = () => {
+    return (
+      <View style={{ opacity: pinCode.length == 6 ? 1 : 0.5 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          disabled={pinCode.length != 6}
+          onPress={() => {
+            setStores!([]);
+            fetchStorePickup(pinCode);
+          }}
+        >
+          <SearchSendIcon />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderInputWithValidation = () => {
     return (
-      <View style={{ paddingBottom: 24 }}>
+      <View style={{ paddingHorizontal: 16 }}>
         <TextInputComponent
           value={pinCode}
           onChangeText={(pincode) => fetchStorePickup(pincode)}
@@ -119,12 +143,15 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter pin code'}
           autoCorrect={false}
+          icon={rightIconView()}
         />
-        {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
+        {storePickUpLoading && (
+          <ActivityIndicator color="green" size="large" style={{ marginTop: 24 }} />
+        )}
         {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
           <Text
             style={{
-              paddingTop: 10,
+              paddingTop: 24,
               ...theme.fonts.IBMPlexSansMedium(16),
               lineHeight: 24,
               color: '#0087ba',
@@ -139,6 +166,13 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
           <Text style={styles.inputValidationStyle}>{'Invalid Pincode'}</Text>
         ) : null}
       </View>
+    );
+  };
+
+  const renderStoreDriveWayPickupView = () => {
+    return (
+      !!stores.length &&
+      !!selectedStore && <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
     );
   };
 
@@ -181,22 +215,33 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         {renderInputWithValidation()}
-        {renderCardTitle()}
-        {renderRadioButtonList()}
+        {renderStoreDriveWayPickupView()}
+        <View style={{ padding: 16, paddingTop: 29 }}>
+          {renderCardTitle()}
+          {renderRadioButtonList()}
+        </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <Header
-        leftIcon="backArrow"
-        title={'STORE PICK UP'}
-        container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => props.navigation.goBack()}
-      />
-      <ScrollView bounces={false}>{renderStorePickupCard()}</ScrollView>
-      {renderBottomButton()}
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <Header
+          leftIcon="backArrow"
+          title={'STORE PICK UP'}
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+        <ScrollView bounces={false}>{renderStorePickupCard()}</ScrollView>
+        {renderBottomButton()}
+      </SafeAreaView>
+      {showDriveWayPopup && !!selectedStore && (
+        <StoreDriveWayPickupPopup
+          store={stores.find((item) => item.storeid == selectedStore)!}
+          onPressOkGotIt={() => setShowDriveWayPopup(false)}
+        />
+      )}
+    </View>
   );
 };
