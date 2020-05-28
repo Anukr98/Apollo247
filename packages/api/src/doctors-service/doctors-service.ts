@@ -75,6 +75,7 @@ import {
 } from 'doctors-service/resolvers/doctorDataElastic';
 
 import { winstonLogger } from 'customWinstonLogger';
+import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/deeplink';
 
 (async () => {
   await connect();
@@ -184,6 +185,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: doctorDataElasticTypeDefs,
         resolvers: doctorDataElasticResolvers,
+      },
+      {
+        typeDefs: deepLinkTypeDefs,
+        resolvers: deepLinkResolvers,
       },
     ]),
     plugins: [

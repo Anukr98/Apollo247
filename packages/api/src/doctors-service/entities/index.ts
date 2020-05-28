@@ -1096,3 +1096,55 @@ export class CityPincodeMapper extends BaseEntity {
   zone: string;
 }
 // citypincode mapper ends
+
+//citypincode mapper starts
+export enum DeepLinkType {
+  DOCTOR,
+}
+
+@Entity()
+export class Deeplink extends BaseEntity {
+  @Column({ nullable: true })
+  campaignName: string;
+
+  @Column({ nullable: true })
+  channelName: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  deeplink: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  linkRefreshDate: Date;
+
+  @Column({ nullable: true })
+  partnerId: string;
+
+  @Column({ nullable: true })
+  referralCode: string;
+
+  @Column({ nullable: true })
+  shortId: string;
+
+  @Column({ nullable: true })
+  templateId: string;
+
+  @Column({ nullable: true })
+  type: DeepLinkType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
