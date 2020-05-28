@@ -235,12 +235,12 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
           !isEmpty(referralDescription) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
-                <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
+                <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
               </div>
               <div className={classes.adviceInstruction}>
                 {otherInstructions && otherInstructions.length > 0 && (
                   <div className={classes.advice}>
-                    <span>Doctor’s Advise</span>
+                    <span>Doctor’s Advice</span>
                     <div>
                       {otherInstructions.map((instruction) => (
                         <div className={classes.instruction}>{instruction.instruction}</div>
@@ -334,8 +334,8 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
             <span>Disclaimer:</span>
             <span>
               This prescription is issued on the basis of your inputs during teleconsultation. It is
-              valid from the date of issue for upto 90 days (for the specific period/dosage of each
-              medicine as advised).
+              valid from the date of issue until the specific period/dosage of each medicine as
+              advised.
             </span>
           </div>
         </div>

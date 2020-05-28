@@ -250,7 +250,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    }else if (duplicate) {
+    } else if (duplicate) {
       setErrorState({
         ...errorState,
         symptomError: true,
