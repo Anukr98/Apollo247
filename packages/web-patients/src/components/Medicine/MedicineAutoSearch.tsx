@@ -214,7 +214,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
-        if (data.products) {
+        if (data && data.products) {
           setShowError(data.products.length === 0);
           setSearchMedicines(data.products);
         } else {
