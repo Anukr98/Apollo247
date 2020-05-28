@@ -201,3 +201,24 @@ export const paymentStatusTracking = (data: PaymentStatusData) => {
     }
   }
 };
+
+interface MedicineDetails {
+  sku: string;
+  name: string;
+  category_id: string;
+}
+
+export const notifyMeTracking = (data: MedicineDetails) => {
+  if (window && window.webengage) {
+    const { sku, name, category_id } = data;
+    try {
+      window.webengage.track('Notify Me', {
+        'product name': name,
+        'product id': sku,
+        'category ID': category_id,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};

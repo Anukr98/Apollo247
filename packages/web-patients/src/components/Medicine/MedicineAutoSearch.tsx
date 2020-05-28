@@ -6,8 +6,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
+import { gtmTracking } from '../../gtmTracking';
+import { notifyMeTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -189,11 +192,11 @@ export const MedicineAutoSearch: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  let cancelSearchSuggestionsApi: any;
   const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
     setLoading(true);
@@ -225,6 +228,15 @@ export const MedicineAutoSearch: React.FC = (props) => {
 
   let showError = false;
   if (!loading && searchText.length > 2) showError = true;
+
+  const isInCart = (medicine: MedicineProduct) => {
+    const index = cartItems.findIndex((item) => item.id === medicine.id);
+    return index > -1;
+  };
+
+  const getQuantity = (medicine: MedicineProduct) => {
+    return cartItems.find((item) => item.id === medicine.id).quantity;
+  };
 
   return (
     <div className={classes.root}>
@@ -293,13 +305,130 @@ export const MedicineAutoSearch: React.FC = (props) => {
                       </div>
                     </Link>
                     <div className={classes.rightActions}>
-                      <AphButton className={classes.addToCart}>Add to Cart</AphButton>
-                      <AphButton className={classes.addToCart}>Notify me</AphButton>
-                      <div className={classes.addQty}>
-                        <AphButton>-</AphButton>
-                        <div className={classes.totalQty}>1</div>
-                        <AphButton>+</AphButton>
-                      </div>
+                      {!isInCart(medicine) && (
+                        <AphButton
+                          onClick={() => {
+                            if (medicine.is_in_stock) {
+                              const cartItem: MedicineCartItem = {
+                                description: medicine.description,
+                                id: medicine.id,
+                                image: medicine.image,
+                                is_in_stock: medicine.is_in_stock,
+                                is_prescription_required: medicine.is_prescription_required,
+                                name: medicine.name,
+                                price: medicine.price,
+                                sku: medicine.sku,
+                                special_price: medicine.special_price,
+                                small_image: medicine.small_image,
+                                status: medicine.status,
+                                thumbnail: medicine.thumbnail,
+                                type_id: medicine.type_id,
+                                mou: medicine.mou,
+                                quantity: 1,
+                                isShippable: true,
+                              };
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: 'Add to Cart',
+                                label: medicine.name,
+                                value: medicine.special_price || medicine.price,
+                              });
+                              addCartItem && addCartItem(cartItem);
+                            } else {
+                              const { sku, name, category_id } = medicine;
+                              notifyMeTracking({
+                                sku,
+                                category_id,
+                                name,
+                              });
+                            }
+                          }}
+                          className={classes.addToCart}
+                        >
+                          {medicine.is_in_stock ? 'Add to Cart' : 'Notify me'}
+                        </AphButton>
+                      )}
+                      {isInCart(medicine) && (
+                        <div className={classes.addQty}>
+                          <AphButton
+                            onClick={() => {
+                              const medicineQtyInCart = getQuantity(medicine);
+                              if (medicineQtyInCart === 1) {
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Remove Cart Item',
+                                  label: medicine.name,
+                                  value: medicine.special_price || medicine.price,
+                                });
+                                removeCartItem && removeCartItem(medicine.id);
+                              } else {
+                                const cartItem: MedicineCartItem = {
+                                  description: medicine.description,
+                                  id: medicine.id,
+                                  image: medicine.image,
+                                  is_in_stock: medicine.is_in_stock,
+                                  is_prescription_required: medicine.is_prescription_required,
+                                  name: medicine.name,
+                                  price: medicine.price,
+                                  sku: medicine.sku,
+                                  special_price: medicine.special_price,
+                                  small_image: medicine.small_image,
+                                  status: medicine.status,
+                                  thumbnail: medicine.thumbnail,
+                                  type_id: medicine.type_id,
+                                  mou: medicine.mou,
+                                  quantity: -1,
+                                  isShippable: true,
+                                };
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Updating Cart Item by decreasing quantity 1',
+                                  label: medicine.name,
+                                  value: medicine.special_price || medicine.price,
+                                });
+                                updateCartItem && updateCartItem(cartItem);
+                              }
+                            }}
+                          >
+                            -
+                          </AphButton>
+                          <div className={classes.totalQty}>{getQuantity(medicine)}</div>
+                          <AphButton
+                            onClick={() => {
+                              const medicineQtyInCart = getQuantity(medicine);
+                              if (medicineQtyInCart < 20) {
+                                const cartItem: MedicineCartItem = {
+                                  description: medicine.description,
+                                  id: medicine.id,
+                                  image: medicine.image,
+                                  is_in_stock: medicine.is_in_stock,
+                                  is_prescription_required: medicine.is_prescription_required,
+                                  name: medicine.name,
+                                  price: medicine.price,
+                                  sku: medicine.sku,
+                                  special_price: medicine.special_price,
+                                  small_image: medicine.small_image,
+                                  status: medicine.status,
+                                  thumbnail: medicine.thumbnail,
+                                  type_id: medicine.type_id,
+                                  mou: medicine.mou,
+                                  quantity: 1,
+                                  isShippable: true,
+                                };
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Updating Cart Item by increasing quantity 1',
+                                  label: medicine.name,
+                                  value: medicine.special_price || medicine.price,
+                                });
+                                updateCartItem && updateCartItem(cartItem);
+                              }
+                            }}
+                          >
+                            +
+                          </AphButton>
+                        </div>
+                      )}
                     </div>
                   </li>
                 ))}
