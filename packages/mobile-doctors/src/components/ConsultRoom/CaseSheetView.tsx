@@ -415,6 +415,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
       pdfUrl: pdf || prescriptionPdf,
+      isResend: pdf === undefined,
     };
     console.log(followupObj, 'followupObj');
 

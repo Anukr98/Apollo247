@@ -27,8 +27,8 @@ const commonConfigs = {
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.002',
-  Android_Version: '1.002',
+  iOS_Version: '1.0019',
+  Android_Version: '1.0019',
 };
 
 //QA

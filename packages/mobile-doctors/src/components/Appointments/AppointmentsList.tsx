@@ -211,7 +211,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
                                     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
                                     ssl: true,
-                                    uuid: doctorDetails ? doctorDetails.id : REQUEST_ROLES.DOCTOR,
+                                    uuid: REQUEST_ROLES.DOCTOR,
                                   };
 
                                   const pubnub = new Pubnub(config);
@@ -227,6 +227,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                     caseSheetId: caseSheetId,
                                     doctorInfo: doctorDetails,
                                     pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                                    isResend: true,
                                   };
 
                                   pubnub.publish(
