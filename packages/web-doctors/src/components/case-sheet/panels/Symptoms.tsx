@@ -312,14 +312,6 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    } else if (isEmpty(trim(severity))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: false,
-        howOfftenError: false,
-        severityError: true,
-      });
     } else if (duplicate) {
       setErrorState({
         ...errorState,
