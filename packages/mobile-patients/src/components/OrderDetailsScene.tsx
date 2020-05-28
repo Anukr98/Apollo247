@@ -448,7 +448,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         if (items.length > itemsToAdd.length) {
           showErrorPopup('Few items are out of stock.');
         }
-        props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
+        props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((e) => {
         CommonBugFender('OrderDetailsScene_reOrder', e);

@@ -325,6 +325,7 @@ const makeAppointmentPayment: Resolver<
           '{0}',
           ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
         ),
+        isJdConsultStarted: true,
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);

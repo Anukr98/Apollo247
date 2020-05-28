@@ -201,11 +201,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={
-            <TouchableOpacity
-              onPress={() =>
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-              }
-            >
+            <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}>
               <CartIcon style={{}} />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>

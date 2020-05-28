@@ -12,12 +12,7 @@ import { format, addMinutes } from 'date-fns';
 import { DoctorType } from 'doctors-service/entities';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
-import {
-  CASESHEET_STATUS,
-  APPOINTMENT_TYPE,
-  CaseSheet,
-  Appointment,
-} from 'consults-service/entities';
+import { CASESHEET_STATUS, APPOINTMENT_TYPE, CaseSheet } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
 export const appointmentNotificationTypeDefs = gql`

@@ -2,7 +2,6 @@ import {
   EntityRepository,
   Repository,
   Between,
-  LessThan,
   Brackets,
   Not,
   Connection,
@@ -22,7 +21,6 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
-  REFUND_STATUS,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -355,8 +353,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
     const inputStartDate =
       format(curDate, 'yyyy-MM-dd') + 'T' + curDate.getUTCHours() + ':' + curMin;
-    console.log('past appts', inputStartDate);
-    return this.find({
+    //console.log('past appts', inputStartDate);
+    /*return this.find({
       where: {
         doctorId,
         patientId: In(patientIds),
@@ -364,7 +362,23 @@ export class AppointmentRepository extends Repository<Appointment> {
         status: Not(STATUS.CANCELLED),
       },
       order: { appointmentDateTime: 'DESC' },
-    });
+    });*/
+
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime < :fromDate)', {
+        fromDate: inputStartDate,
+      })
+      .andWhere('appointment.patientId IN (:...ids)', { ids: patientIds })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+        status4: STATUS.PAYMENT_FAILED,
+        status5: STATUS.PAYMENT_PENDING_PG,
+      })
+      .orderBy('appointment.appointmentDateTime', 'DESC')
+      .getMany();
   }
 
   getPatientPastAppointments(

@@ -645,7 +645,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     'Service Area': 'Pharmacy',
                   };
                   postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
-                  props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
+                  props.navigation.navigate(AppRoutes.YourCart);
                 }}
                 title="BUY NOW"
                 style={{ flex: 1 }}
@@ -1184,7 +1184,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+                props.navigation.navigate(
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                )
               }
               style={{ right: 20 }}
             >
