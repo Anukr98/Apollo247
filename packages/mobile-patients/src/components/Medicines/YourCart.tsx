@@ -1141,6 +1141,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
+    const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
@@ -1167,6 +1168,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
             <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
+          </View>
+          <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
+            <Text style={styles.blueTextStyle}>Packaging Charges</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {packagingCharges.toFixed(2)}</Text>
           </View>
           {/* <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
               <Text style={styles.blueTextStyle}>Packaging Charges</Text>
