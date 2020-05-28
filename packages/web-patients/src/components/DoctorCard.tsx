@@ -147,6 +147,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
+  const doctorName = doctorDetails && doctorDetails.fullName;
 
   const clinics: any = [];
 
@@ -227,7 +228,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
-        onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+        onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId))}
       >
         <Avatar
           alt={doctorDetails.firstName || ''}
@@ -247,7 +248,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         />
         <div
           className={classes.doctorInfo}
-          onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+          onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId))}
         >
           {/* {loading ? (
             <div className={classes.cardLoader}>

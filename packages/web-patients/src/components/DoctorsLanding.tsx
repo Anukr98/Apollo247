@@ -31,6 +31,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 import { gtmTracking } from '../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -211,6 +212,9 @@ export const DoctorsLanding: React.FC = (props) => {
     currentLat,
     getCurrentLocationPincode,
   } = useLocationDetails();
+  const params = useParams<{
+    specialty: string;
+  }>();
 
   if (!currentPincode && currentLat && currentLong) {
     getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);

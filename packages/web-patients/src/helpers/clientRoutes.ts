@@ -6,8 +6,9 @@ export const clientRoutes = {
   storagePoc: () => '/storage-poc',
 
   welcome: () => '/',
-  doctorDetails: (doctorId: string) => `/doctor-details/${doctorId}`,
+  doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
+  specialties: (specialty: string) => `/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
