@@ -2,7 +2,6 @@ import {
   EntityRepository,
   Repository,
   Between,
-  LessThan,
   Brackets,
   Not,
   Connection,
@@ -354,8 +353,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
     const inputStartDate =
       format(curDate, 'yyyy-MM-dd') + 'T' + curDate.getUTCHours() + ':' + curMin;
-    console.log('past appts', inputStartDate);
-    return this.find({
+    //console.log('past appts', inputStartDate);
+    /*return this.find({
       where: {
         doctorId,
         patientId: In(patientIds),
@@ -363,17 +362,33 @@ export class AppointmentRepository extends Repository<Appointment> {
         status: Not(STATUS.CANCELLED),
       },
       order: { appointmentDateTime: 'DESC' },
-    });
+    });*/
+
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime < :fromDate)', {
+        fromDate: inputStartDate,
+      })
+      .andWhere('appointment.patientId IN (:...ids)', { ids: patientIds })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+        status4: STATUS.PAYMENT_FAILED,
+        status5: STATUS.PAYMENT_PENDING_PG,
+      })
+      .orderBy('appointment.appointmentDateTime', 'DESC')
+      .getMany();
   }
 
   getPatientPastAppointments(
-    patientId: string,
+    ids: string[],
     filter?: CONSULTS_RX_SEARCH_FILTER[],
     offset?: number,
     limit?: number
   ) {
     const whereClause = {
-      patientId,
+      patientId: In(ids),
       //appointmentDateTime: LessThan(new Date()),
       status: STATUS.COMPLETED,
       appointmentType: In([APPOINTMENT_TYPE.ONLINE, APPOINTMENT_TYPE.PHYSICAL]),
@@ -1180,6 +1195,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getAllAppointmentsByPatientId(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
       .orderBy('appointment.appointmentDateTime', 'ASC')

@@ -307,9 +307,11 @@ export enum PharmaDiscountApplicableOn {
 }
 
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum Relation {

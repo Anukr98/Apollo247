@@ -167,12 +167,14 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
 
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   let patientAppointments: ConsultRecord[] = [];
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patient);
   if (
     hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
     hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)
   ) {
     patientAppointments = await apptsRepo.getPatientPastAppointments(
-      patient,
+      primaryPatientIds,
       filter,
       offset,
       limit
@@ -183,7 +185,11 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   let patientMedicineOrders: MedicineOrders[] = [];
   let uniqueMedicineRxOrders: MedicineOrders[] = [];
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
-    patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
+    patientMedicineOrders = await medicineOrdersRepo.findByPatientIds(
+      primaryPatientIds,
+      offset,
+      limit
+    );
 
     //filtering the medicine orders by unique prescription url
     const prescriptionUrls: string[] = [];
@@ -214,7 +220,6 @@ const getPatientLabResults: Resolver<
 
   //get users list for the mobile number
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-  console.log(prismUserList);
 
   const patientDetails = await patientsRepo.findById(args.patientId);
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -232,7 +237,6 @@ const getPatientLabResults: Resolver<
 
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
-
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
   console.log(labResults);
   return false;

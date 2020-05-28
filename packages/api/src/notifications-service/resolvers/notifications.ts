@@ -9,6 +9,8 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { ApiConstants } from 'ApiConstants';
 import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
+
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -590,12 +592,6 @@ export async function sendNotification(
     //send sms
     console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-    //send sms to doctor
-    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
-    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
@@ -706,6 +702,24 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
     //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND
+  ) {
+    const appRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
+    const refundsInfo = await appRefRepo.getRefundsByAppointmentId(appointment);
+    if (refundsInfo) {
+      notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
+      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace(
+        '{0}',
+        Number(refundsInfo.refundAmount).toFixed(2)
+      );
+      notificationBody = notificationBody.replace('{1}', appointment.id);
+      notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
+
+      sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    } else {
+      return;
+    }
   }
 
   //initialize firebaseadmin
@@ -893,6 +907,23 @@ export async function sendNotification(
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         doctorType: 'JUNIOR',
+      },
+    };
+  }
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Appointment_Canceled_Refund',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
       },
     };
   }
@@ -1713,9 +1744,10 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  let tatDate;
   if (orderDetails.orderTat) {
     if (Date.parse(orderDetails.orderTat.toString())) {
-      const tatDate = new Date(orderDetails.orderTat.toString());
+      tatDate = new Date(orderDetails.orderTat.toString());
       orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
     }
   }
@@ -1723,7 +1755,7 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
   if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
     notificationBody = notificationBody.replace('{2}', atOrederDateTime);

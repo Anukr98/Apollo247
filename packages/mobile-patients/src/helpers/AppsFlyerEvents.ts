@@ -3,6 +3,7 @@ type YesOrNo = { value: 'Yes' | 'No' };
 export enum AppsFlyerEventName {
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
+  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
@@ -98,7 +99,9 @@ export interface AppsFlyerEvents {
     'Referral Code'?: string;
   };
   [AppsFlyerEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-
+  [AppsFlyerEventName.OTP_VERIFICATION_SUCCESS]: {
+    'Mobile Number': string;
+  };
   // ********** Home Screen Events ********** \\
 
   [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
