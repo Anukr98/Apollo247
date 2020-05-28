@@ -327,20 +327,24 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 quantity: 1,
                                 isShippable: true,
                               };
+                              /* Gtm code start  */
                               gtmTracking({
                                 category: 'Pharmacy',
                                 action: 'Add to Cart',
                                 label: medicine.name,
                                 value: medicine.special_price || medicine.price,
                               });
+                              /* Gtm code end  */
                               addCartItem && addCartItem(cartItem);
                             } else {
                               const { sku, name, category_id } = medicine;
+                              /* WebEngage event start */
                               notifyMeTracking({
                                 sku,
                                 category_id,
                                 name,
                               });
+                              /* WebEngage event end */
                             }
                           }}
                           className={classes.addToCart}
@@ -354,12 +358,14 @@ export const MedicineAutoSearch: React.FC = (props) => {
                             onClick={() => {
                               const medicineQtyInCart = getQuantity(medicine);
                               if (medicineQtyInCart === 1) {
+                                /* Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
                                   action: 'Remove Cart Item',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
                                 });
+                                /* Gtm code end  */
                                 removeCartItem && removeCartItem(medicine.id);
                               } else {
                                 const cartItem: MedicineCartItem = {
@@ -380,12 +386,14 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                   quantity: -1,
                                   isShippable: true,
                                 };
+                                /* Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
                                   action: 'Updating Cart Item by decreasing quantity 1',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
                                 });
+                                /* Gtm code end  */
                                 updateCartItem && updateCartItem(cartItem);
                               }
                             }}
@@ -415,12 +423,14 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                   quantity: 1,
                                   isShippable: true,
                                 };
+                                /* Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
                                   action: 'Updating Cart Item by increasing quantity 1',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
                                 });
+                                /* Gtm code end  */
                                 updateCartItem && updateCartItem(cartItem);
                               }
                             }}
