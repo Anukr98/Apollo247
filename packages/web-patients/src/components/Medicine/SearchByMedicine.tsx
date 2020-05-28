@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicineListscard } from 'components/Medicine/MedicineListscard';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -13,11 +13,12 @@ import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
-import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     searchByBrandPage: {
+      position: 'relative',
       [theme.breakpoints.up('sm')]: {
         backgroundColor: '#f7f8f5',
       },
@@ -120,7 +122,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     scrollBar: {
-      height: 'calc(100vh - 195px) !important',
+      height: 'calc(100vh - 220px) !important',
       zIndex: 1,
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 245px) !important',
@@ -132,6 +134,49 @@ const useStyles = makeStyles((theme: Theme) => {
     footerLinks: {
       [theme.breakpoints.down(900)]: {
         display: 'none',
+      },
+    },
+    autoSearch: {
+      backgroundColor: '#fff',
+      padding: '20px 40px',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      marginTop: -48,
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+      '& >div:first-child': {
+        flex: 1,
+      },
+    },
+    searchRight: {
+      marginLeft: 'auto',
+      paddingLeft: 40,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    uploadPreBtn: {
+      backgroundColor: '#fff',
+      color: '#fcb716',
+      border: '1px solid #fcb716',
+      minWidth: 105,
+      '&:hover': {
+        backgroundColor: '#fff',
+        color: '#fcb716',          
+      },
+    },
+    specialOffer: {
+      paddingLeft: 20,
+      fontSize: 16,
+      color: '#01475b',
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 10,
       },
     },
   };
@@ -380,6 +425,21 @@ export const SearchByMedicine: React.FC = (props) => {
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
           </div>
+          <div className={classes.autoSearch}>
+            <MedicineAutoSearch />
+            <div className={classes.searchRight}>
+              <AphButton
+                className={classes.uploadPreBtn}
+                title={'Upload Prescription'}
+              >
+                Upload
+              </AphButton>
+              <Link className={classes.specialOffer} to="#">
+                <span><img src={require('images/ic_notification.svg')} alt="" /></span>
+                <span>Special offers</span>
+              </Link>
+            </div>
+          </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
               disableFilters={disableFilters}
@@ -401,14 +461,15 @@ export const SearchByMedicine: React.FC = (props) => {
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
                     {() =>
-                      params.searchMedicineType === 'search-by-brand' ? (
-                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      ) : (
-                        <MedicineListscard
-                          medicineList={medicineListFiltered}
-                          isLoading={isLoading}
-                        />
-                      )
+                    <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      // params.searchMedicineType === 'search-by-brand' ? (
+                      //   <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      // ) : (
+                      //   <MedicineListscard
+                      //     medicineList={medicineListFiltered}
+                      //     isLoading={isLoading}
+                      //   />
+                      // )
                     }
                   </MedicinesCartContext.Consumer>
                 </div>

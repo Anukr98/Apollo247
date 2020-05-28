@@ -47,13 +47,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addToCartBtn: {
       color: '#fc9916',
-      fontWeight: 'bold',
       boxShadow: 'none',
       backgroundColor: 'transparent',
       minWidth: 'auto',
       textAlign: 'center',
       padding: 0,
       marginTop: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
     },
     noData: {
       marginTop: 10,
@@ -65,6 +68,30 @@ const useStyles = makeStyles((theme: Theme) => {
     productName: {
       minHeight: 45,
     },
+    addQty: {
+      paddingTop: 16,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      '& button': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+        boxShadow: 'none',
+        width: 18,
+        height: 18,
+        lineHeight: '14px',
+        padding: 0,
+        borderRadius: 0,
+        minWidth: 'auto',
+        border: '1px solid #fc9916',
+      },
+    },
+    totalQty: {
+      fontSize: 14,
+      color: '#fc9916',
+      paddingLeft: 16,
+      paddingRight: 16,
+    },    
   };
 });
 export interface products {
@@ -181,6 +208,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
               ) : (
                 <span>Out of stock</span>
               )}
+              <AphButton className={classes.addToCartBtn}>Notify me</AphButton>
+              <div className={classes.addQty}>
+                <AphButton>-</AphButton>
+                <div className={classes.totalQty}>1</div>
+                <AphButton>+</AphButton>
+              </div>
             </div>
           </Grid>
         ))
