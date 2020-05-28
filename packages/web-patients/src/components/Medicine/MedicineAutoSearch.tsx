@@ -83,22 +83,29 @@ const useStyles = makeStyles((theme: Theme) => {
           listStyleType: 'none',
           borderBottom: '0.5px solid rgba(2,71,91,0.1)',
           cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
           '& a': {
             display: 'flex',
             alignItems: 'center',
             padding: '12px 12px',
-            '&:hover': {
-              backgroundColor: '#f7f8f5',
-            },
-            '&:focus': {
-              backgroundColor: '#f7f8f5',
-            },
+            flex: 1,
+          },
+          '&:hover': {
+            backgroundColor: '#f7f8f5',
+          },
+          '&:focus': {
+            backgroundColor: '#f7f8f5',
           },
           '&:last-child': {
             borderBottom: 0,
           },
         },
       },
+    },
+    rightActions: {
+      marginLeft: 'auto',
+      paddingRight: 16,
     },
     medicineImg: {
       paddingRight: 16,
@@ -138,6 +145,39 @@ const useStyles = makeStyles((theme: Theme) => {
     helpText: {
       paddingLeft: 20,
       paddingRight: 20,
+    },
+    addToCart: {
+      backgroundColor: 'transparent',
+      color: '#fc9916',
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
+    },
+    addQty: {
+      display: 'flex',
+      alignItems: 'center',
+      '& button': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+        boxShadow: 'none',
+        width: 18,
+        height: 18,
+        lineHeight: '14px',
+        padding: 0,
+        borderRadius: 0,
+        minWidth: 'auto',
+        border: '1px solid #fc9916',
+      },
+    },
+    totalQty: {
+      fontSize: 14,
+      color: '#fc9916',
+      paddingLeft: 16,
+      paddingRight: 16,
     },
   };
 });
@@ -252,6 +292,15 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         )}
                       </div>
                     </Link>
+                    <div className={classes.rightActions}>
+                      <AphButton className={classes.addToCart}>Add to Cart</AphButton>
+                      <AphButton className={classes.addToCart}>Notify me</AphButton>
+                      <div className={classes.addQty}>
+                        <AphButton>-</AphButton>
+                        <div className={classes.totalQty}>1</div>
+                        <AphButton>+</AphButton>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
