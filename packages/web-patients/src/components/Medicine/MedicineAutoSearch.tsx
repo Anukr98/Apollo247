@@ -196,6 +196,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [showError, setShowError] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
@@ -213,7 +214,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
-        setSearchMedicines(data.products);
+        if (data.products) {
+          setShowError(data.products.length === 0);
+          setSearchMedicines(data.products);
+        } else {
+          setShowError(true);
+          setSearchMedicines([]);
+        }
         setLoading(false);
       })
       .catch((e) => {
@@ -225,9 +232,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
       setLoading(false);
     }
   }, [searchText]);
-
-  let showError = false;
-  if (!loading && searchText.length > 2) showError = true;
 
   const isInCart = (medicine: MedicineProduct) => {
     const index = cartItems.findIndex((item) => item.id === medicine.id);
@@ -300,7 +304,10 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         {medicine.is_in_stock ? (
                           <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
                         ) : (
-                          <div className={classes.noStock}>Out Of Stock</div>
+                          <>
+                            <div className={classes.medicinePrice}>Rs. {medicine.price}</div>
+                            <div className={classes.noStock}>Out Of Stock</div>
+                          </>
                         )}
                       </div>
                     </Link>
