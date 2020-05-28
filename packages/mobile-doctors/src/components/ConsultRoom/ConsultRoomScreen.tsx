@@ -727,17 +727,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
         .catch((e) => {
           setLoading && setLoading(false);
-          console.log('Error occured while update casesheet', e);
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          console.log('Error occured while adding Doctor', errorMessage, error);
-          if (errorMessage.search('INVALID_REFERRAL_DESCRIPTION') > -1) {
+          const errorMessage = e.graphQLErrors[0].message;
+          if (errorMessage.includes('INVALID_REFERRAL_DESCRIPTION')) {
             showAphAlert &&
               showAphAlert({
                 title: strings.common.alert,
                 description: strings.alerts.missing_referral_description,
               });
-          } else if (errorMessage.search('CASESHEET_SENT_TO_PATIENT_ALREADY') > -1) {
+          } else if (errorMessage.includes('CASESHEET_SENT_TO_PATIENT_ALREADY')) {
             showAphAlert &&
               showAphAlert({
                 title: strings.common.uh_oh,
