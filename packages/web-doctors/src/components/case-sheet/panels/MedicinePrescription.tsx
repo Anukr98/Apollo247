@@ -2171,9 +2171,8 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm(
-                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
-                            );
+                            setMedicineForm((e.target as HTMLInputElement)
+                              .value as MEDICINE_FORM_TYPES);
                           }}
                           row
                         >
@@ -2706,9 +2705,8 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm(
-                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
-                              );
+                              setMedicineForm((e.target as HTMLInputElement)
+                                .value as MEDICINE_FORM_TYPES);
                             }}
                             row
                           >
