@@ -1152,7 +1152,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.DOCTOR,
+    uuid: doctorDetails ? doctorDetails.id : REQUEST_ROLES.DOCTOR,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
