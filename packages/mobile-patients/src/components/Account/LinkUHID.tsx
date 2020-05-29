@@ -272,7 +272,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         <TouchableOpacity
           style={[
             styles.closeButton,
-            heightPercent <= 30 ?
+            heightPercent <= 31 ?
               { top: 140, right: 40 } :
               { top: '31%', right: 60 }
           ]}
@@ -286,7 +286,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           <View
             style={[
               styles.modalView,
-              heightPercent <= 30 ? { margin: 70 } : { margin: 90 },
+              heightPercent <= 31 ? { margin: 70 } : { margin: 90 },
             ]}>
             <Text
               style={{
@@ -455,8 +455,16 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
               return false;
             } else if (action === 'link') {
               if (enableSelect) {
-                setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
-                setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
+                const indexRelink = relinkSecondaryUHIDs.indexOf(profile!.uhid);
+                const indexSecondary = selectedSecondary.indexOf(profile!.uhid);
+                if (indexRelink > -1) {
+                  relinkSecondaryUHIDs.splice(indexRelink, 1);
+                  selectedSecondary.splice(indexSecondary, 1);
+                } else {
+                  setSelectedSecondary([...selectedSecondary, profiles[index].uhid]);
+                  setRelinkSecondaryUHIDs([...relinkSecondaryUHIDs, profiles[index].uhid]);
+                }
+                setRefreshFlatList(!refreshFlatList);
               }
             } else if (action === 'delink' && isSecondaryUHID) {
               if (enableSelect) {
