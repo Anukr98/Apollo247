@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Paper, CircularProgress } from '@material-ui/core';
+import { Theme, Popover, Paper, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
+import { gtmTracking } from '../../gtmTracking';
+import { notifyMeTracking } from '../../webEngageTracking';
+import { NotifyMeNotification } from './NotifyMeNotification';
+import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,21 +184,58 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 16,
       paddingRight: 16,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
+interface MedicineAutoSearchProps {
+  fromPDP: boolean;
+}
 
-export const MedicineAutoSearch: React.FC = (props) => {
+export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => {
   const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [showError, setShowError] = useState<boolean>(false);
+  const mascotRef = useRef(null);
+  const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
 
-  let cancelSearchSuggestionsApi: any;
   const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
     setLoading(true);
@@ -210,7 +252,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
         }
       )
       .then(({ data }) => {
-        setSearchMedicines(data.products);
+        if (data && data.products) {
+          setShowError(data.products.length === 0);
+          setSearchMedicines(data.products);
+        } else {
+          setShowError(true);
+          setSearchMedicines([]);
+        }
         setLoading(false);
       })
       .catch((e) => {
@@ -223,8 +271,14 @@ export const MedicineAutoSearch: React.FC = (props) => {
     }
   }, [searchText]);
 
-  let showError = false;
-  if (!loading && searchText.length > 2) showError = true;
+  const isInCart = (medicine: MedicineProduct) => {
+    const index = cartItems.findIndex((item) => item.id === medicine.id);
+    return index > -1;
+  };
+
+  const getQuantity = (medicine: MedicineProduct) => {
+    return cartItems.find((item) => item.id === medicine.id).quantity;
+  };
 
   return (
     <div className={classes.root}>
@@ -234,6 +288,11 @@ export const MedicineAutoSearch: React.FC = (props) => {
           error={showError}
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              window.location.href = clientRoutes.searchByMedicine('search-medicines', searchText);
+            }
+          }}
           onChange={(e) => {
             setSearchText(e.target.value);
             if (e.target.value.length > 2) {
@@ -257,9 +316,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
         </AphButton>
       </div>
       {showError ? (
-        <FormHelperText className={classes.helpText} component="div" error={showError}>
-          Sorry, we couldn't find what you are looking for :(
-        </FormHelperText>
+        props.fromPDP ? (
+          <span>Hit enter to search '{searchText}'</span>
+        ) : (
+          <FormHelperText className={classes.helpText} component="div" error={showError}>
+            Sorry, we couldn't find what you are looking for :("
+          </FormHelperText>
+        )
       ) : (
         ''
       )}
@@ -270,38 +333,196 @@ export const MedicineAutoSearch: React.FC = (props) => {
               <CircularProgress size={30} />
             </div>
           )}
-          {searchMedicines && searchMedicines.length > 0 && (
+          {searchText.length > 2 && searchMedicines && searchMedicines.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
-                  <li key={medicine.id}>
-                    <Link to={clientRoutes.medicineDetails(medicine.sku)}>
-                      <div className={classes.medicineImg}>
-                        {medicine.is_prescription_required ? (
-                          <img src={require('images/ic_tablets_rx.svg')} alt="" />
-                        ) : (
-                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                  <>
+                    <li key={medicine.id}>
+                      <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                        <div className={classes.medicineImg}>
+                          {medicine.is_prescription_required ? (
+                            <img src={require('images/ic_tablets_rx.svg')} alt="" />
+                          ) : (
+                            <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                          )}
+                        </div>
+                        <div className={classes.medicineInfo}>
+                          <div className={classes.medicineName}>{medicine.name}</div>
+                          {medicine.is_in_stock ? (
+                            <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                          ) : (
+                            <>
+                              <div className={classes.medicinePrice}>Rs. {medicine.price}</div>
+                              <div className={classes.noStock}>Out Of Stock</div>
+                            </>
+                          )}
+                        </div>
+                      </Link>
+                      <div className={classes.rightActions}>
+                        {!isInCart(medicine) && (
+                          <AphButton
+                            onClick={() => {
+                              if (medicine.is_in_stock) {
+                                const cartItem: MedicineCartItem = {
+                                  description: medicine.description,
+                                  id: medicine.id,
+                                  image: medicine.image,
+                                  is_in_stock: medicine.is_in_stock,
+                                  is_prescription_required: medicine.is_prescription_required,
+                                  name: medicine.name,
+                                  price: medicine.price,
+                                  sku: medicine.sku,
+                                  special_price: medicine.special_price,
+                                  small_image: medicine.small_image,
+                                  status: medicine.status,
+                                  thumbnail: medicine.thumbnail,
+                                  type_id: medicine.type_id,
+                                  mou: medicine.mou,
+                                  quantity: 1,
+                                  isShippable: true,
+                                };
+                                /* Gtm code start  */
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Add to Cart',
+                                  label: medicine.name,
+                                  value: medicine.special_price || medicine.price,
+                                });
+                                /* Gtm code end  */
+                                addCartItem && addCartItem(cartItem);
+                              } else {
+                                const { sku, name, category_id } = medicine;
+                                /* WebEngage event start */
+                                notifyMeTracking({
+                                  sku,
+                                  category_id,
+                                  name,
+                                });
+                                /* WebEngage event end */
+                                setIsNotifyMeDialogOpen(true);
+                              }
+                            }}
+                            className={classes.addToCart}
+                          >
+                            {medicine.is_in_stock ? 'Add to Cart' : 'Notify me'}
+                          </AphButton>
+                        )}
+                        {isInCart(medicine) && (
+                          <div className={classes.addQty}>
+                            <AphButton
+                              onClick={() => {
+                                const medicineQtyInCart = getQuantity(medicine);
+                                if (medicineQtyInCart === 1) {
+                                  /* Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Remove Cart Item',
+                                    label: medicine.name,
+                                    value: medicine.special_price || medicine.price,
+                                  });
+                                  /* Gtm code end  */
+                                  removeCartItem && removeCartItem(medicine.id);
+                                } else {
+                                  const cartItem: MedicineCartItem = {
+                                    description: medicine.description,
+                                    id: medicine.id,
+                                    image: medicine.image,
+                                    is_in_stock: medicine.is_in_stock,
+                                    is_prescription_required: medicine.is_prescription_required,
+                                    name: medicine.name,
+                                    price: medicine.price,
+                                    sku: medicine.sku,
+                                    special_price: medicine.special_price,
+                                    small_image: medicine.small_image,
+                                    status: medicine.status,
+                                    thumbnail: medicine.thumbnail,
+                                    type_id: medicine.type_id,
+                                    mou: medicine.mou,
+                                    quantity: -1,
+                                    isShippable: true,
+                                  };
+                                  /* Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Updating Cart Item by decreasing quantity 1',
+                                    label: medicine.name,
+                                    value: medicine.special_price || medicine.price,
+                                  });
+                                  /* Gtm code end  */
+                                  updateCartItem && updateCartItem(cartItem);
+                                }
+                              }}
+                            >
+                              -
+                            </AphButton>
+                            <div className={classes.totalQty}>{getQuantity(medicine)}</div>
+                            <AphButton
+                              onClick={() => {
+                                const medicineQtyInCart = getQuantity(medicine);
+                                if (medicineQtyInCart < MEDICINE_QUANTITY) {
+                                  const cartItem: MedicineCartItem = {
+                                    description: medicine.description,
+                                    id: medicine.id,
+                                    image: medicine.image,
+                                    is_in_stock: medicine.is_in_stock,
+                                    is_prescription_required: medicine.is_prescription_required,
+                                    name: medicine.name,
+                                    price: medicine.price,
+                                    sku: medicine.sku,
+                                    special_price: medicine.special_price,
+                                    small_image: medicine.small_image,
+                                    status: medicine.status,
+                                    thumbnail: medicine.thumbnail,
+                                    type_id: medicine.type_id,
+                                    mou: medicine.mou,
+                                    quantity: 1,
+                                    isShippable: true,
+                                  };
+                                  /* Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Updating Cart Item by increasing quantity 1',
+                                    label: medicine.name,
+                                    value: medicine.special_price || medicine.price,
+                                  });
+                                  /* Gtm code end  */
+                                  updateCartItem && updateCartItem(cartItem);
+                                }
+                              }}
+                            >
+                              +
+                            </AphButton>
+                          </div>
                         )}
                       </div>
-                      <div className={classes.medicineInfo}>
-                        <div className={classes.medicineName}>{medicine.name}</div>
-                        {medicine.is_in_stock ? (
-                          <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
-                        ) : (
-                          <div className={classes.noStock}>Out Of Stock</div>
-                        )}
+                    </li>
+                    <Popover
+                      open={iśNotifyMeDialogOpen}
+                      anchorEl={mascotRef.current}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                      }}
+                      classes={{ paper: classes.bottomPopover }}
+                    >
+                      <div className={classes.successPopoverWindow}>
+                        <div className={classes.windowWrap}>
+                          <div className={classes.mascotIcon}>
+                            <img src={require('images/ic-mascot.png')} alt="" />
+                          </div>
+                          <NotifyMeNotification
+                            setIsNotifyMeDialogOpen={setIsNotifyMeDialogOpen}
+                            medicineName={medicine.name}
+                          />
+                        </div>
                       </div>
-                    </Link>
-                    <div className={classes.rightActions}>
-                      <AphButton className={classes.addToCart}>Add to Cart</AphButton>
-                      <AphButton className={classes.addToCart}>Notify me</AphButton>
-                      <div className={classes.addQty}>
-                        <AphButton>-</AphButton>
-                        <div className={classes.totalQty}>1</div>
-                        <AphButton>+</AphButton>
-                      </div>
-                    </div>
-                  </li>
+                    </Popover>
+                  </>
                 ))}
               </ul>
             </div>
