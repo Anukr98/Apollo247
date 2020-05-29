@@ -26,7 +26,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorsNextAvailability: [DoctorSlotAvailability]
     doctorsAvailability: [DoctorConsultModeAvailability]
     specialty: DoctorSpecialty
-    defaultSort: String
+    sort: String
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -72,7 +72,7 @@ type FilterDoctorsResult = {
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty?: DoctorSpecialty;
-  defaultSort: string;
+  sort: string;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -279,13 +279,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       finalSpecialityDetails.push(doctor.specialty);
     }
   }
-  // let facilityDistances: FacilityDistanceMap = {};
-  // if (args.geolocation) {
-  //   searchLogger('GEOLOCATION_API_CALL___START');
-  //   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-  //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
-  //   searchLogger('GEOLOCATION_API_CALL___END');
-  // }
+
   args.filterInput.sort = args.filterInput.sort || defaultSort();
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
@@ -375,16 +369,20 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
-    defaultSort: defaultSort(),
+    sort: args.filterInput.sort,
   };
 };
 function defaultSort() {
   const ISTOffset: number = 330;
   const currentTime: Date = new Date();
   const ISTTime: Date = new Date(
-    currentTime.getTime() + (currentTime.getTimezoneOffset() + ISTOffset) * 6000
+    currentTime.getTime() + (ISTOffset - currentTime.getTimezoneOffset()) * 60000
   );
-  return ISTTime.getHours() > 7 || ISTTime.getHours() < 16 ? 'distance' : 'availability';
+  console.log('currentTime', currentTime);
+  console.log('currentTime.getTimezoneOffset', currentTime.getTimezoneOffset());
+  console.log('isttime', ISTTime);
+  console.log('isttime.getHour', ISTTime.getHours());
+  return ISTTime.getHours() > 7 && ISTTime.getHours() < 16 ? 'distance' : 'availability';
 }
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {

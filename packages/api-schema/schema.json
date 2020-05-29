@@ -10437,7 +10437,7 @@
             "deprecationReason": null
           },
           {
-            "name": "defaultSort",
+            "name": "sort",
             "description": null,
             "args": [],
             "type": {
