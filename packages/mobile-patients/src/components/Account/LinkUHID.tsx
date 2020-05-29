@@ -272,7 +272,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         <TouchableOpacity
           style={[
             styles.closeButton,
-            heightPercent <= 30 ?
+            heightPercent <= 31 ?
               { top: 140, right: 40 } :
               { top: '31%', right: 60 }
           ]}
@@ -286,7 +286,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           <View
             style={[
               styles.modalView,
-              heightPercent <= 30 ? { margin: 70 } : { margin: 90 },
+              heightPercent <= 31 ? { margin: 70 } : { margin: 90 },
             ]}>
             <Text
               style={{
