@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Theme } from '@material-ui/core';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -18,7 +19,11 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { AphButton } from '@aph/web-ui-components';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { useCurrentPatient } from 'hooks/authHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -164,8 +169,11 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 105,
       '&:hover': {
         backgroundColor: '#fff',
-        color: '#fcb716',          
+        color: '#fcb716',
       },
+    },
+    ePrescriptionTitle: {
+      zIndex: 9999,
     },
     specialOffer: {
       paddingLeft: 20,
@@ -207,6 +215,9 @@ export const SearchByMedicine: React.FC = (props) => {
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [isReloaded, setIsReloaded] = useState(false);
+
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -401,6 +412,14 @@ export const SearchByMedicine: React.FC = (props) => {
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
 
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
+
   return (
     <div className={classes.root}>
       <Header />
@@ -426,16 +445,19 @@ export const SearchByMedicine: React.FC = (props) => {
             </AphButton>
           </div>
           <div className={classes.autoSearch}>
-            <MedicineAutoSearch />
+            <MedicineAutoSearch fromPDP={true} />
             <div className={classes.searchRight}>
               <AphButton
                 className={classes.uploadPreBtn}
+                onClick={() => handleUploadPrescription()}
                 title={'Upload Prescription'}
               >
                 Upload
               </AphButton>
               <Link className={classes.specialOffer} to="#">
-                <span><img src={require('images/ic_notification.svg')} alt="" /></span>
+                <span>
+                  <img src={require('images/ic_notification.svg')} alt="" />
+                </span>
                 <span>Special offers</span>
               </Link>
             </div>
@@ -460,17 +482,9 @@ export const SearchByMedicine: React.FC = (props) => {
               <Scrollbars className={classes.scrollBar} autoHide={true}>
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
-                    {() =>
-                    <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      // params.searchMedicineType === 'search-by-brand' ? (
-                      //   <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      // ) : (
-                      //   <MedicineListscard
-                      //     medicineList={medicineListFiltered}
-                      //     isLoading={isLoading}
-                      //   />
-                      // )
-                    }
+                    {() => (
+                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                    )}
                   </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
@@ -478,6 +492,25 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription
+          closeDialog={() => {
+            setIsUploadPreDialogOpen(false);
+          }}
+          isNonCartFlow={true}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+        />
+      </AphDialog>
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
+      </AphDialog>
       {!onePrimaryUser && <ManageProfile />}
       <div className={classes.footerLinks}>
         <BottomLinks />
@@ -486,3 +519,12 @@ export const SearchByMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+// params.searchMedicineType === 'search-by-brand' ? (
+//   <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+// ) : (
+//   <MedicineListscard
+//     medicineList={medicineListFiltered}
+//     isLoading={isLoading}
+//   />
+// )
