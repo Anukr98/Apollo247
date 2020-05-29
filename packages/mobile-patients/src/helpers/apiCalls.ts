@@ -507,6 +507,20 @@ export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResp
   );
 };
 
+export const getItemsAvailabilityInStoreApi = (
+  items: string[] // SKU list
+): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
+  return Axios.post(
+    `${config.STORES_LIST[0]}/searchpin_api.php`,
+    { siteid: '14438', item: items },
+    {
+      headers: {
+        Authorization: config.STORES_LIST[1],
+      },
+    }
+  );
+};
+
 export const pinCodeServiceabilityApi = (
   pinCode: string
 ): Promise<AxiosResponse<{ Availability: boolean }>> => {

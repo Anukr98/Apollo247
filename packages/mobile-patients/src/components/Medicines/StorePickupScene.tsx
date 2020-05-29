@@ -200,6 +200,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             onPress={() => {
               CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${item.storeid}`);
               setSelectedStore(item.storeid);
+              // setShowDriveWayPopup(true);
             }}
             containerStyle={{
               marginTop: 16,

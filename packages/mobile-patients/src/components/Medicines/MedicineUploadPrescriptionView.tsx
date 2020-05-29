@@ -366,7 +366,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   return (
     <>
       {renderUploadPrescription()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {uploadPrescriptionPopup()}
     </>
   );
