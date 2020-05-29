@@ -182,7 +182,7 @@ const saveMedicineOrderOMS: Resolver<
         discountedTotals.mrpPriceTotal -
         discountedTotals.couponDiscount -
         discountedTotals.productDiscount;
-      if (medicineCartOMSInput.estimatedAmount != finalAmount) {
+      if (medicineCartOMSInput.estimatedAmount != Number(finalAmount.toFixed(2))) {
         throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
       }
     }

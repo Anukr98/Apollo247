@@ -1224,6 +1224,18 @@ export const MedicineCart: React.FC = (props) => {
                       if (couponCode === '') {
                         setIsApplyCouponDialogOpen(true);
                       } else {
+                        /* GTM TRACKING START */
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: 'Order',
+                          label: `Coupon Removed - ${couponCode}`,
+                          value: validateCouponResult &&
+                            validateCouponResult.discountedTotals &&
+                            validateCouponResult.discountedTotals.couponDiscount ?
+                            Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2)) :
+                            null
+                        });
+                         /* GTM TRACKING START */
                         setValidateCouponResult(null);
                         setErrorMessage('');
                         setCouponCode && setCouponCode('');

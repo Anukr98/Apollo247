@@ -107,6 +107,11 @@ export enum REQUEST_ROLES {
   ADMIN = 'ADMIN',
 }
 
+export enum VALUE_TYPE {
+  STATUS = 'STATUS',
+  OTHER = 'OTHER',
+}
+
 export enum TRANSFER_STATUS {
   INITIATED = 'INITIATED',
   COMPLETED = 'COMPLETED',
@@ -317,6 +322,12 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
+
+  @OneToMany(
+    (type) => AppointmentUpdateHistory,
+    (appointmentUpdateHistory) => appointmentUpdateHistory.appointment
+  )
+  appointmentUpdateHistory: AppointmentUpdateHistory[];
 }
 //Appointment ends
 
@@ -1019,6 +1030,37 @@ export class AppointmentNoShow extends BaseEntity {
   }
 }
 //Appointment no show details end
+
+//AppointmentUpdateHistory starts
+@Entity()
+export class AppointmentUpdateHistory extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
+  appointment: Appointment;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  userType: REQUEST_ROLES;
+
+  @Column({ nullable: true })
+  userName: string;
+
+  @Column({ nullable: true }) // status/profile/....
+  valueType: VALUE_TYPE;
+
+  @Column({ nullable: true })
+  fromValue: string;
+
+  @Column({ nullable: true })
+  toValue: string;
+
+  @Column({ nullable: true })
+  reason: string;
+}
 
 //documents summary starts
 @Entity()

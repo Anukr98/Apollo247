@@ -103,6 +103,10 @@ export class PatientRepository extends Repository<Patient> {
           this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
+    } else {
+      if (patientList[0].primaryPatientId == null) {
+        this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
+      }
     }
 
     return this.find({
@@ -363,6 +367,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
+    console.log(url, 'getuser lab results');
     const reqStartTime = new Date();
     const labResults = await fetch(url, prismHeaders)
       .then((res) => {
@@ -392,7 +397,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser health checks');
     const reqStartTime = new Date();
     const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
@@ -422,7 +427,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser hospitalizations');
     const reqStartTime = new Date();
     const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
@@ -452,7 +457,7 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
+    console.log(url, 'getuser patient op prescriptions');
     const reqStartTime = new Date();
     const opPrescriptions = await fetch(url, prismHeaders)
       .then((res) => {
@@ -514,21 +519,33 @@ export class PatientRepository extends Repository<Patient> {
     primaryPatientId?: string
   ) {
     const fieldToUpdate: Partial<Patient> = { [column]: flag };
+    let check = true;
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.primaryUhid = undefined;
-        fieldToUpdate.primaryPatientId = undefined;
+        check = false;
       } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }
     }
 
-    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
-      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
-        updatePatientError,
+    if (check) {
+      return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+        throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+          updatePatientError,
+        });
       });
-    });
+    } else {
+      return this.createQueryBuilder('patient')
+        .update()
+        .set({
+          primaryUhid: () => 'patient.uhid',
+          primaryPatientId: () => 'patient.id',
+          ...fieldToUpdate,
+        })
+        .where('id IN (:...ids)', { ids })
+        .execute();
+    }
   }
 
   updateToken(id: string, athsToken: string) {
