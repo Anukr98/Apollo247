@@ -134,6 +134,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 30,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
   };

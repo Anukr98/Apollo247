@@ -76,6 +76,7 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
         },
         '&:hover': {
           backgroundColor: 'transparent',
+          boxShadow: 'none',
         },
       },
     };
