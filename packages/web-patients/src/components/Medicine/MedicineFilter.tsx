@@ -3,10 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -217,7 +214,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterScroll: {
-      height: 'calc(100vh - 330px) !important',
+      height: 'calc(100vh - 355px) !important',
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 370px) !important',
       },
@@ -288,64 +285,20 @@ interface MedicineFilterProps {
   setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
 }
 
-type Params = { searchMedicineType: string; searchText: string };
-
 export type SortByOptions = 'A-Z' | 'Z-A' | 'Price-H-L' | 'Price-L-H' | '';
 
 const sortingOptions = ['A-Z', 'Z-A', 'Price-H-L', 'Price-L-H'];
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const classes = useStyles({});
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  };
   const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
   const [selected, setSelected] = useState<boolean>(false);
-  const pastSearchValue = localStorage.getItem('searchText');
-  const params = useParams<Params>();
   const locationUrl = window.location.href;
-  const [subtxt, setSubtxt] = useState<string>(
-    pastSearchValue && pastSearchValue.length > 0
-      ? pastSearchValue
-      : params.searchMedicineType === 'search-medicines'
-      ? params.searchText
-      : ''
-  );
-  const [dataValue, setDataValue] = useState<any>([]);
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
   const [fromDiscount, setFromDiscount] = useState<string>('0');
   const [toDiscount, setToDiscount] = useState<string>('100');
   const [sortValue, setSortValue] = useState<string>('');
-
-  useEffect(() => {
-    if (subtxt.length > 2) {
-      onSearchMedicine(subtxt);
-    }
-  }, [subtxt]);
-
-  const onSearchMedicine = async (value: string | null) => {
-    await axios
-      .post(
-        apiDetails.url,
-        {
-          params: value,
-        },
-        {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
-        }
-      )
-      .then(({ data }) => {
-        props.setMedicineList && props.setMedicineList(data.products);
-        setDataValue(data.products);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  };
 
   const filterByCatagery = (value: string) => {
     let categoryList = selectedCatagerys;
@@ -385,8 +338,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     }
   }, [selected]);
 
-  let showError = false;
-  if (subtxt.length > 2 && !dataValue) showError = true;
   let disableApplyFilter = false;
   const numberToDiscount = Number(toDiscount);
   const numberFromDiscount = Number(fromDiscount);
@@ -395,28 +346,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     numberFromDiscount > numberToDiscount;
   return (
     <div className={classes.root}>
-      <div
-        className={`${classes.searchInput} ${
-          !props.disableFilters ? classes.searchInputDisabled : ''
-        }`}
-      >
-        <AphTextField
-          placeholder="Search med, brands and more"
-          onChange={(e) => {
-            localStorage.setItem('searchText', e.target.value);
-            setSubtxt(e.target.value);
-          }}
-          value={subtxt.replace(/\s+/gi, ' ').trimLeft()}
-          error={showError}
-        />
-      </div>
-      {showError ? (
-        <FormHelperText className={classes.helpText} component="div" error={showError}>
-          Sorry, we couldn't find what you are looking for :(
-        </FormHelperText>
-      ) : (
-        ''
-      )}
       <div
         className={`${classes.filterSection} ${
           props.showResponsiveFilter ? classes.filterSectionOpen : ''
@@ -645,18 +574,3 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     </div>
   );
 };
-
-// const getDescription = (value: SortByOptions) => {
-//   switch (value) {
-//     case 'A-Z':
-//       return 'Products Name A-Z';
-//     case 'Z-A':
-//       return 'Products Name Z-A';
-//     case 'Price-H-L':
-//       return 'Price: High To Low';
-//     case 'Price-L-H':
-//       return 'Price: Low To High';
-//     default:
-//       return 'Please Select';
-//   }
-// };
