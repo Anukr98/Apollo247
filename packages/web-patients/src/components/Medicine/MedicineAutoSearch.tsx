@@ -333,7 +333,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
               <CircularProgress size={30} />
             </div>
           )}
-          {searchMedicines && searchMedicines.length > 0 && (
+          {searchText.length > 2 && searchMedicines && searchMedicines.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
