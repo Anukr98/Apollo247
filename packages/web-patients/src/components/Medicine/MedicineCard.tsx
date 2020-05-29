@@ -10,6 +10,7 @@ import { gtmTracking } from '../../gtmTracking';
 import { notifyMeTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
+import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,7 +298,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                   <AphButton
                     onClick={() => {
                       const medicineQtyInCart = getQuantity(product);
-                      if (medicineQtyInCart < 20) {
+                      if (medicineQtyInCart < MEDICINE_QUANTITY) {
                         const cartItem: MedicineCartItem = {
                           description: product.description,
                           id: product.id,

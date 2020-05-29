@@ -12,6 +12,7 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { gtmTracking } from '../../gtmTracking';
 import { notifyMeTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
+import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -459,7 +460,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                             <AphButton
                               onClick={() => {
                                 const medicineQtyInCart = getQuantity(medicine);
-                                if (medicineQtyInCart < 20) {
+                                if (medicineQtyInCart < MEDICINE_QUANTITY) {
                                   const cartItem: MedicineCartItem = {
                                     description: medicine.description,
                                     id: medicine.id,
