@@ -52,6 +52,7 @@ import {
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 export type DiagnosisJson = {
   name: string;
@@ -241,6 +242,7 @@ export const caseSheetTypeDefs = gql`
     followUpConsultType: APPOINTMENT_TYPE
     followUpDate: DateTime
     id: String
+    isJdConsultStarted: Boolean
     medicinePrescription: [MedicinePrescription]
     notes: String
     otherInstructions: [OtherInstructions]
@@ -493,6 +495,7 @@ export const caseSheetTypeDefs = gql`
     ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
+    submitJDCaseSheet(appointmentId: String): Boolean
     generatePrescriptionTemp(
       caseSheetId: ID!
       sentToPatient: Boolean!
@@ -1073,6 +1076,82 @@ const createSeniorDoctorCaseSheet: Resolver<
   return caseSheetDetails;
 };
 
+const submitJDCaseSheet: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  Boolean
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.doctorType == DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //checking appointment details
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  const virtualJDId = process.env.VIRTUAL_JD_ID;
+  const createdDate = new Date();
+
+  const ConsultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  //queue record will be present if isJdQuestionsComplete is true in appointment
+  if (!appointmentData.isJdQuestionsComplete) {
+    const consultQueueAttrs = {
+      appointmentId: appointmentData.id,
+      createdDate: createdDate,
+      doctorId: virtualJDId,
+      isActive: false,
+    };
+    ConsultQueueRepo.saveConsultQueueItems([consultQueueAttrs]);
+    appointmentRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
+  } else {
+    const queueItem = await ConsultQueueRepo.findByAppointmentId(appointmentData.id);
+    if (queueItem) ConsultQueueRepo.updateConsultQueueItems([queueItem.id.toString()], virtualJDId);
+  }
+
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(
+    args.appointmentId
+  );
+  //updating or inserting the case sheet
+  if (juniorDoctorcaseSheet) {
+    const casesheetAttrsToUpdate = {
+      createdDoctorId: virtualJDId,
+      status: CASESHEET_STATUS.COMPLETED,
+      notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
+      isJdConsultStarted: true,
+    };
+    await caseSheetRepo.updateCaseSheet(juniorDoctorcaseSheet.id, casesheetAttrsToUpdate);
+  } else {
+    const casesheetAttrsToAdd = {
+      createdDate: createdDate,
+      consultType: appointmentData.appointmentType,
+      createdDoctorId: virtualJDId,
+      doctorType: DoctorType.JUNIOR,
+      doctorId: appointmentData.doctorId,
+      patientId: appointmentData.patientId,
+      appointment: appointmentData,
+      status: CASESHEET_STATUS.COMPLETED,
+      notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
+      isJdConsultStarted: true,
+    };
+    await caseSheetRepo.savecaseSheet(casesheetAttrsToAdd);
+  }
+
+  //Getting patient details for mobile number
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(appointmentData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace('{0}', patientData.firstName)
+    .replace('{1}', doctorData.displayName)
+    .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
+  sendNotificationSMS(patientData.mobileNumber, messageBody);
+
+  return true;
+};
+
 const updatePatientPrescriptionSentStatus: Resolver<
   null,
   { caseSheetId: string; sentToPatient: boolean },
@@ -1240,6 +1319,7 @@ export const caseSheetResolvers = {
     updatePatientPrescriptionSentStatus,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
+    submitJDCaseSheet,
     generatePrescriptionTemp,
   },
 
