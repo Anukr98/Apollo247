@@ -18,6 +18,7 @@ export interface ConsultOrders_consultOrders_appointments_appointmentPayments {
   paymentStatus: string | null;
   paymentType: string | null;
   responseMessage: string | null;
+  paymentDateTime: any | null;
 }
 
 export interface ConsultOrders_consultOrders_appointments_doctor {
