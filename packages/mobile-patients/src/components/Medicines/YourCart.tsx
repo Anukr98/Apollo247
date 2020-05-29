@@ -164,6 +164,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     storeId,
     setStoreId,
     deliveryCharges,
+    packagingCharges,
     cartTotal,
     couponDiscount,
     productDiscount,
@@ -1141,7 +1142,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
-    const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
