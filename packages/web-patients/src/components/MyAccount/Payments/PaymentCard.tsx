@@ -202,7 +202,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   }
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
-      ? clientRoutes.doctorDetails('', cardDetails.doctorId)
+      ? clientRoutes.doctorDetails(cardDetails.doctor.name, cardDetails.doctorId)
       : getAppStoreLink();
   const buttonText =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
