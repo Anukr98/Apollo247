@@ -284,6 +284,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if ((appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE') {
+      showPopup({
+        description: strings.popUP.awaiting_reschedule,
+      });
+    }
+  }, [appointmentData]);
+
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
