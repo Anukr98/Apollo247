@@ -1145,7 +1145,7 @@ const submitJDCaseSheet: Resolver<
   const patientData = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace('{0}', patientData.firstName)
-    .replace('{1}', doctorData.displayName)
+    .replace('{1}', doctorData.firstName)
     .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
   sendNotificationSMS(patientData.mobileNumber, messageBody);
 
