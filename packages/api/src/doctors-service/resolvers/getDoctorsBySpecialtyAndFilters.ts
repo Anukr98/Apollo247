@@ -279,7 +279,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       finalSpecialityDetails.push(doctor.specialty);
     }
   }
-  console.log(defaultSort());
+
   args.filterInput.sort = args.filterInput.sort || defaultSort();
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
