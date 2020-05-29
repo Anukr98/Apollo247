@@ -538,7 +538,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
           onPress={() =>
-            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+            props.navigation.navigate(
+              diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+            )
           }
         >
           <CartIcon />

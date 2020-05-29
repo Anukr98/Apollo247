@@ -480,7 +480,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           </Text>
         ) : (
           <>
-            <Text style={[styles.bannerText, heightPercent <= 30 ? {...fonts.IBMPlexSansMedium(13)} : {...fonts.IBMPlexSansMedium(15)}]}>
+            <Text style={[styles.bannerText, heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(13)} : {...fonts.IBMPlexSansMedium(15)}]}>
               Create your primary UHID by selecting any one of your own profile from below.
             </Text>
             <TouchableOpacity
@@ -493,7 +493,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               <Text 
                 style={[
                   styles.readMoreText,
-                  heightPercent <= 30 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(11)}
+                  heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(11)}
                 ]}>
                   Read More
                 </Text>

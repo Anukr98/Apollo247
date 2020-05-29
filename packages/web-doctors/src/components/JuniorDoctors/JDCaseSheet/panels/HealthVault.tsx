@@ -255,7 +255,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
         )}`}</div>
         {data &&
         data.caseSheet &&
-        data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR'
+        data.caseSheet.length > 1 &&
+        data.caseSheet[1]!.doctorType !== 'JUNIOR'
           ? data &&
             data.caseSheet &&
             data.caseSheet.length > 0 &&
@@ -289,8 +290,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
         {data &&
         data.caseSheet &&
         data.caseSheet.length > 1 &&
-          data.caseSheet[1] &&
-          data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
+        data.caseSheet[1] &&
+        data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
           <div className={`${classes.iconButton}`}>
             <IconButton aria-label="Video call">
               {data &&

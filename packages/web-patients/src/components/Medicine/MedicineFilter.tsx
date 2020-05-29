@@ -217,7 +217,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterScroll: {
-      height: 'calc(100vh - 330px) !important',
+      height: 'calc(100vh - 355px) !important',
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 370px) !important',
       },

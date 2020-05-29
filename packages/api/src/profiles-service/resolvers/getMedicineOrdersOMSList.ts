@@ -34,6 +34,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     orderTat: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE

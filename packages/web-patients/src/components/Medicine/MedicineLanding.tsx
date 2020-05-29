@@ -166,8 +166,7 @@ const useStyles = makeStyles((theme: Theme) => {
     preServiceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: '10px 15px',
-      paddingbottom: 8,
+      padding: 16,
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
@@ -213,7 +212,16 @@ const useStyles = makeStyles((theme: Theme) => {
     prescriptionGroup: {
       display: 'flex',
       width: '100%',
-      paddingBottom: 15,
+      '& button': {
+        backgroundColor: '#fff',
+        color: '#fcb716',
+        border: '1px solid #fcb716',
+        minWidth: 105,
+        '&:hover': {
+          backgroundColor: '#fff',
+          color: '#fcb716',          
+        },
+      },
     },
     prescriptionIcon: {
       marginLeft: 'auto',
@@ -224,7 +232,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     groupTitle: {
       fontSize: 16,
-      paddingBottom: 7,
+      paddingBottom: 16,
     },
     marginNone: {
       marginBottom: 0,
@@ -487,25 +495,17 @@ export const MedicineLanding: React.FC = (props) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>Have a prescription ready?</div>
+                          <div className={classes.groupTitle}>Now place your order via prescription</div>
                           <AphButton
-                            color="primary"
-                            // onClick={() => setIsUploadPreDialogOpen(true)}
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
-                            Upload Prescription
+                            Upload
                           </AphButton>
                         </div>
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
                         </div>
-                      </div>
-                      <div className={classes.consultLink}>
-                        Don’t have a prescription? Don’t worry!
-                        <Link to={clientRoutes.doctorsLanding()} title={'Consult a doctor'}>
-                          Consult a Doctor
-                        </Link>
                       </div>
                     </div>
                   </div>
