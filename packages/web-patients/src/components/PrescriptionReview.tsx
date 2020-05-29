@@ -85,6 +85,23 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
         padding: '40px 0 0',
       },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        '& img': {
+          order: 2,
+        },
+        '& div': {
+          order: 1,
+          padding: '0 0 20px',
+        },
+        '& h4': {
+          position: 'static',
+          width: 'auto',
+          paddingLeft: 0,
+          margin: '0 0 20px',
+          textAlign: 'center',
+        },
+      },
     },
     whiteText: {
       color: '#ffffff !important',
@@ -140,6 +157,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         fontWeight: 'bold',
       },
+      [theme.breakpoints.down('xs')]: {
+        textAlign: 'center',
+      },
     },
     vBody: {
       padding: '15px 20px',
@@ -162,6 +182,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'flex-start',
       justifyContent: 'space-between',
       margin: '0 0 20px',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     stepDetails: {
       textAlign: 'center',
@@ -173,6 +196,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 12,
         color: 'rgb(1, 71, 91,0.7)',
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        margin: '0 0 20px',
       },
     },
     bold: {
@@ -288,9 +315,16 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 150,
         fontSize: 13,
       },
+      [theme.breakpoints.down('xs')]: {
+        textAlign: 'center',
+      },
     },
     afterUpload: {
       padding: '20px 30px',
+      background: '#fff',
+      [theme.breakpoints.down('xs')]: {
+        padding: 16,
+      },
     },
     uploadHead: {
       padding: '0 0 5px',
@@ -335,6 +369,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 200,
       border: '1px solid #00b38e',
       display: 'block',
+      [theme.breakpoints.down('xs')]: {
+        width: 140,
+      },
     },
     hrList: {
       padding: 0,
@@ -362,6 +399,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       textAlign: 'right',
       padding: '10px 0 0',
+      [theme.breakpoints.down('xs')]: {
+        textAlign: 'center',
+      },
     },
     recordDetails: {
       display: 'flex',
@@ -475,14 +515,14 @@ export const PrescriptionReview: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.prContent}>
-          <div className={classes.backArrow}>
+          {/* <div className={classes.backArrow}>
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-          </div>
+          </div> */}
           <div className={classes.pageHeader}>
             <h6>Check Drug Interactions</h6>
           </div>
           <Grid container spacing={2} className={classes.reviewContainer}>
-            <Grid item sm={6}>
+            <Grid item xs={12} sm={6}>
               <div className={classes.pContent}>
                 <div className={classes.consultDetails}>
                   <div className={classes.cdContent}>
@@ -552,7 +592,7 @@ export const PrescriptionReview: React.FC = (props) => {
                 </div>
               </div>
             </Grid>
-            <Grid item sm={6}>
+            <Grid item xs={12} sm={6}>
               <div className={classes.prescriptionUpload}>
                 <div className={classes.uploadContent}>
                   {!uploadPrescription ? (
