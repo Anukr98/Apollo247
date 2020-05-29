@@ -258,6 +258,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:disabled': {
         opacity: 0.7,
@@ -437,6 +438,7 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     searchInput: {
