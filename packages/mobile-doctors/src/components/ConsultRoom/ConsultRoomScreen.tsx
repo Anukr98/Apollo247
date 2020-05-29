@@ -1498,7 +1498,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 return;
               }
 
-              if (isAudioCall) {
+              if (isAudioCall || isCall) {
                 return;
               }
               //need to work form here
@@ -1570,7 +1570,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
                 return;
               }
-              if (isAudioCall) {
+              if (isAudioCall || isCall) {
                 return;
               }
               callhandelBack = false;
@@ -2205,13 +2205,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
   const uploadPrescriptionPopup = () => {
-    return (
+    return isDropdownVisible ? (
       <UploadPrescriprionPopup
         heading={strings.consult_room.attach_files}
         instructionHeading={strings.consult_room.instruction_for_upload}
         instructions={[strings.consult_room.instruction_list]}
-        isVisible={isDropdownVisible}
         disabledOption={strings.consult_room.none}
+        blockCamera={isCall}
+        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: strings.consult_room.take_a_photo,
           gallery: strings.consult_room.choose_from_gallery,
@@ -2275,7 +2276,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const closeviews = () => {
     setPatientImageshow(false);
