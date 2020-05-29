@@ -1,20 +1,21 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { LoggedInUserType, DoctorType, DOCTOR_ONLINE_STATUS, Salutation } from "./globalTypes";
+import { LoggedInUserType, DoctorType, DOCTOR_ONLINE_STATUS, Salutation } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: findLoggedinUserDetails
 // ====================================================
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor_specialty {
-  __typename: "DoctorSpecialties";
+  __typename: 'DoctorSpecialties';
   name: string;
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor_doctorHospital_facility {
-  __typename: "Facility";
+  __typename: 'Facility';
   name: string;
   streetLine1: string | null;
   streetLine2: string | null;
@@ -23,12 +24,12 @@ export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetail
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor_doctorHospital {
-  __typename: "DoctorHospital";
+  __typename: 'DoctorHospital';
   facility: findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor_doctorHospital_facility;
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor {
-  __typename: "Profile";
+  __typename: 'Profile';
   city: string | null;
   country: string | null;
   doctorType: DoctorType;
@@ -56,20 +57,22 @@ export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetail
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary {
-  __typename: "DoctorSecretary";
+  __typename: 'DoctorSecretary';
   doctor: findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary_doctor | null;
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails {
-  __typename: "Secretary";
+  __typename: 'Secretary';
   name: string;
-  doctorSecretary: (findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary | null)[] | null;
+  doctorSecretary:
+    | (findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails_doctorSecretary | null)[]
+    | null;
   mobileNumber: string;
   isActive: boolean;
 }
 
 export interface findLoggedinUserDetails_findLoggedinUserDetails {
-  __typename: "LoggedInUserDetails";
+  __typename: 'LoggedInUserDetails';
   loggedInUserType: LoggedInUserType | null;
   secretaryDetails: findLoggedinUserDetails_findLoggedinUserDetails_secretaryDetails | null;
 }

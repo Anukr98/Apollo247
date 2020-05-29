@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,13 +8,13 @@
 // ====================================================
 
 export interface AddDoctorFavouriteAdvice_addDoctorFavouriteAdvice_adviceList {
-  __typename: "DoctorsFavouriteAdvice";
+  __typename: 'DoctorsFavouriteAdvice';
   id: string;
   instruction: string;
 }
 
 export interface AddDoctorFavouriteAdvice_addDoctorFavouriteAdvice {
-  __typename: "FavouriteAdviceList";
+  __typename: 'FavouriteAdviceList';
   adviceList: (AddDoctorFavouriteAdvice_addDoctorFavouriteAdvice_adviceList | null)[] | null;
 }
 

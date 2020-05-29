@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,13 +8,13 @@
 // ====================================================
 
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory {
-  __typename: "AppointmentHistory";
+  __typename: 'AppointmentHistory';
   appointmentDateTime: any;
   id: string;
 }
 
 export interface GetAppointmentData_getAppointmentData {
-  __typename: "DoctorAppointmentResult";
+  __typename: 'DoctorAppointmentResult';
   appointmentsHistory: (GetAppointmentData_getAppointmentData_appointmentsHistory | null)[] | null;
 }
 

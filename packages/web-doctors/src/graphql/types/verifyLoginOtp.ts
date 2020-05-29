@@ -1,15 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { OtpVerificationInput } from "./globalTypes";
+import { OtpVerificationInput } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: verifyLoginOtp
 // ====================================================
 
 export interface verifyLoginOtp_verifyLoginOtp {
-  __typename: "OtpVerificationResult";
+  __typename: 'OtpVerificationResult';
   status: boolean;
   authToken: string | null;
   isBlocked: boolean | null;

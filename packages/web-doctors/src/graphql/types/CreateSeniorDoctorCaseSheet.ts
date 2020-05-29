@@ -1,15 +1,26 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_TO_BE_TAKEN, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
+import {
+  APPOINTMENT_TYPE,
+  STATUS,
+  DoctorType,
+  MEDICINE_TIMINGS,
+  MEDICINE_UNIT,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_FREQUENCY,
+  MEDICINE_CONSUMPTION_DURATION,
+} from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: CreateSeniorDoctorCaseSheet
 // ====================================================
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_appointment {
-  __typename: "Appointment";
+  __typename: 'Appointment';
   id: string;
   appointmentDateTime: any;
   appointmentState: string | null;
@@ -24,17 +35,17 @@ export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_appoint
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosis {
-  __typename: "Diagnosis";
+  __typename: 'Diagnosis';
   name: string | null;
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosticPrescription {
-  __typename: "DiagnosticPrescription";
+  __typename: 'DiagnosticPrescription';
   itemname: string | null;
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
+  __typename: 'MedicinePrescription';
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
   medicineInstructions: string | null;
@@ -50,12 +61,12 @@ export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_medicin
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_otherInstructions {
-  __typename: "OtherInstructions";
+  __typename: 'OtherInstructions';
   instruction: string | null;
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_symptoms {
-  __typename: "SymptomList";
+  __typename: 'SymptomList';
   symptom: string | null;
   since: string | null;
   howOften: string | null;
@@ -64,21 +75,27 @@ export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_symptom
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet {
-  __typename: "CaseSheet";
+  __typename: 'CaseSheet';
   appointment: CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_appointment | null;
   blobName: string | null;
   consultType: string | null;
   diagnosis: (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosis | null)[] | null;
-  diagnosticPrescription: (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosticPrescription | null)[] | null;
+  diagnosticPrescription:
+    | (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosticPrescription | null)[]
+    | null;
   doctorId: string | null;
   doctorType: DoctorType | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
   id: string | null;
-  medicinePrescription: (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_medicinePrescription | null)[] | null;
+  medicinePrescription:
+    | (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_medicinePrescription | null)[]
+    | null;
   notes: string | null;
-  otherInstructions: (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_otherInstructions | null)[] | null;
+  otherInstructions:
+    | (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_otherInstructions | null)[]
+    | null;
   patientId: string | null;
   symptoms: (CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_symptoms | null)[] | null;
 }

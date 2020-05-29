@@ -1,15 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { RescheduleAppointmentInput, TRANSFER_STATUS } from "./globalTypes";
+import { RescheduleAppointmentInput, TRANSFER_STATUS } from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: InitiateRescheduleAppointment
 // ====================================================
 
 export interface InitiateRescheduleAppointment_initiateRescheduleAppointment_rescheduleAppointment {
-  __typename: "RescheduleAppointment";
+  __typename: 'RescheduleAppointment';
   id: string;
   rescheduleStatus: TRANSFER_STATUS;
   rescheduleReason: string;
@@ -17,7 +18,7 @@ export interface InitiateRescheduleAppointment_initiateRescheduleAppointment_res
 }
 
 export interface InitiateRescheduleAppointment_initiateRescheduleAppointment {
-  __typename: "RescheduleAppointmentResult";
+  __typename: 'RescheduleAppointmentResult';
   rescheduleAppointment: InitiateRescheduleAppointment_initiateRescheduleAppointment_rescheduleAppointment | null;
   rescheduleCount: number | null;
 }

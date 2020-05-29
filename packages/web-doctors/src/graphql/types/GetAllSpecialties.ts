@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface GetAllSpecialties_getAllSpecialties {
-  __typename: "DoctorSpecialty";
+  __typename: 'DoctorSpecialty';
   id: string;
   name: string;
   image: string | null;

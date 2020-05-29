@@ -1,15 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: GetConsultQueue
 // ====================================================
 
 export interface GetConsultQueue_getConsultQueue_consultQueue_patient {
-  __typename: "Patient";
+  __typename: 'Patient';
   id: string;
   uhid: string | null;
   firstName: string | null;
@@ -18,7 +19,7 @@ export interface GetConsultQueue_getConsultQueue_consultQueue_patient {
 }
 
 export interface GetConsultQueue_getConsultQueue_consultQueue_appointment {
-  __typename: "Appointment";
+  __typename: 'Appointment';
   id: string;
   appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
@@ -26,7 +27,7 @@ export interface GetConsultQueue_getConsultQueue_consultQueue_appointment {
 }
 
 export interface GetConsultQueue_getConsultQueue_consultQueue {
-  __typename: "ConsultQueueItem";
+  __typename: 'ConsultQueueItem';
   id: number;
   isActive: boolean;
   patient: GetConsultQueue_getConsultQueue_consultQueue_patient;
@@ -34,7 +35,7 @@ export interface GetConsultQueue_getConsultQueue_consultQueue {
 }
 
 export interface GetConsultQueue_getConsultQueue {
-  __typename: "GetConsultQueueResult";
+  __typename: 'GetConsultQueueResult';
   consultQueue: GetConsultQueue_getConsultQueue_consultQueue[];
 }
 

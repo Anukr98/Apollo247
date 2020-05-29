@@ -1,15 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { CancelAppointmentInput, STATUS } from "./globalTypes";
+import { CancelAppointmentInput, STATUS } from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: CancelAppointment
 // ====================================================
 
 export interface CancelAppointment_cancelAppointment {
-  __typename: "CancelAppointmentResult";
+  __typename: 'CancelAppointmentResult';
   status: STATUS | null;
 }
 

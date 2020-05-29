@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface GetNotifications_getNotifications_notificationData {
-  __typename: "GetNotificationsResponse";
+  __typename: 'GetNotificationsResponse';
   appointmentId: string | null;
   doctorId: string | null;
   lastUnreadMessageDate: any | null;
@@ -19,7 +20,7 @@ export interface GetNotifications_getNotifications_notificationData {
 }
 
 export interface GetNotifications_getNotifications {
-  __typename: "NotificationDataSet";
+  __typename: 'NotificationDataSet';
   notificationData: (GetNotifications_getNotifications_notificationData | null)[] | null;
 }
 

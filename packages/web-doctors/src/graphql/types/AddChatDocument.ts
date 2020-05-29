@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface AddChatDocument_addChatDocument {
-  __typename: "UploadedDocumentDetails";
+  __typename: 'UploadedDocumentDetails';
   id: string | null;
   documentPath: string | null;
 }

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface UpdatePatientPrescriptionSentStatus_updatePatientPrescriptionSentStatus {
-  __typename: "PatientPrescriptionSentResponse";
+  __typename: 'PatientPrescriptionSentResponse';
   success: boolean | null;
   blobName: string | null;
 }

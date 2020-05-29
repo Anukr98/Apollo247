@@ -1,22 +1,25 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorNextAvailableSlotInput } from "./globalTypes";
+import { DoctorNextAvailableSlotInput } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: GetDoctorNextAvailableSlot
 // ====================================================
 
 export interface GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots {
-  __typename: "SlotAvailability";
+  __typename: 'SlotAvailability';
   doctorId: string;
   availableSlot: string;
 }
 
 export interface GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot {
-  __typename: "SlotAvailabilityResult";
-  doctorAvailalbeSlots: (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null;
+  __typename: 'SlotAvailabilityResult';
+  doctorAvailalbeSlots:
+    | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
+    | null;
 }
 
 export interface GetDoctorNextAvailableSlot {

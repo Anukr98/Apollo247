@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,13 +8,13 @@
 // ====================================================
 
 export interface GetPatientLifeStyleList_getPatientLifeStyleList_lifeStyleList {
-  __typename: "PatientLifeStyles";
+  __typename: 'PatientLifeStyles';
   id: string;
   description: string | null;
 }
 
 export interface GetPatientLifeStyleList_getPatientLifeStyleList {
-  __typename: "PatientLifeStyleListResult";
+  __typename: 'PatientLifeStyleListResult';
   lifeStyleList: GetPatientLifeStyleList_getPatientLifeStyleList_lifeStyleList[] | null;
 }
 

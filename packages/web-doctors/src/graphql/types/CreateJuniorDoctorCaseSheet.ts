@@ -1,23 +1,36 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
+import {
+  APPOINTMENT_TYPE,
+  STATUS,
+  DoctorType,
+  MEDICINE_UNIT,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_FREQUENCY,
+  MEDICINE_CONSUMPTION_DURATION,
+} from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: CreateJuniorDoctorCaseSheet
 // ====================================================
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment_appointmentDocuments {
-  __typename: "AppointmentDocuments";
+  __typename: 'AppointmentDocuments';
   documentPath: string | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment {
-  __typename: "Appointment";
+  __typename: 'Appointment';
   id: string;
   appointmentDateTime: any;
-  appointmentDocuments: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment_appointmentDocuments | null)[] | null;
+  appointmentDocuments:
+    | (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment_appointmentDocuments | null)[]
+    | null;
   appointmentState: string | null;
   appointmentType: APPOINTMENT_TYPE;
   displayId: string;
@@ -30,17 +43,17 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appoint
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_diagnosis {
-  __typename: "Diagnosis";
+  __typename: 'Diagnosis';
   name: string | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_diagnosticPrescription {
-  __typename: "DiagnosticPrescription";
+  __typename: 'DiagnosticPrescription';
   itemname: string | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicinePrescription {
-  __typename: "MedicinePrescription";
+  __typename: 'MedicinePrescription';
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
   medicineInstructions: string | null;
@@ -56,12 +69,12 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicin
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_otherInstructions {
-  __typename: "OtherInstructions";
+  __typename: 'OtherInstructions';
   instruction: string | null;
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_symptoms {
-  __typename: "SymptomList";
+  __typename: 'SymptomList';
   symptom: string | null;
   since: string | null;
   howOften: string | null;
@@ -70,21 +83,27 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_symptom
 }
 
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet {
-  __typename: "CaseSheet";
+  __typename: 'CaseSheet';
   appointment: CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment | null;
   blobName: string | null;
   consultType: string | null;
   diagnosis: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_diagnosis | null)[] | null;
-  diagnosticPrescription: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_diagnosticPrescription | null)[] | null;
+  diagnosticPrescription:
+    | (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_diagnosticPrescription | null)[]
+    | null;
   doctorId: string | null;
   doctorType: DoctorType | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
   id: string | null;
-  medicinePrescription: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicinePrescription | null)[] | null;
+  medicinePrescription:
+    | (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicinePrescription | null)[]
+    | null;
   notes: string | null;
-  otherInstructions: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_otherInstructions | null)[] | null;
+  otherInstructions:
+    | (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_otherInstructions | null)[]
+    | null;
   patientId: string | null;
   symptoms: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_symptoms | null)[] | null;
 }

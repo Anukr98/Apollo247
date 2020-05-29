@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface GetSecretaryList_getSecretaryList {
-  __typename: "SecretaryDetails";
+  __typename: 'SecretaryDetails';
   id: string;
   name: string;
   mobileNumber: string;

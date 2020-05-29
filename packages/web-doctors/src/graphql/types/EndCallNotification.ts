@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -7,7 +8,7 @@
 // ====================================================
 
 export interface EndCallNotification_endCallNotification {
-  __typename: "EndCallResult";
+  __typename: 'EndCallResult';
   status: boolean;
 }
 

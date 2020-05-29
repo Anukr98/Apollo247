@@ -1,15 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { CreateAppointmentSessionInput } from "./globalTypes";
+import { CreateAppointmentSessionInput } from './globalTypes';
 
 // ====================================================
 // GraphQL mutation operation: CreateAppointmentSession
 // ====================================================
 
 export interface CreateAppointmentSession_createAppointmentSession {
-  __typename: "CreateAppointmentSession";
+  __typename: 'CreateAppointmentSession';
   sessionId: string;
   appointmentToken: string;
   patientId: string;

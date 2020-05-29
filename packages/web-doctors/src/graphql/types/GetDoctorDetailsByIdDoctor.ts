@@ -1,22 +1,23 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from './globalTypes';
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetailsByIdDoctor
 // ====================================================
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
-  __typename: "DoctorSpecialties";
+  __typename: 'DoctorSpecialties';
   id: string;
   name: string;
   image: string | null;
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
-  __typename: "Facility";
+  __typename: 'Facility';
   name: string;
   facilityType: string;
   streetLine1: string | null;
@@ -30,12 +31,12 @@ export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associ
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
-  __typename: "DoctorHospital";
+  __typename: 'DoctorHospital';
   facility: GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor {
-  __typename: "Profile";
+  __typename: 'Profile';
   firstName: string | null;
   lastName: string | null;
   experience: string | null;
@@ -47,19 +48,19 @@ export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associ
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam {
-  __typename: "StarTeam";
+  __typename: 'StarTeam';
   associatedDoctor: GetDoctorDetailsByIdDoctor_getDoctorDetailsById_starTeam_associatedDoctor | null;
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_specialty {
-  __typename: "DoctorSpecialties";
+  __typename: 'DoctorSpecialties';
   id: string;
   image: string | null;
   name: string;
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_doctorHospital_facility {
-  __typename: "Facility";
+  __typename: 'Facility';
   city: string | null;
   country: string | null;
   facilityType: string;
@@ -74,12 +75,12 @@ export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_doctorHospital_
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_doctorHospital {
-  __typename: "DoctorHospital";
+  __typename: 'DoctorHospital';
   facility: GetDoctorDetailsByIdDoctor_getDoctorDetailsById_doctorHospital_facility;
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_consultHours {
-  __typename: "ConsultHours";
+  __typename: 'ConsultHours';
   consultMode: ConsultMode;
   consultType: ConsultType;
   endTime: string;
@@ -91,7 +92,7 @@ export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById_consultHours {
 }
 
 export interface GetDoctorDetailsByIdDoctor_getDoctorDetailsById {
-  __typename: "DoctorDetails";
+  __typename: 'DoctorDetails';
   id: string;
   salutation: Salutation | null;
   firstName: string;

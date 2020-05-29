@@ -47,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 12,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -160,6 +161,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,

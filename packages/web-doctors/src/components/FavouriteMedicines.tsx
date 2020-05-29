@@ -175,6 +175,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -193,6 +194,7 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     backArrow: {
