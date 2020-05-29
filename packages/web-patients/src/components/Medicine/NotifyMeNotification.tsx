@@ -51,7 +51,9 @@ export const NotifyMeNotification: React.FC<NotifyMeNotificationProps> = (props)
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Okay! :)</Typography>
-        <p>You will be notified when {props.medicineName} is back in stock.</p>
+        <p>
+          You will be notified when <b>{props.medicineName}</b> is back in stock.
+        </p>
       </div>
       <div className={classes.actions}>
         <AphButton
