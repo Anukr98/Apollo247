@@ -519,12 +519,3 @@ export const SearchByMedicine: React.FC = (props) => {
     </div>
   );
 };
-
-// params.searchMedicineType === 'search-by-brand' ? (
-//   <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-// ) : (
-//   <MedicineListscard
-//     medicineList={medicineListFiltered}
-//     isLoading={isLoading}
-//   />
-// )

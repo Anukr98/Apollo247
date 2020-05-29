@@ -434,7 +434,6 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    // localStorage.removeItem('searchText');
     if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
