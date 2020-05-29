@@ -1426,6 +1426,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         prescriptionImageUrl
         orderTat
         orderType
+        deliveryType
         currentStatus
         patientAddressId
         medicineOrdersStatus {
