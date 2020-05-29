@@ -266,7 +266,6 @@ const insertDataElastic: Resolver<
     for (let i = 0; i < allDocsInfo.length; i++) {
       const searchParams: RequestParams.Search = {
         index: 'doctors',
-        type: 'posts',
         body: {
           query: {
             match_phrase: {
