@@ -150,10 +150,15 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        display: 'none',
+        boxShadow: 'none',
+        padding: 0,
+        marginTop: -10,
       },
       '& >div:first-child': {
         flex: 1,
+        [theme.breakpoints.down('xs')]: {
+          top: 50,
+        }
       },
     },
     searchRight: {
