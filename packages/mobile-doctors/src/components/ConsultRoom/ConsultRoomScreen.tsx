@@ -493,8 +493,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               (t) =>
                 t &&
                 item &&
-                (t.externalId || t.id || '').toLowerCase() ===
-                  (item.externalId || t.id || '').toLowerCase()
+                (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                  (item.externalId || item.id || item.medicineName || '').toLowerCase()
             )
         )
         .map((i) => {
@@ -509,6 +509,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
     );
     setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+      .filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex(
+            (t) =>
+              t &&
+              item &&
+              (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                (item.externalId || item.id || item.medicineName || '').toLowerCase()
+          )
+      )
       .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
       .filter((i) => i !== null || i !== '') as string[]);
     setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
