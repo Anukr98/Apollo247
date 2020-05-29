@@ -219,7 +219,7 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 105,
         '&:hover': {
           backgroundColor: '#fff',
-          color: '#fcb716',          
+          color: '#fcb716',
         },
       },
     },
@@ -434,7 +434,6 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    localStorage.removeItem('searchText');
     if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
@@ -478,7 +477,7 @@ export const MedicineLanding: React.FC = (props) => {
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <MedicineAutoSearch />
+                <MedicineAutoSearch fromPDP={false} />
                 {loading && (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />
@@ -495,7 +494,9 @@ export const MedicineLanding: React.FC = (props) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>Now place your order via prescription</div>
+                          <div className={classes.groupTitle}>
+                            Now place your order via prescription
+                          </div>
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
@@ -614,12 +615,16 @@ export const MedicineLanding: React.FC = (props) => {
             setIsUploadPreDialogOpen(false);
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
         />
       </AphDialog>
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-        <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
       </AphDialog>
       {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />
