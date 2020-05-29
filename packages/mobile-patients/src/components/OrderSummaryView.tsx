@@ -254,8 +254,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', marginBottom: 6 }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.name}</Text>
               <Text style={styles.nameStyle}>
-                {orderDetails.patient?.firstName}
-                {orderDetails.patient?.lastName}
+                {orderDetails.patient?.firstName} {orderDetails.patient?.lastName}
               </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
