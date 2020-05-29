@@ -1,24 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  DoctorType,
-  DOCTOR_ONLINE_STATUS,
-  Salutation,
-  ConsultMode,
-  ConsultType,
-  WeekDay,
-  AccountType,
-} from './globalTypes';
+import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetailsById
 // ====================================================
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
-  __typename: 'ConsultHours';
+  __typename: "ConsultHours";
   consultMode: ConsultMode;
   startTime: string;
   endTime: string;
@@ -29,13 +20,13 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_packages {
-  __typename: 'Packages';
+  __typename: "Packages";
   name: string;
   fees: string;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_bankAccount {
-  __typename: 'BankAccount';
+  __typename: "BankAccount";
   accountNumber: string;
   state: string | null;
   IFSCcode: string;
@@ -45,12 +36,12 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_bankAccount {
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   name: string;
   streetLine1: string | null;
   streetLine2: string | null;
@@ -59,12 +50,12 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facili
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
@@ -72,17 +63,17 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
-  __typename: 'Profile';
+  __typename: "Profile";
   country: string | null;
   doctorType: DoctorType;
   delegateNumber: string | null;
@@ -105,13 +96,13 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam {
-  __typename: 'StarTeam';
+  __typename: "StarTeam";
   isActive: boolean | null;
   associatedDoctor: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
   awards: string | null;
   city: string | null;
   country: string | null;

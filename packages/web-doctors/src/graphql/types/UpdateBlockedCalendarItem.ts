@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,7 +7,7 @@
 // ====================================================
 
 export interface UpdateBlockedCalendarItem_updateBlockedCalendarItem_blockedCalendar {
-  __typename: 'BlockedCalendarItem';
+  __typename: "BlockedCalendarItem";
   id: number;
   doctorId: string;
   start: any;
@@ -16,7 +15,7 @@ export interface UpdateBlockedCalendarItem_updateBlockedCalendarItem_blockedCale
 }
 
 export interface UpdateBlockedCalendarItem_updateBlockedCalendarItem {
-  __typename: 'BlockedCalendarResult';
+  __typename: "BlockedCalendarResult";
   blockedCalendar: UpdateBlockedCalendarItem_updateBlockedCalendarItem_blockedCalendar[];
 }
 

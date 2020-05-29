@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation } from './globalTypes';
+import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: AddSecretary
 // ====================================================
 
 export interface AddSecretary_addSecretary_secretary {
-  __typename: 'Secretary';
+  __typename: "Secretary";
   id: string;
   name: string;
   mobileNumber: string;
@@ -18,7 +17,7 @@ export interface AddSecretary_addSecretary_secretary {
 }
 
 export interface AddSecretary_addSecretary_doctor_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   city: string | null;
   country: string | null;
   facilityType: string;
@@ -35,12 +34,12 @@ export interface AddSecretary_addSecretary_doctor_doctorHospital_facility {
 }
 
 export interface AddSecretary_addSecretary_doctor_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: AddSecretary_addSecretary_doctor_doctorHospital_facility;
 }
 
 export interface AddSecretary_addSecretary_doctor {
-  __typename: 'Profile';
+  __typename: "Profile";
   city: string | null;
   country: string | null;
   doctorType: DoctorType;
@@ -71,7 +70,7 @@ export interface AddSecretary_addSecretary_doctor {
 }
 
 export interface AddSecretary_addSecretary {
-  __typename: 'DoctorSecretaryData';
+  __typename: "DoctorSecretaryData";
   secretary: AddSecretary_addSecretary_secretary | null;
   doctor: AddSecretary_addSecretary_doctor | null;
 }

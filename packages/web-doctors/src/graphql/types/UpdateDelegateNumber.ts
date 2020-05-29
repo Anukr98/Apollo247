@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,7 +7,7 @@
 // ====================================================
 
 export interface UpdateDelegateNumber_updateDelegateNumber {
-  __typename: 'Profile';
+  __typename: "Profile";
   delegateNumber: string | null;
 }
 

@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DOCTOR_ONLINE_STATUS } from './globalTypes';
+import { Salutation, DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorDashboard
 // ====================================================
 
 export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorDetails {
-  __typename: 'Profile';
+  __typename: "Profile";
   firstName: string | null;
   lastName: string | null;
   salutation: Salutation | null;
@@ -19,20 +18,16 @@ export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorD
 }
 
 export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorQueueItems {
-  __typename: 'QueuedConsults';
+  __typename: "QueuedConsults";
   doctorid: string | null;
   queuedconsultscount: number | null;
 }
 
 export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard {
-  __typename: 'DashboardData';
+  __typename: "DashboardData";
   consultsBookedButNotInQueue: number | null;
-  juniorDoctorDetails:
-    | (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorDetails | null)[]
-    | null;
-  juniorDoctorQueueItems:
-    | (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorQueueItems | null)[]
-    | null;
+  juniorDoctorDetails: (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorDetails | null)[] | null;
+  juniorDoctorQueueItems: (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorQueueItems | null)[] | null;
 }
 
 export interface GetJuniorDoctorDashboard {

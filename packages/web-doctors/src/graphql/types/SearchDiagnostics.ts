@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,12 +7,12 @@
 // ====================================================
 
 export interface SearchDiagnostics_searchDiagnostics_diagnostics {
-  __typename: 'Diagnostics';
+  __typename: "Diagnostics";
   itemName: string;
 }
 
 export interface SearchDiagnostics_searchDiagnostics {
-  __typename: 'SearchDiagnosticsResult';
+  __typename: "SearchDiagnosticsResult";
   diagnostics: (SearchDiagnostics_searchDiagnostics_diagnostics | null)[] | null;
 }
 

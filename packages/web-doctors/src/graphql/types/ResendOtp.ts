@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { LOGIN_TYPE } from './globalTypes';
+import { LOGIN_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: ResendOtp
 // ====================================================
 
 export interface ResendOtp_resendOtp {
-  __typename: 'LoginResult';
+  __typename: "LoginResult";
   status: boolean;
   message: string | null;
   loginId: string | null;

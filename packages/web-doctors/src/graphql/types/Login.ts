@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { LOGIN_TYPE } from './globalTypes';
+import { LOGIN_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: Login
 // ====================================================
 
 export interface Login_login {
-  __typename: 'LoginResult';
+  __typename: "LoginResult";
   status: boolean;
   message: string | null;
   loginId: string | null;

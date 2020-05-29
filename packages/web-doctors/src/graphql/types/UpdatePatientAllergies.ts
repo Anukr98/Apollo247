@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,13 +7,13 @@
 // ====================================================
 
 export interface UpdatePatientAllergies_updatePatientAllergies_patient {
-  __typename: 'Patient';
+  __typename: "Patient";
   id: string;
   allergies: string | null;
 }
 
 export interface UpdatePatientAllergies_updatePatientAllergies {
-  __typename: 'UpdatePatientResult';
+  __typename: "UpdatePatientResult";
   patient: UpdatePatientAllergies_updatePatientAllergies_patient | null;
 }
 

@@ -1,40 +1,24 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  ModifyCaseSheetInput,
-  APPOINTMENT_TYPE,
-  STATUS,
-  DoctorType,
-  Gender,
-  Salutation,
-  MEDICINE_TIMINGS,
-  MEDICINE_UNIT,
-  MEDICINE_FORM_TYPES,
-  MEDICINE_FREQUENCY,
-  MEDICINE_CONSUMPTION_DURATION,
-  ROUTE_OF_ADMINISTRATION,
-} from './globalTypes';
+import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, Salutation, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ModifyCaseSheet
 // ====================================================
 
 export interface ModifyCaseSheet_modifyCaseSheet_appointment_appointmentDocuments {
-  __typename: 'AppointmentDocuments';
+  __typename: "AppointmentDocuments";
   documentPath: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_appointment {
-  __typename: 'Appointment';
+  __typename: "Appointment";
   id: string;
   sdConsultationDate: any | null;
   appointmentDateTime: any;
-  appointmentDocuments:
-    | (ModifyCaseSheet_modifyCaseSheet_appointment_appointmentDocuments | null)[]
-    | null;
+  appointmentDocuments: (ModifyCaseSheet_modifyCaseSheet_appointment_appointmentDocuments | null)[] | null;
   appointmentState: string | null;
   appointmentType: APPOINTMENT_TYPE;
   displayId: string;
@@ -51,7 +35,7 @@ export interface ModifyCaseSheet_modifyCaseSheet_appointment {
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_createdDoctorProfile {
-  __typename: 'Profile';
+  __typename: "Profile";
   city: string | null;
   country: string | null;
   doctorType: DoctorType;
@@ -74,17 +58,17 @@ export interface ModifyCaseSheet_modifyCaseSheet_createdDoctorProfile {
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_diagnosis {
-  __typename: 'Diagnosis';
+  __typename: "Diagnosis";
   name: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_diagnosticPrescription {
-  __typename: 'DiagnosticPrescription';
+  __typename: "DiagnosticPrescription";
   itemname: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_medicinePrescription {
-  __typename: 'MedicinePrescription';
+  __typename: "MedicinePrescription";
   medicineConsumptionDurationInDays: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
@@ -100,12 +84,12 @@ export interface ModifyCaseSheet_modifyCaseSheet_medicinePrescription {
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_otherInstructions {
-  __typename: 'OtherInstructions';
+  __typename: "OtherInstructions";
   instruction: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_symptoms {
-  __typename: 'SymptomList';
+  __typename: "SymptomList";
   symptom: string | null;
   since: string | null;
   howOften: string | null;
@@ -114,7 +98,7 @@ export interface ModifyCaseSheet_modifyCaseSheet_symptoms {
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet {
-  __typename: 'CaseSheet';
+  __typename: "CaseSheet";
   appointment: ModifyCaseSheet_modifyCaseSheet_appointment | null;
   blobName: string | null;
   createdDate: any | null;

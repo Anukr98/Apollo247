@@ -1,33 +1,32 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { Salutation } from './globalTypes';
+import { Salutation } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
 // ====================================================
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
   id: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   id: string;
   name: string;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
   id: string;
   salutation: Salutation | null;
   firstName: string;
@@ -40,18 +39,16 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties {
-  __typename: 'DoctorSpecialty';
+  __typename: "DoctorSpecialty";
   id: string;
   name: string;
   image: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName {
-  __typename: 'SearchDoctorAndSpecialtyByNameResult';
+  __typename: "SearchDoctorAndSpecialtyByNameResult";
   doctors: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null;
-  specialties:
-    | (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[]
-    | null;
+  specialties: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[] | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName {

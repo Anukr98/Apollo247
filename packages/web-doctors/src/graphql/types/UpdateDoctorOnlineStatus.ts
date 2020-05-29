@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { DOCTOR_ONLINE_STATUS, DoctorType, Salutation } from './globalTypes';
+import { DOCTOR_ONLINE_STATUS, DoctorType, Salutation } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateDoctorOnlineStatus
 // ====================================================
 
 export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
   awards: string | null;
   city: string | null;
   country: string | null;
@@ -43,7 +42,7 @@ export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
 }
 
 export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus {
-  __typename: 'UpdateDoctorOnlineStatusResult';
+  __typename: "UpdateDoctorOnlineStatusResult";
   doctor: UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor;
 }
 

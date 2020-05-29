@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -8,7 +7,7 @@
 // ====================================================
 
 export interface SearchDiagnosis_searchDiagnosis {
-  __typename: 'DiagnosisJson';
+  __typename: "DiagnosisJson";
   name: string | null;
   id: string | null;
 }

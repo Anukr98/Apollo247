@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { TransferAppointmentInput, TRANSFER_STATUS } from './globalTypes';
+import { TransferAppointmentInput, TRANSFER_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: InitiateTransferAppointment
 // ====================================================
 
 export interface InitiateTransferAppointment_initiateTransferAppointment_transferAppointment {
-  __typename: 'TransferAppointment';
+  __typename: "TransferAppointment";
   id: string;
   transferStatus: TRANSFER_STATUS;
   transferReason: string;
@@ -19,7 +18,7 @@ export interface InitiateTransferAppointment_initiateTransferAppointment_transfe
 }
 
 export interface InitiateTransferAppointment_initiateTransferAppointment {
-  __typename: 'TransferAppointmentResult';
+  __typename: "TransferAppointmentResult";
   transferAppointment: InitiateTransferAppointment_initiateTransferAppointment_transferAppointment | null;
   doctorNextSlot: string | null;
 }

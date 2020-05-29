@@ -1,25 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  DoctorType,
-  Gender,
-  DOCTOR_ONLINE_STATUS,
-  Salutation,
-  AccountType,
-  ConsultMode,
-  ConsultType,
-  WeekDay,
-} from './globalTypes';
+import { DoctorType, Gender, DOCTOR_ONLINE_STATUS, Salutation, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: RemoveSecretary
 // ====================================================
 
 export interface RemoveSecretary_removeSecretary_bankAccount {
-  __typename: 'BankAccount';
+  __typename: "BankAccount";
   accountHolderName: string;
   accountNumber: string;
   accountType: AccountType;
@@ -32,7 +22,7 @@ export interface RemoveSecretary_removeSecretary_bankAccount {
 }
 
 export interface RemoveSecretary_removeSecretary_consultHours_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   city: string | null;
   country: string | null;
   facilityType: string;
@@ -41,7 +31,7 @@ export interface RemoveSecretary_removeSecretary_consultHours_facility {
 }
 
 export interface RemoveSecretary_removeSecretary_consultHours {
-  __typename: 'ConsultHours';
+  __typename: "ConsultHours";
   consultMode: ConsultMode;
   consultType: ConsultType;
   endTime: string;
@@ -53,24 +43,24 @@ export interface RemoveSecretary_removeSecretary_consultHours {
 }
 
 export interface RemoveSecretary_removeSecretary_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   city: string | null;
 }
 
 export interface RemoveSecretary_removeSecretary_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: RemoveSecretary_removeSecretary_doctorHospital_facility;
 }
 
 export interface RemoveSecretary_removeSecretary_packages {
-  __typename: 'Packages';
+  __typename: "Packages";
   fees: string;
   id: string;
   name: string;
 }
 
 export interface RemoveSecretary_removeSecretary_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   createdDate: string | null;
   id: string;
   image: string | null;
@@ -78,7 +68,7 @@ export interface RemoveSecretary_removeSecretary_specialty {
 }
 
 export interface RemoveSecretary_removeSecretary_starTeam_associatedDoctor {
-  __typename: 'Profile';
+  __typename: "Profile";
   city: string | null;
   country: string | null;
   id: string;
@@ -91,13 +81,13 @@ export interface RemoveSecretary_removeSecretary_starTeam_associatedDoctor {
 }
 
 export interface RemoveSecretary_removeSecretary_starTeam {
-  __typename: 'StarTeam';
+  __typename: "StarTeam";
   isActive: boolean | null;
   associatedDoctor: RemoveSecretary_removeSecretary_starTeam_associatedDoctor | null;
 }
 
 export interface RemoveSecretary_removeSecretary {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
   awards: string | null;
   city: string | null;
   country: string | null;

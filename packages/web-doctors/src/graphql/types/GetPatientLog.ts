@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { patientLogSort, patientLogType, Gender } from './globalTypes';
+import { patientLogSort, patientLogType, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetPatientLog
 // ====================================================
 
 export interface GetPatientLog_getPatientLog_patientLog_patientInfo {
-  __typename: 'Patient';
+  __typename: "Patient";
   firstName: string | null;
   lastName: string | null;
   dateOfBirth: any | null;
@@ -23,13 +22,13 @@ export interface GetPatientLog_getPatientLog_patientLog_patientInfo {
 }
 
 export interface GetPatientLog_getPatientLog_patientLog_unreadMessagesCount {
-  __typename: 'AppointmentCount';
+  __typename: "AppointmentCount";
   appointmentId: string | null;
   count: number | null;
 }
 
 export interface GetPatientLog_getPatientLog_patientLog {
-  __typename: 'PatientLog';
+  __typename: "PatientLog";
   patientid: string | null;
   consultscount: string | null;
   appointmentids: (string | null)[] | null;
@@ -39,7 +38,7 @@ export interface GetPatientLog_getPatientLog_patientLog {
 }
 
 export interface GetPatientLog_getPatientLog {
-  __typename: 'PatientLogData';
+  __typename: "PatientLogData";
   patientLog: (GetPatientLog_getPatientLog_patientLog | null)[] | null;
   totalResultCount: number | null;
 }

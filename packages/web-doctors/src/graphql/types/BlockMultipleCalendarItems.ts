@@ -1,16 +1,15 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
-import { BlockMultipleItems } from './globalTypes';
+import { BlockMultipleItems } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: BlockMultipleCalendarItems
 // ====================================================
 
 export interface BlockMultipleCalendarItems_blockMultipleCalendarItems_blockedCalendar {
-  __typename: 'BlockedCalendarItem';
+  __typename: "BlockedCalendarItem";
   id: number;
   doctorId: string;
   start: any;
@@ -18,7 +17,7 @@ export interface BlockMultipleCalendarItems_blockMultipleCalendarItems_blockedCa
 }
 
 export interface BlockMultipleCalendarItems_blockMultipleCalendarItems {
-  __typename: 'BlockedCalendarResult';
+  __typename: "BlockedCalendarResult";
   blockedCalendar: BlockMultipleCalendarItems_blockMultipleCalendarItems_blockedCalendar[];
 }
 
