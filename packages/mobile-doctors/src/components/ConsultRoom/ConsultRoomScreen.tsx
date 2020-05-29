@@ -117,6 +117,7 @@ import KeepAwake from 'react-native-keep-awake';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -2297,6 +2298,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             backgroundColor: 'transparent',
             marginRight: 16,
             marginTop: 30,
+            zIndex: 10,
           }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
@@ -2316,22 +2318,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const imageOpen = () => {
     console.log(url);
-
-    return popupView(
-      <Image
-        style={{
-          flex: 1,
-          resizeMode: 'contain',
-          marginTop: 20,
-          marginHorizontal: 20,
-          marginBottom: 20,
-          borderRadius: 10,
-        }}
-        source={{
-          uri: url,
-        }}
-      />
-    );
+    return popupView(<ImageZoom source={{ uri: url }} zoom pan />);
   };
   const showWeimageOpen = () => {
     console.log(url, 'showWeimageOpen url');
