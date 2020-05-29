@@ -25,7 +25,7 @@ export class DeeplinkRepository extends Repository<Deeplink> {
   }
 
   async getDeepLinkByDoctorId(doctorId: string) {
-    return this.find({ where: { doctorId } }).catch((deepLinkError) => {
+    return this.findOne({ where: { doctorId } }).catch((deepLinkError) => {
       throw new AphError(AphErrorMessages.GET_DEEPLINK_ERROR, undefined, {
         deepLinkError,
       });

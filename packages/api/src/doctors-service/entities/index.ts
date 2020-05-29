@@ -1099,7 +1099,7 @@ export class CityPincodeMapper extends BaseEntity {
 
 //citypincode mapper starts
 export enum DeepLinkType {
-  DOCTOR,
+  DOCTOR = 'DOCTOR',
 }
 
 @Entity()
@@ -1113,9 +1113,11 @@ export class Deeplink extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('Deeplink_deepLink')
   @Column({ nullable: true, type: 'text' })
-  deeplink: string;
+  deepLink: string;
 
+  @Index('Deeplink_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
