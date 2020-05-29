@@ -127,15 +127,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
     },
     medicinePrice: {
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
-      opacity: 0.6,
     },
     noStock: {
       fontSize: 12,
       color: '#890000',
       fontWeight: 500,
+      paddingLeft: 16,
     },
     itemSelected: {
       backgroundColor: '#f7f8f5',
@@ -188,12 +188,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     successPopoverWindow: {
       display: 'flex',
@@ -204,7 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 368,
       borderRadius: 10,
       paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 5px 30px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
     mascotIcon: {
@@ -214,6 +208,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         maxWidth: 80,
       },
+    },
+    bottomInfo: {
+      display: 'flex',
+      alignItems: 'center',
     },
   };
 });
@@ -333,7 +331,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
               <CircularProgress size={30} />
             </div>
           )}
-          {searchMedicines && searchMedicines.length > 0 && (
+          {searchText.length > 2 && searchMedicines && searchMedicines.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
@@ -352,10 +350,10 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                           {medicine.is_in_stock ? (
                             <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
                           ) : (
-                            <>
+                            <div className={classes.bottomInfo}>
                               <div className={classes.medicinePrice}>Rs. {medicine.price}</div>
                               <div className={classes.noStock}>Out Of Stock</div>
-                            </>
+                            </div>
                           )}
                         </div>
                       </Link>

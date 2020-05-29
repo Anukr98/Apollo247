@@ -127,6 +127,11 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    loader: {
+      textAlign: 'center',
+      padding: 20,
+      margin: 'auto',
+    }
   };
 });
 export interface products {
@@ -362,7 +367,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
           </Grid>
         ))
       ) : props.isLoading ? (
-        <CircularProgress />
+        <div className={classes.loader}><CircularProgress /></div>
       ) : (
         <div className={classes.noData}>
           {parseInt(paramSearchText) ? 'No data found' : `No results found for ${paramSearchText}`}
