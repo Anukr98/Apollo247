@@ -44,6 +44,6 @@ module.exports = async (req, res, next) => {
             }
             next(e);
         }
-    }, 10000);
+    }, 5000);
 
 };
