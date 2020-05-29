@@ -48,12 +48,7 @@ export const Welcome: React.FC = (props) => {
       "@context": "https://schema.org/",
       "@type": "WebSite",
       "name": "Apollo 24*7",
-      "url": "https://www.apollo247.com/",
-      // "potentialAction": {
-      //   "@type": "SearchAction",
-      //   "target": "Insert Internal Site Search URL Here {search_term_string} Insert Search Query Parameter Here",
-      //   "query-input": "required name=search_term_string"
-      // }
+      "url": "https://www.apollo247.com/"
     }
     
   
