@@ -7,13 +7,14 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   REQUEST_ROLES,
+  ES_DOCTOR_SLOT_STATUS,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
@@ -352,6 +353,31 @@ const bookRescheduleAppointment: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
+    const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+    const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    let apptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    if (appointmentDateTime >= new Date(slotApptDt)) {
+      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
+    }
+    const sl = `${actualApptDt}T${appointmentDateTime
+      .getUTCHours()
+      .toString()
+      .padStart(2, '0')}:${appointmentDateTime
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
+    console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
+    const esDocotrStatusOpen =
+      status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
+    const DoctorSLotStatus = await appointmentRepo.updateDoctorSlotStatusES(
+      appointment.doctorId,
+      apptDt,
+      sl,
+      appointment.appointmentType,
+      esDocotrStatusOpen
+    );
+  }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
@@ -369,6 +395,12 @@ const bookRescheduleAppointment: Resolver<
         apptDetails.rescheduleCount + 1,
         APPOINTMENT_STATE.RESCHEDULE
       );
+      // update on ES, should update new slot to booked and previous slot to open
+      //open old slot
+      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
+      // book new slot
+      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
+      //ends
     }
 
     const notificationType = NotificationType.PATIENT_APPOINTMENT_RESCHEDULE;
@@ -405,6 +437,12 @@ const bookRescheduleAppointment: Resolver<
         apptDetails.rescheduleCountByDoctor + 1,
         APPOINTMENT_STATE.RESCHEDULE
       );
+      // update on ES, should update new slot to booked and previous slot to open
+      //open old slot
+      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
+      // book new slot
+      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
+      //ends
     }
   }
 

@@ -1439,7 +1439,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
   const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1932,7 +1931,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         stopCallAbondmentTimer();
-        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         // console.log("AUDIO_CALL_STARTED");
@@ -1943,7 +1941,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
-        setIsDoctorNoShow(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
       } else if (message.message.message === startConsultMsg) {
@@ -2060,7 +2057,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
-      setIsDoctorNoShow(false);
     }
 
     // const timeStamp = parseInt(message.timetoken) / parseInt('10000000');
@@ -6086,43 +6082,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 OK, GOT IT
               </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )}
-      {isDoctorNoShow && (
-        <BottomPopUp
-          title={`Hi ${userName},`}
-          description={"Opps! seems like doctor hasn't joined. Please reschedule the appointment."}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              marginHorizontal: 20,
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              marginVertical: 18,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.claimStyles}
-              onPress={() => {
-                setIsDoctorNoShow(false);
-                cancelAppointmentApi();
-              }}
-            >
-              <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.rescheduletyles}
-              onPress={() => {
-                NextAvailableSlot(appointmentData, 'Transfer', true);
-                setIsDoctorNoShow(false);
-              }}
-            >
-              <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>
