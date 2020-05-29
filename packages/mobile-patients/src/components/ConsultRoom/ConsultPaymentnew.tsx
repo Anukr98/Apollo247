@@ -24,6 +24,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const price = props.navigation.getParam('price');
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
+  const doctorID = props.navigation.getParam('doctorID');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const bankCode = props.navigation.getParam('bankCode')
@@ -50,6 +51,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       orderId: appointmentId,
       price: price,
       doctorName: doctorName,
+      doctorID:doctorID,
       appointmentDateTime: appointmentInput.appointmentDateTime,
       appointmentType: appointmentInput.appointmentType,
       displayID: displayID,

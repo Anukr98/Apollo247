@@ -10,12 +10,19 @@ import {
   MEDICINE_ORDER_STATUS,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  CouponCategoryApplicable,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
-import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
+import {
+  validatePharmaCoupon,
+  PharmaOutput,
+  PharmaCouponInputArgs,
+} from 'coupons-service/resolvers/validatePharmaCoupon';
+import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSInput {
@@ -35,6 +42,8 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     coupon: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
   }
 
   input MedicineCartOMSItem {
@@ -48,6 +57,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     isPrescriptionNeeded: Int
     mou: Int
     isMedicine: String!
+    specialPrice: Float!
   }
 
   extend type Mutation {
@@ -55,6 +65,10 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   }
 `;
 
+export enum customerTypeInCoupons {
+  FIRST = 'FIRST',
+  RECURRING = 'RECURRING',
+}
 type MedicineCartOMSInput = {
   quoteId: string;
   shopId: string;
@@ -72,6 +86,8 @@ type MedicineCartOMSInput = {
   coupon: string;
   couponDiscount: number;
   productDiscount: number;
+  packagingCharges: number;
+  showPrescriptionAtStore: boolean;
 };
 
 type MedicineCartOMSItem = {
@@ -85,6 +101,7 @@ type MedicineCartOMSItem = {
   isPrescriptionNeeded: number;
   mou: number;
   isMedicine: string;
+  specialPrice: number;
 };
 
 type SaveMedicineOrderResult = {
@@ -101,9 +118,14 @@ const saveMedicineOrderOMS: Resolver<
   MedicineCartOMSInputInputArgs,
   ProfilesServiceContext,
   SaveMedicineOrderResult
-> = async (parent, { medicineCartOMSInput }, { profilesDb }) => {
+> = async (
+  parent,
+  { medicineCartOMSInput },
+  { mobileNumber, profilesDb, doctorsDb, consultsDb }
+) => {
   const errorCode = 0,
     errorMessage = '';
+
   if (!medicineCartOMSInput.items || medicineCartOMSInput.items.length == 0) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
@@ -122,6 +144,51 @@ const saveMedicineOrderOMS: Resolver<
     );
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+  }
+  if (medicineCartOMSInput.coupon) {
+    const orderLineItems = medicineCartOMSInput.items.map((item) => {
+      return {
+        itemId: item.medicineSku,
+        productName: item.medicineName,
+        productType:
+          item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
+        mrp: item.mrp,
+        specialPrice: item.specialPrice,
+        quantity: item.quantity,
+      };
+    });
+    const pharmaCouponInput: PharmaCouponInputArgs = {
+      pharmaCouponInput: {
+        code: medicineCartOMSInput.coupon,
+        patientId: medicineCartOMSInput.patientId,
+        orderLineItems: orderLineItems,
+      },
+    };
+    const context: CouponServiceContext = {
+      mobileNumber,
+      doctorsDb,
+      consultsDb,
+      patientsDb: profilesDb,
+    };
+    const couponValidity: PharmaOutput = (await validatePharmaCoupon(
+      null,
+      pharmaCouponInput,
+      context
+    )) as PharmaOutput;
+    if (!couponValidity.validityStatus) {
+      throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
+    }
+    if (couponValidity.discountedTotals) {
+      const discountedTotals = couponValidity.discountedTotals;
+      const finalAmount =
+        (medicineCartOMSInput.devliveryCharges || 0) +
+        discountedTotals.mrpPriceTotal -
+        discountedTotals.couponDiscount -
+        discountedTotals.productDiscount;
+      if (medicineCartOMSInput.estimatedAmount != Number(finalAmount.toFixed(2))) {
+        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
+      }
     }
   }
 
@@ -144,28 +211,45 @@ const saveMedicineOrderOMS: Resolver<
     coupon: medicineCartOMSInput.coupon,
     couponDiscount: medicineCartOMSInput.couponDiscount,
     productDiscount: medicineCartOMSInput.productDiscount,
+    packagingCharges: medicineCartOMSInput.packagingCharges,
+    showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
     isOmsOrder: true,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
-  if (saveOrder) {
-    const medicineOrderLineItems = medicineCartOMSInput.items.map(async (item) => {
-      const orderItemAttrs: Partial<MedicineOrderLineItems> = {
-        medicineOrders: saveOrder,
-        ...item,
-      };
-      await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
-    });
-    await Promise.all(medicineOrderLineItems);
-  }
 
-  return {
-    errorCode,
-    errorMessage,
-    orderId: saveOrder.id,
-    orderAutoId: saveOrder.orderAutoId,
-  };
+  try {
+    const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+    if (saveOrder) {
+      const medicineOrderLineItems = medicineCartOMSInput.items.map(async (item) => {
+        const orderItemAttrs: Partial<MedicineOrderLineItems> = {
+          medicineOrders: saveOrder,
+          ...item,
+        };
+        await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
+      });
+      await Promise.all(medicineOrderLineItems);
+
+      const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+        medicineOrders: saveOrder,
+        orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await medicineOrdersRepo.saveMedicineOrderStatus(
+        medicineOrderStatusAttrs,
+        saveOrder.orderAutoId
+      );
+    }
+    return {
+      errorCode,
+      errorMessage,
+      orderId: saveOrder.id,
+      orderAutoId: saveOrder.orderAutoId,
+    };
+  } catch (e) {
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, e);
+  }
 };
 
 export const saveMedicineOrderOMSResolvers = {

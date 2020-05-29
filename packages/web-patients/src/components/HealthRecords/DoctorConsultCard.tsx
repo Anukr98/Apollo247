@@ -179,86 +179,98 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
     }
   };
 
-  return (
+  return consult && consult.patientId ? (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
-      {consult && consult.patientId ? (
-        <>
-          <div className={classes.doctorInfoGroup}>
-            <div className={classes.doctorImg}>
-              <Avatar
-                alt="Dr. Simran Rai"
-                src={consult.doctorInfo.photoUrl}
-                className={classes.avatar}
-              />
-            </div>
-            <div className={classes.doctorInfo}>
-              <div className={classes.doctorName}>
-                {consult.doctorInfo
-                  ? `Dr. ${consult.doctorInfo.firstName || ''} ${consult.doctorInfo.lastName || ''}`
-                  : ''}
-              </div>
-              <div className={classes.doctorService}>
-                {consult.isFollowUp ? (
-                  <span>Follow-up to {consult.followUpTo}</span>
-                ) : (
-                  <span>New Consult</span>
-                )}
-                <span>
-                  <img src={require('images/ic_onlineconsult.svg')} alt="" />
-                </span>
-              </div>
-              <div className={classes.doctorService}>
-                {
-                  <span>
-                    {symptoms && symptoms.length > 0
-                      ? symptoms.map((symptom: SymptomType, idx: number) => {
-                          if (idx !== 0) {
-                            return `, ${symptom.symptom} `;
-                          }
-                          return symptom.symptom;
-                        })
-                      : 'No Symptoms'}
-                  </span>
-                }
-                <span onClick={() => prescriptionDownload(consult.caseSheet)}>
-                  <img src={require('images/ic_prescription_blue.svg')} alt="" />
-                </span>
-              </div>
-            </div>
+      <div className={classes.doctorInfoGroup}>
+        <div className={classes.doctorImg}>
+          <Avatar
+            alt="Dr. Simran Rai"
+            src={
+              consult.doctorInfo &&
+              consult.doctorInfo.photoUrl &&
+              consult.doctorInfo.photoUrl.length > 0
+                ? consult.doctorInfo.photoUrl
+                : ''
+            }
+            className={classes.avatar}
+          />
+        </div>
+        <div className={classes.doctorInfo}>
+          <div className={classes.doctorName}>
+            {consult.doctorInfo
+              ? `Dr. ${consult.doctorInfo.firstName || ''} ${consult.doctorInfo.lastName || ''}`
+              : ''}
           </div>
-          {/* <div className={classes.bottomActions}> */}
-          {/* <AphButton>Book Follow-up</AphButton>
-            <AphButton>Order Meds & Tests</AphButton> */}
-          {/* </div> */}
-        </>
-      ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <img src={require('images/ic_prescription_icon.svg')} alt="" />
+          <div className={classes.doctorService}>
+            {consult.isFollowUp ? (
+              <span>Follow-up to {consult.followUpTo}</span>
+            ) : (
+              <span>New Consult</span>
+            )}
+            <span>
+              <img src={require('images/ic_onlineconsult.svg')} alt="" />
+            </span>
           </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>Prescription uploaded by Patient</div>
-            <div className={classes.dateField}>
+          <div className={classes.doctorService}>
+            {
               <span>
-                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+                {symptoms && symptoms.length > 0
+                  ? symptoms.map((symptom: SymptomType, idx: number) => {
+                      if (idx !== 0) {
+                        return `, ${symptom.symptom} `;
+                      }
+                      return symptom.symptom;
+                    })
+                  : 'No Symptoms'}
               </span>
-            </div>
+            }
+            <span onClick={() => prescriptionDownload(consult.caseSheet)}>
+              <img src={require('images/ic_prescription_blue.svg')} alt="" />
+            </span>
           </div>
         </div>
-      ) : (
+      </div>
+      {/* <div className={classes.bottomActions}> */}
+      {/* <AphButton>Book Follow-up</AphButton>
+            <AphButton>Order Meds & Tests</AphButton> */}
+      {/* </div> */}
+    </div>
+  ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
+    <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+      <div className={classes.doctorInfoGroup}>
+        <div className={classes.doctorImg}>
+          <img src={require('images/ic_prescription_icon.svg')} alt="" />
+        </div>
+        <div className={classes.doctorInfo}>
+          <div className={classes.doctorName}>Prescription uploaded by Patient</div>
+          <div className={classes.dateField}>
+            <span>
+              {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    consult.medicineOrderLineItems.map((medicine: any) => (
+      <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
         <div className={classes.doctorInfoGroup}>
           <div className={classes.doctorImg}>
             <Avatar
               alt="Dr. Simran Rai"
-              src={consult.doctorInfo.photoUrl}
+              src={
+                consult.doctorInfo &&
+                consult.doctorInfo.photoUrl &&
+                consult.doctorInfo.photoUrl.length > 0
+                  ? consult.doctorInfo.photoUrl
+                  : ''
+              }
               className={classes.avatar}
             />
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName}>
-              {consult.medicineOrderLineItems.map((medicine: any) => (
-                <span>{medicine.medicineName}</span>
-              ))}
+              <span>{medicine.medicineName}</span>
             </div>
             <div className={classes.dateField}>
               <span>
@@ -267,7 +279,7 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    ))
   );
 };

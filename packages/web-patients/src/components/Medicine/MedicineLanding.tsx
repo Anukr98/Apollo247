@@ -31,6 +31,8 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -164,8 +166,7 @@ const useStyles = makeStyles((theme: Theme) => {
     preServiceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: '10px 15px',
-      paddingbottom: 8,
+      padding: 16,
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
@@ -211,18 +212,27 @@ const useStyles = makeStyles((theme: Theme) => {
     prescriptionGroup: {
       display: 'flex',
       width: '100%',
-      paddingBottom: 15,
+      '& button': {
+        backgroundColor: '#fff',
+        color: '#fcb716',
+        border: '1px solid #fcb716',
+        minWidth: 105,
+        '&:hover': {
+          backgroundColor: '#fff',
+          color: '#fcb716',
+        },
+      },
     },
     prescriptionIcon: {
       marginLeft: 'auto',
       paddingLeft: 10,
       '& img': {
-        maxWidth: 30,
+        maxWidth: 42,
       },
     },
     groupTitle: {
       fontSize: 16,
-      paddingBottom: 7,
+      paddingBottom: 16,
     },
     marginNone: {
       marginBottom: 0,
@@ -329,6 +339,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
@@ -360,6 +371,9 @@ export const MedicineLanding: React.FC = (props) => {
         (prescriptions && prescriptions.length > 0)) // the length condition check is mandatory else it will execute it infinity times
     ) {
       clearCartInfo && clearCartInfo();
+    }
+    if (localStorage.getItem('pharmaCoupon')) {
+      localStorage.removeItem('pharmaCoupon');
     }
   }
 
@@ -420,7 +434,6 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    localStorage.removeItem('searchText');
     if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
@@ -464,7 +477,7 @@ export const MedicineLanding: React.FC = (props) => {
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <MedicineAutoSearch />
+                <MedicineAutoSearch fromPDP={false} />
                 {loading && (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />
@@ -481,43 +494,44 @@ export const MedicineLanding: React.FC = (props) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>Have a prescription ready?</div>
+                          <div className={classes.groupTitle}>
+                            Now place your order via prescription
+                          </div>
                           <AphButton
-                            color="primary"
-                            // onClick={() => setIsUploadPreDialogOpen(true)}
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
-                            Upload Prescription
+                            Upload
                           </AphButton>
                         </div>
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
                         </div>
                       </div>
-                      <div className={classes.consultLink}>
-                        Don’t have a prescription? Don’t worry!
-                        <Link to={clientRoutes.doctorsLanding()} title={'Consult a doctor'}>
-                          Consult a Doctor
-                        </Link>
-                      </div>
                     </div>
                   </div>
-                  <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                    <Link
-                      className={`${classes.serviceType} ${classes.textVCenter}`}
-                      to={clientRoutes.yourOrders()}
-                      title={'Open your orders'}
-                    >
-                      <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_tablets.svg')} alt="" />
-                      </span>
-                      <span className={classes.linkText}>Your Orders</span>
-                      <span className={classes.rightArrow}>
-                        <img src={require('images/ic_arrow_right.svg')} alt="" />
-                      </span>
-                    </Link>
-                  </div>
+                  <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <div
+                        className={`${classes.sectionGroup} ${classes.marginNone}`}
+                        onClick={() => !isSignedIn && protectWithLoginPopup()}
+                      >
+                        <Link
+                          className={`${classes.serviceType} ${classes.textVCenter}`}
+                          to={isSignedIn && clientRoutes.yourOrders()}
+                          title={'Open your orders'}
+                        >
+                          <span className={classes.serviceIcon}>
+                            <img src={require('images/ic_tablets.svg')} alt="" />
+                          </span>
+                          <span className={classes.linkText}>Your Orders</span>
+                          <span className={classes.rightArrow}>
+                            <img src={require('images/ic_arrow_right.svg')} alt="" />
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                  </ProtectedWithLoginPopup>
                 </div>
               </div>
             </div>
@@ -536,8 +550,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                          item.key
-                        )}
+                        item.key
+                      )}
                     </div>
                     {item.value}
                   </div>
@@ -546,13 +560,13 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      {showOrderPopup &&
+      {showOrderPopup && (
         <Route
           render={({ history }) => {
-            return <PaymentStatusModal history={history} />
+            return <PaymentStatusModal history={history} addToCartRef={addToCartRef} />;
           }}
         />
-      }
+      )}
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}
@@ -601,12 +615,16 @@ export const MedicineLanding: React.FC = (props) => {
             setIsUploadPreDialogOpen(false);
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
         />
       </AphDialog>
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-        <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
       </AphDialog>
       {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />

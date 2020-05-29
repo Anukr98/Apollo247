@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
-import Scrollbars from 'react-custom-scrollbars';
 import { OrderCard } from 'components/Orders/OrderCard';
 import { OrdersMessage } from 'components/Orders/OrdersMessage';
 import { TrackOrders } from 'components/Orders/TrackOrders';
@@ -92,6 +91,11 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    overlayOpen: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -107,7 +111,7 @@ export const YourOrders: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.leftSection}>
+      <div className={`${classes.leftSection} ${isSmallScreen && !showMobileDetails ? '' : classes.overlayOpen}`}>
         <div className={classes.sectionHeader}>Your Orders</div>
         <OrderCard
           orderAutoId={orderAutoId}

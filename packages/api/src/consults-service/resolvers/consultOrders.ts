@@ -6,7 +6,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
-import { STATUS } from 'consults-service/entities';
+import { STATUS, REFUND_STATUS } from 'consults-service/entities';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const consultOrdersTypeDefs = gql`
   type AppointmentsResult {
@@ -21,6 +22,7 @@ export const consultOrdersTypeDefs = gql`
     discountedAmount: Float
     appointmentType: String
     appointmentPayments: [ApptPayment]
+    appointmentRefunds: [ApptRefunds]
     status: STATUS
     doctorId: String
     doctor: DoctorResponse
@@ -37,6 +39,13 @@ export const consultOrdersTypeDefs = gql`
     paymentStatus: String
     paymentType: String
     responseMessage: String
+    paymentDateTime: DateTime
+  }
+  type ApptRefunds {
+    refundAmount: Float
+    txnTimestamp: Date
+    refundStatus: REFUND_STATUS
+    refundId: String
   }
   extend type Query {
     consultOrders(patientId: String): AppointmentsResult
@@ -51,6 +60,7 @@ type ApptResponse = {
   discountedAmount: number;
   appointmentType: string;
   appointmentPayments: ApptPayment[];
+  appointmentRefunds: ApptRefunds[];
   status: STATUS;
   doctorId: string;
   doctor: DoctorResponse;
@@ -71,6 +81,14 @@ type ApptPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
+  paymentDateTime: Date;
+};
+
+type ApptRefunds = {
+  refundAmount: number;
+  txnTimestamp: Date;
+  refundStatus: REFUND_STATUS;
+  refundId: string;
 };
 
 const consultOrders: Resolver<
@@ -78,11 +96,15 @@ const consultOrders: Resolver<
   { patientId: string },
   ConsultServiceContext,
   AppointmentsResult
-> = async (parent, args, { consultsDb, doctorsDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docConsultRep = doctorsDb.getCustomRepository(DoctorRepository);
-  const response = await apptsRepo.getAllAppointmentsByPatientId(args.patientId);
-  // console.log('appointments Response', JSON.stringify(response, null, 2));
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+
+  const response = await apptsRepo.getAllAppointmentsByPatientId(primaryPatientIds);
+  // console.log('appointments Response', JSON.stringify(response, null, 2))
 
   if (response && response.length > 0) {
     const result = [];
@@ -102,6 +124,7 @@ const consultOrders: Resolver<
           appointmentDateTime: val.appointmentDateTime,
           appointmentType: val.appointmentType,
           appointmentPayments: val.appointmentPayments,
+          appointmentRefunds: val.appointmentRefunds,
           id: val.id,
           doctorId: val.doctorId,
           status: val.status,
@@ -117,7 +140,8 @@ const consultOrders: Resolver<
     } else {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
-  } else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  } else if (response.length == 0) return { appointments: [] };
+  else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
 export const consultOrdersResolvers = {

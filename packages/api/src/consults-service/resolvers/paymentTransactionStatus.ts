@@ -5,8 +5,15 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
+import { REFUND_STATUS } from 'consults-service/entities';
 
 export const paymentTransactionStatusTypeDefs = gql`
+  enum REFUND_STATUS {
+    REFUND_REQUEST_RAISED
+    REFUND_FAILED
+    REFUND_SUCCESSFUL
+    REFUND_REQUEST_NOT_RAISED
+  }
   type AppointmentPaymentResponse {
     appointment: AppointmentPaymentDetails
   }
@@ -19,6 +26,10 @@ export const paymentTransactionStatusTypeDefs = gql`
     responseMessage: String
     paymentDateTime: DateTime
     displayId: Int
+    paymentMode: String
+    refundStatus: REFUND_STATUS
+    refundId: String
+    refundAmount: Int
   }
   extend type Query {
     paymentTransactionStatus(appointmentId: String): AppointmentPaymentResponse
@@ -38,6 +49,16 @@ type AppointmentPaymentDetails = {
   responseMessage: string;
   paymentDateTime: Date | null;
   displayId: number;
+  paymentMode: string;
+  refundStatus: REFUND_STATUS;
+  refundId: String;
+  refundAmount: number;
+};
+
+type RefundDetails = {
+  refundStatus: REFUND_STATUS;
+  refundId: String;
+  refundAmount: number;
 };
 
 const paymentTransactionStatus: Resolver<
@@ -49,32 +70,52 @@ const paymentTransactionStatus: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const response = await apptsRepo.findAppointmentPaymentById(args.appointmentId);
+
+  if (!response) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
   log(
     'consultServiceLogger',
-    'payload received',
+    'consult payment response',
     'paymentTransactionStatus()',
     `The response received: ${JSON.stringify(response)}`,
     'true'
   );
 
-  if (!response) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
   const appointmentPaymentsResponse =
     response.appointmentPayments && response.appointmentPayments[0]
       ? response.appointmentPayments[0]
       : null;
+  const appointmentRefundsResponse = response.appointmentRefunds;
+  const refundData: Partial<RefundDetails> = {};
+
+  if (appointmentRefundsResponse) {
+    appointmentRefundsResponse.forEach((val) => {
+      if (val.refundStatus !== REFUND_STATUS.REFUND_REQUEST_NOT_RAISED) {
+        if (refundData.refundAmount) refundData.refundAmount += val.refundAmount;
+        else refundData.refundAmount = val.refundAmount;
+        refundData.refundId = val.refundId;
+        refundData.refundStatus = val.refundStatus;
+      }
+    });
+  }
   const returnResponse: AppointmentPaymentDetails = {
     displayId: response.displayId,
     paymentStatus: response.status,
     bankTxnId: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
-    paymentRefId: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
+    paymentRefId: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentRefId : '',
     responseMessage: appointmentPaymentsResponse ? appointmentPaymentsResponse.responseMessage : '',
     amountPaid: appointmentPaymentsResponse ? appointmentPaymentsResponse.amountPaid : 0,
-    responseCode: appointmentPaymentsResponse ? appointmentPaymentsResponse.bankTxnId : '',
+    responseCode: appointmentPaymentsResponse ? appointmentPaymentsResponse.responseCode : '',
     paymentDateTime: appointmentPaymentsResponse
       ? appointmentPaymentsResponse.paymentDateTime
       : null,
+    paymentMode: appointmentPaymentsResponse ? appointmentPaymentsResponse.paymentMode : '',
+    refundAmount: refundData.refundAmount ? refundData.refundAmount : 0,
+    refundId: refundData.refundId ? refundData.refundId : '',
+    refundStatus: refundData.refundStatus
+      ? refundData.refundStatus
+      : REFUND_STATUS.REFUND_REQUEST_NOT_RAISED,
   };
 
   if (appointmentPaymentsResponse) {

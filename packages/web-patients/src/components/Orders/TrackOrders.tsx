@@ -3,16 +3,16 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, Typography, Tabs, Tab } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { OrderStatusCard } from 'components/Orders/OrderStatusCard';
+import { OrderStatusCard, isRejectedStatus } from 'components/Orders/OrderStatusCard';
 import { CancelOrder } from 'components/Orders/CancelOrder';
 import { ReturnOrder } from 'components/Orders/ReturnOrder';
 import { OrdersSummary } from 'components/Orders/OrderSummary';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
-import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
+import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-// import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -192,22 +192,23 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       ? 1
       : 0
   );
-  const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
+  const [moreActionsDialog, setMoreActionsDialog] = useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
   const [noOrderDetails, setNoOrderDetails] = useState<boolean>(false);
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const mascotRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [cancelOrderReasonText, setCancelOrderReasonText] = useState<string>('');
+  // const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
   };
-  const [orderDetailsData, setOrderDetailsData] = useState<orederDetails | null>(null);
-  const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
+  const [orderDetailsData, setOrderDetailsData] = useState<OrderDetails | null>(null);
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
 
   useEffect(() => {
     if (props.orderAutoId) {
@@ -219,14 +220,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             typeof props.orderAutoId == 'string' ? parseInt(props.orderAutoId) : props.orderAutoId,
         },
       })
-        .then((res: any) => {
+        .then(({ data }: any) => {
           if (
-            res &&
-            res.data &&
-            res.data.getMedicineOrderDetails &&
-            res.data.getMedicineOrderDetails.MedicineOrderDetails
+            data &&
+            data.getMedicineOrderOMSDetails &&
+            data.getMedicineOrderOMSDetails.medicineOrderDetails
           ) {
-            const medicineOrderDetails = res.data.getMedicineOrderDetails.MedicineOrderDetails;
+            const medicineOrderDetails = data.getMedicineOrderOMSDetails.medicineOrderDetails;
             if (medicineOrderDetails) {
               setOrderDetailsData(medicineOrderDetails);
               setNoOrderDetails(false);
@@ -253,7 +253,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
       orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
     if (
       orderStatus &&
-      (orderStatus.orderStatus == 'CANCELLED' || orderStatus.orderStatus == 'DELIVERED')
+      (isRejectedStatus(orderStatus.orderStatus) ||
+        orderStatus.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
     ) {
       isDisable = true;
     }
@@ -264,6 +265,19 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0 &&
     orderDetailsData.medicineOrderPayments[0];
+  const orderShipments =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderShipments &&
+    orderDetailsData.medicineOrderShipments[0];
+
+  const isShipmentListHasBilledState = () => {
+    if (orderShipments && orderShipments.medicineOrdersStatus) {
+      const isBilled = orderShipments.medicineOrdersStatus.findIndex(
+        (statusDetails) => statusDetails.orderStatus === MEDICINE_ORDER_STATUS.ORDER_BILLED
+      );
+      return isBilled !== -1 ? true : false;
+    }
+  };
 
   let isDisableCancel = false;
   if (
@@ -271,12 +285,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0
   ) {
-    if (
-      (orderPayment && orderPayment.paymentType === 'COD') ||
-      (orderPayment && orderPayment.paymentType === 'CASHLESS')
-    ) {
-      isDisableCancel = true;
-    }
+    isDisableCancel = orderShipments ? isShipmentListHasBilledState() : false;
   }
 
   return (
@@ -305,7 +314,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable || !isDisableCancel}
+                disabled={!props.orderAutoId || isDisable || isDisableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >
@@ -373,21 +382,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <Scrollbars
               autoHide={true}
               autoHeight
-              autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 276px)'
-                  : isSmallScreen
-                  ? 'calc(100vh - 96px)'
-                  : 'calc(100vh - 250px)'
-              }
+              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
             >
-              <div className={classes.customScroll}>
-                {noOrderDetails ? (
-                  'No Order is Found'
-                ) : (
-                  <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
-                )}
-              </div>
+              {noOrderDetails ? (
+                'No Order is Found'
+              ) : (
+                <OrderStatusCard orderDetailsData={orderDetailsData} isLoading={isLoading} />
+              )}
             </Scrollbars>
           </TabContainer>
         )}
@@ -396,13 +397,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             <Scrollbars
               autoHide={true}
               autoHeight
-              autoHeightMax={
-                isMediumScreen
-                  ? 'calc(100vh - 276px)'
-                  : isSmallScreen
-                  ? 'calc(100vh - 96px)'
-                  : 'calc(100vh - 250px)'
-              }
+              autoHeightMax={isSmallScreen ? 'calc(100vh - 96px)' : 'auto'}
             >
               <div className={classes.customScroll}>
                 {noOrderDetails ? (
@@ -419,9 +414,14 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
         <CancelOrder
-          setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
+          setIsCancelOrderDialogOpen={(isDialogOpened: boolean) =>
+            setIsCancelOrderDialogOpen(isDialogOpened)
+          }
           orderAutoId={props.orderAutoId}
-          setIsPopoverOpen={setIsPopoverOpen}
+          setIsPopoverOpen={(isPopoverOpened: boolean) => setIsPopoverOpen(isPopoverOpened)}
+          setCancelOrderReasonText={(reasonText: string) => {
+            setCancelOrderReasonText(reasonText);
+          }}
         />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">

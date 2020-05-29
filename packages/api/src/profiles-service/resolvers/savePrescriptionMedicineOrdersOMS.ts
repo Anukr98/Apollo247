@@ -10,6 +10,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -164,6 +165,12 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
   if (saveOrder) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      medicineOrders: saveOrder,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
       deliveryAddress1 = '',
@@ -171,6 +178,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       landmark = '',
       deliveryAddress = 'Kakinada',
       deliveryState = 'Telangana',
+      stateCode = 'TS',
       lat = 0,
       long = 0;
     if (patientAddressDetails) {
@@ -180,6 +188,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       landmark = patientAddressDetails.landmark || landmark;
       lat = patientAddressDetails.latitude || lat;
       long = patientAddressDetails.longitude || long;
+      stateCode = patientAddressDetails.stateCode || stateCode;
       deliveryAddress =
         patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
       deliveryCity = patientAddressDetails.city || deliveryCity;
@@ -233,11 +242,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         billingaddress: deliveryAddress.trim(),
         billingpincode: deliveryZipcode,
         billingcity: deliveryCity,
-        billingstateid: 'TS',
+        billingstateid: stateCode,
         shippingaddress: deliveryAddress.trim(),
         shippingpincode: deliveryZipcode,
         shippingcity: deliveryCity,
-        shippingstateid: 'TS',
+        shippingstateid: stateCode,
         customerid: '',
         patiendname: patientDetails.firstName,
         customername:
@@ -299,12 +308,18 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       ''
     );
     const orderResp: PharmaResult = JSON.parse(textRes);
-
     if (orderResp.Status === false) {
       errorCode = -1;
       errorMessage = orderResp.Message;
       orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
     } else {
+      const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+        orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+        medicineOrders: saveOrder,
+        statusDate: new Date(),
+        statusMessage: orderResp.Message,
+      };
+      await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
       await medicineOrdersRepo.updateMedicineOrderDetails(
         saveOrder.id,
         saveOrder.orderAutoId,

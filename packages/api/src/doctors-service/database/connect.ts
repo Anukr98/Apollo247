@@ -4,6 +4,7 @@ import {
   AppointmentCallDetails,
   AppointmentDocuments,
   AppointmentNoShow,
+  AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
@@ -21,6 +22,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -82,6 +84,7 @@ import {
   SearchHistory,
   RegistrationCodes,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -131,6 +134,7 @@ export const connect = async () => {
         AppointmentCallDetails,
         AppointmentDocuments,
         AppointmentNoShow,
+        AppointmentRefunds,
         AppointmentPayments,
         AppointmentSessions,
         AuditHistory,
@@ -148,6 +152,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         UtilizationCapacity,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -199,6 +204,7 @@ export const connect = async () => {
         PatientNotificationSettings,
         SearchHistory,
         RegistrationCodes,
+        MedicineOrderCancelReason,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

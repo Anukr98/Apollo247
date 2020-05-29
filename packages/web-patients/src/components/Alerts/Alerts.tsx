@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { createMuiTheme } from '@material-ui/core/styles';
+import { Route } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,6 +97,7 @@ interface Alertprops {
   alertMessage: string;
   setAlertMessage: (alertMessage: string) => void;
   setIsAlertOpen: (isAlertOpen: boolean) => void;
+  consult?: boolean;
 }
 
 export const Alerts: React.FC<Alertprops> = (props) => {
@@ -123,14 +126,23 @@ export const Alerts: React.FC<Alertprops> = (props) => {
             >
               Ignore
             </AphButton> */}
-            <AphButton
-              onClick={() => {
-                props.setIsAlertOpen(false), props.setAlertMessage('');
-              }}
-              title={'Close'}
-            >
-              Done
-            </AphButton>
+            <Route
+              render={({ history }) => (
+                <AphButton
+                  onClick={() => {
+                    if (props.consult) {
+                      history.push(clientRoutes.doctorsLanding());
+                      props.setIsAlertOpen(false);
+                    }
+                    props.setIsAlertOpen(false);
+                    props.setAlertMessage('');
+                  }}
+                  title={'Close'}
+                >
+                  Done
+                </AphButton>
+              )}
+            />
           </div>
         </div>
       </div>

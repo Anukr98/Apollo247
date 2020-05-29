@@ -270,6 +270,12 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
       paddingRight: 5,
     },
+    errorText: {
+      color: '#890000',
+      padding: '6px 16px',
+      fontSize: 11,
+      fontWeight: 500,
+    },
   });
 });
 
@@ -473,7 +479,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
-                  {errorMessage && <span>{errorMessage}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
@@ -482,6 +487,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     </div>
                   )}
                 </div>
+                {errorMessage && <div className={classes.errorText}>{errorMessage}</div>}
               </>
             ) : null}
           </div>

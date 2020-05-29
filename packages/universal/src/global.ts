@@ -77,5 +77,7 @@ declare namespace NodeJS {
 
     AZURE_STORAGE_CONNECTION_STRING_API_SIGNATURE: string;
     AZURE_STORAGE_CONTAINER_NAME_SIGNATURE: string;
+
+    COUNTRY_CODES: string;
   }
 }

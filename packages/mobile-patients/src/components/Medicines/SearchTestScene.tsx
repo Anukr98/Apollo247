@@ -494,13 +494,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
-        <NeedHelpAssistant
+        {/* <NeedHelpAssistant
           navigation={props.navigation}
           containerStyle={{ marginTop: 84, marginBottom: 50 }}
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Tests');
           }}
-        />
+        /> */}
       </ScrollView>
     );
   };

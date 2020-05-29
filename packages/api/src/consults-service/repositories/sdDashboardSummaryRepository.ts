@@ -293,10 +293,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('appointment_call_details."callType" = :callType', { callType })
       .andWhere('appointment."doctorId" = :doctorId', { doctorId })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-      })
+      .andWhere('appointment_call_details."doctorType"!= :docType', { docType: DoctorType.JUNIOR })
+      .andWhere('appointment.status in(:status)', { status: STATUS.COMPLETED })
       .groupBy('appointment_call_details."appointmentId"')
       .getRawMany();
     if (callDetails && callDetails.length > 0) {
@@ -523,42 +521,40 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       where: {
         doctorId,
         appointmentDateTime: Between(startDate, endDate),
-        status: Not(STATUS.CANCELLED),
+        status: STATUS.COMPLETED,
       },
     });
-    console.log('appointmentsList>', appointmentList);
+    console.log('appointmentList==>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
+      console.log('inside the consdition');
       return new Promise<number>((resolve, reject) => {
         appointmentList.forEach(async (appt, index, array) => {
-          const calldetails = await AppointmentCallDetails.findOne({
+          const calldetails = await AppointmentCallDetails.find({
             where: { appointment: appt.id, doctorType: Not('JUNIOR') },
+            order: { startTime: 'ASC' },
+            take: 1,
           });
-          console.log('callDetalis==>', calldetails);
+          console.log('calldetails==>', calldetails);
           if (calldetails) {
             const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
-            const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
+            const callStartTimeFormat = format(calldetails[0].startTime, 'yyyy-MM-dd HH:mm');
             const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
             const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
-            console.log(
-              'datesss=>',
-              apptFormat,
-              callStartTimeFormat,
-              addingFiveMinutes,
-              addingFiveMinutesFormat
-            );
-            const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
-              start: new Date(apptFormat),
-              end: new Date(addingFiveMinutesFormat),
-            });
-            console.log('isWithInInterval=>', withInTime);
+            console.log('dates', apptFormat, callStartTimeFormat, addingFiveMinutesFormat);
+            const withInTime =
+              isWithinInterval(new Date(callStartTimeFormat), {
+                start: new Date(apptFormat),
+                end: new Date(addingFiveMinutesFormat),
+              }) || calldetails[0].startTime <= appt.appointmentDateTime;
             if (withInTime) {
               count = count + 1;
             }
-            console.log('count==>', count);
           }
           if (index + 1 === array.length) {
-            resolve(count);
+            setInterval(() => {
+              resolve(count);
+            }, 3000);
           }
         });
       });
