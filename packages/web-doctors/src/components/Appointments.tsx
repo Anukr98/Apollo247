@@ -15,6 +15,7 @@ import {
   StepContent,
   Typography,
   Tooltip,
+  Popover,
 } from '@material-ui/core';
 import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -49,6 +50,8 @@ export interface AppointmentsProps {
   values: Appointment[];
   loading: boolean;
   selectedDate: Date;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -304,12 +307,92 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 2,
     },
     popoverTile: {
-      color: '#fcb716',
+      fontSize: '18px',
       fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: '1.33',
+      letterSpacing: 'normal',
+      color: '#02475b',
     },
     ApptTypeStyle: {
       fontSize: 15,
       paddingLeft: 10,
+    },
+    confirmation: {
+      fontSize: '16px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: '1.25',
+      letterSpacing: 'normal',
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: '24px',
+    },
+    message: {
+      fontSize: '13px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: '16px',
+    },
+    dialogBox: {
+      width: '400px',
+      height: '329px',
+      borderRadius: '10px',
+      boxShadow: '0 5px 30px 0 rgba(0, 0, 0, 0.25)',
+      backgroundColor: '#ffffff',
+    },
+    modalWrapper: {
+      marginTop: '12px',
+      marginLeft: '20px',
+      height: '77%',
+      marginRight: '20px',
+    },
+    modal: {
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    button: {
+      minWidth: 130,
+      fontSize: 13,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      // margin: theme.spacing(0, 1, 0, 1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+      '&:disabled': {
+        color: '#fc9916',
+        opacity: 0.7,
+      },
+    },
+    yesButton: {
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fc9916',
+      color: '#ffffff',
+      '&:hover': {
+        backgroundColor: '#fc9916',
+      },
+      marginLeft: 20,
+      width: '210px',
+    },
+    buttonWrapper: {
+      marginTop: '25px',
+    },
+    cross: {
+      marginTop: '16px',
+      marginLeft: '85%',
+    },
+    paper: {
+      transform: 'translate(-50%,-50%) !important',
+      top: '50% !important',
+      left: '50% !important',
     },
   })
 );
@@ -330,13 +413,14 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   values,
   loading: loadingData,
   selectedDate,
+  setIsDialogOpen,
+  isDialogOpen,
 }) => {
   const classes = useStyles({});
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const upcomingElement = useRef(null);
 
@@ -592,6 +676,37 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       </div>
     );
   }
+  const StatusModal = (props: any) => {
+    return (
+      <Popover
+        open={props.isDialogOpen}
+        onClose={props.onClose}
+        disableBackdropClick
+        disableEscapeKeyDown
+        className={classes.modal}
+        classes={{ paper: classes.paper }}
+      >
+        <div className={classes.dialogBox}>
+          <Button className={classes.cross}>
+            <img src={require('images/ic_cross.svg')} alt="" onClick={props.onClose} />
+          </Button>
+          <div className={classes.modalWrapper}>
+            <div className={classes.popoverTile}>{props.headerText}</div>
+            <div className={classes.confirmation}>{props.confirmationText}</div>
+            <div className={classes.message}>{props.messageText}</div>
+            <div className={classes.buttonWrapper}>
+              <Button className={classes.button} onClick={props.onClose}>
+                {'no, wait'}
+              </Button>
+              <Button className={`${classes.button} ${classes.yesButton}`}>
+                {'yes, start consult'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Popover>
+    );
+  };
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
@@ -602,31 +717,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
 
-      <Dialog
-        open={isDialogOpen}
+      <StatusModal
         onClose={() => setIsDialogOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            As the patient has not done the pre-assessment, you will not be able to start the
-            consult.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={() => {
-              setIsDialogOpen(false);
-            }}
-            autoFocus
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        isDialogOpen={isDialogOpen}
+        headerText={
+          'The Patient’s vitals and the completed case sheet haven’t been submitted for this appointment yet.'
+        }
+        confirmationText={'Do you still want to start this consultation?'}
+        messageText={
+          'When you start the consult, we will notify the patient to join the consult room. Please allow the patient a few minutes to join. '
+        }
+      />
     </div>
   );
 };

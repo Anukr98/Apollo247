@@ -230,6 +230,8 @@ export const Calendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();
   if (currentUserId) {
@@ -272,7 +274,7 @@ export const Calendar: React.FC = () => {
           endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
         },
         fetchPolicy: 'no-cache',
-        pollInterval: pageRefreshTimeInSeconds * 1000,
+        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000,
         notifyOnNetworkStatusChange: true,
       })
     : { data: [], loading: false };
@@ -338,6 +340,8 @@ export const Calendar: React.FC = () => {
                   setRange(getRange(date));
                 }}
                 loading={loading}
+                isDialogOpen={isDialogOpen}
+                setIsDialogOpen={setIsDialogOpen}
               />
             )}
             {viewSelection === 'month' && (
@@ -351,6 +355,8 @@ export const Calendar: React.FC = () => {
                   setStartOfMonthDate(range as { start: string; end: string });
                   setRange(getMonthRange(range as { start: string; end: string }));
                 }}
+                isDialogOpen={isDialogOpen}
+                setIsDialogOpen={setIsDialogOpen}
               />
             )}
           </div>
