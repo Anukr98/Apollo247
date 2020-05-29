@@ -33,6 +33,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getMany();
   }
 
+  getJDCaseSheetByAppointmentId(appointmentId: string) {
+    return this.createQueryBuilder('case_sheet')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
+      .getOne()
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
+      });
+  }
+
   getJuniorDoctorCaseSheet(appointmentId: string) {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
