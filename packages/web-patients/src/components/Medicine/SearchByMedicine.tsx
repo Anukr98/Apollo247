@@ -24,6 +24,8 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { MedicineListscard } from './MedicineListscard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -158,7 +160,7 @@ const useStyles = makeStyles((theme: Theme) => {
         flex: 1,
         [theme.breakpoints.down('xs')]: {
           top: 50,
-        }
+        },
       },
     },
     searchRight: {
@@ -223,6 +225,8 @@ export const SearchByMedicine: React.FC = (props) => {
 
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -487,9 +491,16 @@ export const SearchByMedicine: React.FC = (props) => {
               <Scrollbars className={classes.scrollBar} autoHide={true}>
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
-                    {() => (
-                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                    )}
+                    {() =>
+                      isSmallScreen || isMediumScreen ? (
+                        <MedicineListscard
+                          medicineList={medicineListFiltered}
+                          isLoading={isLoading}
+                        />
+                      ) : (
+                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      )
+                    }
                   </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
