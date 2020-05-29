@@ -128,9 +128,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     missCall: {
@@ -250,9 +252,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     imageUpload: {
