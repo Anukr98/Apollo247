@@ -227,7 +227,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 10,
       '& img': {
-        maxWidth: 30,
+        maxWidth: 42,
       },
     },
     groupTitle: {

@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        color: '#fc9916',
       },
     },
   };
@@ -56,7 +57,7 @@ export const NotifyMeNotification: React.FC<NotifyMeNotificationProps> = (props)
         <AphButton
           type="submit"
           color="primary"
-          classes={{ root: classes.button }}
+          className={classes.button}
           onClick={() => {
             props.setIsNotifyMeDialogOpen(false);
           }}
