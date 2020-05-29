@@ -784,9 +784,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -943,9 +943,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1198,7 +1198,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }
   followUpBookedCount(id: string) {
@@ -1238,9 +1238,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1298,9 +1298,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
