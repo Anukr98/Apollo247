@@ -14,6 +14,8 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { CommentsForm } from 'components/Covid/CommentsForm';
 import { CommentsList } from 'components/Covid/CommentsList';
 import { AphButton } from '@aph/web-ui-components';
+import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
+import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     pageContainer: {
-      paddingBottom: 20,
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
@@ -133,6 +134,31 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    hideWeb: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
+    hideMobile: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    bannerGroup: {
+      position: 'relative',
+    },
+    riskLevelWrap: {
+      [theme.breakpoints.down('xs')]: {
+        margin: 20,
+        marginTop: 0,
+      },
+      '& >div': {
+        [theme.breakpoints.down('xs')]: {
+          marginTop: 0,
+        },
+      },
+    },
   };
 });
 
@@ -151,9 +177,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [isWebView, setIsWebView] = useState<boolean>(false);
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComments] = useState('');
+  const [totalLike, setTotalLike] = useState('');
+  const [totalDislike, setTotalDislike] = useState('');
 
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
-  // const covidArticleDetailUrl = 'https://uatcms.apollo247.com/api/article-details';
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
@@ -180,6 +207,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             id,
             comments,
             totalComments,
+            totalLike,
+            totalDislike,
           } = postData;
           setHtmlData(htmlData);
           setSource(source);
@@ -192,6 +221,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           setShowLoader(false);
           setComments(comments);
           setTotalComments(totalComments);
+          setTotalDislike(totalDislike);
+          setTotalLike(totalLike);
         }
       });
     } else {
@@ -209,12 +240,21 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             </div>
           ) : (
             <>
-              <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
-              <div className={classes.imageBanner}>
-                <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
-                <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
+              <div className={classes.bannerGroup}>
+                <ArticleBanner title={title} source={source} type={type} isWebView={isWebView} />
+                <div className={classes.imageBanner}>
+                  <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
+                  <img className={classes.desktopBanner} src={thumbnailWeb} alt="" />
+                </div>
               </div>
-              {/* <FeedbackWidget /> */}
+              <div className={classes.hideWeb}>
+                <FeedbackWidget
+                  totalComments={totalComments}
+                  totalLike={totalLike}
+                  totalDislike={totalDislike}
+                  articleId={titleId}
+                />
+              </div>
               <div className={classes.sectionGroup}>
                 <div className={classes.mainContent}>
                   <div
@@ -229,12 +269,17 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                       </a>
                     </>
                   )}
-                  <div className={classes.expertsContainer}>
-                    <CallOurExperts />
-                  </div>
                 </div>
                 <div className={classes.rightSidebar}>
                   <div className={classes.formCard}>
+                    <div className={classes.hideMobile}>
+                      <FeedbackWidget
+                        totalComments={totalComments}
+                        totalLike={totalLike}
+                        totalDislike={totalDislike}
+                        articleId={titleId}
+                      />
+                    </div>
                     <CommentsForm titleId={titleId} />
                     <CommentsList
                       titleId={titleId}
@@ -242,15 +287,17 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                       totalComments={totalComments}
                     />
                   </div>
-                  {/* <div className={classes.bottomActions}>
-                    <AphButton color="primary">Share this article</AphButton>
-                  </div> */}
                 </div>
               </div>
             </>
           )}
         </div>
+        <div className={classes.riskLevelWrap}>
+          <CheckRiskLevel />
+        </div>
       </div>
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

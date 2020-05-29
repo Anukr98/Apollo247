@@ -1,19 +1,22 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Afternoon,
+  CurrencyIcon,
   EditIconNew,
   Invoice,
   Location,
   ManageProfileIcon,
-  NotificaitonAccounts,
+  NeedHelpIcon,
+  PrimaryIcon,
+  LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_DEVICE_TOKEN,
-  GET_MEDICINE_ORDERS_LIST,
+  GET_MEDICINE_ORDERS_OMS__LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
@@ -21,14 +24,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import {
-  g,
-  getNetStatus,
-  statusBarHeight,
-  postWEGNeedHelpEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -37,14 +37,15 @@ import {
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
+import WebEngage from 'react-native-webengage';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -52,15 +53,11 @@ import {
   StackActions,
 } from 'react-navigation';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '../../graphql/types/GetMedicineOrdersList';
-import { TabHeader } from '../ui/TabHeader';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+} from '../../graphql/types/getMedicineOrdersOMSList';
 import { AppConfig } from '../../strings/AppConfig';
-import WebEngage from 'react-native-webengage';
-import AsyncStorage from '@react-native-community/async-storage';
-import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { TabHeader } from '../ui/TabHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -186,10 +183,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     error: ordersError,
     loading: ordersLoading,
     refetch: ordersRefetch,
-  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'cache-first',
-  });
+  } = useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
+    GET_MEDICINE_ORDERS_OMS__LIST,
+    {
+      variables: { patientId: currentPatient && currentPatient.id },
+      fetchPolicy: 'cache-first',
+    }
+  );
 
   useEffect(() => {
     if (!currentPatient) {
@@ -236,9 +236,22 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       return (
         <View style={styles.topView}>
           <View style={styles.detailsViewStyle}>
-            <Text style={styles.doctorNameStyles}>
-              {profileDetails.firstName} {profileDetails.lastName}
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={styles.doctorNameStyles}>
+                {profileDetails.firstName} {profileDetails.lastName}
+              </Text>
+              {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                <LinkedUhidIcon
+                  style={{
+                    width: 22,
+                    height: 20,
+                    marginLeft: 5,
+                    marginTop: Platform.OS === 'ios' ? 5 : 8,
+                  }}
+                  resizeMode={'contain'}
+                />
+              ) : null}
+            </View>
             <View style={styles.separatorStyle} />
             <View
               style={{
@@ -426,7 +439,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       <View>
         <ListCard
           container={{ marginTop: 14 }}
-          title={'Manage Profiles'}
+          title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
           onPress={() =>
             props.navigation.navigate(AppRoutes.ManageProfile, {
@@ -446,7 +459,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.YourOrdersScene, {
-              orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+              orders: (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
                 (item) =>
                   !(
                     (item!.medicineOrdersStatus || []).length == 1 &&
@@ -458,6 +471,33 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               error: ordersError,
               loading: ordersLoading,
             });
+          }}
+        />
+        <ListCard
+          title={'My Payments'}
+          leftIcon={<CurrencyIcon />}
+          onPress={() => {
+            // postMyOrdersClicked('My Account', currentPatient);
+            props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+              // orders: (g(orders, 'getMedicineOrdersList', 'MedicineOrdersList') || []).filter(
+              //   (item) =>
+              //     !(
+              //       (item!.medicineOrdersStatus || []).length == 1 &&
+              //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+              //     )
+              // ),
+              // refetch: ordersRefetch,
+              // error: ordersError,
+              // loading: ordersLoading,
+              patientId: currentPatient,
+            });
+          }}
+        />
+        <ListCard
+          title={'Need Help'}
+          leftIcon={<NeedHelpIcon />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MobileHelp);
           }}
         />
         {/* <ListCard
@@ -494,12 +534,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          <NeedHelpAssistant
+          {/* <NeedHelpAssistant
             navigation={props.navigation}
             onNeedHelpPress={() => {
               postWEGNeedHelpEvent(currentPatient, 'My Account');
             }}
-          />
+          /> */}
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
               style={{

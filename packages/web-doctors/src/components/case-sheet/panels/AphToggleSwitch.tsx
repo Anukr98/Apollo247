@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f7f7',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     switchBase: {

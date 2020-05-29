@@ -247,6 +247,12 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
   bankAccount: DoctorBankAccounts[];
 
+  @Column({ default: true })
+  isJdAllowed: Boolean;
+
+  @Column({ default: true })
+  isApolloJdRequired: Boolean;
+
   @Column({ nullable: true, type: 'text' })
   awards: string;
 
@@ -716,6 +722,9 @@ export class AdminUsers extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
+
+  @Column({ default: false })
+  readOnly: Boolean;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;

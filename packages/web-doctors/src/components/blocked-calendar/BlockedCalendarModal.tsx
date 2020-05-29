@@ -310,6 +310,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         },
         '&:hover': {
           backgroundColor: 'transparent',
+          boxShadow: 'none',
         },
       },
       modalFooter: {

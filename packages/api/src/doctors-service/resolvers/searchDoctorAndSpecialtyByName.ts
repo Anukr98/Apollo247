@@ -115,7 +115,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
   const docSearchParams: RequestParams.Search = {
     index: 'doctors',
-    type: 'posts',
     body: {
       size: 1000,
       query: {
@@ -222,7 +221,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   ) {
     const PossibleDoctorParams: RequestParams.Search = {
       index: 'doctors',
-      type: 'posts',
       body: {
         size: 200,
         query: {
