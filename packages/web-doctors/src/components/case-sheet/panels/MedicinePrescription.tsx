@@ -45,7 +45,7 @@ import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const apiDetails = {
-  url: process.env.PHARMACY_MED_SEARCH_URL,
+  url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
