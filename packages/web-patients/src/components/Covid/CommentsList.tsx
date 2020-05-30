@@ -90,10 +90,6 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
     setCommentsArr(currentCommentsArr);
   }, [props]);
 
-  useEffect(() => {
-    console.log(222, commentsArr.length);
-  }, [commentsArr]);
-
   const getMoreComments = () => {
     setCommentsLoading(true);
     const currentOffset = commentsArr.length;
