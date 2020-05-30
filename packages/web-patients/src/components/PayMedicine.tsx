@@ -511,32 +511,32 @@ export const PayMedicine: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-        return {
-          medicineSKU: cartItemDetails.sku,
-          medicineName: cartItemDetails.name,
-          price:
-            couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-              ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
-              : Number(getItemSpecialPrice(cartItemDetails)),
-          quantity: cartItemDetails.quantity,
-          itemValue: cartItemDetails.quantity * cartItemDetails.price,
-          itemDiscount:
-            cartItemDetails.quantity *
-            (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-              ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-              : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
-          mrp: cartItemDetails.price,
-          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-          mou: parseInt(cartItemDetails.mou),
-          isMedicine:
-            cartItemDetails.type_id === 'Pharma'
-              ? '1'
-              : cartItemDetails.type_id === 'Fmcg'
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price:
+              couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : Number(getItemSpecialPrice(cartItemDetails)),
+            quantity: cartItemDetails.quantity,
+            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemDiscount:
+              cartItemDetails.quantity *
+              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine:
+              cartItemDetails.type_id === 'Pharma'
+                ? '1'
+                : cartItemDetails.type_id === 'Fmcg'
                 ? '0'
                 : null,
-          specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
-        };
-      })
+            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+          };
+        })
       : [];
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
@@ -680,6 +680,8 @@ export const PayMedicine: React.FC = (props) => {
         setMutationLoading(false);
         setIsLoading(false);
         sessionStorage.setItem('cartValues', '');
+        window.location.href = `${clientRoutes.welcome()}`;
+        alert('something went wrong');
       });
   };
 
@@ -754,9 +756,9 @@ export const PayMedicine: React.FC = (props) => {
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
-              }&patientId=${
+            }&patientId=${
               currentPatient ? currentPatient.id : ''
-              }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
+            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -784,8 +786,8 @@ export const PayMedicine: React.FC = (props) => {
                 params.payType === 'pharmacy'
                   ? clientRoutes.medicinesCart()
                   : appointmentType.toLowerCase() === 'online'
-                    ? clientRoutes.payOnlineConsult()
-                    : clientRoutes.payOnlineClinicConsult()
+                  ? clientRoutes.payOnlineConsult()
+                  : clientRoutes.payOnlineClinicConsult()
               }
             >
               <div className={classes.backArrow}>
@@ -818,41 +820,41 @@ export const PayMedicine: React.FC = (props) => {
                       color="secondary"
                     />
                   ) : (
-                      <ul className={classes.paymentOptions}>
-                        {paymentOptions.length > 0 &&
-                          paymentOptions.map((payType, index) => {
-                            return (
-                              <li
-                                key={index}
-                                onClick={() =>
-                                  params.payType === 'pharmacy'
-                                    ? onClickPay(payType.paymentMode, payType.name)
-                                    : onClickConsultPay(payType.paymentMode)
-                                }
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <img
-                                  src={payType.imageUrl}
-                                  alt=""
-                                  style={{ height: 30, width: 30 }}
-                                />
-                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                              </li>
-                            );
-                          })}
-                        {params.payType === 'pharmacy' && (
-                          <li>
-                            <FormGroup>
-                              <FormControlLabel
-                                className={classes.checkbox}
-                                control={<Checkbox onChange={handleChange} name="checked" />}
-                                label="Cash On Delivery"
+                    <ul className={classes.paymentOptions}>
+                      {paymentOptions.length > 0 &&
+                        paymentOptions.map((payType, index) => {
+                          return (
+                            <li
+                              key={index}
+                              onClick={() =>
+                                params.payType === 'pharmacy'
+                                  ? onClickPay(payType.paymentMode, payType.name)
+                                  : onClickConsultPay(payType.paymentMode)
+                              }
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <img
+                                src={payType.imageUrl}
+                                alt=""
+                                style={{ height: 30, width: 30 }}
                               />
-                            </FormGroup>
-                          </li>
-                        )}
-                      </ul>
-                    )}
+                              <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                            </li>
+                          );
+                        })}
+                      {params.payType === 'pharmacy' && (
+                        <li>
+                          <FormGroup>
+                            <FormControlLabel
+                              className={classes.checkbox}
+                              control={<Checkbox onChange={handleChange} name="checked" />}
+                              label="Cash On Delivery"
+                            />
+                          </FormGroup>
+                        </li>
+                      )}
+                    </ul>
+                  )}
                   {checked && (
                     <AphButton
                       className={classes.payBtn}
@@ -863,8 +865,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                          `Pay Rs.${totalWithCouponDiscount.toFixed(2)} on delivery`
-                        )}
+                        `Pay Rs.${totalWithCouponDiscount.toFixed(2)} on delivery`
+                      )}
                     </AphButton>
                   )}
                   {params.payType === 'consults' && revisedAmount === 0 && (
@@ -900,20 +902,20 @@ export const PayMedicine: React.FC = (props) => {
                             </span>
                           </div>
                         ) : (
-                            <>
-                              <div className={classes.appliedCoupon}>
-                                <span className={classes.linkText}>
-                                  <span>{consultCouponCode}</span> applied
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{consultCouponCode}</span> applied
                               </span>
-                                <span className={classes.rightArrow}>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </span>
-                              </div>
-                              <div className={classes.couponText}>
-                                {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
-                              </div>
-                            </>
-                          )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                            <div className={classes.couponText}>
+                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                     {consultCouponCode.length > 0 && (
@@ -921,9 +923,9 @@ export const PayMedicine: React.FC = (props) => {
                         Savings of Rs.{' '}
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
                           ? (
-                            parseFloat(onlineConsultationFees) -
-                            parseFloat(validateConsultCouponResult.revisedAmount)
-                          ).toFixed(2)
+                              parseFloat(onlineConsultationFees) -
+                              parseFloat(validateConsultCouponResult.revisedAmount)
+                            ).toFixed(2)
                           : parseFloat(consultCouponValue).toFixed(2)}{' '}
                         on the bill
                       </div>
@@ -959,34 +961,34 @@ export const PayMedicine: React.FC = (props) => {
                     </div>
                   </Paper>
                 ) : (
-                    <Paper className={classes.paper}>
-                      <div className={classes.charges}>
-                        {' '}
-                        <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.discount}`}>
-                        <p>Coupon Applied</p>{' '}
-                        <p>
-                          - Rs.
+                  <Paper className={classes.paper}>
+                    <div className={classes.charges}>
+                      {' '}
+                      <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.discount}`}>
+                      <p>Coupon Applied</p>{' '}
+                      <p>
+                        - Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                            ? (
+                          ? (
                               parseFloat(amount) -
                               parseFloat(validateConsultCouponResult.revisedAmount)
                             ).toFixed(2)
-                            : parseFloat(consultCouponValue).toFixed(2) || 0}
-                        </p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.total}`}>
-                        <p>To Pay</p>{' '}
-                        <p>
-                          Rs.
+                          : parseFloat(consultCouponValue).toFixed(2) || 0}
+                      </p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.total}`}>
+                      <p>To Pay</p>{' '}
+                      <p>
+                        Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.revisedAmount
-                            ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
-                            : revisedAmount.toFixed(2)}
-                        </p>
-                      </div>
-                    </Paper>
-                  )}
+                          ? parseFloat(validateConsultCouponResult.revisedAmount).toFixed(2)
+                          : revisedAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </Paper>
+                )}
               </Grid>
             </Grid>
           </div>
@@ -1020,6 +1022,6 @@ export const PayMedicine: React.FC = (props) => {
         setIsAlertOpen={setIsAlertOpen}
         consult={consult}
       />
-    </div >
+    </div>
   );
 };
