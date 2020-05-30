@@ -447,7 +447,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                         </Grid>
                         <Grid sm={9} xs={10} key={6} item className={classes.valign}>
                           <div className={classes.section2}>
-                            {appointment.isNew && (
+                            {/* {appointment.isNew && (
                               <Typography
                                 gutterBottom
                                 variant="caption"
@@ -455,7 +455,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                               >
                                 New
                               </Typography>
-                            )}
+                            )} */}
                             <Typography
                               gutterBottom
                               variant="body1"
