@@ -88,6 +88,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   doctorsAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
   specialty: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
   doctorsNextAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
+  defaultSort: string | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters {

@@ -236,9 +236,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         props.navigation.getParam('specialityId') === generalPhysicians.id
       ) {
         setData(generalPhysicians.data);
+        vaueChange(generalPhysicians.data);
       }
       if (ent && ent.data && props.navigation.getParam('specialityId') === ent.id) {
         setData(ent.data);
+        vaueChange(ent.data);
       }
       if (
         Dermatology &&
@@ -246,12 +248,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         props.navigation.getParam('specialityId') === Dermatology.id
       ) {
         setData(Dermatology.data);
+        vaueChange(Dermatology.data);
       }
       if (Urology && Urology.data && props.navigation.getParam('specialityId') === Urology.id) {
         setData(Urology.data);
+        vaueChange(Urology.data);
       }
     }
   }, [generalPhysicians, ent, Urology, Dermatology]);
+
+  const vaueChange = (data: any) => {
+    const filterGetData =
+      data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+    console.log('sortBy', filterGetData);
+
+    if (filterGetData.defaultSort === 'distance') {
+      setValue(false);
+    } else {
+      setValue(true);
+    }
+  };
 
   const client = useApolloClient();
   const params = props.navigation.getParam('specialities') || null;
@@ -280,7 +296,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         if (status) {
           // fetchCurrentLocation();
           fetchSpecialityFilterData(filterMode, FilterData);
-          // checkTime();
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -378,7 +393,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
       console.log(latlng, 'latlng []');
 
-      // checkTime();
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
@@ -389,19 +403,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
-
-  const checkTime = () => {
-    const currentTime = moment().format('HH');
-    console.log('currentTime', currentTime);
-
-    if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
-      setValue(true);
-      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
-    } else {
-      setValue(false);
-      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
-    }
-  };
 
   // const fetchNextSlots = (doctorIds: (string | null)[]) => {
   //   const todayDate = new Date().toISOString().slice(0, 10);

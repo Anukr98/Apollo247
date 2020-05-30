@@ -665,6 +665,8 @@ export interface MedicineCartOMSInput {
   coupon?: string | null;
   couponDiscount?: number | null;
   productDiscount?: number | null;
+  packagingCharges?: number | null;
+  showPrescriptionAtStore?: boolean | null;
 }
 
 export interface MedicineCartOMSItem {
