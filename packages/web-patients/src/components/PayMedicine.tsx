@@ -679,9 +679,10 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
+        localStorage.removeItem(`${currentPatient && currentPatient.id}`);
         sessionStorage.setItem('cartValues', '');
-        window.location.href = `${clientRoutes.welcome()}`;
-        alert('something went wrong');
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong, please try later.');
       });
   };
 
