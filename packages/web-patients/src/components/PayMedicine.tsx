@@ -407,13 +407,14 @@ export const PayMedicine: React.FC = (props) => {
   }>();
   const pharmacyMinDeliveryValue = process.env.PHARMACY_MIN_DELIVERY_VALUE;
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
-  const { currentPatient } = useAllCurrentPatients();
 
-  const deliveryCharges =
-    cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
-      ? 0
-      : parseFloat(pharmacyDeliveryCharges);
-  const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
+  const { currentPatient } = useAllCurrentPatients();
+  // const deliveryCharges =
+  //   cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
+  //     ? 0
+  //     : parseFloat(pharmacyDeliveryCharges);
+
+  // const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const getMRPTotal = () => {
     let sum = 0;
     cartItems.forEach((item) => {
@@ -434,6 +435,11 @@ export const PayMedicine: React.FC = (props) => {
     totalWithCouponDiscount,
     validateCouponResult,
   } = cartValues;
+  const deliveryCharges =
+    mrpTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
+    totalWithCouponDiscount <= 0
+      ? 0
+      : Number(pharmacyDeliveryCharges);
 
   const consultBookDetails = localStorage.getItem('consultBookDetails')
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
