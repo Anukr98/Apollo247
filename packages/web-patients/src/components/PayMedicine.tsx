@@ -436,7 +436,7 @@ export const PayMedicine: React.FC = (props) => {
     validateCouponResult,
   } = cartValues;
   const deliveryCharges =
-    mrpTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
+    cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
     totalWithCouponDiscount <= 0
       ? 0
       : Number(pharmacyDeliveryCharges);
