@@ -39,10 +39,11 @@ module.exports = async (req, res) => {
         logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(aptResp.data)}`);
 
         if (aptResp.data.errors && aptResp.data.errors.length) {
-            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(aptResp.data.errors)}`)
-            throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`)
+            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(aptResp.data.errors)}`);
+            throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
         }
 
+        const merc_unq_ref = `${source}:${appointmentId}`;
         const { discountedAmount, patientId: patientIdExisting } = aptResp.data.data.getAppointmentData.appointmentsHistory[0];
 
         const paymentOrderId = generatePaymentOrderId();
@@ -61,11 +62,11 @@ module.exports = async (req, res) => {
 
         logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
         if (updateResp.data.errors && updateResp.data.errors.length) {
-            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(updateResp.data.errors)}`)
+            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(updateResp.data.errors)}`);
             throw new Error(`Error Occured in updatePaymentOrderId for appoinment id: ${appointmentId}`);
         }
 
-        const success = await initPayment(patientIdExisting, paymentOrderId, discountedAmount, source, addParams);
+        const success = await initPayment(patientIdExisting, paymentOrderId, discountedAmount, merc_unq_ref, addParams);
 
         res.render('paytmRedirect.ejs', {
             resultData: success,
@@ -83,4 +84,4 @@ module.exports = async (req, res) => {
             code: '10001',
         });
     }
-}
+};

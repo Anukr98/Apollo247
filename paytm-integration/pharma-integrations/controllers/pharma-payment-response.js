@@ -36,21 +36,27 @@ module.exports = async (req, res, next) => {
 
         logger.info(`${orderId} - paymed-response - ${JSON.stringify(payload)}`);
 
-        axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+        if (process.env.NODE_ENV == 'dev'
+            || process.env.NODE_ENV == 'local'
+            || transactionStatus == 'pending'
+        ) {
+            axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-        logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
-        // this needs to be altered later.
-        const requestJSON = {
-            query: medicineOrderQuery(payload)
-        };
+            logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
 
-        /// write medicineoirder
-        const response = await axios.post(process.env.API_URL, requestJSON);
-        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
+            // this needs to be altered later.
+            const requestJSON = {
+                query: medicineOrderQuery(payload)
+            };
 
-        if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - pharma-payment-response - ${JSON.stringify(response.data.errors)}`);
-            throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
+            /// write medicineorder
+            const response = await axios.post(process.env.API_URL, requestJSON);
+            logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
+
+            if (response.data.errors && response.data.errors.length) {
+                logger.error(`${orderId} - pharma-payment-response - ${JSON.stringify(response.data.errors)}`);
+                throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
+            }
         }
 
         if (bookingSource === 'WEB') {
