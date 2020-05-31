@@ -4,6 +4,64 @@ import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { SchemaMarkup } from 'SchemaMarkup';
+const structuredJSON = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How do I book a online consultation?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text:
+          "You can book an online consultation in two ways: <br/> <br/> \
+      1) If you're you looking for a specialist, you may start by going to the Homepage.\
+      Click Find a Doctor, select a specialty and click Online Consults. Select an\
+      appointment card and click Consult Now.<br/><br/>\
+      2) If you're looking for a doctor based on your symptoms, you may start by going to\
+      the Homepage. Click Track Symptoms, search for your symptoms or select a few of them\
+      based on your current situation. Click Show Doctors and select an appointment card\
+      and click Consult Now. <br/><br/>\
+      You can also book an appointment by going to Appointments and clicking Book an Appointment.",
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much time will I get to speak to a doctor?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text:
+          ' You can consult with your assigned doctor for about 15 minutes, depending on your health status. The timings may increase if you have further queries.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I get a free consultation with the same doctor?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text:
+          "Once you have successfully consulted with the doctor,{' '}\
+      <b>you can avail one free follow-up consultation.\
+      </b> (Applicable within the seven days after the date of your first consultation)<br/><br/>",
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I book my follow-up session in the app with the doctor?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text:
+          "After you've successfully consulted with the assigned doctor, you can avail a free\
+      follow-up* session by following the given steps:-<br/>\
+      Go to Appointments -> Select Active Select an Appointment Card -> Click Schedule a Follow-up\
+      <br/> or <br/>\
+      Go to Health Records -> Select Consults & Rx Select an Appointment Card -> Click\
+      Book Follow-Up (You can avail one free follow-up session with the doctor within seven days after the date of consultation)* <br />",
+      },
+    },
+  ],
+};
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -38,6 +96,7 @@ export const Faq: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Header />
+      <SchemaMarkup structuredJSON={structuredJSON} />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <h1 className={classes.textCenter}>Frequently Asked Questions</h1>
