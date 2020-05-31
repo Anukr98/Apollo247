@@ -420,7 +420,6 @@ export const MedicineDetails: React.FC = (props) => {
     } else {
       const { manufacturer, description, image, name, special_price } = medicineDetails;
       setStructuredJSON({
-
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": name,
@@ -431,7 +430,7 @@ export const MedicineDetails: React.FC = (props) => {
           "@type": "Offer",
           "url": `https://www.apollo247.com/medicine-details/${params.sku}`,
           "priceCurrency": "INR",
-          "price": special_price,
+          "price": special_price ? special_price: 0,
           "priceValidUntil": "2020-12-31",
           "availability": "https://schema.org/InStock",
           "itemCondition": "https://schema.org/NewCondition"
