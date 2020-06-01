@@ -12,6 +12,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 import _replace from 'lodash/replace';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -172,6 +173,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
   const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
+  const { currentPatient } = useAllCurrentPatients();
 
   const isInCart = (medicine: MedicineProduct) => {
     const index = cartItems.findIndex((item) => item.id === medicine.id);
@@ -251,7 +253,11 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     }
                   }}
                 >
-                  {product.is_in_stock ? 'Add To Cart' : 'Notify me'}
+                  {product.is_in_stock
+                    ? 'Add to Cart'
+                    : currentPatient && currentPatient.id
+                    ? 'Notify me'
+                    : ''}
                 </AphButton>
               )}
               {isInCart(product) && (
