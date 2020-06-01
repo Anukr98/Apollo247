@@ -20,11 +20,6 @@ export enum APPOINTMENT_UPDATED_BY {
   ADMIN = 'ADMIN',
 }
 
-export enum VALUE_TYPE {
-  STATUS = 'STATUS',
-  OTHER = 'OTHER',
-}
-
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -116,6 +111,11 @@ export enum REQUEST_ROLES {
   JUNIOR = 'JUNIOR',
   SYSTEM = 'SYSTEM',
   ADMIN = 'ADMIN',
+}
+
+export enum VALUE_TYPE {
+  STATUS = 'STATUS',
+  OTHER = 'OTHER',
 }
 
 export enum TRANSFER_STATUS {

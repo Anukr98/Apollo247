@@ -963,7 +963,11 @@ app.get('/processOmsOrders', (req, res) => {
               response.data.data.getMedicineOrderOMSDetails &&
               response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
             if (orderDetails) {
-              console.log(orderDetails.currentStatus, 'order details');
+              logger.info(
+                `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(
+                  orderDetails
+                )}`
+              );
               if (orderDetails.currentStatus != 'CANCELLED') {
                 let deliveryCity = 'Kakinada',
                   deliveryZipcode = '500034',
@@ -1059,7 +1063,10 @@ app.get('/processOmsOrders', (req, res) => {
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
                 }
-                const [tatDate, timeslot] = orderDetails.orderTat.split(' ');
+                const orderTat =
+                  orderDetails.orderTat && Date.parse(orderDetails.orderTat)
+                    ? new Date(orderDetails.orderTat)
+                    : '';
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1075,11 +1082,8 @@ app.get('/processOmsOrders', (req, res) => {
                   prefferedsite: '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
-                  deliverydate:
-                    tatDate && Date.parse(tatDate)
-                      ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss')
-                      : '',
-                  timeslot: timeslot || '',
+                  deliverydate: orderTat ? format(orderTat, 'MM-dd-yyyy HH:mm:ss') : '',
+                  timeslot: orderTat ? format(orderTat, 'HH:mm') : '',
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
                   customercomment: '',
@@ -1121,6 +1125,11 @@ app.get('/processOmsOrders', (req, res) => {
                   itemdetails: orderLineItems || [],
                   imageurl: orderPrescriptionUrl,
                 };
+                logger.info(
+                  `processOrders()->${orderAutoId}-> pushing to OMS - ${JSON.stringify(
+                    medicineOrderPharma
+                  )}`
+                );
                 axios
                   .post(
                     process.env.PHARMACY_MED_PLACE_OMS_ORDERS,
@@ -1133,7 +1142,6 @@ app.get('/processOmsOrders', (req, res) => {
                     }
                   )
                   .then((resp) => {
-                    console.log('pharma resp', resp.data);
                     if (resp.data.Status == true) {
                       logger.info(
                         `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
@@ -1191,6 +1199,8 @@ app.get('/processOmsOrders', (req, res) => {
                     });
                   });
               }
+            } else {
+              logger.error(`error while fetching order details for oms -> ${response}`);
             }
           })
           .catch((error) => {

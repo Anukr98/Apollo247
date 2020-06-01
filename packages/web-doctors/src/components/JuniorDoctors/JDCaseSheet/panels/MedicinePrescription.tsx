@@ -37,7 +37,7 @@ import _uniqueId from 'lodash/uniqueId';
 import Scrollbars from 'react-custom-scrollbars';
 
 const apiDetails = {
-  url: process.env.PHARMACY_MED_SEARCH_URL,
+  url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
@@ -160,6 +160,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 12,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,

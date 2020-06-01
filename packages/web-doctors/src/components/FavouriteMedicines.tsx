@@ -56,7 +56,7 @@ import {
 } from 'graphql/types/RemoveFavouriteMedicine';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 const apiDetails = {
-  url: process.env.PHARMACY_MED_SEARCH_URL,
+  url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
@@ -175,6 +175,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -193,6 +194,7 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     backArrow: {

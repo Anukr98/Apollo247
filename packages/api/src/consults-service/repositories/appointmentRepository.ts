@@ -1198,7 +1198,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }
   followUpBookedCount(id: string) {

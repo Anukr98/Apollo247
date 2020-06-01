@@ -159,7 +159,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -197,13 +197,13 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com',
+  CC_MAIL = 'chanti.reddy@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
@@ -305,4 +305,14 @@ export enum ApiConstants {
   AUTO_SUBMIT_CASESHEET_TIME = 10,
   STAT_LOWECASE = 'stat',
   STAT_UPPERCASE = 'STAT(Immediately)',
+
+  //doctor deeplink constants starts
+  BRAND_DOMAIN = 'apollo247.onelink.me',
+  LINK_TTL = '31',
+  PARTNER_ID = 'Doctor patient Download',
+  CHANNEL_NAME = 'Doctor Connect',
+  DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
+  DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/AEkA',
+  DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
+  DOCTOR_DEEPLINK_TEMPLATE_ID = 'AEkA',
 }

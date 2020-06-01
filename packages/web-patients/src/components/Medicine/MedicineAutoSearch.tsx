@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Paper, CircularProgress } from '@material-ui/core';
+import { Theme, Popover, Paper, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -11,6 +11,9 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { notifyMeTracking } from '../../webEngageTracking';
+import { NotifyMeNotification } from './NotifyMeNotification';
+import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,15 +128,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
     },
     medicinePrice: {
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
-      opacity: 0.6,
     },
     noStock: {
       fontSize: 12,
       color: '#890000',
       fontWeight: 500,
+      paddingLeft: 16,
     },
     itemSelected: {
       backgroundColor: '#f7f8f5',
@@ -182,21 +185,57 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 16,
       paddingRight: 16,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 30px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    bottomInfo: {
+      display: 'flex',
+      alignItems: 'center',
+    },
   };
 });
+interface MedicineAutoSearchProps {
+  fromPDP: boolean;
+}
 
-export const MedicineAutoSearch: React.FC = (props) => {
+export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => {
   const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  const { currentPatient } = useAllCurrentPatients();
   const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
   const [showError, setShowError] = useState<boolean>(false);
+  const mascotRef = useRef(null);
+  const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
+  const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
 
   const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
@@ -250,6 +289,14 @@ export const MedicineAutoSearch: React.FC = (props) => {
           error={showError}
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              window.location.href = clientRoutes.searchByMedicine(
+                'search-medicines',
+                searchText.replace(/\s/g, '-')
+              );
+            }
+          }}
           onChange={(e) => {
             setSearchText(e.target.value);
             if (e.target.value.length > 2) {
@@ -273,9 +320,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
         </AphButton>
       </div>
       {showError ? (
-        <FormHelperText className={classes.helpText} component="div" error={showError}>
-          Sorry, we couldn't find what you are looking for :(
-        </FormHelperText>
+        props.fromPDP ? (
+          <span>Hit enter to search '{searchText}'</span>
+        ) : (
+          <FormHelperText className={classes.helpText} component="div" error={showError}>
+            Sorry, we couldn't find what you are looking for :("
+          </FormHelperText>
+        )
       ) : (
         ''
       )}
@@ -286,7 +337,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
               <CircularProgress size={30} />
             </div>
           )}
-          {searchMedicines && searchMedicines.length > 0 && (
+          {searchText.length > 2 && searchMedicines && searchMedicines.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchMedicines.map((medicine) => (
@@ -304,10 +355,10 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         {medicine.is_in_stock ? (
                           <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
                         ) : (
-                          <>
+                          <div className={classes.bottomInfo}>
                             <div className={classes.medicinePrice}>Rs. {medicine.price}</div>
                             <div className={classes.noStock}>Out Of Stock</div>
-                          </>
+                          </div>
                         )}
                       </div>
                     </Link>
@@ -352,11 +403,17 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 name,
                               });
                               /* WebEngage event end */
+                              setSelectedMedicineName(medicine.name);
+                              setIsNotifyMeDialogOpen(true);
                             }
                           }}
                           className={classes.addToCart}
                         >
-                          {medicine.is_in_stock ? 'Add to Cart' : 'Notify me'}
+                          {medicine.is_in_stock
+                            ? 'Add to Cart'
+                            : currentPatient && currentPatient.id
+                            ? 'Notify me'
+                            : ''}
                         </AphButton>
                       )}
                       {isInCart(medicine) && (
@@ -411,7 +468,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                           <AphButton
                             onClick={() => {
                               const medicineQtyInCart = getQuantity(medicine);
-                              if (medicineQtyInCart < 20) {
+                              if (medicineQtyInCart < MEDICINE_QUANTITY) {
                                 const cartItem: MedicineCartItem = {
                                   description: medicine.description,
                                   id: medicine.id,
@@ -454,6 +511,31 @@ export const MedicineAutoSearch: React.FC = (props) => {
           )}
         </Scrollbars>
       </Paper>
+      <Popover
+        open={iśNotifyMeDialogOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <NotifyMeNotification
+              setIsNotifyMeDialogOpen={setIsNotifyMeDialogOpen}
+              medicineName={selectedMedicineName}
+            />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

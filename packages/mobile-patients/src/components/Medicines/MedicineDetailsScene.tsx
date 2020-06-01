@@ -1207,7 +1207,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             size="large"
             color="green"
           />
-        ) : !isEmptyObject(medicineDetails) && !!medicineDetails.sku ? (
+        ) : !isEmptyObject(medicineDetails) && !!medicineDetails.id ? (
           <KeyboardAwareScrollView
             ref={scrollViewRef}
             bounces={false}
@@ -1224,7 +1224,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         )}
         {!loading &&
           !isEmptyObject(medicineDetails) &&
-          !!medicineDetails.sku &&
+          !!medicineDetails.id &&
           renderBottomButtons()}
       </SafeAreaView>
       {showPopup && Popup()}
