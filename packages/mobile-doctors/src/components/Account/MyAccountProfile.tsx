@@ -293,7 +293,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             <View>
               <Text style={styles.login}>{strings.account.secretay_login}</Text>
               {renderMobilePhoneView()}
-              <HelpView />
               {isLoading ? <Loader flex1 /> : null}
               {renderButtonsView()}
             </View>

@@ -49,7 +49,6 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           />
         ))}
       </SquareCardWithTitle>
-      <HelpView styles={{ marginBottom: -10 }} />
     </View>
   );
 };
