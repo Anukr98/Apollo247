@@ -259,7 +259,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 props.close(false);
                  /*GTM TRACKING START */
                  gtmTracking({
-                  category: 'Consultations',
+                  category: 'Pharmacy',
                   action: 'Order',
                   label: `Coupon Applied - ${selectCouponCode}`,
                   value: couponValidateResult.discountedTotals.couponDiscount,

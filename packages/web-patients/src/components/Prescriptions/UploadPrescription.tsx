@@ -139,6 +139,7 @@ const client = new AphStorageClient(
 interface UploadPrescriptionProps {
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
+  isNonCartFlow: boolean;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -218,11 +219,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                   baseFormat: res,
                                 });
                             });
-                            const currentUrl = window.location.href;
-                            if (
-                              currentUrl.endsWith('/medicines') ||
-                              currentUrl.includes('/medicines/')
-                            ) {
+                            if (props.isNonCartFlow) {
                               setTimeout(() => {
                                 window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
                               }, 3000);
