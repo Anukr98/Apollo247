@@ -872,46 +872,48 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const stopAllCalls = () => {
     console.log('isA', isAudioCall, '\nisVe', isCall);
-    endCallNotificationAPI(true);
-    setIsAudioCall(false);
-    setHideStatusBar(false);
-    setChatReceived(false);
-    setConvertVideo(false);
-    setShowVideo(true);
-    setIsCall(false);
-    const text = {
-      id: doctorId,
-      message: messageCodes.endCallMsg,
-      isTyping: true,
-      messageDate: new Date(),
-      sentBy: REQUEST_ROLES.DOCTOR,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status: any, response: any) => {}
-    );
-    const stoptext = {
-      id: doctorId,
-      message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
-      duration: callTimerStarted,
-      isTyping: true,
-      messageDate: new Date(),
-      sentBy: REQUEST_ROLES.DOCTOR,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: stoptext,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status: any, response: any) => {}
-    );
+    if (isAudioCall || isCall) {
+      endCallNotificationAPI(true);
+      setIsAudioCall(false);
+      setHideStatusBar(false);
+      setChatReceived(false);
+      setConvertVideo(false);
+      setShowVideo(true);
+      setIsCall(false);
+      const text = {
+        id: doctorId,
+        message: messageCodes.endCallMsg,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: REQUEST_ROLES.DOCTOR,
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: text,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status: any, response: any) => {}
+      );
+      const stoptext = {
+        id: doctorId,
+        message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
+        duration: callTimerStarted,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: REQUEST_ROLES.DOCTOR,
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: stoptext,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status: any, response: any) => {}
+      );
+    }
   };
 
   const callAbandonmentCall = () => {
@@ -1647,7 +1649,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </View>
     );
   };
-
+  const onEndConsult = () => {
+    stopAllCalls();
+    endCallNotificationAPI(false);
+  };
   const renderTabPage = () => {
     return (
       <>
@@ -1671,6 +1676,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setOverlayDisplay(component);
                 }}
                 onStartConsult={onStartConsult}
+                onEndConsult={onEndConsult}
                 onStopConsult={onStopConsult}
                 startConsult={startConsult}
                 navigation={props.navigation}

@@ -88,7 +88,8 @@
     "oops": "Oops!",
     "no_internet": "There is no internet. Please check your internet connection.",
     "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
-    "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed"
+    "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed",
+    "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
   "popUP": {
     "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
@@ -402,7 +403,7 @@
     "reschedule_consult": "Reschedule Consult",
     "attach_files": "Attach File(s)",
     "instruction_for_upload": "Instructions For Uploading Files",
-    "instruction_list": " Take clear Picture of your entire file. \n Doctor details & date of the test should be clearly visible. \n Only JPG / PNG type files up to 2 mb are allowed.",
+    "instruction_list": "Only JPG / PNG type files up to 2 mb are allowed.",
     "none": "NONE",
     "take_a_photo": "TAKE A PHOTO",
     "choose_from_gallery": "CHOOSE FROM\nGALLERY",

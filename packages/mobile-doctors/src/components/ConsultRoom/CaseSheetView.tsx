@@ -119,6 +119,7 @@ interface DataPair {
 
 export interface CaseSheetViewProps extends NavigationScreenProps {
   onStartConsult: () => void;
+  onEndConsult: () => void;
   onStopConsult: () => void;
   startConsult: boolean;
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -286,6 +287,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const client = useApolloClient();
 
   const {
+    onEndConsult,
     saveDetails,
     caseSheet,
     caseSheetEdit,
@@ -480,10 +482,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         props.overlayDisplay(null);
         prescriptionView();
         setShowEditPreviewButtons(true);
+        onEndConsult();
         // endCallNotification();
         const text = {
           id: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
-          message: '^^#appointmentComplete',
+          message: messageCodes.appointmentComplete,
           isTyping: true,
           messageDate: new Date(),
           sentBy: REQUEST_ROLES.DOCTOR,
