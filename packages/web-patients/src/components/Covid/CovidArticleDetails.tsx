@@ -16,6 +16,7 @@ import { CommentsList } from 'components/Covid/CommentsList';
 import { AphButton } from '@aph/web-ui-components';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { BottomLinks } from 'components/BottomLinks';
+import moment from 'moment';
 import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -184,37 +185,6 @@ export const CovidArticleDetails: React.FC = (props: any) => {
 
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
-  useEffect(() => {
-    const schemaJSON =
-      title && thumbnailWeb
-        ? {
-            '@context': 'https://schema.org',
-            '@type': 'BlogPosting',
-            mainEntityOfPage: {
-              '@type': 'WebPage',
-              '@id': window.location.href,
-            },
-            headline: title,
-            image: thumbnailWeb,
-            author: {
-              '@type': 'Organization',
-              name: 'Apollo 247',
-            },
-            publisher: {
-              '@type': 'Organization',
-              name: 'Apollo 247',
-              logo: {
-                '@type': 'ImageObject',
-                url:
-                  'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
-                width: 58,
-                height: 59,
-              },
-            },
-          }
-        : null;
-    setStructuredJSON(schemaJSON);
-  }, [title, thumbnailWeb]);
 
   useEffect(() => {
     if (props && props.location && props.location.search && props.location.search.length) {
@@ -242,7 +212,39 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             totalComments,
             totalLike,
             totalDislike,
+            createdAt,
+            updatedAt,
           } = postData;
+          const schemaJSON =
+            title && thumbnailWeb && createdAt && updatedAt
+              ? {
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                mainEntityOfPage: {
+                  '@type': 'WebPage',
+                  '@id': window.location.href,
+                },
+                headline: title,
+                image: thumbnailWeb,
+                author: {
+                  '@type': 'Organization',
+                  name: 'Apollo 247',
+                },
+                datePublished: moment(Number(createdAt)).utc().format(),
+                dateModified: moment(Number(updatedAt)).utc().format(),
+                publisher: {
+                  '@type': 'Organization',
+                  name: 'Apollo 247',
+                  logo: {
+                    '@type': 'ImageObject',
+                    url:
+                      'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
+                    width: 58,
+                    height: 59,
+                  },
+                },
+              }
+              : null;
           setHtmlData(htmlData);
           setSource(source);
           setSourceUrl(sourceUrl);
@@ -256,6 +258,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           setTotalComments(totalComments);
           setTotalDislike(totalDislike);
           setTotalLike(totalLike);
+          setStructuredJSON(schemaJSON);
         }
       });
     } else {
