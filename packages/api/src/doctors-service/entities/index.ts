@@ -1156,9 +1156,11 @@ export class DoctorPatientExternalConnect extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('DoctorPatientExternalConnect_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
+  @Index('DoctorPatientExternalConnect_externalConnect')
   @Column({ default: false })
   externalConnect: Boolean;
 
