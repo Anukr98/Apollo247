@@ -16,6 +16,7 @@ import { CommentsList } from 'components/Covid/CommentsList';
 import { AphButton } from '@aph/web-ui-components';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { BottomLinks } from 'components/BottomLinks';
+import moment from 'moment';
 import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -180,13 +181,15 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [totalComments, setTotalComments] = useState('');
   const [totalLike, setTotalLike] = useState('');
   const [totalDislike, setTotalDislike] = useState('');
+  const [createdAt, setCreatedAt] = useState();
+  const [updatedAt, setUpdatedAt] = useState();
   const [structuredJSON, setStructuredJSON] = useState(null);
 
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
   useEffect(() => {
     const schemaJSON =
-      title && thumbnailWeb
+      title && thumbnailWeb && createdAt && updatedAt
         ? {
             '@context': 'https://schema.org',
             '@type': 'BlogPosting',
@@ -200,6 +203,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
               '@type': 'Organization',
               name: 'Apollo 247',
             },
+            datePublished: moment(createdAt).utc().format(),
+            dateModified: moment(updatedAt).utc().format(),
             publisher: {
               '@type': 'Organization',
               name: 'Apollo 247',
@@ -214,7 +219,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           }
         : null;
     setStructuredJSON(schemaJSON);
-  }, [title, thumbnailWeb]);
+  }, [title, thumbnailWeb, createdAt, updatedAt]);
 
   useEffect(() => {
     if (props && props.location && props.location.search && props.location.search.length) {
@@ -242,6 +247,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
             totalComments,
             totalLike,
             totalDislike,
+            createdAt,
+            updatedAt,
           } = postData;
           setHtmlData(htmlData);
           setSource(source);
@@ -256,6 +263,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           setTotalComments(totalComments);
           setTotalDislike(totalDislike);
           setTotalLike(totalLike);
+          setCreatedAt(createdAt);
+          setUpdatedAt(updatedAt);
         }
       });
     } else {
