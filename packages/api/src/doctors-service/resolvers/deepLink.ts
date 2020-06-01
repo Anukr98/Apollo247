@@ -21,6 +21,7 @@ export const deepLinkTypeDefs = gql`
   extend type Mutation {
     upsertDoctorsDeeplink(doctorId: String): Deeplink
     insertBulkDeepLinks: String
+    refreshDoctorDeepLinks: String
   }
 `;
 
@@ -127,6 +128,7 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
           F: 'deepLink',
           G: 'shortId',
           H: 'templateId',
+          I: 'linkRefreshDate',
         },
       },
     ],
@@ -134,7 +136,6 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
 
   const linkData: Partial<Deeplink>[] = rowData.sheet1;
 
-  //get Doctor ids, remove from insert list if there are any.
   const linkRepository = doctorsDb.getCustomRepository(DeeplinkRepository);
   const getDeeplinks: Deeplink[] = await linkRepository.getDeeplinks();
 
@@ -142,13 +143,13 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
   const newRefreshDate = addDays(new Date(), refreshDays);
 
   linkData.map((item: Partial<Deeplink>) => {
-    getDeeplinks.forEach((element: Deeplink) => {
-      item.channelName =
-        item.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
-          ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
-          : ApiConstants.CHANNEL_NAME_APOLLO.toString();
+    item.channelName =
+      item.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
+        ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
+        : ApiConstants.CHANNEL_NAME_APOLLO.toString();
 
-      item.linkRefreshDate = newRefreshDate;
+    item.linkRefreshDate = newRefreshDate;
+    getDeeplinks.forEach((element: Deeplink) => {
       if (element.doctorId == item.doctorId) {
         item.partnerId = element.partnerId;
         item.channelName = element.channelName;
@@ -158,12 +159,10 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
         item.shortId = element.shortId;
         item.templateId = element.templateId;
         item.id = element.id;
-        return;
       }
     });
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   linkData.map(async (element: Deeplink) => {
     const doctorType =
       element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
@@ -177,9 +176,37 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
   return 'Data Insertion Completed :)';
 };
 
+const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
+  const linkRepository = doctorsDb.getCustomRepository(DeeplinkRepository);
+  const getDeeplinks: Deeplink[] = await linkRepository.getDeeplinks();
+
+  const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
+  const newRefreshDate = addDays(new Date(), refreshDays);
+  getDeeplinks.map((element: Deeplink) => {
+    element.linkRefreshDate = newRefreshDate;
+  });
+
+  getDeeplinks.map(async (element: Deeplink) => {
+    const doctorType =
+      element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
+        ? DoctorType.DOCTOR_CONNECT
+        : DoctorType.APOLLO;
+    await refreshLink(element, doctorType);
+  });
+
+  await linkRepository.bulkUpsertDeepLinks(getDeeplinks);
+
+  return 'Deeplink Refresh Completed :)';
+};
+
 export const deepLinkResolvers = {
   Mutation: {
     upsertDoctorsDeeplink,
     insertBulkDeepLinks,
+    refreshDoctorDeepLinks,
   },
 };
