@@ -11,12 +11,7 @@ import {
 import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
+import StatusModal, { defaultText, modalData, ModalContent } from '../../StatusModal';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -185,81 +180,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 70,
       },
     },
-    confirmation: {
-      fontSize: '16px',
-      fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: '1.25',
-      letterSpacing: 'normal',
-      color: 'rgba(0, 0, 0, 0.6)',
-      marginTop: '24px',
-    },
-    message: {
-      fontSize: '13px',
-      fontWeight: 'normal',
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 'normal',
-      letterSpacing: 'normal',
-      color: 'rgba(0, 0, 0, 0.6)',
-      marginTop: '16px',
-    },
-    dialogBox: {
-      width: '400px',
-      height: '329px',
-      borderRadius: '10px',
-      boxShadow: '0 5px 30px 0 rgba(0, 0, 0, 0.25)',
-      backgroundColor: '#ffffff',
-    },
-    modalWrapper: {
-      marginTop: '12px',
-      marginLeft: '20px',
-      height: '77%',
-      marginRight: '20px',
-    },
-    modal: {
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    },
-    button: {
-      minWidth: 130,
-      fontSize: 13,
-      padding: '8px 16px',
-      fontWeight: theme.typography.fontWeightBold,
-      color: '#fc9916',
-      backgroundColor: '#fff',
-      // margin: theme.spacing(0, 1, 0, 1),
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      '&:hover': {
-        backgroundColor: '#fff',
-      },
-      '&:disabled': {
-        color: '#fc9916',
-        opacity: 0.7,
-      },
-    },
-    yesButton: {
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: '#fc9916',
-      color: '#ffffff',
-      '&:hover': {
-        backgroundColor: '#fc9916',
-      },
-      marginLeft: 20,
-      width: '210px',
-    },
-    buttonWrapper: {
-      marginTop: '25px',
-    },
-    cross: {
-      marginTop: '16px',
-      marginLeft: '85%',
-    },
-    paper: {
-      transform: 'translate(-50%,-50%) !important',
-      top: '50% !important',
-      left: '50% !important',
-    },
   };
 });
 
@@ -270,6 +190,7 @@ interface MonthEvent {
   end: Date;
   patientId: string;
   caseSheet: (caseSheetInfo | null)[];
+  isJdQuestionsComplete: boolean | null;
 }
 
 const localizer = momentLocalizer(moment);
@@ -278,7 +199,14 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
   if (data && data.getDoctorAppointments) {
     eventList = (data.getDoctorAppointments.appointmentsHistory || []).map(
       (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
-        const { id, appointmentDateTime, patientInfo, patientId, caseSheet } = appointment!;
+        const {
+          id,
+          appointmentDateTime,
+          patientInfo,
+          patientId,
+          caseSheet,
+          isJdQuestionsComplete,
+        } = appointment!;
         const start = new Date(appointmentDateTime);
         return {
           id,
@@ -287,6 +215,7 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
           end: addMinutes(start, 15),
           patientId,
           caseSheet: caseSheet || [],
+          isJdQuestionsComplete: isJdQuestionsComplete,
         };
       }
     );
@@ -331,8 +260,8 @@ export const Month: React.FC<MonthProps> = ({
 }) => {
   const classes = useStyles({});
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
-  //const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState(date);
+  const [text, setText] = useState<ModalContent>(defaultText);
 
   useEffect(() => {
     setEvents(eventsAdapter(data));
@@ -346,43 +275,40 @@ export const Month: React.FC<MonthProps> = ({
               cdetails && cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
           )
         : [];
-    if (jrdCaseSheet.length > 0) {
+
+    if (
+      jrdCaseSheet.length > 0 &&
+      event.isJdQuestionsComplete &&
+      jrdCaseSheet[0].status === 'COMPLETED'
+    ) {
       window.location.href = `/consulttabs/${event.id}/${event.patientId}/0`;
     } else {
       setIsDialogOpen(true);
-    }
-  };
+      let text: ModalContent = {
+        ...defaultText,
+        appointmentId: event.id,
+        patientId: event.patientId,
+      };
 
-  const StatusModal = (props: any) => {
-    return (
-      <Popover
-        open={props.isDialogOpen}
-        onClose={props.onClose}
-        disableBackdropClick
-        disableEscapeKeyDown
-        className={classes.modal}
-        classes={{ paper: classes.paper }}
-      >
-        <div className={classes.dialogBox}>
-          <Button className={classes.cross}>
-            <img src={require('images/ic_cross.svg')} alt="" onClick={props.onClose} />
-          </Button>
-          <div className={classes.modalWrapper}>
-            <div className={classes.popoverTile}>{props.headerText}</div>
-            <div className={classes.confirmation}>{props.confirmationText}</div>
-            <div className={classes.message}>{props.messageText}</div>
-            <div className={classes.buttonWrapper}>
-              <Button className={classes.button} onClick={props.onClose}>
-                {'no, wait'}
-              </Button>
-              <Button className={`${classes.button} ${classes.yesButton}`}>
-                {'yes, start consult'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Popover>
-    );
+      if (!event.isJdQuestionsComplete) {
+        text.headerText = modalData.questionNotField.headerText;
+        text.confirmationText = modalData.questionNotField.confirmationText;
+        text.messageText = modalData.questionNotField.messageText;
+      } else if (jrdCaseSheet.length === 0 && event.isJdQuestionsComplete) {
+        text.headerText = modalData.jdPending.headerText;
+        text.confirmationText = modalData.jdPending.confirmationText;
+        text.messageText = modalData.jdPending.messageText;
+      } else if (
+        jrdCaseSheet.length > 0 &&
+        jrdCaseSheet[0].isJdConsultStarted &&
+        jrdCaseSheet[0].status !== 'COMPLETED'
+      ) {
+        text.headerText = modalData.jdInProgress.headerText;
+        text.confirmationText = modalData.jdInProgress.confirmationText;
+        text.messageText = modalData.jdInProgress.messageText;
+      }
+      setText(text);
+    }
   };
 
   return (
@@ -417,15 +343,15 @@ export const Month: React.FC<MonthProps> = ({
       </div>
 
       <StatusModal
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setText(defaultText);
+        }}
         isDialogOpen={isDialogOpen}
-        headerText={
-          'The Patient’s vitals and the completed case sheet haven’t been submitted for this appointment yet.'
-        }
-        confirmationText={'Do you still want to start this consultation?'}
-        messageText={
-          'When you start the consult, we will notify the patient to join the consult room. Please allow the patient a few minutes to join. '
-        }
+        headerText={text.headerText}
+        confirmationText={text.confirmationText}
+        messageText={text.messageText}
+        appointmentId={text.appointmentId}
       />
     </div>
   );

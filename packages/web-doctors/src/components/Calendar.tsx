@@ -157,6 +157,7 @@ const dataAdapter = (
       const {
         id,
         appointmentDateTime,
+        isJdQuestionsComplete,
         appointmentType: type,
         status,
         patientId,
@@ -198,6 +199,7 @@ const dataAdapter = (
         type,
         status,
         caseSheet,
+        isJdQuestionsComplete,
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,

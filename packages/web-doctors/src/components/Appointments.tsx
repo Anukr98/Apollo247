@@ -15,25 +15,20 @@ import {
   StepContent,
   Typography,
   Tooltip,
-  Popover,
 } from '@material-ui/core';
 import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
+import StatusModal, { defaultText, modalData, ModalContent } from './StatusModal';
 
 export interface Appointment {
   id: string;
   patientId: string;
   startTime: number;
+  isJdQuestionsComplete: boolean | null;
   endTime: number;
   isNew: boolean;
   type: string;
@@ -235,6 +230,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 25,
         width: '95%',
         boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
+        cursor: 'pointer',
       },
       '&.upcoming': {
         '& .stepIcon': {
@@ -372,28 +368,6 @@ const useStyles = makeStyles((theme: Theme) =>
         opacity: 0.7,
       },
     },
-    yesButton: {
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      backgroundColor: '#fc9916',
-      color: '#ffffff',
-      '&:hover': {
-        backgroundColor: '#fc9916',
-      },
-      marginLeft: 20,
-      width: '210px',
-    },
-    buttonWrapper: {
-      marginTop: '25px',
-    },
-    cross: {
-      marginTop: '16px',
-      marginLeft: '85%',
-    },
-    paper: {
-      transform: 'translate(-50%,-50%) !important',
-      top: '50% !important',
-      left: '50% !important',
-    },
   })
 );
 
@@ -409,6 +383,10 @@ const getActiveStep = (appointments: Appointment[]) => {
   }, 0);
 };
 
+function wait<R, E>(promise: Promise<R>): [R, E] {
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+}
+
 export const Appointments: React.FC<AppointmentsProps> = ({
   values,
   loading: loadingData,
@@ -421,7 +399,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
-
+  const [text, setText] = useState<ModalContent>(defaultText);
   const upcomingElement = useRef(null);
 
   useImperativeHandle(upcomingElement, () => {
@@ -654,7 +632,9 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   }}
                 >
                   <div>
-                    {jrdCaseSheet.length > 0 ? (
+                    {jrdCaseSheet.length > 0 &&
+                    appointment.isJdQuestionsComplete &&
+                    jrdCaseSheet[0].status === 'COMPLETED' ? (
                       <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
                         {appointmentCard}
                       </Link>
@@ -662,6 +642,33 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                       <div
                         onClick={() => {
                           setIsDialogOpen(true);
+                          let text: ModalContent = {
+                            ...defaultText,
+                            appointmentId: appointment.id,
+                            patientId: appointment.patientId,
+                          };
+
+                          if (!appointment.isJdQuestionsComplete) {
+                            text.headerText = modalData.questionNotField.headerText;
+                            text.confirmationText = modalData.questionNotField.confirmationText;
+                            text.messageText = modalData.questionNotField.messageText;
+                          } else if (
+                            jrdCaseSheet.length === 0 &&
+                            appointment.isJdQuestionsComplete
+                          ) {
+                            text.headerText = modalData.jdPending.headerText;
+                            text.confirmationText = modalData.jdPending.confirmationText;
+                            text.messageText = modalData.jdPending.messageText;
+                          } else if (
+                            jrdCaseSheet.length > 0 &&
+                            jrdCaseSheet[0].isJdConsultStarted &&
+                            jrdCaseSheet[0].status !== 'COMPLETED'
+                          ) {
+                            text.headerText = modalData.jdInProgress.headerText;
+                            text.confirmationText = modalData.jdInProgress.confirmationText;
+                            text.messageText = modalData.jdInProgress.messageText;
+                          }
+                          setText(text);
                         }}
                       >
                         {appointmentCard}
@@ -676,57 +683,28 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       </div>
     );
   }
-  const StatusModal = (props: any) => {
-    return (
-      <Popover
-        open={props.isDialogOpen}
-        onClose={props.onClose}
-        disableBackdropClick
-        disableEscapeKeyDown
-        className={classes.modal}
-        classes={{ paper: classes.paper }}
-      >
-        <div className={classes.dialogBox}>
-          <Button className={classes.cross}>
-            <img src={require('images/ic_cross.svg')} alt="" onClick={props.onClose} />
-          </Button>
-          <div className={classes.modalWrapper}>
-            <div className={classes.popoverTile}>{props.headerText}</div>
-            <div className={classes.confirmation}>{props.confirmationText}</div>
-            <div className={classes.message}>{props.messageText}</div>
-            <div className={classes.buttonWrapper}>
-              <Button className={classes.button} onClick={props.onClose}>
-                {'no, wait'}
-              </Button>
-              <Button className={`${classes.button} ${classes.yesButton}`}>
-                {'yes, start consult'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Popover>
-    );
-  };
+
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled
+        {'No consults scheduled'}
         {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
 
       <StatusModal
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setText(defaultText);
+        }}
         isDialogOpen={isDialogOpen}
-        headerText={
-          'The Patient’s vitals and the completed case sheet haven’t been submitted for this appointment yet.'
-        }
-        confirmationText={'Do you still want to start this consultation?'}
-        messageText={
-          'When you start the consult, we will notify the patient to join the consult room. Please allow the patient a few minutes to join. '
-        }
+        headerText={text.headerText}
+        confirmationText={text.confirmationText}
+        messageText={text.messageText}
+        appointmentId={text.appointmentId}
+        patientId={text.patientId}
       />
     </div>
   );
