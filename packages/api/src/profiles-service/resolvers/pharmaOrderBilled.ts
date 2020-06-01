@@ -28,12 +28,29 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    discountPrice: Float
+    packSize: Int
+    isSubstitute: Boolean
+    substitute: [SubstituteDetails]
+  }
+
+  input SubstituteDetails {
+    articleCode: String
+    articleName: String
+    quantity: Int
+    batch: String
+    unitPrice: Float
+    discountPrice: Float
   }
 
   input BillingDetails {
     invoiceTime: String
     invoiceNo: String
     invoiceValue: Float
+    cashValue: Float
+    prepaidValue: Float
+    discountValue: Float
+    deliveryCharges: Float
   }
 
   type SaveOrderShipmentInvoiceResult {
@@ -73,6 +90,10 @@ type BillingDetails = {
   invoiceTime: string;
   invoiceNo: string;
   invoiceValue: string;
+  cashValue: number;
+  prepaidValue: number;
+  discountValue: number;
+  deliveryCharges: number;
 };
 
 type ArticleDetails = {
@@ -81,6 +102,19 @@ type ArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  discountPrice: number;
+  packSize: number;
+  isSubstitute: boolean;
+  substitute: SubstituteDetails[];
+};
+
+type SubstituteDetails = {
+  articleCode: string;
+  articleName: string;
+  quantity: number;
+  batch: string;
+  unitPrice: number;
+  discountPrice: number;
 };
 
 type SaveOrderShipmentInvoiceInputArgs = {
@@ -125,6 +159,7 @@ const saveOrderShipmentInvoice: Resolver<
 
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
+  const billDetails: BillingDetails = saveOrderShipmentInvoiceInput.billingDetails;
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
     orderNo: saveOrderShipmentInvoiceInput.orderId,
     apOrderNo: shipmentDetails.apOrderNo,
@@ -134,8 +169,12 @@ const saveOrderShipmentInvoice: Resolver<
         addMinutes(parseISO(saveOrderShipmentInvoiceInput.billingDetails.invoiceTime), -330),
         "yyyy-MM-dd'T'HH:mm:ss.SSSX"
       ),
-      billNumber: saveOrderShipmentInvoiceInput.billingDetails.invoiceNo,
-      invoiceValue: saveOrderShipmentInvoiceInput.billingDetails.invoiceValue,
+      billNumber: billDetails.invoiceNo,
+      invoiceValue: billDetails.invoiceValue,
+      cashValue: billDetails.cashValue,
+      prepaidValue: billDetails.prepaidValue,
+      discountValue: billDetails.discountValue,
+      deliveryCharges: billDetails.deliveryCharges,
     }),
     itemDetails: JSON.stringify(
       saveOrderShipmentInvoiceInput.itemDetails.map((item) => {
@@ -144,6 +183,7 @@ const saveOrderShipmentInvoice: Resolver<
           itemName: item.articleName,
           batchId: item.batch,
           issuedQty: item.quantity,
+          mou: item.packSize,
           mrp: item.quantity * item.unitPrice,
         };
       })
