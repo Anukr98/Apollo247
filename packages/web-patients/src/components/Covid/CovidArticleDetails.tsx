@@ -203,8 +203,8 @@ export const CovidArticleDetails: React.FC = (props: any) => {
               '@type': 'Organization',
               name: 'Apollo 247',
             },
-            datePublished: moment(createdAt).utc().format(),
-            dateModified: moment(updatedAt).utc().format(),
+            datePublished: moment(Number(createdAt)).utc().format(),
+            dateModified: moment(Number(updatedAt)).utc().format(),
             publisher: {
               '@type': 'Organization',
               name: 'Apollo 247',
