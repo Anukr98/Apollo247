@@ -95,6 +95,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     storeId,
     grandTotal,
     deliveryCharges,
+    packagingCharges,
     cartItems,
     deliveryType,
     clearCartInfo,
@@ -344,6 +345,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
+        packagingCharges: packagingCharges,
         estimatedAmount: getFormattedAmount(grandTotal),
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
