@@ -17,7 +17,6 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useQuery } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
-// import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({

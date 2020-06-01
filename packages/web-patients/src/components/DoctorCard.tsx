@@ -25,8 +25,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
-// import { getIstTimestamp } from 'helpers/dateHelpers';
-// import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({

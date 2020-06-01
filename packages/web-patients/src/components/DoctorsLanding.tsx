@@ -222,7 +222,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
   }>();
 
   useEffect(() => {
-    if (params.specialty) {
+    if (params && params.specialty) {
       const specialityName = decodeURIComponent(params.specialty);
       apolloClient
         .query({
