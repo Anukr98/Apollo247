@@ -69,6 +69,7 @@ export interface ShoppingCartContextProps {
   couponDiscount: number;
   productDiscount: number;
   deliveryCharges: number;
+  packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
   showPrescriptionAtStore: boolean;
@@ -125,6 +126,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   couponDiscount: 0,
   productDiscount: 0,
   deliveryCharges: 0,
+  packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
 
@@ -304,6 +306,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
+  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
+
   const grandTotal = parseFloat(
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
   );
@@ -458,6 +462,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponDiscount,
         productDiscount,
         deliveryCharges,
+        packagingCharges,
         uploadPrescriptionRequired,
 
         ePrescriptions,

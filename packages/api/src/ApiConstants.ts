@@ -159,7 +159,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -197,13 +197,13 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com',
+  CC_MAIL = 'chanti.reddy@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
@@ -289,6 +289,7 @@ export enum ApiConstants {
   DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
 
   AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
+  AUTO_SUBMIT_BY_SD = 'JD case-sheet auto submitted, as per the request',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
@@ -296,6 +297,7 @@ export enum ApiConstants {
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
+  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, if you wish to start the consultation now, please join the consultation room by clicking here  {2}.',
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
@@ -303,4 +305,14 @@ export enum ApiConstants {
   AUTO_SUBMIT_CASESHEET_TIME = 10,
   STAT_LOWECASE = 'stat',
   STAT_UPPERCASE = 'STAT(Immediately)',
+
+  //doctor deeplink constants starts
+  BRAND_DOMAIN = 'apollo247.onelink.me',
+  LINK_TTL = '31',
+  PARTNER_ID = 'Doctor patient Download',
+  CHANNEL_NAME = 'Doctor Connect',
+  DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
+  DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/AEkA',
+  DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
+  DOCTOR_DEEPLINK_TEMPLATE_ID = 'AEkA',
 }

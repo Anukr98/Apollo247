@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, LayoutChangeEvent } from 'react-native';
 import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
@@ -77,6 +77,7 @@ export interface OrderProgressCardProps {
   time?: string;
   description?: string; // if falsy value it renders date & time
   style?: StyleProp<ViewStyle>;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
@@ -115,7 +116,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
   };
 
   return (
-    <View style={{ flexDirection: 'row' }}>
+    <View style={{ flexDirection: 'row' }} onLayout={(event) => props.onLayout!(event)}>
       {renderGraphicalStatus()}
       <View style={[styles.containerStyle1]}>
         <View

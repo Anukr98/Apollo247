@@ -170,6 +170,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setStoreId,
     showPrescriptionAtStore,
     deliveryCharges,
+    packagingCharges,
     cartTotal,
     couponDiscount,
     productDiscount,
@@ -1184,6 +1185,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
             <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
+          </View>
+          <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
+            <Text style={styles.blueTextStyle}>Packaging Charges</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {packagingCharges.toFixed(2)}</Text>
           </View>
           {/* <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
               <Text style={styles.blueTextStyle}>Packaging Charges</Text>

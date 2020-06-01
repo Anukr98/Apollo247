@@ -48,6 +48,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -140,6 +141,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,
