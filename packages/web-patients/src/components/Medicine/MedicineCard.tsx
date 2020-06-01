@@ -72,6 +72,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     noData: {
       marginTop: 10,
+      fontSize: 14,
+      lineHeight: '18px',
+      paddingLeft: 10,
       [theme.breakpoints.down('xs')]: {
         marginTop: 25,
         paddingLeft: 10,
@@ -367,7 +370,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         <div className={classes.noData}>
           {parseInt(paramSearchText)
             ? 'No data found'
-            : `No results found for ${_replace(paramSearchText, '-', ' ')}`}
+            : <span>No results found for <b>'{_replace(paramSearchText, '-', ' ')}'</b></span>}
         </div>
       )}
       <Popover

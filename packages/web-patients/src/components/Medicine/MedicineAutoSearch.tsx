@@ -214,6 +214,12 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
     },
+    noData: {
+      display: 'block',
+      marginTop: 5,
+      fontSize: 14,
+      lineHeight: '18px',
+    },
   };
 });
 interface MedicineAutoSearchProps {
@@ -321,7 +327,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
       </div>
       {showError ? (
         props.fromPDP ? (
-          <span>Hit enter to search '{searchText}'</span>
+          <span className={classes.noData}>Hit enter to search <b>'{searchText}'</b></span>
         ) : (
           <FormHelperText className={classes.helpText} component="div" error={showError}>
             Sorry, we couldn't find what you are looking for :("
