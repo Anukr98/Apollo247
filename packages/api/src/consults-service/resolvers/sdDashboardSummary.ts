@@ -241,24 +241,25 @@ const updateConsultRating: Resolver<
         poorRating = record.ratingcount;
       }
     });
-    const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
-    const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
-    const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
-      ratingDate: args.summaryDate,
-      goodRating,
-      noRating: 0,
-      poorRating,
-      greatRating,
-      okRating,
-      helpTickets: helpTicketCount,
-      validHubOrders: validHubOrders[0],
-      validHubOrdersDelivered: validHubOrders[1],
-      validVdcOrders: validHubOrders[2],
-      validVdcOrdersDelivered: validHubOrders[3],
-      updatedDate: new Date(),
-    };
-    await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
+  const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
+  const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
+  const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
+    ratingDate: args.summaryDate,
+    goodRating,
+    noRating: 0,
+    poorRating,
+    greatRating,
+    okRating,
+    helpTickets: helpTicketCount,
+    validHubOrders: validHubOrders[0],
+    validHubOrdersDelivered: validHubOrders[1],
+    validVdcOrders: validHubOrders[2],
+    validVdcOrdersDelivered: validHubOrders[3],
+    updatedDate: new Date(),
+  };
+  await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
+
   return { ratingRowsCount: feedbackData.length };
 };
 const updatePhrDocSummary: Resolver<
