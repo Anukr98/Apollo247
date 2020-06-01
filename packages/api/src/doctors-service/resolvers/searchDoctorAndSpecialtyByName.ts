@@ -88,6 +88,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
   const matchedDoctors = [],
+    perfectMatchedDoctors = [],
+    perfectMatchedDoctorsId = [],
     earlyAvailableApolloMatchedDoctors = [],
     earlyAvailableNonApolloMatchedDoctors = [],
     earlyAvailableNearByMatchedApolloDoctors = [],
@@ -113,6 +115,95 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
+  const PerfectdocSearchParams: RequestParams.Search = {
+    index: 'doctors',
+    body: {
+      size: 1000,
+      query: {
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            {
+              multi_match: {
+                fields: ['fullName', 'specialty.name'],
+                type: 'phrase_prefix',
+                query: searchTextLowerCase,
+              },
+            },
+          ],
+        },
+      },
+    },
+  };
+  const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
+    const doctor = doc._source;
+    doctor['id'] = doctor.doctorId;
+    if (doctor.specialty) {
+      doctor.specialty.id = doctor.specialty.specialtyId;
+    }
+    doctor['activeSlotCount'] = 0;
+    doctor['earliestSlotavailableInMinutes'] = 0;
+    let bufferTime = 5;
+    for (const consultHour of doctor.consultHours) {
+      consultHour['id'] = consultHour['consultHoursId'];
+      bufferTime = consultHour['consultBuffer'];
+    }
+    doctor['doctorHospital'] = [];
+
+    for (const slots of doctor.doctorSlots) {
+      for (const slot of slots['slots']) {
+        if (
+          slot.status == 'OPEN' &&
+          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+        ) {
+          if (doctor['activeSlotCount'] === 0) {
+            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
+              new Date(slot.slot),
+              new Date()
+            );
+            matchedDoctorsNextAvailability.push({
+              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+              currentDateTime: new Date(),
+              doctorId: doctor.doctorId,
+              onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
+              referenceSlot: slot.slot,
+            });
+          }
+          doctor['activeSlotCount'] += 1;
+        }
+      }
+    }
+    doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
+    for (const facility of doctor.facility) {
+      if (facilityIds.indexOf(facility.facilityId) === -1) {
+        facilityIds.push(facility.facilityId);
+        facilityLatLongs.push([facility.latitude, facility.longitude]);
+      }
+      doctor['doctorHospital'].push({
+        facility: {
+          name: facility.name,
+          facilityType: facility.facilityType,
+          streetLine1: facility.streetLine1,
+          streetLine2: facility.streetLine2,
+          streetLine3: facility.streetLine3,
+          city: facility.city,
+          state: facility.state,
+          zipcode: facility.zipcode,
+          imageUrl: facility.imageUrl,
+          latitude: facility.latitude,
+          longitude: facility.longitude,
+          country: facility.country,
+          id: facility.facilityId,
+        },
+      });
+    }
+    if (doctor['activeSlotCount'] > 0) {
+      perfectMatchedDoctorsId.push(doctor['id']);
+      perfectMatchedDoctors.push(doctor);
+    }
+  }
   const docSearchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -197,7 +288,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         },
       });
     }
-    if (doctor['activeSlotCount'] > 0) {
+    if (doctor['activeSlotCount'] > 0 && !perfectMatchedDoctorsId.includes(doctor['id'])) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloMatchedDoctors.push(doctor);
@@ -353,11 +444,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
-    finalMatchedDoctors = earlyAvailableNearByMatchedApolloDoctors
-      .sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
+    finalMatchedDoctors = perfectMatchedDoctors
+      .concat(
+        earlyAvailableNearByMatchedApolloDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
       )
       .concat(
         earlyAvailableFarMatchedApolloDoctors.sort(
@@ -423,11 +516,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         )
       );
   } else {
-    finalMatchedDoctors = earlyAvailableApolloMatchedDoctors
-      .sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
+    finalMatchedDoctors = perfectMatchedDoctors
+      .concat(
+        earlyAvailableApolloMatchedDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
       )
       .concat(
         earlyAvailableNonApolloMatchedDoctors.sort(
@@ -467,7 +562,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   }
 
   searchLogger(`API_CALL___END`);
-
   return {
     doctors: finalMatchedDoctors,
     doctorsNextAvailability: matchedDoctorsNextAvailability,
