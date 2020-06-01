@@ -16,6 +16,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking } from '../../gtmTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -376,6 +377,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [structuredJSON, setStructuredJSON] = React.useState(null);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
@@ -415,6 +417,26 @@ export const MedicineDetails: React.FC = (props) => {
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
+    } else {
+      const { manufacturer, description, image, name, special_price } = medicineDetails;
+      setStructuredJSON({
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": name,
+        "image": process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+        "description": description,
+        "brand": manufacturer,
+        "offers": {
+          "@type": "Offer",
+          "url": `https://www.apollo247.com/medicine-details/${params.sku}`,
+          "priceCurrency": "INR",
+          "price": special_price ? special_price: 0,
+          "priceValidUntil": "2020-12-31",
+          "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition"
+        }
+      })
+
     }
   }, [medicineDetails]);
 
@@ -588,8 +610,12 @@ export const MedicineDetails: React.FC = (props) => {
       .replace(/&amp;amp;/g, '&')
       .replace(/&amp;nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
+
+
   return (
     <div className={classes.root}>
+      {structuredJSON &&
+        <SchemaMarkup structuredJSON={structuredJSON} />}
       <MedicinesCartContext.Consumer>
         {() => (
           <>

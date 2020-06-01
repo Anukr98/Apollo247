@@ -335,6 +335,12 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({
     nullable: true,
+    type: 'json',
+  })
+  shopAddress: string;
+
+  @Column({
+    nullable: true,
     type: 'jsonb',
     array: false,
     name: 'paymentInfo',

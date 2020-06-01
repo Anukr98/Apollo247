@@ -25,6 +25,11 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up(1220)]: {
         padding: 40,
       },
+      '& button': {
+        [theme.breakpoints.up('sm')]: {
+          display: 'none',
+        },
+      },
     },
     backArrow: {
       cursor: 'pointer',
@@ -79,6 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 0,
       width: '100%',
+      display: 'flex',
       [theme.breakpoints.up(1220)]: {
         padding: '0 40px 34px 40px',
       },
@@ -97,12 +103,25 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
       },
     },
+    rightGroup: {
+      marginLeft: 'auto',
+      paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
     articleType: {
       fontSize: 12,
       lineHeight: '18px',
       textTransform: 'uppercase',
       paddingTop: 10,
       color: '#fff',
+      '& span': {
+        fontSize: 14,
+        lineHeight: '24px',
+        textTransform: 'none',
+        opacity: 0.8,
+      },
     },
     bottomPopover: {
       overflow: 'initial',
@@ -214,9 +233,15 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>{title}</h2>
-        <div className={classes.articleType}>{type}</div>
-        {source && source.length && <p>Sourced from {source}</p>}
+        <div>
+          <h2>{title}</h2>
+          <div className={classes.articleType}>{type} | {source && source.length && <span>Sourced from {source}</span>}</div>
+        </div>
+        <div className={classes.rightGroup}>
+          <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
+            Subscribe
+          </AphButton>
+        </div>
       </div>
       <Popover
         open={openSubscriptionForm}
