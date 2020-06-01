@@ -121,6 +121,11 @@ const App: React.FC = () => {
             path={clientRoutes.doctorDetails(':name', ':id')}
             component={DoctorDetails}
           />
+          <Route
+            exact
+            path={clientRoutes.specialtyDoctorDetails(':specialty', ':name', ':id')}
+            component={DoctorDetails}
+          />
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
