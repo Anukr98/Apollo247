@@ -11,6 +11,7 @@ import { notifyMeTracking } from '../../webEngageTracking';
 import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
+import _replace from 'lodash/replace';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -131,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 20,
       margin: 'auto',
-    }
+    },
   };
 });
 export interface products {
@@ -170,6 +171,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
+  const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
 
   const isInCart = (medicine: MedicineProduct) => {
     const index = cartItems.findIndex((item) => item.id === medicine.id);
@@ -244,6 +246,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         name,
                       });
                       /* WebEngage event end */
+                      setSelectedMedicineName(product.name);
                       setIsNotifyMeDialogOpen(true);
                     }
                   }}
@@ -339,40 +342,44 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 </div>
               )}
             </div>
-            <Popover
-              open={iśNotifyMeDialogOpen}
-              anchorEl={mascotRef.current}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              classes={{ paper: classes.bottomPopover }}
-            >
-              <div className={classes.successPopoverWindow}>
-                <div className={classes.windowWrap}>
-                  <div className={classes.mascotIcon}>
-                    <img src={require('images/ic-mascot.png')} alt="" />
-                  </div>
-                  <NotifyMeNotification
-                    setIsNotifyMeDialogOpen={setIsNotifyMeDialogOpen}
-                    medicineName={product.name}
-                  />
-                </div>
-              </div>
-            </Popover>
           </Grid>
         ))
       ) : props.isLoading ? (
-        <div className={classes.loader}><CircularProgress /></div>
+        <div className={classes.loader}>
+          <CircularProgress />
+        </div>
       ) : (
         <div className={classes.noData}>
-          {parseInt(paramSearchText) ? 'No data found' : `No results found for ${paramSearchText}`}
+          {parseInt(paramSearchText)
+            ? 'No data found'
+            : `No results found for ${_replace(paramSearchText, '-', ' ')}`}
         </div>
       )}
+      <Popover
+        open={iśNotifyMeDialogOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <NotifyMeNotification
+              setIsNotifyMeDialogOpen={setIsNotifyMeDialogOpen}
+              medicineName={selectedMedicineName}
+            />
+          </div>
+        </div>
+      </Popover>
     </Grid>
   );
 };
