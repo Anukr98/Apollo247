@@ -109,6 +109,7 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
   campaign = campaign.split('/').join('-');
   campaign = campaign.split(' ').join('-');
   campaign = campaign.split('.').join('-');
+  campaign = campaign.split('--').join('-');
 
   //doctor deeplink
   const af_dp = ApiConstants.DOCTOR_DEEPLINK_CONSTANT.toString() + doctordata.id;
