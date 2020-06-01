@@ -3,8 +3,16 @@ import { ApiConstants } from 'ApiConstants';
 import { Deeplink, Doctor, DoctorType } from 'doctors-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
+import { debugLog } from 'customWinstonLogger';
+
+const dLogger = debugLog(
+  'doctorServiceLogger',
+  'Dcotor Deeplink Generate',
+  Math.floor(Math.random() * 100000000)
+);
 
 export async function getDeeplink(deepLinkInput: DeepLinkInput) {
+  const reqStartTime = new Date();
   const linkResponse = await fetch(ApiConstants.DOCTOR_DEEPLINK_URL, {
     method: 'POST',
     headers: {
@@ -15,13 +23,29 @@ export async function getDeeplink(deepLinkInput: DeepLinkInput) {
   });
 
   if (linkResponse.ok) {
+    dLogger(
+      reqStartTime,
+      'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK',
+      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
+        deepLinkInput
+      )} --- ${JSON.stringify(linkResponse.text())}`
+    );
     return await linkResponse.text();
   } else {
+    dLogger(
+      reqStartTime,
+      'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK___ERROR',
+      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
+        deepLinkInput
+      )} --- ${JSON.stringify(linkResponse.body)}`
+    );
     throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
   }
 }
 
 export async function refreshLink(existingDeeplinkDetails: Deeplink) {
+  const reqStartTime = new Date();
+
   //doctor deeplink
   const af_dp = ApiConstants.DOCTOR_DEEPLINK_CONSTANT.toString() + existingDeeplinkDetails.doctorId;
   const deepLinkInput: DeepLinkInput = {
@@ -48,8 +72,22 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink) {
   });
 
   if (linkResponse.ok) {
+    dLogger(
+      reqStartTime,
+      'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK_REFRESH',
+      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
+        deepLinkInput
+      )} --- ${JSON.stringify(linkResponse.text())}`
+    );
     return await linkResponse.text();
   } else {
+    dLogger(
+      reqStartTime,
+      'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK_REFRESH___ERROR',
+      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
+        deepLinkInput
+      )} --- ${JSON.stringify(linkResponse.body)}`
+    );
     throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
   }
 }

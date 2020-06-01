@@ -314,5 +314,6 @@ export enum ApiConstants {
   DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
   DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/AEkA',
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
-  DOCTOR_DEEPLINK_TEMPLATE_ID = 'AEkA',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
 }
