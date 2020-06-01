@@ -50,6 +50,7 @@ import {
   getNetStatus,
   isValidSearch,
   postAppsFlyerEvent,
+  postFirebaseEvent,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -57,6 +58,8 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -368,7 +371,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       });
   };
 
-  const postwebEngageSearchEvent = (searchInput: string) => {
+  const postSearchEvent = (searchInput: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SEARCH] = {
       'Search Text': searchInput,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -382,11 +385,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributes);
   };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
-      postwebEngageSearchEvent(searchTextString);
+      postSearchEvent(searchTextString);
       setisSearching(true);
       client
         .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
@@ -815,7 +819,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
-  const postSpecialityWEGEvent = (speciality: string, specialityId: string) => {
+  const postSpecialityEvent = (speciality: string, specialityId: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.SPECIALITY_CLICKED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -830,6 +834,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Speciality ID': specialityId,
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributes);
   };
 
   const postDoctorClickWEGEvent = (
@@ -876,7 +881,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
-                postSpecialityWEGEvent(rowData.name, rowData.id);
+                postSpecialityEvent(rowData.name, rowData.id);
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,

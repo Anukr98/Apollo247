@@ -26,8 +26,8 @@ export enum FirebaseEventName {
   PHARMACY_SUBMIT_PRESCRIPTION = 'PHARMACY_SUBMIT_PRESCRIPTION',
   PHARMACY_CHECKOUT_COMPLETED = 'PHARMACY_CHECKOUT_COMPLETED',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'DIAGNOSTIC_CHECKOUT_COMPLETED',
-  DOCTOR_SEARCH = 'Doctor Search',
-  SPECIALITY_CLICKED = 'Speciality Clicked',
+  DOCTOR_SEARCH = 'DOCTOR_SEARCH',
+  SPECIALITY_CLICKED = 'SPECIALITY_CLICKED',
   DOCTOR_CLICKED = 'Doctor Clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
@@ -39,17 +39,17 @@ export enum FirebaseEventName {
   RATING_GIVEN = 'Rating Given',
 
   // HomePageElements Events
-  BUY_MEDICINES = 'Buy Medicines',
-  ORDER_TESTS = 'Order Tests',
-  MANAGE_DIABETES = 'Manage Diabetes',
-  TRACK_SYMPTOMS = 'Track Symptoms',
-  VIEW_HELATH_RECORDS = 'View Helath Records',
+  FIND_A_DOCTOR = 'FIND_A_DOCTOR',
+  BUY_MEDICINES = 'BUY_MEDICINES',
+  ORDER_TESTS = 'ORDER_TESTS',
+  MANAGE_DIABETES = 'MANAGE_DIABETES',
+  TRACK_SYMPTOMS = 'TRACK_SYMPTOMS',
+  VIEW_HELATH_RECORDS = 'VIEW_HELATH_RECORDS',
   CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
-  MY_ACCOUNT = 'My Account',
-  FIND_A_DOCTOR = 'Find a Doctor',
-
+  MY_ACCOUNT = 'MY_ACCOUNT',
+  TABBAR_APPOINTMENTS_CLICKED = 'TABBAR_APPOINTMENTS_CLICKED',
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
@@ -71,8 +71,8 @@ export interface PatientInfo {
   'Patient Name': string;
   'Patient UHID': string;
   Relation: string;
-  Age: number;
-  Gender: string;
+  'Patient Age': number;
+  'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
 }
@@ -87,6 +87,7 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
+  'Speciality ID': string;
 }
 
 export interface FirebaseEvents {
@@ -114,14 +115,15 @@ export interface FirebaseEvents {
 
   [FirebaseEventName.BUY_MEDICINES]: PatientInfoWithSource;
   [FirebaseEventName.ORDER_TESTS]: PatientInfoWithSource;
-  [FirebaseEventName.MANAGE_DIABETES]: PatientInfo;
-  [FirebaseEventName.TRACK_SYMPTOMS]: PatientInfo;
+  [FirebaseEventName.MANAGE_DIABETES]: PatientInfoWithSource;
+  [FirebaseEventName.TRACK_SYMPTOMS]: PatientInfoWithSource;
   [FirebaseEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
+  [FirebaseEventName.FIND_A_DOCTOR]: PatientInfoWithSource;
   [FirebaseEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [FirebaseEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [FirebaseEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [FirebaseEventName.MY_ACCOUNT]: PatientInfo;
-  [FirebaseEventName.FIND_A_DOCTOR]: PatientInfo;
+  [FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
 
   // ********** PharmacyEvents ********** \\
 
@@ -317,8 +319,8 @@ export interface FirebaseEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
