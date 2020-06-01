@@ -152,6 +152,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnContainer: {
@@ -170,6 +171,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnInactive: {
@@ -183,6 +185,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     heading: {

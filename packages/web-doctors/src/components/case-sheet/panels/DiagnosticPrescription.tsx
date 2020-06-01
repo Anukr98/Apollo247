@@ -172,6 +172,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -190,6 +191,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingRight: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         border: '1px solid #00b38e',
@@ -210,6 +212,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     inputRoot: {

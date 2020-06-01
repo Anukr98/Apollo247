@@ -1132,19 +1132,6 @@ export const getFormattedLocation = (
   } as LocationData;
 };
 
-export const getFormattedLocationFromPincode = async (pincode: string) => {
-  const placesResponse = await autoCompletePlaceSearch(pincode, true);
-  const placeId = g(placesResponse, 'data', 'predictions', '0' as any, 'place_id');
-  if (placeId) {
-    const placeIdResponse = await getPlaceInfoByPlaceId(placeId);
-    const addrComponents = g(placeIdResponse, 'data', 'result', 'address_components')!;
-    const latLng = g(placeIdResponse, 'data', 'result', 'geometry', 'location')!;
-    return getFormattedLocation(addrComponents, latLng);
-  } else {
-    throw 'No results found.';
-  }
-};
-
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   return (
     moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=

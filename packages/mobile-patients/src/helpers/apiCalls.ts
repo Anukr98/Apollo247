@@ -612,7 +612,7 @@ const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincode}&components=country:in&key=${googlePlacesApiKey}`;
   return Axios.get(url);
 };
 
@@ -634,15 +634,12 @@ export const getPlaceInfoByPlaceId = (
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
-  searchText: string,
-  filterCountry?: boolean
+  searchText: string
 ): Promise<AxiosResponse<AutoCompleteApiResponse>> => {
   // const CancelToken = Axios.CancelToken;
   // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
 
-  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}${
-    filterCountry ? '&components=country:in' : ''
-  }&key=${googlePlacesApiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&components=country:in&key=${googlePlacesApiKey}`;
   return Axios.get(url, {
     // cancelToken: new CancelToken((c) => {
     //   // An executor function receives a cancel function as a parameter
