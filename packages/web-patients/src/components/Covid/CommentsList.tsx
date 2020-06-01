@@ -80,7 +80,6 @@ interface CommentListProps {
 }
 
 export const CommentsList: React.FC<CommentListProps> = (props) => {
-  console.log(1111, props.totalComments);
   const classes = useStyles({});
   const [commentsArr, setCommentsArr] = useState(props.commentData);
   const [commentsLoading, setCommentsLoading] = useState<boolean>(false);
