@@ -220,6 +220,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             },
           ],
+          must_not: [
+            {
+              ids: { values: perfectMatchedDoctorsId },
+            },
+          ],
         },
       },
     },
@@ -288,7 +293,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         },
       });
     }
-    if (doctor['activeSlotCount'] > 0 && !perfectMatchedDoctorsId.includes(doctor['id'])) {
+    if (doctor['activeSlotCount'] > 0) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloMatchedDoctors.push(doctor);
