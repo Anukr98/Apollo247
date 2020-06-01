@@ -1,11 +1,27 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Theme, Typography, Link } from '@material-ui/core';
+
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import { Header } from './Header';
-import { AphInput, AphButton } from '@aph/web-ui-components';
-import Popover from '@material-ui/core/Popover';
+import _isEmpty from 'lodash/isEmpty';
+import { useDropzone } from 'react-dropzone';
+import { Alerts } from 'components/Alerts/Alerts';
 
+import {
+  AphInput,
+  AphButton,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+} from '@aph/web-ui-components';
+
+import Popover from '@material-ui/core/Popover';
+import { isEmailValid } from '@aph/universal/dist/aphValidators';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { PrescriptionFormat, EPrescription } from 'components/MedicinesCartProvider';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     prContainer: {
@@ -18,6 +34,9 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    prescriptionThumb: {
+      maxWidth: 30,
     },
     backArrow: {
       zIndex: 2,
@@ -61,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       margin: '0 0 20px',
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
+    },
+    error: {
+      color: '#890000',
     },
     cdContent: {
       display: 'flex',
@@ -147,6 +169,18 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       overflow: 'hidden',
     },
+    resendBtnDisabled: {
+      color: '#fc9916 !important',
+      opacity: 0.4,
+      background: '#fff',
+      cursor: 'pointer',
+      fontSize: 13,
+      textTransform: 'uppercase',
+      border: '1px solid #fcb716',
+      textAlign: 'center',
+      borderRadius: 5,
+      boxShadow: 'none',
+    },
     vHead: {
       padding: '15px 20px',
       background: '#f7f8f5',
@@ -206,13 +240,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
     },
     beforeUpload: {
-      // display: 'none',
+      outline: 'none',
     },
     uploadArea: {
       textAlign: 'center',
       padding: '40px 40px 16px',
       background: '#fff',
-
       '& h5': {
         fontSize: 16,
         fontWeight: '600',
@@ -226,6 +259,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       padding: '10px 20px',
       background: '#fff',
+      cursor: 'pointer',
       color: '#fcb716',
       fontSize: 13,
       fontWeight: 'bold',
@@ -391,6 +425,9 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
     uploadMore: {
       fontSize: 13,
       color: '#fc9916',
@@ -505,11 +542,147 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 export const PrescriptionReview: React.FC = (props) => {
+  const defPresObject = {
+    name: '',
+    imageUrl: '',
+    fileType: '',
+    baseFormat: '',
+  };
   const classes = useStyles({});
   const mascotRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userQuery, setUserQuery] = useState<string>('');
+  const [isPostSubmitDisable, setIsPostSubmitDisable] = useState<boolean>(true);
+  const [emailValid, setEmailValid] = useState<boolean>(true);
   const [uploadPrescription, setUploadPrescription] = React.useState<boolean>(false);
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [prescriptionUploaded, setPrescriptionUploaded] = React.useState<PrescriptionFormat | null>(
+    defPresObject
+  );
+  const [ePrescriptionUploaded, setEPrescriptionUploaded] = React.useState<
+    [EPrescription] | null
+  >();
+
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [prescriptionArr, setPrescriptionArr] = useState([]);
+  const [ePrescriptionArr, setEPrescriptionArr] = useState([]);
+
+  const toBase64 = (file: any) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    acceptedFiles.forEach(async (file: any) => {
+      const reader = new FileReader();
+      const fileExtension = file.name.split('.').pop();
+      const fileSize = file.size;
+      if (fileSize > 2000000) {
+        setIsAlertOpen(true);
+        setAlertMessage('Invalid File Size. File size must be less than 2MB');
+      } else if (
+        fileExtension &&
+        (fileExtension.toLowerCase() === 'png' ||
+          fileExtension.toLowerCase() === 'jpg' ||
+          fileExtension.toLowerCase() === 'jpeg' ||
+          fileExtension.toLowerCase() === 'pdf')
+      ) {
+        if (file) {
+          const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
+            throw error;
+          });
+          if (aphBlob && aphBlob.name) {
+            const url = client.getBlobUrl(aphBlob.name);
+            toBase64(file).then((res: any) => {
+              setPrescriptionUploaded({
+                imageUrl: url,
+                name: aphBlob.name,
+                fileType: fileExtension.toLowerCase(),
+                baseFormat: res,
+              });
+              // props.closeDialog();
+              // setIsUploading(false);
+              return;
+            });
+          }
+        }
+      } else {
+        setIsAlertOpen(true);
+        setAlertMessage(
+          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+        );
+      }
+      reader.onabort = () => console.log('file reading was aborted');
+      reader.onerror = () => console.log('file reading has failed');
+      reader.onload = () => {
+        // Do whatever you want with the file contents
+        const binaryStr = reader.result;
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  useEffect(() => {
+    if (prescriptionUploaded && prescriptionUploaded.imageUrl) {
+      setPrescriptionArr(prescriptionArr.concat([prescriptionUploaded]));
+      setUploadPrescription(true);
+    }
+  }, [prescriptionUploaded]);
+
+  useEffect(() => {
+    if (ePrescriptionUploaded && !_isEmpty(ePrescriptionUploaded)) {
+      setEPrescriptionArr(ePrescriptionUploaded);
+      setUploadPrescription(true);
+    }
+  }, [ePrescriptionUploaded]);
+
+  useEffect(() => {
+    if (
+      isEmailValid(userEmail) &&
+      ((prescriptionArr && prescriptionArr.length) ||
+        (ePrescriptionArr && ePrescriptionArr.length)) &&
+      userQuery.length
+    ) {
+      setIsPostSubmitDisable(false);
+    } else {
+      setIsPostSubmitDisable(true);
+    }
+  }, [userEmail, prescriptionArr, ePrescriptionArr, userQuery]);
+
+  const handleEmailValidityCheck = () => {
+    if (userEmail.length && !isEmailValid(userEmail)) {
+      setEmailValid(false);
+    } else {
+      setEmailValid(true);
+    }
+  };
+
+  const deleteItem = (type: string, id: string) => {
+    if (type === 'physical') {
+      setPrescriptionArr(prescriptionArr.filter((e: PrescriptionFormat) => e.name !== id));
+    } else {
+      setEPrescriptionArr(ePrescriptionArr.filter((e: EPrescription) => e.id !== id));
+    }
+  };
+
+  const submitPrescriptionForReview = () => {
+    setIsPopoverOpen(true);
+  };
+
   return (
     <div className={classes.prContainer}>
       <Header />
@@ -596,7 +769,8 @@ export const PrescriptionReview: React.FC = (props) => {
               <div className={classes.prescriptionUpload}>
                 <div className={classes.uploadContent}>
                   {!uploadPrescription ? (
-                    <div className={classes.beforeUpload}>
+                    <div className={classes.beforeUpload} {...getRootProps()}>
+                      <input {...getInputProps()} />
                       <div className={classes.uploadArea}>
                         <img src={require('images/cloud-upload.png')} />
                         <Typography component="h5">
@@ -605,10 +779,13 @@ export const PrescriptionReview: React.FC = (props) => {
                         <Typography component="h5">or</Typography>
                         <div
                           className={classes.uploadFile}
-                          onClick={() => setUploadPrescription(true)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsUploadPreDialogOpen(true);
+                            // setUploadPrescription(true);
+                          }}
                         >
                           Choose File
-                          <input type="file" />
                         </div>
                         <Typography component="p">(Pdf,jpeg,jpg)</Typography>
                       </div>
@@ -624,39 +801,81 @@ export const PrescriptionReview: React.FC = (props) => {
                     </div>
                   ) : (
                     <div className={classes.afterUpload}>
-                      <div className={classes.uploadHead}>
-                        <Typography component="h6">Physical Prescriptions</Typography>
-                      </div>
-                      <ul className={classes.uploadList}>
-                        <li>
-                          <div className={classes.imageDetails}>
-                            <img src={require('images/physical-prescription.png')} />
-                            <div>
-                              <Typography component="h5">IMG_20190726</Typography>
-                              <span className={classes.uploadProgress}></span>
-                            </div>
+                      {prescriptionArr && prescriptionArr.length > 0 && (
+                        <>
+                          <div className={classes.uploadHead}>
+                            <Typography component="h6">Physical Prescriptions</Typography>
                           </div>
-                          <a href="javascript:void(0);">
-                            <img src={require('images/ic_cross_onorange_small.svg')} width="20" />
-                          </a>
-                        </li>
-                        <li>
-                          <div className={classes.imageDetails}>
-                            <img src={require('images/physical-prescription.png')} />
-                            <div>
-                              <Typography component="h5">IMG_20190726</Typography>
-                              <span className={classes.uploadProgress}></span>
-                            </div>
+                          <ul className={classes.uploadList}>
+                            {prescriptionArr.map((pres: PrescriptionFormat) => {
+                              return (
+                                <li key={pres.imageUrl}>
+                                  <div className={classes.imageDetails}>
+                                    <img
+                                      className={classes.prescriptionThumb}
+                                      src={pres.imageUrl}
+                                    />
+                                    <div>
+                                      <Typography component="h5">{pres.name}</Typography>
+                                      <span className={classes.uploadProgress}></span>
+                                    </div>
+                                  </div>
+                                  <a
+                                    onClick={() => {
+                                      deleteItem('physical', pres.name);
+                                    }}
+                                  >
+                                    <img
+                                      src={require('images/ic_cross_onorange_small.svg')}
+                                      width="20"
+                                    />
+                                  </a>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </>
+                      )}
+                      {ePrescriptionArr && ePrescriptionArr.length > 0 && (
+                        <>
+                          <div className={classes.uploadHead}>
+                            <Typography component="h6">
+                              Prescriptions From Health Records
+                            </Typography>
                           </div>
-                          <a href="javascript:void(0);">
-                            <img src={require('images/ic_cross_onorange_small.svg')} width="20" />
-                          </a>
-                        </li>
-                      </ul>
-                      <div className={classes.uploadHead}>
-                        <Typography component="h6">Prescriptions From Health Records</Typography>
-                      </div>
-                      <ul className={classes.hrList}>
+                          <ul className={classes.hrList}>
+                            {ePrescriptionArr.map((pres: EPrescription) => {
+                              return (
+                                <li key={pres.id}>
+                                  <div className={classes.recordDetails}>
+                                    <img src={require('images/rx.png')} />
+                                    <div>
+                                      <Typography component="h5">{pres.doctorName}</Typography>
+                                      <div className={classes.details}>
+                                        <Typography>{pres.date}</Typography>
+                                        <Typography>{pres.forPatient}</Typography>
+                                      </div>
+                                      <Typography>{pres.medicines}</Typography>
+                                    </div>
+                                  </div>
+                                  <a
+                                    onClick={() => {
+                                      deleteItem('ePres', pres.id);
+                                    }}
+                                  >
+                                    <img
+                                      src={require('images/ic_cross_onorange_small.svg')}
+                                      width="20"
+                                    />
+                                  </a>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </>
+                      )}
+
+                      {/* <ul className={classes.hrList}>
                         <li>
                           <div className={classes.recordDetails}>
                             <img src={require('images/rx.png')} />
@@ -673,26 +892,48 @@ export const PrescriptionReview: React.FC = (props) => {
                             <img src={require('images/ic_cross_onorange_small.svg')} width="20" />
                           </a>
                         </li>
-                      </ul>
-                      <a href="javascript:void(0)" className={classes.uploadMore}>
-                        Upload More Prescriptions
-                      </a>
+                      </ul> */}
+                      <div
+                        onClick={() => {
+                          setIsUploadPreDialogOpen(true);
+                        }}
+                      >
+                        <a href="javascript:void(0)" className={classes.uploadMore}>
+                          Upload More Prescriptions
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>
                 <div className={classes.box}>
                   <AphInput
                     className={classes.emailId}
-                    value=""
+                    value={userEmail}
+                    error={!emailValid}
+                    onChange={(event) => setUserEmail(event.target.value)}
                     placeholder="Enter email ID here"
+                    onBlur={handleEmailValidityCheck}
                   />
+                  {!emailValid && <div className={classes.error}>Invalid email</div>}
                 </div>
                 <div className={` ${classes.box} ${classes.queryBox}`}>
                   <span>Queries(if any)</span>
-                  <AphInput className={classes.queries} value="" placeholder="Type here.." />
+                  <AphInput
+                    className={classes.queries}
+                    value={userQuery}
+                    onChange={(event) => setUserQuery(event.target.value)}
+                    placeholder="Type here..."
+                  />
                 </div>
                 <div className={classes.buttonContainer}>
-                  <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+                  <AphButton
+                    className={isPostSubmitDisable ? classes.resendBtnDisabled : ''}
+                    disabled={isPostSubmitDisable}
+                    color="primary"
+                    onClick={() => {
+                      submitPrescriptionForReview();
+                    }}
+                  >
                     Submit
                   </AphButton>
                 </div>
@@ -700,6 +941,31 @@ export const PrescriptionReview: React.FC = (props) => {
             </Grid>
           </Grid>
         </div>
+      </div>
+      <div>
+        <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+          <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+          <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+          <UploadPrescription
+            closeDialog={() => {
+              setIsUploadPreDialogOpen(false);
+            }}
+            setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+            isNonCartFlow={false}
+            isPresReview={true}
+            setPrescriptionForReview={setPrescriptionUploaded}
+          />
+        </AphDialog>
+        <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+          <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
+          <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+          <UploadEPrescriptionCard
+            setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+            isNonCartFlow={false}
+            isPresReview={true}
+            setEPrescriptionForReview={setEPrescriptionUploaded}
+          />
+        </AphDialog>
       </div>
       <Popover
         open={isPopoverOpen}
@@ -730,6 +996,12 @@ export const PrescriptionReview: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

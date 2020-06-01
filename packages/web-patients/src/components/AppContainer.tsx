@@ -186,11 +186,7 @@ const App: React.FC = () => {
             path={clientRoutes.payOnlineClinicConsult()}
             component={ClinicCheckout}
           />
-          <AuthRouted
-            exact
-            path={clientRoutes.prescriptionReview()}
-            component={PrescriptionReview}
-          />
+          <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
         </Switch>
       </div>
     </Scrollbars>

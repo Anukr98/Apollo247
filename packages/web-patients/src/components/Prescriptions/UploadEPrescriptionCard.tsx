@@ -131,6 +131,8 @@ const useStyles = makeStyles((theme: Theme) => {
 interface EPrescriptionCardProps {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
   isNonCartFlow: boolean;
+  isPresReview?: boolean;
+  setEPrescriptionForReview?: any;
 }
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
@@ -254,8 +256,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => item && !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT).toDate().getTime() -
-          moment(a.date, DATE_FORMAT).toDate().getTime()
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -387,6 +393,14 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             }
             onClick={() => {
               setMutationLoading(true);
+
+              if (props.isPresReview) {
+                props.setEPrescriptionForReview(selectedEPrescriptions);
+                setMutationLoading(false);
+                props.setIsEPrescriptionOpen(false);
+                return;
+              }
+
               setEPrescriptionData && setEPrescriptionData(selectedEPrescriptions);
               setUploadedEPrescription && setUploadedEPrescription(true);
 

@@ -140,6 +140,8 @@ interface UploadPrescriptionProps {
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
   isNonCartFlow: boolean;
+  isPresReview?: boolean;
+  setPrescriptionForReview?: any;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -211,6 +213,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
                             toBase64(file).then((res: any) => {
+                              if (props.isPresReview) {
+                                props.setPrescriptionForReview({
+                                  imageUrl: url,
+                                  name: aphBlob.name,
+                                  fileType: fileExtension.toLowerCase(),
+                                  baseFormat: res,
+                                });
+                                props.closeDialog();
+                                setIsUploading(false);
+                              }
+
                               setPrescriptionUploaded &&
                                 setPrescriptionUploaded({
                                   imageUrl: url,
@@ -235,6 +248,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                           'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
                         );
                       }
+
                       setIsUploading(false);
                     }
                   }}
