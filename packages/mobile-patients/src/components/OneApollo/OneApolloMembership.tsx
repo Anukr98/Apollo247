@@ -3,6 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   Dimensions,
   ImageBackground,
+  ScrollView,
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -19,6 +20,9 @@ import { NavigationActions, NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OneApollo, CreditsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MyMembership } from './MyMembership';
+import { MyTransactions } from './MyTransactions';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -112,11 +116,25 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
     );
   };
 
+  const renderScreen = () => {
+    switch (screen) {
+      case 'MyMembership':
+        return <MyMembership />;
+        break;
+      case 'MyTransactions':
+        return <MyTransactions />;
+        break;
+    }
+  };
+
   return (
     <SafeAreaView style={{ ...theme.viewStyles.container, backgroundColor: '#fff' }}>
-      {renderHeader()}
-      {renderMembershipCard()}
-      {renderOneApolloHeader()}
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        {renderHeader()}
+        {renderMembershipCard()}
+        {renderOneApolloHeader()}
+        {renderScreen()}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -130,7 +148,6 @@ const styles = StyleSheet.create({
   backgroundImage: {
     height: 0.46 * windowWidth,
     width: 0.9 * windowWidth,
-    // borderRadius: 10,
     alignItems: 'center',
   },
   membershipinfo: {
