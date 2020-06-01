@@ -495,7 +495,7 @@ export const MyAccount: React.FC = (props) => {
     if(mobileNumber.trim().length < 10){
       setShowErrorMessage(true);
     }else{
-      setShowErrorMessage(false)
+      setShowErrorMessage(false);
       setLoading(true);
     client
       .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
@@ -534,6 +534,7 @@ export const MyAccount: React.FC = (props) => {
     
   };
   const showShareProfileDialog = () => {
+    setShowErrorMessage(false);
     setLoading(true);
     setDeepLink('');
     setMobileNumber('');
