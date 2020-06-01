@@ -445,9 +445,70 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
         break;
       case 'Patient_Cancel_Appointment': {
-        // showContentAlert(data, 'Patient_Cancel_Appointment');
-        return; // Not showing in app because PN overriding in-app notification
+        const userId = await dataSavedUserID('selectedProfileId');
+        const { data } = notification;
+        const { appointmentId } = data;
+        {
+          showAphAlert!({
+            title: ' ',
+            description: data.content,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'CHECK STATUS',
+                onPress: () => {
+                  props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+                    patientId: userId,
+                    fromNotification: true,
+                    appointmentId: appointmentId,
+                  });
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
       }
+      case 'Appointment_Canceled_Refund':
+        const userId = await dataSavedUserID('selectedProfileId');
+        const { data } = notification;
+        const { appointmentId } = data;
+        {
+          showAphAlert!({
+            title: ' ',
+            description: data.content,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'CHECK STATUS',
+                onPress: () => {
+                  props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+                    patientId: userId,
+                    fromNotification: true,
+                    appointmentId: appointmentId,
+                  });
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
 
       case 'Cart_Ready':
         {
@@ -640,20 +701,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
     }
   };
-  const cancelledAndRefundNotifHandler = async (notification: any) => {
-    const userId = await dataSavedUserID('selectedProfileId');
-    const cancelledType = 'Patient_Cancel_Appointment';
-    const refundType = 'Appointment_Canceled_Refund';
-    const { _data } = notification;
-    const { type, appointmentId } = _data;
-    if (type === cancelledType || type === refundType) {
-      props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
-        patientId: userId,
-        fromNotification: true,
-        appointmentId: appointmentId,
-      });
-    }
-  };
+
   useEffect(() => {
     console.log('createNotificationListeners');
     /*
@@ -696,7 +744,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             // Get the action triggered by the notification being opened
             // const action = _notificationOpen.action;
             processNotification(_notificationOpen.notification);
-            cancelledAndRefundNotifHandler(_notificationOpen.notification);
             try {
               aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
@@ -738,7 +785,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           const notification: Notification = notificationOpen.notification;
           processNotification(notification);
-          cancelledAndRefundNotifHandler(notification);
         }
       });
 
