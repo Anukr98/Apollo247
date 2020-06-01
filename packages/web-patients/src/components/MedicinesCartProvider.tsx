@@ -12,6 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 export interface MedicineCartItem {
   description: string;
   id: number;
+  arrId?: any[];
   image: string | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
@@ -62,6 +63,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
+  removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
@@ -103,6 +105,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
+  removeCartItems: null,
   updateCartItem: null,
   updateCartItemQty: null,
   cartTotal: 0,
@@ -262,6 +265,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
+  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
+    const items = cartItems.filter((item) => !arrId.includes(item.id));
+    setCartItems(items);
+    setIsCartUpdated(true);
+  };
+
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
@@ -363,6 +372,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         itemsStr,
         addCartItem,
         removeCartItem,
+        removeCartItems,
         updateCartItem,
         updateCartItemQty,
         cartTotal,
@@ -405,6 +415,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
+  removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
   updateCartItemQty: useShoppingCartContext().updateCartItemQty,
   cartTotal: useShoppingCartContext().cartTotal,
