@@ -211,10 +211,9 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                 });
               }}
               label={strings.account.add_block_hours}
-              style={{ marginTop: 32 }}
+              style={{ marginTop: 32, marginBottom: 30 }}
             />
           </View>
-          <HelpView />
         </ScrollView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
