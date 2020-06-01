@@ -59,7 +59,7 @@ import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
-import { PrescriptionReview } from './prescriptionReview';
+import { PrescriptionReview } from 'components/prescriptionReview';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
