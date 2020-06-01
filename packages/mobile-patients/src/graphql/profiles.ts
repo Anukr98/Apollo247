@@ -812,7 +812,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         physicalSlot
         referenceSlot
       }
-      defaultSort
+      sort
     }
   }
 `;

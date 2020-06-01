@@ -236,11 +236,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         props.navigation.getParam('specialityId') === generalPhysicians.id
       ) {
         setData(generalPhysicians.data);
-        vaueChange(generalPhysicians.data);
       }
       if (ent && ent.data && props.navigation.getParam('specialityId') === ent.id) {
         setData(ent.data);
-        vaueChange(ent.data);
       }
       if (
         Dermatology &&
@@ -248,11 +246,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         props.navigation.getParam('specialityId') === Dermatology.id
       ) {
         setData(Dermatology.data);
-        vaueChange(Dermatology.data);
       }
       if (Urology && Urology.data && props.navigation.getParam('specialityId') === Urology.id) {
         setData(Urology.data);
-        vaueChange(Urology.data);
       }
     }
   }, [generalPhysicians, ent, Urology, Dermatology]);
@@ -262,7 +258,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
     console.log('sortBy', filterGetData);
 
-    if (filterGetData.defaultSort === 'distance') {
+    if (filterGetData.sort === 'distance') {
       setValue(false);
     } else {
       setValue(true);
@@ -587,6 +583,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
         setData(data);
+        vaueChange(data);
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
