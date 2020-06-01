@@ -208,8 +208,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                   <span className={classes.regularPrice}>(Rs. {product.price})</span>
                 )}
               </div>
-              {!isInCart(product) && (
-                <>
+              {!isInCart(product) &&
+                (!product.is_in_stock && !currentPatient ? (
+                  <div className={classes.noStock}>Out Of Stock</div>
+                ) : (
                   <AphButton
                     className={classes.addToCartBtn}
                     onClick={() => {
@@ -266,11 +268,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                       ? 'Notify me'
                       : ''}
                   </AphButton>
-                  {!product.is_in_stock && !currentPatient && (
-                    <div className={classes.noStock}>Out Of Stock</div>
-                  )}
-                </>
-              )}
+                ))}
               {isInCart(product) && (
                 <div className={classes.addQty}>
                   <AphButton
