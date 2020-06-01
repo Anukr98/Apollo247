@@ -2,6 +2,7 @@ const axios = require('axios');
 const logger = require('../../winston-logger')('Consults-logs');
 const { verifychecksum } = require('../../paytm/lib/checksum');
 const { consultsOrderQuery } = require('../helpers/make-graphql-query');
+const { CONSULT_RESPONSE_DELAY } = require('../../Constants');
 
 module.exports = async (req, res, next) => {
 
@@ -63,22 +64,24 @@ module.exports = async (req, res, next) => {
                 transactionStatus = 'refunded';
             }
         }
+        setTimeout(() => {
 
-
-        if (bookingSource == 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
-            res.redirect(redirectUrl);
-        } else {
-            if (transactionStatus === 'failed') {
-                res.redirect(
-                    `/consultpg-error?tk=${appointmentId}&status=${transactionStatus}`
-                );
+            if (bookingSource == 'WEB') {
+                const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${appointmentId}&status=${transactionStatus}`;
+                res.redirect(redirectUrl);
             } else {
-                res.redirect(
-                    `/consultpg-success?tk=${appointmentId}&status=${transactionStatus}`
-                );
+                if (transactionStatus === 'failed') {
+                    res.redirect(
+                        `/consultpg-error?tk=${appointmentId}&status=${transactionStatus}`
+                    );
+                } else {
+                    res.redirect(
+                        `/consultpg-success?tk=${appointmentId}&status=${transactionStatus}`
+                    );
+                }
             }
-        }
+        }, CONSULT_RESPONSE_DELAY);
+
     } catch (e) {
         if (e.response && e.response.data) {
             logger.error(`${orderId} - consult-response - ${JSON.stringify(e.response.data)}`);

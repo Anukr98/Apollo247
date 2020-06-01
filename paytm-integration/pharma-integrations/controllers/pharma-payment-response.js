@@ -2,6 +2,7 @@ const axios = require('axios');
 const logger = require('../../winston-logger')('Pharmacy-logs');
 const { verifychecksum } = require('../../paytm/lib/checksum');
 const { medicineOrderQuery } = require('../helpers/make-graphql-query');
+const { PHARMA_RESPONSE_DELAY } = require('../../Constants');
 
 module.exports = async (req, res, next) => {
     let transactionStatus = '';
@@ -58,21 +59,23 @@ module.exports = async (req, res, next) => {
                 throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
             }
         }
+        setTimeout(() => {
+            if (bookingSource === 'WEB') {
+                let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
+                if (transactionStatus === 'failed') {
+                    redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
+                }
+                res.redirect(redirectUrl);
+            } else {
+                if (transactionStatus === 'failed') {
+                    res.redirect(`/mob-error?status=${transactionStatus}`);
+                }
+                else {
+                    res.redirect(`/mob?status=${transactionStatus}`);
+                }
+            }
+        }, PHARMA_RESPONSE_DELAY);
 
-        if (bookingSource === 'WEB') {
-            let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
-            if (transactionStatus === 'failed') {
-                redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
-            }
-            res.redirect(redirectUrl);
-        } else {
-            if (transactionStatus === 'failed') {
-                res.redirect(`/mob-error?status=${transactionStatus}`);
-            }
-            else {
-                res.redirect(`/mob?status=${transactionStatus}`);
-            }
-        }
     } catch (e) {
         if (e.response && e.response.data) {
             logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
