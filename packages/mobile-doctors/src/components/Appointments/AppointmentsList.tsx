@@ -293,12 +293,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
                   symptoms={
-                    (i.caseSheet &&
-                      g(
-                        i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR),
-                        'symptoms'
-                      )) ||
-                    []
+                    i.caseSheet
+                      ? i.caseSheet.length > 0 &&
+                        i.caseSheet[0] !== null &&
+                        i.caseSheet[0].symptoms !== null
+                        ? i.caseSheet[0].symptoms || []
+                        : i.caseSheet.length > 1 &&
+                          i.caseSheet[1] !== null &&
+                          i.caseSheet[1]!.symptoms !== null
+                        ? i.caseSheet[1].symptoms || []
+                        : []
+                      : []
                   }
                   doctorId={i.doctorId}
                   patientId={i.patientId}
