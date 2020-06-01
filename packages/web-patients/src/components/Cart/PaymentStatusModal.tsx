@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useParams } from 'hooks/routerHooks';
 import { useMutation } from 'react-apollo-hooks';
+import { Route } from 'react-router-dom';
 import moment from 'moment';
 import _camelCase from 'lodash/camelCase';
 import _startCase from 'lodash/startCase';
@@ -219,28 +220,36 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
           </>
         </Modal>
       ) : (
-        <Popover
-          open={showOrderPopup}
-          anchorEl={props.addToCartRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
+        <Route
+          render={({ history }) => (
+            <Popover
+              open={showOrderPopup}
+              onClose={() => {
+                setShowOrderPopup(false);
+                history.push(clientRoutes.medicines());
+              }}
+              anchorEl={props.addToCartRef.current}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.bottomPopover }}
+            >
+              <div className={classes.successPopoverWindow}>
+                <div className={classes.windowWrap}>
+                  <div className={classes.mascotIcon}>
+                    <img src={require('images/ic-mascot.png')} alt="" />
+                  </div>
+                  <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
+                </div>
               </div>
-              <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
-            </div>
-          </div>
-        </Popover>
+            </Popover>
+          )}
+        />
       )}
     </>
   );

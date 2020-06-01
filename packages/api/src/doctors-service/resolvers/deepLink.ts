@@ -6,7 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DeepLinkInput } from 'types/deeplinks';
 import { getDeeplink, refreshLink, generateDeepLinkBody } from 'helpers/appsflyer';
-import { Deeplink, DeepLinkType } from 'doctors-service/entities';
+import { Deeplink, DeepLinkType, DoctorType } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { DeeplinkRepository } from 'doctors-service/repositories/deepLinkRepository';
 import { format, addDays, differenceInDays } from 'date-fns';
@@ -44,13 +44,12 @@ const upsertDoctorsDeeplink: Resolver<
     //check expiry date of deeplink
     const refreshDate = new Date(format(linkData.linkRefreshDate, 'yyyy-MM-dd'));
 
-    console.log(differenceInDays(refreshDate, todayDate));
     if (
       differenceInDays(refreshDate, todayDate) > refreshDays - 1 ||
       differenceInDays(refreshDate, todayDate) <= 0
     ) {
       const newRefreshDate = addDays(new Date(), refreshDays);
-      const newLink = await refreshLink(linkData);
+      const newLink = await refreshLink(linkData, doctordata.doctorType);
 
       const linkDetails = newLink.split('/');
       const shortId = linkDetails[linkDetails.length - 1];
@@ -69,12 +68,17 @@ const upsertDoctorsDeeplink: Resolver<
   }
 
   const deepLinkAttrs: DeepLinkInput = generateDeepLinkBody(doctordata);
-  const deepLink = await getDeeplink(deepLinkAttrs);
+  const deepLink = await getDeeplink(deepLinkAttrs, doctordata.doctorType);
 
   const refreshDate = addDays(new Date(), refreshDays);
 
   const linkDetails = deepLink.split('/');
   const shortId = linkDetails[linkDetails.length - 1];
+
+  const templateId =
+    doctordata.doctorType == DoctorType.DOCTOR_CONNECT
+      ? ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO.toString()
+      : ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString();
 
   //insert link data
   const dataAttributes: Partial<Deeplink> = {
@@ -86,7 +90,7 @@ const upsertDoctorsDeeplink: Resolver<
     doctorId: doctordata.id,
     partnerId: deepLinkAttrs.data.pid,
     referralCode: deepLinkAttrs.data.af_sub1,
-    templateId: ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID.toString(),
+    templateId: templateId,
     type: DeepLinkType.DOCTOR,
   };
   await linkRepository.createDeeplink(dataAttributes);

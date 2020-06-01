@@ -12,6 +12,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 import _replace from 'lodash/replace';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,6 +63,12 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
         color: '#fc9916',
       },
+    },
+    noStock: {
+      fontSize: 12,
+      color: '#890000',
+      fontWeight: 'bold',
+      padding: 0,
     },
     noData: {
       marginTop: 10,
@@ -172,6 +179,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
   const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
+  const { currentPatient } = useAllCurrentPatients();
 
   const isInCart = (medicine: MedicineProduct) => {
     const index = cartItems.findIndex((item) => item.id === medicine.id);
@@ -200,60 +208,67 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                   <span className={classes.regularPrice}>(Rs. {product.price})</span>
                 )}
               </div>
-              {!isInCart(product) && (
-                <AphButton
-                  className={classes.addToCartBtn}
-                  onClick={() => {
-                    if (product.is_in_stock) {
-                      const cartItem: MedicineCartItem = {
-                        description: product.description,
-                        id: product.id,
-                        image: product.image,
-                        is_in_stock: product.is_in_stock,
-                        is_prescription_required: product.is_prescription_required,
-                        name: product.name,
-                        price: product.price,
-                        sku: product.sku,
-                        special_price: product.special_price,
-                        small_image: product.small_image,
-                        status: product.status,
-                        thumbnail: product.thumbnail,
-                        type_id: product.type_id,
-                        mou: product.mou,
-                        quantity: 1,
-                        isShippable: true,
-                      };
-                      /**Gtm code start  */
-                      gtmTracking({
-                        category: 'Pharmacy',
-                        action: 'Add to Cart',
-                        label: product.name,
-                        value: product.special_price || product.price,
-                      });
-                      /**Gtm code End  */
-                      const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                      if (index >= 0) {
-                        updateCartItem && updateCartItem(cartItem);
+              {!isInCart(product) &&
+                (!product.is_in_stock && !currentPatient ? (
+                  <div className={classes.noStock}>Out Of Stock</div>
+                ) : (
+                  <AphButton
+                    className={classes.addToCartBtn}
+                    onClick={() => {
+                      if (product.is_in_stock) {
+                        const cartItem: MedicineCartItem = {
+                          description: product.description,
+                          id: product.id,
+                          image: product.image,
+                          is_in_stock: product.is_in_stock,
+                          is_prescription_required: product.is_prescription_required,
+                          name: product.name,
+                          price: product.price,
+                          sku: product.sku,
+                          special_price: product.special_price,
+                          small_image: product.small_image,
+                          status: product.status,
+                          thumbnail: product.thumbnail,
+                          type_id: product.type_id,
+                          mou: product.mou,
+                          quantity: 1,
+                          isShippable: true,
+                        };
+                        /**Gtm code start  */
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: 'Add to Cart',
+                          label: product.name,
+                          value: product.special_price || product.price,
+                        });
+                        /**Gtm code End  */
+                        const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                        if (index >= 0) {
+                          updateCartItem && updateCartItem(cartItem);
+                        } else {
+                          addCartItem && addCartItem(cartItem);
+                        }
                       } else {
-                        addCartItem && addCartItem(cartItem);
+                        const { sku, name, category_id } = product;
+                        /* WebEngage event start */
+                        notifyMeTracking({
+                          sku,
+                          category_id,
+                          name,
+                        });
+                        /* WebEngage event end */
+                        setSelectedMedicineName(product.name);
+                        setIsNotifyMeDialogOpen(true);
                       }
-                    } else {
-                      const { sku, name, category_id } = product;
-                      /* WebEngage event start */
-                      notifyMeTracking({
-                        sku,
-                        category_id,
-                        name,
-                      });
-                      /* WebEngage event end */
-                      setSelectedMedicineName(product.name);
-                      setIsNotifyMeDialogOpen(true);
-                    }
-                  }}
-                >
-                  {product.is_in_stock ? 'Add To Cart' : 'Notify me'}
-                </AphButton>
-              )}
+                    }}
+                  >
+                    {product.is_in_stock
+                      ? 'Add to Cart'
+                      : currentPatient && currentPatient.id
+                      ? 'Notify me'
+                      : ''}
+                  </AphButton>
+                ))}
               {isInCart(product) && (
                 <div className={classes.addQty}>
                   <AphButton
