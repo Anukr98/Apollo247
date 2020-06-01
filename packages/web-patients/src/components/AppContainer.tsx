@@ -59,6 +59,7 @@ import { MyPayments } from 'components/MyAccount/MyPayments';
 import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
+import { PrescriptionReview } from 'components/PrescriptionReview';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -184,6 +185,11 @@ const App: React.FC = () => {
             exact
             path={clientRoutes.payOnlineClinicConsult()}
             component={ClinicCheckout}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.prescriptionReview()}
+            component={PrescriptionReview}
           />
         </Switch>
       </div>

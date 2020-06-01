@@ -374,7 +374,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const ordersList = await this.find({
       where: {
         createdDate: Between(newStartDate, newEndDate),
-        orderTat: Not(['', null]),
+        orderTat: Not(null),
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         currentStatus: In([
           MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
@@ -383,8 +383,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    console.log('orderAutoId=>', ordersList[0].orderAutoId);
-    console.log('ordersList====>', ordersList);
+    //console.log('ordersList====>', ordersList);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -392,7 +391,11 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
     if (ordersList.length > 0) {
       ordersList.map(async (orderDetails) => {
-        if (Date.parse(orderDetails.orderTat.toString())) {
+        console.log('orderAutoId=>', orderDetails.orderAutoId);
+        if (
+          orderDetails.orderTat.toString() != '' &&
+          Date.parse(orderDetails.orderTat.toString())
+        ) {
           const tatDate = new Date(orderDetails.orderTat.toString());
           console.log('tatDate==>', tatDate);
           const istCreatedDate = orderDetails.createdDate;

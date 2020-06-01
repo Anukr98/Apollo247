@@ -26,9 +26,18 @@ export interface WeekProps {
   data: Appointment[];
   onDaySelection: (date: Date) => void;
   loading: boolean;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
 }
 
-export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection, loading: loadingData }) => {
+export const Week: React.FC<WeekProps> = ({
+  date,
+  data,
+  onDaySelection,
+  loading: loadingData,
+  isDialogOpen,
+  setIsDialogOpen,
+}) => {
   const [appointments, setAppointments] = useState<Appointment[]>(data);
   const [loading, isLoading] = useState<boolean>(loadingData);
 
@@ -56,7 +65,13 @@ export const Week: React.FC<WeekProps> = ({ date, data, onDaySelection, loading:
         />
       </div>
 
-      <Appointments values={appointments} loading={loading} selectedDate={date} />
+      <Appointments
+        values={appointments}
+        loading={loading}
+        selectedDate={date}
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+      />
     </div>
   );
 };
