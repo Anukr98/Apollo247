@@ -104,10 +104,11 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType:
 
 export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput {
   //generate campaign
-  let mciNumber = doctordata.registrationNumber ? doctordata.registrationNumber : '0';
-  mciNumber = mciNumber.split('/').join('-');
-  mciNumber = mciNumber.split(' ').join('-');
-  const campaign = doctordata.fullName + '-' + mciNumber;
+  const mciNumber = doctordata.registrationNumber ? doctordata.registrationNumber : '0';
+  let campaign = doctordata.fullName + '-' + mciNumber;
+  campaign = campaign.split('/').join('-');
+  campaign = campaign.split(' ').join('-');
+  campaign = campaign.split('.').join('-');
 
   //doctor deeplink
   const af_dp = ApiConstants.DOCTOR_DEEPLINK_CONSTANT.toString() + doctordata.id;
