@@ -489,7 +489,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // refetch: ordersRefetch,
               // error: ordersError,
               // loading: ordersLoading,
-              patientId: currentPatient,
+              patientId: currentPatient.id,
+              fromNotification: false,
             });
           }}
         />

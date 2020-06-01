@@ -1534,11 +1534,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           />
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, {
-                isComingFromConsult: true,
-              })
-            }
+            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
             // style={{ right: 20 }}
           >
             <CartIcon />

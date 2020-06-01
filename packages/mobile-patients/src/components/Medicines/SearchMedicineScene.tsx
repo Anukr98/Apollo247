@@ -420,7 +420,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
+                props.navigation.navigate(
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                );
               }}
             >
               <CartIcon />

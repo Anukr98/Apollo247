@@ -99,9 +99,16 @@ export class PatientRepository extends Repository<Patient> {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
+        } else if (patient.primaryPatientId == null) {
+          this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
+    } else {
+      if (patientList[0].primaryPatientId == null) {
+        this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
+      }
     }
+
     return this.find({
       where: { mobileNumber, isActive: true },
       relations: [
@@ -291,8 +298,12 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    const category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    const currentTimeStamp = getUnixTime(new Date());
+    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
+    category =
+      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
+        ? PRISM_DOCUMENT_CATEGORY.OpSummary
+        : category;
+    const currentTimeStamp = getUnixTime(new Date()) * 1000;
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
@@ -300,7 +311,7 @@ export class PatientRepository extends Repository<Patient> {
       file: docInput.base64FileInput,
       authtoken: prismAuthToken,
       format: fileFormat,
-      tag: docInput.category,
+      tag: category,
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
@@ -385,7 +396,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
@@ -415,7 +425,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
@@ -445,7 +454,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const opPrescriptions = await fetch(url, prismHeaders)
       .then((res) => {
@@ -507,21 +515,33 @@ export class PatientRepository extends Repository<Patient> {
     primaryPatientId?: string
   ) {
     const fieldToUpdate: Partial<Patient> = { [column]: flag };
+    let check = true;
     if (primaryUhid) {
       if (primaryUhid == 'null') {
-        fieldToUpdate.primaryUhid = undefined;
-        fieldToUpdate.primaryPatientId = undefined;
+        check = false;
       } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }
     }
 
-    return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
-      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
-        updatePatientError,
+    if (check) {
+      return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
+        throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+          updatePatientError,
+        });
       });
-    });
+    } else {
+      return this.createQueryBuilder('patient')
+        .update()
+        .set({
+          primaryUhid: () => 'patient.uhid',
+          primaryPatientId: () => 'patient.id',
+          ...fieldToUpdate,
+        })
+        .where('id IN (:...ids)', { ids })
+        .execute();
+    }
   }
 
   updateToken(id: string, athsToken: string) {

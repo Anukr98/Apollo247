@@ -43,6 +43,8 @@ const locationRoutesBlackList: string[] = [
   '/my-payments',
 ];
 
+const MEDICINE_QUANTITY: number = 20;
+
 const sortByProperty = (arr: any[], property: string) =>
   arr.sort((a, b) => parseFloat(a[property]) - parseFloat(b[property]));
 
@@ -114,4 +116,5 @@ export {
   getPaymentMethodFullName,
   pharmaStateCodeMapping,
   customerCareNumber,
+  MEDICINE_QUANTITY,
 };

@@ -6,6 +6,7 @@ import {
   Text,
   View,
   PixelRatio,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -60,6 +61,8 @@ export interface ReadMoreLinkUHIDProps extends NavigationScreenProps { }
 export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
 
   const pixelRatio = PixelRatio.get();
+  const { height } = Dimensions.get("window");
+  const heightPercent = Math.round((5 * height) / 100);
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -90,7 +93,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
       <ScrollView bounces={false}>
         <View style={styles.cardContainer}>
           <Text style={[styles.stepsHeading,
-          pixelRatio <= 2 ?
+          heightPercent <= 31 ?
             { ...fonts.IBMPlexSansMedium(13), padding: 12 } :
             { ...fonts.IBMPlexSansMedium(15), padding: 15 }]}>
             STEP 1 - Select one of your own profile as a Primary UHID.
@@ -112,22 +115,22 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             >
               <Text style={[
                 styles.instructionText,
-                pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
+                heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
               ]}>Select a profile from manage</Text>
               <Text style={[
                 styles.instructionText,
-                pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
+                heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
               ]}>
                 profile section to make it as</Text>
               <Text style={[
                 styles.instructionText,
-                pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
+                heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(7) } : { ...fonts.IBMPlexSansMedium(9) }
               ]}>
                 your primary UHID.</Text>
               <Arrow1 style={{
                 resizeMode: 'contain',
-                height: pixelRatio <= 2 ? 50 : 70,
-                marginLeft: pixelRatio <= 2 ? 50 : 70,
+                height: heightPercent <= 31 ? 50 : 70,
+                marginLeft: heightPercent <= 31 ? 50 : 70,
               }} />
             </View>
             <View>
@@ -154,14 +157,14 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 }} />
                 <Text style={[
                   styles.instructionText,
-                  pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
+                  heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
                 ]}>
                   Selected profile as Primary UHID</Text>
               </View>
             </View>
           </View>
           <Text style={[styles.stepsHeading,
-          pixelRatio <= 2 ?
+          heightPercent <= 31 ?
             { ...fonts.IBMPlexSansMedium(13), padding: 12 } :
             { ...fonts.IBMPlexSansMedium(15), padding: 15 }]}>
             STEP 2 - How to link your own UHID’s(Profile) to your Primary UHID.
@@ -188,19 +191,19 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
               style={{
                 position: 'absolute',
                 justifyContent: 'center',
-                left: pixelRatio <= 2 ? 125 : 130,
+                left: heightPercent <= 31 ? 125 : 130,
                 top: 80,
               }}
             >
               <Text style={[
                 styles.instructionText,
-                pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
+                heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
               ]}>
                 Once primary UHID </Text>
               <Text style={[
                 styles.instructionText,
                 { marginBottom: 12 },
-                pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
+                heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8) } : { ...fonts.IBMPlexSansMedium(9) }
               ]}>is created.</Text>
               <View style={{ marginLeft: 8 }}>
                 <Arrow2 style={{
@@ -210,17 +213,17 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 }} />
                 <Text style={[
                   styles.instructionText,
-                  pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
+                  heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
                 ]}>
                   Select your other</Text>
                 <Text style={[
                   styles.instructionText,
-                  pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
+                  heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
                 ]}>
                   profiles to link to the</Text>
                 <Text style={[
                   styles.instructionText,
-                  pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
+                  heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
                 ]}>
                   the primary UHID.</Text>
               </View>
@@ -238,7 +241,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
               style={[{
                 ...fonts.IBMPlexSansMedium(12),
                 color: theme.colors.LIGHT_BLUE,
-              }, pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(11) } : { ...fonts.IBMPlexSansMedium(12) }]}
+              }, heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(11) } : { ...fonts.IBMPlexSansMedium(12) }]}
             >Simultaneously, you can link other profiles multiple UHID to their Primary UHID.</Text>
           </View>
           <View
@@ -257,7 +260,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             }} />
             <View
               style={{
-                paddingLeft: pixelRatio <= 2 ? 8 : 20
+                paddingLeft: heightPercent <= 31 ? 8 : 20
               }}
             >
               <Text style={[
@@ -297,7 +300,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             </View>
           </View>
           <Text style={[styles.stepsHeading,
-          pixelRatio <= 2 ?
+          heightPercent <= 31 ?
             { ...fonts.IBMPlexSansMedium(13), padding: 12 } :
             { ...fonts.IBMPlexSansMedium(15), padding: 15 }]}>
             STEP 3 - How to access your other UHID’s linked to Primary UHID.
@@ -342,7 +345,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             </View>
           </View>
           <Text style={[styles.stepsHeading,
-          pixelRatio <= 2 ?
+          heightPercent <= 31 ?
             { ...fonts.IBMPlexSansMedium(13), padding: 12 } :
             { ...fonts.IBMPlexSansMedium(15), padding: 15 }]}>
             STEP 4 - How to Delink a UHID from Primary UHID.
@@ -372,14 +375,14 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 resizeMode: 'contain',
                 position: 'absolute',
                 top: 100,
-                left: pixelRatio <= 2 ? 110 : 120,
-                width: pixelRatio <= 2 ? 60 : 90,
+                left: heightPercent <= 31 ? 110 : 120,
+                width: heightPercent <= 31 ? 60 : 90,
               }} />
               <View style={{ marginLeft: 30 }}>
                 <HandBlue style={{
                   resizeMode: 'contain',
-                  width: pixelRatio <= 2 ? 15 : 17,
-                  height: pixelRatio <= 2 ? 15 : 17,
+                  width: heightPercent <= 31 ? 15 : 17,
+                  height: heightPercent <= 31 ? 15 : 17,
                   position: 'absolute',
                   top: 15,
                   left: -20,
@@ -412,19 +415,19 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                   <DottedArrow3
                     style={{
                       resizeMode: 'stretch',
-                      width: pixelRatio <= 2 ? 60 : 100,
+                      width: heightPercent <= 31 ? 60 : 100,
                       height: 7,
                     }}
                   />
-                  <View style={{ left: pixelRatio <= 2 ? 5 : 40 }}>
+                  <View style={{ left: heightPercent <= 31 ? 5 : 40 }}>
                     <Text style={[
                       styles.instructionText,
-                      pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
+                      heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
                     ]}>
                       Back to</Text>
                     <Text style={[
                       styles.instructionText,
-                      pixelRatio <= 2 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
+                      heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
                     ]}>
                       manage profile</Text>
                   </View>
@@ -443,10 +446,10 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                   <Text style={[styles.instructionText, { marginLeft: 35, marginTop: 10 }]}>Reconfirmation</Text>
                   <DottedArrow2 style={{
                     resizeMode: 'stretch',
-                    width: pixelRatio <= 2 ? 100 : 120,
-                    height: pixelRatio <= 2 ? 60 : 70,
+                    width: heightPercent <= 31 ? 100 : 120,
+                    height: heightPercent <= 31 ? 60 : 70,
                     position: 'absolute',
-                    left: pixelRatio <= 2 ? -70 : -90
+                    left: heightPercent <= 31 ? -70 : -90
                   }} />
                 </View>
               </View>

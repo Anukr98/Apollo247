@@ -20,6 +20,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  dataSavedUserID,
   aphConsole,
   handleGraphQlError,
   g,
@@ -639,7 +640,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
     }
   };
-
+  const cancelledAndRefundNotifHandler = async (notification: any) => {
+    const userId = await dataSavedUserID('selectedProfileId');
+    const cancelledType = 'Patient_Cancel_Appointment';
+    const refundType = 'Appointment_Canceled_Refund';
+    const { _data } = notification;
+    const { type, appointmentId } = _data;
+    if (type === cancelledType || type === refundType) {
+      props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+        patientId: userId,
+        fromNotification: true,
+        appointmentId: appointmentId,
+      });
+    }
+  };
   useEffect(() => {
     console.log('createNotificationListeners');
     /*
@@ -682,7 +696,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             // Get the action triggered by the notification being opened
             // const action = _notificationOpen.action;
             processNotification(_notificationOpen.notification);
-
+            cancelledAndRefundNotifHandler(_notificationOpen.notification);
             try {
               aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
@@ -724,6 +738,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           const notification: Notification = notificationOpen.notification;
           processNotification(notification);
+          cancelledAndRefundNotifHandler(notification);
         }
       });
 

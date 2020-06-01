@@ -269,6 +269,9 @@ export class MedicineOrders extends BaseEntity {
   @Column('decimal', { precision: 5, scale: 2 })
   devliveryCharges: number;
 
+  @Column({ type: 'float8', nullable: true })
+  packagingCharges: number;
+
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
 
@@ -308,6 +311,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   prismPrescriptionFileId: string;
+
+  @Column({ nullable: true })
+  showPrescriptionAtStore: boolean;
 
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;

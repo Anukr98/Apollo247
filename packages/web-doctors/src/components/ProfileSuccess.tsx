@@ -80,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
   });

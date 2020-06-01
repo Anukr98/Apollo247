@@ -492,9 +492,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .catch((e) => {
         Alert.alert('Uh oh.. :(', e);
       });
-    props.navigation.push(AppRoutes.TestsCart, {
-      isComingFromConsult: true,
-    });
+    props.navigation.push(AppRoutes.TestsCart);
   };
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
@@ -633,7 +631,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
         // if (medPrescription.length > medicines.filter((item) => item!.isInStock).length) {
         //   // const outOfStockCount = medPrescription.length - medicines.length;
-        //   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        //   // props.navigation.push(AppRoutes.YourCart);
         // }
 
         const rxMedicinesCount =
@@ -654,7 +652,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             presToAdd,
           ]);
         }
-        props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        props.navigation.push(AppRoutes.YourCart);
       })
       .catch((e) => {
         CommonBugFender('ConsultDetails_onAddToCart', e);

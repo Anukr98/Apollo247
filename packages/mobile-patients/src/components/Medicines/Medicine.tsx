@@ -362,7 +362,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
           )
       );
-      console.log('orders fetched', orders, 'data:', data);
 
       data.length > 0 && setOrdersFetched(data);
     }
@@ -538,7 +537,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
           onPress={() =>
-            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+            props.navigation.navigate(
+              diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+            )
           }
         >
           <CartIcon />
@@ -1442,7 +1443,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPress={() => {
           postwebEngageProductClickedEvent(item, 'HOME SEARCH', 'Search');
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          savePastSeacrh(`${item.id}`, item.name).catch((e) => {});
+          savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
           });

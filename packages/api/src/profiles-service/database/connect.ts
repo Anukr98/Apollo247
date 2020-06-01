@@ -21,6 +21,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -85,6 +86,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -148,6 +150,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,
@@ -201,6 +204,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         UtilizationCapacity,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

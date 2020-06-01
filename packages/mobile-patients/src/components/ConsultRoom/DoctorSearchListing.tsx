@@ -217,7 +217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(true);
+  const [value, setValue] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -252,6 +252,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     }
   }, [generalPhysicians, ent, Urology, Dermatology]);
+
+  const vaueChange = (data: any) => {
+    const filterGetData =
+      data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+    console.log('sortBy', filterGetData);
+
+    if (filterGetData.sort === 'distance') {
+      setValue(false);
+    } else {
+      setValue(true);
+    }
+  };
 
   const client = useApolloClient();
   const params = props.navigation.getParam('specialities') || null;
@@ -571,6 +583,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
         setData(data);
+        vaueChange(data);
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);

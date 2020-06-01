@@ -169,7 +169,7 @@ const getAppointmentHistory: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(
     appointmentHistoryInput.patientId
   );
-  console.log(primaryPatientIds, 'primary patient ids');
+  //console.log(primaryPatientIds, 'primary patient ids');
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
     primaryPatientIds

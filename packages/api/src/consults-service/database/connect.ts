@@ -24,6 +24,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -47,6 +48,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -118,6 +120,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         UtilizationCapacity,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -138,6 +141,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,

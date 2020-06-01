@@ -14,6 +14,12 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+export enum APPOINTMENT_UPDATED_BY {
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
+  ADMIN = 'ADMIN',
+}
+
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -107,6 +113,11 @@ export enum REQUEST_ROLES {
   ADMIN = 'ADMIN',
 }
 
+export enum VALUE_TYPE {
+  STATUS = 'STATUS',
+  OTHER = 'OTHER',
+}
+
 export enum TRANSFER_STATUS {
   INITIATED = 'INITIATED',
   COMPLETED = 'COMPLETED',
@@ -180,6 +191,12 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
+
+  @OneToMany(
+    (type) => AppointmentUpdateHistory,
+    (appointmentUpdateHistory) => appointmentUpdateHistory.appointment
+  )
+  appointmentUpdateHistory: AppointmentUpdateHistory[];
 
   @Column({ nullable: true })
   couponCode: string;
@@ -911,6 +928,38 @@ export class TransferAppointmentDetails extends BaseEntity {
   }
 }
 //transfer apppointment ends
+
+//AppointmentUpdateHistory starts
+@Entity()
+export class AppointmentUpdateHistory extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
+  appointment: Appointment;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  userType: APPOINTMENT_UPDATED_BY;
+
+  @Column({ nullable: true })
+  userName: string;
+
+  @Column({ nullable: true })
+  valueType: VALUE_TYPE;
+
+  @Column({ nullable: true })
+  fromValue: string;
+
+  @Column({ nullable: true })
+  toValue: string;
+
+  @Column({ nullable: true })
+  reason: string;
+}
+//AppointmentUpdateHistory ends
 
 //Reschedule-appointment starts
 @Entity()

@@ -403,17 +403,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           } catch (error) {
             CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
           }
-          if (
-            message == 'APPOINTMENT_EXIST_ERROR' ||
-            message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
-            message === 'DOCTOR_SLOT_BLOCKED'
-          ) {
+          if (message == 'APPOINTMENT_EXIST_ERROR') {
             renderErrorPopup(
               `Oops ! The selected slot is unavailable. Please choose a different one`
             );
           } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
             renderErrorPopup(
               `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+            );
+          } else if (
+            message === 'OUT_OF_CONSULT_HOURS' ||
+            message === 'DOCTOR_SLOT_BLOCKED' ||
+            message === 'APPOINTMENT_BOOK_DATE_ERROR'
+          ) {
+            renderErrorPopup(
+              `Slot you are trying to book is no longer available. Please try a different slot.`
             );
           } else {
             renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);

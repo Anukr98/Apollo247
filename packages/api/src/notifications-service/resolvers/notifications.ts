@@ -7,12 +7,7 @@ import { NotificationsServiceContext } from 'notifications-service/Notifications
 import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
-import {
-  Patient,
-  MedicineOrders,
-  DiagnosticOrders,
-  PatientNotificationSettings,
-} from 'profiles-service/entities';
+import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
 
@@ -597,12 +592,25 @@ export async function sendNotification(
     //send sms
     console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-    //send sms to doctor
-    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
-    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+
+    //send sms to doctor if Appointment DateTime is less than 24 hours
+    const presentDate = new Date();
+    const laterDate =
+      appointment.appointmentDateTime > presentDate ? appointment.appointmentDateTime : presentDate;
+    const earlierDate =
+      appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
+    const hoursDifference = differenceInHours(laterDate, earlierDate);
+
+    if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
+      let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
+        '{0}',
+        doctorDetails.fullName
+      );
+      doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+      doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+      doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    }
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
@@ -722,7 +730,7 @@ export async function sendNotification(
       notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
       notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace(
         '{0}',
-        '' + refundsInfo.refundAmount.toFixed(2)
+        Number(refundsInfo.refundAmount).toFixed(2)
       );
       notificationBody = notificationBody.replace('{1}', appointment.id);
       notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);

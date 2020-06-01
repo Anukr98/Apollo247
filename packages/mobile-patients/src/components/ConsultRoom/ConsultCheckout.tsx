@@ -269,11 +269,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         } catch (error) {
           CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
         }
-        if (
-          message == 'APPOINTMENT_EXIST_ERROR' ||
-          message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
-          message === 'DOCTOR_SLOT_BLOCKED'
-        ) {
+        if (message == 'APPOINTMENT_EXIST_ERROR') {
           props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Oops ! The selected slot is unavailable. Please choose a different one`
@@ -282,6 +278,14 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+          );
+        } else if (
+          message === 'OUT_OF_CONSULT_HOURS' ||
+          message === 'DOCTOR_SLOT_BLOCKED' ||
+          message === 'APPOINTMENT_BOOK_DATE_ERROR'
+        ) {
+          renderErrorPopup(
+            `Slot you are trying to book is no longer available. Please try a different slot.`
           );
         } else {
           props.navigation.navigate(AppRoutes.DoctorSearch);
