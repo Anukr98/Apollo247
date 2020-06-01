@@ -14,6 +14,8 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -142,29 +144,35 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                 </Link>
               </Grid>
             ) : (
-              <Grid
-                item
-                xs={6}
-                sm={6}
-                md={4}
-                lg={3}
-                title={(searchDetails && searchDetails.name) || ''}
-                onClick={(e) => {
-                  specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
-                  speciality(e.currentTarget.title);
-                  disableFilter(false);
-                }}
-                key={_uniqueId('psearch_spl_')}
-              >
-                <div className={classes.contentBox}>
-                  <Avatar
-                    alt={(searchDetails && searchDetails.name) || ''}
-                    src={(searchDetails && searchDetails.image) || ''}
-                    className={classes.bigAvatar}
-                  />
-                  {(searchDetails && searchDetails.name) || ''}
-                </div>
-              </Grid>
+              <Route
+                render={({ history }) => (
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    title={(searchDetails && searchDetails.name) || ''}
+                    onClick={(e) => {
+                      specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
+                      speciality(e.currentTarget.title);
+                      disableFilter(false);
+                      const encoded = encodeURIComponent(`${e.currentTarget.title}`);
+                      history.push(clientRoutes.specialties(encoded));
+                    }}
+                    key={_uniqueId('psearch_spl_')}
+                  >
+                    <div className={classes.contentBox}>
+                      <Avatar
+                        alt={(searchDetails && searchDetails.name) || ''}
+                        src={(searchDetails && searchDetails.image) || ''}
+                        className={classes.bigAvatar}
+                      />
+                      {(searchDetails && searchDetails.name) || ''}
+                    </div>
+                  </Grid>
+                )}
+              />
             );
           })}
         </Grid>

@@ -181,7 +181,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                             onClick={(e) => {
                               mutation();
                               speciality(e.currentTarget.title);
-                              history.push(clientRoutes.specialties(`${e.currentTarget.title}`));
+                              const encoded = encodeURIComponent(`${e.currentTarget.title}`);
+                              history.push(clientRoutes.specialties(encoded));
                               specialityId && specialityId(specialityDetails.id);
                               disableFilter(false);
                             }}

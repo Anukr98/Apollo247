@@ -32,6 +32,7 @@ import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 import { gtmTracking } from '../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { useParams } from 'hooks/routerHooks';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -215,6 +216,28 @@ export const DoctorsLanding: React.FC = (props) => {
   const params = useParams<{
     specialty: string;
   }>();
+
+  useEffect(() => {
+    if (params.specialty) {
+      const specialityName = decodeURIComponent(params.specialty);
+      apolloClient
+        .query({
+          query: GET_ALL_SPECIALITIES,
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          response.data &&
+            response.data.getAllSpecialties &&
+            response.data.getAllSpecialties.map((specialty: any) => {
+              if (specialty.name === specialityName) {
+                setSpecialtyId(specialty.id);
+                setSpecialitySelected(specialityName);
+              }
+            });
+        });
+    }
+  }, []);
 
   if (!currentPincode && currentLat && currentLong) {
     getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);
@@ -419,7 +442,9 @@ export const DoctorsLanding: React.FC = (props) => {
                   <a
                     onClick={() => {
                       // window.history.back();
-                      window.location.href = clientRoutes.welcome();
+                      params.specialty
+                        ? (window.location.href = clientRoutes.doctorsLanding())
+                        : (window.location.href = clientRoutes.welcome());
                       if (localStorage.getItem('symptomTracker')) {
                         localStorage.removeItem('symptomTracker');
                       }

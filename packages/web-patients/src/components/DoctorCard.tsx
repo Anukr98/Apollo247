@@ -24,6 +24,7 @@ import moment from 'moment';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 // import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
@@ -151,6 +152,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const clinics: any = [];
 
+  const params = useParams<{
+    specialty: string;
+  }>();
+
   const getDiffInMinutes = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
@@ -228,7 +233,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
-        onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId))}
+        onClick={() => {
+          params.specialty
+            ? (window.location.href = clientRoutes.specialtyDoctorDetails(
+                params.specialty,
+                doctorName,
+                doctorId
+              ))
+            : (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId));
+        }}
       >
         <Avatar
           alt={doctorDetails.firstName || ''}
@@ -248,7 +261,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         />
         <div
           className={classes.doctorInfo}
-          onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId))}
+          onClick={() =>
+            (window.location.href = clientRoutes.specialtyDoctorDetails(
+              params.specialty,
+              doctorName,
+              doctorId
+            ))
+          }
         >
           {/* {loading ? (
             <div className={classes.cardLoader}>

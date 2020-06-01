@@ -34,7 +34,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
 
-type Params = { id: string };
+type Params = { id: string; specialty: string };
 
 export interface DoctorDetailsProps {
   id: string;
@@ -321,7 +321,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <Link to={clientRoutes.doctorsLanding()} title={'Back to doctors search'}>
+              <Link
+                to={
+                  params.specialty
+                    ? clientRoutes.specialties(params.specialty)
+                    : clientRoutes.doctorsLanding()
+                }
+                title={'Back to doctors search'}
+              >
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
