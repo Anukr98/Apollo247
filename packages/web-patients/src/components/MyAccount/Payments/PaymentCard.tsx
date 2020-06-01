@@ -202,7 +202,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   }
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
-      ? clientRoutes.doctorDetails(cardDetails.doctorId)
+      ? clientRoutes.doctorDetails(cardDetails.doctor.name, cardDetails.doctorId)
       : getAppStoreLink();
   const buttonText =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
@@ -251,7 +251,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           <div className={classes.infoText}>
             <span>Payment Ref Number - {paymentRefId}</span>
             <span className={classes.rightArrow}>
-              <Link to={clientRoutes.doctorDetails(cardDetails.doctorId)}>
+              <Link to={clientRoutes.doctorDetails(cardDetails.doctor.name, cardDetails.doctorId)}>
                 <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
               </Link>
             </span>

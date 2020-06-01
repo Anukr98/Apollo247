@@ -34,8 +34,6 @@ import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
 
-type Params = { id: string };
-
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -228,7 +226,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<Params>();
+  const params = useParams<{ id: string; specialty: string }>();
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
@@ -321,7 +319,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <Link to={clientRoutes.doctorsLanding()} title={'Back to doctors search'}>
+              <Link
+                to={
+                  params.specialty
+                    ? clientRoutes.specialties(params.specialty)
+                    : clientRoutes.doctorsLanding()
+                }
+                title={'Back to doctors search'}
+              >
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

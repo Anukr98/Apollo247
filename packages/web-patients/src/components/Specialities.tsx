@@ -15,7 +15,8 @@ import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useQuery } from 'react-apollo-hooks';
-// import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType } from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -169,33 +170,39 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                     key={_uniqueId('special_')}
                   >
                     {(mutation) => (
-                      <Grid
-                        item
-                        xs={12}
-                        sm={6}
-                        title={title}
-                        onClick={(e) => {
-                          mutation();
-                          speciality(e.currentTarget.title);
-                          specialityId && specialityId(specialityDetails.id);
-                          disableFilter(false);
-                        }}
-                      >
-                        <div className={classes.contentBox}>
-                          <Avatar
-                            alt={specialityDetails.name || ''}
-                            src={specialityDetails.image || ''}
-                            className={classes.bigAvatar}
-                          />
-                          <div>
-                            <div>{specialityDetails.name}</div>
-                            <div className={classes.specialityDetails}>{userFriendlyName}</div>
-                          </div>
-                          <span className={classes.rightArrow}>
-                            <img src={require('images/ic_arrow_right.svg')} />
-                          </span>
-                        </div>
-                      </Grid>
+                      <Route
+                        render={({ history }) => (
+                          <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            title={title}
+                            onClick={(e) => {
+                              mutation();
+                              speciality(e.currentTarget.title);
+                              const encoded = encodeURIComponent(`${e.currentTarget.title}`);
+                              history.push(clientRoutes.specialties(encoded));
+                              specialityId && specialityId(specialityDetails.id);
+                              disableFilter(false);
+                            }}
+                          >
+                            <div className={classes.contentBox}>
+                              <Avatar
+                                alt={specialityDetails.name || ''}
+                                src={specialityDetails.image || ''}
+                                className={classes.bigAvatar}
+                              />
+                              <div>
+                                <div>{specialityDetails.name}</div>
+                                <div className={classes.specialityDetails}>{userFriendlyName}</div>
+                              </div>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} />
+                              </span>
+                            </div>
+                          </Grid>
+                        )}
+                      />
                     )}
                   </Mutation>
                 );
