@@ -4571,6 +4571,18 @@
             "deprecationReason": null
           },
           {
+            "name": "shopAddress",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "estimatedAmount",
             "description": null,
             "args": [],
@@ -28083,6 +28095,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "shopAddress",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "ShopAddress",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -28210,6 +28232,77 @@
                 "name": "Float",
                 "ofType": null
               }
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "ShopAddress",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "storename",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "address",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "workinghrs",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "phone",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "city",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "state",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "defaultValue": null
           }
@@ -28732,6 +28825,16 @@
             "type": {
               "kind": "SCALAR",
               "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "shopAddress",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "ShopAddress",
               "ofType": null
             },
             "defaultValue": null
