@@ -309,10 +309,13 @@ export enum ApiConstants {
   //doctor deeplink constants starts
   BRAND_DOMAIN = 'apollo247.onelink.me',
   LINK_TTL = '31',
-  PARTNER_ID = 'Doctor patient Download',
-  CHANNEL_NAME = 'Doctor Connect',
+  PARTNER_ID_APOLLO = 'Doctor patient Download',
+  PARTNER_ID_NON_APOLLO = 'DOCTOR CONNECT',
+  CHANNEL_NAME_APOLLO = 'Doctor patient Download',
+  CHANNEL_NAME_NON_APOLLO = 'Doctor Connect',
   DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
-  DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/AEkA',
+  DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/',
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
-  DOCTOR_DEEPLINK_TEMPLATE_ID = 'AEkA',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
 }

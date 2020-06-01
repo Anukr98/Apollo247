@@ -21,8 +21,12 @@ import {
   validatePharmaCoupon,
   PharmaOutput,
   PharmaCouponInputArgs,
+  OrderLineItems,
 } from 'coupons-service/resolvers/validatePharmaCoupon';
 import { CouponServiceContext } from 'coupons-service/couponServiceContext';
+import { log } from 'customWinstonLogger';
+import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import fetch from 'node-fetch';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSInput {
@@ -91,7 +95,7 @@ type MedicineCartOMSInput = {
 };
 
 type MedicineCartOMSItem = {
-  medicineSku: string;
+  medicineSKU: string;
   medicineName: string;
   itemValue: number;
   itemDiscount: number;
@@ -134,30 +138,73 @@ const saveMedicineOrderOMS: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  if (
-    medicineCartOMSInput.patientAddressId != '' &&
-    medicineCartOMSInput.patientAddressId != null
-  ) {
-    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-    const patientAddressDetails = await patientAddressRepo.findById(
-      medicineCartOMSInput.patientAddressId
-    );
-    if (!patientAddressDetails) {
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
-    }
+  if (!medicineCartOMSInput.patientAddressId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
-  if (medicineCartOMSInput.coupon) {
-    const orderLineItems = medicineCartOMSInput.items.map((item) => {
-      return {
-        itemId: item.medicineSku,
-        productName: item.medicineName,
-        productType:
-          item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
-        mrp: item.mrp,
-        specialPrice: item.specialPrice,
-        quantity: item.quantity,
-      };
+  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddressDetails = await patientAddressRepo.findById(
+    medicineCartOMSInput.patientAddressId
+  );
+  if (!patientAddressDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  }
+
+  const itemsSkus = medicineCartOMSInput.items.map((item) => {
+    return item.medicineSKU;
+  });
+
+  const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
+  const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
+
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${skusInfoUrl}`,
+    'FETCH_ITEM_DETAILS_FROM_PHARMACY()->API_CALL_STARTING',
+    itemsSkus.join(','),
+    ''
+  );
+  const pharmaResp = await fetch(skusInfoUrl, {
+    method: 'POST',
+    body: JSON.stringify({
+      params: itemsSkus.join(','),
+    }),
+    headers: { 'Content-Type': 'application/json', authorization: authToken },
+  });
+
+  if (pharmaResp.status != 200) {
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${skusInfoUrl}`,
+      'FETCH_ITEM_DETAILS_FROM_PHARMACY()->API_CALL_FAILED',
+      JSON.stringify(pharmaResp),
+      ''
+    );
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+  }
+
+  const lineItemsDetails: PharmaItemsResponse = await pharmaResp.json();
+
+  const orderLineItems: OrderLineItems[] = [];
+  medicineCartOMSInput.items.map((item) => {
+    const orderLineItem = lineItemsDetails.productdp.find((productItem) => {
+      return productItem.sku == item.medicineSKU;
     });
+    if (orderLineItem) {
+      orderLineItems.push({
+        itemId: orderLineItem.sku,
+        productName: orderLineItem.name,
+        productType:
+          orderLineItem.type_id == 'PHARMA'
+            ? CouponCategoryApplicable.PHARMA
+            : CouponCategoryApplicable.FMCG,
+        mrp: orderLineItem.price,
+        specialPrice: orderLineItem.special_price || orderLineItem.price,
+        quantity: item.quantity,
+      });
+    }
+  });
+
+  if (medicineCartOMSInput.coupon) {
     const pharmaCouponInput: PharmaCouponInputArgs = {
       pharmaCouponInput: {
         code: medicineCartOMSInput.coupon,
@@ -189,6 +236,17 @@ const saveMedicineOrderOMS: Resolver<
       if (medicineCartOMSInput.estimatedAmount != Number(finalAmount.toFixed(2))) {
         throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
       }
+    }
+  } else {
+    let estimatedAmount = orderLineItems.reduce((addedAmount, lineItem) => {
+      return addedAmount + lineItem.quantity * lineItem.specialPrice;
+    }, 0);
+    if (medicineCartOMSInput.devliveryCharges) {
+      estimatedAmount += medicineCartOMSInput.devliveryCharges;
+    }
+
+    if (estimatedAmount != medicineCartOMSInput.estimatedAmount) {
+      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
     }
   }
 

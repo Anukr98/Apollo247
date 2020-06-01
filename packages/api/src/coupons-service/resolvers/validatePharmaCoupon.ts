@@ -68,7 +68,7 @@ export const validatePharmaCouponTypeDefs = gql`
   }
 `;
 
-type OrderLineItems = {
+export type OrderLineItems = {
   itemId: string;
   mrp: number;
   productName: string;

@@ -72,6 +72,11 @@ export const getNotificationsTypeDefs = gql`
     status: Boolean
   }
 
+  type SendSMS {
+    status: String
+    message: String
+  }
+
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
@@ -81,6 +86,7 @@ export const getNotificationsTypeDefs = gql`
     sendDailyAppointmentSummary: String
     sendFollowUpNotification: String
     sendChatMessageToDoctor(appointmentId: String): SendChatMessageToDoctorResult
+    sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
   }
 `;
 
@@ -2140,6 +2146,16 @@ const sendChatMessageToDoctor: Resolver<
   return { status: true };
 };
 
+const sendMessageToMobileNumber: Resolver<
+  null,
+  { mobileNumber: string; textToSend: string },
+  NotificationsServiceContext,
+  { status: string; message: string }
+> = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  const messageResponse = await sendNotificationSMS(args.mobileNumber, args.textToSend);
+  return { status: messageResponse.status, message: messageResponse.message };
+};
+
 export const getNotificationsResolvers = {
   Query: {
     sendPushNotification,
@@ -2147,5 +2163,6 @@ export const getNotificationsResolvers = {
     sendDailyAppointmentSummary,
     sendFollowUpNotification,
     sendChatMessageToDoctor,
+    sendMessageToMobileNumber,
   },
 };

@@ -13,6 +13,24 @@ export interface PharmaCancelResponse {
   ordersCancelResult: PharmaCancelResult;
 }
 
+export interface PharmaLineItemResult {
+  id: number;
+  sku: string;
+  price: number;
+  name: string;
+  status: string;
+  type_id: string;
+  url_key: string;
+  is_in_stock: number;
+  mou: string;
+  special_price: number;
+  is_prescription_required: string;
+}
+
+export interface PharmaItemsResponse {
+  productdp: PharmaLineItemResult[];
+}
+
 export interface PharmaCancelResult {
   ApOrderNo: string;
   Message: string;
