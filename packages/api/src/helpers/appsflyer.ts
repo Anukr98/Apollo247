@@ -11,9 +11,16 @@ const dLogger = debugLog(
   Math.floor(Math.random() * 100000000)
 );
 
-export async function getDeeplink(deepLinkInput: DeepLinkInput) {
+export async function getDeeplink(deepLinkInput: DeepLinkInput, doctorType: DoctorType) {
+  const templateId =
+    doctorType == DoctorType.DOCTOR_CONNECT
+      ? ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO.toString()
+      : ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString();
+
+  const apiUrl = ApiConstants.DOCTOR_DEEPLINK_URL + templateId;
+
   const reqStartTime = new Date();
-  const linkResponse = await fetch(ApiConstants.DOCTOR_DEEPLINK_URL, {
+  const linkResponse = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
@@ -23,27 +30,25 @@ export async function getDeeplink(deepLinkInput: DeepLinkInput) {
   });
 
   if (linkResponse.ok) {
+    const responseData = await linkResponse.text();
     dLogger(
       reqStartTime,
       'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK',
-      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
-        deepLinkInput
-      )} --- ${JSON.stringify(linkResponse.text())}`
+      `${apiUrl} --- ${JSON.stringify(deepLinkInput)} --- ${responseData}`
     );
-    return await linkResponse.text();
+    return responseData;
   } else {
+    const responseData = await linkResponse.text();
     dLogger(
       reqStartTime,
       'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK___ERROR',
-      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
-        deepLinkInput
-      )} --- ${JSON.stringify(linkResponse.body)}`
+      `${apiUrl} --- ${JSON.stringify(deepLinkInput)} --- ${responseData}`
     );
     throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
   }
 }
 
-export async function refreshLink(existingDeeplinkDetails: Deeplink) {
+export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType: DoctorType) {
   const reqStartTime = new Date();
 
   //doctor deeplink
@@ -52,16 +57,23 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink) {
     brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
     data: {
-      pid: ApiConstants.PARTNER_ID.toString(),
+      pid: existingDeeplinkDetails.partnerId,
       c: existingDeeplinkDetails.campaignName,
-      af_channel: ApiConstants.CHANNEL_NAME.toString(),
+      af_channel: existingDeeplinkDetails.channelName,
       af_dp: af_dp,
       af_sub1: existingDeeplinkDetails.referralCode,
       af_force_deeplink: 'true',
     },
   };
 
-  const apiUrl = ApiConstants.DOCTOR_DEEPLINK_URL + '?id=' + existingDeeplinkDetails.shortId;
+  const templateId =
+    doctorType == DoctorType.DOCTOR_CONNECT
+      ? ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO.toString()
+      : ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString();
+
+  const apiUrl =
+    ApiConstants.DOCTOR_DEEPLINK_URL + templateId + '?id=' + existingDeeplinkDetails.shortId;
+
   const linkResponse = await fetch(apiUrl, {
     method: 'PUT',
     headers: {
@@ -72,21 +84,19 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink) {
   });
 
   if (linkResponse.ok) {
+    const responseData = await linkResponse.text();
     dLogger(
       reqStartTime,
       'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK_REFRESH',
-      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
-        deepLinkInput
-      )} --- ${JSON.stringify(linkResponse.text())}`
+      `${apiUrl} --- ${JSON.stringify(deepLinkInput)} --- ${responseData}`
     );
-    return await linkResponse.text();
+    return responseData;
   } else {
+    const responseData = await linkResponse.text();
     dLogger(
       reqStartTime,
       'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK_REFRESH___ERROR',
-      `${ApiConstants.DOCTOR_DEEPLINK_URL} --- ${JSON.stringify(
-        deepLinkInput
-      )} --- ${JSON.stringify(linkResponse.body)}`
+      `${apiUrl} --- ${JSON.stringify(deepLinkInput)} --- ${responseData}`
     );
     throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
   }
@@ -107,13 +117,23 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
   referralCode =
     doctordata.doctorType == DoctorType.DOCTOR_CONNECT ? 'C-' + referralCode : 'A-' + referralCode;
 
+  const partnerId =
+    doctordata.doctorType == DoctorType.DOCTOR_CONNECT
+      ? ApiConstants.PARTNER_ID_NON_APOLLO.toString()
+      : ApiConstants.PARTNER_ID_APOLLO.toString();
+
+  const channelName =
+    doctordata.doctorType == DoctorType.DOCTOR_CONNECT
+      ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
+      : ApiConstants.CHANNEL_NAME_APOLLO.toString();
+
   const deepLinkAttrs: DeepLinkInput = {
     brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
     data: {
-      pid: ApiConstants.PARTNER_ID.toString(),
+      pid: partnerId,
       c: campaign,
-      af_channel: ApiConstants.CHANNEL_NAME.toString(),
+      af_channel: channelName,
       af_dp: af_dp,
       af_sub1: referralCode,
       af_force_deeplink: 'true',
