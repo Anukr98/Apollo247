@@ -48,7 +48,8 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
-  getItemsAvailabilityInStoreApi,
+  getStoreInventoryApi,
+  GetStoreInventoryResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -454,9 +455,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     } else if (cartItems.length > 0 && storeId) {
       setLoading!(true);
       setLastStoreIdReplica(storeId);
-      getItemsAvailabilityInStoreApi(cartItems.map((item) => item.id))
-        .then(() => {
-          if (areItemsAvailableInStore()) {
+      getStoreInventoryApi(
+        storeId,
+        cartItems.map((item) => item.id)
+      )
+        .then(({ data }) => {
+          const storeItems = g(data, 'itemDetails');
+          if (storeItems && areItemsAvailableInStore(storeItems, cartItems)) {
             !isOnlyCartItemsChange && setShowDriveWayPopup(true);
           } else {
             clearStoreIdAndShowAlert(string.medicine_cart.cartItemsNotAvailableInStore);
@@ -487,9 +492,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     renderAlert(message);
   };
 
-  const areItemsAvailableInStore = () => {
-    // TODO: implementation
-    return Math.floor(Math.random() * 10) % 2 == 0;
+  const areItemsAvailableInStore = (
+    storeItems: GetStoreInventoryResponse['itemDetails'],
+    cartItems: ShoppingCartItem[]
+  ) => {
+    const isInventoryAvailable = (cartItem: ShoppingCartItem) =>
+      !!storeItems.find((item) => item.itemId == cartItem.id && item.qty >= cartItem.quantity);
+
+    return !cartItems.find((item) => !isInventoryAvailable(item));
   };
 
   const _validateCoupon = (variables: validatePharmaCouponVariables) =>

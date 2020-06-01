@@ -94,6 +94,16 @@ export interface ClinicDetailsResponse {
   data: Clinic[];
 }
 
+export interface GetStoreInventoryResponse {
+  shopId: string;
+  requestStatus: boolean;
+  requestMessage: string;
+  itemDetails: {
+    itemId: string;
+    qty: number;
+  }[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -507,15 +517,21 @@ export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResp
   );
 };
 
-export const getItemsAvailabilityInStoreApi = (
+export const getStoreInventoryApi = (
+  shopId: string,
   items: string[] // SKU list
-): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
+): Promise<AxiosResponse<GetStoreInventoryResponse>> => {
   return Axios.post(
-    `${config.STORES_LIST[0]}/searchpin_api.php`,
-    { siteid: '14438', item: items },
+    `${config.GET_STORE_INVENTORY[0]}`,
+    {
+      shopId: shopId,
+      itemdetails: items.map((itemId) => ({
+        ItemId: itemId,
+      })),
+    },
     {
       headers: {
-        Authorization: config.STORES_LIST[1],
+        Authentication: config.GET_STORE_INVENTORY[1],
       },
     }
   );
