@@ -391,6 +391,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const [doctorId, setDoctorId] = React.useState<string>('');
   const client = useApolloClient();
+  const doctorName = doctorDetail && doctorDetail.fullName;
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -525,7 +526,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       info:
         'In case your account has been debited, you should get the refund in 10-14 working days.',
       callbackFunction: () => {
-        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+        props &&
+          props.history &&
+          props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
       },
     },
     PAYMENT_SUCCESS: {
@@ -540,7 +543,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       info:
         'In case your account has been debited, you should get the refund in 10-14 working days.',
       callbackFunction: () => {
-        props && props.history && props.history.push(clientRoutes.doctorDetails(doctorId));
+        props &&
+          props.history &&
+          props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
       },
     },
   };
