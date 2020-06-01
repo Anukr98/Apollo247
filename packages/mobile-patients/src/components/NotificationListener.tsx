@@ -19,34 +19,22 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  dataSavedUserID,
-  aphConsole,
-  handleGraphQlError,
-  g,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { dataSavedUserID, aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
-import { FeedbackPopup } from './FeedbackPopup';
-import { MedicalIcon } from './ui/Icons';
+import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import {
   getMedicineOrderOMSDetails,
   getMedicineOrderOMSDetailsVariables,
@@ -94,15 +82,9 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
-  const [medFeedback, setmedFeedback] = useState({
-    visible: false,
-    title: '',
-    subtitle: '',
-    transactionId: '',
-  });
 
   const showMedOrderStatusAlert = (
     data:
@@ -346,7 +328,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const subtitle: string = `Delivered On: ${moment(data.deliveredDate).format(
             'D MMM YYYY'
           )}`;
-          setmedFeedback({ title, subtitle, transactionId: orderId, visible: true });
+          setMedFeedback!({ title, subtitle, transactionId: orderId, visible: true });
         }
         break;
       case 'Order_Out_For_Delivery':
@@ -444,44 +426,45 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
-      case 'Patient_Cancel_Appointment': {
-        const userId = await dataSavedUserID('selectedProfileId');
-        const { data } = notification;
-        const { appointmentId } = data;
+      case 'Patient_Cancel_Appointment':
         {
-          showAphAlert!({
-            title: ' ',
-            description: data.content,
-            CTAs: [
-              {
-                text: 'DISMISS',
-                onPress: () => {
-                  hideAphAlert && hideAphAlert();
+          const userId = await dataSavedUserID('selectedProfileId');
+          const { data } = notification;
+          const { appointmentId } = data;
+          {
+            showAphAlert!({
+              title: ' ',
+              description: data.content,
+              CTAs: [
+                {
+                  text: 'DISMISS',
+                  onPress: () => {
+                    hideAphAlert && hideAphAlert();
+                  },
+                  type: 'white-button',
                 },
-                type: 'white-button',
-              },
-              {
-                text: 'CHECK STATUS',
-                onPress: () => {
-                  props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
-                    patientId: userId,
-                    fromNotification: true,
-                    appointmentId: appointmentId,
-                  });
-                  hideAphAlert && hideAphAlert();
+                {
+                  text: 'CHECK STATUS',
+                  onPress: () => {
+                    props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+                      patientId: userId,
+                      fromNotification: true,
+                      appointmentId: appointmentId,
+                    });
+                    hideAphAlert && hideAphAlert();
+                  },
+                  type: 'orange-button',
                 },
-                type: 'orange-button',
-              },
-            ],
-          });
+              ],
+            });
+          }
         }
         break;
-      }
       case 'Appointment_Canceled_Refund':
-        const userId = await dataSavedUserID('selectedProfileId');
-        const { data } = notification;
-        const { appointmentId } = data;
         {
+          const userId = await dataSavedUserID('selectedProfileId');
+          const { data } = notification;
+          const { appointmentId } = data;
           showAphAlert!({
             title: ' ',
             description: data.content,
@@ -1013,37 +996,5 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       });
   };
 
-  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_FEEDBACK_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'id'),
-      Rating: rating,
-      'Rating Reason': reason,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_FEEDBACK_GIVEN, eventAttributes);
-  };
-
-  return (
-    <>
-      <FeedbackPopup
-        title="We value your feedback! :)"
-        description="How was your overall experience with the following medicine delivery —"
-        info={{
-          title: medFeedback.title,
-          description: medFeedback.subtitle,
-          imageComponent: <MedicalIcon />,
-        }}
-        transactionId={medFeedback.transactionId}
-        type={FEEDBACKTYPE.PHARMACY}
-        isVisible={medFeedback.visible}
-        onComplete={(ratingStatus, ratingOption) => {
-          postRatingGivenWEGEvent(ratingStatus!, ratingOption);
-          setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
-          showAphAlert!({
-            title: 'Thanks :)',
-            description: 'Your feedback has been submitted. Thanks for your time.',
-          });
-        }}
-      />
-    </>
-  );
+  return null;
 };
