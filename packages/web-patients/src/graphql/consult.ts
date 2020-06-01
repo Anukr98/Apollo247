@@ -147,6 +147,7 @@ export const GET_CONSULT_PAYMENTS = gql`
           paymentStatus
           paymentType
           responseMessage
+          paymentDateTime
         }
         status
         doctorId
