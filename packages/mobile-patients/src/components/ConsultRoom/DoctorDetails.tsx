@@ -346,6 +346,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         }
       })
       .catch((e) => {
+        props.navigation.navigate(AppRoutes.ConsultRoom, {});
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
