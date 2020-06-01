@@ -377,8 +377,8 @@ export const MedicineDetails: React.FC = (props) => {
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
-  const [structuredJSON, setStructuredJSON] = React.useState(null);
-
+  const [productSchemaJSON, setProductSchemaJSON] = React.useState(null);
+  const [drugSchemaJSON, setDrugSchemaJSON] = React.useState(null);
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -397,6 +397,40 @@ export const MedicineDetails: React.FC = (props) => {
       )
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
+        /**schema markup  start*/
+        const { manufacturer, description, image, name, special_price, price, id, sku, type_id, PharmaOverview } = data.productdp[0];
+        setProductSchemaJSON({
+          '@context': 'https://schema.org/',
+          '@type': 'Product',
+          name: name,
+          image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+          description: description,
+          brand: manufacturer,
+          sku: params.sku,
+          gtin: id,
+          offers: {
+            '@type': 'Offer',
+            url: `https://www.apollo247.com/medicine-details/${sku}`,
+            priceCurrency: 'INR',
+            price: special_price || price,
+            priceValidUntil: '2020-12-31',
+            availability: 'https://schema.org/InStock',
+            itemCondition: 'https://schema.org/NewCondition',
+          },
+        });
+        if(type_id && type_id=== 'Pharma' && Array.isArray(PharmaOverview) && PharmaOverview.length) {
+          const { generic, Doseform } = PharmaOverview[0];
+          setDrugSchemaJSON({
+            "@context": "https://schema.org/",
+            "@type": "Drug",
+            "name": name,
+            "description": description,
+            "activeIngredient": generic,
+            "dosageForm": Doseform
+          });
+        }
+        /**schema markup End */
+
         /**Gtm code start  */
         data &&
           data.productdp &&
@@ -417,28 +451,9 @@ export const MedicineDetails: React.FC = (props) => {
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
-    } else {
-      const { manufacturer, description, image, name, special_price, price, id } = medicineDetails;
-      setStructuredJSON({
-        '@context': 'https://schema.org/',
-        '@type': 'Product',
-        name: name,
-        image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
-        description: description,
-        brand: manufacturer,
-        sku: params.sku,
-        gtin: id,
-        offers: {
-          '@type': 'Offer',
-          url: `https://www.apollo247.com/medicine-details/${params.sku}`,
-          priceCurrency: 'INR',
-          price: special_price || price,
-          priceValidUntil: '2020-12-31',
-          availability: 'https://schema.org/InStock',
-          itemCondition: 'https://schema.org/NewCondition',
-        },
-      });
-    }
+    } 
+      
+    
   }, [medicineDetails]);
 
   let medicinePharmacyDetails: PharmaOverview[] | null = null;
@@ -614,7 +629,8 @@ export const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
+      {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
+      {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>
         {() => (
           <>
