@@ -260,7 +260,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             }} />
             <View
               style={{
-                paddingLeft: heightPercent <= 31 ? 8 : 20
+                paddingLeft: heightPercent <= 31 ? 8 : 15
               }}
             >
               <Text style={[
