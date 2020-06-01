@@ -156,6 +156,14 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
               doctorDetails && doctorDetails.associatedDoctor && doctorDetails.associatedDoctor.id
                 ? doctorDetails.associatedDoctor.id
                 : '';
+
+            const associateDoctorName =
+              doctorDetails &&
+              doctorDetails.associatedDoctor &&
+              doctorDetails.associatedDoctor.fullName
+                ? doctorDetails.associatedDoctor.fullName
+                : '';
+
             const associateDoctorImage =
               doctorDetails &&
               doctorDetails.associatedDoctor &&
@@ -184,7 +192,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <a href={clientRoutes.doctorDetails(associateDoctorId)}>
+                    <a href={clientRoutes.doctorDetails(associateDoctorName, associateDoctorId)}>
                       <div className={classes.doctorName}>
                         {doctorDetails &&
                         doctorDetails.associatedDoctor &&
