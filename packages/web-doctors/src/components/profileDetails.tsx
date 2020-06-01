@@ -372,6 +372,7 @@ const useStyles = makeStyles((theme: Theme) => {
         border: '1px solid #30c1a3',
         borderRadius: 10,
         fontWeight: 500,
+        paddingLeft: 45,
         paddingRight: 120,
       },
     },
@@ -391,6 +392,23 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
         marginRight: 10,
       },
+    },
+    errorText: {
+      fontSize: 13,
+      color: '#890000',
+      paddingTop: 10,
+      paddingLeft: 5,
+      fontWeight: 500,
+    },
+    inputAdornment: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      zIndex: 2,
+      padding: 10,
+      fontWeight: 500,
+      fontSize: '1rem',
+      color: '#02475b',
     },
   };
 });
@@ -909,10 +927,14 @@ export const MyAccount: React.FC = (props) => {
                 <div className={classes.formGroup}>
                   <label>Invite via SMS</label>
                   <div className={classes.formWrap}>
+                    <div className={classes.inputAdornment}>+91</div>
                     <TextField
                       placeholder="Enter recipient’s mobile number here"
                       autoFocus
-                      inputProps={{ type: 'tel', maxLength: 10 }}
+                      inputProps={{ 
+                        type: 'tel', 
+                        maxLength: 10
+                      }}
                       value={mobileNumber}
                       onPaste={(e) => {
                         if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
@@ -948,9 +970,9 @@ export const MyAccount: React.FC = (props) => {
                       InputLabelProps={{ shrink: true }}
                     />
                     {showErrorMessage && (
-                      <Typography variant="h6">
-                        <span>Please enter valid mobile number</span>
-                      </Typography>
+                      <div className={classes.errorText}>
+                        Please enter valid mobile number
+                      </div>
                     )}
 
                     <AphButton color="primary" onClick={() => shareDeepLink()}>
