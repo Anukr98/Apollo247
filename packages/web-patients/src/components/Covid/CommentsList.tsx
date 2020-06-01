@@ -59,12 +59,19 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type CommentItem = {
+interface CommentReplyInterface {
+  content: string;
+  name: string;
+  createdAt: string;
+}
+
+interface CommentItem {
   email: string;
   createdAt: string;
   content: string;
   name: string;
-};
+  commentReply: CommentReplyInterface;
+}
 
 interface CommentListProps {
   commentData: Array<CommentItem>;
@@ -119,6 +126,13 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
                 <div className={classes.postDate}>{item.createdAt && newCommentDateTime}</div>
               </div>
               <div className={classes.postContent}>{item.content}</div>
+              {item && item.commentReply && (
+                <div>
+                  {item.commentReply.name}{' '}
+                  {moment.unix(parseInt(item.commentReply.createdAt)).format('DD MMMM YYYY')}
+                  <div dangerouslySetInnerHTML={{ __html: item.commentReply.content }} />
+                </div>
+              )}
             </div>
           );
         })}
