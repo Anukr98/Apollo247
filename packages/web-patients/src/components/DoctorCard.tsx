@@ -138,6 +138,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorCardProps {
   doctorDetails: any;
   nextAvailability: string | null;
+  history?: any;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -235,12 +236,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         className={classes.topContent}
         onClick={() => {
           params.specialty
-            ? (window.location.href = clientRoutes.specialtyDoctorDetails(
-                params.specialty,
-                doctorName,
-                doctorId
-              ))
-            : (window.location.href = clientRoutes.doctorDetails(doctorName, doctorId));
+            ? props.history.push(
+                clientRoutes.specialtyDoctorDetails(params.specialty, doctorName, doctorId)
+              )
+            : props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
         }}
       >
         <Avatar
@@ -261,13 +260,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         />
         <div
           className={classes.doctorInfo}
-          onClick={() =>
-            (window.location.href = clientRoutes.specialtyDoctorDetails(
-              params.specialty,
-              doctorName,
-              doctorId
-            ))
-          }
+          onClick={() => {
+            params.specialty
+              ? props.history.push(
+                  clientRoutes.specialtyDoctorDetails(params.specialty, doctorName, doctorId)
+                )
+              : props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
+          }}
         >
           {/* {loading ? (
             <div className={classes.cardLoader}>
