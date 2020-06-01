@@ -2,6 +2,7 @@ const axios = require('axios');
 const logger = require('../../winston-logger')('Pharmacy-logs');
 const { verifychecksum } = require('../../paytm/lib/checksum');
 const { medicineOrderQuery } = require('../helpers/make-graphql-query');
+const { PHARMA_RESPONSE_DELAY } = require('../../Constants');
 
 module.exports = async (req, res, next) => {
     let transactionStatus = '';
@@ -36,37 +37,45 @@ module.exports = async (req, res, next) => {
 
         logger.info(`${orderId} - paymed-response - ${JSON.stringify(payload)}`);
 
-        axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+        if (process.env.NODE_ENV == 'dev'
+            || process.env.NODE_ENV == 'local'
+            || transactionStatus == 'pending'
+        ) {
+            axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
-        logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
-        // this needs to be altered later.
-        const requestJSON = {
-            query: medicineOrderQuery(payload)
-        };
+            logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
 
-        /// write medicineoirder
-        const response = await axios.post(process.env.API_URL, requestJSON);
-        logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
+            // this needs to be altered later.
+            const requestJSON = {
+                query: medicineOrderQuery(payload)
+            };
 
-        if (response.data.errors && response.data.errors.length) {
-            logger.error(`${orderId} - pharma-payment-response - ${JSON.stringify(response.data.errors)}`);
-            throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
-        }
+            /// write medicineorder
+            const response = await axios.post(process.env.API_URL, requestJSON);
+            logger.info(`${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`);
 
-        if (bookingSource === 'WEB') {
-            let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
-            if (transactionStatus === 'failed') {
-                redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
-            }
-            res.redirect(redirectUrl);
-        } else {
-            if (transactionStatus === 'failed') {
-                res.redirect(`/mob-error?status=${transactionStatus}`);
-            }
-            else {
-                res.redirect(`/mob?status=${transactionStatus}`);
+            if (response.data.errors && response.data.errors.length) {
+                logger.error(`${orderId} - pharma-payment-response - ${JSON.stringify(response.data.errors)}`);
+                throw new Error("Error Occured in SaveMedicineOrderPaymentMq!");
             }
         }
+        setTimeout(() => {
+            if (bookingSource === 'WEB') {
+                let redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
+                if (transactionStatus === 'failed') {
+                    redirectUrl = `${process.env.PORTAL_URL}/${orderId}/${transactionStatus}`;
+                }
+                res.redirect(redirectUrl);
+            } else {
+                if (transactionStatus === 'failed') {
+                    res.redirect(`/mob-error?status=${transactionStatus}`);
+                }
+                else {
+                    res.redirect(`/mob?status=${transactionStatus}`);
+                }
+            }
+        }, PHARMA_RESPONSE_DELAY);
+
     } catch (e) {
         if (e.response && e.response.data) {
             logger.error(`${orderId} - paymed-response - ${JSON.stringify(e.response.data)}`);
