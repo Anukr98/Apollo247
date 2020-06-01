@@ -398,7 +398,18 @@ export const MedicineDetails: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
         /**schema markup  start*/
-        const { manufacturer, description, image, name, special_price, price, id, sku, type_id, PharmaOverview } = data.productdp[0];
+        const {
+          manufacturer,
+          description,
+          image,
+          name,
+          special_price,
+          price,
+          id,
+          sku,
+          type_id,
+          PharmaOverview,
+        } = data.productdp[0];
         setProductSchemaJSON({
           '@context': 'https://schema.org/',
           '@type': 'Product',
@@ -418,15 +429,20 @@ export const MedicineDetails: React.FC = (props) => {
             itemCondition: 'https://schema.org/NewCondition',
           },
         });
-        if(type_id && type_id=== 'Pharma' && Array.isArray(PharmaOverview) && PharmaOverview.length) {
+        if (
+          type_id &&
+          type_id === 'Pharma' &&
+          Array.isArray(PharmaOverview) &&
+          PharmaOverview.length
+        ) {
           const { generic, Doseform } = PharmaOverview[0];
           setDrugSchemaJSON({
-            "@context": "https://schema.org/",
-            "@type": "Drug",
-            "name": name,
-            "description": description,
-            "activeIngredient": generic,
-            "dosageForm": Doseform
+            '@context': 'https://schema.org/',
+            '@type': 'Drug',
+            name: name,
+            description: description,
+            activeIngredient: generic,
+            dosageForm: Doseform,
           });
         }
         /**schema markup End */
@@ -451,9 +467,7 @@ export const MedicineDetails: React.FC = (props) => {
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
-    } 
-      
-    
+    }
   }, [medicineDetails]);
 
   let medicinePharmacyDetails: PharmaOverview[] | null = null;
