@@ -107,6 +107,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    handleDeepLink();
+  }, []);
+
+  const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
         .then((url) => {
@@ -127,8 +131,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
-  }, []);
-
+  };
   const handleOpenURL = (event: any) => {
     try {
       console.log('event', event);
@@ -195,6 +198,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         default:
+          getData('ConsultRoom');
           break;
       }
       console.log('route', route);
