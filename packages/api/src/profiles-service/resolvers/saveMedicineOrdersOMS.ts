@@ -42,6 +42,8 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     coupon: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
   }
 
   input MedicineCartOMSItem {
@@ -84,6 +86,8 @@ type MedicineCartOMSInput = {
   coupon: string;
   couponDiscount: number;
   productDiscount: number;
+  packagingCharges: number;
+  showPrescriptionAtStore: boolean;
 };
 
 type MedicineCartOMSItem = {
@@ -182,7 +186,7 @@ const saveMedicineOrderOMS: Resolver<
         discountedTotals.mrpPriceTotal -
         discountedTotals.couponDiscount -
         discountedTotals.productDiscount;
-      if (medicineCartOMSInput.estimatedAmount != finalAmount) {
+      if (medicineCartOMSInput.estimatedAmount != Number(finalAmount.toFixed(2))) {
         throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
       }
     }
@@ -207,6 +211,8 @@ const saveMedicineOrderOMS: Resolver<
     coupon: medicineCartOMSInput.coupon,
     couponDiscount: medicineCartOMSInput.couponDiscount,
     productDiscount: medicineCartOMSInput.productDiscount,
+    packagingCharges: medicineCartOMSInput.packagingCharges,
+    showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
     isOmsOrder: true,
   };
 

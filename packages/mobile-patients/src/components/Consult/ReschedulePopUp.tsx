@@ -18,7 +18,7 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { APPOINTMENT_STATE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { APPOINTMENT_STATE, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -288,6 +288,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                             if (
                               props.data.appointmentState ===
                                 APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                              props.data.status == STATUS.PENDING ||
                               dateIsAfter
                             )
                               props.setdisplayoverlay();
@@ -322,6 +323,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
 
                       if (
                         props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                        props.data.status == STATUS.PENDING ||
                         dateIsAfter
                       )
                         acceptChange();

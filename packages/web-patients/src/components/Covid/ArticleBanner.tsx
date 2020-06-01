@@ -11,8 +11,10 @@ import { CallOurExperts } from 'components/CallOurExperts';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      position: 'relative',
-      backgroundColor: '#fff',
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
+      height: '100%',
     },
     bannerTop: {
       position: 'relative',
@@ -74,14 +76,16 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
       color: '#01475b',
       fontWeight: 500,
+      position: 'absolute',
+      bottom: 0,
+      width: '100%',
       [theme.breakpoints.up(1220)]: {
-        padding: '34px 40px',
-        marginTop: -118,
+        padding: '0 40px 34px 40px',
       },
       '& h2': {
         margin: 0,
         fontSize: 24,
-        color: '#01475b',
+        color: '#fff',
         fontWeight: 600,
         [theme.breakpoints.down('xs')]: {
           lineHeight: '30px',
@@ -90,6 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 14,
         margin: 0,
+        color: '#fff',
       },
     },
     articleType: {
@@ -97,6 +102,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '18px',
       textTransform: 'uppercase',
       paddingTop: 10,
+      color: '#fff',
     },
     bottomPopover: {
       overflow: 'initial',
@@ -190,9 +196,6 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>
-      <div className={classes.callOurExpertsContainer}>
-        <CallOurExperts />
-      </div>
       <div className={classes.bannerTop}>
         <Link
           to={
@@ -202,7 +205,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
           }
         >
           <div className={classes.backArrow}>
-            <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+            <img className={classes.blackArrow} src={require('images/ic_back_white.svg')} />
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
         </Link>

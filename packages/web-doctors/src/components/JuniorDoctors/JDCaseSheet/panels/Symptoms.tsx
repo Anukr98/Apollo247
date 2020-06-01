@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 0,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       maxWidth: 20,
@@ -56,6 +57,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 30,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       maxWidth: 20,
@@ -81,6 +83,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginTop: 16,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       marginRight: 8,
@@ -249,14 +252,6 @@ export const Symptoms: React.FC = (props) => {
         sinceError: false,
         howOfftenError: false,
         severityError: false,
-      });
-    } else if (isEmpty(trim(severity))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: false,
-        howOfftenError: false,
-        severityError: true,
       });
     } else if (duplicate) {
       setErrorState({

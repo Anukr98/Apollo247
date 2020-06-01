@@ -383,6 +383,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
+    console.log('orderAutoId=>', ordersList[0].orderAutoId);
     console.log('ordersList====>', ordersList);
     let totalCount = 0,
       deliveryCount = 0,
@@ -393,29 +394,44 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         if (Date.parse(orderDetails.orderTat.toString())) {
           const tatDate = new Date(orderDetails.orderTat.toString());
+          console.log('tatDate==>', tatDate);
           const istCreatedDate = orderDetails.createdDate;
+          console.log('istCreatedDate==>', istCreatedDate);
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
+          console.log('orderTat==>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {
             vdcCount++;
           }
+          console.log('counts==>', totalCount, vdcCount);
           if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+            console.log('inside condition');
             const orderStatusDetails = await MedicineOrdersStatus.findOne({
               where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
             });
+            console.log('orderStatusDetails=>', orderStatusDetails);
             if (orderStatusDetails) {
+              console.log('inside orderStatusDetails');
+              console.log(orderStatusDetails.statusDate, orderDetails.createdDate);
+              console.log(
+                'difference==>',
+                Math.abs(
+                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
+                )
+              );
               const deliveryTat = Math.floor(
                 Math.abs(
                   differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
                 )
               );
-
+              console.log('deliveryTat=>', deliveryTat);
               if (deliveryTat <= 120) {
                 deliveryCount++;
               } else {
                 vdcDeliveryCount++;
               }
+              console.log('delivery,VdcCounts=>', deliveryCount, vdcCount);
             }
           }
         }

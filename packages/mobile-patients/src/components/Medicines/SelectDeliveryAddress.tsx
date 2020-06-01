@@ -17,6 +17,7 @@ import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -72,8 +73,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
                   } else {
                     showAphAlert!({
                       title: 'Uh oh.. :(',
-                      description:
-                        'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                      description: string.medicine_cart.pharmaAddressUnServiceableAlert,
                     });
                     CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Pincode unserviceable.');
                     setSelectedAddressId && setSelectedAddressId('');

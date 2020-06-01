@@ -117,12 +117,12 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
   const postCommentUrl = process.env.POST_COMMENT_URL || '';
 
   useEffect(() => {
-    if (isEmailValid(userEmail) && comment.length) {
+    if (isEmailValid(userEmail) && comment.length && isNameValid(userName)) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, comment]);
+  }, [userEmail, comment, userName]);
 
   const handleCancelForm = () => {
     setComment('');
@@ -214,7 +214,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       <div className={classes.formRow}>
         <AphTextField
           onChange={(event) => handleNameChange(event)}
-          label="Full Name"
+          label="Full Name*"
           placeholder="Add your name"
           value={userName}
         />

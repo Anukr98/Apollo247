@@ -403,6 +403,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       appointment: appointmentData,
       status: CASESHEET_STATUS.COMPLETED,
       notes: ApiConstants.NO_JD_AVAILABLE_TEXT.toString(),
+      isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
   }

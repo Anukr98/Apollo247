@@ -247,6 +247,12 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
   bankAccount: DoctorBankAccounts[];
 
+  @Column({ default: true })
+  isJdAllowed: Boolean;
+
+  @Column({ default: true })
+  isApolloJdRequired: Boolean;
+
   @Column({ nullable: true, type: 'text' })
   awards: string;
 
@@ -1090,3 +1096,57 @@ export class CityPincodeMapper extends BaseEntity {
   zone: string;
 }
 // citypincode mapper ends
+
+//citypincode mapper starts
+export enum DeepLinkType {
+  DOCTOR = 'DOCTOR',
+}
+
+@Entity()
+export class Deeplink extends BaseEntity {
+  @Column({ nullable: true })
+  campaignName: string;
+
+  @Column({ nullable: true })
+  channelName: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('Deeplink_deepLink')
+  @Column({ nullable: true, type: 'text' })
+  deepLink: string;
+
+  @Index('Deeplink_doctorId')
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  linkRefreshDate: Date;
+
+  @Column({ nullable: true })
+  partnerId: string;
+
+  @Column({ nullable: true })
+  referralCode: string;
+
+  @Column({ nullable: true })
+  shortId: string;
+
+  @Column({ nullable: true })
+  templateId: string;
+
+  @Column({ nullable: true })
+  type: DeepLinkType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}

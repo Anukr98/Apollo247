@@ -1,5 +1,6 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
+import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -41,6 +42,8 @@ const appStaticVariables = {
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
   HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
+  CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
+  PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -137,14 +140,14 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.418',
+  Android_Version: '2.418',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 // QA
@@ -175,14 +178,14 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.426',
+  Android_Version: '2.426',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //Production
@@ -213,12 +216,13 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.31',
-  Android_Version: '2.31',
+  iOS_Version: '2.41',
+  Android_Version: '2.41',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://www.apollo247.com/covid19?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //PERFORMANCE
@@ -256,7 +260,7 @@ const ConfigurationPERFORM = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //VAPT
@@ -294,7 +298,7 @@ const ConfigurationVAPT = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //DevelopmentReplica
@@ -332,7 +336,7 @@ const ConfigurationDevReplica = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 const Configuration =
@@ -513,21 +517,16 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Area pharmacy store not found on app',
-      'Cancel the medicine order',
-      'Delay in pharmacy order',
-      'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery',
-      'Inappropriate attitude and behavior of pharmacy staff',
-      'Incorrect medicines',
-      'Issues in order confirmations',
-      'Medicines not delivered',
-      'Order cancelled, no refund',
-      'Orders cancelled without any information',
-      'Payment issues in online pharmacy',
-      'Software not user-friendly',
-      'Updates in order delivery or status of the order',
-      'Refund required',
+      'I want to cancel my medicine order with a refund',
+      'The order was successfully placed but medicines not yet delivered',
+      'I was not able to make the payment due to technical errors',
+      'My money got deducted but no order confirmation received',
+      'My order got canceled with no prior notice hence, need the refund',
+      'There is a mismatch in the quantity of medicines ordered and delivered',
+      'The medicines delivered are not the ones which were ordered by me',
+      'The app is crashing/ website is working too slow',
+      'The excess amount charged for medicine delivery',
+      'Inappropriate attitude or behaviour of delivery staff',
     ],
   },
   {

@@ -154,9 +154,11 @@ export enum MEDICINE_UNIT {
 }
 
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum ROUTE_OF_ADMINISTRATION {

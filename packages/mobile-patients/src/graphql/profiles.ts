@@ -5,17 +5,29 @@ export const GET_CURRENT_PATIENTS = gql`
     getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
-        mobileNumber
+        uhid
         firstName
         lastName
-        relation
-        uhid
-        gender
+        mobileNumber
         dateOfBirth
         emailAddress
         gender
-        dateOfBirth
+        relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies
@@ -852,6 +864,10 @@ export const SAVE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        mobileNumber
+        latitude
+        longitude
+        stateCode
       }
     }
   }
@@ -871,6 +887,9 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
+        stateCode
       }
     }
   }
@@ -980,6 +999,9 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         updatedDate
         addressType
         otherAddressType
+        latitude
+        longitude
+        stateCode
       }
     }
   }
@@ -1085,9 +1107,9 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
-export const SAVE_MEDICINE_ORDER = gql`
-  mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
-    SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
+export const SAVE_MEDICINE_ORDER_OMS = gql`
+  mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
       errorCode
       errorMessage
       orderId
@@ -1114,11 +1136,42 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
         id
         orderAutoId
         deliveryType
+        currentStatus
         medicineOrdersStatus {
           id
           orderStatus
           statusDate
           hideStatus
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
+  query getMedicineOrdersOMSList($patientId: String) {
+    getMedicineOrdersOMSList(patientId: $patientId) {
+      medicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        currentStatus
+        medicineOrdersStatus {
+          id
+          statusDate
+          orderStatus
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          currentStatus
+          medicineOrdersStatus {
+            statusDate
+            hideStatus
+            orderStatus
+          }
         }
       }
     }
@@ -1316,6 +1369,18 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         orderType
         currentStatus
         patientAddressId
+        currentStatus
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+        }
         medicineOrdersStatus {
           id
           orderStatus
@@ -1331,6 +1396,102 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           isMedicine
           mou
         }
+        patient {
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
+  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      medicineOrderDetails {
+        id
+        orderAutoId
+        devliveryCharges
+        couponDiscount
+        productDiscount
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
+        orderType
+        currentStatus
+        patientAddressId
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+          statusMessage
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+          isMedicine
+          mou
+          isPrescriptionNeeded
+        }
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          updatedDate
+          currentStatus
+          itemDetails
+          medicineOrdersStatus {
+            id
+            orderStatus
+            statusDate
+            hideStatus
+          }
+          medicineOrderInvoice {
+            id
+            siteId
+            remarks
+            requestType
+            vendorName
+            billDetails
+            itemDetails
+          }
+        }
+        patient {
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
       }
     }
   }
@@ -1344,9 +1505,11 @@ export const UPLOAD_FILE = gql`
   }
 `;
 
-export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
-  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
-    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
+  mutation savePrescriptionMedicineOrderOMS(
+    $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
+  ) {
+    savePrescriptionMedicineOrderOMS(prescriptionMedicineOMSInput: $prescriptionMedicineOMSInput) {
       status
       orderId
       orderAutoId
@@ -1375,6 +1538,69 @@ export const GET_COUPONS = gql`
         expirationDate
         isActive
       }
+    }
+  }
+`;
+
+export const GET_PHARMA_COUPON_LIST = gql`
+  query getPharmaCouponList {
+    getPharmaCouponList {
+      coupons {
+        code
+        couponConsultRule {
+          couponApplicability
+          id
+        }
+        couponPharmaRule {
+          couponCategoryApplicable
+          discountApplicableOn
+          messageOnCouponScreen
+          successMessage
+        }
+        couponGenericRule {
+          id
+          minimumCartValue
+          maximumCartValue
+          couponDueDate
+          couponEndDate
+          couponStartDate
+          couponReuseCount
+          couponReuseCountPerCustomer
+          couponApplicableCustomerType
+          discountType
+          discountValue
+        }
+        createdDate
+        description
+        id
+        isActive
+        displayStatus
+      }
+    }
+  }
+`;
+
+export const VALIDATE_PHARMA_COUPON = gql`
+  query validatePharmaCoupon($pharmaCouponInput: PharmaCouponInput) {
+    validatePharmaCoupon(pharmaCouponInput: $pharmaCouponInput) {
+      discountedTotals {
+        couponDiscount
+        mrpPriceTotal
+        productDiscount
+      }
+      pharmaLineItemsWithDiscountedPrice {
+        applicablePrice
+        discountedPrice
+        itemId
+        mrp
+        productName
+        productType
+        quantity
+        specialPrice
+      }
+      successMessage
+      reasonForInvalidStatus
+      validityStatus
     }
   }
 `;
@@ -1913,6 +2139,27 @@ export const CANCEL_MEDICINE_ORDER = gql`
   }
 `;
 
+export const CANCEL_MEDICINE_ORDER_OMS = gql`
+  mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
+    cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
+      orderStatus
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
+  query GetMedicineOrderCancelReasons {
+    getMedicineOrderCancelReasons {
+      cancellationReasons {
+        reasonCode
+        description
+        displayMessage
+        isUserReason
+      }
+    }
+  }
+`;
+
 export const GET_CALL_DETAILS = gql`
   query getCallDetails($appointmentCallId: String) {
     getCallDetails(appointmentCallId: $appointmentCallId) {
@@ -2068,8 +2315,8 @@ export const AUTOMATED_QUESTIONS = gql`
 `;
 
 export const LOGIN = gql`
-  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
-    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, $hashCode: String) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType, hashCode: $hashCode) {
       status
       message
       loginId
@@ -2113,6 +2360,20 @@ export const GET_PATIENTS_MOBILE = gql`
         gender
         relation
         photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        familyHistory {
+          description
+          relation
+        }
+        lifeStyle {
+          description
+          occupationHistory
+        }
         patientMedicalHistory {
           bp
           dietAllergies
@@ -2124,6 +2385,10 @@ export const GET_PATIENTS_MOBILE = gql`
           temperature
           weight
         }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
       }
     }
   }
@@ -2148,13 +2413,119 @@ export const GET_DEVICE_TOKEN_COUNT = gql`
 export const GET_TRANSACTION_STATUS = gql`
   query paymentTransactionStatus($appointmentId: String!) {
     paymentTransactionStatus(appointmentId: $appointmentId) {
-      appointment{
+      appointment {
+        paymentRefId
         displayId
         bankTxnId
         paymentStatus
         amountPaid
-       
       }
+    }
   }
-}
+`;
+
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const GET_PHARMA_TRANSACTION_STATUS = gql`
+  query pharmaPaymentStatus($orderId: Int!) {
+    pharmaPaymentStatus(orderId: $orderId) {
+      paymentRefId
+      bankTxnId
+      amountPaid
+      paymentStatus
+      paymentDateTime
+      orderDateTime
+      paymentMode
+    }
+  }
+`;
+
+export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
+  query consultOrders($patientId: String!) {
+    consultOrders(patientId: $patientId) {
+      appointments {
+        id
+        doctorId
+        displayId
+        appointmentDateTime
+        actualAmount
+        status
+        appointmentType
+        discountedAmount
+        appointmentRefunds {
+          refundAmount
+          txnTimestamp
+          refundStatus
+        }
+        appointmentPayments {
+          paymentRefId
+          paymentStatus
+          amountPaid
+        }
+        doctor {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
+  query pharmacyOrders($patientId: String!) {
+    pharmacyOrders(patientId: $patientId) {
+      pharmaOrders {
+        id
+        estimatedAmount
+        devliveryCharges
+        bookingSource
+        orderAutoId
+        appointmentId
+        currentStatus
+        orderType
+        orderDateTime
+        quoteDateTime
+        medicineOrderPayments {
+          paymentType
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          paymentMode
+          amountPaid
+        }
+      }
+    }
+  }
+`;
+
+export const CONSULT_ORDER_INVOICE = gql`
+  query getOrderInvoice($patientId: String!, $appointmentId: String!) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  }
+`;
+
+export const LINK_UHID = gql`
+  mutation linkUhids($primaryUhid: String!, $linkedUhids: [String]) {
+    linkUhids(primaryUhid: $primaryUhid, linkedUhids: $linkedUhids)
+  }
+`;
+
+export const UNLINK_UHID = gql`
+  mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
+    unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
+  }
 `;
