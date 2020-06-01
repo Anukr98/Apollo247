@@ -19,7 +19,11 @@ import {
   CommonLogEvent,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -56,10 +60,12 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
+import SmsRetriever from 'react-native-sms-retriever';
 
 const { height, width } = Dimensions.get('window');
 
@@ -379,9 +385,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       'Mobile Number': phoneNumberFromParams,
     };
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
   };
 
-  const onClickOk = () => {
+  const onClickOk = (readOtp?: string) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
     postWebEngageEvent(WebEngageEventName.OTP_ENTERED, eventAttributes);
@@ -396,7 +403,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             setshowSpinner(true);
             const { loginId } = props.navigation.state.params!;
 
-            verifyOTP(loginId, otp)
+            verifyOTP(loginId, readOtp || otp)
               .then((data: any) => {
                 console.log(data.status === true, data.status, 'status');
 
@@ -596,6 +603,30 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       getTimerData();
     }
   };
+
+  const smsListenerAndroid = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const registered = await SmsRetriever.startSmsRetriever();
+        if (registered) {
+          SmsRetriever.addSmsListener((event) => {
+            console.log(event.message, 'otp message');
+            if (event.message) {
+              const messageOTP = event.message.match(/[0-9]{6}/g);
+              if (messageOTP) {
+                isOtpValid(messageOTP[0]);
+                // onClickOk(messageOTP[0]);
+              }
+            }
+            SmsRetriever.removeSmsListener();
+          });
+        }
+      } catch (error) {
+        console.log('Message listining error');
+      }
+    }
+  };
+
   useEffect(() => {
     // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
     //   const newOtp = message.body.match(/-*[0-9]+/);
@@ -611,6 +642,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     //   return false;
     // });
     AppState.addEventListener('change', _handleAppStateChange);
+    if (Platform.OS === 'android') {
+      smsListenerAndroid();
+    }
+    return () => {
+      if (Platform.OS === 'android') {
+        SmsRetriever.removeSmsListener();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -961,7 +1000,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 <ArrowDisabled size="md_l" />
               )
             }
-            onClickButton={onClickOk}
+            onClickButton={() => onClickOk()}
             buttonStyle={{
               position: 'absolute',
               top: Platform.OS === 'ios' ? 156 : 164,

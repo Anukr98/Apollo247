@@ -260,6 +260,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingTop: 11,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -287,6 +288,7 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     inputRoot: {

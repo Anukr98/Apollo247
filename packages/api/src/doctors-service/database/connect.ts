@@ -46,6 +46,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -97,6 +98,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,

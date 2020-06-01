@@ -46,6 +46,8 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     coupon: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
   }
 
   input MedicineCartOMSItem {
@@ -88,6 +90,8 @@ type MedicineCartOMSInput = {
   coupon: string;
   couponDiscount: number;
   productDiscount: number;
+  packagingCharges: number;
+  showPrescriptionAtStore: boolean;
 };
 
 type MedicineCartOMSItem = {
@@ -265,6 +269,8 @@ const saveMedicineOrderOMS: Resolver<
     coupon: medicineCartOMSInput.coupon,
     couponDiscount: medicineCartOMSInput.couponDiscount,
     productDiscount: medicineCartOMSInput.productDiscount,
+    packagingCharges: medicineCartOMSInput.packagingCharges,
+    showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
     isOmsOrder: true,
   };
 

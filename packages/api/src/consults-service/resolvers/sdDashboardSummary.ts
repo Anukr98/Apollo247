@@ -336,6 +336,7 @@ const updateSdSummary: Resolver<
       }
       const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      console.log('timeSlots==>', timeSlots);
       let difference = 0;
       let totalSlotsTime = 0;
       if (timeSlots.length) {

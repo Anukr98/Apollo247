@@ -8,7 +8,6 @@ module.exports = async (req, res, next) => {
 
     setTimeout(async () => {
         let orderId;
-
         try {
             const payload = req.body;
             orderId = payload.ORDERID;

@@ -129,6 +129,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 12,
         '&:hover': {
           backgroundColor: 'transparent',
+          boxShadow: 'none',
         },
         '& img': {
           maxWidth: 20,
