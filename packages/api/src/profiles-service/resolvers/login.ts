@@ -127,7 +127,6 @@ const login: Resolver<
   //call sms gateway service to send the OTP here
   loginLogger('SEND_SMS___START');
   const smsResult = await sendSMS(mobileNumber, otp, hashCode);
-  sendNotificationWhatsapp('+918019677178', '');
   loginLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
