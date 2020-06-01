@@ -85,7 +85,7 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
   const renderDescription = () => (
     <Text style={styles.descText}>
       {
-        'Drive into the store and our staff will deliver your medicines to you outside. We will ensure you don’t have to wait & will get your medicines instantaneously!'
+        'Get your medicines without waiting!\nDrive in to our store, our staff will deliver your medicines to you.'
       }
     </Text>
   );
@@ -107,13 +107,23 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
     </View>
   );
 
-  const renderInfo = () => (
-    <Text style={styles.infoText}>
-      {
-        'Once you place your order, you will get an SMS with the number of store executives. Kindly contact him 15 minutes before you arrive & he would be waiting outside with your products. Kindly use a prepaid method of payment to ensure stocks are blocked & smooth process.'
-      }
-    </Text>
-  );
+  const renderInfo = () => {
+    const infoTextList = [
+      "Place your order, get an SMS with store executive's number",
+      'Contact executive 15 minutes before you reach',
+      'Collect your medicines & drive off',
+    ];
+    return (
+      <View style={{ marginTop: 5 }}>
+        {infoTextList.map((item) => (
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={[styles.infoText, { paddingRight: 0 }]}>{'\u2022'}</Text>
+            <Text style={[styles.infoText, { paddingLeft: 10, flex: 1 }]}>{item}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   const renderGotItButton = () => (
     <Button
