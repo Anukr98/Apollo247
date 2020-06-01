@@ -1150,3 +1150,21 @@ export class Deeplink extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
+
+@Entity()
+export class DoctorPatientExternalConnect extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ default: false })
+  externalConnect: Boolean;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  patientId: string;
+}

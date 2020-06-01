@@ -29,11 +29,15 @@ export const getAppointmentOverviewTypeDefs = gql`
     fromDate: DateTime
     toDate: DateTime
   }
+  type PastAppointmentsCountResult {
+    count: Int
+  }
   extend type Query {
     getAppointmentOverview(
       appointmentOverviewInput: GetAllDoctorAppointmentsInput
     ): GetAppointmentOverviewResult!
     getAppointmentByPaymentOrderId(orderId: String): AppointmentList
+    getPastAppointmentsCount(doctorId: String!, patientId: String!): PastAppointmentsCountResult!
   }
   extend type Mutation {
     updatePaymentOrderId(
@@ -64,6 +68,10 @@ type GetAllDoctorAppointmentsInput = {
 };
 type GetAllDoctorAppointmentsInputArgs = {
   appointmentOverviewInput: GetAllDoctorAppointmentsInput;
+};
+
+type PastAppointmentsCountResult = {
+  count: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -156,10 +164,24 @@ const getAppointmentByPaymentOrderId: Resolver<
   return { appointment: appointmentDetails };
 };
 
+const getPastAppointmentsCount: Resolver<
+  null,
+  { doctorId: string; patientId: string },
+  ConsultServiceContext,
+  PastAppointmentsCountResult
+> = async (parent, { doctorId, patientId }, context) => {
+  if (!doctorId) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  if (!patientId) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  const { apptRepo } = getRepos(context);
+  const count = await apptRepo.getAppointmentsCount(doctorId, patientId);
+  return { count };
+};
+
 export const getAppointmentOverviewResolvers = {
   Query: {
     getAppointmentOverview,
     getAppointmentByPaymentOrderId,
+    getPastAppointmentsCount,
   },
   Mutation: {
     updatePaymentOrderId,
