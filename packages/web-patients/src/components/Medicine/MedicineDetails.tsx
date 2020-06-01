@@ -418,25 +418,26 @@ export const MedicineDetails: React.FC = (props) => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
     } else {
-      const { manufacturer, description, image, name, special_price } = medicineDetails;
+      const { manufacturer, description, image, name, special_price, price, id } = medicineDetails;
       setStructuredJSON({
-        "@context": "https://schema.org/",
-        "@type": "Product",
-        "name": name,
-        "image": process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
-        "description": description,
-        "brand": manufacturer,
-        "offers": {
-          "@type": "Offer",
-          "url": `https://www.apollo247.com/medicine-details/${params.sku}`,
-          "priceCurrency": "INR",
-          "price": special_price ? special_price: 0,
-          "priceValidUntil": "2020-12-31",
-          "availability": "https://schema.org/InStock",
-          "itemCondition": "https://schema.org/NewCondition"
-        }
-      })
-
+        '@context': 'https://schema.org/',
+        '@type': 'Product',
+        name: name,
+        image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+        description: description,
+        brand: manufacturer,
+        sku: params.sku,
+        gtin: id,
+        offers: {
+          '@type': 'Offer',
+          url: `https://www.apollo247.com/medicine-details/${params.sku}`,
+          priceCurrency: 'INR',
+          price: special_price || price,
+          priceValidUntil: '2020-12-31',
+          availability: 'https://schema.org/InStock',
+          itemCondition: 'https://schema.org/NewCondition',
+        },
+      });
     }
   }, [medicineDetails]);
 
@@ -611,11 +612,9 @@ export const MedicineDetails: React.FC = (props) => {
       .replace(/&amp;nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
 
-
   return (
     <div className={classes.root}>
-      {structuredJSON &&
-        <SchemaMarkup structuredJSON={structuredJSON} />}
+      {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <MedicinesCartContext.Consumer>
         {() => (
           <>
