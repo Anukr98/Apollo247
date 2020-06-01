@@ -172,12 +172,10 @@ type CartPushNotificationInput = {
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
-export async function sendSMS(message: string) {
+/*export async function sendSMS(message: string) {
   const smsUrl = process.env.SMS_GATEWAY_URL ? process.env.SMS_GATEWAY_URL : '';
   if (smsUrl == '') {
     throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
-  }
-
   log(
     'notificationServiceLogger',
     `EXTERNAL_API_CALL_SMS: ${smsUrl}`,
@@ -187,7 +185,44 @@ export async function sendSMS(message: string) {
   );
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
-}
+}*/
+
+export const sendNotificationWhatsapp = async (mobileNumber: string, message: string) => {
+  const apiUrl =
+    process.env.WHATSAPP_URL +
+    '?method=OPT_IN&phone_number=' +
+    mobileNumber +
+    '&userid=' +
+    process.env.WHATSAPP_USERNAME +
+    '&password=' +
+    process.env.WHATSAPP_PASSWORD +
+    '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
+  const optInResponse = await fetch(apiUrl)
+    .then(async (res) => {
+      console.log(res, 'res of opt id');
+      const sendApiUrl =
+        process.env.WHATSAPP_URL +
+        '?method=SendMessage&send_to=' +
+        mobileNumber +
+        '&userid=' +
+        process.env.WHATSAPP_USERNAME +
+        '&password=' +
+        process.env.WHATSAPP_PASSWORD +
+        '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
+        message;
+      await fetch(sendApiUrl)
+        .then((res) => {
+          console.log(res, 'res of actual msg send');
+        })
+        .catch((error) => {
+          console.log(error, 'send message api error');
+        });
+    })
+    .catch((error) => {
+      console.log(error, 'optInResponse error');
+    });
+  console.log(optInResponse);
+};
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
@@ -307,7 +342,8 @@ export async function sendCallsNotification(
   //options
   const options = {
     priority: NotificationPriority.high,
-    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline,
+    contentAvailable: true,
   };
   let notificationResponse;
   const registrationToken: string[] = [];
