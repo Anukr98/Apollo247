@@ -320,7 +320,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
         currentPatient
       );
-      getAddressDatails();
+      order.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && getAddressDatails();
+      let shopAddress =
+        order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
+          ? JSON.parse(order.shopAddress)
+          : null;
+      shopAddress && setAddressData(shopAddress.address);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -578,16 +583,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
             </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b'), flex: 1 }}>
               {orderDetails.patient && orderDetails.patient.firstName}{' '}
               {orderDetails.patient && orderDetails.patient.lastName}
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
+          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 0 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
-              {string.OrderSummery.address}
+              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                ? string.OrderSummery.store_address
+                : string.OrderSummery.address}
             </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 13, '#01475b', 1, 24),
+                paddingRight: 0,
+                flex: 1,
+              }}
+            >
               {addressData}
             </Text>
           </View>
@@ -693,6 +706,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.CANCELLED]: [
           '',
           orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
+        ],
+        [MEDICINE_ORDER_STATUS.READY_AT_STORE]: [
+          '',
+          `Your order is ready for pickup at your selected ${addressData}`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           'Out for delivery: ',

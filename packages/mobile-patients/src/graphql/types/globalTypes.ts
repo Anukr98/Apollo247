@@ -667,6 +667,7 @@ export interface MedicineCartOMSInput {
   productDiscount?: number | null;
   packagingCharges?: number | null;
   showPrescriptionAtStore?: boolean | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -807,6 +808,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   email?: string | null;
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
@@ -844,6 +846,15 @@ export interface SaveSearchInput {
   typeId: string;
   typeName?: string | null;
   patient: string;
+}
+
+export interface ShopAddress {
+  storename?: string | null;
+  address?: string | null;
+  workinghrs?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  state?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {

@@ -1,6 +1,7 @@
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_ORDER_STATUS,
+  MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -147,6 +148,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   );
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
+  const packaging_charges = orderDetails.packagingCharges;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
   const paymentMethodToDisplay =
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
@@ -259,7 +261,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.shippingDetails}>{string.OrderSummery.address} </Text>
+              <Text style={styles.shippingDetails}>
+                {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                  ? string.OrderSummery.store_address
+                  : string.OrderSummery.address}
+              </Text>
               <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
@@ -397,7 +403,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>+ Rs.0.00</Text>
+              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                + Rs.{(packaging_charges || 0).toFixed(2)}
+              </Text>
             </View>
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
