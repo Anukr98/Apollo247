@@ -665,7 +665,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: 'Doctor will get back within 24 hours',
+          automatedText: `We have notified the query you have raised to the Dr. ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
@@ -1424,7 +1424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        // console.log('presenceEvent', presenceEvent);
+        console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -5451,6 +5451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     },
                     (status, response) => {}
                   );
+                  InsertMessageToDoctor('ImageUploaded');
                   KeepAwake.activate();
                 })
                 .catch((e) => {
@@ -5637,6 +5638,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     },
                     (status, response) => {}
                   );
+                  InsertMessageToDoctor('EprescriptionUploaded');
                   KeepAwake.activate();
                 });
               item.message &&
