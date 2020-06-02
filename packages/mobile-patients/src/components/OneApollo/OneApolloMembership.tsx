@@ -20,7 +20,7 @@ import { MyTransactions } from './MyTransactions';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface OneApolloProps extends NavigationScreenProps {}
+export interface OneApolloProps extends NavigationScreenProps { }
 
 export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   const [name, setName] = useState<String>('Bhuvan Reddy');
@@ -133,7 +133,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   const renderScreen = () => {
     switch (screen) {
       case 'MyMembership':
-        return <MyMembership />;
+        return <MyMembership tier={tier} />;
         break;
       case 'MyTransactions':
         return <MyTransactions />;
