@@ -92,6 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CommentsFormProps {
   titleId: string;
+  onCancel: () => void;
 }
 
 export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
@@ -125,6 +126,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
     setUserNameValid(true);
     setMaskEmail(false);
     setSubscribe(true);
+    props.onCancel();
   };
 
   const handleEmailValidityCheck = () => {
@@ -173,6 +175,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
             onChange={(event) => setComment(event.target.value)}
             value={comment}
             multiline
+            autoFocus={true}
             inputProps={{
               maxLength: 300,
             }}
