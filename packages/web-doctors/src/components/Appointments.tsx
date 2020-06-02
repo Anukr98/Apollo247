@@ -646,8 +646,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                             appointmentId: appointment.id,
                             patientId: appointment.patientId,
                           };
-                          debugger;
-
                           if (!appointment.isJdQuestionsComplete) {
                             text.headerText = modalData.questionNotField.headerText;
                             text.confirmationText = modalData.questionNotField.confirmationText;
