@@ -107,7 +107,7 @@ export class AphStorageClient {
     name?: Parameters<typeof BlobURL.fromContainerURL>[1];
     file: File;
   }) => {
-    const fileName = (name +`${file.name.split('.').pop()}`) as Parameters<typeof BlobURL.fromContainerURL>[1];
+    const fileName = (`${name}.${file.name.split('.').pop()}`) as Parameters<typeof BlobURL.fromContainerURL>[1];
     const blockBlobUrl = BlockBlobURL.fromBlobURL(
       BlobURL.fromContainerURL(this.containerUrl, fileName)
     );
