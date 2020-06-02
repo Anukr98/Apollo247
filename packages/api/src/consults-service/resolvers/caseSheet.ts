@@ -243,6 +243,7 @@ export const caseSheetTypeDefs = gql`
     id: String
     isJdConsultStarted: Boolean
     medicinePrescription: [MedicinePrescription]
+    removedMedicinePrescription: [MedicinePrescription]
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
@@ -253,6 +254,7 @@ export const caseSheetTypeDefs = gql`
     updatedDate: DateTime
     referralSpecialtyName: String
     referralDescription: String
+    version: Int
   }
 
   type Diagnosis {
@@ -461,6 +463,7 @@ export const caseSheetTypeDefs = gql`
     followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
+    removedMedicinePrescription: [MedicinePrescriptionInput!]
     id: String!
     status: CASESHEET_STATUS
     lifeStyle: String
@@ -634,7 +637,9 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
+    appointmentData.id
+  );
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
@@ -706,6 +711,7 @@ type ModifyCaseSheetInput = {
   followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
+  removedMedicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
   status: CASESHEET_STATUS;
   lifeStyle: string;
@@ -791,6 +797,12 @@ const modifyCaseSheet: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_LIST);
     getCaseSheetData.medicinePrescription = JSON.parse(
       JSON.stringify(inputArguments.medicinePrescription)
+    );
+  }
+
+  if (!(inputArguments.removedMedicinePrescription === undefined)) {
+    getCaseSheetData.removedMedicinePrescription = JSON.parse(
+      JSON.stringify(inputArguments.removedMedicinePrescription)
     );
   }
 
@@ -1034,10 +1046,9 @@ const createSeniorDoctorCaseSheet: Resolver<
   if (juniorDoctorcaseSheet == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   //check whether if senior doctors casesheet already exists
-  let caseSheetDetails;
-  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(args.appointmentId);
+  const sdCaseSheets = await caseSheetRepo.getSeniorDoctorMultipleCaseSheet(args.appointmentId);
 
-  if (caseSheetDetails == null) {
+  if (sdCaseSheets == null || sdCaseSheets.length == 0) {
     const caseSheetAttrs: Partial<CaseSheet> = {
       diagnosis: juniorDoctorcaseSheet.diagnosis,
       diagnosticPrescription: juniorDoctorcaseSheet.diagnosticPrescription,
@@ -1054,9 +1065,39 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
-    caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
-  return caseSheetDetails;
+
+  if (sdCaseSheets.length > 0) {
+    //check whether latest version is not in complete status
+    if (sdCaseSheets[0].status != CASESHEET_STATUS.COMPLETED) {
+      return sdCaseSheets[0];
+    }
+    const caseSheetAttrs: Partial<CaseSheet> = {
+      diagnosis: sdCaseSheets[0].diagnosis,
+      diagnosticPrescription: sdCaseSheets[0].diagnosticPrescription,
+      followUp: sdCaseSheets[0].followUp,
+      followUpAfterInDays: sdCaseSheets[0].followUpAfterInDays,
+      followUpDate: sdCaseSheets[0].followUpDate,
+      otherInstructions: sdCaseSheets[0].otherInstructions,
+      symptoms: sdCaseSheets[0].symptoms,
+      medicinePrescription: sdCaseSheets[0].medicinePrescription,
+      consultType: appointmentData.appointmentType,
+      doctorId: sdCaseSheets[0].doctorId,
+      patientId: sdCaseSheets[0].patientId,
+      appointment: appointmentData,
+      createdDoctorId: appointmentData.doctorId,
+      doctorType: doctorData.doctorType,
+      version: sdCaseSheets[0].version + 1,
+      referralSpecialtyName: sdCaseSheets[0].referralSpecialtyName,
+      referralDescription: sdCaseSheets[0].referralDescription,
+      isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
+      notes: sdCaseSheets[0].notes,
+    };
+    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  }
+
+  return sdCaseSheets[0];
 };
 
 const submitJDCaseSheet: Resolver<
