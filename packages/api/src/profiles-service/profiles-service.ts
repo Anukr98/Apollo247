@@ -199,6 +199,10 @@ import {
   pharmaOrdersTypeDefs,
   pharmacyOrdersResolvers,
 } from 'profiles-service/resolvers/pharmacyOrders';
+import {
+  savePharmacologistConsultResolvers,
+  savePharmacologistConsultTypeDefs,
+} from 'profiles-service/resolvers/savePharmacologistConsult';
 
 (async () => {
   await connect();
@@ -444,6 +448,10 @@ import {
       {
         typeDefs: getMedicineOrderCancelReasonsTypeDefs,
         resolvers: getMedicineOrderCancelReasonsResolvers,
+      },
+      {
+        typeDefs: savePharmacologistConsultTypeDefs,
+        resolvers: savePharmacologistConsultResolvers,
       },
     ]),
     plugins: [

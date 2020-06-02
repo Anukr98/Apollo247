@@ -163,9 +163,12 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
             className={!articleLiked ? classes.likeFilter : ''}
             src={require('images/ic_like.svg')}
             alt="Likes"
+            onContextMenu={(e) => e.preventDefault()}
           />
         </span>
-        <span>{likeCount} Likes</span>
+        <span>
+          {likeCount} {Number(likeCount) === 1 ? 'Like' : 'Likes'}
+        </span>
       </div>
       <div className={classes.linkItem} onClick={() => handleDislikeButton()}>
         <span>
@@ -173,15 +176,24 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
             className={articleDisLiked ? classes.disLikeFilter : ''}
             src={require('images/ic_dislike.svg')}
             alt="Dislikes"
+            onContextMenu={(e) => e.preventDefault()}
           />
         </span>
-        <span>{dislikeCount} Dislikes</span>
+        <span>
+          {dislikeCount} {Number(dislikeCount) === 1 ? 'Dislike' : 'Dislikes'}
+        </span>
       </div>
       <div className={classes.linkItem}>
         <span>
-          <img src={require('images/ic_feed.svg')} alt="Comments" />
+          <img
+            onContextMenu={(e) => e.preventDefault()}
+            src={require('images/ic_feed.svg')}
+            alt="Comments"
+          />
         </span>
-        <span>{Number(props.totalComments)} Comments</span>
+        <span>
+          {Number(props.totalComments)} {Number(props.totalComments) === 1 ? 'Comment' : 'Comments'}
+        </span>
       </div>
     </div>
   );
