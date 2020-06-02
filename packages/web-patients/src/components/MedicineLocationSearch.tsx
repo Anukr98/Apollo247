@@ -333,12 +333,17 @@ export const MedicineLocationSearch: React.FC = (props) => {
             setIsLocationPopover(false);
             setPincode('');
             setPincodeError(false);
+            setMutationLoading(false);
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: AxiosError) => {
+            console.log(e);
+            setMutationLoading(false);
+          };
         }
       })
       .catch((e: AxiosError) => {
+        setMutationLoading(false);
         console.log(e);
       });
   };
@@ -355,10 +360,14 @@ export const MedicineLocationSearch: React.FC = (props) => {
             getCurrentLocationDetails(lat, lng);
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: AxiosError) => {
+            setMutationLoading(false);
+            console.log(e);
+          };
         }
       })
       .catch((e: AxiosError) => {
+        setMutationLoading(false);
         console.log(e);
       });
   };
@@ -370,10 +379,14 @@ export const MedicineLocationSearch: React.FC = (props) => {
           setPincodeError(false);
           getPlaceDetails(pincode);
         } else {
+          setMutationLoading(false);
           setPincodeError(true);
         }
       })
-      .catch((e) => setPincodeError(true));
+      .catch((e) => {
+        setPincodeError(true);
+        setMutationLoading(false);
+      });
   };
 
   return (
@@ -443,7 +456,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
           <h2>Hi! :)</h2>
           <p>Allow us to serve you better by entering your delivery pincode below.</p>
           <AphTextField
-            value={pincode}
+            placeholder="Enter pincode here"
             onChange={(e) => {
               setPincodeError(false);
               setPincode(e.target.value);
@@ -451,7 +464,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             inputProps={{
               maxLength: 6,
             }}
-            placeholder="Enter pincode here"
+            value={pincode}
           />
           {pincodeError && (
             <div className={classes.pincodeError}>
