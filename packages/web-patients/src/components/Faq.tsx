@@ -166,7 +166,7 @@ export const Faq: React.FC = (props) => {
   };
 
   useEffect(() => {
-    fetchUtil(`https://uatcms.apollo247.com/api/faqlist`, 'GET', {}, '', true).then((res: any) => {
+    fetchUtil(process.env.APOLLO_247_FAQ_BASE_URL, 'GET', {}, '', true).then((res: any) => {
       if (res && res.data) {
         setFaqData(res.data);
       }
