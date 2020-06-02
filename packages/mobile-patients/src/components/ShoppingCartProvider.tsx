@@ -72,7 +72,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
-
+  showPrescriptionAtStore: boolean;
+  setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
 
@@ -143,6 +144,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   stores: [],
   setStores: null,
+  showPrescriptionAtStore: false,
+  setShowPrescriptionAtStore: null,
   pinCode: '',
   setPinCode: null,
 
@@ -190,6 +193,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
+    ShoppingCartContextProps['showPrescriptionAtStore']
+  >(false);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -481,6 +487,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStores,
         storeId,
         setStoreId,
+        showPrescriptionAtStore,
+        setShowPrescriptionAtStore,
 
         pinCode,
         setPinCode,

@@ -7,6 +7,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
+  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -43,11 +44,12 @@ import {
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   getDeliveryTime,
-  getPlaceInfoByLatLng,
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
+  getStoreInventoryApi,
+  GetStoreInventoryResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -93,6 +95,9 @@ import {
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { TextInputComponent } from '../ui/TextInputComponent';
+import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
+import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -163,6 +168,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     deliveryAddressId,
     storeId,
     setStoreId,
+    showPrescriptionAtStore,
     deliveryCharges,
     packagingCharges,
     cartTotal,
@@ -194,17 +200,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
-  const { locationDetails } = useAppCommonData();
+  const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
+  const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
-  // To remove applied coupon from cart when user goes back.
+  // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
     return () => {
       setCoupon!(null);
+      setStoreId!('');
     };
   }, []);
 
@@ -238,42 +247,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!(locationDetails && locationDetails.pincode)) {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  !pinCode && fetchStorePickup(_pincode || '');
-                }
-              } catch (e) {
-                CommonBugFender('YourCart_getPlaceInfoByLatLng_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('YourCart_getPlaceInfoByLatLng', error);
-              console.log(error, 'geocode error');
-            });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
-      console.log('pincode');
+    const location = pharmacyLocation || locationDetails;
+    if (!(location && location.pincode)) {
+      doRequestAndAccessLocationModified()
+        .then((response) => {
+          if (response) {
+            const _pincode = response.pincode;
+            !pinCode && fetchStorePickup(_pincode || '');
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('YourCart_getPlaceInfoByLatLng', e);
+        });
     } else {
-      !pinCode && fetchStorePickup(locationDetails.pincode);
+      !pinCode && fetchStorePickup(location.pincode);
     }
   }, []);
 
@@ -295,10 +282,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 'No'
               );
               setDeliveryAddressId && setDeliveryAddressId('');
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description: string.medicine_cart.pharmaAddressUnServiceableAlert,
-              });
+              renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
             }
           })
           .catch((e) => {
@@ -342,10 +326,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         )
         .catch((e) => {
           setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
-          });
+          renderAlert(`Something went wrong, unable to fetch addresses.`);
         })) ||
       setLoading!(false);
   };
@@ -464,10 +445,63 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [deliveryAddressId, cartItems]);
 
   useEffect(() => {
+    const isOnlyCartItemsChange = lastStoreIdReplica == storeId;
+
+    if (cartItems.length == 0 && storeId) {
+      // clear storeId
+      setLastStoreIdReplica(storeId);
+      setStoreId!('');
+      setselectedTab(tabs[0].title);
+      renderAlert(string.medicine_cart.addItemsForStoresAlert);
+    } else if (cartItems.length > 0 && storeId) {
+      setLoading!(true);
+      setLastStoreIdReplica(storeId);
+      getStoreInventoryApi(
+        storeId,
+        cartItems.map((item) => item.id)
+      )
+        .then(({ data }) => {
+          const storeItems = g(data, 'itemDetails');
+          if (storeItems && areItemsAvailableInStore(storeItems, cartItems)) {
+            !isOnlyCartItemsChange && setShowDriveWayPopup(true);
+          } else {
+            clearStoreIdAndShowAlert(string.medicine_cart.cartItemsNotAvailableInStore);
+          }
+        })
+        .catch(() => {
+          clearStoreIdAndShowAlert(string.medicine_cart.storeItemsAvailabilityApiFailMsg);
+        })
+        .finally(() => setLoading!(false));
+    }
+  }, [storeId, cartItems]);
+
+  useEffect(() => {
     if (coupon && cartTotal > 0) {
       applyCoupon(coupon.code, cartItems);
     }
   }, [cartTotal]);
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
+
+  const clearStoreIdAndShowAlert = (message: string) => {
+    setStoreId!('');
+    renderAlert(message);
+  };
+
+  const areItemsAvailableInStore = (
+    storeItems: GetStoreInventoryResponse['itemDetails'],
+    cartItems: ShoppingCartItem[]
+  ) => {
+    const isInventoryAvailable = (cartItem: ShoppingCartItem) =>
+      !!storeItems.find((item) => item.itemId == cartItem.id && item.qty >= cartItem.quantity);
+
+    return !cartItems.find((item) => !isInventoryAvailable(item));
+  };
 
   const _validateCoupon = (variables: validatePharmaCouponVariables) =>
     client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
@@ -499,10 +533,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-    });
+    renderAlert(message);
   };
 
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
@@ -617,6 +648,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 } else {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
                   setCoupon!(null);
+                  setStoreId!('');
                 }
               }}
             >
@@ -760,10 +792,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
-          });
+          renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
         }
       })
       .catch((e) => {
@@ -931,77 +960,64 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const renderStorePickup = () => {
     return (
-      <View style={{ margin: 16, marginTop: 20 }}>
-        <Text
-          style={{
-            paddingTop: 10,
-            ...theme.fonts.IBMPlexSansMedium(16),
-            lineHeight: 24,
-            color: '#0087ba',
-          }}
-        >
-          Sorry! We are not taking Store Pickup Orders currently as we cannot guarantee inventory
-          availability. You can directly visit your nearby store to check availability.
-        </Text>
+      <View style={{}}>
+        {!!slicedStoreList.length && !!storeId && (
+          <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
+        )}
+        <View style={{ margin: 16 }}>
+          <TextInputComponent
+            value={`${pinCode}`}
+            maxLength={6}
+            onChangeText={(pincode) => fetchStorePickup(pincode)}
+            placeholder={'Enter Pincode'}
+          />
+          {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
+          {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+            <Text
+              style={{
+                paddingTop: 10,
+                ...theme.fonts.IBMPlexSansMedium(16),
+                lineHeight: 24,
+                color: '#0087ba',
+              }}
+            >
+              Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
+              from a nearby store, or change the pincode.
+            </Text>
+          )}
+          {slicedStoreList.map((store, index, array) => (
+            <RadioSelectionItem
+              key={store.storeid}
+              title={`${store.storename}\n${store.address}`}
+              isSelected={storeId === store.storeid}
+              onPress={() => {
+                CommonLogEvent(AppRoutes.YourCart, 'Set store id');
+                setStoreId && setStoreId(store.storeid);
+                // setShowDriveWayPopup(true);
+              }}
+              containerStyle={{ marginTop: 16 }}
+              hideSeparator={index == array.length - 1}
+            />
+          ))}
+          <View>
+            {stores.length > 2 && (
+              <Text
+                style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.StorPickupScene, {
+                    pincode: pinCode,
+                    stores: stores,
+                  })
+                }
+              >
+                VIEW ALL
+              </Text>
+            )}
+          </View>
+        </View>
       </View>
     );
   };
-
-  // const renderStorePickup = () => {
-  //   return (
-  //     <View style={{ margin: 16, marginTop: 20 }}>
-  //       <TextInputComponent
-  //         value={`${pinCode}`}
-  //         maxLength={6}
-  //         onChangeText={(pincode) => fetchStorePickup(pincode)}
-  //         placeholder={'Enter Pincode'}
-  //       />
-  //       {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-  //       {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
-  //         <Text
-  //           style={{
-  //             paddingTop: 10,
-  //             ...theme.fonts.IBMPlexSansMedium(16),
-  //             lineHeight: 24,
-  //             color: '#0087ba',
-  //           }}
-  //         >
-  //           Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-  //           from a nearby store, or change the pincode.
-  //         </Text>
-  //       )}
-
-  //       {slicedStoreList.map((store, index, array) => (
-  //         <RadioSelectionItem
-  //           key={store.storeid}
-  //           title={`${store.storename}\n${store.address}`}
-  //           isSelected={storeId === store.storeid}
-  //           onPress={() => {
-  //             CommonLogEvent(AppRoutes.YourCart, 'Set store id');
-  //             setStoreId && setStoreId(store.storeid);
-  //           }}
-  //           containerStyle={{ marginTop: 16 }}
-  //           hideSeparator={index == array.length - 1}
-  //         />
-  //       ))}
-  //       <View>
-  //         {stores.length > 2 && (
-  //           <Text
-  //             style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
-  //             onPress={() =>
-  //               props.navigation.navigate(AppRoutes.StorPickupScene, {
-  //                 pincode: pinCode,
-  //                 stores: stores,
-  //               })
-  //             }
-  //           >
-  //             VIEW ALL
-  //           </Text>
-  //         )}
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   const renderDelivery = () => {
     return (
@@ -1025,6 +1041,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }}
             data={tabs}
             onChange={(selectedTab: string) => {
+              if (selectedTab == tabs[1].title && cartItems.length == 0) {
+                renderAlert(string.medicine_cart.addItemsForStoresAlert);
+                return;
+              }
               setselectedTab(selectedTab);
               setStoreId!('');
               setDeliveryAddressId!('');
@@ -1048,10 +1068,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           if (cartTotal == 0) {
-            showAphAlert!({
-              title: string.common.uhOh,
-              description: 'Please add items in the cart to apply coupon.',
-            });
+            renderAlert('Please add items in the cart to apply coupon.');
           } else {
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
             setCoupon!(null);
@@ -1294,7 +1311,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     !cartItems.find((item) => item.unserviceable) &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
-      ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
+      ? (storeId && showPrescriptionAtStore) ||
+        physicalPrescriptions.length > 0 ||
+        ePrescriptions.length > 0
       : true)
   );
 
@@ -1353,10 +1372,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           CommonBugFender('YourCart_physicalPrescriptionUpload', e);
           aphConsole.log({ e });
           setLoading!(false);
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Error occurred while uploading prescriptions.',
-          });
+          renderAlert('Error occurred while uploading prescriptions.');
         });
     } else {
       setisPhysicalUploadComplete(true);
@@ -1539,8 +1555,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderDelivery()}
+            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
@@ -1567,6 +1583,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showDriveWayPopup && !!storeId && (
+        <StoreDriveWayPickupPopup
+          store={stores.find((item) => item.storeid == storeId)!}
+          onPressOkGotIt={() => setShowDriveWayPopup(false)}
+        />
+      )}
     </View>
   );
 };

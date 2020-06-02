@@ -93,6 +93,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const {
     deliveryAddressId,
     storeId,
+    showPrescriptionAtStore,
     grandTotal,
     deliveryCharges,
     packagingCharges,
@@ -334,6 +335,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       return;
     }
     setLoading && setLoading(true);
+    const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
+    const { storename, address, workinghrs, phone, city, state } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         coupon: coupon ? coupon.code : '',
@@ -342,6 +345,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
+        shopAddress: selectedStore ? { storename, address, workinghrs, phone, city, state } : null,
+        showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
@@ -735,7 +740,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             <TouchableOpacity
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder(item.paymentMode, null, false);
+                initiateOrder(item.paymentMode, '', false);
               }}
               style={styles.paymentModeCard}
             >
@@ -848,7 +853,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }}
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder('NB', null, false);
+                initiateOrder('NB', '', false);
               }}
             >
               <Text
@@ -928,7 +933,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           }}
           title={'PLACE ORDER'}
           onPress={() => {
-            initiateOrder(null, null, true);
+            initiateOrder('', '', true);
           }}
         />
       </View>
