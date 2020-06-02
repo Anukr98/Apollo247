@@ -105,10 +105,11 @@ export class AphStorageClient {
     file,
   }: {
     name?: Parameters<typeof BlobURL.fromContainerURL>[1];
-    file: Parameters<typeof uploadBrowserDataToBlockBlob>[1];
+    file: File;
   }) => {
+    const fileName = (`${name}.${file.name.split('.').pop()}`) as Parameters<typeof BlobURL.fromContainerURL>[1];
     const blockBlobUrl = BlockBlobURL.fromBlobURL(
-      BlobURL.fromContainerURL(this.containerUrl, name)
+      BlobURL.fromContainerURL(this.containerUrl, fileName)
     );
     const blob = await uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobUrl);
     const aphBlob: AphBlob = { ...blob, name };

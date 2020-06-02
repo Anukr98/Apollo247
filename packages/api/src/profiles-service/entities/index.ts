@@ -22,12 +22,12 @@ export type ONE_APOLLO_USER_REG = {
   Gender: Gender;
   BusinessUnit: string;
   StoreCode: string;
-}
+};
 
 export enum ONE_APOLLO_STORE_CODE {
   ANDCUS = 'ANDCUS',
   IOSCUS = 'IOSCUS',
-  WEBCUS = 'WEBCUS'
+  WEBCUS = 'WEBCUS',
 }
 
 export enum CouponApplicability {
