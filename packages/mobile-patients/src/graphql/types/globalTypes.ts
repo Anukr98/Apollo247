@@ -491,6 +491,7 @@ export interface BookAppointmentInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
+  externalConnect?: boolean | null;
 }
 
 export interface BookFollowUpAppointmentInput {
