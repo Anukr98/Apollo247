@@ -72,6 +72,7 @@ const Common = {
   PALE_LIGHT_GRAY: paleLightGray,
   COD_TEXT: '#084c60',
   PLATINUM_GREY: platinumGrey,
+  REDEEMED_TEXT: '#c3202b'
 };
 
 const Header = {

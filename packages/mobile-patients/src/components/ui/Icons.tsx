@@ -1031,3 +1031,7 @@ export const OneApolloPlatinum: React.FC<IconProps> = (props) => (
 export const OneApolloLockIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/padlock.png')} />
 );
+
+export const TxnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
+);
