@@ -492,46 +492,45 @@ export const MyAccount: React.FC = (props) => {
   const onNext = () => {};
   const onBack = () => {};
   const shareDeepLink = () => {
-    if(mobileNumber.trim().length < 10){
+    if (mobileNumber.trim().length < 10) {
       setShowErrorMessage(true);
-    }else{
+    } else {
       setShowErrorMessage(false);
       setLoading(true);
-    client
-      .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
-        query: SEND_MESSAGE_TO_MOBILE_NUMBER,
-        fetchPolicy: 'no-cache',
-        variables: {
-          mobileNumber: mobileNumberWithPrefix,
-          textToSend: `Hi, ${doctorProfile.displayName} has invited you to the Apollo247 application. Click here ${deepLink} to download the application.  Use this referral code to login`,
-        },
-      })
-      .then((data) => {
-        if (
-          data &&
-          data.data &&
-          data.data.sendMessageToMobileNumber &&
-          data.data.sendMessageToMobileNumber.status &&
-          data.data.sendMessageToMobileNumber.status === 'OK'
-        ) {
-          alert(data.data.sendMessageToMobileNumber.message);
-          setIsShareProfileDialogOpen(false);
-          setDeepLink('');
-          setMobileNumber('');
-        } else {
+      client
+        .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
+          query: SEND_MESSAGE_TO_MOBILE_NUMBER,
+          fetchPolicy: 'no-cache',
+          variables: {
+            mobileNumber: mobileNumberWithPrefix,
+            textToSend: `Hi, ${doctorProfile.displayName} has invited you to the Apollo247 application. Click here ${deepLink} to download the application.  Use this referral code to login`,
+          },
+        })
+        .then((data) => {
+          if (
+            data &&
+            data.data &&
+            data.data.sendMessageToMobileNumber &&
+            data.data.sendMessageToMobileNumber.status &&
+            data.data.sendMessageToMobileNumber.status === 'OK'
+          ) {
+            alert(data.data.sendMessageToMobileNumber.message);
+            setIsShareProfileDialogOpen(false);
+            setDeepLink('');
+            setMobileNumber('');
+          } else {
+            alert('An error occuered in sending message to mobile number');
+            console.log(data);
+          }
+          setLoading(false);
+          //setUserDetails(data.data.getDoctorDetailsById);
+        })
+        .catch((error) => {
           alert('An error occuered in sending message to mobile number');
-          console.log(data);
-        }
-        setLoading(false);
-        //setUserDetails(data.data.getDoctorDetailsById);
-      })
-      .catch((error) => {
-        alert('An error occuered in sending message to mobile number');
-        console.log(error);
-        setLoading(true);
-      });
+          console.log(error);
+          setLoading(true);
+        });
     }
-    
   };
   const showShareProfileDialog = () => {
     setShowErrorMessage(false);
@@ -932,9 +931,9 @@ export const MyAccount: React.FC = (props) => {
                     <TextField
                       placeholder="Enter recipient’s mobile number here"
                       autoFocus
-                      inputProps={{ 
-                        type: 'tel', 
-                        maxLength: 10
+                      inputProps={{
+                        type: 'tel',
+                        maxLength: 10,
                       }}
                       value={mobileNumber}
                       onPaste={(e) => {
@@ -971,16 +970,13 @@ export const MyAccount: React.FC = (props) => {
                       InputLabelProps={{ shrink: true }}
                     />
                     {showErrorMessage && (
-                      <div className={classes.errorText}>
-                        Please enter valid mobile number
-                      </div>
+                      <div className={classes.errorText}>Please enter valid mobile number</div>
                     )}
 
                     <AphButton color="primary" onClick={() => shareDeepLink()}>
                       Send
                     </AphButton>
-                    {loading && (<CircularProgress className={classes.loader} />)}
-                    
+                    {loading && <CircularProgress className={classes.loader} />}
                   </div>
                 </div>
                 {/* <p className={classes.infoText}>

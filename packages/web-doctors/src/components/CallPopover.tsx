@@ -869,7 +869,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
-  const appointmentComplete = '^^#appointmentComplete'; 
+  const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
