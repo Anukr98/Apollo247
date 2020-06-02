@@ -200,7 +200,7 @@ export const Faq: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Header />
-      <SchemaMarkup structuredJSON={faqSchema} />
+      {faqSchema && <SchemaMarkup structuredJSON={faqSchema} />}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.faqHeader}>
