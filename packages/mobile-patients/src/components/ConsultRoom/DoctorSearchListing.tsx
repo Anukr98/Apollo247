@@ -89,6 +89,7 @@ import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 const { width: screenWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  mainContainer: { flex: 1, backgroundColor: 'white' },
   topView: {
     height: 56,
     borderRadius: 0,
@@ -98,6 +99,51 @@ const styles = StyleSheet.create({
     elevation: 1,
     backgroundColor: theme.colors.WHITE,
     borderBottomWidth: 0,
+  },
+  consultHeadingText: {
+    textAlign: 'center',
+    marginVertical: 20,
+    ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE),
+  },
+  sortByTextStyle: {
+    ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
+    marginLeft: 13,
+    marginTop: 13,
+  },
+
+  bottomMainContainer: { backgroundColor: theme.colors.WHITE },
+  bottomOptionsContainer: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    marginHorizontal: 13,
+    justifyContent: 'space-between',
+  },
+  bottomItemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottomCenterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  seperator: {
+    height: 34,
+    width: 0.5,
+    backgroundColor: '#b4b4b4',
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    backgroundColor: theme.colors.WHITE,
+    paddingTop: 10,
+    paddingBottom: 22,
+  },
+  inputTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    paddingBottom: 5,
   },
 });
 
@@ -1011,34 +1057,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderDoctorSearchBar = () => {
     return (
-      <View
-        style={{
-          paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
-          paddingTop: 10,
-        }}
-      >
+      <View style={styles.searchContainer}>
         <TextInputComponent
           conatinerstyles={{ paddingBottom: 0 }}
-          inputStyle={[
-            {
-              ...theme.fonts.IBMPlexSansMedium(14),
-              color: theme.colors.SHERPA_BLUE,
-              paddingBottom: 5,
-            },
-            false
-              ? {
-                  borderBottomColor: '#e50000',
-                }
-              : {},
-          ]}
-          textInputprops={
-            false
-              ? {
-                  selectionColor: '#e50000',
-                }
-              : {}
-          }
+          inputStyle={styles.inputTextStyle}
           value={doctorSearch}
           placeholder="Search doctors"
           underlineColorAndroid="transparent"
@@ -1048,23 +1070,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             }
           }}
         />
-        {false ? (
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(12),
-              color: '#890000',
-              paddingVertical: 8,
-            }}
-          >
-            Sorry, we couldn’t find what you are looking for :(
-          </Text>
-        ) : (
-          <View
-            style={{
-              height: 22,
-            }}
-          />
-        )}
       </View>
     );
   };
@@ -1073,37 +1078,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderBottomOptions = () => {
     return (
-      <View style={{ backgroundColor: theme.colors.WHITE }}>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
-            marginLeft: 13,
-            marginTop: 13,
-          }}
-        >
-          Sort by
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            marginBottom: 10,
-            marginHorizontal: 13,
-            justifyContent: 'space-between',
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 0.6 : 1),
-              }}
-            >
-              Nearby
+      <View style={styles.bottomMainContainer}>
+        <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
+        <View style={styles.bottomOptionsContainer}>
+          <View style={styles.bottomItemContainer}>
+            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 0.6 : 1)}>
+              {string.doctor_search_listing.near}
             </Text>
             <TouchableOpacity
               activeOpacity={1}
@@ -1132,34 +1112,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 }}
               />
             </TouchableOpacity>
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 1 : 0.6),
-              }}
-            >
-              Availability
+            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 1 : 0.6)}>
+              {string.doctor_search_listing.avaliablity}
             </Text>
           </View>
-          <View
-            style={{
-              height: 34,
-              width: 0.5,
-              backgroundColor: '#b4b4b4',
-            }}
-          />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
+          <View style={styles.seperator} />
+          <View style={styles.bottomItemContainer}>
+            <View style={styles.bottomItemContainer}>
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
@@ -1170,20 +1129,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               </TouchableOpacity>
               <Text
                 style={{
-                  ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, 1),
+                  ...theme.viewStyles.text(
+                    'B',
+                    10,
+                    theme.colors.SHERPA_BLUE,
+                    onlineCheckBox ? 1 : 0.6
+                  ),
                   marginLeft: 4,
                 }}
               >
-                {'Online\nConsults'}
+                {string.doctor_search_listing.online}
               </Text>
             </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginLeft: 10,
-              }}
-            >
+            <View style={styles.bottomCenterContainer}>
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
@@ -1194,28 +1152,21 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               </TouchableOpacity>
               <Text
                 style={{
-                  ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, 1),
+                  ...theme.viewStyles.text(
+                    'B',
+                    10,
+                    theme.colors.SHERPA_BLUE,
+                    physicalCheckBox ? 1 : 0.6
+                  ),
                   marginLeft: 4,
                 }}
               >
-                {'In-Person\nConsults'}
+                {string.doctor_search_listing.inperson}
               </Text>
             </View>
           </View>
-          <View
-            style={{
-              height: 34,
-              width: 0.5,
-              backgroundColor: '#b4b4b4',
-            }}
-          />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
+          <View style={styles.seperator} />
+          <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
@@ -1232,7 +1183,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
         {renderDoctorSearchBar()}
@@ -1241,14 +1192,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  marginVertical: 20,
-                  ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE),
-                }}
-              >
-                Consult with the best {specialistPluralTerm || 'Doctors'}
+              <Text style={styles.consultHeadingText}>
+                {string.doctor_search_listing.consultBest.replace(
+                  '{0}',
+                  specialistPluralTerm || 'Doctors'
+                )}
               </Text>
               {renderDoctorSearches(
                 onlineCheckBox

@@ -201,6 +201,12 @@
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
+    "consultBest": "Consult with the best {0}",
+    "sortby": "Sort by",
+    "near": "Nearby",
+    "avaliablity": "Availability",
+    "online": "Online\nConsults",
+    "inperson": "In-Person\nConsults",
     "filter_data": [
       {
         "label": "City",

@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 20,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 12,
+    marginBottom: 16,
     borderRadius: 10,
   },
   buttonView: {
