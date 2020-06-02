@@ -9,6 +9,7 @@ import {
 import { clientRoutes } from 'helpers/clientRoutes';
 import _map from 'lodash/map';
 import _forEach from 'lodash/forEach';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -163,6 +164,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
               doctorDetails.associatedDoctor.fullName
                 ? doctorDetails.associatedDoctor.fullName
                 : '';
+            const readbleDoctorname = readableParam(associateDoctorName);
 
             const associateDoctorImage =
               doctorDetails &&
@@ -192,7 +194,7 @@ export const StarDoctorTeam: React.FC<StarDoctorTeamProps> = (props) => {
                     className={classes.bigAvatar}
                   />
                   <div className={classes.doctorInfo}>
-                    <a href={clientRoutes.doctorDetails(associateDoctorName, associateDoctorId)}>
+                    <a href={clientRoutes.doctorDetails(readbleDoctorname, associateDoctorId)}>
                       <div className={classes.doctorName}>
                         {doctorDetails &&
                         doctorDetails.associatedDoctor &&

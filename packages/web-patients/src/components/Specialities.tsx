@@ -17,6 +17,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useQuery } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -180,7 +181,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                             onClick={(e) => {
                               mutation();
                               speciality(e.currentTarget.title);
-                              const encoded = encodeURIComponent(`${e.currentTarget.title}`);
+                              const specialityUpdated = readableParam(`${e.currentTarget.title}`);
+                              const encoded = encodeURIComponent(specialityUpdated);
                               history.push(clientRoutes.specialties(encoded));
                               specialityId && specialityId(specialityDetails.id);
                               disableFilter(false);
