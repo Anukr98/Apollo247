@@ -515,7 +515,6 @@ export const MyAccount: React.FC = (props) => {
             data.data.sendMessageToMobileNumber.status === 'OK'
           ) {
             alert(data.data.sendMessageToMobileNumber.message);
-            //setIsShareProfileDialogOpen(false);
             setDeepLink('');
             setMobileNumber('');
           } else {
@@ -946,7 +945,6 @@ export const MyAccount: React.FC = (props) => {
                             //setPhoneMessage(validPhoneMessage);
                             setShowErrorMessage(false);
                           } else {
-                            //setPhoneMessage(invalidPhoneMessage);
                             setShowErrorMessage(true);
                           }
                         } else {
