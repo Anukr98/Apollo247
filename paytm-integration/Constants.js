@@ -20,4 +20,5 @@ module.exports = Object.freeze({
   PAYMENT_REQUEST_FAILURE_UNKNOWN_REASON: 'Something went wrong, please try again!',
   PAYMENT_MODE_ONLY_TRUE: 'YES',
   INVALID_PAYMENT_TYPE: 'Invalid payment type! Please contact IT department.',
+  DOCTORS_DEEPLINK_REFRESH: `mutation{ refreshDoctorDeepLinks }`,
 });
