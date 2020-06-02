@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Theme, Button, Modal } from '@material-ui/core';
+import { Theme, Button, Modal, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -63,7 +63,6 @@ import {
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
-import { CircularProgress } from '@material-ui/core';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -401,6 +400,7 @@ export const ConsultTabs: React.FC = () => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
+  const [loadingChat, setLoadingChat] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -525,32 +525,39 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const refreshChatWindow = (timetoken: number) => {
-    pubnub.history(
-      {
-        channel: appointmentId,
-        reverse: true,
-        count: 1000,
-        stringifiedTimeToken: true,
-        start: timetoken,
-      },
-      (status: any, res: any) => {
-        const newmessage: MessagesObjectProps[] = [];
-        res.messages.forEach((element: any, index: number) => {
-          const item = element.entry;
-          if (item.prismId) {
-            getPrismUrls(client, patientId, item.prismId).then((data: any) => {
-              item.url = (data && data.urls[0]) || item.url;
-            });
+    setLoadingChat(true);
+    try {
+      pubnub.history(
+        {
+          channel: appointmentId,
+          reverse: true,
+          count: 1000,
+          stringifiedTimeToken: true,
+          start: timetoken,
+        },
+        (status: any, res: any) => {
+          const newmessage: MessagesObjectProps[] = [];
+          res.messages.forEach((element: any, index: number) => {
+            const item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+            }
+            newmessage.push(item);
+          });
+          setMessages(newmessage);
+          const end: number = res.endTimeToken ? res.endTimeToken : 1;
+          if (res.messages.length == 100) {
+            getHistory(end);
           }
-          newmessage.push(item);
-        });
-        setMessages(newmessage);
-        const end: number = res.endTimeToken ? res.endTimeToken : 1;
-        if (res.messages.length == 100) {
-          getHistory(end);
+          setLoadingChat(false);
         }
-      }
-    );
+      );
+    } catch (err) {
+      console.error(err);
+      setLoadingChat(false);
+    }
   };
 
   /* case sheet data*/
@@ -1799,6 +1806,7 @@ export const ConsultTabs: React.FC = () => {
                           lastMsg={lastMsg}
                           messages={messages}
                           refreshChatWindow={refreshChatWindow}
+                          loadingChat={loadingChat}
                         />
                       </div>
                     </div>
@@ -1820,6 +1828,12 @@ export const ConsultTabs: React.FC = () => {
           </Scrollbars>
         </CaseSheetContext.Provider>
       )}
+      {loadingChat && (
+        <div>
+          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
+        </div>
+      )}
+
       <Modal
         open={isConfirmDialogOpen}
         onClose={() => setIsConfirmDialogOpen(false)}

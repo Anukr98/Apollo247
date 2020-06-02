@@ -372,6 +372,7 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
+  loadingChat: boolean;
   refreshChatWindow: (timetoken: number) => void;
 }
 
@@ -937,6 +938,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   onClick={() => {
                     props.refreshChatWindow(0);
                   }}
+                  disabled={props.loadingChat}
                 >
                   <ReplayIcon />
                 </Fab>
