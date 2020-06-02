@@ -877,7 +877,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
                 postSpecialityWEGEvent(rowData.name, rowData.id);
-                onClickSearch(rowData.id, rowData.name);
+                onClickSearch(rowData.id, rowData.name, rowData.specialistPluralTerm || '');
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
                   typeId: rowData.id,
@@ -944,10 +944,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     else return null;
   };
 
-  const onClickSearch = (id: string, name: string) => {
+  const onClickSearch = (id: string, name: string, specialistPluralTerm: string) => {
     props.navigation.navigate('DoctorSearchListing', {
       specialityId: id,
       specialityName: name,
+      specialistPluralTerm,
     });
   };
 
