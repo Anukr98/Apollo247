@@ -823,6 +823,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   referralDescription: string;
 
+  @Column({ nullable: true, type: 'json' })
+  removedMedicinePrescription: string;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
@@ -845,6 +848,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: 1 })
+  version: number;
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;

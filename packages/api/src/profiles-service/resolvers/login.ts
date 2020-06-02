@@ -10,7 +10,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
-import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {

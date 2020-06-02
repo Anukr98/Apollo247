@@ -52,6 +52,7 @@ export interface PharmaAddressDetails {
   city: string;
   pincode: string;
   state: string;
+  country: string;
 }
 
 export interface EPrescription {
@@ -172,6 +173,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     city: '',
     pincode: localStorage.getItem('pharmaPincode') || '',
     state: '',
+    country: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 
