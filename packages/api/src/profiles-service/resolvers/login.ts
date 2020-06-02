@@ -320,7 +320,7 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-  sendNotificationWhatsapp(mobileNumber, message);
+  //sendNotificationWhatsapp(mobileNumber, message);
   //logging success response here
   log(
     'smsOtpAPILogger',
