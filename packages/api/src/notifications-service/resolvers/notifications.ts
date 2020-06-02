@@ -297,14 +297,14 @@ export async function sendCallsNotification(
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
       //send whatsapp message for junior doctor call
-      let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
+      /*let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
         '{0}',
         patientDetails.firstName
       );
       whatsappMsg = whatsappMsg.replace(
         '{1}',
         doctorDetails.firstName + ' ' + doctorDetails.lastName
-      );
+      ); */
       //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
     } else {
       notificationBody = ApiConstants.JUNIOR_AVCALL_APPOINTMENT_BODY;
@@ -313,14 +313,14 @@ export async function sendCallsNotification(
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
     //send whatsapp message for junior doctor call
-    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
       '{0}',
       patientDetails.firstName
     );
     whatsappMsg = whatsappMsg.replace(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
-    );
+    );*/
     //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
@@ -1251,7 +1251,7 @@ export async function sendReminderNotification(
       }
     }
 
-    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -1259,7 +1259,7 @@ export async function sendReminderNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
     //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
 
     payload = {
