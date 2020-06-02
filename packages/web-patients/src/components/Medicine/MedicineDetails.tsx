@@ -400,7 +400,7 @@ export const MedicineDetails: React.FC = (props) => {
         await axios
           .post(
             apiDetails.url || '',
-            { params: data.sku },
+            { params: data.sku || sku },
             {
               headers: {
                 Authorization: apiDetails.authToken,

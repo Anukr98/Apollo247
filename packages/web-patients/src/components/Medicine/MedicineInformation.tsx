@@ -328,7 +328,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         await axios
           .post(
             apiDetails.url || '',
-            { params: data.sku },
+            { params: data.sku || params.sku },
             {
               headers: {
                 Authorization: apiDetails.authToken,
@@ -376,7 +376,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               ordertype: 'pharma',
               lookup: [
                 {
-                  sku: data.sku,
+                  sku: data.sku || params.sku,
                   qty: 1,
                 },
               ],
