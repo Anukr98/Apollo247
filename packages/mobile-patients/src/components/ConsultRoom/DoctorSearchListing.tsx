@@ -51,11 +51,13 @@ import {
   getNetStatus,
   postAppsFlyerEvent,
   postWebEngageEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -79,6 +81,7 @@ import {
   View,
   FlatList,
   ViewStyle,
+  Alert,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
@@ -951,12 +954,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributes);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributes);
     }
   };
 
@@ -1250,6 +1256,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChange={(selectedTab: string) => {
             // setshowSpinner(true);
             setselectedTab(selectedTab);
+            const eventAttributes: FirebaseEvents[FirebaseEventName.ONLINE_CONSULTS_CLICKED] = {
+              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+              'Patient UHID': g(currentPatient, 'uhid'),
+              Relation: g(currentPatient, 'relation'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+            };
+            if (selectedTab == 'Online Consults') {
+              postFirebaseEvent(FirebaseEventName.ONLINE_CONSULTS_CLICKED, eventAttributes);
+            } else if (selectedTab == 'Clinic Visits') {
+              postFirebaseEvent(FirebaseEventName.CLINIC_VISIT_CLICKED, eventAttributes);
+            }
             const selectedFilterMode =
               selectedTab === tabs[0].title
                 ? ConsultMode.BOTH

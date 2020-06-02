@@ -858,12 +858,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributes);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributes);
     }
   };
 

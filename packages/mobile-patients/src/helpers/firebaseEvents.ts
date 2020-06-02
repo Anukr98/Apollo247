@@ -28,13 +28,13 @@ export enum FirebaseEventName {
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'DIAGNOSTIC_CHECKOUT_COMPLETED',
   DOCTOR_SEARCH = 'DOCTOR_SEARCH',
   SPECIALITY_CLICKED = 'SPECIALITY_CLICKED',
-  DOCTOR_CLICKED = 'Doctor Clicked',
-  BOOK_APPOINTMENT = 'Book Appointment',
-  CONSULT_NOW_CLICKED = 'Consult Now clicked',
+  DOCTOR_CLICKED = 'DOCTOR_CLICKED',
+  BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
+  CONSULT_NOW_CLICKED = 'CONSULT_NOW_CLICKED',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
-  PAY_BUTTON_CLICKED = 'Pay Button Clicked',
+  PAY_BUTTON_CLICKED = 'PAY_BUTTON_CLICKED',
   CONSULTATION_BOOKED = 'CONSULTATION_BOOKED',
   RATING_GIVEN = 'Rating Given',
 
@@ -65,6 +65,14 @@ export enum FirebaseEventName {
 
   //In App Purchase Events
   IN_APP_PURCHASE = 'In_app_purchase',
+
+  //DoctorSearchListing Events
+  ONLINE_CONSULTS_CLICKED = 'ONLINE_CONSULTS_CLICKED',
+  CLINIC_VISIT_CLICKED = 'CLINIC_VISIT_CLICKED',
+
+    // Payments Events
+    PAYMENT_INSTRUMENT = 'PAYMENT_INSTRUMENT',
+    PAYMENT_STATUS = 'PAYMENT_STATUS',
 }
 
 export interface PatientInfo {
@@ -75,6 +83,13 @@ export interface PatientInfo {
   'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface defaultinfo {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Mobile Number': string;
 }
 
 export interface PatientInfoWithSource extends PatientInfo {
@@ -124,6 +139,8 @@ export interface FirebaseEvents {
   [FirebaseEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [FirebaseEventName.MY_ACCOUNT]: PatientInfo;
   [FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
+  [FirebaseEventName.ONLINE_CONSULTS_CLICKED]: defaultinfo;
+  [FirebaseEventName.CLINIC_VISIT_CLICKED]: defaultinfo;
 
   // ********** PharmacyEvents ********** \\
 

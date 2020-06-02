@@ -95,13 +95,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             Appointment_Id: orderId,
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+          postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
           try {
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-            // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
+            postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
           } catch (error) {}
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);

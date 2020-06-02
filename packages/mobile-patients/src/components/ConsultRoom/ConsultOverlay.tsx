@@ -482,6 +482,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
   const onPressPay = () => {
