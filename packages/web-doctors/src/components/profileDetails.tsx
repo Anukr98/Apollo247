@@ -492,7 +492,7 @@ export const MyAccount: React.FC = (props) => {
   const onNext = () => {};
   const onBack = () => {};
   const shareDeepLink = () => {
-    if (mobileNumber.trim().length < 10) {
+    if (mobileNumber.trim().length < 10 || mobileNumber.trim() === '' || showErrorMessage) {
       setShowErrorMessage(true);
     } else {
       setShowErrorMessage(false);
@@ -973,7 +973,7 @@ export const MyAccount: React.FC = (props) => {
                       <div className={classes.errorText}>Please enter valid mobile number</div>
                     )}
 
-                    <AphButton color="primary" onClick={() => shareDeepLink()}>
+                    <AphButton disabled={(showErrorMessage || mobileNumber === '') ? true : false} color="primary" onClick={() => shareDeepLink()}>
                       Send
                     </AphButton>
                     {loading && <CircularProgress className={classes.loader} />}
