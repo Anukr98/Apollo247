@@ -1075,6 +1075,15 @@ const submitJDCaseSheet: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(
+    args.appointmentId
+  );
+
+  if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
+    return false;
+  }
+
   const virtualJDId = process.env.VIRTUAL_JD_ID;
   const createdDate = new Date();
 
@@ -1094,10 +1103,6 @@ const submitJDCaseSheet: Resolver<
     if (queueItem) ConsultQueueRepo.updateConsultQueueItems([queueItem.id.toString()], virtualJDId);
   }
 
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(
-    args.appointmentId
-  );
   //updating or inserting the case sheet
   if (juniorDoctorcaseSheet) {
     const casesheetAttrsToUpdate = {
