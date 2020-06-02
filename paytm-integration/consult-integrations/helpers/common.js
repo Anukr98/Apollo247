@@ -7,7 +7,7 @@ const logger = require('../../winston-logger')('Consults-logs');
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function (patientId, orderAutoId, amount, bookingSource, addParams) {
+const initPayment = function (patientId, orderAutoId, amount, merc_unq_ref, addParams) {
     return new Promise((resolve, reject) => {
         let paymentObj = {
             ORDER_ID: orderAutoId,
@@ -18,7 +18,7 @@ const initPayment = function (patientId, orderAutoId, amount, bookingSource, add
             MID: process.env.MID_CONSULTS,
             WEBSITE: process.env.WEBSITE_CONSULTS,
             CALLBACK_URL: process.env.CALLBACK_URL_CONSULTS,
-            MERC_UNQ_REF: bookingSource,
+            MERC_UNQ_REF: merc_unq_ref,
         };
         Object.assign(paymentObj, addParams);
 
