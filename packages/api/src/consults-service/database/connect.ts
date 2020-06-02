@@ -90,6 +90,7 @@ import {
   RegistrationCodes,
   CouponPharmaRules,
   MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -211,6 +212,7 @@ export const connect = async () => {
         SearchHistory,
         RegistrationCodes,
         MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

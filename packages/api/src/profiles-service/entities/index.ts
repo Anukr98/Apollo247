@@ -750,6 +750,12 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
   patientDeviceTokens: PatientDeviceTokens[];
 
+  @OneToMany(
+    (type) => PharmacologistConsult,
+    (pharmacologistConsult) => pharmacologistConsult.patient
+  )
+  pharmacologistConsult: PharmacologistConsult[];
+
   @OneToOne(
     (type) => PatientNotificationSettings,
     (patientNotificationSettings) => patientNotificationSettings.patient
@@ -2137,4 +2143,25 @@ export class MedicineOrderCancelReason extends BaseEntity {
 
   @Column({ nullable: true })
   isUserReason: boolean;
+}
+
+@Entity()
+export class PharmacologistConsult extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  prescriptionImageUrl: string;
+
+  @Column({ nullable: true })
+  emailId: string;
+
+  @Column({ nullable: true })
+  queries: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.pharmacologistConsult)
+  patient: Patient;
 }
