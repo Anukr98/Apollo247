@@ -6,11 +6,8 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PharmacologistConsultRepository } from 'profiles-service/repositories/patientPharmacologistConsults';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { pharmacologistEmailTemplate } from 'helpers/emailTemplates/pharmacologistEmailTemplate';
-import { sendMail } from 'notifications-service/resolvers/email';
-import { ApiConstants } from 'ApiConstants';
 
-export const savePatientNotificationSettingsTypeDefs = gql`
+export const savePharmacologistConsultTypeDefs = gql`
   input SavePharmacologistConsultInput {
     patientId: ID!
     prescriptionImageUrl: String
@@ -23,7 +20,7 @@ export const savePatientNotificationSettingsTypeDefs = gql`
   }
 
   extend type Mutation {
-    savePatientNotificationSettings(
+    savePharmacologistConsult(
       savePharmacologistConsultInput: SavePharmacologistConsultInput
     ): SavePharmacologistConsultResult!
   }
@@ -76,7 +73,7 @@ const savePharmacologistConsult: Resolver<
   };
 };
 
-export const savePatientNotificationSettingsResolvers = {
+export const savePharmacologistConsultResolvers = {
   Mutation: {
     savePharmacologistConsult,
   },
