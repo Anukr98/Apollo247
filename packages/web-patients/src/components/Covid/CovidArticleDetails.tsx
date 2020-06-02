@@ -210,6 +210,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
   const [isWebView, setIsWebView] = useState<boolean>(false);
+  const [showCommentForm, setShowCommentForm] = useState<boolean>(false);
   const [comments, setComments] = useState([]);
   const [totalComments, setTotalComments] = useState('');
   const [totalLike, setTotalLike] = useState('');
@@ -347,8 +348,19 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     <div className={classes.sectionHead}>
                       <img src={require('images/ic-feed.svg')} alt="" /> Comments ({totalComments})
                     </div>
-                    <div className={classes.formTrigger}>Enter your comments here..</div>
-                    <CommentsForm titleId={titleId} />
+
+                    {showCommentForm ? (
+                      <CommentsForm
+                        titleId={titleId}
+                        onCancel={() => {
+                          setShowCommentForm(false);
+                        }}
+                      />
+                    ) : (
+                      <div onClick={() => setShowCommentForm(true)} className={classes.formTrigger}>
+                        Enter your comments here..
+                      </div>
+                    )}
                     <CommentsList
                       titleId={titleId}
                       commentData={comments}
