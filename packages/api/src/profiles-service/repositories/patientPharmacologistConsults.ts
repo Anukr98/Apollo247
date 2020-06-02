@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, In } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { PharmacologistConsult } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';

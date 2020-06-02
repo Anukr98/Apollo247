@@ -71,7 +71,6 @@ export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
       <div className={classes.actions}>
         <AphButton
           onClick={() => {
-            props.setIsPopoverOpen(false);
             props.setIsPincodeDialogOpen(true);
           }}
           title={'Enter Manualy'}
