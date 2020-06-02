@@ -3,8 +3,9 @@ import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Button from '@material-ui/core/Button';
 import { SUBMIT_JD_CASESHEET } from 'graphql/appointments';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { withRouter } from 'react-router-dom';
+import { SubmitJdCasesheet, SubmitJdCasesheetVariables } from 'graphql/types/SubmitJdCasesheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -154,6 +155,8 @@ export const defaultText = {
 const StatusModal = (props: any) => {
   const apolloClient = useApolloClient();
   const classes = useStyles({});
+  let text = props.text;
+
   return (
     <Popover
       open={props.isDialogOpen}
@@ -168,9 +171,9 @@ const StatusModal = (props: any) => {
           <img src={require('images/ic_cross.svg')} alt="" onClick={props.onClose} />
         </Button>
         <div className={classes.modalWrapper}>
-          <div className={classes.popoverTile}>{props.headerText}</div>
-          <div className={classes.confirmation}>{props.confirmationText}</div>
-          <div className={classes.message}>{props.messageText}</div>
+          <div className={classes.popoverTile}>{text.headerText}</div>
+          <div className={classes.confirmation}>{text.confirmationText}</div>
+          <div className={classes.message}>{text.messageText}</div>
           <div className={classes.buttonWrapper}>
             <Button
               className={
@@ -184,14 +187,27 @@ const StatusModal = (props: any) => {
               <Button
                 className={`${classes.button} ${classes.yesButton}`}
                 onClick={() => {
-                  apolloClient
-                    .mutate({
-                      mutation: SUBMIT_JD_CASESHEET,
-                      variables: { appointmentId: props.appointmentId },
+                  const submit: any = apolloClient.mutate({
+                    mutation: SUBMIT_JD_CASESHEET,
+                    variables: { appointmentId: text.appointmentId },
+                  });
+
+                  submit
+                    .then((resp: any) => {
+                      if (resp && !resp.data) {
+                        if (resp.data.submitJDCaseSheet) {
+                          props.history.push(
+                            `/consulttabs/${text.appointmentId}/${text.patientId}/0`
+                          );
+                        } else if (!resp.data.submitJDCaseSheet) {
+                          let text = { ...defaultText };
+                          text.headerText = modalData.jdInProgress.headerText;
+                          props.setText(text);
+                        }
+                      }
                     })
-                    .then(
-                      props.history.push(`/consulttabs/${props.appointmentId}/${props.patientId}/0`)
-                    );
+                    .catch((exception: any) => console.log('something went wrong', exception))
+                    .error((error: any) => console.log('something went wrong', error));
                 }}
               >
                 {'yes, start consult'}

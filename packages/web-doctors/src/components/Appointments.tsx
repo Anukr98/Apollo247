@@ -700,11 +700,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           setText(defaultText);
         }}
         isDialogOpen={isDialogOpen}
-        headerText={text.headerText}
-        confirmationText={text.confirmationText}
-        messageText={text.messageText}
-        appointmentId={text.appointmentId}
-        patientId={text.patientId}
+        text={text}
+        setText={setText}
       />
     </div>
   );

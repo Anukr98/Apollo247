@@ -348,10 +348,7 @@ export const Month: React.FC<MonthProps> = ({
           setText(defaultText);
         }}
         isDialogOpen={isDialogOpen}
-        headerText={text.headerText}
-        confirmationText={text.confirmationText}
-        messageText={text.messageText}
-        appointmentId={text.appointmentId}
+        text={text}
       />
     </div>
   );
