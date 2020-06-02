@@ -243,6 +243,7 @@ export const caseSheetTypeDefs = gql`
     id: String
     isJdConsultStarted: Boolean
     medicinePrescription: [MedicinePrescription]
+    removedMedicinePrescription: [MedicinePrescription]
     notes: String
     otherInstructions: [OtherInstructions]
     patientId: String
@@ -253,6 +254,7 @@ export const caseSheetTypeDefs = gql`
     updatedDate: DateTime
     referralSpecialtyName: String
     referralDescription: String
+    version: Int
   }
 
   type Diagnosis {
@@ -461,6 +463,7 @@ export const caseSheetTypeDefs = gql`
     followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
+    removedMedicinePrescription: [MedicinePrescriptionInput!]
     id: String!
     status: CASESHEET_STATUS
     lifeStyle: String
@@ -634,7 +637,9 @@ const getCaseSheet: Resolver<
   let juniorDoctorNotes = '';
 
   //check whether there is a senior doctor case-sheet
-  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
+  const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCompletedCaseSheet(
+    appointmentData.id
+  );
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
@@ -706,6 +711,7 @@ type ModifyCaseSheetInput = {
   followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
+  removedMedicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
   status: CASESHEET_STATUS;
   lifeStyle: string;
@@ -791,6 +797,12 @@ const modifyCaseSheet: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_LIST);
     getCaseSheetData.medicinePrescription = JSON.parse(
       JSON.stringify(inputArguments.medicinePrescription)
+    );
+  }
+
+  if (!(inputArguments.removedMedicinePrescription === undefined)) {
+    getCaseSheetData.removedMedicinePrescription = JSON.parse(
+      JSON.stringify(inputArguments.removedMedicinePrescription)
     );
   }
 
@@ -982,7 +994,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
   if (caseSheetDetails != null) return caseSheetDetails;
 
-  let caseSheetAttrs: Partial<CaseSheet> = {
+  const caseSheetAttrs: Partial<CaseSheet> = {
     consultType: appointmentData.appointmentType,
     doctorId: appointmentData.doctorId,
     patientId: appointmentData.patientId,
