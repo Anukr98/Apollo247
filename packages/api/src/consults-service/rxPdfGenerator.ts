@@ -352,6 +352,13 @@ export const convertCaseSheetToRxPdfData = async (
     ? caseSheet.referralDescription
     : '';
 
+  const removedMedicinesList: string[] = [];
+  const removedMedicines = JSON.parse(JSON.stringify(caseSheet.removedMedicinePrescription));
+  if (removedMedicines) {
+    removedMedicines.forEach((item: CaseSheetMedicinePrescription) => {
+      removedMedicinesList.push(item.medicineName);
+    });
+  }
   return {
     prescriptions,
     generalAdvice,
@@ -366,6 +373,7 @@ export const convertCaseSheetToRxPdfData = async (
     followUpDetails,
     referralSpecialtyName,
     referralSpecialtyDescription,
+    removedMedicinesList,
   };
 };
 
@@ -453,29 +461,28 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     labelValue2: string,
     y?: number
   ) => {
+    const secondCloumnMoveDownLength = labelValue1.length < 40 ? 0 : labelValue1.length / 40;
     return doc
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#7f7f7f')
-      .text(labelText1, margin + 15, y, { lineBreak: false })
+      .text(labelText1, margin + 15, y, { lineBreak: false, width: 100 })
 
       .fontSize(11)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#333333')
-      .text(`${labelValue1}`, 100, y, { lineBreak: false })
-      .moveDown(0.5)
+      .text(`${labelValue1}`, 100, y, { lineBreak: false, width: 240 })
 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#7f7f7f')
-      .text(labelText2, margin + 340, y, { lineBreak: false })
+      .text(labelText2, margin + 340, y, { lineBreak: false, width: 100 })
 
       .fontSize(10)
       .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
       .fillColor('#333333')
-      .text(`${labelValue2}`, 450, y)
-
-      .moveDown(0.5);
+      .text(`${labelValue2}`, 450, y, { width: 190 })
+      .moveDown(secondCloumnMoveDownLength + 0.5);
   };
 
   const headerEndY = 120;
@@ -623,7 +630,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
-  const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
+  const renderPrescriptions = (
+    prescriptions: RxPdfData['prescriptions'],
+    removedMedicines: RxPdfData['removedMedicinesList']
+  ) => {
     renderSectionHeader('Medication Prescribed', 'ic-medicines.png', headerEndY + 150);
     prescriptions.forEach((prescription, index) => {
       // const medicineTimings = prescripti
@@ -673,6 +683,28 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         });
       }
     });
+
+    removedMedicines.forEach((prescription, index) => {
+      const newIndex = prescriptions.length + index;
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+      const docY = doc.y;
+      doc
+        .fontSize(12)
+        .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+        .fillColor('#333333')
+        .text(`${newIndex + 1}.  ${prescription}`, margin + 15, docY, {
+          strike: true,
+        })
+        .fillColor('#890000')
+        .text(
+          '( This medication has been discontinued )',
+          margin + 15 + prescription.length * 10,
+          docY
+        )
+        .moveDown(0.5);
+    });
   };
 
   const renderGeneralAdvice = (
@@ -682,7 +714,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     referralDescription: RxPdfData['referralSpecialtyDescription']
   ) => {
     if (generalAdvice) {
-      renderSectionHeader('Advise/ Instructions', 'ic-doctors-2.png');
+      renderSectionHeader('Advice/ Instructions', 'ic-doctors-2.png');
       generalAdvice.forEach((advice, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
@@ -927,7 +959,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   }
 
   if (!_isEmpty(rxPdfData.prescriptions)) {
-    renderPrescriptions(rxPdfData.prescriptions);
+    renderPrescriptions(rxPdfData.prescriptions, rxPdfData.removedMedicinesList);
     doc.moveDown(1.5);
   }
 
