@@ -332,6 +332,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     }
   }, [order]);
 
+  useEffect(() => {
+    selectedTab == string.orders.viewBill && setScrollYValue(0);
+  }, [selectedTab]);
+
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (goToHomeOnBack) {
@@ -1222,6 +1226,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
+    scrollToSlots();
     return (
       <View>
         <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
