@@ -81,6 +81,17 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'uppercase',
         [theme.breakpoints.down('xs')]: {
           lineHeight: '36px',
+          fontSize: 24,
+        },
+        [theme.breakpoints.down(360)]: {
+          lineHeight: '30px',
+          paddingBottom: 10,
+        },
+        '& span': {
+          [theme.breakpoints.down(360)]: {
+            display: 'block',
+            paddingTop: 3,
+          },
         },
       },
       '& p': {
@@ -187,7 +198,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>Coronavirus (Covid-19)</h2>
+        <h2>Coronavirus <span>(Covid-19)</span></h2>
         <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
       </div>
       <Popover
