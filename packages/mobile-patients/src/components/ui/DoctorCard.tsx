@@ -217,11 +217,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       : null;
 
     props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-      DoctorName: rowData?.fullName,
+      DoctorName: rowData && rowData.fullName,
       DoctorId: id,
-      hideCheckbox: false,
       nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
       nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,
+      onlinePrice: rowData && rowData.onlineConsultationFees,
+      InpersonPrice: rowData && rowData.physicalConsultationFees,
       ConsultType: props.availableModes,
       params: params,
     });

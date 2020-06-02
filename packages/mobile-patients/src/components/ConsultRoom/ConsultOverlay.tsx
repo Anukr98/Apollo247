@@ -104,6 +104,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   appointmentType: string;
   appointmentId: string;
   consultModeSelected: ConsultMode;
+  externalConnect: boolean | null;
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
@@ -363,6 +364,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       : selectedClinic
       ? selectedClinic.facility.id
       : '';
+    const externalConnectParam =
+      props.externalConnect !== null ? { externalConnect: props.externalConnect } : {};
     const appointmentInput: BookAppointmentInput = {
       patientId: props.patientId,
       doctorId: props.doctor ? props.doctor.id : '',
@@ -373,6 +376,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       couponCode: coupon ? coupon : null,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      ...externalConnectParam,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);

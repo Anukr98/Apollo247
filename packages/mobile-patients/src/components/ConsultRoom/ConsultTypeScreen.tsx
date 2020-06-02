@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import { View, Text, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Header } from '../ui/Header';
@@ -17,9 +17,18 @@ import {
   OnlineConsult,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { nextAvailability, mhdMY } from '../../helpers/helperFunctions';
+import { nextAvailability, mhdMY, g } from '../../helpers/helperFunctions';
 import { ConsultMode } from '../../graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useUIElements } from '../UIElementsProvider';
+import { PAST_APPOINTMENTS_COUNT } from '../../graphql/profiles';
+import {
+  getPastAppointmentsCount,
+  getPastAppointmentsCountVariables,
+} from '../../graphql/types/getPastAppointmentsCount';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -110,9 +119,10 @@ const styles = StyleSheet.create({
 export interface ConsultTypeScreenProps extends NavigationScreenProps {
   DoctorName: string;
   DoctorId: string;
-  hideCheckbox: boolean;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
+  onlinePrice: string;
+  InpersonPrice: string;
   ConsultType: ConsultMode;
 }
 
@@ -125,11 +135,42 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const [consultedChecked, setConsultedChecked] = useState<boolean>(false);
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
-  const hideCheckbox = props.navigation.getParam('hideCheckbox');
+  const [hideCheckbox, setHideCheckbox] = useState<boolean>(false);
   const nextAppointemntOnlineTime = props.navigation.getParam('nextAppointemntOnlineTime');
   const nextAppointemntInPresonTime = props.navigation.getParam('nextAppointemntInPresonTime');
+  const onlinePrice = props.navigation.getParam('onlinePrice');
+  const InpersonPrice = props.navigation.getParam('InpersonPrice');
   const ConsultType = props.navigation.getParam('ConsultType');
   const params = props.navigation.getParam('params');
+  const { setLoading } = useUIElements();
+  const { currentPatientId } = useAllCurrentPatients();
+
+  const client = useApolloClient();
+
+  useEffect(() => {
+    if (DoctorId && currentPatientId) {
+      setLoading && setLoading(true);
+      client
+        .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
+          query: PAST_APPOINTMENTS_COUNT,
+          variables: {
+            doctorId: DoctorId,
+            patientId: currentPatientId || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
+          if (count && count > 0) {
+            setHideCheckbox(true);
+          }
+          setLoading && setLoading(false);
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultTypeScreen_getCount', e);
+        });
+    }
+  }, []);
 
   const renderHeader = () => {
     return (
@@ -229,7 +270,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       <InPersonHeader />,
       string.consultType.online.heading,
       string.consultType.online.question,
-      '323',
+      onlinePrice,
       nextAppointemntOnlineTime,
       [
         { image: <CTDoctor />, description: string.consultType.online.point1 },
@@ -251,6 +292,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.ONLINE,
+          externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
       }
@@ -262,7 +304,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       <InPersonHeader />,
       string.consultType.inperson.heading,
       string.consultType.inperson.question,
-      '543',
+      InpersonPrice,
       nextAppointemntInPresonTime,
       [
         { image: <CTDoctor />, description: string.consultType.inperson.point1 },
@@ -284,11 +326,13 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: DoctorId,
           consultModeSelected: ConsultMode.PHYSICAL,
+          externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
       }
     );
   };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.mainContainer}>
@@ -300,8 +344,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           contentContainerStyle={styles.ScrollViewStyle}
         >
           {hideCheckbox ? null : renderCheckbox()}
-          {renderOnlineCard()}
-          {renderInPersonCard()}
+          {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}
+          {[ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(ConsultType)
+            ? renderInPersonCard()
+            : null}
         </ScrollView>
       </SafeAreaView>
     </View>

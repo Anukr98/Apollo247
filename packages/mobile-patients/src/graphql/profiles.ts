@@ -137,6 +137,14 @@ export const ADD_NEW_PROFILE = gql`
 //   }
 // `;
 
+export const PAST_APPOINTMENTS_COUNT = gql`
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
+    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+      count
+    }
+  }
+`;
+
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {
