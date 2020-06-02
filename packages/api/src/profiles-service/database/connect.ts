@@ -62,6 +62,7 @@ import {
   CouponPharmaRules,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -131,6 +132,7 @@ export const connect = async () => {
         RegistrationCodes,
         SearchHistory,
         MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
