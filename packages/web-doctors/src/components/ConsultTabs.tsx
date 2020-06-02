@@ -524,6 +524,35 @@ export const ConsultTabs: React.FC = () => {
     );
   };
 
+  const refreshChatWindow = (timetoken: number) => {
+    pubnub.history(
+      {
+        channel: appointmentId,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status: any, res: any) => {
+        const newmessage: MessagesObjectProps[] = [];
+        res.messages.forEach((element: any, index: number) => {
+          const item = element.entry;
+          if (item.prismId) {
+            getPrismUrls(client, patientId, item.prismId).then((data: any) => {
+              item.url = (data && data.urls[0]) || item.url;
+            });
+          }
+          newmessage.push(item);
+        });
+        setMessages(newmessage);
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+      }
+    );
+  };
+
   /* case sheet data*/
   useEffect(() => {
     if (isSignedIn) {
@@ -1769,6 +1798,7 @@ export const ConsultTabs: React.FC = () => {
                           sessionClient={sessionClient}
                           lastMsg={lastMsg}
                           messages={messages}
+                          refreshChatWindow={refreshChatWindow}
                         />
                       </div>
                     </div>
