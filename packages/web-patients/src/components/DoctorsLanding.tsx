@@ -34,6 +34,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { useParams } from 'hooks/routerHooks';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { History } from 'history';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -223,7 +224,8 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
 
   useEffect(() => {
     if (params && params.specialty) {
-      const specialityName = decodeURIComponent(params.specialty);
+      const decoded = decodeURIComponent(params.specialty);
+      const specialityName = readableParam(decoded);
       apolloClient
         .query({
           query: GET_ALL_SPECIALITIES,
