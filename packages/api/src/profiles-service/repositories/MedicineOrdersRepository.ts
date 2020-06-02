@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  ONE_APOLLO_USER_REG
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -24,6 +25,40 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  async getOneApolloUser(mobileNumber: string) {
+    try {
+      const response = await fetch(`${process.env.ONEAPOLLO_BASE_URL}/Customer/GetByMobile?mobilenumber=${mobileNumber}&BusinessUnit=${process.env.ONEAPOLLO_BUSINESS_UNIT}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'AccessToken': <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          'APIKey': <string>process.env.ONEAPOLLO_API_KEY
+        },
+      });
+      return response.json();
+    } catch (e) {
+      console.log("error occured in getOneApolloUser()", e);
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+
+  async createOneApolloUser(oneApollUser: ONE_APOLLO_USER_REG) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/Customer/Register', {
+        method: 'POST',
+        body: JSON.stringify(oneApollUser),
+        headers: {
+          'Content-Type': 'application/json',
+          'AccessToken': <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          'APIKey': <string>process.env.ONEAPOLLO_API_KEY
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
   }
 
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
