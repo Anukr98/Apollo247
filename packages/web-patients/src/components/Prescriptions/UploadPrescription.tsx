@@ -203,54 +203,29 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       ) {
                         setIsUploading(true);
                         if (file) {
-                          await client
-                            .uploadBrowserFile({ file })
-                            .then((res: any) => {
-                              if (res && res.name) {
-                                console.log(res.name);
-                                // const url = client.getBlobUrl(res.name);
-                                // toBase64(file).then((res: any) => {
-                                //   setPrescriptionUploaded &&
-                                //     setPrescriptionUploaded({
-                                //       imageUrl: url,
-                                //       name: res.name,
-                                //       fileType: fileExtension.toLowerCase(),
-                                //       baseFormat: res,
-                                //     });
-                                // });
-                                // if (props.isNonCartFlow) {
-                                //   setTimeout(() => {
-                                //     window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                                //   }, 3000);
-                                // } else {
-                                //   props.closeDialog();
-                                //   setIsUploading(false);
-                                // }
-                              }
-                            })
-                            .catch((error) => {
-                              throw error;
+                          await client.uploadBrowserFile({ file }).catch((error) => {
+                            throw error;
+                          });
+                          if (aphBlob && aphBlob.name) {
+                            const url = client.getBlobUrl(aphBlob.name);
+                            toBase64(file).then((res: any) => {
+                              setPrescriptionUploaded &&
+                                setPrescriptionUploaded({
+                                  imageUrl: url,
+                                  name: aphBlob.name,
+                                  fileType: fileExtension.toLowerCase(),
+                                  baseFormat: res,
+                                });
                             });
-                          // if (aphBlob && aphBlob.name) {
-                          //   const url = client.getBlobUrl(aphBlob.name);
-                          //   toBase64(file).then((res: any) => {
-                          //     setPrescriptionUploaded &&
-                          //       setPrescriptionUploaded({
-                          //         imageUrl: url,
-                          //         name: aphBlob.name,
-                          //         fileType: fileExtension.toLowerCase(),
-                          //         baseFormat: res,
-                          //       });
-                          //   });
-                          //   if (props.isNonCartFlow) {
-                          //     setTimeout(() => {
-                          //       window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                          //     }, 3000);
-                          //   } else {
-                          //     props.closeDialog();
-                          //     setIsUploading(false);
-                          //   }
-                          // }
+                            if (props.isNonCartFlow) {
+                              setTimeout(() => {
+                                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                              }, 3000);
+                            } else {
+                              props.closeDialog();
+                              setIsUploading(false);
+                            }
+                          }
                         }
                       } else {
                         setIsAlertOpen(true);
