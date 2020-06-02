@@ -418,7 +418,7 @@ export const MedicineDetails: React.FC = (props) => {
           description: description,
           brand: manufacturer,
           sku: params.sku,
-          gtin: id,
+          gtin8: id,
           offers: {
             '@type': 'Offer',
             url: `https://www.apollo247.com/medicine-details/${sku}`,
@@ -441,7 +441,7 @@ export const MedicineDetails: React.FC = (props) => {
             '@type': 'Drug',
             name: name,
             description: description,
-            activeIngredient: generic,
+            activeIngredient: generic.length ? generic.split('+') : '',
             dosageForm: Doseform,
           });
         }
