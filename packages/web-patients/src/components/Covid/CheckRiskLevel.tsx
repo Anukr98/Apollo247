@@ -104,20 +104,20 @@ export const CheckRiskLevel: React.FC = (props) => {
       </div>
       <div className={classes.boxContent}>
         <h3>Worried about being at risk for COVID-19?</h3>
-        <p>Assess your symptoms and determine if you're at risk for coronavirus disease and get guidance on when to seek medical care and what to do in the meantime. You can also all our experts for advice.</p>
+        <p>
+          Assess your symptoms and determine if you're at risk for coronavirus disease and get
+          guidance on when to seek medical care and what to do in the meantime. You can also all our
+          experts for advice.
+        </p>
       </div>
       <div className={classes.rightActions}>
-        <AphButton
-          onClick={() => window.open(covidScannerUrl)}
-        >
+        <AphButton onClick={() => window.open(covidScannerUrl)}>
           <span>
             <img src={require('images/ic_covid-white.svg')} alt="" />
           </span>
           <span>Check your Covid-19 risk level</span>
         </AphButton>
-        <AphButton
-          onClick={() => window.open(covidScannerUrl)}
-        >
+        <AphButton onClick={() => window.open(covidScannerUrl)}>
           <span>
             <img src={require('images/call-24.svg')} alt="" />
           </span>
