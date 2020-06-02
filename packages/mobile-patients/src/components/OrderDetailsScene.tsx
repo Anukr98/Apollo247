@@ -38,6 +38,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
   FEEDBACKTYPE,
+  MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -197,7 +198,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-
+  console.log({ order });
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -319,7 +320,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
         currentPatient
       );
-      getAddressDatails();
+      order.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY && getAddressDatails();
+      let shopAddress =
+        order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
+          ? JSON.parse(order.shopAddress)
+          : null;
+      shopAddress && setAddressData(shopAddress.address);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -501,7 +507,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderOrderTrackTopView = () => {
     const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
+    );
+    const currentOrderStatus = orderStatusList.find(
+      (item) => item!.orderStatus == orderDetails.currentStatus
     );
     let capsuleViewBGColor: string;
     let capsuleTextColor: string;
@@ -572,16 +583,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
               {string.OrderSummery.name}
             </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b'), flex: 1 }}>
               {orderDetails.patient && orderDetails.patient.firstName}{' '}
               {orderDetails.patient && orderDetails.patient.lastName}
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
+          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 0 }}>
             <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
-              {string.OrderSummery.address}
+              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                ? string.OrderSummery.store_address
+                : string.OrderSummery.address}
             </Text>
-            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 13, '#01475b', 1, 24),
+                paddingRight: 0,
+                flex: 1,
+              }}
+            >
               {addressData}
             </Text>
           </View>
@@ -614,14 +633,20 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
+              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                ? 'STORE PICKUP - '
+                : isDelivered
+                ? 'ORDER DELIVERED - '
+                : 'EXPECTED DELIVERY - '}
             </Text>
             <Text
               style={{
                 ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
               }}
             >
-              {isDelivered
+              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                ? getFormattedDate(currentOrderStatus && currentOrderStatus.statusDate)
+                : isDelivered
                 ? getFormattedDate(isDelivered.statusDate)
                 : tatInfo && getFormattedDate(tatInfo)}
             </Text>
@@ -633,7 +658,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PICKEDUP
     );
     const isCancelled = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
@@ -647,9 +674,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const hours = expectedDeliveryDiff.asHours();
     // const formattedDateDeliveryTime =
     //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
-    let orderCompleteText = `Your order no. #${orderAutoId} is successfully delivered on ${isDelivered &&
-      isDelivered.statusDate &&
-      getFormattedDateTime(isDelivered.statusDate)}.`;
+    let orderCompleteText =
+      orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? `Your order no. #${orderAutoId} is successfully picked up on ${isDelivered &&
+            isDelivered.statusDate &&
+            getFormattedDateTime(isDelivered.statusDate)}.`
+        : `Your order no. #${orderAutoId} is successfully delivered on ${isDelivered &&
+            isDelivered.statusDate &&
+            getFormattedDateTime(isDelivered.statusDate)}.`;
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
@@ -674,6 +706,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.CANCELLED]: [
           '',
           orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
+        ],
+        [MEDICINE_ORDER_STATUS.READY_AT_STORE]: [
+          '',
+          `Your order is ready for pickup at your selected ${addressData}`,
         ],
         [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
           'Out for delivery: ',
@@ -721,64 +757,147 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
-        .concat([
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-        ]);
+        .concat(
+          orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+            ? [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+            : [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+        );
       scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
-        .concat([
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        .concat(
+          orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+            ? [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+            : [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-        ]);
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+        );
       scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat(
+          orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+            ? [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+            : [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+                } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+              ]
+        );
+      scrollToSlots();
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
@@ -787,17 +906,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {
             statusDate: tatInfo,
             id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
-          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-          {
-            statusDate: tatInfo,
-            id: 'idToBeDelivered',
-            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+            orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
       scrollToSlots();
@@ -832,7 +941,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
         ]);
       scrollToSlots();
-    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+    } else if (
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PICKEDUP
+    ) {
       statusList = orderStatusList
         .filter(
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
@@ -911,20 +1023,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             >
               {'Thank You for choosing Apollo 24|7'}
             </Text>
-            <Button
-              style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
-              onPress={() => setShowFeedbackPopup(true)}
-              titleTextStyle={{
-                ...theme.viewStyles.text(
-                  'B',
-                  isIphone5s() ? 11 : 13,
-                  theme.colors.BUTTON_TEXT,
-                  1,
-                  24
-                ),
-              }}
-              title={'RATE YOUR DELIVERY EXPERIENCE'}
-            />
+            {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? null : (
+              <Button
+                style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
+                onPress={() => setShowFeedbackPopup(true)}
+                titleTextStyle={{
+                  ...theme.viewStyles.text(
+                    'B',
+                    isIphone5s() ? 11 : 13,
+                    theme.colors.BUTTON_TEXT,
+                    1,
+                    24
+                  ),
+                }}
+                title={'RATE YOUR DELIVERY EXPERIENCE'}
+              />
+            )}
             <Button
               style={{ flex: 1, width: '95%', alignSelf: 'center' }}
               onPress={() => reOrder()}

@@ -263,6 +263,7 @@
     "shipping_address": "SHIPPING ADDRESS",
     "name": "Name - ",
     "address": "Address - ",
+    "store_address": "Store Address - ",
     "paymentDetails": "PAYMENT DETAILS",
     "mrp_total": "MRP Total",
     "product_discount": "Product Discount",
