@@ -218,32 +218,32 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           const schemaJSON =
             title && thumbnailWeb && createdAt && updatedAt
               ? {
-                '@context': 'https://schema.org',
-                '@type': 'BlogPosting',
-                mainEntityOfPage: {
-                  '@type': 'WebPage',
-                  '@id': window.location.href,
-                },
-                headline: title,
-                image: thumbnailWeb,
-                author: {
-                  '@type': 'Organization',
-                  name: 'Apollo 247',
-                },
-                datePublished: moment(Number(createdAt)).utc().format(),
-                dateModified: moment(Number(updatedAt)).utc().format(),
-                publisher: {
-                  '@type': 'Organization',
-                  name: 'Apollo 247',
-                  logo: {
-                    '@type': 'ImageObject',
-                    url:
-                      'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
-                    width: 58,
-                    height: 59,
+                  '@context': 'https://schema.org',
+                  '@type': 'BlogPosting',
+                  mainEntityOfPage: {
+                    '@type': 'WebPage',
+                    '@id': window && window.location ? window.location.href : null,
                   },
-                },
-              }
+                  headline: title,
+                  image: thumbnailWeb,
+                  author: {
+                    '@type': 'Organization',
+                    name: 'Apollo24|7',
+                  },
+                  datePublished: moment(Number(createdAt)).utc().format(),
+                  dateModified: moment(Number(updatedAt)).utc().format(),
+                  publisher: {
+                    '@type': 'Organization',
+                    name: 'Apollo24|7',
+                    logo: {
+                      '@type': 'ImageObject',
+                      url:
+                        'https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png',
+                      width: 58,
+                      height: 59,
+                    },
+                  },
+                }
               : null;
           setHtmlData(htmlData);
           setSource(source);
