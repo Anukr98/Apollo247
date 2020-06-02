@@ -179,19 +179,19 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
           >
             <LinkUHIDStep2first style={{
               resizeMode: 'contain',
-              width: 115,
+              width: '30%',
               height: 220,
             }} />
             <LinkUHIDStep2second style={{
               resizeMode: 'contain',
-              width: 115,
+              width: '30%',
               height: 220,
             }} />
             <View
               style={{
                 position: 'absolute',
                 justifyContent: 'center',
-                left: heightPercent <= 31 ? 125 : 130,
+                left: heightPercent <= 31 ? 110 : 120,
                 top: 80,
               }}
             >
@@ -260,7 +260,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             }} />
             <View
               style={{
-                paddingLeft: heightPercent <= 31 ? 8 : 15
+                paddingLeft: heightPercent <= 31 ? 5 : 8
               }}
             >
               <Text style={[
