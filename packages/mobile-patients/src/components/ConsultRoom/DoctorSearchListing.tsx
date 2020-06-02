@@ -93,12 +93,16 @@ const styles = StyleSheet.create({
   topView: {
     height: 56,
     borderRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 2,
-    zIndex: 1,
-    elevation: 1,
     backgroundColor: theme.colors.WHITE,
     borderBottomWidth: 0,
+  },
+  shadowStyle: {
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 15 },
+    zIndex: 1,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
   },
   consultHeadingText: {
     textAlign: 'center',
@@ -749,7 +753,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderTopView = () => {
     return (
-      <View style={styles.topView}>
+      <View style={[styles.topView, styles.shadowStyle]}>
         <Header
           leftIcon="backArrow"
           container={{ borderBottomWidth: 1 }}
@@ -1057,7 +1061,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const renderDoctorSearchBar = () => {
     return (
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, styles.shadowStyle]}>
         <TextInputComponent
           conatinerstyles={{ paddingBottom: 0 }}
           inputStyle={styles.inputTextStyle}
