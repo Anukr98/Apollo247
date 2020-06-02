@@ -336,29 +336,28 @@ const useStyles = makeStyles((theme: Theme) => {
     popOverUL: {
       listStyleType: 'none',
       textAlign: 'center',
-      display: 'inline',
-      paddingBottom: 0,
-      paddingLeft: 0,
+      display: 'block',
+      padding: '5px 16px',
+      margin: 0,
+      minWidth: 225,
       '& li': {
         fontSize: '15px',
         fontWeight: 500,
-        paddingLeft: '20px',
         fontStyle: 'normal',
         fontStretch: 'normal',
         lineHeight: 'normal',
         letterSpacing: 'normal',
         color: '#02475b',
-        paddingBottom: 15,
-        paddingRight: 20,
-        paddingTop: 15,
+        paddingBottom: 13,
+        paddingTop: 13,
         textAlign: 'left',
         cursor: 'pointer',
         borderBottom: '1px solid rgba(2,71,91,0.2)',
-        '&:hover': {
-          background: '#f0f4f5',
-        },
         '&:last-child': {
           borderBottom: 'none',
+        },
+        '&:hover': {
+          fontWeight: 600,
         },
       },
     },
@@ -370,6 +369,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& .MuiPaper-rounded': {
         borderRadius: 10,
       },
+    },
+    popPaper: {
+      borderRadius: 10,
     },
     noSlotsAvailable: {
       fontSize: 14,
@@ -764,6 +766,22 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBoxVital: {
       minHeight: 'auto',
+    },
+    previewButton: {
+      minWidth: 170,
+      fontSize: 13,
+      padding: '8px 40px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fff',
+      backgroundColor: '#fc9916',
+      margin: theme.spacing(0, 1, 0, 1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#e68c15',
+      },
+      '&:disabled': {
+        opacity: 0.7,
+      },
     },
   };
 });
@@ -1963,21 +1981,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             props.sentToPatient === true ? (
               <>
                 <Button
-                  className={classes.backButton}
+                  className={classes.previewButton}
                   onClick={() => {
-                    onStopConsult(true);
+                    console.log('Preview Prescription');
                   }}
                 >
-                  {isResendLoading ? 'please wait...' : 'Resend Prescription'}
-                  {/* <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span> */}
-                </Button>
-                <Button
-                  className={classes.backButton}
-                  onClick={() => {
-                    onPrint();
-                  }}
-                >
-                  Print
+                  Preview Prescription
                 </Button>
               </>
             ) : (
@@ -2311,18 +2320,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-                disabled={
-                  props.appointmentStatus === STATUS.COMPLETED ||
-                  props.appointmentStatus === STATUS.CANCELLED ||
-                  props.isAppointmentEnded ||
-                  disableOnCancel ||
-                  (isPastAppointment() && !consultStart) ||
-                  (appointmentInfo!.appointmentState !== 'NEW' &&
-                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
+                // disabled={
+                //   props.appointmentStatus === STATUS.COMPLETED ||
+                //   props.appointmentStatus === STATUS.CANCELLED ||
+                //   props.isAppointmentEnded ||
+                //   disableOnCancel ||
+                //   (isPastAppointment() && !consultStart) ||
+                //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                //     appointmentInfo!.status !== STATUS.PENDING)
+                // }
                 onClick={(e) => handleClickThreeDots(e)}
               >
                 <img src={require('images/ic_more.svg')} />
@@ -2334,6 +2343,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               open={openThreeDots}
               anchorEl={anchorElThreeDots}
               onClose={handleCloseThreeDots}
+              classes={{ paper: classes.popPaper }}
               anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'right',
@@ -2346,21 +2356,47 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {currentUserType !== LoggedInUserType.SECRETARY && (
-                    <li
-                      onClick={() => {
-                        if (
-                          appointmentInfo!.status === STATUS.PENDING ||
-                          appointmentInfo!.status === STATUS.IN_PROGRESS
-                        ) {
-                          handleCloseThreeDots();
-                          setIsCancelPopoverOpen(true);
-                        } else {
-                          alert('You are not allowed to cancel the appointment.');
-                        }
-                      }}
-                    >
-                      End or Cancel Consult
-                    </li>
+                    <>
+                      <li
+                        onClick={() => {
+                          onStopConsult(true);
+                        }}
+                      >
+                        {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                      </li>
+                      <li
+                        onClick={() => {
+                          onPrint();
+                        }}
+                      >
+                        Print Prescription
+                      </li>
+                      <li
+                        onClick={() => {
+                          console.log('Issue New Prescription');
+                        }}
+                      >
+                        Issue New Prescription
+                      </li>
+                      {(appointmentInfo!.status === STATUS.PENDING ||
+                        appointmentInfo!.status === STATUS.IN_PROGRESS) && (
+                        <li
+                          onClick={() => {
+                            if (
+                              appointmentInfo!.status === STATUS.PENDING ||
+                              appointmentInfo!.status === STATUS.IN_PROGRESS
+                            ) {
+                              handleCloseThreeDots();
+                              setIsCancelPopoverOpen(true);
+                            } else {
+                              alert('You are not allowed to cancel the appointment.');
+                            }
+                          }}
+                        >
+                          End or Cancel Consult
+                        </li>
+                      )}
+                    </>
                   )}
                 </ul>
               </div>
