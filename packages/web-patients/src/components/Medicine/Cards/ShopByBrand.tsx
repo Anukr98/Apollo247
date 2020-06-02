@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
+import _replace from 'lodash/replace';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,9 +104,11 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
       <Slider {...sliderSettings}>
         {props.data &&
           props.data.map((brand, index) => {
+            let formattedTitle = _replace(brand.title.toLowerCase(), ' & ', '_');
+            formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={index} className={classes.card}>
-                <Link to={clientRoutes.searchByMedicine('shop-by-brand', brand.category_id)}>
+                <Link to={clientRoutes.searchByMedicine(formattedTitle, brand.category_id)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img

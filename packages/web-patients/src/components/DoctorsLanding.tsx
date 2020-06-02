@@ -236,9 +236,9 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
           response.data &&
             response.data.getAllSpecialties &&
             response.data.getAllSpecialties.map((specialty: any) => {
-              if (specialty.name === specialityName) {
+              if (specialty.name.toLowerCase() === specialityName) {
                 setSpecialtyId(specialty.id);
-                setSpecialitySelected(specialityName);
+                setSpecialitySelected(specialty.name);
               }
             });
         });
