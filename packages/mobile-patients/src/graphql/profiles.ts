@@ -20,6 +20,8 @@ export const GET_CURRENT_PATIENTS = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         familyHistory {
           description
           relation
@@ -1433,6 +1435,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         prescriptionImageUrl
         orderTat
         orderType
+        shopAddress
+        packagingCharges
+        deliveryType
         currentStatus
         patientAddressId
         medicineOrdersStatus {
@@ -2373,6 +2378,8 @@ export const GET_PATIENTS_MOBILE = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         familyHistory {
           description
           relation
@@ -2534,5 +2541,21 @@ export const LINK_UHID = gql`
 export const UNLINK_UHID = gql`
   mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
     unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
+  }
+`;
+
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation updateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
+    }
   }
 `;

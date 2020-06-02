@@ -1,4 +1,5 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
+import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 
 declare global {
   interface Window {
@@ -109,6 +110,28 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 
 const customerCareNumber = '04048217222';
 
+const readableParam = (param: string) => {
+  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-');
+};
+const dayMapping = {
+  MONDAY: 'Mo',
+  TUESDAY: 'Tu',
+  WEDNESDAY: 'We',
+  THURSDAY: 'Th',
+  FRIDAY: 'Fr',
+  SATURDAY: 'SA',
+  SUNDAY: 'Su',
+};
+
+const getOpeningHrs = (
+  consultHours: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[]
+) => {
+  return consultHours.map((consult) => {
+    const { startTime, endTime, weekDay } = consult;
+    return `${dayMapping[weekDay]} ${startTime}-${endTime}`;
+  });
+};
+
 export {
   sortByProperty,
   locationRoutesBlackList,
@@ -117,4 +140,6 @@ export {
   pharmaStateCodeMapping,
   customerCareNumber,
   MEDICINE_QUANTITY,
+  readableParam,
+  getOpeningHrs,
 };

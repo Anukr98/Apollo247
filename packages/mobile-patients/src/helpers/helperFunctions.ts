@@ -176,6 +176,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Order Ready at Store';
+      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;

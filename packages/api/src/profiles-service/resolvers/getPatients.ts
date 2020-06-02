@@ -44,6 +44,9 @@ export const getPatientTypeDefs = gql`
     photoUrl: String!
     id: ID!
   }
+  type UpdateWhatsAppStatusResult {
+    status: Boolean
+  }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getAthsToken(patientId: String): PatientInfo
@@ -55,6 +58,11 @@ export const getPatientTypeDefs = gql`
     deleteProfile(patientId: String): DeleteProfileResult!
     addNewProfile(patientProfileInput: PatientProfileInput): PatientInfo!
     editProfile(editProfileInput: EditProfileInput): PatientInfo!
+    updateWhatsAppStatus(
+      whatsAppMedicine: Boolean
+      whatsAppConsult: Boolean
+      patientId: String
+    ): UpdateWhatsAppStatusResult!
   }
 `;
 
@@ -88,6 +96,10 @@ type PatientList = {
 };
 
 type DeleteProfileResult = {
+  status: Boolean;
+};
+
+type UpdateWhatsAppStatusResult = {
   status: Boolean;
 };
 
@@ -189,6 +201,21 @@ const getDeviceCodeCount: Resolver<
   return { deviceCount };
 };
 
+const updateWhatsAppStatus: Resolver<
+  null,
+  { whatsAppMedicine: boolean; whatsAppConsult: boolean; patientId: string },
+  ProfilesServiceContext,
+  UpdateWhatsAppStatusResult
+> = async (parent, args, { profilesDb, mobileNumber }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  await patientRepo.updateWhatsAppStatus(
+    args.patientId,
+    args.whatsAppConsult,
+    args.whatsAppMedicine
+  );
+  return { status: true };
+};
+
 const getAthsToken: Resolver<
   null,
   { patientId: string },
@@ -226,5 +253,6 @@ export const getPatientResolvers = {
     deleteProfile,
     addNewProfile,
     editProfile,
+    updateWhatsAppStatus,
   },
 };

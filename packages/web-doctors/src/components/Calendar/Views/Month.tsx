@@ -271,8 +271,7 @@ export const Month: React.FC<MonthProps> = ({
     const jrdCaseSheet =
       event.caseSheet.length > 0
         ? event.caseSheet.filter(
-            (cdetails: caseSheetInfo | null) =>
-              cdetails && cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+            (cdetails: caseSheetInfo | null) => cdetails && cdetails.doctorType === 'JUNIOR'
           )
         : [];
 
@@ -294,7 +293,10 @@ export const Month: React.FC<MonthProps> = ({
         text.headerText = modalData.questionNotField.headerText;
         text.confirmationText = modalData.questionNotField.confirmationText;
         text.messageText = modalData.questionNotField.messageText;
-      } else if (jrdCaseSheet.length === 0 && event.isJdQuestionsComplete) {
+      } else if (
+        (jrdCaseSheet.length === 0 && event.isJdQuestionsComplete) ||
+        (jrdCaseSheet.length > 0 && !jrdCaseSheet[0].isJdConsultStarted)
+      ) {
         text.headerText = modalData.jdPending.headerText;
         text.confirmationText = modalData.jdPending.confirmationText;
         text.messageText = modalData.jdPending.messageText;
@@ -348,10 +350,7 @@ export const Month: React.FC<MonthProps> = ({
           setText(defaultText);
         }}
         isDialogOpen={isDialogOpen}
-        headerText={text.headerText}
-        confirmationText={text.confirmationText}
-        messageText={text.messageText}
-        appointmentId={text.appointmentId}
+        text={text}
       />
     </div>
   );
