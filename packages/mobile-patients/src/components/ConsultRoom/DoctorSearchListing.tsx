@@ -99,29 +99,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     borderBottomWidth: 0,
   },
-  headingText: {
-    paddingBottom: 8,
-    color: theme.colors.CARD_HEADER,
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  descriptionText: {
-    color: theme.colors.CARD_DESCRIPTION,
-    paddingBottom: 11,
-    ...theme.fonts.IBMPlexSansMedium(17),
-  },
-  viewRowStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  textStyle: {
-    color: theme.colors.LIGHT_BLUE,
-    letterSpacing: 0.35,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-  },
 });
 
 let latlng: locationType | null = null;
-const key = AppConfig.Configuration.GOOGLE_API_KEY;
+
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;
@@ -760,6 +741,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const getDoctorAvailableMode = (id: string) => {
+    let availableMode: ConsultMode | null = null;
+    if (doctorsAvailability) {
+      const itemIndex = doctorsAvailability.findIndex((i) => i && i.doctorId === id);
+      if (itemIndex > -1) {
+        availableMode = (doctorsAvailability[itemIndex]!.availableModes || [null])[0];
+      }
+    }
+    return availableMode;
+  };
+
   const renderSearchDoctorResultsRow = (
     rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
     index: number,
@@ -776,7 +768,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorsNextAvailability={doctorsNextAvailability}
           style={styles}
           numberOfLines={numberOfLines}
-          availableModes={filter ? filter : null}
+          availableModes={getDoctorAvailableMode(rowData.id)}
           onPress={() => {
             postDoctorClickWEGEvent(rowData, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1261,11 +1253,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
-                    ? undefined
+                    ? ConsultMode.BOTH
                     : ConsultMode.ONLINE
                   : physicalCheckBox
                   ? ConsultMode.PHYSICAL
-                  : undefined,
+                  : ConsultMode.BOTH,
                 doctorSearch
               )}
             </View>

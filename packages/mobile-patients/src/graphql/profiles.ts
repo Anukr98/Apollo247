@@ -622,6 +622,8 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         displayName
         fullName
         experience
+        onlineConsultationFees
+        physicalConsultationFees
         specialty {
           id
           name
@@ -715,10 +717,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           salutation
           firstName
           lastName
+          fullName
           experience
           city
           photoUrl
           qualification
+          thumbnailUrl
+          physicalConsultationFees
+          onlineConsultationFees
           specialty {
             id
             name

@@ -387,19 +387,34 @@ export const getNetStatus = async () => {
 };
 
 export const nextAvailability = (nextSlot: string) => {
-  const today: Date = new Date();
-  const date2: Date = new Date(nextSlot);
-  const secs = (date2 as any) - (today as any);
-  const mins = Math.ceil(secs / (60 * 1000));
-  let hours: number = 0;
-  if (mins > 0 && mins < 60) {
-    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
-  } else if (mins >= 60 && mins < 1380) {
-    hours = Math.ceil(mins / 60);
-    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
-  } else if (mins >= 1380) {
-    const days = Math.ceil(mins / (24 * 60));
-    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  return `available in ${mhdMY(nextSlot, 'min')}`;
+};
+
+export const mhdMY = (
+  time: string,
+  mText: string = 'minute',
+  hText: string = 'hour',
+  dText: string = 'day',
+  MText: string = 'month',
+  YText: string = 'year'
+) => {
+  const current = moment(new Date());
+  const difference = moment.duration(moment(time).diff(current));
+  const min = Math.ceil(difference.asMinutes());
+  const hours = Math.ceil(difference.asHours());
+  const days = Math.ceil(difference.asDays());
+  const months = Math.ceil(difference.asMonths());
+  const year = Math.ceil(difference.asYears());
+  if (min > 0 && min < 24) {
+    return `${min} ${mText}${min !== 1 ? 's' : ''}`;
+  } else if (hours > 0 && hours < 24) {
+    return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
+  } else if (days > 0 && days < 30) {
+    return `${days} ${dText}${days !== 1 ? 's' : ''}`;
+  } else if (months > 0 && months < 12) {
+    return `${months} ${MText}${months !== 1 ? 's' : ''}`;
+  } else if (year > 0 && year < 30) {
+    return `${year} ${YText}${year !== 1 ? 's' : ''}`;
   }
 };
 

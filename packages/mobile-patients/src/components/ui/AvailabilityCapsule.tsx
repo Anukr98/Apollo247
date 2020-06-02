@@ -19,7 +19,7 @@ export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) =
         upperCase
         title={nextAvailability(props.availableTime)}
         style={props.styles}
-        isActive={Number(timeDiff) > 15 || timeDiff < 0 ? false : true}
+        isActive={!(Number(timeDiff) > 15 || timeDiff < 0)}
       />
     );
   return null;

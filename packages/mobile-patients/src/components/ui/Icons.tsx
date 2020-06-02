@@ -377,6 +377,14 @@ export const VideoOnIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/CallVideoOn.png')} />
 );
 
+export const Online: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 19, height: 19 }} {...props} source={require('./icons/ic_video.png')} />
+);
+
+export const InPerson: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/fa_solid_hospital.png')} />
+);
+
 export const SpeakerOn: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/speakerOn.png')} />
 );

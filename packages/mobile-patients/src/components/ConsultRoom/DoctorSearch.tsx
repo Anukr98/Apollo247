@@ -31,7 +31,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
 import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
 import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
-import { FilterDoctorInput, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  FilterDoctorInput,
+  SEARCH_TYPE,
+  ConsultMode,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   SearchDoctorAndSpecialtyByName,
@@ -989,6 +993,40 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     }
   };
+  const getDoctorAvailableMode = (id: string, slot: 'other' | 'result') => {
+    let availableMode: ConsultMode | null = null;
+    if (doctorAvailalbeSlots && slot === 'result') {
+      const itemIndex = doctorAvailalbeSlots.findIndex((i) => i && i.doctorId === id);
+      if (itemIndex > -1) {
+        if (
+          g(doctorAvailalbeSlots[itemIndex], 'onlineSlot') &&
+          g(doctorAvailalbeSlots[itemIndex], 'physicalSlot')
+        ) {
+          availableMode = ConsultMode.BOTH;
+        } else if (g(doctorAvailalbeSlots[itemIndex], 'onlineSlot')) {
+          availableMode = ConsultMode.ONLINE;
+        } else if (g(doctorAvailalbeSlots[itemIndex], 'physicalSlot')) {
+          availableMode = ConsultMode.PHYSICAL;
+        }
+      }
+    } else if (OtherDoctorAvailalbeSlots && slot === 'other') {
+      const itemIndex = OtherDoctorAvailalbeSlots.findIndex((i) => i && i.doctorId === id);
+      if (itemIndex > -1) {
+        if (
+          g(OtherDoctorAvailalbeSlots[itemIndex], 'onlineSlot') &&
+          g(OtherDoctorAvailalbeSlots[itemIndex], 'physicalSlot')
+        ) {
+          availableMode = ConsultMode.BOTH;
+        } else if (g(OtherDoctorAvailalbeSlots[itemIndex], 'onlineSlot')) {
+          availableMode = ConsultMode.ONLINE;
+        } else if (g(OtherDoctorAvailalbeSlots[itemIndex], 'physicalSlot')) {
+          availableMode = ConsultMode.PHYSICAL;
+        }
+      }
+    }
+    // OtherDoctorAvailalbeSlots;
+    return availableMode;
+  };
 
   const renderSearchDoctorResultsRow = (
     rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null
@@ -1000,7 +1038,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <DoctorCard
               saveSearch={true}
               doctorsNextAvailability={doctorAvailalbeSlots}
-              // doctorAvailalbeSlots={doctorAvailalbeSlots}
+              availableModes={getDoctorAvailableMode(rowData.id, 'result')}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
@@ -1049,7 +1087,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     : []
                   : OtherDoctorAvailalbeSlots
               }
-              // doctorAvailalbeSlots={doctorAvailalbeSlots}
+              availableModes={getDoctorAvailableMode(rowData.id, 'other')}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
