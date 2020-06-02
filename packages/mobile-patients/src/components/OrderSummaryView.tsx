@@ -136,6 +136,12 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const deliveredOrder = medicineOrderStatus.find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
   );
+  const orderBilledAndPacked = medicineOrderStatus.find(
+    (item) =>
+      item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
+      item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+      item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  );
   let item_quantity: string;
   if (medicineOrderLineItems.length == 1) {
     item_quantity = medicineOrderLineItems.length + ' item ';
@@ -420,14 +426,88 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 {paymentMethodToDisplay}
               </Text>
             </View>
+            {orderBilledAndPacked && (
+              <>
+                <View style={[styles.horizontalline, { marginTop: 7, marginBottom: 11 }]} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
+                    {string.OrderSummaryText.total_order_billed}
+                  </Text>
+                  <Text
+                    style={[
+                      {
+                        ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
+                        textAlign: 'right',
+                      },
+                    ]}
+                  >
+                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                  </Text>
+                </View>
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
+                >
+                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0) }}>
+                    {string.OrderSummaryText.total_billed_value}
+                  </Text>
+                  <Text
+                    style={[
+                      {
+                        ...theme.viewStyles.text('SB', 14, '#01475b', 0.7, 24, 0),
+                        textAlign: 'right',
+                      },
+                    ]}
+                  >
+                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                  </Text>
+                </View>
+                <View style={[styles.horizontalline, { marginTop: 9, marginBottom: 9 }]} />
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
+                >
+                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0) }}>
+                    {string.OrderSummaryText.amount_to_be_paid_on_delivery}
+                  </Text>
+                  <Text
+                    style={[
+                      {
+                        ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0),
+                        textAlign: 'right',
+                      },
+                    ]}
+                  >
+                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                  </Text>
+                </View>
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
+                >
+                  <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0) }}>
+                    {string.OrderSummaryText.refund_amount}
+                  </Text>
+                  <Text
+                    style={[
+                      {
+                        ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
+                        textAlign: 'right',
+                      },
+                    ]}
+                  >
+                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
-        <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
-          <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>
-          <Text style={styles.DisclaimerDescr}>
-            Price may vary when the actual bill is generated.{' '}
-          </Text>
-        </View>
+        {!orderBilledAndPacked && (
+          <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
+            <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>
+            <Text style={styles.DisclaimerDescr}>
+              Price may vary when the actual bill is generated.{' '}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
