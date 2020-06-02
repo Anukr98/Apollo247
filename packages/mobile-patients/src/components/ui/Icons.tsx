@@ -995,3 +995,7 @@ export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
 export const CreditsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/credits.png')} />
 );
+
+export const TxnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
+);

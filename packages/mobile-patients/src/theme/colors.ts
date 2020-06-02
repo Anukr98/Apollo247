@@ -69,7 +69,8 @@ const Common = {
   REFUND_TEXT: '#a30808',
   LIGHT_GRAY: lightGray,
   PALE_LIGHT_GRAY: paleLightGray,
-  COD_TEXT: '#084c60'
+  COD_TEXT: '#084c60',
+  REDEEMED_TEXT:'#c3202b'
 };
 
 const Header = {

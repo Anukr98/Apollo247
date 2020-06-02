@@ -4,17 +4,11 @@ import {
   Dimensions,
   ImageBackground,
   ScrollView,
-  Image,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ViewStyle,
-  Alert,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -30,13 +24,33 @@ export interface OneApolloProps extends NavigationScreenProps {}
 
 export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   const [name, setName] = useState<String>('Bhuvan Reddy');
-  const [tier, settier] = useState<String>('Gold Member');
+  const [tier, settier] = useState<String>('platinum');
   const [credits, setCredits] = useState<String>('100');
   const [screen, setScreen] = useState<String>('MyMembership');
 
+  const tierData: any = {
+    gold: {
+      image: require('../ui/icons/gold.png'),
+      title: 'Gold Member',
+    },
+    silver: {
+      image: require('../ui/icons/silver.png'),
+      title: 'Silver Member',
+    },
+    platinum: {
+      image: require('../ui/icons/platinum.png'),
+      title: 'Platinum Member',
+    },
+  };
   const renderHeader = () => {
     return (
-      <Header leftIcon={'backArrow'} title={'ONEAPOLLO MEMBERSHIP'} onPressLeftIcon={() => {}} />
+      <Header
+        leftIcon={'backArrow'}
+        title={'ONEAPOLLO MEMBERSHIP'}
+        onPressLeftIcon={() => {
+          props.navigation.goBack();
+        }}
+      />
     );
   };
 
@@ -48,7 +62,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         </View>
         <View style={{ flex: 0.75, justifyContent: 'center' }}>
           <Text style={styles.nameText}>{name}</Text>
-          <Text style={styles.tierText}>{tier}</Text>
+          <Text style={styles.tierText}>{tierData[`${tier}`].title}</Text>
         </View>
       </View>
     );
@@ -74,7 +88,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
     return (
       <View style={styles.membership}>
         <ImageBackground
-          source={require('../ui/icons/gold.png')}
+          source={tierData[`${tier}`].image}
           style={styles.backgroundImage}
           imageStyle={{ borderRadius: 10 }}
         >
