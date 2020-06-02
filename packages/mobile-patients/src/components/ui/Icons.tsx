@@ -995,3 +995,27 @@ export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
 export const CreditsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/credits.png')} />
 );
+
+export const SilverMembershipBanner: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver_membership.png')} />
+);
+
+export const MembershipBenefitsOne: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_1.png')} />
+);
+
+export const MembershipBenefitsTwo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_2.png')} />
+);
+
+export const MembershipBenefitsThree: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_3.png')} />
+);
+
+export const TriangleGreyBulletPoint: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/triangle_grey.png')} />
+);
+
+export const OneApolloGold: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/gold.png')} />
+);
