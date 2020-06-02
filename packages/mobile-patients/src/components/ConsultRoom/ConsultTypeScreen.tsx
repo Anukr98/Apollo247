@@ -248,8 +248,6 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
                 }}
               >
                 {i.description}
-                {i.description}
-                {i.description}
               </Text>
             </View>
           ))}
