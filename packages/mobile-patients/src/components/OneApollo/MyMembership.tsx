@@ -9,6 +9,9 @@ import {
   MembershipBenefitsTwo,
   MembershipBenefitsThree,
   OneApolloGold,
+  OneApolloSilver,
+  OneApolloPlatinum,
+  OneApolloLockIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
@@ -234,33 +237,57 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 resizeMode: 'contain',
                 marginRight: 10,
               }} />
-              <Text
+              <View
                 style={{
                   position: 'absolute',
                   alignSelf: 'center',
-                  marginVertical: 90,
-                  color: theme.colors.PLATINUM_GREY,
-                  ...theme.fonts.IBMPlexSansMedium(10),
+                  marginVertical: 80,
                 }}
-              >Gold</Text>
+              >
+                <OneApolloLockIcon
+                  style={{
+                    resizeMode: 'contain',
+                    alignSelf: 'center'
+                  }}
+                />
+                <Text
+                  style={{
+                    color: theme.colors.PLATINUM_GREY,
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                    marginTop: 10
+                  }}
+                >Gold</Text>
+              </View>
             </View>
             <View>
-              <OneApolloGold style={{
+              <OneApolloPlatinum style={{
                 width: 300,
                 height: 200,
                 resizeMode: 'contain',
                 marginRight: 10,
                 marginLeft: 10,
               }} />
-              <Text
+              <View
                 style={{
                   position: 'absolute',
                   alignSelf: 'center',
-                  marginVertical: 90,
-                  color: theme.colors.PLATINUM_GREY,
-                  ...theme.fonts.IBMPlexSansMedium(10),
+                  marginVertical: 80,
                 }}
-              >Platinum</Text>
+              >
+                <OneApolloLockIcon
+                  style={{
+                    resizeMode: 'contain',
+                    alignSelf: 'center'
+                  }}
+                />
+                <Text
+                  style={{
+                    color: theme.colors.PLATINUM_GREY,
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                    marginTop: 10
+                  }}
+                >Platinum</Text>
+              </View>
             </View>
           </ScrollView>
           <Text

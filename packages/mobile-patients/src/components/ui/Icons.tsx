@@ -1019,3 +1019,15 @@ export const TriangleGreyBulletPoint: React.FC<IconProps> = (props) => (
 export const OneApolloGold: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/gold.png')} />
 );
+
+export const OneApolloSilver: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver.png')} />
+);
+
+export const OneApolloPlatinum: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/platinum.png')} />
+);
+
+export const OneApolloLockIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/padlock.png')} />
+);
