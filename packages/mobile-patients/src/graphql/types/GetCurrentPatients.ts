@@ -51,6 +51,8 @@ export interface GetCurrentPatients_getCurrentPatients_patients {
   isUhidPrimary: boolean | null;
   primaryUhid: string | null;
   primaryPatientId: string | null;
+  whatsAppMedicine: boolean | null;
+  whatsAppConsult: boolean | null;
   familyHistory: (GetCurrentPatients_getCurrentPatients_patients_familyHistory | null)[] | null;
   lifeStyle: (GetCurrentPatients_getCurrentPatients_patients_lifeStyle | null)[] | null;
   patientMedicalHistory: GetCurrentPatients_getCurrentPatients_patients_patientMedicalHistory | null;

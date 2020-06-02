@@ -1,16 +1,17 @@
 import {
   aphConsole,
   dataSavedUserID,
+  doRequestAndAccessLocationModified,
   findAddrComponents,
   formatAddress,
   g,
   handleGraphQlError,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
-  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -45,11 +46,11 @@ import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDoc
 import {
   getDeliveryTime,
   getPlaceInfoByPincode,
+  getStoreInventoryApi,
+  GetStoreInventoryResponse,
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
-  getStoreInventoryApi,
-  GetStoreInventoryResponse,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -60,12 +61,11 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Geolocation from '@react-native-community/geolocation';
 import Axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
@@ -84,7 +84,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -94,10 +93,11 @@ import {
   validatePharmaCoupon,
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
-import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { whatsAppUpdateAPICall } from '../../helpers/clientCalls';
 import { TextInputComponent } from '../ui/TextInputComponent';
-import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
+import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
+import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -208,6 +208,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+  const { getPatientApiCall } = useAuth();
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -295,7 +296,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    postWEGWhatsAppEvent(true);
+    if (!g(currentPatient, 'whatsAppMedicine')) {
+      postWEGWhatsAppEvent(true);
+      // callWhatsOptAPICall(true);
+    }
     getUserAddress();
   }, []);
 
@@ -666,6 +670,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
           props.navigation.goBack();
+          whatsappAPICalled();
         }}
       />
     );
@@ -1511,9 +1516,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const whatsappAPICalled = () => {
+    if (!g(currentPatient, 'whatsAppMedicine')) {
+      getPatientApiCall();
+    }
+  };
+
   const onPressProceedToPay = () => {
     postwebEngageProceedToPayEvent();
-
+    whatsappAPICalled();
     const proceed = () => {
       const prescriptions = physicalPrescriptions;
       if (prescriptions.length == 0 && ePrescriptions.length == 0) {
@@ -1543,6 +1554,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const callWhatsOptAPICall = async (optedFor: boolean) => {
+    const userId = await dataSavedUserID('selectedProfileId');
+
+    whatsAppUpdateAPICall(
+      client,
+      optedFor,
+      g(currentPatient, 'whatsAppConsult'),
+      userId ? userId : g(currentPatient, 'id')
+    )
+      .then(({ data }: any) => {
+        console.log(data, 'whatsAppUpdateAPICall');
+        getPatientApiCall();
+      })
+      .catch((e: any) => {
+        CommonBugFender('YourCart_whatsAppUpdateAPICall_error', e);
+        console.log('error', e);
+      });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1560,15 +1590,22 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
-          <WhatsAppStatus
-            style={{ marginTop: 6 }}
-            onPress={() => {
-              whatsAppUpdate
-                ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
-                : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
-            }}
-            isSelected={whatsAppUpdate}
-          />
+          {!g(currentPatient, 'whatsAppMedicine') ? (
+            <WhatsAppStatus
+              style={{ marginTop: 6 }}
+              onPress={() => {
+                whatsAppUpdate
+                  ? (setWhatsAppUpdate(false),
+                    postWEGWhatsAppEvent(false),
+                    callWhatsOptAPICall(false))
+                  : (setWhatsAppUpdate(true),
+                    postWEGWhatsAppEvent(true),
+                    callWhatsOptAPICall(true));
+              }}
+              isSelected={whatsAppUpdate}
+            />
+          ) : null}
+
           <View style={{ height: 70 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG>
