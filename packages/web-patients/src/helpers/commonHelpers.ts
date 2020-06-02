@@ -109,6 +109,10 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 
 const customerCareNumber = '04048217222';
 
+const readableParam = (param: string) => {
+  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-');
+};
+
 export {
   sortByProperty,
   locationRoutesBlackList,
@@ -117,4 +121,5 @@ export {
   pharmaStateCodeMapping,
   customerCareNumber,
   MEDICINE_QUANTITY,
+  readableParam,
 };

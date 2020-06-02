@@ -7,6 +7,7 @@ import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,9 +201,10 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
     paymentRefId = paymentInfo[0].paymentRefId;
     amountPaid = paymentInfo[0].amountPaid;
   }
+  const readableDoctorName = readableParam(cardDetails.doctor.name);
   const buttonUrl =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
-      ? clientRoutes.doctorDetails(cardDetails.doctor.name, cardDetails.doctorId)
+      ? clientRoutes.doctorDetails(readableDoctorName, cardDetails.doctorId)
       : getAppStoreLink();
   const buttonText =
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
@@ -251,7 +253,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           <div className={classes.infoText}>
             <span>Payment Ref Number - {paymentRefId}</span>
             <span className={classes.rightArrow}>
-              <Link to={clientRoutes.doctorDetails(cardDetails.doctor.name, cardDetails.doctorId)}>
+              <Link to={clientRoutes.doctorDetails(readableDoctorName, cardDetails.doctorId)}>
                 <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
               </Link>
             </span>
