@@ -195,7 +195,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {checkIfDisabled() && currentPath !== '/' && <LocationSearch />}
+          {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
           {checkIfDisabled() && currentPath !== '/' && <MedicineLocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>

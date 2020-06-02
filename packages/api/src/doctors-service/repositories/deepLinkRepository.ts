@@ -31,4 +31,22 @@ export class DeeplinkRepository extends Repository<Deeplink> {
       });
     });
   }
+
+  async getDeeplinks() {
+    return this.find().catch((deepLinkError) => {
+      throw new AphError(AphErrorMessages.GET_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    });
+  }
+
+  async bulkUpsertDeepLinks(deeplinkAttrs: Partial<Deeplink>[]) {
+    try {
+      return this.save(deeplinkAttrs);
+    } catch (deepLinkError) {
+      throw new AphError(AphErrorMessages.SAVE_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    }
+  }
 }

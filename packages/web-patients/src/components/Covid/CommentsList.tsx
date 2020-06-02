@@ -8,7 +8,7 @@ import fetchUtil from 'helpers/fetch';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 16,
+      padding: 16,
     },
     listRow: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -18,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       fontSize: 12,
       lineHeight: '18px',
+      '&:first-child': {
+        borderTop: 'none',
+      },
     },
     circlularProgress: {
       display: 'flex',
@@ -32,8 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     postDate: {
       marginLeft: 'auto',
-      color: '#0087ba',
-      opacity: 0.6,
+      opacity: 0.8,
     },
     postContent: {
       paddingTop: 8,
@@ -54,6 +56,30 @@ const useStyles = makeStyles((theme: Theme) => {
           color: '#fc9916',
           boxShadow: 'none',
         },
+      },
+    },
+    feedback: {
+      backgroundColor: '#f7f7f7',
+      fontSize: 12,
+      borderRadius: 10,
+      marginLeft: 20,
+      marginTop: 10,
+      padding: 12,
+      color: '#01475b',
+    },
+    feedbackHead: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    feedbackDate: {
+      marginLeft: 'auto',
+      opacity: 0.8,
+    },
+    feedbackContent: {
+      opacity: 0.6,
+      paddingTop: 8,
+      '& a': {
+        color: '#0087ba',
       },
     },
   };
@@ -127,10 +153,17 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
               </div>
               <div className={classes.postContent}>{item.content}</div>
               {item && item.commentReply && (
-                <div>
-                  {item.commentReply.name}{' '}
-                  {moment.unix(parseInt(item.commentReply.createdAt)).format('DD MMMM YYYY')}
-                  <div dangerouslySetInnerHTML={{ __html: item.commentReply.content }} />
+                <div className={classes.feedback}>
+                  <div className={classes.feedbackHead}>
+                    <div>{item.commentReply.name} </div>
+                    <div className={classes.feedbackDate}>
+                      {moment.unix(parseInt(item.commentReply.createdAt)).format('DD MMMM YYYY')}
+                    </div>
+                  </div>
+                  <div
+                    className={classes.feedbackContent}
+                    dangerouslySetInnerHTML={{ __html: item.commentReply.content }}
+                  />
                 </div>
               )}
             </div>

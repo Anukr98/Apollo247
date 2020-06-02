@@ -48,6 +48,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  DoctorPatientExternalConnect,
   Deeplink,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
@@ -90,6 +91,7 @@ import {
   RegistrationCodes,
   CouponPharmaRules,
   MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -159,6 +161,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -211,6 +214,7 @@ export const connect = async () => {
         SearchHistory,
         RegistrationCodes,
         MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

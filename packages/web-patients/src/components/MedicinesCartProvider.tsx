@@ -12,6 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 export interface MedicineCartItem {
   description: string;
   id: number;
+  arrId?: any[];
   image: string | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
@@ -46,6 +47,13 @@ export interface PrescriptionFormat {
   baseFormat: string;
 }
 
+export interface PharmaAddressDetails {
+  city: string;
+  pincode: string;
+  state: string;
+  country: string;
+}
+
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
@@ -62,6 +70,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
+  removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
@@ -95,6 +104,10 @@ export interface MedicineCartContextProps {
   changeCartTatStatus: ((status: boolean) => void) | null;
   setCouponCode: ((couponCode: string) => void) | null;
   couponCode: string;
+  medicineAddress: string;
+  setMedicineAddress: ((medicineAddress: string) => void) | null;
+  setPharmaAddressDetails: ((pharmaAddressDetails: PharmaAddressDetails) => void) | null;
+  pharmaAddressDetails: PharmaAddressDetails;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -103,6 +116,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
+  removeCartItems: null,
   updateCartItem: null,
   updateCartItemQty: null,
   cartTotal: 0,
@@ -132,6 +146,10 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   changeCartTatStatus: null,
   couponCode: null,
   setCouponCode: null,
+  medicineAddress: null,
+  setMedicineAddress: null,
+  setPharmaAddressDetails: null,
+  pharmaAddressDetails: null,
 });
 
 enum CartTypes {
@@ -149,6 +167,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
     imageUrl: '',
     fileType: '',
     baseFormat: '',
+  };
+  const pharmaDefObject = {
+    city: '',
+    pincode: localStorage.getItem('pharmaPincode') || '',
+    state: '',
+    country: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 
@@ -198,6 +222,25 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
     JSON.stringify(cartItems || {})
   );
+  const [medicineAddress, setMedicineAddress] = useState<
+    MedicineCartContextProps['medicineAddress']
+  >(localStorage.getItem('pharmaAddress'));
+  const [pharmaAddressDetails, setPharmaAddressDetails] = useState<PharmaAddressDetails>(
+    pharmaDefObject
+  );
+
+  useEffect(() => {
+    if (medicineAddress) {
+      localStorage.setItem('pharmaAddress', medicineAddress);
+    }
+  }, [medicineAddress]);
+
+  useEffect(() => {
+    if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
+      localStorage.setItem('pharmaPincode', pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
+
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(cartItems);
@@ -259,6 +302,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+    setIsCartUpdated(true);
+  };
+
+  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
+    const items = cartItems.filter((item) => !arrId.includes(item.id));
+    setCartItems(items);
     setIsCartUpdated(true);
   };
 
@@ -347,7 +396,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setPrescriptions([]);
     setEPrescriptionData([]);
     setCouponCode('');
-    // setCartItems([]);
   };
 
   const changeCartTatStatus = (status: boolean) => {
@@ -363,6 +411,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         itemsStr,
         addCartItem,
         removeCartItem,
+        removeCartItems,
         updateCartItem,
         updateCartItemQty,
         cartTotal,
@@ -391,6 +440,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         changeCartTatStatus,
         setCouponCode,
         couponCode,
+        medicineAddress,
+        setMedicineAddress,
+        pharmaAddressDetails,
+        setPharmaAddressDetails,
       }}
     >
       {props.children}
@@ -405,6 +458,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
+  removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
   updateCartItemQty: useShoppingCartContext().updateCartItemQty,
   cartTotal: useShoppingCartContext().cartTotal,
@@ -434,4 +488,8 @@ export const useShoppingCart = () => ({
   changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
   setCouponCode: useShoppingCartContext().setCouponCode,
   couponCode: useShoppingCartContext().couponCode,
+  medicineAddress: useShoppingCartContext().medicineAddress,
+  setMedicineAddress: useShoppingCartContext().setMedicineAddress,
+  pharmaAddressDetails: useShoppingCartContext().pharmaAddressDetails,
+  setPharmaAddressDetails: useShoppingCartContext().setPharmaAddressDetails,
 });

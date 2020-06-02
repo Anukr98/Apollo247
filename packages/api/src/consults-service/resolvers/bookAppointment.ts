@@ -17,6 +17,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { discountCalculation } from 'helpers/couponCommonFunctions';
 
@@ -89,6 +90,7 @@ export const bookAppointmentTypeDefs = gql`
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
     couponCode: String
+    externalConnect: Boolean
   }
 
   type BookAppointmentResult {
@@ -116,6 +118,7 @@ type BookAppointmentInput = {
   couponCode: string;
   actualAmount: number;
   discountedAmount: number;
+  externalConnect?: boolean;
 };
 
 type AppointmentBooking = {
@@ -161,6 +164,17 @@ const bookAppointment: Resolver<
   const patientDetails = await patient.findById(appointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  const externalConnectRepo = doctorsDb.getCustomRepository(DoctorPatientExternalConnectRepository);
+
+  if (appointmentInput.externalConnect != undefined) {
+    const recordPresent = await externalConnectRepo.findByDoctorAndPatient(
+      appointmentInput.doctorId,
+      appointmentInput.patientId
+    );
+    if (recordPresent)
+      throw new AphError(AphErrorMessages.EXTERNAL_CONNECT_PRESENT_ERROR, undefined, {});
   }
 
   /*if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
@@ -327,6 +341,15 @@ const bookAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
+
+  if (appointmentInput.externalConnect != undefined) {
+    const attrs = {
+      doctorId: appointmentInput.doctorId,
+      patientId: appointmentInput.patientId,
+      externalConnect: appointmentInput.externalConnect,
+    };
+    externalConnectRepo.saveExternalConnectData(attrs);
+  }
 
   return { appointment };
 };
