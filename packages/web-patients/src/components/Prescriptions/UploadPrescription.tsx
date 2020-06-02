@@ -203,9 +203,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       ) {
                         setIsUploading(true);
                         if (file) {
-                          await client.uploadBrowserFile({ file }).catch((error) => {
-                            throw error;
-                          });
+                          const aphBlob = await client
+                            .uploadBrowserFile({ file })
+                            .catch((error) => {
+                              throw error;
+                            });
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
                             toBase64(file).then((res: any) => {
