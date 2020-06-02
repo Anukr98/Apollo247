@@ -2357,27 +2357,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <ul className={classes.popOverUL}>
                   {currentUserType !== LoggedInUserType.SECRETARY && (
                     <>
-                      <li
-                        onClick={() => {
-                          onStopConsult(true);
-                        }}
-                      >
-                        {isResendLoading ? 'please wait...' : 'Resend Prescription'}
-                      </li>
-                      <li
-                        onClick={() => {
-                          onPrint();
-                        }}
-                      >
-                        Print Prescription
-                      </li>
-                      <li
-                        onClick={() => {
-                          console.log('Issue New Prescription');
-                        }}
-                      >
-                        Issue New Prescription
-                      </li>
+                      {props.appointmentStatus === STATUS.COMPLETED &&
+                        props.sentToPatient === true && (
+                          <>
+                            <li
+                              onClick={() => {
+                                onStopConsult(true);
+                              }}
+                            >
+                              {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                            </li>
+                            <li
+                              onClick={() => {
+                                onPrint();
+                              }}
+                            >
+                              Print Prescription
+                            </li>
+                            <li
+                              onClick={() => {
+                                console.log('Issue New Prescription');
+                              }}
+                            >
+                              Issue New Prescription
+                            </li>
+                          </>
+                        )}
+
                       {(appointmentInfo!.status === STATUS.PENDING ||
                         appointmentInfo!.status === STATUS.IN_PROGRESS) && (
                         <li
