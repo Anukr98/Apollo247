@@ -12,6 +12,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -161,13 +162,36 @@ export const Faq: React.FC = (props) => {
   const [value, setValue] = useState(0);
   const [faqData, setFaqData] = useState<any>();
   const [currentCategory, setCurrentCategory] = useState<string>('online-consultation');
+  const [faqSchema, setFaqSchema] = useState(null);
   const handleChange = (event: any, newValue: any) => {
     setValue(newValue);
+  };
+
+  const createFaqSchema = (faqData: any) => {
+    const mainEntity: any[] = [];
+    Object.values(faqData).map((faqs: any[]) => {
+      faqs.map((faqObj: any) => {
+        mainEntity.push({
+          '@type': 'Question',
+          name: faqObj.faqQuestion,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faqObj.faqAnswer,
+          },
+        });
+      });
+    });
+    setFaqSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity,
+    });
   };
 
   useEffect(() => {
     fetchUtil(`https://uatcms.apollo247.com/api/faqlist`, 'GET', {}, '', true).then((res: any) => {
       if (res && res.data) {
+        createFaqSchema(res.data);
         setFaqData(res.data);
       }
     });
@@ -176,6 +200,7 @@ export const Faq: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Header />
+      <SchemaMarkup structuredJSON={faqSchema} />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.faqHeader}>
