@@ -38,6 +38,14 @@ const styles = StyleSheet.create({
   ScrollViewStyle: {
     paddingBottom: 23,
   },
+  shadowStyle: {
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 15 },
+    zIndex: 1,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+  },
   headerTextContainer: {
     backgroundColor: theme.colors.WHITE,
     paddingTop: 8,
@@ -178,12 +186,13 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         leftIcon="backArrow"
         title="CONSULT TYPE"
         onPressLeftIcon={() => props.navigation.goBack()}
+        container={styles.shadowStyle}
       />
     );
   };
   const renderDoctorName = () => {
     return (
-      <View style={styles.headerTextContainer}>
+      <View style={[styles.headerTextContainer, styles.shadowStyle]}>
         <Text style={theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE)}>
           {string.consultType.mainHeading}
         </Text>
