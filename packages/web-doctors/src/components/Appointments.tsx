@@ -484,8 +484,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
             const jrdCaseSheet =
               appointment.caseSheet.length > 0
                 ? appointment.caseSheet.filter(
-                    (cdetails: caseSheetInfo) =>
-                      cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+                    (cdetails: caseSheetInfo) => cdetails.doctorType === 'JUNIOR'
                   )
                 : [];
             const appointmentCard = (
@@ -647,14 +646,15 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                             appointmentId: appointment.id,
                             patientId: appointment.patientId,
                           };
+                          debugger;
 
                           if (!appointment.isJdQuestionsComplete) {
                             text.headerText = modalData.questionNotField.headerText;
                             text.confirmationText = modalData.questionNotField.confirmationText;
                             text.messageText = modalData.questionNotField.messageText;
                           } else if (
-                            jrdCaseSheet.length === 0 &&
-                            appointment.isJdQuestionsComplete
+                            (jrdCaseSheet.length === 0 && appointment.isJdQuestionsComplete) ||
+                            (jrdCaseSheet.length > 0 && !jrdCaseSheet[0].isJdConsultStarted)
                           ) {
                             text.headerText = modalData.jdPending.headerText;
                             text.confirmationText = modalData.jdPending.confirmationText;

@@ -177,13 +177,13 @@ const StatusModal = (props: any) => {
           <div className={classes.buttonWrapper}>
             <Button
               className={
-                props.messageText !== '' ? classes.button : `${classes.button} ${classes.oKButton}`
+                text.messageText !== '' ? classes.button : `${classes.button} ${classes.oKButton}`
               }
               onClick={props.onClose}
             >
-              {props.messageText !== '' ? 'no, wait' : 'Okay'}
+              {text.messageText !== '' ? 'no, wait' : 'Okay'}
             </Button>
-            {props.messageText !== '' && (
+            {text.messageText !== '' && (
               <Button
                 className={`${classes.button} ${classes.yesButton}`}
                 onClick={() => {
@@ -194,7 +194,7 @@ const StatusModal = (props: any) => {
 
                   submit
                     .then((resp: any) => {
-                      if (resp && !resp.data) {
+                      if (resp && resp.data) {
                         if (resp.data.submitJDCaseSheet) {
                           props.history.push(
                             `/consulttabs/${text.appointmentId}/${text.patientId}/0`
@@ -206,8 +206,7 @@ const StatusModal = (props: any) => {
                         }
                       }
                     })
-                    .catch((exception: any) => console.log('something went wrong', exception))
-                    .error((error: any) => console.log('something went wrong', error));
+                    .catch((exception: any) => console.log('something went wrong', exception));
                 }}
               >
                 {'yes, start consult'}
