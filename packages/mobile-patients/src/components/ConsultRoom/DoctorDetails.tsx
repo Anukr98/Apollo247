@@ -951,6 +951,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={props.navigation.getParam('consultModeSelected')}
           // availableSlots={availableSlots}
         />
       )}

@@ -212,9 +212,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log('Error occured', { error });
         });
     }
-    props.navigation.navigate(AppRoutes.DoctorDetails, {
-      doctorId: id,
-      ...params,
+    const availability = doctorsNextAvailability
+      ? doctorsNextAvailability.find((i) => i && i.doctorId === id)
+      : null;
+
+    props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
+      DoctorName: rowData?.fullName,
+      DoctorId: id,
+      hideCheckbox: false,
+      nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
+      nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,
+      ConsultType: props.availableModes,
+      params: params,
     });
   };
 
@@ -247,7 +256,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
+            {availableTime ? (
+              <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
+            ) : null}
             {/* <View style={{ position: 'absolute', top: -6, right: 0 }}>
               //To-Do add Appollo or Non-Apollo Logo here
             </View> */}
@@ -369,7 +380,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   }}
                 >
                   <Text style={styles.buttonText}>
-                    {availableInMin && availableInMin < 60 && availableInMin > 0
+                    {availableInMin && availableInMin < 60 && availableInMin > 0 && availableTime
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}
                   </Text>

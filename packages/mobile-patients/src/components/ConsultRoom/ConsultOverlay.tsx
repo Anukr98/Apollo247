@@ -34,6 +34,7 @@ import {
   AppointmentType,
   BOOKINGSOURCE,
   DEVICETYPE,
+  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getNetStatus,
@@ -100,6 +101,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   FollowUp: boolean;
   appointmentType: string;
   appointmentId: string;
+  consultModeSelected: ConsultMode;
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
@@ -108,7 +110,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
-
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -149,6 +150,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
+  useEffect(() => {
+    if (props.consultModeSelected === ConsultMode.ONLINE) {
+      setselectedTab(tabs[0].title);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
+      setselectedTab(tabs[1].title);
+    }
+  }, [props.consultModeSelected]);
 
   useEffect(() => {
     postWEGWhatsAppEvent(true);
