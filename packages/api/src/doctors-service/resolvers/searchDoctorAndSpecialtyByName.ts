@@ -131,7 +131,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   'specialty.groupName',
                   'specialty.commonSearchTerm',
                   'specialty.userFriendlyNomenclature',
-                ]
+                ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
               },
