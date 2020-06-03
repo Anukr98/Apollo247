@@ -508,21 +508,40 @@ const updateDoctorFeeSummary: Resolver<
       args.summaryDate,
       ConsultMode.BOTH
     );
+    console.log('consultations==>', totalConsultations);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
       totalConsults = totalConsultations.length;
-      totalConsultations.forEach(async (consultation, index, array) => {
-        const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
-          consultation.id
-        );
-        if (!_isEmpty(paymentDetails) && paymentDetails) {
-          totalFee += parseFloat(paymentDetails.amountPaid.toString());
-        }
-        if (index + 1 === array.length) {
-          saveDetails();
-        }
+      console.log('totalConsults==>', totalConsults);
+      const promises = totalConsultations.map((consultation) => {
+        return new Promise<number>(async (resolve, reject) => {
+          const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
+            consultation.id
+          );
+          let fee = 0;
+          if (!_isEmpty(paymentDetails) && paymentDetails) {
+            fee = parseFloat(paymentDetails.amountPaid.toString());
+          }
+          console.log('totalFee==>', fee);
+          resolve(fee);
+        });
       });
+      const totFeeArray = await Promise.all(promises);
+      totalFee = totFeeArray.reduce((total, current) => total + current);
+      console.log('totalFee', totalFee);
+      saveDetails();
+      //  totalConsultations.forEach(async (consultation, index, array) => {
+      //     const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
+      //       consultation.id
+      //     );
+      //     if (!_isEmpty(paymentDetails) && paymentDetails) {
+      //       totalFee += parseFloat(paymentDetails.amountPaid.toString());
+      //     }
+      //     if (index + 1 === array.length) {
+      //       saveDetails();
+      //     }
+      //   })
     } else {
       saveDetails();
     }
