@@ -40,6 +40,7 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    packSize: Int
     discountPrice: Float
   }
 
@@ -115,6 +116,7 @@ type SubstituteDetails = {
   batch: string;
   unitPrice: number;
   discountPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentInvoiceInputArgs = {
@@ -147,12 +149,15 @@ const saveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
+  const currentStatus = orderDetails.shopId
+    ? MEDICINE_ORDER_STATUS.READY_AT_STORE
+    : MEDICINE_ORDER_STATUS.ORDER_BILLED;
   const statusDate = format(
     addMinutes(parseISO(saveOrderShipmentInvoiceInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+    orderStatus: currentStatus,
     medicineOrderShipments: shipmentDetails,
     statusDate: new Date(statusDate),
   };
@@ -195,7 +200,7 @@ const saveOrderShipmentInvoice: Resolver<
 
   await medicineOrdersRepo.updateMedicineOrderShipment(
     {
-      currentStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      currentStatus: currentStatus,
     },
     shipmentDetails.apOrderNo
   );
@@ -208,7 +213,7 @@ const saveOrderShipmentInvoice: Resolver<
   });
   if (!unBilledShipments) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      orderStatus: currentStatus,
       medicineOrders: orderDetails,
       statusDate: new Date(statusDate),
     };
@@ -217,7 +222,7 @@ const saveOrderShipmentInvoice: Resolver<
       orderDetails.id,
       orderDetails.orderAutoId,
       new Date(statusDate),
-      MEDICINE_ORDER_STATUS.ORDER_BILLED
+      currentStatus
     );
   }
 
