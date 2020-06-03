@@ -1355,7 +1355,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.PATIENT,
+    uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1443,7 +1443,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const data: any = response.channels[appointmentData.id].occupants;
 
             const occupancyDoctor = data.filter((obj: any) => {
-              return obj.uuid === REQUEST_ROLES.DOCTOR;
+              return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
             });
 
             const startConsultResult = insertText.filter((obj: any) => {
@@ -5638,7 +5638,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     },
                     (status, response) => {}
                   );
-                  InsertMessageToDoctor('EprescriptionUploaded');
                   KeepAwake.activate();
                 });
               item.message &&
@@ -5656,6 +5655,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   },
                   (status, response) => {}
                 );
+              InsertMessageToDoctor('EprescriptionUploaded');
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
