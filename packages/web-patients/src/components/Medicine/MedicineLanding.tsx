@@ -2,13 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import {
-  Theme,
-  Popover,
-  CircularProgress,
-  Typography,
-  Link as MaterialLink,
-} from '@material-ui/core';
+import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
