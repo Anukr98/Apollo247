@@ -63,7 +63,7 @@ export interface MyMembershipProps extends tierType { }
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const membershipType = props.tier;
-  const [showGoldContent, setShowGoldContent] = useState<boolean>(membershipType === 'silver');
+  const [showGoldContent, setShowGoldContent] = useState<boolean>(membershipType === 'Silver');
   const [showBenefits, setShowBenefits] = useState<boolean>(true);
   const [showCreditEarnings, setShowCreditEarnings] = useState<boolean>(true);
   const [showCreditRedemption, setShowCreditRedemption] = useState<boolean>(true);
@@ -230,7 +230,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         >
           <ScrollView
             horizontal={true}
-            contentContainerStyle={{ width: membershipType === 'gold' ? '100%' : '200%' }}
+            contentContainerStyle={{ width: membershipType === 'Gold' ? '100%' : '200%' }}
             showsHorizontalScrollIndicator={false}
             scrollEventThrottle={200}
             decelerationRate="fast"
@@ -245,7 +245,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             }}
           >
             {
-              membershipType === 'silver' && (
+              membershipType === 'Silver' && (
                 <View>
                   <OneApolloGold style={{
                     width: 300,
@@ -353,7 +353,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       {renderHealthCreditEarning()}
       {renderHealthCreditRedemption()}
       {
-        (membershipType !== 'platinum') && renderMembershipUpgrades()
+        (membershipType !== 'Platinum') && renderMembershipUpgrades()
       }
       <TouchableOpacity onPress={() => { console.log('know more') }}>
         <Text

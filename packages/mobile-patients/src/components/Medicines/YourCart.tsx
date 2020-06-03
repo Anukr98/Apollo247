@@ -93,6 +93,7 @@ import {
   validatePharmaCouponVariables,
 } from '../../graphql/types/validatePharmaCoupon';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -147,6 +148,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(14),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
+  },
+  oneApollotxt: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 10,
+    alignItems: 'center',
   },
 });
 
@@ -1522,6 +1529,27 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const renderOneapollotext = () => {
+    return (
+      <View style={styles.oneApollotxt}>
+        <View style={{ flex: 0.13 }}>
+          <OneApollo style={{ height: 25, width: 33 }} />
+        </View>
+        <View style={{ flex: 0.87 }}>
+          <Text
+            numberOfLines={2}
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(13),
+              color: theme.colors.SHADE_GREY,
+            }}
+          >
+            You will earn OneApollo Health Credits for this transaction.
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1537,6 +1565,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
+            {renderOneapollotext()}
             {/* {renderMedicineSuggestions()} */}
           </View>
           <WhatsAppStatus

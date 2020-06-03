@@ -1,18 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Dimensions, Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TxnIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_ONEAPOLLO_USERTXNS } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { format } from 'date-fns';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface MyTransactionsProps {}
+export interface MyTransactionsProps {
+  earned: number;
+  redeemed: number;
+}
 
 export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
-  const [earned, setEarned] = useState<String>('100');
-  const [redeemed, setRedeemed] = useState<String>('0');
-  const [txns, settxns] = useState<any>(['1', '', '']);
+  const [earned, setEarned] = useState<number>(props.earned);
+  const [redeemed, setRedeemed] = useState<number>(props.redeemed);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [txns, settxns] = useState<any>([]);
+  const client = useApolloClient();
+  const { showAphAlert } = useUIElements();
+
+  useEffect(() => {
+    client
+      .query({
+        query: GET_ONEAPOLLO_USERTXNS,
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        console.log(res.data.getOneApolloUserTransactions);
+        settxns(res.data.getOneApolloUserTransactions);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        CommonBugFender('fetchingOneApolloUserTxns', error);
+        console.log(error);
+        // renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+      });
+  }, []);
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
 
   const rendertxnsHeader = () => {
     return (
@@ -58,7 +95,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
         </View>
         <View style={{ flex: 0.45 }}>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#000000', lineHeight: 22 }}>
-            Apollo Hospitals
+            {item.businessUnit}
           </Text>
           <Text
             style={{
@@ -68,10 +105,10 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
               lineHeight: 22,
             }}
           >
-            24 May 2020
+            {format(item.transactionDate, 'DD MMM YYYY')}
           </Text>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#666666', marginTop: 12 }}>
-            Billing Rs. 200
+            Billing Rs. {item.netAmount}
           </Text>
         </View>
         <View style={{ flex: 0.25, alignItems: 'flex-end' }}>
@@ -103,7 +140,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
               lineHeight: 22,
             }}
           >
-            20
+            {item.earnedHC}
           </Text>
           <Text
             style={{
@@ -113,7 +150,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
               lineHeight: 22,
             }}
           >
-            30
+            {item.redeemedHC}
           </Text>
         </View>
       </View>
@@ -139,17 +176,23 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {rendertxnsHeader()}
-        {renderTxns()}
-      </ScrollView>
+      {loading ? (
+        <View style={{ height: 150, alignItems: 'center', justifyContent: 'center' }}>
+          <Spinner style={{ backgroundColor: '#fff' }} />
+        </View>
+      ) : (
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {rendertxnsHeader()}
+          {renderTxns()}
+        </ScrollView>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    ...theme.viewStyles.container,
+    flex: 1,
     backgroundColor: '#fff',
     marginHorizontal: 0.05 * windowWidth,
   },

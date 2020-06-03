@@ -2530,3 +2530,28 @@ export const UNLINK_UHID = gql`
     unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
   }
 `;
+
+export const GET_ONEAPOLLO_USER = gql`
+  query getOneApolloUser($patientId: String!) {
+    getOneApolloUser(patientId: $patientId) {
+      name
+      earnedHC
+      availableHC
+      tier
+    }
+  }
+`;
+
+export const GET_ONEAPOLLO_USERTXNS = gql`
+  query getOneApolloUserTransactions {
+    getOneApolloUserTransactions {
+      earnedHC
+      transactionDate
+      grossAmount
+      netAmount
+      transactionDate
+      businessUnit
+      redeemedHC
+    }
+  }
+`;

@@ -16,32 +16,78 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OneApollo, CreditsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MyMembership } from './MyMembership';
 import { MyTransactions } from './MyTransactions';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_ONEAPOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { requiredSubselectionMessage } from 'graphql/validation/rules/ScalarLeafs';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export interface OneApolloProps extends NavigationScreenProps { }
+export interface OneApolloProps extends NavigationScreenProps {}
 
 export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
-  const [name, setName] = useState<String>('Bhuvan Reddy');
-  const [tier, settier] = useState<String>('platinum');
-  const [credits, setCredits] = useState<String>('100');
+  const [name, setName] = useState<String>('user');
+  const [tier, settier] = useState<String>('Silver');
+  const [credits, setCredits] = useState(0);
   const [screen, setScreen] = useState<String>('MyMembership');
+  const [earned, setEarned] = useState(0);
+  const [redeemed, setRedeemed] = useState(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const { showAphAlert } = useUIElements();
 
   const tierData: any = {
-    gold: {
+    Gold: {
       image: require('../ui/icons/gold.png'),
       title: 'Gold Member',
     },
-    silver: {
+    Silver: {
       image: require('../ui/icons/silver.png'),
       title: 'Silver Member',
     },
-    platinum: {
+    Platinum: {
       image: require('../ui/icons/platinum.png'),
       title: 'Platinum Member',
     },
   };
+
+  useEffect(() => {
+    client
+      .query({
+        query: GET_ONEAPOLLO_USER,
+        variables: {
+          patientId: currentPatient && currentPatient.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        setLoading(false);
+        console.log(res.data.getOneApolloUser);
+        setName(res.data.getOneApolloUser.name);
+        setCredits(res.data.getOneApolloUser.availableHC);
+        settier(res.data.getOneApolloUser.tier);
+        setEarned(res.data.getOneApolloUser.earnedHC);
+        setRedeemed(res.data.getOneApolloUser.earnedHC - res.data.getOneApolloUser.availableHC);
+      })
+      .catch((error) => {
+        setLoading(false);
+        CommonBugFender('fetchingOneApolloUser', error);
+        console.log(error);
+        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+      });
+  }, []);
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
+
   const renderHeader = () => {
     return (
       <Header
@@ -112,7 +158,14 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
             setScreen('MyMembership');
           }}
         >
-          <Text style={styles.headerText}>My Membership </Text>
+          <Text
+            style={{
+              ...styles.headerText,
+              color: screen == 'MyMembership' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
+            }}
+          >
+            My Membership{' '}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
@@ -124,7 +177,14 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
             setScreen('MyTransactions');
           }}
         >
-          <Text style={styles.headerText}>My Transactions</Text>
+          <Text
+            style={{
+              ...styles.headerText,
+              color: screen == 'MyTransactions' ? theme.colors.LIGHT_BLUE : 'rgba(1,28,36,0.6)',
+            }}
+          >
+            My Transactions
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -136,7 +196,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         return <MyMembership tier={tier} />;
         break;
       case 'MyTransactions':
-        return <MyTransactions />;
+        return <MyTransactions earned={earned} redeemed={redeemed} />;
         break;
     }
   };
@@ -149,6 +209,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         {renderOneApolloHeader()}
         {renderScreen()}
       </ScrollView>
+      {loading && <Spinner />}
     </SafeAreaView>
   );
 };
