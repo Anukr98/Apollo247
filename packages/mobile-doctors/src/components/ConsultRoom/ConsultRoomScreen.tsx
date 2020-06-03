@@ -1290,7 +1290,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             const data = response.channels[channel].occupants;
 
             const occupancyPatient = data.filter((obj) => {
-              return obj.uuid === REQUEST_ROLES.PATIENT;
+              return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
             });
             console.log('occupancyPatient', occupancyPatient);
             if (occupancyPatient.length > 0) {
