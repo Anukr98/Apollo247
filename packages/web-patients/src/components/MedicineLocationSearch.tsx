@@ -207,7 +207,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
-  const [hedaerPincodeError, setHedaerPincodeError] = React.useState<string | null>(null);
+  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
@@ -278,7 +278,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   }, [currentLocation, currentPincode]);
 
   useEffect(() => {
-    if (!hedaerPincodeError && pharmaAddressDetails.pincode) {
+    if (!headerPincodeError && pharmaAddressDetails.pincode) {
       isServiceable(pharmaAddressDetails.pincode);
     }
   }, [pharmaAddressDetails]);
@@ -389,11 +389,11 @@ export const MedicineLocationSearch: React.FC = (props) => {
 
   const checkSelectedPincodeServiceability = (pincode: string, status: string) => {
     if (pincode === pharmaAddressDetails.pincode) {
-      setHedaerPincodeError(status);
+      setHeaderPincodeError(status);
       setPincodeError(false);
     } else {
       setPincodeError(status === '1');
-      setHedaerPincodeError('0');
+      setHeaderPincodeError('0');
     }
   };
 
@@ -438,7 +438,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </span>
         </div>
-        {hedaerPincodeError === '1' && (
+        {headerPincodeError === '1' && (
           <div className={classes.noService}>Sorry, not serviceable here.</div>
         )}
       </div>
@@ -463,7 +463,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <ul>
           <li
             onClick={() => {
-              setHedaerPincodeError(null);
+              setHeaderPincodeError(null);
               locateCurrentLocation();
             }}
           >
