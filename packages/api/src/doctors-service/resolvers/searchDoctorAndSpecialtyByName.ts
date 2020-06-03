@@ -137,11 +137,21 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
         },
       },
     },
   };
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  console.log(responsePerfectMatchDoctors.body.hits.hits);
+
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -232,6 +242,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
           must_not: [
             {
               ids: { values: perfectMatchedDoctorsId },
@@ -306,7 +324,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
-      if (doctor['earliestSlotavailableInMinutes'] < 241) {
+      if (doctor['earliestSlotavailableInMinutes'] < 1441) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloMatchedDoctors.push(doctor);
         } else {
@@ -340,6 +358,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 },
               },
             ],
+            should: {
+              match: {
+                doctorType: {
+                  query: 'STAR_APOLLO',
+                  boost: 10,
+                },
+              },
+            },
           },
         },
       },
@@ -408,7 +434,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         });
       }
       if (doctor['activeSlotCount'] > 0) {
-        if (doctor['earliestSlotavailableInMinutes'] < 241) {
+        if (doctor['earliestSlotavailableInMinutes'] < 1441) {
           if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
             earlyAvailableApolloPossibleDoctors.push(doctor);
           } else {
