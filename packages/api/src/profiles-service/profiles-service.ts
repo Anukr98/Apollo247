@@ -307,7 +307,7 @@ import {
       },
       {
         typeDefs: getOneApolloUserTypeDefs,
-        resolvers: getOneApolloUserResolvers
+        resolvers: getOneApolloUserResolvers,
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
