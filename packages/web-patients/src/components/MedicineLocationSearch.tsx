@@ -364,7 +364,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const getPlaceDetails = (pincode: string) => {
     axios
       .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
       .then(({ data }) => {
         try {
