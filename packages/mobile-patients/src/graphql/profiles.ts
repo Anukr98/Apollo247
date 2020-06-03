@@ -728,6 +728,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           firstName
           lastName
           fullName
+          displayName
           experience
           city
           photoUrl
