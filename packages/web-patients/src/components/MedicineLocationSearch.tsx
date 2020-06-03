@@ -3,11 +3,12 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
-import { useAuth } from 'hooks/authHooks';
+
 import { useLocationDetails, GooglePlacesType } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -207,6 +208,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
   const [hedaerPincodeError, setHedaerPincodeError] = React.useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
@@ -344,12 +347,16 @@ export const MedicineLocationSearch: React.FC = (props) => {
         } catch {
           (e: AxiosError) => {
             console.log(e);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong :(');
             setMutationLoading(false);
           };
         }
       })
       .catch((e: AxiosError) => {
         setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         console.log(e);
       });
   };
@@ -374,6 +381,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
       })
       .catch((e: AxiosError) => {
         setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         console.log(e);
       });
   };
@@ -400,7 +409,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        checkSelectedPincodeServiceability(pincode, '1');
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         setMutationLoading(false);
       });
   };
@@ -538,6 +548,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
