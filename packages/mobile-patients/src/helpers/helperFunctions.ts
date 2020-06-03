@@ -876,7 +876,8 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+  console.log(whatsAppAllow, 'whatsAppAllow');
+  webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
 
 export const permissionHandler = (

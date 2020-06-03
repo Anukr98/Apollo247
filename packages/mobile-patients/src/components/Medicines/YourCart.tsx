@@ -1514,7 +1514,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const whatsappAPICalled = () => {
     if (!g(currentPatient, 'whatsAppMedicine')) {
-      getPatientApiCall();
+      postWEGWhatsAppEvent(whatsAppUpdate);
+      callWhatsOptAPICall(whatsAppUpdate);
     }
   };
 
@@ -1592,13 +1593,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <WhatsAppStatus
               style={{ marginTop: 6 }}
               onPress={() => {
-                whatsAppUpdate
-                  ? (setWhatsAppUpdate(false),
-                    postWEGWhatsAppEvent(false),
-                    callWhatsOptAPICall(false))
-                  : (setWhatsAppUpdate(true),
-                    postWEGWhatsAppEvent(true),
-                    callWhatsOptAPICall(true));
+                whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
               }}
               isSelected={whatsAppUpdate}
             />
