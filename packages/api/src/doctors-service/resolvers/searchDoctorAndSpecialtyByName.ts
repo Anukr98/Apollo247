@@ -137,11 +137,21 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
         },
       },
     },
   };
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  console.log(responsePerfectMatchDoctors.body.hits.hits);
+
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -232,6 +242,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
           must_not: [
             {
               ids: { values: perfectMatchedDoctorsId },
@@ -340,6 +358,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 },
               },
             ],
+            should: {
+              match: {
+                doctorType: {
+                  query: 'STAR_APOLLO',
+                  boost: 10,
+                },
+              },
+            },
           },
         },
       },
