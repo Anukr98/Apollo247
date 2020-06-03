@@ -270,6 +270,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
+      console.log(doctor);
       if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloDoctors.push(doctor);
@@ -348,7 +349,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         )
       );
   } else {
-    earlyAvailableApolloDoctors
+    doctors = earlyAvailableApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
