@@ -39,6 +39,7 @@ export const consultOrdersTypeDefs = gql`
     paymentStatus: String
     paymentType: String
     responseMessage: String
+    paymentDateTime: DateTime
   }
   type ApptRefunds {
     refundAmount: Float
@@ -80,6 +81,7 @@ type ApptPayment = {
   paymentStatus: string;
   paymentType: string;
   responseMessage: string;
+  paymentDateTime: Date;
 };
 
 type ApptRefunds = {

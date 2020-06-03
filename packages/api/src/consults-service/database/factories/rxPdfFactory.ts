@@ -54,6 +54,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const followUpDetails = '';
   const referralSpecialtyName = '';
   const referralSpecialtyDescription = '';
+  const removedMedicinesList: string[] = [];
 
   return {
     prescriptions,
@@ -69,5 +70,6 @@ export const buildRxPdfData = (): RxPdfData => {
     followUpDetails,
     referralSpecialtyName,
     referralSpecialtyDescription,
+    removedMedicinesList,
   };
 };

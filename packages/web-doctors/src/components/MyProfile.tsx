@@ -275,6 +275,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnContainer: {
@@ -309,6 +310,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 20,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     none: {

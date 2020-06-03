@@ -266,7 +266,6 @@ const insertDataElastic: Resolver<
     for (let i = 0; i < allDocsInfo.length; i++) {
       const searchParams: RequestParams.Search = {
         index: 'doctors',
-        type: 'posts',
         body: {
           query: {
             match_phrase: {
@@ -356,6 +355,8 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
       image: allDocsInfo.specialty.image,
       specialistSingularTerm: allDocsInfo.specialty.specialistSingularTerm,
       specialistPluralTerm: allDocsInfo.specialty.specialistPluralTerm,
+      groupName: allDocsInfo.specialty.groupName,
+      commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
       userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
     };
   }

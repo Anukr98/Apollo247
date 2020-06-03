@@ -309,6 +309,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:disabled': {
         opacity: 0.7,
@@ -529,6 +530,7 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     searchInput: {
@@ -868,6 +870,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1459,7 +1462,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
-        lastMsg.message.message !== appointmentComplete
+        lastMsg.message.message !== appointmentComplete &&
+        lastMsg.message.message !== doctorAutoResponse
       ) {
         setIsNewMsg(true);
       } else {
@@ -1487,7 +1491,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     ) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === REQUEST_ROLES.PATIENT;
+        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
       });
       if (presenceEventObject.totalOccupancy >= 2) {
         didPatientJoined = true;

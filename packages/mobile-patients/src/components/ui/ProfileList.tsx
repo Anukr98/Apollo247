@@ -3,7 +3,11 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Dimensions, View, Text, StyleSheet, ViewStyle, StyleProp, TextStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DropdownGreen,
+  PrimaryIcon,
+  LinkedUhidIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -19,6 +23,8 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useUIElements } from '../UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { g } from '../../helpers/helperFunctions';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -53,6 +59,7 @@ export interface ProfileListProps {
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
   showList?: boolean;
+  menuHidden?: () => void;
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
 }
 
@@ -68,11 +75,17 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     unsetloaderDisplay,
   } = props;
   const addString = 'ADD MEMBER';
+  const addBoolen = false;
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const shopCart = useShoppingCart();
   const diagCart = useDiagnosticsCart();
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const {
+    allCurrentPatients,
+    setCurrentPatientId,
+    currentPatient,
+    profileAllPatients,
+  } = useAllCurrentPatients();
   const { loading, setLoading } = useUIElements();
   const { width, height } = Dimensions.get('window');
 
@@ -83,6 +96,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
   const [isAddressCalled, setAddressCalled] = useState<boolean>(false);
+
+  const { isUHID } = useAppCommonData();
 
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
@@ -98,9 +113,38 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const pickerData =
     (profileArray &&
       profileArray!.map((i) => {
-        return { key: i.id, value: titleCase(i.firstName || i.lastName || '') };
+        return {
+          key: i.id,
+          value: titleCase(i.firstName || i.lastName || ''),
+          isPrimary: i.isUhidPrimary,
+          uhid: i.uhid,
+        };
       })) ||
     [];
+
+  useEffect(() => {
+    if (isUHID) {
+      isUHID.map(async (el: any) => {
+        try {
+          const selectedUHID = await AsyncStorage.getItem('selectUserUHId');
+
+          if (el === selectedUHID) {
+            const profilePatients = profileAllPatients.filter((obj: any) => {
+              return obj.isUhidPrimary === true;
+            });
+
+            props.onProfileChange && props.onProfileChange(profilePatients[0]!);
+            profile && setProfile(profilePatients[0]);
+
+            setCurrentPatientId!(g(profilePatients[0], 'id')),
+              AsyncStorage.setItem('selectUserId', g(profilePatients[0], 'id')),
+              AsyncStorage.setItem('selectUserUHId', g(profilePatients[0], 'uhid')),
+              setAddressList(g(profilePatients[0], 'id'));
+          }
+        } catch (error) {}
+      });
+    }
+  }, [isUHID]);
 
   useEffect(() => {
     // AsyncStorage.removeItem('selectUserId');
@@ -117,7 +161,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           setAddressList(storeVallue);
       } else if (currentPatient) {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
-        setAddressList(currentPatient!.id);
+        AsyncStorage.setItem('selectUserUHId', currentPatient!.uhid),
+          setAddressList(currentPatient!.id);
       }
     };
 
@@ -132,11 +177,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setProfileArray(addNewProfileText(allCurrentPatients!));
-    if (allCurrentPatients) {
-      setLoading && setLoading(false);
-    }
-  }, [allCurrentPatients]);
+    setProfileArray(addNewProfileText(profileAllPatients!));
+    // if (profileAllPatients) {
+    //   setLoading && setLoading(false);
+    // }
+  }, [profileAllPatients]);
 
   useEffect(() => {
     setProfileArray(addNewProfileText(profileArray!, profile));
@@ -213,6 +258,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         emailAddress: addString,
         photoUrl: addString,
         patientMedicalHistory: null,
+        athsToken: addString,
+        referralCode: addString,
+        isLinked: addBoolen,
+        isUhidPrimary: addBoolen,
+        primaryUhid: addString,
+        primaryPatientId: addString,
+        familyHistory: null,
+        lifeStyle: null,
       });
     }
     return pArray;
@@ -222,6 +275,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     return (
       <MaterialMenu
         showMenu={props.showList}
+        menuHidden={() => {
+          props.menuHidden && props.menuHidden();
+        }}
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
@@ -261,14 +317,17 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile && setDisplayAddProfile(true);
           } else {
+            console.log(' selectedUser.key', selectedUser.key, selectedUser);
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);
             props.onProfileChange && props.onProfileChange(pfl!);
             profileArray && setProfile(pfl);
+            console.log(' pfl.key', pfl);
           }
           saveUserChange &&
             selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key),
+            AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
             setAddressList(selectedUser!.key));
         }}
       >
@@ -288,6 +347,12 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               >
                 {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
               </Text>
+              {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+                <LinkedUhidIcon
+                  style={{ width: 22, height: 20, marginLeft: 5, marginTop: 2 }}
+                  resizeMode={'contain'}
+                />
+              ) : null}
               <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                 <DropdownGreen />
               </View>
