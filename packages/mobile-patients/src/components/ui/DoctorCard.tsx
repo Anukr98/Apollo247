@@ -325,7 +325,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
                 {rowData.experience} YR
-                {Number(rowData.experience) != 1 ? 'S' : ''}
+                {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
               </Text>
               {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE)}>
