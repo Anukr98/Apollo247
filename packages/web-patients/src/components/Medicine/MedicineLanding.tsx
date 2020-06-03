@@ -2,7 +2,13 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
+import {
+  Theme,
+  Popover,
+  CircularProgress,
+  Typography,
+  Link as MaterialLink,
+} from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
@@ -295,6 +301,13 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    windowWrapNew: {
+      width: 368,
+      borderRadius: 10,
+      padding: 20,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
     windowBody: {
       padding: 20,
       paddingTop: 0,
@@ -323,6 +336,44 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    thankyouPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: '0 0 10px',
+      },
+      '& h4': {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#0087ba',
+      },
+    },
+    pUploadSuccess: {
+      '& h2': {
+        fontSize: 36,
+        lineHeight: '44px',
+        fontWeight: 'bold',
+      },
+      '& p': {
+        fontSize: 17,
+        color: '#0087ba',
+        lineHeight: '24px',
+        margin: '20px 0',
+        fontWeight: '600',
+      },
+      '& a': {
+        fontSize: 13,
+        fontWeight: '600',
+        display: 'block',
+        textAlign: 'right',
+        textTransform: 'uppercase',
+        color: '#fc9916',
+      },
+    },
     trackBtn: {
       marginLeft: 'auto',
     },
@@ -337,7 +388,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineLanding: React.FC = (props) => {
+export const MedicineLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
@@ -388,12 +439,26 @@ export const MedicineLanding: React.FC = (props) => {
   );
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const mascotRef = useRef(null);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+
+  useEffect(() => {
+    if (
+      (props &&
+        props.location &&
+        props.location.search.substring(1) === 'prescriptionSubmit=success') ||
+      window.location.href.includes('prescriptionSubmit=success')
+    ) {
+      setIsPopoverOpen(true);
+      // window.history.pushState('', '', '');
+    }
+  }, [props]);
 
   /* Gtm code Start */
   useEffect(() => {
@@ -603,6 +668,40 @@ export const MedicineLanding: React.FC = (props) => {
                   Okay
                 </AphButton>
               </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.thankyouPopoverWindow}>
+          <div className={classes.windowWrapNew}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.pUploadSuccess}>
+              <Typography component="h2">Thankyou :)</Typography>
+              <Typography>Your prescriptions have been submitted successfully.</Typography>
+              <Typography>Our pharmacologist will reply to your email within 24 hours.</Typography>
+              <Link
+                to={clientRoutes.medicines()}
+                onClick={() => {
+                  setIsPopoverOpen(false);
+                }}
+              >
+                Ok, Got It
+              </Link>
             </div>
           </div>
         </div>

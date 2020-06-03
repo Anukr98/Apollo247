@@ -447,6 +447,7 @@ export interface BookAppointmentInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   couponCode?: string | null;
+  externalConnect?: boolean | null;
 }
 
 export interface BookRescheduleAppointmentInput {
@@ -609,6 +610,9 @@ export interface MedicineCartOMSInput {
   coupon?: string | null;
   couponDiscount?: number | null;
   productDiscount?: number | null;
+  packagingCharges?: number | null;
+  showPrescriptionAtStore?: boolean | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -770,6 +774,7 @@ export interface PrescriptionMedicineOrderOMSInput {
   email?: string | null;
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
+  shopAddress?: ShopAddress | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {
@@ -793,11 +798,27 @@ export interface Range {
   maximum?: number | null;
 }
 
+export interface SavePharmacologistConsultInput {
+  patientId: string;
+  prescriptionImageUrl?: string | null;
+  emailId?: string | null;
+  queries?: string | null;
+}
+
 export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
   typeName?: string | null;
   patient: string;
+}
+
+export interface ShopAddress {
+  storename?: string | null;
+  address?: string | null;
+  workinghrs?: string | null;
+  phone?: string | null;
+  city?: string | null;
+  state?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {

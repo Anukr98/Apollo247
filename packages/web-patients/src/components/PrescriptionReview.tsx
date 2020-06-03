@@ -1,11 +1,14 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Theme, Typography, Link } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import { Header } from './Header';
 import _isEmpty from 'lodash/isEmpty';
 import { useDropzone } from 'react-dropzone';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+
 import { Alerts } from 'components/Alerts/Alerts';
 
 import {
@@ -19,9 +22,15 @@ import {
 import Popover from '@material-ui/core/Popover';
 import { isEmailValid } from '@aph/universal/dist/aphValidators';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { useMutation } from 'react-apollo-hooks';
+
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { PrescriptionFormat, EPrescription } from 'components/MedicinesCartProvider';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { SAVE_PHARMACOLOGIST_CONSULT } from 'graphql/medicines';
+import { savePharmacologistConsultVariables } from 'graphql/types/savePharmacologistConsult';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     prContainer: {
@@ -37,6 +46,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     prescriptionThumb: {
       maxWidth: 30,
+    },
+    loader: {
+      textAlign: 'center',
+      display: 'block',
     },
     backArrow: {
       zIndex: 2,
@@ -487,56 +500,13 @@ const useStyles = makeStyles((theme: Theme) => {
         top: '38px !important',
       },
     },
-    thankyouPopoverWindow: {
-      display: 'flex',
-      marginRight: 5,
-      marginBottom: 5,
-      '& h3': {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#02475b',
-        margin: '0 0 10px',
-      },
-      '& h4': {
-        fontSize: 17,
-        fontWeight: 'bold',
-        color: '#0087ba',
-      },
-    },
-    windowWrap: {
-      width: 368,
-      borderRadius: 10,
-      padding: 20,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-    },
+
     mascotIcon: {
       position: 'absolute',
       right: 12,
       top: -40,
       '& img': {
         maxWidth: 80,
-      },
-    },
-    pUploadSuccess: {
-      '& h2': {
-        fontSize: 36,
-        lineHeight: '44px',
-        fontWeight: 'bold',
-      },
-      '& p': {
-        fontSize: 17,
-        color: '#0087ba',
-        lineHeight: '24px',
-        margin: '20px 0',
-        fontWeight: '600',
-      },
-      '& a': {
-        fontSize: 13,
-        fontWeight: '600',
-        display: 'block',
-        textAlign: 'right',
-        textTransform: 'uppercase',
       },
     },
   };
@@ -546,16 +516,17 @@ const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-export const PrescriptionReview: React.FC = (props) => {
+export const PrescriptionReview: React.FC = (props: any) => {
   const defPresObject = {
     name: '',
     imageUrl: '',
     fileType: '',
     baseFormat: '',
   };
+  const { isSignedIn } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+
   const classes = useStyles({});
-  const mascotRef = useRef(null);
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userQuery, setUserQuery] = useState<string>('');
   const [isPostSubmitDisable, setIsPostSubmitDisable] = useState<boolean>(true);
@@ -563,6 +534,7 @@ export const PrescriptionReview: React.FC = (props) => {
   const [uploadPrescription, setUploadPrescription] = React.useState<boolean>(false);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [prescriptionUploaded, setPrescriptionUploaded] = React.useState<PrescriptionFormat | null>(
     defPresObject
   );
@@ -625,8 +597,7 @@ export const PrescriptionReview: React.FC = (props) => {
           'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
         );
       }
-      reader.onabort = () => console.log('file reading was aborted');
-      reader.onerror = () => console.log('file reading has failed');
+
       reader.onload = () => {
         // Do whatever you want with the file contents
         const binaryStr = reader.result;
@@ -679,8 +650,33 @@ export const PrescriptionReview: React.FC = (props) => {
     }
   };
 
+  const submitPrescriptionMutation = useMutation(SAVE_PHARMACOLOGIST_CONSULT);
+
+  const makeApi = (variables: savePharmacologistConsultVariables) => {
+    submitPrescriptionMutation({ variables })
+      .then(({ data }: any) => {
+        if (data.savePharmacologistConsult && data.savePharmacologistConsult.status) {
+          setIsLoading(false);
+          props && props.history.push(`${clientRoutes.medicines()}?prescriptionSubmit=success`);
+        }
+      })
+      .catch((e) => {
+        setIsLoading(false);
+        console.log(e);
+      });
+  };
+
   const submitPrescriptionForReview = () => {
-    setIsPopoverOpen(true);
+    setIsLoading(true);
+    const savePharmacologistConsultInput: savePharmacologistConsultVariables = {
+      savePharmacologistConsultInput: {
+        patientId: currentPatient ? currentPatient.id : '',
+        prescriptionImageUrl: prescriptionArr[0].imageUrl,
+        emailId: userEmail,
+        queries: userQuery,
+      },
+    };
+    makeApi(savePharmacologistConsultInput);
   };
 
   return (
@@ -874,25 +870,6 @@ export const PrescriptionReview: React.FC = (props) => {
                           </ul>
                         </>
                       )}
-
-                      {/* <ul className={classes.hrList}>
-                        <li>
-                          <div className={classes.recordDetails}>
-                            <img src={require('images/rx.png')} />
-                            <div>
-                              <Typography component="h5">Dr. Simran Rai</Typography>
-                              <div className={classes.details}>
-                                <Typography>27 June 2019</Typography>
-                                <Typography>Preeti</Typography>
-                              </div>
-                              <Typography>Cytoplam, Metformin, Insulin, Crocin</Typography>
-                            </div>
-                          </div>
-                          <a href="javascript:void(0);">
-                            <img src={require('images/ic_cross_onorange_small.svg')} width="20" />
-                          </a>
-                        </li>
-                      </ul> */}
                       <div
                         onClick={() => {
                           setIsUploadPreDialogOpen(true);
@@ -925,18 +902,29 @@ export const PrescriptionReview: React.FC = (props) => {
                     placeholder="Type here..."
                   />
                 </div>
-                <div className={classes.buttonContainer}>
-                  <AphButton
-                    className={isPostSubmitDisable ? classes.resendBtnDisabled : ''}
-                    disabled={isPostSubmitDisable}
-                    color="primary"
-                    onClick={() => {
-                      submitPrescriptionForReview();
-                    }}
-                  >
-                    Submit
-                  </AphButton>
-                </div>
+
+                <ProtectedWithLoginPopup>
+                  {({ protectWithLoginPopup }) => (
+                    <div className={classes.buttonContainer}>
+                      {isLoading ? (
+                        <div className={classes.loader}>
+                          <CircularProgress size={30} />
+                        </div>
+                      ) : (
+                        <AphButton
+                          className={isPostSubmitDisable ? classes.resendBtnDisabled : ''}
+                          disabled={isPostSubmitDisable}
+                          color="primary"
+                          onClick={() => {
+                            !isSignedIn ? protectWithLoginPopup() : submitPrescriptionForReview();
+                          }}
+                        >
+                          Submit
+                        </AphButton>
+                      )}
+                    </div>
+                  )}
+                </ProtectedWithLoginPopup>
               </div>
             </Grid>
           </Grid>
@@ -967,35 +955,7 @@ export const PrescriptionReview: React.FC = (props) => {
           />
         </AphDialog>
       </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.thankyouPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.pUploadSuccess}>
-              <Typography component="h2">Thankyou :)</Typography>
-              <Typography>Your prescriptions have been submitted successfully.</Typography>
-              <Typography>Our pharmacologist will reply to your email within 24 hours.</Typography>
-              <Link href="javascript:void(0);" onClick={() => setIsPopoverOpen(false)}>
-                Ok, Got It
-              </Link>
-            </div>
-          </div>
-        </div>
-      </Popover>
+
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

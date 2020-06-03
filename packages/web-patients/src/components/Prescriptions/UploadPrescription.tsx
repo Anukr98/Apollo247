@@ -211,6 +211,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                               if (res && res.name) {
                                 const fileName = res.name as string;
                                 const url = client.getBlobUrl(fileName);
+
+                                if (props.isPresReview) {
+                                  props.setPrescriptionForReview({
+                                    imageUrl: url,
+                                    name: fileName,
+                                    fileType: fileExtension.toLowerCase(),
+                                    baseFormat: res,
+                                  });
+                                  props.closeDialog();
+                                  setIsUploading(false);
+                                  return;
+                                }
+
                                 toBase64(file).then((res: any) => {
                                   setPrescriptionUploaded &&
                                     setPrescriptionUploaded({
@@ -233,37 +246,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             .catch((error) => {
                               throw error;
                             });
-                          if (aphBlob && aphBlob.name) {
-                            const url = client.getBlobUrl(aphBlob.name);
-                            toBase64(file).then((res: any) => {
-                              if (props.isPresReview) {
-                                props.setPrescriptionForReview({
-                                  imageUrl: url,
-                                  name: aphBlob.name,
-                                  fileType: fileExtension.toLowerCase(),
-                                  baseFormat: res,
-                                });
-                                props.closeDialog();
-                                setIsUploading(false);
-                              }
-
-                              setPrescriptionUploaded &&
-                                setPrescriptionUploaded({
-                                  imageUrl: url,
-                                  name: aphBlob.name,
-                                  fileType: fileExtension.toLowerCase(),
-                                  baseFormat: res,
-                                });
-                            });
-                            if (props.isNonCartFlow) {
-                              setTimeout(() => {
-                                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                              }, 3000);
-                            } else {
-                              props.closeDialog();
-                              setIsUploading(false);
-                            }
-                          }
                         }
                       } else {
                         setIsAlertOpen(true);
