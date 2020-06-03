@@ -23,6 +23,7 @@ export async function sendMail(emailContent: EmailMessage) {
       subject: emailContent.subject,
       text: emailContent.messageContent,
       html: emailContent.messageContent,
+      attachments: emailContent.attachments,
     },
     (err: any, json: any) => {
       if (err) {
