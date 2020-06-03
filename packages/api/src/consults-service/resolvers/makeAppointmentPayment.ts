@@ -10,7 +10,7 @@ import {
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
 } from 'consults-service/entities';
-import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -216,7 +216,7 @@ const makeAppointmentPayment: Resolver<
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
-        await initiateRefund(
+        let refundResponse = await initiateRefund(
           {
             appointment: processingAppointment,
             appointmentPayments: paymentInfo,
@@ -228,16 +228,27 @@ const makeAppointmentPayment: Resolver<
         );
 
         paymentInfo.appointment = processingAppointment;
-        sendNotification(
-          {
-            appointmentId: processingAppointment.id,
-            notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
-          },
-          patientsDb,
-          consultsDb,
-          doctorsDb
-        );
-        isRefunded = true;
+        refundResponse = refundResponse as PaytmResponse;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: processingAppointment.id,
+              notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+          isRefunded = true;
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed makeAppointmentPayment',
+            'makeAppointmentPayment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
       }
 
       return {
