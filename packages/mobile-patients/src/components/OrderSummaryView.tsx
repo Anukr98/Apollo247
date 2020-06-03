@@ -15,6 +15,7 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { DiscountIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -202,7 +203,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            Rs.{(item.mrp! * item.quantity! || 0).toFixed(2)}
+            Rs. {(item.mrp! * item.quantity! || 0).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -389,7 +390,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs.{product_discount.toFixed(2)}
+                  - Rs. {product_discount.toFixed(2)}
                 </Text>
               </View>
             )}
@@ -397,20 +398,20 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs.{coupon_discount.toFixed(2)}
+                  - Rs. {coupon_discount.toFixed(2)}
                 </Text>
               </View>
             )}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                + Rs.{(orderDetails.devliveryCharges || 0).toFixed(2)}
+                + Rs. {(orderDetails.devliveryCharges || 0).toFixed(2)}
               </Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                + Rs.{(packaging_charges || 0).toFixed(2)}
+                + Rs. {(packaging_charges || 0).toFixed(2)}
               </Text>
             </View>
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
@@ -500,6 +501,37 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             )}
           </View>
         </View>
+        {orderBilledAndPacked && (
+          <View
+            style={[
+              styles.paymentCard,
+              {
+                marginTop: 8,
+                paddingHorizontal: 16,
+                paddingVertical: 6,
+                borderWidth: 1.5,
+                borderColor: '#00b38e',
+                flexDirection: 'row',
+              },
+            ]}
+          >
+            <DiscountIcon style={{ width: 55, height: 51 }} />
+            <View
+              style={{
+                marginLeft: 14,
+                alignSelf: 'center',
+                flex: 1,
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('B', 18, '#00b38e', 1, undefined, 0) }}>
+                {'YAY!'}
+              </Text>
+              <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
+                {`You got an additional discount of Rs. ${product_discount.toFixed(2)}`}
+              </Text>
+            </View>
+          </View>
+        )}
         {!orderBilledAndPacked && (
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
             <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>

@@ -499,6 +499,10 @@ export const OrderPlacedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_tracker_done.png')} />
 );
 
+export const DiscountIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/discount.png')} />
+);
+
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
 );
