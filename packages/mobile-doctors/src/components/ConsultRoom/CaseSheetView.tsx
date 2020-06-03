@@ -842,6 +842,24 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
   const [keyBoardVisible, setKeyBoardVisible] = useState<boolean>(false);
+  useEffect(() => {
+    const keyboardShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyBoardVisible(true);
+      }
+    );
+    const keyboardHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyBoardVisible(false);
+      }
+    );
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
 
   const renderFields = (
     heading: string,
@@ -2687,18 +2705,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       ) : null}
       <View style={styles.casesheetView}>
         <KeyboardAwareScrollView
-          onKeyboardDidShow={() => {
-            setKeyBoardVisible(true);
-          }}
-          onKeyboardDidHide={() => {
-            setKeyBoardVisible(false);
-          }}
-          onKeyboardWillShow={() => {
-            setKeyBoardVisible(true);
-          }}
-          onKeyboardWillHide={() => {
-            setKeyBoardVisible(false);
-          }}
           scrollEnabled={true}
           enableOnAndroid={true}
           enableAutomaticScroll={true}
