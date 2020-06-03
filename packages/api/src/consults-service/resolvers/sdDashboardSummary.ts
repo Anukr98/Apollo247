@@ -520,10 +520,12 @@ const updateDoctorFeeSummary: Resolver<
           const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
             consultation.id
           );
+          console.log('paymentDetails=>', paymentDetails);
           let fee = 0;
           if (!_isEmpty(paymentDetails) && paymentDetails) {
             fee = parseFloat(paymentDetails.amountPaid.toString());
           }
+          console.log('appointmentId==>', consultation.id);
           console.log('totalFee==>', fee);
           resolve(fee);
         });
