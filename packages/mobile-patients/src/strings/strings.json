@@ -268,7 +268,7 @@
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
-    "showPresAtStoreForStorePickUp": "This option is only available for Store Pick Up. Please upload prescription for Home Delivery."
+    "showPresAtStoreForStorePickUp": "Option to show prescription at the store is available for Store Pick Up only. Please upload the prescription for Home Delivery of your medicines."
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
