@@ -99,6 +99,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Keyboard,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -840,7 +841,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-
+  const [keyBoardVisible, setKeyBoardVisible] = useState<boolean>(false);
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyBoardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyBoardVisible(false);
+    });
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
   const renderFields = (
     heading: string,
     data: string,
@@ -856,6 +869,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View
           style={{
             minHeight: 44,
+            maxHeight: keyBoardVisible ? 110 : undefined,
             marginTop: 8,
             marginBottom: 16,
             backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -867,6 +881,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInput
             style={{
               minHeight: 44,
+              maxHeight: keyBoardVisible ? 110 : undefined,
               justifyContent: 'center',
               paddingTop: 12,
               paddingBottom: 12,
