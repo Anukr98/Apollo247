@@ -471,20 +471,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         )
       )
       .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
         earlyAvailableFarMatchedApolloDoctors.sort(
           (a, b) =>
             parseFloat(a.earliestSlotavailableInMinutes) -
@@ -549,20 +535,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       );
   } else {
     finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
       .concat(
         earlyAvailableApolloMatchedDoctors.sort(
           (a, b) =>
