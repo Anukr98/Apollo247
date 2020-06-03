@@ -10,12 +10,12 @@ import { pharmacologistEmailTemplate } from 'helpers/emailTemplates/pharmacologi
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
+import { format, addMinutes } from 'date-fns';
 
 export const savePharmacologistConsultTypeDefs = gql`
   input SavePharmacologistConsultInput {
-    patientId: ID
+    patientId: ID!
     prescriptionImageUrl: String
-    prismPrescriptionFileId: String
     emailId: String!
     queries: String
   }
@@ -34,7 +34,6 @@ export const savePharmacologistConsultTypeDefs = gql`
 type SavePharmacologistConsultInput = {
   patientId: string;
   prescriptionImageUrl: string;
-  prismPrescriptionFileId: string;
   emailId: string;
   queries: string;
 };
@@ -53,13 +52,13 @@ const savePharmacologistConsult: Resolver<
   ProfilesServiceContext,
   SavePharmacologistConsultResult
 > = async (parent, { savePharmacologistConsultInput }, { profilesDb }) => {
-  let patientDetails;
-  if (savePharmacologistConsultInput.patientId) {
-    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    patientDetails = await patientRepo.findById(savePharmacologistConsultInput.patientId);
-    if (patientDetails == null) {
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    }
+  if (!savePharmacologistConsultInput.patientId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findById(savePharmacologistConsultInput.patientId);
+  if (patientDetails == null) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
   const pharmacologistRepo = profilesDb.getCustomRepository(PharmacologistConsultRepository);
@@ -74,14 +73,16 @@ const savePharmacologistConsult: Resolver<
   } catch (e) {
     throw new AphError(AphErrorMessages.SAVE_PHARMACOLOGIST_CONSULT_ERROR, undefined, {});
   }
-
+  const date = format(addMinutes(new Date(), 330), 'yyyy-MM-dd hh:mm');
   const mailContent = pharmacologistEmailTemplate({
-    patientName: patientDetails ? patientDetails.firstName : '',
-    date: new Date(),
+    patientName: patientDetails.firstName,
+    date: date,
     patientQueries: savePharmacologistConsultInput.queries,
   });
-
-  const subjectLine = ApiConstants.PHARMACOLOGIST_CONSULT_TITLE + new Date();
+  let subjectLine: string = '';
+  subjectLine = ApiConstants.PHARMACOLOGIST_CONSULT_TITLE;
+  subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
+  subjectLine = subjectLine.replace('{1}', date);
   const subject =
     process.env.NODE_ENV == 'production'
       ? subjectLine

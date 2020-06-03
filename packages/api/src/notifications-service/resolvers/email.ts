@@ -13,7 +13,6 @@ export async function sendMail(emailContent: EmailMessage) {
   let ccEmailList = [];
   ccEmailList = emailContent.ccEmail.split(',');
   const sendgrid = require('@sendgrid/mail');
-  console.log(process.env.SENDGRID_API_KEY);
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
   sendgrid.send(
     {
