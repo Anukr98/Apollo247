@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export interface MedicineProduct {
+  url_key: string;
   description: string;
   id: number;
   image: string | null;

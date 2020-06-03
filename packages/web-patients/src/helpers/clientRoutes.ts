@@ -6,8 +6,11 @@ export const clientRoutes = {
   storagePoc: () => '/storage-poc',
 
   welcome: () => '/',
-  doctorDetails: (doctorId: string) => `/doctor-details/${doctorId}`,
+  doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
+  specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
+    `/specialties/${specialty}/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
+  specialties: (specialty: string) => `/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -30,7 +33,7 @@ export const clientRoutes = {
   medicineAllBrands: () => '/view-all-brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
   searchByMedicine: (searchMedicineType: string, searchText: string) =>
-    `/${searchMedicineType}/${searchText}`,
+    `/medicine/${searchMedicineType}/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
   addressBook: () => '/address-book',
   symptomsTrackerFor: () => '/track-symptoms-for',
