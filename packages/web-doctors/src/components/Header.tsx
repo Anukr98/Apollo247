@@ -343,7 +343,6 @@ export const Header: React.FC = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
-    uuid: 'SD',
   };
   const pubnub = new Pubnub(config);
   const sendNotification = (notificationText: string) => {

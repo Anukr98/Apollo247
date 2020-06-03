@@ -38,6 +38,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
   __typename: "Profile";
+  fullName: string | null;
   firstName: string | null;
   lastName: string | null;
   experience: string | null;

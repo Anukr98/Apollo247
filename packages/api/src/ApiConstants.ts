@@ -15,7 +15,9 @@ export enum ApiConstants {
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
   CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  WHATSAPP_SD_CONSULT_START_REMINDER = 'Hi {1}! {2} is waiting for you to start the consultation. Please go to My Appointments in Apollo 247 and start the consultation. {3}',
   JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  WHATSAPP_JD_CONSULT_START_REMINDER = 'Hi {0}! {1} team doctor is waiting for you to start the consultation. Please go to My Appointments in Apollo 247 and start the consultation. {3}',
   JUNIOR_AVCALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting for your call response. Please proceed to the consult room",
   AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
@@ -23,6 +25,7 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   CLICK_HERE = ' Click here to fill your details now ',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
+  WHATSAPP_SD_CONSULT_REMINDER_15_MIN = 'Appointment Reminder: {0} Your appointment with {1} will start in {3} mins.',
   VIRTUAL_REMINDER_15_BODY = 'Appointment Reminder: Your appointment with Dr {0} will start in 15 mins. :) ',
   APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
@@ -126,6 +129,7 @@ export enum ApiConstants {
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to respond. {3}',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
@@ -159,7 +163,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -197,13 +201,13 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com',
+  CC_MAIL = 'chanti.reddy@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
@@ -305,4 +309,17 @@ export enum ApiConstants {
   AUTO_SUBMIT_CASESHEET_TIME = 10,
   STAT_LOWECASE = 'stat',
   STAT_UPPERCASE = 'STAT(Immediately)',
+
+  //doctor deeplink constants starts
+  BRAND_DOMAIN = 'apollo247.onelink.me',
+  LINK_TTL = '31',
+  PARTNER_ID_APOLLO = 'Doctor patient Download',
+  PARTNER_ID_NON_APOLLO = 'DOCTOR CONNECT',
+  CHANNEL_NAME_APOLLO = 'Doctor patient Download',
+  CHANNEL_NAME_NON_APOLLO = 'Doctor Connect',
+  DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
+  DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/',
+  DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
+  DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
 }

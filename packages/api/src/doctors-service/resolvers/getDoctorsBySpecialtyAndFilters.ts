@@ -165,6 +165,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     earlyAvailableNonApolloDoctors = [],
     nearByApolloDoctors = [],
     remainingApolloDoctors = [],
+    earlyAvailableStarApolloDoctors = [],
+    earlyAvailableNearStarApolloDoctors = [],
+    earlyAvailableFarStarApolloDoctors = [],
     docs = [];
 
   const facilityIds: string[] = [];
@@ -262,7 +265,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     if (doctor['activeSlotCount'] > 0) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
-        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
+        if (doctor.doctorType === 'STAR_APOLLO') {
+          earlyAvailableStarApolloDoctors.push(doctor);
+        } else if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloDoctors.push(doctor);
         } else {
           earlyAvailableNonApolloDoctors.push(doctor);
@@ -288,6 +293,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         args.filterInput.geolocation.longitude
       ).toString();
     });
+
+    for (const doctor of earlyAvailableStarApolloDoctors) {
+      if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
+        earlyAvailableNearStarApolloDoctors.push(doctor);
+      } else {
+        earlyAvailableFarStarApolloDoctors.push(doctor);
+      }
+    }
     for (const doctor of earlyAvailableApolloDoctors) {
       if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
         earlyAvailableNearByApolloDoctors.push(doctor);
@@ -304,11 +317,25 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
     }
-    doctors = earlyAvailableNearByApolloDoctors
+    doctors = earlyAvailableNearStarApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
           parseFloat(b.earliestSlotavailableInMinutes)
+      )
+      .concat(
+        earlyAvailableNearByApolloDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
+      )
+      .concat(
+        earlyAvailableFarStarApolloDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
       )
       .concat(
         earlyAvailableFarApolloDoctors.sort(
@@ -339,11 +366,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         )
       );
   } else {
-    doctors = earlyAvailableApolloDoctors
+    doctors = earlyAvailableStarApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
           parseFloat(b.earliestSlotavailableInMinutes)
+      )
+      .concat(
+        earlyAvailableApolloDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
       )
       .concat(
         earlyAvailableNonApolloDoctors.sort(

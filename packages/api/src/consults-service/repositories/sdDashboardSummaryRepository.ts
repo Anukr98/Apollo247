@@ -562,7 +562,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       return count;
     }
   }
-
   async getPatientTypes(appointmentDate: Date, doctorId: string) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
