@@ -185,7 +185,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     stores,
     setStores,
     ePrescriptions,
-    deliveryType,
+    setShowPrescriptionAtStore,
     setAddresses,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
@@ -1048,6 +1048,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setselectedTab(selectedTab);
               setStoreId!('');
               setDeliveryAddressId!('');
+              setShowPrescriptionAtStore!(false);
               // delivery time related
               setdeliveryTime('');
               setdeliveryError('');
@@ -1579,7 +1580,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView navigation={props.navigation} />
+            <MedicineUploadPrescriptionView
+              selectedTab={selectedTab}
+              navigation={props.navigation}
+            />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
