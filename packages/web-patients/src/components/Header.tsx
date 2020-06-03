@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -16,6 +16,8 @@ import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
+import { MyProfile } from 'components/MyAccount/MyProfile';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -167,6 +169,46 @@ const useStyles = makeStyles((theme: Theme) => {
     hideVisibility: {
       visibility: 'hidden',
     },
+    userOptions: {
+      position: 'absolute',
+      top: 89,
+      right: 0,
+      left: 'auto',
+      width: 0,
+      borderRadius: 10,
+      textAlign: 'center',
+      transition: '0.1s ease',
+      overflow: 'hidden',
+    },
+    userAccountList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      textAlign: 'left',
+      '& li': {
+        '& a': {
+          padding: '10px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
+          '& img': {
+            margin: '0 10px 0 0',
+          },
+        },
+      },
+    },
+    downloadAppBtn: {
+      margin: '10px auto',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 10,
+      fontSize: 13,
+      fontWeight: 'bold',
+      padding: '8px 20px',
+      display: 'block',
+    },
+    userListActive: {
+      width: '300px !important',
+    },
   };
 });
 
@@ -175,6 +217,7 @@ export const Header: React.FC = (props) => {
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
+  const [ProfileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
@@ -209,17 +252,18 @@ export const Header: React.FC = (props) => {
               }`}
             >
               {isSignedIn ? (
-                <Link
+                <div
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={clientRoutes.myAccount()}
+                  // to={clientRoutes.myAccount()}
                   title={'Control profile'}
+                  onClick={() => setProfileVisible(true)}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
                     <img src={require('images/ic_account.svg')} />
                   )}
-                </Link>
+                </div>
               ) : (
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (
@@ -253,7 +297,48 @@ export const Header: React.FC = (props) => {
                 </ProtectedWithLoginPopup>
               )}
               {isSignedIn ? (
-                ''
+                <Paper
+                  className={`${classes.userOptions} ${
+                    ProfileVisible ? classes.userListActive : ''
+                  }`}
+                >
+                  <ul className={classes.userAccountList}>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage Profiles
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_notificaiton_accounts.svg')} alt="" /> Health
+                        Records
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_round_live_help.svg')} alt="" /> Need Help
+                      </a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)">
+                        <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                      </a>
+                    </li>
+                  </ul>
+                  <AphButton color="primary" className={classes.downloadAppBtn}>
+                    Download App
+                  </AphButton>
+                </Paper>
               ) : (
                 <Popover
                   open={isLoginPopupVisible}
