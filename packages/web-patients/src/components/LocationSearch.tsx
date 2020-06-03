@@ -1,35 +1,38 @@
-import React, { useRef, useEffect } from 'react';
-import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Popover } from '@material-ui/core';
-import { AphTextField } from '@aph/web-ui-components';
-import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-import { AllowLocation } from 'components/AllowLocation';
-import { useAuth } from 'hooks/authHooks';
-import { useLocationDetails } from 'components/LocationProvider';
+import React, { useRef, useEffect } from "react";
+import { makeStyles, createStyles } from "@material-ui/styles";
+import { Theme, Popover } from "@material-ui/core";
+import { AphTextField } from "@aph/web-ui-components";
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from "react-places-autocomplete";
+import { AllowLocation } from "components/AllowLocation";
+import { useAuth } from "hooks/authHooks";
+import { useLocationDetails } from "components/LocationProvider";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     userLocation: {
-      borderLeft: '0.5px solid rgba(2,71,91,0.3)',
+      borderLeft: "0.5px solid rgba(2,71,91,0.3)",
       paddingLeft: 20,
       marginLeft: 40,
       paddingTop: 22,
       paddingBottom: 22,
       marginTop: 10,
       marginBottom: 10,
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
-        borderLeft: 'none',
+      [theme.breakpoints.down("xs")]: {
+        marginLeft: "auto",
+        borderLeft: "none",
         paddingTop: 15,
         paddingBottom: 15,
       },
     },
     locationWrap: {
-      display: 'flex',
-      alignItems: 'center',
-      cursor: 'pointer',
+      display: "flex",
+      alignItems: "center",
+      cursor: "pointer",
       maxWidth: 210,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down("xs")]: {
         maxWidth: 180,
       },
       [theme.breakpoints.down(500)]: {
@@ -38,11 +41,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     iconType: {
       width: 25,
-      textAlign: 'center',
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
+      textAlign: "center",
+      [theme.breakpoints.down("xs")]: {
+        display: "none",
       },
-      display: 'inline-block',
+      display: "inline-block",
       marginTop: 41,
       right: 2,
     },
@@ -50,15 +53,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.light,
-      overflow: 'hidden',
-      textTransform: 'uppercase',
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
+      overflow: "hidden",
+      textTransform: "uppercase",
+      whiteSpace: "nowrap",
+      textOverflow: "ellipsis",
+      [theme.breakpoints.down("xs")]: {
+        marginLeft: "auto",
       },
       [theme.breakpoints.down(360)]: {
-        display: 'none',
+        display: "none",
       },
     },
     textField: {
@@ -66,89 +69,89 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: theme.spacing(1),
       width: 200,
       fontSize: 12,
-      display: 'inline-block',
-      backgroundColor: 'white',
-      cursor: 'pointer',
+      display: "inline-block",
+      backgroundColor: "white",
+      cursor: "pointer",
     },
     locationIcon: {
-      color: '#00b38e',
+      color: "#00b38e",
       marginRight: 5,
     },
     iconDesktop: {
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
+      [theme.breakpoints.down("xs")]: {
+        display: "none",
       },
     },
     iconMobile: {
       marginLeft: 5,
-      display: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
+      display: "none",
+      [theme.breakpoints.down("xs")]: {
+        display: "block",
       },
     },
     locationPopWrap: {
       width: 240,
-      padding: '16px 20px',
+      padding: "16px 20px",
     },
     inputLabel: {
-      color: '#02475b',
+      color: "#02475b",
       fontSize: 12,
       fontWeight: 500,
     },
     searchInput: {
-      display: 'flex',
-      '& >div:first-child': {
-        width: 'calc(100% - 40px)',
+      display: "flex",
+      "& >div:first-child": {
+        width: "calc(100% - 40px)",
       },
     },
     popLocationIcon: {
-      textAlign: 'center',
+      textAlign: "center",
       paddingTop: 8,
       paddingLeft: 16,
-      '& img': {
+      "& img": {
         maxWidth: 24,
       },
     },
     locationAutoComplete: {
-      color: '#02475b',
+      color: "#02475b",
       paddingTop: 10,
-      '& ul': {
+      "& ul": {
         margin: 0,
         padding: 0,
-        '& li': {
-          color: '#02475b',
-          cursor: 'pointer',
-          padding: '8px 0',
+        "& li": {
+          color: "#02475b",
+          cursor: "pointer",
+          padding: "8px 0",
           fontSize: 16,
           fontWeight: 500,
-          borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-          listStyleType: 'none',
-          '&:last-child': {
+          borderBottom: "0.5px solid rgba(2,71,91,0.3)",
+          listStyleType: "none",
+          "&:last-child": {
             paddingBottom: 0,
-            borderBottom: 'none',
+            borderBottom: "none",
           },
         },
       },
     },
     popPaperRoot: {
       marginTop: -16,
-      overflow: 'initial',
+      overflow: "initial",
     },
     dateLoader: {
       fontSize: 14,
       fontWeight: 500,
-      color: '#02475b',
+      color: "#02475b",
     },
     bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
+      overflow: "initial",
+      backgroundColor: "transparent",
+      boxShadow: "none",
     },
     successPopoverWindow: {
-      display: 'flex',
+      display: "flex",
       marginRight: 5,
       marginBottom: 5,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down("xs")]: {
         marginLeft: 5,
       },
     },
@@ -156,27 +159,27 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 368,
       borderRadius: 10,
       paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      boxShadow: "0 5px 40px 0 rgba(0, 0, 0, 0.3)",
       backgroundColor: theme.palette.common.white,
     },
     mascotIcon: {
-      position: 'absolute',
+      position: "absolute",
       right: 12,
       top: -40,
-      '& img': {
+      "& img": {
         maxWidth: 72,
       },
     },
     locationPopoverClose: {
-      position: 'absolute',
+      position: "absolute",
       top: -10,
       height: 26,
-      borderRadius: '50%',
-      boxShadow: '1px 1px 2px 1px #eaeaea',
+      borderRadius: "50%",
+      boxShadow: "1px 1px 2px 1px #eaeaea",
       left: -10,
-      cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
+      cursor: "pointer",
+      [theme.breakpoints.down("xs")]: {
+        left: "0px !important",
       },
     },
   });
@@ -204,20 +207,27 @@ type InputProps = {
 export const LocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
-  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<boolean>(false);
-  const [isForceFullyClosePopover, setIsForceFullyClosePopover] = React.useState<boolean>(false);
+  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<
+    boolean
+  >(false);
+  const [
+    isForceFullyClosePopover,
+    setIsForceFullyClosePopover,
+  ] = React.useState<boolean>(false);
 
   const searchOptions = {
-    componentRestrictions: { country: ['in'] },
+    componentRestrictions: { country: ["in"] },
   };
 
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const [address, setAddress] = React.useState('');
-  const [selectedAddress, setSelectedAddress] = React.useState('');
-  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(false);
-  const [detectBy, setDetectBy] = React.useState<string | null>('');
+  const [address, setAddress] = React.useState("");
+  const [selectedAddress, setSelectedAddress] = React.useState("");
+  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(
+    false
+  );
+  const [detectBy, setDetectBy] = React.useState<string | null>("");
 
   const {
     currentLocation,
@@ -242,48 +252,50 @@ export const LocationSearch: React.FC = (props) => {
       .then((results: any) => getLatLng(results[0]))
       .then((resObj: any) => {
         if (resObj) {
-          localStorage.setItem('currentAddress', address);
+          localStorage.setItem("currentAddress", address);
           setCurrentLat(resObj.lat);
           setCurrentLong(resObj.lng);
           setCurrentLocation(address);
-          setSelectedAddress(address.substring(0, address.indexOf(',')));
-          setAddress('');
+          setSelectedAddress(address.substring(0, address.indexOf(",")));
+          setAddress("");
           setIsLocationPopoverOpen(false);
         }
       })
       .catch((error: any) => {
-        setAddress('');
+        setAddress("");
         setIsLocationPopoverOpen(false);
       });
   };
 
   useEffect(() => {
     if (
-      !localStorage.getItem('currentAddress') &&
+      !localStorage.getItem("currentAddress") &&
       !isSigningIn &&
       (!isUserDeniedLocationAccess || !isLocationDenied)
     ) {
       navigator.permissions &&
-        navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
-          if (PermissionStatus.state === 'denied') {
-            setIsPopoverOpen(false);
-            setIsLocationDenied(true);
-            setIsUserDeniedLocationAccess(true);
-            // setIsLocationPopoverOpen(true);
-          } else if (
-            PermissionStatus.state !== 'granted' &&
-            !detectBy &&
-            !isForceFullyClosePopover
-          ) {
-            setIsPopoverOpen(true);
-          } else if (PermissionStatus.state === 'granted' && !detectBy) {
-            locateCurrentLocation();
-            setIsPopoverOpen(false);
-          }
-        });
+        navigator.permissions
+          .query({ name: "geolocation" })
+          .then((PermissionStatus) => {
+            if (PermissionStatus.state === "denied") {
+              setIsPopoverOpen(false);
+              setIsLocationDenied(true);
+              setIsUserDeniedLocationAccess(true);
+              // setIsLocationPopoverOpen(true);
+            } else if (
+              PermissionStatus.state !== "granted" &&
+              !detectBy &&
+              !isForceFullyClosePopover
+            ) {
+              setIsPopoverOpen(true);
+            } else if (PermissionStatus.state === "granted" && !detectBy) {
+              locateCurrentLocation();
+              setIsPopoverOpen(false);
+            }
+          });
     } else if (
       (isLocationDenied || isUserDeniedLocationAccess) &&
-      !localStorage.getItem('currentAddress') &&
+      !localStorage.getItem("currentAddress") &&
       !isSigningIn
     ) {
       // setIsLocationPopoverOpen(true);
@@ -295,20 +307,24 @@ export const LocationSearch: React.FC = (props) => {
   const renderSuggestion = (text: string, matchedLength: number) => {
     return (
       <>
-        <span style={{ fontWeight: 500 }}>{text.substring(0, matchedLength)}</span>
-        <span style={{ fontWeight: 400 }}>{text.substring(matchedLength, text.length)}</span>
+        <span style={{ fontWeight: 500 }}>
+          {text.substring(0, matchedLength)}
+        </span>
+        <span style={{ fontWeight: 400 }}>
+          {text.substring(matchedLength, text.length)}
+        </span>
       </>
     );
   };
 
   const getAddressFromLocalStorage = () => {
-    const currentAddress = localStorage.getItem('currentAddress');
+    const currentAddress = localStorage.getItem("currentAddress");
     if (currentAddress) {
-      return currentAddress.includes(',')
-        ? currentAddress.substring(0, currentAddress.indexOf(','))
+      return currentAddress.includes(",")
+        ? currentAddress.substring(0, currentAddress.indexOf(","))
         : currentAddress;
     }
-    return 'No location';
+    return "No location";
   };
 
   return (
@@ -322,7 +338,7 @@ export const LocationSearch: React.FC = (props) => {
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}
-          src={require('images/ic_location_on.svg')}
+          src={require("images/ic_location_on.svg")}
           alt=""
           title={selectedAddress}
         />
@@ -335,7 +351,7 @@ export const LocationSearch: React.FC = (props) => {
         </span>
         <img
           className={`${classes.locationIcon} ${classes.iconMobile}`}
-          src={require('images/ic_location_on.svg')}
+          src={require("images/ic_location_on.svg")}
           alt=""
           title={selectedAddress}
         />
@@ -344,18 +360,19 @@ export const LocationSearch: React.FC = (props) => {
         open={isLocationPopoverOpen}
         anchorEl={locationRef.current}
         onClose={() => {
-          if (getAddressFromLocalStorage() !== 'No location') setIsLocationPopoverOpen(false);
+          if (getAddressFromLocalStorage() !== "No location")
+            setIsLocationPopoverOpen(false);
         }}
         classes={{
           paper: classes.popPaperRoot,
         }}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: "top",
+          horizontal: "left",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: "top",
+          horizontal: "left",
         }}
       >
         <PlacesAutocomplete
@@ -364,7 +381,12 @@ export const LocationSearch: React.FC = (props) => {
           onSelect={handleSelect}
           searchOptions={searchOptions}
         >
-          {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => {
+          {({
+            getInputProps,
+            suggestions,
+            getSuggestionItemProps,
+            loading,
+          }: InputProps) => {
             return (
               <div className={classes.locationPopWrap}>
                 <div
@@ -373,9 +395,12 @@ export const LocationSearch: React.FC = (props) => {
                     setIsLocationPopoverOpen(false);
                   }}
                 >
-                  <img src={require('images/ic_cross_popup.svg')} alt="" />
+                  <img src={require("images/ic_cross_popup.svg")} alt="" />
                 </div>
-                <label className={classes.inputLabel} title={'Current Location'}>
+                <label
+                  className={classes.inputLabel}
+                  title={"Current Location"}
+                >
                   Current Location
                 </label>
                 <div className={classes.searchInput}>
@@ -384,16 +409,22 @@ export const LocationSearch: React.FC = (props) => {
                     placeholder="Search Places..."
                     {...getInputProps()}
                     onKeyDown={(e) => {
-                      e.key === 'Enter' && e.preventDefault();
+                      e.key === "Enter" && e.preventDefault();
                     }}
-                    title={'Search Places...'}
+                    title={"Search Places..."}
                   />
                   <div className={classes.popLocationIcon}>
-                    <img src={require('images/ic-location.svg')} alt="" title={'Location'} />
+                    <img
+                      src={require("images/ic-location.svg")}
+                      alt=""
+                      title={"Location"}
+                    />
                   </div>
                 </div>
                 <div className={classes.locationAutoComplete}>
-                  {loading && <div className={classes.dateLoader}>Loading...</div>}
+                  {loading && (
+                    <div className={classes.dateLoader}>Loading...</div>
+                  )}
                   <ul>
                     {suggestions.map((suggestion: SuggestionProps) => {
                       return suggestion.index < 3 ? (
@@ -416,22 +447,25 @@ export const LocationSearch: React.FC = (props) => {
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         classes={{ paper: classes.bottomPopover }}
       >
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
-            <div className={classes.locationPopoverClose} onClick={closePopOver}>
-              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            <div
+              className={classes.locationPopoverClose}
+              onClick={closePopOver}
+            >
+              <img src={require("images/ic_cross_popup.svg")} alt="" />
             </div>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <img src={require("images/ic-mascot.png")} alt="" />
             </div>
             <AllowLocation
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}

@@ -7,26 +7,31 @@ import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: '#fff',
       display: 'flex',
-      padding: '0 0 16px',
-      margin: '0 0 16px',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      [theme.breakpoints.down('xs')]: {
-        padding: '16px 20px',
-        margin: 0,
-      },
+      padding: '16px 0 0',
+      margin: '20px 0 0',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
     },
     linkItem: {
-      display: 'flex',
+      display: 'none',
       alignItems: 'center',
       cursor: 'pointer',
-      fontSize: 9,
+      fontSize: 12,
+      lineHeight: '26px',
       fontWeight: 600,
       minWidth: 90,
+      color: '#0087ba',
       '& img': {
         verticalAlign: 'middle',
         marginRight: 5,
+      },
+      '& span': {
+        '& span': {
+          color: '#7098a3',
+        },
+      },
+      '&:first-child': {
+        display: 'flex',
       },
     },
     likeFilter: {
@@ -161,11 +166,14 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
         <span>
           <img
             className={!articleLiked ? classes.likeFilter : ''}
-            src={require('images/ic_like.svg')}
+            src={require('images/noun-like.svg')}
             alt="Likes"
+            onContextMenu={(e) => e.preventDefault()}
           />
         </span>
-        <span>{likeCount} Likes</span>
+        <span>
+          {Number(likeCount) === 1 ? 'Like' : 'Likes'} <span>({likeCount})</span>
+        </span>
       </div>
       <div className={classes.linkItem} onClick={() => handleDislikeButton()}>
         <span>
@@ -173,15 +181,24 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
             className={articleDisLiked ? classes.disLikeFilter : ''}
             src={require('images/ic_dislike.svg')}
             alt="Dislikes"
+            onContextMenu={(e) => e.preventDefault()}
           />
         </span>
-        <span>{dislikeCount} Dislikes</span>
+        <span>
+          {dislikeCount} {Number(dislikeCount) === 1 ? 'Dislike' : 'Dislikes'}
+        </span>
       </div>
       <div className={classes.linkItem}>
         <span>
-          <img src={require('images/ic_feed.svg')} alt="Comments" />
+          <img
+            onContextMenu={(e) => e.preventDefault()}
+            src={require('images/ic_feed.svg')}
+            alt="Comments"
+          />
         </span>
-        <span>{Number(props.totalComments)} Comments</span>
+        <span>
+          {Number(props.totalComments)} {Number(props.totalComments) === 1 ? 'Comment' : 'Comments'}
+        </span>
       </div>
     </div>
   );

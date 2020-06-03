@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   EPrescription,
@@ -9,12 +8,10 @@ import {
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
-import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossYellow, FileBig, Check, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
@@ -22,6 +19,8 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -45,8 +44,6 @@ const styles = StyleSheet.create({
 export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
   isTest?: boolean;
 }
-{
-}
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
   props
@@ -54,9 +51,8 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const { isTest } = props;
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const { currentPatient } = useAllCurrentPatients();
-  // const currentPatientId = currentPatient && currentPatient!.id;
 
+  const { showAphAlert } = useUIElements();
   const {
     uploadPrescriptionRequired,
     setPhysicalPrescriptions,
@@ -66,6 +62,12 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     setEPrescriptions,
     removeEPrescription,
   } = isTest ? useDiagnosticsCart() : useShoppingCart();
+
+  const {
+    showPrescriptionAtStore,
+    setShowPrescriptionAtStore,
+    deliveryAddressId,
+  } = useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -289,29 +291,36 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     );
   };
 
-  const consultDoctorCTA = () => {
+  const showPrescriptionAtTheStoreView = () => {
     return (
-      <View style={{ marginHorizontal: 16, paddingBottom: 16 }}>
-        <Spearator style={{ marginBottom: 11.5 }} />
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-            paddingBottom: 8,
-          }}
-        >
-          Don’t have a prescription? Don’t worry!
+      <View style={{ marginHorizontal: 16, paddingBottom: 22 }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24) }}>OR</Text>
+        <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24), marginTop: 11 }}>
+          For Store Pickup Only
         </Text>
-        <Text
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ marginTop: 9, flexDirection: 'row' }}
           onPress={() => {
-            CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', 'Navigate to doctor search');
-            props.navigation.navigate(AppRoutes.DoctorSearch);
-          }}
-          style={{
-            ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
+            if (deliveryAddressId) {
+              showAphAlert!({
+                title: string.common.uhOh,
+                description: string.medicine_cart.showPresAtStoreForStorePickUp,
+              });
+            } else {
+              setShowPrescriptionAtStore!(!showPrescriptionAtStore);
+            }
           }}
         >
-          CONSULT A DOCTOR
-        </Text>
+          <View style={{ marginLeft: -2 }}>
+            {showPrescriptionAtStore ? <Check /> : <UnCheck />}
+          </View>
+          <Text
+            style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 24), flex: 1, marginLeft: 5 }}
+          >
+            I will show the prescription at the store.
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -347,13 +356,13 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                   style={{
                     ...styles.yellowTextStyle,
                     paddingTop: 0,
-                    // textAlign: 'right',
+                    paddingBottom: 7,
                   }}
                 >
                   UPLOAD PRESCRIPTION
                 </Text>
               </TouchableOpacity>
-              {!isTest && consultDoctorCTA()}
+              {(!isTest && showPrescriptionAtTheStoreView()) || <View style={{ height: 8 }} />}
             </View>
           ) : (
             rendePrescriptions()
@@ -366,7 +375,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   return (
     <>
       {renderUploadPrescription()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {uploadPrescriptionPopup()}
     </>
   );

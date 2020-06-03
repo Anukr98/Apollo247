@@ -423,6 +423,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopConsultJr = '^^#stopconsultJr';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -580,6 +581,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (status !== STATUS.COMPLETED) return;
     if (!sendMessageToDoctor) return;
 
+    SendAutoMatedMessageToDoctorAPI();
+
     const ciphertext = CryptoJS.AES.encrypt(
       message,
       AppConfig.Configuration.CRYPTO_SECRET_KEY
@@ -602,6 +605,76 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((error) => {
         console.log('InsertMessageToDoctor_error', error);
       });
+  };
+
+  const SendAutoMatedMessageToDoctorAPI = async () => {
+    try {
+      const saveAppointment = [
+        {
+          appointmentId: appointmentData.id,
+          date: moment().format('YYYY-MM-DD'),
+          sendDate: new Date(),
+        },
+      ];
+      console.log('saveAppointment', saveAppointment);
+
+      const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
+      const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
+      console.log('saveAppointmentDataAsyncStorage', saveAppointmentData);
+
+      if (saveAppointmentData) {
+        const result = saveAppointmentData.filter((obj: any) => {
+          return obj.appointmentId === appointmentData.id;
+        });
+        console.log('saveAppointmentDataresult', saveAppointmentData);
+
+        if (result.length > 0) {
+          if (result[0].appointmentId === appointmentData.id) {
+            const index = saveAppointmentData.findIndex(
+              (project: any) => project.appointmentId === appointmentData.id
+            );
+
+            const diff = moment.duration(
+              moment(saveAppointmentData[index].sendDate).diff(new Date())
+            );
+            const diffInMins = diff.asMinutes();
+            console.log('chatdiffInMins', diffInMins);
+            if (diffInMins <= -10) {
+              sendDcotorChatMessage();
+              saveAppointmentData[index].sendDate = new Date();
+              saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+            }
+
+            AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+          }
+        } else {
+          sendDcotorChatMessage();
+          saveAppointmentData.push(saveAppointment[0]);
+          AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+        }
+      } else {
+        sendDcotorChatMessage();
+        AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
+      }
+    } catch (error) {}
+  };
+
+  const sendDcotorChatMessage = () => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: {
+          message: doctorAutoResponse,
+          automatedText: `We have notified the query you have raised to the Dr. ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
+          id: doctorId,
+          isTyping: true,
+          messageDate: new Date(),
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {}
+    );
   };
 
   const setSendAnswers = (val: number) => {
@@ -1282,7 +1355,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.PATIENT,
+    uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1351,7 +1424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        // console.log('presenceEvent', presenceEvent);
+        console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -1370,7 +1443,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const data: any = response.channels[appointmentData.id].occupants;
 
             const occupancyDoctor = data.filter((obj: any) => {
-              return obj.uuid === REQUEST_ROLES.DOCTOR;
+              return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
             });
 
             const startConsultResult = insertText.filter((obj: any) => {
@@ -2002,8 +2075,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
         minuteTimer && clearTimeout(minuteTimer);
         addMessages(message);
-      } else if (message.message.message === consultPatientStartedMsg) {
-        console.log('consultPatientStartedMsg');
+      } else if (message.message.message === doctorAutoResponse) {
+        console.log('doctorAutoResponse');
         addMessages(message);
       } else if (message.message.message === imageconsult) {
         console.log('imageconsult');
@@ -3747,7 +3820,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <>{transferReschedule(rowData, index)}</>
               ) : (
                 <>
-                  {rowData.message === consultPatientStartedMsg ? (
+                  {rowData.message === consultPatientStartedMsg ||
+                  rowData.message === doctorAutoResponse ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
                   ) : rowData.message === firstMessage ||
                     rowData.message === secondMessage ||
@@ -5377,6 +5451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     },
                     (status, response) => {}
                   );
+                  InsertMessageToDoctor('ImageUploaded');
                   KeepAwake.activate();
                 })
                 .catch((e) => {
@@ -5580,6 +5655,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   },
                   (status, response) => {}
                 );
+              InsertMessageToDoctor('EprescriptionUploaded');
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);

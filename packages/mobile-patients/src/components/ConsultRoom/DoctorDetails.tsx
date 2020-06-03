@@ -348,6 +348,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         }
       })
       .catch((e) => {
+        props.navigation.navigate(AppRoutes.ConsultRoom, {});
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
@@ -954,6 +955,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={props.navigation.getParam('consultModeSelected')}
+          externalConnect={props.navigation.getParam('externalConnect')}
           // availableSlots={availableSlots}
         />
       )}

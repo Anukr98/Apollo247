@@ -63,6 +63,8 @@ export const getCurrentPatientsTypeDefs = gql`
     isUhidPrimary: Boolean
     primaryUhid: String
     primaryPatientId: String
+    whatsAppMedicine: Boolean
+    whatsAppConsult: Boolean
   }
 
   type HealthVault {
@@ -92,6 +94,8 @@ export const getCurrentPatientsTypeDefs = gql`
     isUhidPrimary: Boolean
     primaryUhid: String
     primaryPatientId: String
+    whatsAppMedicine: Boolean
+    whatsAppConsult: Boolean
   }
 
   type LifeStyle {
