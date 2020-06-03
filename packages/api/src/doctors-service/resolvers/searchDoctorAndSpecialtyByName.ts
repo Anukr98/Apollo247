@@ -125,7 +125,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             {
               multi_match: {
-                fields: ['fullName', 'specialty.name'],
+                fields: [
+                  'fullName',
+                  'specialty.name',
+                  'specialty.groupName',
+                  'specialty.commonSearchTerm',
+                  'specialty.userFriendlyNomenclature',
+                ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
               },
@@ -214,7 +220,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             {
               multi_match: {
-                fields: ['fullName', 'specialty.name'],
+                fields: [
+                  'fullName',
+                  'specialty.name',
+                  'specialty.groupName',
+                  'specialty.commonSearchTerm',
+                  'specialty.userFriendlyNomenclature',
+                ],
                 fuzziness: 'AUTO',
                 query: searchTextLowerCase,
               },
