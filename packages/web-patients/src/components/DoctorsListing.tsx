@@ -154,6 +154,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface DoctorsListingProps {
+  history: any;
   filter: SearchObject;
   specialityName: string;
   specialityId: string;
@@ -509,6 +510,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                 return (
                   <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
                     <DoctorCard
+                      history={props.history}
                       doctorDetails={doctorDetails}
                       key={_uniqueId('dcListing_')}
                       nextAvailability={nextAvailabilityString}

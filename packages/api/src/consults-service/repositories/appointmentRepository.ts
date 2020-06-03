@@ -54,6 +54,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getAppointmentsCount(doctorId: string, patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .getCount();
+  }
+
   getAppointmentsByIds(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .where('appointment.id IN (:...ids)', { ids })
@@ -1198,7 +1205,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }
   followUpBookedCount(id: string) {

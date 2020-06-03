@@ -20,11 +20,6 @@ export enum APPOINTMENT_UPDATED_BY {
   ADMIN = 'ADMIN',
 }
 
-export enum VALUE_TYPE {
-  STATUS = 'STATUS',
-  OTHER = 'OTHER',
-}
-
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -116,6 +111,11 @@ export enum REQUEST_ROLES {
   JUNIOR = 'JUNIOR',
   SYSTEM = 'SYSTEM',
   ADMIN = 'ADMIN',
+}
+
+export enum VALUE_TYPE {
+  STATUS = 'STATUS',
+  OTHER = 'OTHER',
 }
 
 export enum TRANSFER_STATUS {
@@ -823,6 +823,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   referralDescription: string;
 
+  @Column({ nullable: true, type: 'json' })
+  removedMedicinePrescription: string;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
@@ -845,6 +848,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: 1 })
+  version: number;
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;

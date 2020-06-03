@@ -15,6 +15,21 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 
+export type ONE_APOLLO_USER_REG = {
+  FirstName: string;
+  LastName: string;
+  MobileNumber: string;
+  Gender: Gender;
+  BusinessUnit: string;
+  StoreCode: string;
+}
+
+export enum ONE_APOLLO_STORE_CODE {
+  ANDCUS = 'ANDCUS',
+  IOSCUS = 'IOSCUS',
+  WEBCUS = 'WEBCUS'
+}
+
 export enum CouponApplicability {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',
@@ -332,6 +347,12 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ type: 'float8', nullable: true })
   productDiscount: number;
+
+  @Column({
+    nullable: true,
+    type: 'json',
+  })
+  shopAddress: string;
 
   @Column({
     nullable: true,
@@ -744,6 +765,12 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientDeviceTokens, (patientDeviceTokens) => patientDeviceTokens.patient)
   patientDeviceTokens: PatientDeviceTokens[];
 
+  @OneToMany(
+    (type) => PharmacologistConsult,
+    (pharmacologistConsult) => pharmacologistConsult.patient
+  )
+  pharmacologistConsult: PharmacologistConsult[];
+
   @OneToOne(
     (type) => PatientNotificationSettings,
     (patientNotificationSettings) => patientNotificationSettings.patient
@@ -781,6 +808,14 @@ export class Patient extends BaseEntity {
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
+
+  @Index('Patient_whatsAppConsult')
+  @Column({ default: true })
+  whatsAppConsult: Boolean;
+
+  @Index('Patient_whatsAppMedicine')
+  @Column({ default: true })
+  whatsAppMedicine: Boolean;
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
@@ -2131,4 +2166,25 @@ export class MedicineOrderCancelReason extends BaseEntity {
 
   @Column({ nullable: true })
   isUserReason: boolean;
+}
+
+@Entity()
+export class PharmacologistConsult extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  prescriptionImageUrl: string;
+
+  @Column({ nullable: true })
+  emailId: string;
+
+  @Column({ nullable: true })
+  queries: string;
+
+  @ManyToOne((type) => Patient, (patient) => patient.pharmacologistConsult)
+  patient: Patient;
 }

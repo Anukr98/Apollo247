@@ -69,9 +69,11 @@ export interface ShoppingCartContextProps {
   couponDiscount: number;
   productDiscount: number;
   deliveryCharges: number;
+  packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
-
+  showPrescriptionAtStore: boolean;
+  setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
 
@@ -124,6 +126,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   couponDiscount: 0,
   productDiscount: 0,
   deliveryCharges: 0,
+  packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
 
@@ -141,6 +144,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   stores: [],
   setStores: null,
+  showPrescriptionAtStore: false,
+  setShowPrescriptionAtStore: null,
   pinCode: '',
   setPinCode: null,
 
@@ -188,6 +193,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
+    ShoppingCartContextProps['showPrescriptionAtStore']
+  >(false);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -297,6 +305,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
+
+  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
 
   const grandTotal = parseFloat(
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
@@ -452,6 +462,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponDiscount,
         productDiscount,
         deliveryCharges,
+        packagingCharges,
         uploadPrescriptionRequired,
 
         ePrescriptions,
@@ -476,6 +487,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStores,
         storeId,
         setStoreId,
+        showPrescriptionAtStore,
+        setShowPrescriptionAtStore,
 
         pinCode,
         setPinCode,

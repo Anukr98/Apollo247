@@ -82,6 +82,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       marginRight: 8,
@@ -100,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
   },
   popupHeadingCenter: {
@@ -185,6 +187,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: 15,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       maxWidth: 20,

@@ -78,6 +78,10 @@ import {
   getMedicineOrdersOMSListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersOMSList';
 import {
+  getOneApolloUserTypeDefs,
+  getOneApolloUserResolvers,
+} from 'profiles-service/resolvers/getOneApolloUser';
+import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
@@ -195,6 +199,10 @@ import {
   pharmaOrdersTypeDefs,
   pharmacyOrdersResolvers,
 } from 'profiles-service/resolvers/pharmacyOrders';
+import {
+  savePharmacologistConsultResolvers,
+  savePharmacologistConsultTypeDefs,
+} from 'profiles-service/resolvers/savePharmacologistConsult';
 
 (async () => {
   await connect();
@@ -296,6 +304,10 @@ import {
       {
         typeDefs: savePrescriptionMedicineOrderOMSTypeDefs,
         resolvers: savePrescriptionMedicineOrderOMSResolvers,
+      },
+      {
+        typeDefs: getOneApolloUserTypeDefs,
+        resolvers: getOneApolloUserResolvers
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
@@ -436,6 +448,10 @@ import {
       {
         typeDefs: getMedicineOrderCancelReasonsTypeDefs,
         resolvers: getMedicineOrderCancelReasonsResolvers,
+      },
+      {
+        typeDefs: savePharmacologistConsultTypeDefs,
+        resolvers: savePharmacologistConsultResolvers,
       },
     ]),
     plugins: [

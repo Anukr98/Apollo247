@@ -10,23 +10,23 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       position: 'relative',
+      padding: 16,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.15)',
+      borderRadius: 5,
+      backgroundColor: '#fff',
     },
     formRow: {
       paddingBottom: 16,
+      '& label': {
+        opacity: 0.6,
+      },
     },
     commentsBox: {
-      '& label': {
-        textTransform: 'uppercase',
-        color: '#0087ba',
-      },
       '& textarea': {
-        borderRadius: 0,
-        backgroundColor: 'rgba(216, 216, 216, 0.2)',
-        border: 'none',
+        borderWidth: 2,
         marginTop: 8,
-        fontSize: 12,
         fontWeight: 500,
-        color: 'rgba(1,71,91,0.6)',
+        color: '#01475b',
         padding: 12,
         minHeight: 58,
       },
@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#02475b',
         alignItems: 'center',
+        opacity: 1,
         marginLeft: 0,
         '& span': {
           fontSize: 12,
@@ -57,29 +58,21 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       textAlign: 'right',
-      '& button': {
-        display: 'inline-block',
-        boxShadow: 'none',
+    },
+    cancelBtn: {
+      display: 'inline-block',
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      color: '#fc9916',
+      padding: '0 8px',
+      marginRight: 16,
+      '&:hover': {
         backgroundColor: 'transparent',
         color: '#fc9916',
-        padding: '0 8px',
-        '&:hover': {
-          backgroundColor: 'transparent',
-          color: '#fc9916',
-        },
-        '&:last-child': {
-          paddingRight: 0,
-        },
       },
     },
     buttonDisabled: {
-      backgroundColor: 'transparent',
-      color: '#fc9916 !important',
       opacity: 0.6,
-      '&:hover': {
-        backgroundColor: 'transparent',
-        color: '#fc9916 !important',
-      },
     },
     error: {
       color: '#890000',
@@ -99,6 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface CommentsFormProps {
   titleId: string;
+  onCancel: () => void;
 }
 
 export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
@@ -117,12 +111,12 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
   const postCommentUrl = process.env.POST_COMMENT_URL || '';
 
   useEffect(() => {
-    if (isEmailValid(userEmail) && comment.length) {
+    if (isEmailValid(userEmail) && comment.length && isNameValid(userName)) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, comment]);
+  }, [userEmail, comment, userName]);
 
   const handleCancelForm = () => {
     setComment('');
@@ -132,6 +126,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
     setUserNameValid(true);
     setMaskEmail(false);
     setSubscribe(true);
+    props.onCancel();
   };
 
   const handleEmailValidityCheck = () => {
@@ -176,10 +171,11 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       <div className={classes.formRow}>
         <div className={classes.commentsBox}>
           <AphTextField
-            label="Comments"
+            label="Your Comment"
             onChange={(event) => setComment(event.target.value)}
             value={comment}
             multiline
+            autoFocus={true}
             inputProps={{
               maxLength: 300,
             }}
@@ -214,7 +210,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       <div className={classes.formRow}>
         <AphTextField
           onChange={(event) => handleNameChange(event)}
-          label="Full Name"
+          label="Full Name*"
           placeholder="Add your name"
           value={userName}
         />
@@ -238,8 +234,11 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       </div>
       {!isLoading ? (
         <div className={classes.bottomActions}>
-          <AphButton onClick={() => handleCancelForm()}>Cancel</AphButton>
+          <AphButton className={classes.cancelBtn} onClick={() => handleCancelForm()}>
+            Cancel
+          </AphButton>
           <AphButton
+            color="primary"
             disabled={isPostSubmitDisable}
             onClick={() => submitComment()}
             className={isPostSubmitDisable ? classes.buttonDisabled : ''}
