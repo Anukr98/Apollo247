@@ -170,7 +170,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (addressDetails: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${addressDetails.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!addressDetails.latitude || !addressDetails.longitude || !addressDetails.stateCode) {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {

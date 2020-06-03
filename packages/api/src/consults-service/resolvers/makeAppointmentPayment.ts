@@ -293,9 +293,13 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDetails = await doctorRepo.findById(processingAppointment.doctorId);
+    const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : null;
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      isJdAllowed == false
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);

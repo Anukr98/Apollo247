@@ -355,6 +355,8 @@ async function addDoctorElastic(allDocsInfo: Doctor) {
       image: allDocsInfo.specialty.image,
       specialistSingularTerm: allDocsInfo.specialty.specialistSingularTerm,
       specialistPluralTerm: allDocsInfo.specialty.specialistPluralTerm,
+      groupName: allDocsInfo.specialty.groupName,
+      commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
       userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
     };
   }

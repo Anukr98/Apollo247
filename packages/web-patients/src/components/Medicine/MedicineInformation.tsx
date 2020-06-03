@@ -306,6 +306,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
+    skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
     url: process.env.PHARMACY_MED_INFO_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
@@ -315,7 +316,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.url || '',
+        apiDetails.skuUrl || '',
         { params: params.sku },
         {
           headers: {
@@ -323,18 +324,33 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           },
         }
       )
-      .then(({ data }) => {
-        try {
-          if (data) {
-            if (data.products && data.products.length > 0) {
-              setSubstitutes(data.products);
+      .then(async ({ data }) => {
+        await axios
+          .post(
+            apiDetails.url || '',
+            { params: data.sku || params.sku },
+            {
+              headers: {
+                Authorization: apiDetails.authToken,
+              },
             }
-          }
-        } catch (error) {
-          console.log(error);
-        }
+          )
+          .then(({ data }) => {
+            try {
+              if (data) {
+                if (data.products && data.products.length > 0) {
+                  setSubstitutes(data.products);
+                }
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          })
+          .catch((err) => alert({ err }));
       })
-      .catch((err) => alert({ err }));
+      .catch((e) => {
+        alert(e);
+      });
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -343,50 +359,66 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setTatLoading(true);
     await axios
       .post(
-        apiDetails.deliveryUrl || '',
-        {
-          postalcode: pinCode,
-          ordertype: 'pharma',
-          lookup: [
-            {
-              sku: params.sku,
-              qty: 1,
-            },
-          ],
-        },
+        apiDetails.skuUrl || '',
+        { params: params.sku },
         {
           headers: {
-            Authentication: apiDetails.deliveryAuthToken,
+            Authorization: apiDetails.authToken,
           },
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
         }
       )
-      .then((res: AxiosResponse) => {
-        try {
-          if (res && res.data) {
-            if (res.data.errorMsg) {
-              setErrorMessage(res.data.errorMsg);
+      .then(async ({ data }) => {
+        await axios
+          .post(
+            apiDetails.deliveryUrl || '',
+            {
+              postalcode: pinCode,
+              ordertype: 'pharma',
+              lookup: [
+                {
+                  sku: data.sku || params.sku,
+                  qty: 1,
+                },
+              ],
+            },
+            {
+              headers: {
+                Authentication: apiDetails.deliveryAuthToken,
+              },
+              cancelToken: new CancelToken((c) => {
+                // An executor function receives a cancel function as a parameter
+                cancelGetDeliveryTimeApi = c;
+              }),
             }
+          )
+          .then((res: AxiosResponse) => {
+            try {
+              if (res && res.data) {
+                if (res.data.errorMsg) {
+                  setErrorMessage(res.data.errorMsg);
+                }
+                setTatLoading(false);
+                if (
+                  typeof res.data === 'object' &&
+                  Array.isArray(res.data.tat) &&
+                  res.data.tat.length
+                ) {
+                  setDeliveryTime(res.data.tat[0].deliverydate);
+                  setErrorMessage('');
+                } else if (typeof res.data.errorMSG === 'string') {
+                  setErrorMessage(res.data.errorMSG);
+                }
+              }
+            } catch (error) {
+              setTatLoading(false);
+            }
+          })
+          .catch((error: any) => {
             setTatLoading(false);
-            if (
-              typeof res.data === 'object' &&
-              Array.isArray(res.data.tat) &&
-              res.data.tat.length
-            ) {
-              setDeliveryTime(res.data.tat[0].deliverydate);
-              setErrorMessage('');
-            } else if (typeof res.data.errorMSG === 'string') {
-              setErrorMessage(res.data.errorMSG);
-            }
-          }
-        } catch (error) {
-          setTatLoading(false);
-        }
+          });
       })
-      .catch((error: any) => {
+      .catch((e) => {
+        alert(e);
         setTatLoading(false);
       });
   };
@@ -555,6 +587,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setAddMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
                         description: data.description,
                         id: data.id,
                         image: data.image,
@@ -602,6 +635,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setUpdateMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
                         description: data.description,
                         id: data.id,
                         image: data.image,
