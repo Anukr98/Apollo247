@@ -1004,6 +1004,50 @@ export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/linkeduhid.png')} />
 );
 
+export const CreditsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/credits.png')} />
+);
+
+export const SilverMembershipBanner: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver_membership.png')} />
+);
+
+export const MembershipBenefitsOne: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_1.png')} />
+);
+
+export const MembershipBenefitsTwo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_2.png')} />
+);
+
+export const MembershipBenefitsThree: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_3.png')} />
+);
+
+export const TriangleGreyBulletPoint: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/triangle_grey.png')} />
+);
+
+export const OneApolloGold: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/gold.png')} />
+);
+
+export const OneApolloSilver: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver.png')} />
+);
+
+export const OneApolloPlatinum: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/platinum.png')} />
+);
+
+export const OneApolloLockIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/padlock.png')} />
+);
+
+export const TxnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
+);
+
 export const InPersonHeader: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 49, height: 56 }}

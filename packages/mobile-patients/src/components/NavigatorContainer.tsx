@@ -79,6 +79,7 @@ import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRo
 import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
 import { CheckoutSceneNew } from '@aph/mobile-patients/src/components/CheckoutScenenew';
 import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus';
+import { OneApolloMembership } from '@aph/mobile-patients/src/components/OneApollo/OneApolloMembership';
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
@@ -163,6 +164,7 @@ export enum AppRoutes {
   NotificationScreen = 'NotificationScreen',
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
+  OneApolloMembership = 'OneApolloMembership',
   ConsultTypeScreen = 'ConsultTypeScreen',
 }
 
@@ -420,6 +422,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PaymentStatusScreen]: {
     screen: PaymentStatusScreen,
+  },
+  [AppRoutes.OneApolloMembership]: {
+    screen: OneApolloMembership,
   },
   [AppRoutes.ConsultTypeScreen]: {
     screen: ConsultTypeScreen,
