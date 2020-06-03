@@ -128,7 +128,13 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
         >
           {!props.isStatusDone ? (
             <>
-              <Text style={[styles.statusStyle, { color: 'rgba(1,71,91,0.35)' }]}>
+              <Text
+                style={[
+                  styles.statusStyle,
+                  { color: 'rgba(1,71,91,0.35)' },
+                  props.status == 'Order Ready at Store' && { textTransform: 'none' },
+                ]}
+              >
                 {props.status}
               </Text>
             </>
@@ -137,6 +143,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
               <Text
                 style={[
                   styles.statusStyle,
+                  props.status == 'Order Ready at Store' && { textTransform: 'none' },
                   props.status == 'Order Cancelled' && { color: '#890000' },
                 ]}
               >

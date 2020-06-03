@@ -43,6 +43,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -165,7 +166,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             : props.availableModes === ConsultMode.PHYSICAL
             ? g(filterData, '0' as any, 'physicalSlot')
             : g(filterData, '0' as any, 'referenceSlot');
-        console.log(props.availableModes, nextSlot, filterData);
+        // console.log(props.availableModes, nextSlot, filterData);
       } else if (filterData.length > 0 && g(filterData, '0' as any, 'referenceSlot')) {
         nextSlot = filterData[0] ? g(filterData, '0' as any, 'referenceSlot') : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
       }
@@ -370,7 +371,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   onPress={() => {
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
-                        availableInMin && availableInMin < 60 && availableInMin > 0
+                        availableTime && moment(availableTime).isValid()
                           ? 'consult-now'
                           : 'book-appointment'
                       );
@@ -381,7 +382,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   }}
                 >
                   <Text style={styles.buttonText}>
-                    {availableInMin && availableInMin < 60 && availableInMin > 0 && availableTime
+                    {availableTime && moment(availableTime).isValid()
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}
                   </Text>

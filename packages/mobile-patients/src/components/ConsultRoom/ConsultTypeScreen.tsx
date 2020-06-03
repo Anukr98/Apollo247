@@ -13,7 +13,8 @@ import {
   CTPayment,
   CTVideo,
   CTPrescription,
-  OnlineConsult,
+  CTChat,
+  OnlineHeader,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { nextAvailability, mhdMY, g, timeDiffFromNow } from '../../helpers/helperFunctions';
@@ -28,6 +29,7 @@ import {
 } from '../../graphql/types/getPastAppointmentsCount';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -238,7 +240,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             <Text style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}>
               {heading}
             </Text>
-            {time ? (
+            {time && moment(time).isValid() ? (
               <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
                 {nextAvailability(time)}
               </Text>
@@ -274,7 +276,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
             <Text style={styles.buttonTextStyle}>{`${
-              time ? `Consult in ${mhdMY(time, 'min')}` : string.common.book_apointment
+              time && moment(time).isValid()
+                ? `Consult in ${mhdMY(time, 'min')}`
+                : string.common.book_apointment
             }`}</Text>
           </View>
         </TouchableOpacity>
@@ -284,7 +288,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
 
   const renderOnlineCard = () => {
     return renderCard(
-      <InPersonHeader />,
+      <OnlineHeader />,
       string.consultType.online.heading,
       string.consultType.online.question,
       onlinePrice,
@@ -300,7 +304,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
         { image: <CTPrescription />, description: string.consultType.online.point5 },
         {
-          image: <OnlineConsult />,
+          image: <CTChat />,
           description: string.consultType.online.point6,
           textColor: theme.colors.SKY_BLUE,
         },
@@ -334,7 +338,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
         {
-          image: <OnlineConsult />,
+          image: <CTChat />,
           description: string.consultType.inperson.point6,
           textColor: theme.colors.SKY_BLUE,
         },

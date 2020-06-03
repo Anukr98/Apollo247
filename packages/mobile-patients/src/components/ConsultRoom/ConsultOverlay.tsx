@@ -122,7 +122,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -163,11 +163,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.consultModeSelected]);
 
   useEffect(() => {
-    if (!g(currentPatient, 'whatsAppConsult')) {
-      postWEGWhatsAppEvent(true);
-      callWhatsOptAPICall(true);
-    }
-
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -895,7 +890,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              props.setdisplayoverlay(false), whatsappAPICalled();
+              props.setdisplayoverlay(false);
             }}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,

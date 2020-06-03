@@ -794,7 +794,7 @@ export async function sendNotification(
         '{0}',
         Number(refundsInfo.refundAmount).toFixed(2)
       );
-      notificationBody = notificationBody.replace('{1}', appointment.id);
+      notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
       notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
 
       sendNotificationSMS(patientDetails.mobileNumber, notificationBody);

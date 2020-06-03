@@ -275,7 +275,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     if (pincode && pincode.length === 6) {
       axios
         .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
         )
         .then(({ data }) => {
           if (data && data.results.length === 0) {
