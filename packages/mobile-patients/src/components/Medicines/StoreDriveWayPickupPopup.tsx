@@ -140,7 +140,7 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
       <View style={styles.popupView}>
         {renderDriveWayIcon()}
         {renderHeading()}
-        <ScrollView bounces={false}>
+        <ScrollView bounces={false} persistentScrollbar={true}>
           {renderDescription()}
           {renderStoreDetails()}
           {renderInfo()}
