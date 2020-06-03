@@ -90,7 +90,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     tableRow: {
       display: 'flex',
-      alignItems: 'center',
       padding: '4px 0',
       '& >div:nth-child(2)': {
         marginLeft: 'auto',
@@ -189,6 +188,19 @@ const useStyles = makeStyles((theme: Theme) => {
           color: '#fc9916',
         },
       },
+    },
+    orderValue: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 10,
+      fontSize: 14,
+      fontWeight: 600,
+      opacity: 0.7,
+    },
+    refundValue: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 10,
+      fontSize: 14,
+      fontWeight: 600,
     },
   };
 });
@@ -433,6 +445,22 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               <span>{paymentMethodToDisplay}</span>
             </div>
           )}
+          <div className={ classes.orderValue}>
+            <div className={`${classes.priceRow}`}>
+              <span>Total Ordered Value</span>
+              <span>Rs. 270</span>
+            </div>
+            <div className={`${classes.priceRow}`}>
+              <span>Total Billed Value</span>
+              <span>Rs. 250 </span>
+            </div>
+          </div>
+          <div className={ classes.refundValue}>
+            <div className={`${classes.priceRow}`}>
+              <span>Refund to be initiated</span>
+              <span>Rs. 20</span>
+            </div>
+          </div>
         </div>
       </div>
       <div className={classes.disclaimerText}>
