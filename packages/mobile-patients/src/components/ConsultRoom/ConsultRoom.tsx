@@ -71,7 +71,11 @@ import {
   PatientInfoWithSource,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { 
+  FirebaseEventName,
+  PatientInfoFirebase,
+  PatientInfoWithSourceFirebase,
+} from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -454,29 +458,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const postHomeFireBaseEvent = (
     eventName: FirebaseEventName,
-    source?: PatientInfoWithSource['Source']
+    source?: PatientInfoWithSourceFirebase['Source']
   ) => {
-    const eventAttributes: PatientInfo = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
+    const eventAttributes: PatientInfoFirebase = {
+      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'PatientUHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'PatientAge': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      'PatientGender': g(currentPatient, 'gender'),
+      'MobileNumber': g(currentPatient, 'mobileNumber'),
+      'CustomerID': g(currentPatient, 'id'),
     };
     if (source) {
-      (eventAttributes as PatientInfoWithSource)['Source'] = source;
+      (eventAttributes as PatientInfoWithSourceFirebase)['Source'] = source;
     }
     if (
       locationDetails &&
       locationDetails.pincode &&
       eventName == FirebaseEventName.BUY_MEDICINES
     ) {
-      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
+      (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
     }
     postFirebaseEvent(eventName, eventAttributes);
   };

@@ -389,7 +389,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
-    postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributes);
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_SEARCH] = {
+      'SearchText': searchInput,
+      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'PatientUHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'PatientAge': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'PatientGender': g(currentPatient, 'gender'),
+      'MobileNumber': g(currentPatient, 'mobileNumber'),
+      'CustomerID': g(currentPatient, 'id'),
+    };
+    postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributesFirebase);
   };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
@@ -838,7 +851,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Speciality ID': specialityId,
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
-    postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributes);
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
+      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'PatientUHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'PatientAge': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'PatientGender': g(currentPatient, 'gender'),
+      'MobileNumber': g(currentPatient, 'mobileNumber'),
+      'CustomerID': g(currentPatient, 'id'),
+      'SpecialityName': speciality,
+      'SpecialityID': specialityId,
+    };
+    postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributesFirebase);
   };
 
   const postDoctorClickWEGEvent = (
@@ -859,18 +886,30 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
+      'DoctorName': doctorDetails.fullName!,
+      Source: source,
+      'DoctorID': doctorDetails.id,
+      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
+      'DoctorCategory': doctorDetails.doctorType,
+      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
+      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
+      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+    };
+
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
     }
   };
 

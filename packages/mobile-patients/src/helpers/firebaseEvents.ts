@@ -1,3 +1,7 @@
+import {
+  DoctorType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum FirebaseEventName {
@@ -96,13 +100,29 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
 }
 
+export interface PatientInfoFirebase {
+  'PatientName': string;
+  'PatientUHID': string;
+  Relation: string;
+  'PatientAge': number;
+  'PatientGender': string;
+  'MobileNumber': string;
+  'CustomerID': string;
+}
+
+export interface PatientInfoWithSourceFirebase extends PatientInfoFirebase {
+  Source: 'Home Screen' | 'Menu';
+  Pincode?: String;
+  Serviceability?: String;
+}
+
 export interface PatientInfoWithNeedHelp extends PatientInfo {
   Source: 'Home Screen' | 'Medicines' | 'Tests' | 'My Account' | 'Doctor Search';
 }
 
-export interface SpecialityClickedEvent extends PatientInfo {
-  'Speciality Name': string;
-  'Speciality ID': string;
+export interface SpecialityClickedEvent extends PatientInfoFirebase {
+  'SpecialityName': string;
+  'SpecialityID': string;
 }
 
 export interface FirebaseEvents {
@@ -332,14 +352,14 @@ export interface FirebaseEvents {
   // ********** ConsultEvents ********** \\
 
   [FirebaseEventName.DOCTOR_SEARCH]: {
-    'Search Text': string;
-    'Patient Name': string;
-    'Patient UHID': string;
+    'SearchText': string;
+    'PatientName': string;
+    'PatientUHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
+    'PatientAge': number;
+    'PatientGender': string;
+    'MobileNumber': string;
+    'CustomerID': string;
   };
   [FirebaseEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [FirebaseEventName.BOOK_APPOINTMENT]: {
@@ -356,8 +376,14 @@ export interface FirebaseEvents {
     'Customer ID': string;
   };
   [FirebaseEventName.DOCTOR_CLICKED]: {
-    'Doctor Name': string;
+    'DoctorName': string;
     Source: 'List' | 'Search';
+    'DoctorID': string;
+    'SpecialityID': string;
+    'DoctorCategory': DoctorType;
+    'OnlinePrice': number;
+    'PhysicalPrice': number;
+    'DoctorSpeciality': string;
   };
   [FirebaseEventName.CONSULT_NOW_CLICKED]: {
     name: string;

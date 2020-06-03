@@ -782,18 +782,30 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
+      'DoctorName': doctorDetails.fullName!,
+      Source: source,
+      'DoctorID': doctorDetails.id,
+      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
+      'DoctorCategory': doctorDetails.doctorType,
+      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
+      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
+      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+    };
+
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
     }
   };
 
