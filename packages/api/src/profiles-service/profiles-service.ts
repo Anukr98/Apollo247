@@ -82,6 +82,10 @@ import {
   getOneApolloUserResolvers,
 } from 'profiles-service/resolvers/getOneApolloUser';
 import {
+  getOneApolloUserTransactionsTypeDefs,
+  getOneApolloUserTransactionsResolvers,
+} from 'profiles-service/resolvers/getOneApolloTransactions';
+import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
@@ -308,6 +312,10 @@ import {
       {
         typeDefs: getOneApolloUserTypeDefs,
         resolvers: getOneApolloUserResolvers,
+      },
+      {
+        typeDefs: getOneApolloUserTransactionsTypeDefs,
+        resolvers: getOneApolloUserTransactionsResolvers,
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
