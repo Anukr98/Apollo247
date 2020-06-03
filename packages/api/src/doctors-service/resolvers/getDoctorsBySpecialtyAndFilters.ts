@@ -348,7 +348,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         )
       );
   } else {
-    earlyAvailableApolloDoctors
+    doctors = earlyAvailableApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
