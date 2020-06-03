@@ -217,7 +217,7 @@ export const Header: React.FC = (props) => {
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
-  const [ProfileVisible, setProfileVisible] = React.useState<boolean>(false);
+  const [profileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
@@ -256,7 +256,7 @@ export const Header: React.FC = (props) => {
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                   // to={clientRoutes.myAccount()}
                   title={'Control profile'}
-                  onClick={() => setProfileVisible(true)}
+                  onClick={() => setProfileVisible(!profileVisible)}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
@@ -299,7 +299,7 @@ export const Header: React.FC = (props) => {
               {isSignedIn ? (
                 <Paper
                   className={`${classes.userOptions} ${
-                    ProfileVisible ? classes.userListActive : ''
+                    profileVisible ? classes.userListActive : ''
                   }`}
                 >
                   <ul className={classes.userAccountList}>
