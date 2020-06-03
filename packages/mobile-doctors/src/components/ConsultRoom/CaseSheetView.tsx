@@ -118,6 +118,7 @@ interface DataPair {
 }
 
 export interface CaseSheetViewProps extends NavigationScreenProps {
+  autoSavingLoader: boolean;
   onStartConsult: () => void;
   onEndConsult: () => void;
   onStopConsult: () => void;
@@ -310,7 +311,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     addedAdvices,
     setAddedAdvices,
     juniordoctornotes,
-    setJuniorDoctorNotes,
+    autoSavingLoader,
     diagnosisData,
     setDiagnosisData,
     medicinePrescriptionData,
@@ -2673,6 +2674,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   return (
     <SafeAreaView style={styles.casesheetView}>
+      {autoSavingLoader ? (
+        <Spinner
+          indicatorColor={theme.colors.APP_YELLOW}
+          message={'Autosaving'}
+          style={{ backgroundColor: theme.colors.blackColor(0.6) }}
+          messageStyle={{ color: theme.colors.APP_YELLOW }}
+        />
+      ) : null}
       <View style={styles.casesheetView}>
         <KeyboardAwareScrollView
           scrollEnabled={true}
