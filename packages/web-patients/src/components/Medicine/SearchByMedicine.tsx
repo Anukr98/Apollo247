@@ -181,6 +181,7 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 9999,
     },
     specialOffer: {
+      cursor: 'pointer',
       paddingLeft: 20,
       fontSize: 16,
       color: '#01475b',
@@ -460,12 +461,17 @@ export const SearchByMedicine: React.FC = (props) => {
               >
                 Upload
               </AphButton>
-              <Link className={classes.specialOffer} to="#">
+              <div
+                className={classes.specialOffer}
+                onClick={() =>
+                  (window.location.href = clientRoutes.searchByMedicine('deals-of-the-day', '1195'))
+                }
+              >
                 <span>
                   <img src={require('images/ic_notification.svg')} alt="" />
                 </span>
                 <span>Special offers</span>
-              </Link>
+              </div>
             </div>
           </div>
           <div className={classes.brandListingSection}>

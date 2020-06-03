@@ -199,7 +199,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         props.medicineList.map((product: MedicineProduct) => (
           <Grid key={product.id} item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
-              <Link to={clientRoutes.medicineDetails(product.sku)}>
+              <Link to={clientRoutes.medicineDetails(product.url_key)}>
                 <div className={classes.bigAvatar}>
                   <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
                 </div>
@@ -220,6 +220,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     onClick={() => {
                       if (product.is_in_stock) {
                         const cartItem: MedicineCartItem = {
+                          url_key: product.url_key,
                           description: product.description,
                           id: product.id,
                           image: product.image,
@@ -289,6 +290,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         removeCartItem && removeCartItem(product.id);
                       } else {
                         const cartItem: MedicineCartItem = {
+                          url_key: product.url_key,
                           description: product.description,
                           id: product.id,
                           image: product.image,
@@ -326,6 +328,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                       const medicineQtyInCart = getQuantity(product);
                       if (medicineQtyInCart < MEDICINE_QUANTITY) {
                         const cartItem: MedicineCartItem = {
+                          url_key: product.url_key,
                           description: product.description,
                           id: product.id,
                           image: product.image,
@@ -368,9 +371,13 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         </div>
       ) : (
         <div className={classes.noData}>
-          {parseInt(paramSearchText)
-            ? 'No data found'
-            : <span>No results found for <b>'{_replace(paramSearchText, '-', ' ')}'</b></span>}
+          {parseInt(paramSearchText) ? (
+            'No data found'
+          ) : (
+            <span>
+              No results found for <b>'{_replace(paramSearchText, '-', ' ')}'</b>
+            </span>
+          )}
         </div>
       )}
       <Popover

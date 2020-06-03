@@ -40,6 +40,7 @@ import {
   BookAppointmentInput,
   BOOKINGSOURCE,
   DEVICETYPE,
+  ConsultMode,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -102,6 +103,8 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   FollowUp: boolean;
   appointmentType: string;
   appointmentId: string;
+  consultModeSelected: ConsultMode;
+  externalConnect: boolean | null;
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
@@ -110,7 +113,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
-
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -120,7 +122,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -152,6 +154,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
+  useEffect(() => {
+    if (props.consultModeSelected === ConsultMode.ONLINE) {
+      setselectedTab(tabs[0].title);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
+      setselectedTab(tabs[1].title);
+    }
+  }, [props.consultModeSelected]);
 
   useEffect(() => {
     const todayDate = new Date().toISOString().slice(0, 10);
@@ -350,6 +359,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       : selectedClinic
       ? selectedClinic.facility.id
       : '';
+    const externalConnectParam =
+      props.externalConnect !== null ? { externalConnect: props.externalConnect } : {};
     const appointmentInput: BookAppointmentInput = {
       patientId: props.patientId,
       doctorId: props.doctor ? props.doctor.id : '',
@@ -360,6 +371,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       couponCode: coupon ? coupon : null,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      ...externalConnectParam,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);

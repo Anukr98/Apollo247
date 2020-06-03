@@ -1491,7 +1491,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     ) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === REQUEST_ROLES.PATIENT;
+        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
       });
       if (presenceEventObject.totalOccupancy >= 2) {
         didPatientJoined = true;

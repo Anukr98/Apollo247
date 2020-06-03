@@ -137,6 +137,14 @@ export const ADD_NEW_PROFILE = gql`
 //   }
 // `;
 
+export const PAST_APPOINTMENTS_COUNT = gql`
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
+    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+      count
+    }
+  }
+`;
+
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {
@@ -624,6 +632,8 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         displayName
         fullName
         experience
+        onlineConsultationFees
+        physicalConsultationFees
         specialty {
           id
           name
@@ -663,8 +673,8 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
     }
@@ -717,10 +727,15 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           salutation
           firstName
           lastName
+          fullName
+          displayName
           experience
           city
           photoUrl
           qualification
+          thumbnailUrl
+          physicalConsultationFees
+          onlineConsultationFees
           specialty {
             id
             name
