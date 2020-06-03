@@ -33,6 +33,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -679,15 +680,6 @@ export const AddRecords: React.FC = (props) => {
     }
   };
 
-  const toBase64 = (file: any) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-    });
   return (
     <div className={classes.root}>
       <Header />
@@ -761,9 +753,7 @@ export const AddRecords: React.FC = (props) => {
                                 const fileSize = file.size;
                                 if (fileSize > 2000000) {
                                   setIsAlertOpen(true);
-                                  setAlertMessage(
-                                    'Invalid File Size. File size must be less than 2MB'
-                                  );
+                                  setAlertMessage(INVALID_FILE_SIZE_ERROR);
                                 } else if (
                                   fileExtension &&
                                   (fileExtension.toLowerCase() === 'png' ||

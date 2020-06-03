@@ -4,6 +4,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
           medicineOrderDetails {
             id
             shopId
+            shopAddress
             orderAutoId
             estimatedAmount
             orderTat
