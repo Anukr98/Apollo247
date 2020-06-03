@@ -261,6 +261,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
     AsyncStorage.removeItem('editedInputData');
+    AsyncStorage.removeItem('prevSavedData');
     KeepAwake.activate();
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
@@ -281,6 +282,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
+      AsyncStorage.removeItem('prevSavedData');
       AsyncStorage.removeItem('chatFileData');
       KeepAwake.deactivate();
     };
@@ -732,7 +734,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
-          console.log('savecasesheet', _data);
           const modifiedData = {
             ...caseSheet,
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
@@ -741,6 +742,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           setData(modifiedData);
           setIsAutoSaved(autoSave);
           setAutoSavingLoader(false);
+          AsyncStorage.setItem(
+            'prevSavedData',
+            JSON.stringify(inputdata ? inputdata : getInputData())
+          );
           if (callBack) {
             setLoading && setLoading(true);
             callBack();
@@ -860,12 +865,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const timerLoop = (timer: number) => {
-    startAutoSaveTimer(timer, () => {
-      setAutoSavingLoader(true);
-      setTimeout(async () => {
-        const data = await AsyncStorage.getItem('editedInputData');
-        saveDetails(false, true, JSON.parse(data || ''));
-      }, 500);
+    startAutoSaveTimer(timer, async () => {
+      const data = await AsyncStorage.getItem('editedInputData');
+      const prevData = await AsyncStorage.getItem('prevSavedData');
+      if (prevData !== data) {
+        setAutoSavingLoader(true);
+        setTimeout(async () => {
+          const data = await AsyncStorage.getItem('editedInputData');
+          const prevData = await AsyncStorage.getItem('prevSavedData');
+          if (prevData !== data) {
+            saveDetails(false, true, JSON.parse(data || ''));
+          } else {
+            setAutoSavingLoader(false);
+          }
+        }, 500);
+      }
       timerLoop(timer);
     });
   };
