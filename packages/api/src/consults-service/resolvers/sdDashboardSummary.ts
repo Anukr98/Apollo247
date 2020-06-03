@@ -344,12 +344,10 @@ const updateSdSummary: Resolver<
         timeSlots.forEach(async (timeSlot) => {
           const endTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.endTime);
           let startTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime);
-          console.log('dates==>', startTime, endTime);
           if (endTime < startTime) {
-            let stDt = new Date(ApiConstants.SAMPLE_DATE);
-            stDt = addDays(stDt, -1);
-            startTime = new Date(stDt + timeSlot.startTime);
+            startTime = addDays(startTime, -1);
           }
+          console.log('dates==>', startTime, endTime);
           difference += differenceInMinutes(endTime, startTime);
           console.log('difference', difference);
         });
@@ -508,6 +506,8 @@ const updateDoctorFeeSummary: Resolver<
       args.summaryDate,
       ConsultMode.BOTH
     );
+    console.log('consultations==>', totalConsultations);
+    console.log('appointmentId==>', totalConsultations[0].id);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
@@ -518,18 +518,19 @@ const updateDoctorFeeSummary: Resolver<
           const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
             consultation.id
           );
-          //console.log('paymentDetails=>', paymentDetails);
+          console.log('paymentDetails=>', paymentDetails);
           let fee = 0;
           if (!_isEmpty(paymentDetails) && paymentDetails) {
             fee = parseFloat(paymentDetails.amountPaid.toString());
           }
-          console.log('totalFee==>', fee, ' ', consultation.id);
+          console.log('appointmentId==>', consultation.id);
+          console.log('totalFee==>', fee);
           resolve(fee);
         });
       });
       const totFeeArray = await Promise.all(promises);
       totalFee = totFeeArray.reduce((total, current) => total + current);
-      console.log('totalFee', totalFee, args.summaryDate, doctor.id);
+      console.log('totalFee', totalFee);
       saveDetails();
       //  totalConsultations.forEach(async (consultation, index, array) => {
       //     const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
@@ -611,19 +612,23 @@ const Result = async (
     docList.map(async (doctor, index, array) => {
       const weekDay = format(summaryDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      console.log('timeSlots==>', timeSlots);
       if (timeSlots.length) {
         timeSlots.forEach(async (timeSlot) => {
           const currentTime = new Date();
           const startTime = new Date(
             format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
           );
+          console.log('startTime==>', startTime);
           const endTime = new Date(
             format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
           );
+          console.log('endTime==>', endTime);
           const betweenConsultHours = isWithinInterval(currentTime, {
             start: startTime,
             end: endTime,
           });
+
           if (betweenConsultHours == true) {
             if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
               awayCount++;
@@ -634,6 +639,7 @@ const Result = async (
         });
       }
       if (index + 1 === array.length) {
+        console.log('finalCounts==>', [onlineCount, awayCount]);
         resolve([onlineCount, awayCount]);
       }
     });

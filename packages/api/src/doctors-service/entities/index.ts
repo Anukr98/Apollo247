@@ -540,7 +540,7 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   groupName: string;
-  
+
   @Column({ nullable: true })
   commonSearchTerm: string;
 
