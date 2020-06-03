@@ -30,6 +30,8 @@ import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { log } from 'customWinstonLogger';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -382,12 +384,46 @@ const bookRescheduleAppointment: Resolver<
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
-      appointmentRepo.cancelAppointment(
+      await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
         'MAX_RESCHEDULES_EXCEEDED'
       );
+      const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
+      if (appointmentPayment) {
+        let refundResponse = await initiateRefund(
+          {
+            appointment: apptDetails,
+            appointmentPayments: appointmentPayment,
+            refundAmount: appointmentPayment.amountPaid,
+            txnId: appointmentPayment.paymentRefId,
+            orderId: appointmentPayment.orderId,
+          },
+          consultsDb
+        );
+        refundResponse = refundResponse as PaytmResponse;
+        const notificationType = NotificationType.APPOINTMENT_PAYMENT_REFUND;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: apptDetails.id,
+              notificationType,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed',
+            'rescheduleAppointment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
+      }
     } else {
       await appointmentRepo.rescheduleAppointment(
         bookRescheduleAppointmentInput.appointmentId,
@@ -424,12 +460,46 @@ const bookRescheduleAppointment: Resolver<
       apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
     ) {
       //cancel appt
-      appointmentRepo.cancelAppointment(
+      await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
         'MAX_RESCHEDULES_EXCEEDED'
       );
+      const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
+      if (appointmentPayment) {
+        let refundResponse = await initiateRefund(
+          {
+            appointment: apptDetails,
+            appointmentPayments: appointmentPayment,
+            refundAmount: appointmentPayment.amountPaid,
+            txnId: appointmentPayment.paymentRefId,
+            orderId: appointmentPayment.orderId,
+          },
+          consultsDb
+        );
+        refundResponse = refundResponse as PaytmResponse;
+        const notificationType = NotificationType.APPOINTMENT_PAYMENT_REFUND;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: apptDetails.id,
+              notificationType,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed Doctor Reschedule  ',
+            'rescheduleAppointment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
+      }
     } else {
       await appointmentRepo.rescheduleAppointmentByDoctor(
         bookRescheduleAppointmentInput.appointmentId,

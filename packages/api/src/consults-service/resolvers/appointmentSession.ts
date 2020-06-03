@@ -352,7 +352,11 @@ const createAppointmentSession: Resolver<
   );
   console.log(notificationResult, 'notificationResult');
   const currentDate = new Date();
-  if (currentDate < apptDetails.appointmentDateTime) {
+
+  if (
+    createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
+    currentDate < apptDetails.appointmentDateTime
+  ) {
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
     const patientData = await patientRepo.findById(apptDetails.patientId);
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);

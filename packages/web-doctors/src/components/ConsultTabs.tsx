@@ -413,7 +413,7 @@ export const ConsultTabs: React.FC = () => {
     keepAlive: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
-    uuid: `DOCTOR_${doctorId}`,
+    uuid: REQUEST_ROLES.DOCTOR,
   };
   const pubnub = new Pubnub(config);
   useEffect(() => {

@@ -21,7 +21,8 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { log } from 'customWinstonLogger';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -111,7 +112,7 @@ const cancelAppointment: Resolver<
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1
   ) {
-    await initiateRefund(
+    let refundResponse = await initiateRefund(
       {
         orderId: appointment.paymentOrderId,
         txnId: appointment.appointmentPayments[0].paymentRefId,
@@ -121,15 +122,26 @@ const cancelAppointment: Resolver<
       },
       consultsDb
     );
-    sendNotification(
-      {
-        appointmentId: appointment.id,
-        notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
-      },
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    refundResponse = refundResponse as PaytmResponse;
+    if (refundResponse.refundId) {
+      sendNotification(
+        {
+          appointmentId: appointment.id,
+          notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+        },
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+    } else {
+      log(
+        'consultServiceLogger',
+        'Refund failed cancelAppointment',
+        'cancelAppointment()',
+        JSON.stringify(refundResponse),
+        'true'
+      );
+    }
   }
 
   //update slot status in ES as open

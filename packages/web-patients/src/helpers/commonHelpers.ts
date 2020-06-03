@@ -132,6 +132,22 @@ const getOpeningHrs = (
   });
 };
 
+const toBase64 = (file: any) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+
+const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
+const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
+const INVALID_FILE_TYPE_ERROR =
+  'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
+
 export {
   sortByProperty,
   locationRoutesBlackList,
@@ -142,4 +158,9 @@ export {
   MEDICINE_QUANTITY,
   readableParam,
   getOpeningHrs,
+  acceptedFilesNamesForFileUpload,
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  INVALID_FILE_SIZE_ERROR,
+  INVALID_FILE_TYPE_ERROR,
+  toBase64,
 };

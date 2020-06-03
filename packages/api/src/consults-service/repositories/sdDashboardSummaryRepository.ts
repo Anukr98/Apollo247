@@ -443,6 +443,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .andWhere('appointment_call_details.endTime is not null')
       .andWhere('appointment_call_details."doctorType" != :docType', { docType: 'JUNIOR' })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment."status" = :status', { status: STATUS.COMPLETED })
       .getMany();
     console.log(totalTime, 'total time');
     let totalHours = 0;

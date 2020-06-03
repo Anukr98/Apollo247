@@ -264,10 +264,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     '@type': 'Organization',
                     name: 'Apollo24|7',
                   },
-                  datePublished: moment(Number(createdAt))
+                  datePublished: moment(Number(createdAt)*1000)
                     .utc()
                     .format(),
-                  dateModified: moment(Number(updatedAt))
+                  dateModified: moment(Number(updatedAt)*1000)
                     .utc()
                     .format(),
                   publisher: {
