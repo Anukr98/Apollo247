@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
@@ -12,6 +12,7 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -25,6 +26,11 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    loader: {
+      textAlign: 'center',
+      padding: '20px 0',
+      outline: 'none',
     },
     pageContainer: {
       // padding: 20,
@@ -161,14 +167,40 @@ export const Faq: React.FC = (props) => {
   const [value, setValue] = useState(0);
   const [faqData, setFaqData] = useState<any>();
   const [currentCategory, setCurrentCategory] = useState<string>('online-consultation');
+  const [faqSchema, setFaqSchema] = useState(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const handleChange = (event: any, newValue: any) => {
     setValue(newValue);
+  };
+
+  const createFaqSchema = (faqData: any) => {
+    const mainEntity: any[] = [];
+    Object.values(faqData).map((faqs: any[]) => {
+      faqs.map((faqObj: any) => {
+        mainEntity.push({
+          '@type': 'Question',
+          name: faqObj.faqQuestion,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faqObj.faqAnswer,
+          },
+        });
+      });
+    });
+    setFaqSchema({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity,
+    });
   };
 
   useEffect(() => {
     fetchUtil(process.env.APOLLO_247_FAQ_BASE_URL, 'GET', {}, '', true).then((res: any) => {
       if (res && res.data) {
+        createFaqSchema(res.data);
         setFaqData(res.data);
+        setIsLoading(false);
       }
     });
   }, []);
@@ -176,6 +208,7 @@ export const Faq: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Header />
+      {faqSchema && <SchemaMarkup structuredJSON={faqSchema} />}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.faqHeader}>
@@ -230,41 +263,49 @@ export const Faq: React.FC = (props) => {
                     root: classes.tabRoot,
                     selected: classes.tabSelected,
                   }}
-                  label="diagnostics"
+                  label="Diagnostics"
                   onClick={() => {
                     setCurrentCategory('diagnostic');
                   }}
                 />
               </Tabs>
 
-              <div className={classes.tabContent}>
-                <TabPanel>
-                  <div className={classes.expansionContainer}>
-                    {faqData &&
-                      faqData[currentCategory] &&
-                      faqData[currentCategory].map((faq: any) => {
-                        return (
-                          <ExpansionPanel className={classes.expansionPanel}>
-                            <ExpansionPanelSummary
-                              className={classes.expansionSummary}
-                              expandIcon={<ExpandMoreIcon />}
-                              aria-controls="panel1a-content"
-                              id="panel1a-header"
-                            >
-                              <Typography className={classes.heading}>{faq.faqQuestion}</Typography>
-                            </ExpansionPanelSummary>
-                            <ExpansionPanelDetails className={classes.pt0}>
-                              <div
-                                className={classes.expansionDetails}
-                                dangerouslySetInnerHTML={{ __html: faq.faqAnswer }}
-                              />
-                            </ExpansionPanelDetails>
-                          </ExpansionPanel>
-                        );
-                      })}
-                  </div>
-                </TabPanel>
-              </div>
+              {isLoading ? (
+                <div className={classes.loader}>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <div className={classes.tabContent}>
+                  <TabPanel>
+                    <div className={classes.expansionContainer}>
+                      {faqData &&
+                        faqData[currentCategory] &&
+                        faqData[currentCategory].map((faq: any) => {
+                          return (
+                            <ExpansionPanel className={classes.expansionPanel}>
+                              <ExpansionPanelSummary
+                                className={classes.expansionSummary}
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                              >
+                                <Typography className={classes.heading}>
+                                  {faq.faqQuestion}
+                                </Typography>
+                              </ExpansionPanelSummary>
+                              <ExpansionPanelDetails className={classes.pt0}>
+                                <div
+                                  className={classes.expansionDetails}
+                                  dangerouslySetInnerHTML={{ __html: faq.faqAnswer }}
+                                />
+                              </ExpansionPanelDetails>
+                            </ExpansionPanel>
+                          );
+                        })}
+                    </div>
+                  </TabPanel>
+                </div>
+              )}
             </div>
           </div>
         </div>
