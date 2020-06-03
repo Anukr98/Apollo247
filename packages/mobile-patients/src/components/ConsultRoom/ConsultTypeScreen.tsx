@@ -13,7 +13,8 @@ import {
   CTPayment,
   CTVideo,
   CTPrescription,
-  OnlineConsult,
+  CTChat,
+  OnlineHeader,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { nextAvailability, mhdMY, g, timeDiffFromNow } from '../../helpers/helperFunctions';
@@ -287,7 +288,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
 
   const renderOnlineCard = () => {
     return renderCard(
-      <InPersonHeader />,
+      <OnlineHeader />,
       string.consultType.online.heading,
       string.consultType.online.question,
       onlinePrice,
@@ -303,7 +304,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
         { image: <CTPrescription />, description: string.consultType.online.point5 },
         {
-          image: <OnlineConsult />,
+          image: <CTChat />,
           description: string.consultType.online.point6,
           textColor: theme.colors.SKY_BLUE,
         },
@@ -337,7 +338,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
         {
-          image: <OnlineConsult />,
+          image: <CTChat />,
           description: string.consultType.inperson.point6,
           textColor: theme.colors.SKY_BLUE,
         },
