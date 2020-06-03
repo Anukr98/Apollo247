@@ -4,12 +4,10 @@ export const pharmacologistEmailTemplate = _.template(
   `<html>
   <body>  
   <p> Dear Dr. Sanjeev,</p>
-  <ul>
-    <li><%- patientName %> would like a detailed review of prescription attached here.</li>
-    <li>The prescription has been attached in this email.</li>
-    <li>Upload Time: <%- date %> </li>
-    <li>Message from <%- patientName %> : <%- patientQueries %></li> 
-  </ul>
+  <p><%- patientName %> would like a detailed review of prescription attached here.</p>
+  <p>The prescription has been attached in this email.</p>
+  <p>Upload Time: <%- date %> </p>
+  <p>Message from <%- patientName %> : <%- patientQueries %></p>
   <p>Best Regards,</p>
   <p>Apollo 247 Team</p>
   </body> 

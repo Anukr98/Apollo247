@@ -9,8 +9,10 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { pharmacologistEmailTemplate } from 'helpers/emailTemplates/pharmacologistEmailTemplate';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
-import { EmailMessage } from 'types/notificationMessageTypes';
+import { EmailMessage, EmailAttachMent } from 'types/notificationMessageTypes';
 import { format, addMinutes } from 'date-fns';
+import path from 'path';
+import fetch from 'node-fetch';
 
 export const savePharmacologistConsultTypeDefs = gql`
   input SavePharmacologistConsultInput {
@@ -79,6 +81,23 @@ const savePharmacologistConsult: Resolver<
     date: date,
     patientQueries: savePharmacologistConsultInput.queries,
   });
+
+  const attachments: EmailAttachMent[] = [];
+
+  if (savePharmacologistConsultInput.prescriptionImageUrl) {
+    const prescriptionImageUrls = savePharmacologistConsultInput.prescriptionImageUrl.split(',');
+    prescriptionImageUrls.forEach(async (url, index) => {
+      const response = await fetch(url);
+      const buffer = await response.buffer();
+      attachments.push({
+        content: buffer.toString('base64'),
+        filename: path.basename(url),
+        type: path.extname(url),
+        disposition: 'attachment',
+      });
+    });
+  }
+
   let subjectLine: string = '';
   subjectLine = ApiConstants.PHARMACOLOGIST_CONSULT_TITLE;
   subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
@@ -100,6 +119,7 @@ const savePharmacologistConsult: Resolver<
     messageContent: <string>mailContent,
     toEmail: <string>toEmailId,
     ccEmail: <string>savePharmacologistConsultInput.emailId,
+    attachments: attachments,
   };
 
   sendMail(emailContent);
