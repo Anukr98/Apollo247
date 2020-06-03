@@ -5,6 +5,7 @@ import { PaymentCard } from 'components/MyAccount/Payments/PaymentCard';
 import { GET_CONSULT_PAYMENTS } from 'graphql/consult';
 import { ConsultOrders, ConsultOrdersVariables } from 'graphql/types/ConsultOrders';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
+import _sortBy from 'lodash/sortBy';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
@@ -67,7 +68,10 @@ export const ConsultPayments: React.FC = (props) => {
     data.consultOrders.appointments.length
   ) {
     const appointmentData = data.consultOrders.appointments;
-    const dataReversed = [...appointmentData].reverse();
+    const sortByPaymentDateTime = _sortBy(appointmentData, function(item) {
+      return item.appointmentPayments[0].paymentDateTime;
+    });
+    const dataReversed = [...sortByPaymentDateTime].reverse();
     return (
       <div className={classes.root}>
         {dataReversed.map((appointmentDetails) => (
