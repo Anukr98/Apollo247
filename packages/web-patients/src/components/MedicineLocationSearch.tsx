@@ -1,13 +1,14 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Popover } from '@material-ui/core';
+import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
-import { useAuth } from 'hooks/authHooks';
-import { useLocationDetails } from 'components/LocationProvider';
+
+import { useLocationDetails, GooglePlacesType } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -187,7 +188,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
   const mascotRef = useRef(null);
-  const { currentLocation, currentPincode, locateCurrentLocation } = useLocationDetails();
+  const { currentLocation, currentPincode } = useLocationDetails();
   const {
     medicineAddress,
     setMedicineAddress,
@@ -205,14 +206,50 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [isPincodeDialogOpen, setIsPincodeDialogOpen] = React.useState<boolean>(false);
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
+  const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
+  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
     setIsPopoverOpen(false);
   };
 
+  const findAddrComponents = (
+    proptoFind: GooglePlacesType,
+    addrComponents: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacesType[];
+    }[]
+  ) => {
+    const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
+    return findItem ? findItem.short_name || findItem.long_name : '';
+  };
+
+  const locateCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        getCurrentLocationDetails(latitude.toString(), longitude.toString());
+      },
+      (err) => {
+        console.log(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+  };
+
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress')) {
+    if (
+      !localStorage.getItem('pharmaAddress') &&
+      !localStorage.getItem('currentAddress') &&
+      !isLocationDenied
+    ) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
           if (PermissionStatus.state === 'denied') {
@@ -231,7 +268,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
   });
 
   useEffect(() => {
-    if (!medicineAddress && currentLocation) {
+    const medicineAddr = localStorage.getItem('pharmaAddress') || medicineAddress;
+    if (!medicineAddr && currentLocation) {
       setMedicineAddress(currentLocation);
     }
     if (!pharmaAddressDetails.pincode && currentPincode) {
@@ -239,8 +277,14 @@ export const MedicineLocationSearch: React.FC = (props) => {
     }
   }, [currentLocation, currentPincode]);
 
+  useEffect(() => {
+    if (!headerPincodeError && pharmaAddressDetails.pincode) {
+      isServiceable(pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
+
   const getAddressFromLocalStorage = () => {
-    const currentAddress = localStorage.getItem('currentAddress');
+    const currentAddress = localStorage.getItem('pharmaAddress');
     if (currentAddress) {
       return currentAddress.includes(',')
         ? currentAddress.substring(0, currentAddress.indexOf(','))
@@ -268,6 +312,55 @@ export const MedicineLocationSearch: React.FC = (props) => {
     );
   };
 
+  const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
+    await axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addrComponents = data.results[0].address_components || [];
+            const pincode = findAddrComponents('postal_code', addrComponents);
+            const city =
+              findAddrComponents('administrative_area_level_2', addrComponents) ||
+              findAddrComponents('locality', addrComponents);
+            const state = findAddrComponents('administrative_area_level_1', addrComponents);
+            const country = findAddrComponents('country', addrComponents);
+            const area =
+              findAddrComponents('sublocality_level_1', addrComponents) ||
+              findAddrComponents('sublocality_level_2', addrComponents) ||
+              findAddrComponents('locality', addrComponents);
+            setMedicineAddress(area);
+            setPharmaAddressDetails({
+              city,
+              state,
+              pincode,
+              country,
+            });
+            setIsPincodeDialogOpen(false);
+            setIsLocationPopover(false);
+            setPincode('');
+            setPincodeError(false);
+            setMutationLoading(false);
+          }
+        } catch {
+          (e: AxiosError) => {
+            console.log(e);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong :(');
+            setMutationLoading(false);
+          };
+        }
+      })
+      .catch((e: AxiosError) => {
+        setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        console.log(e);
+      });
+  };
+
   const getPlaceDetails = (pincode: string) => {
     axios
       .get(
@@ -276,59 +369,51 @@ export const MedicineLocationSearch: React.FC = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
-            const addressComponents = data.results[0].address_components || [];
-            const pincode =
-              ((
-                addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
-                {}
-              ).long_name as string) || '';
-            const city =
-              ((
-                addressComponents.find(
-                  (item: any) =>
-                    item.types.indexOf('locality') > -1 ||
-                    item.types.indexOf('administrative_area_level_2') > -1
-                ) || {}
-              ).long_name as string) || '';
-            const state: string =
-              ((
-                addressComponents.find(
-                  (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-                ) || {}
-              ).long_name as string) || '';
-            setPharmaAddressDetails({
-              pincode,
-              city,
-              state,
-            });
+            const { lat, lng } = data.results[0].geometry.location;
+            getCurrentLocationDetails(lat, lng);
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: AxiosError) => {
+            setMutationLoading(false);
+            console.log(e);
+          };
         }
       })
       .catch((e: AxiosError) => {
+        setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         console.log(e);
       });
+  };
+
+  const checkSelectedPincodeServiceability = (pincode: string, status: string) => {
+    if (pincode === pharmaAddressDetails.pincode) {
+      setHeaderPincodeError(status);
+      setPincodeError(false);
+    } else {
+      setPincodeError(status === '1');
+      setHeaderPincodeError('0');
+    }
   };
 
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
       .then(({ data }: any) => {
         if (data && data.Availability) {
-          setPincodeError(false);
+          checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
         } else {
-          setPincodeError(true);
+          setMutationLoading(false);
+          checkSelectedPincodeServiceability(pincode, '1');
         }
       })
-      .catch((e) => setPincodeError(true));
+      .catch((e) => {
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        setMutationLoading(false);
+      });
   };
-
-  // useEffect(() => {
-  //   if (currentPincode || (pharmaAddressDetails && pharmaAddressDetails.pincode)) {
-  //     isServiceable(currentPincode || pharmaAddressDetails.pincode);
-  //   }
-  // }, [currentPincode, pharmaAddressDetails]);
 
   return (
     <div className={classes.userLocation}>
@@ -343,16 +428,19 @@ export const MedicineLocationSearch: React.FC = (props) => {
         )}
         <div className={classes.selectedLocation}>
           <span>
-            {!isPopoverOpen && currentLocation && currentLocation.length > 0
-              ? currentLocation
-              : getAddressFromLocalStorage()}
-            {currentPincode || ''}
+            {`${
+              !isPopoverOpen && medicineAddress
+                ? medicineAddress || currentLocation
+                : getAddressFromLocalStorage()
+            } ${pharmaAddressDetails ? pharmaAddressDetails.pincode || currentPincode : ''}`}
           </span>
           <span>
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </span>
         </div>
-        {pincodeError && <div className={classes.noService}>Sorry, not serviceable here.</div>}
+        {headerPincodeError === '1' && (
+          <div className={classes.noService}>Sorry, not serviceable here.</div>
+        )}
       </div>
       <Popover
         open={isLocationPopover}
@@ -375,6 +463,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <ul>
           <li
             onClick={() => {
+              setHeaderPincodeError(null);
               locateCurrentLocation();
             }}
           >
@@ -396,7 +485,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
           <h2>Hi! :)</h2>
           <p>Allow us to serve you better by entering your delivery pincode below.</p>
           <AphTextField
-            value={pincode}
+            placeholder="Enter pincode here"
             onChange={(e) => {
               setPincodeError(false);
               setPincode(e.target.value);
@@ -404,7 +493,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             inputProps={{
               maxLength: 6,
             }}
-            placeholder="Enter pincode here"
+            value={pincode}
           />
           {pincodeError && (
             <div className={classes.pincodeError}>
@@ -420,9 +509,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
                 root: classes.submitBtn,
                 disabled: classes.disabledBtn,
               }}
-              onClick={() => isServiceable(pincode)}
+              onClick={() => {
+                setMutationLoading(true);
+                isServiceable(pincode);
+              }}
             >
-              Submit
+              {mutationLoading ? <CircularProgress color="secondary" size={22} /> : 'Submit'}
             </AphButton>
           </div>
         </div>
@@ -456,6 +548,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

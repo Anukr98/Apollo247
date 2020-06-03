@@ -10,6 +10,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 // const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
 
 export interface MedicineCartItem {
+  url_key: string;
   description: string;
   id: number;
   arrId?: any[];
@@ -51,6 +52,7 @@ export interface PharmaAddressDetails {
   city: string;
   pincode: string;
   state: string;
+  country: string;
 }
 
 export interface EPrescription {
@@ -171,6 +173,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     city: '',
     pincode: localStorage.getItem('pharmaPincode') || '',
     state: '',
+    country: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 

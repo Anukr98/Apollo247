@@ -404,6 +404,7 @@ export const ConsultTabs: React.FC = () => {
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
@@ -412,15 +413,15 @@ export const ConsultTabs: React.FC = () => {
     keepAlive: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
-    uuid: REQUEST_ROLES.DOCTOR,
+    uuid: `DOCTOR_${doctorId}`,
   };
+  const pubnub = new Pubnub(config);
   useEffect(() => {
     if (startAppointment) {
       //followUp[0] = startAppointment;
       //setFollowUp(followUp);
     }
   }, [startAppointment]);
-  const pubnub = new Pubnub(config);
 
   useEffect(() => {
     pubnub.subscribe({

@@ -424,6 +424,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -491,7 +492,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
-        lastMsg.message.message !== appointmentComplete
+        lastMsg.message.message !== appointmentComplete &&
+        lastMsg.message.message !== doctorAutoResponse
       ) {
         setIsNewMsg(true);
       } else {
@@ -647,7 +649,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -752,7 +755,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -866,7 +870,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       jrDrComponent++;
       leftComponent = 0;
