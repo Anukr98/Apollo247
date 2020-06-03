@@ -665,7 +665,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: 'Doctor will get back within 24 hours',
+          automatedText: `We have notified the query you have raised to the Dr. ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
@@ -1355,7 +1355,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.PATIENT,
+    uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1424,7 +1424,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        // console.log('presenceEvent', presenceEvent);
+        console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -1443,7 +1443,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const data: any = response.channels[appointmentData.id].occupants;
 
             const occupancyDoctor = data.filter((obj: any) => {
-              return obj.uuid === REQUEST_ROLES.DOCTOR;
+              return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
             });
 
             const startConsultResult = insertText.filter((obj: any) => {
@@ -5451,6 +5451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     },
                     (status, response) => {}
                   );
+                  InsertMessageToDoctor('ImageUploaded');
                   KeepAwake.activate();
                 })
                 .catch((e) => {
@@ -5654,6 +5655,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   },
                   (status, response) => {}
                 );
+              InsertMessageToDoctor('EprescriptionUploaded');
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);

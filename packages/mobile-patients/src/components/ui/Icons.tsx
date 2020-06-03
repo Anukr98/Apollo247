@@ -377,6 +377,14 @@ export const VideoOnIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/CallVideoOn.png')} />
 );
 
+export const Online: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 19, height: 19 }} {...props} source={require('./icons/ic_video.png')} />
+);
+
+export const InPerson: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/fa_solid_hospital.png')} />
+);
+
 export const SpeakerOn: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/speakerOn.png')} />
 );
@@ -994,4 +1002,40 @@ export const PrimaryIcon: React.FC<IconProps> = (props) => (
 
 export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/linkeduhid.png')} />
+);
+
+export const InPersonHeader: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 49, height: 56 }}
+    {...props}
+    source={require('./icons/illustration_search_specialist.png')}
+  />
+);
+
+export const CTDoctor: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_doctor.png')} />
+);
+
+export const CTCalender: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_calender.png')} />
+);
+
+export const CTVideo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_video.png')} />
+);
+
+export const CTPayment: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_payment.png')} />
+);
+
+export const CTPrescription: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_prescription.png')} />
+);
+
+export const InPersonBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 18, height: 20 }}
+    {...props}
+    source={require('./icons/ic_hospital_blue.png')}
+  />
 );

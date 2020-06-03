@@ -14,6 +14,7 @@ import {
   GET_PATIENT_APPOINTMENTS,
   NEXT_AVAILABLE_SLOT,
   SEND_CHAT_MESSAGE_TO_DOCTOR,
+  UPDATE_WHATSAPP_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import ApolloClient from 'apollo-client';
@@ -48,6 +49,7 @@ import {
   sendChatMessageToDoctor,
   sendChatMessageToDoctorVariables,
 } from '../graphql/types/sendChatMessageToDoctor';
+import { updateWhatsAppStatus } from '../graphql/types/updateWhatsAppStatus';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -328,14 +330,18 @@ export const getDeviceTokenCount = (client: ApolloClient<object>, uniqueDeviceId
   });
 };
 
-export const linkUHIDs = (client: ApolloClient<object>, primaryUhid: string, linkedUhids: string[]) => {
+export const linkUHIDs = (
+  client: ApolloClient<object>,
+  primaryUhid: string,
+  linkedUhids: string[]
+) => {
   return new Promise((res, rej) => {
     client
       .mutate<linkUhidsVariables>({
         mutation: LINK_UHID,
         variables: {
           primaryUhid: primaryUhid,
-          linkedUhids: linkedUhids
+          linkedUhids: linkedUhids,
         },
         fetchPolicy: 'no-cache',
       })
@@ -349,14 +355,18 @@ export const linkUHIDs = (client: ApolloClient<object>, primaryUhid: string, lin
   });
 };
 
-export const deLinkUHIDs = (client: ApolloClient<object>, primaryUhid: string, unlinkUhids: string[]) => {
+export const deLinkUHIDs = (
+  client: ApolloClient<object>,
+  primaryUhid: string,
+  unlinkUhids: string[]
+) => {
   return new Promise((res, rej) => {
     client
       .mutate<linkUhidsVariables>({
         mutation: UNLINK_UHID,
         variables: {
           primaryUhid: primaryUhid,
-          unlinkUhids: unlinkUhids
+          unlinkUhids: unlinkUhids,
         },
         fetchPolicy: 'no-cache',
       })
@@ -376,6 +386,36 @@ export const insertMessage = (client: ApolloClient<object>, messageInput: Messag
       .mutate<insertMessageVariables>({
         mutation: INSERT_MESSAGE,
         variables: { messageInput: messageInput },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueue', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const whatsAppUpdateAPICall = (
+  client: ApolloClient<object>,
+  whatsAppMedicine: boolean,
+  whatsAppConsult: boolean,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    const inputVariables = {
+      whatsAppMedicine: whatsAppMedicine,
+      whatsAppConsult: whatsAppConsult,
+      patientId: patientId,
+    };
+
+    console.log('whatsAppUpdate', inputVariables);
+    client
+      .mutate<updateWhatsAppStatus>({
+        mutation: UPDATE_WHATSAPP_STATUS,
+        variables: inputVariables,
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {

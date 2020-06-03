@@ -810,4 +810,8 @@ export class PatientRepository extends Repository<Patient> {
     }
     return primaryPatientIds;
   }
+
+  updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
+    return this.update(id, { whatsAppConsult, whatsAppMedicine });
+  }
 }

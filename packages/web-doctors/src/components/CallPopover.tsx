@@ -870,6 +870,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1461,7 +1462,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
-        lastMsg.message.message !== appointmentComplete
+        lastMsg.message.message !== appointmentComplete &&
+        lastMsg.message.message !== doctorAutoResponse
       ) {
         setIsNewMsg(true);
       } else {

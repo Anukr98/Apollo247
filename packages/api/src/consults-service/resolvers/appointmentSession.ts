@@ -12,6 +12,7 @@ import {
   TRANSFER_STATUS,
   APPOINTMENT_STATE,
   AppointmentNoShow,
+  CASESHEET_STATUS,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -227,6 +228,21 @@ const createAppointmentSession: Resolver<
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+
+  if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(apptDetails.id);
+    if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.status == CASESHEET_STATUS.COMPLETED) {
+      return {
+        sessionId: '',
+        appointmentToken: '',
+        patientId: '',
+        doctorId: '',
+        appointmentDateTime,
+      };
+    }
+  }
+
   if (
     apptDetails &&
     (apptDetails.status === STATUS.PENDING || apptDetails.status === STATUS.CONFIRMED)
@@ -240,7 +256,6 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.appointmentId
   );
 
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   if (apptSessionDets) {
     const doctorTokenExpiryDate = apptSessionDets.doctorToken
       ? await getExpirationTime(apptSessionDets.doctorToken)

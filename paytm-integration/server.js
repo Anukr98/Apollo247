@@ -65,6 +65,7 @@ app.get(
   })
 );
 
+app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);

@@ -1,7 +1,7 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Store } from '../../helpers/apiCalls';
 import { Spearator } from '../ui/BasicComponents';
 import { DriveWayIcon } from '../ui/Icons';
@@ -15,6 +15,7 @@ const styles = StyleSheet.create({
   },
   popupView: {
     top: Dimensions.get('window').height * 0.15,
+    maxHeight: Dimensions.get('window').height * 0.8,
     marginHorizontal: 20,
     height: 'auto',
     backgroundColor: '#fff',
@@ -139,9 +140,11 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
       <View style={styles.popupView}>
         {renderDriveWayIcon()}
         {renderHeading()}
-        {renderDescription()}
-        {renderStoreDetails()}
-        {renderInfo()}
+        <ScrollView bounces={false}>
+          {renderDescription()}
+          {renderStoreDetails()}
+          {renderInfo()}
+        </ScrollView>
         {renderGotItButton()}
       </View>
     </View>
