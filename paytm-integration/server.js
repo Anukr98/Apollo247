@@ -1093,7 +1093,7 @@ app.get('/processOmsOrders', (req, res) => {
                   shippingmethod:
                     orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'CURBSIDE',
                   paymentmethod: paymentDetails.paymentType === 'CASHLESS' ? 'PREPAID' : 'COD',
-                  prefferedsite: orderDetails.shopId,
+                  prefferedsite: orderDetails.shopId || '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
                   deliverydate: orderTat ? format(orderTat, 'MM-dd-yyyy HH:mm:ss') : '',
