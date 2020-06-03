@@ -112,7 +112,7 @@ export class AphStorageClient {
       BlobURL.fromContainerURL(this.containerUrl, fileName)
     );
     const blob = await uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobUrl);
-    const aphBlob: AphBlob = { ...blob, name };
+    const aphBlob: AphBlob = { ...blob, name: fileName };
     return aphBlob;
   };
   uploadPdfBrowserFile = async ({
