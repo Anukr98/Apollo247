@@ -64,6 +64,25 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     }
   }
 
+  async getOneApolloUserTransactions(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
+    }
+  }
+
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
     return this.createQueryBuilder()
       .from(MedicineOrders, 'mo')
