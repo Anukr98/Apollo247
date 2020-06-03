@@ -509,6 +509,7 @@ const updateDoctorFeeSummary: Resolver<
       ConsultMode.BOTH
     );
     console.log('consultations==>', totalConsultations);
+    console.log('appointmentId==>', totalConsultations[0].id);
     let totalFee: number = 0;
     let totalConsults: number = 0;
     if (totalConsultations.length) {
