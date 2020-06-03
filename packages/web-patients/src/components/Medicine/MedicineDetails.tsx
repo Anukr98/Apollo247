@@ -421,7 +421,9 @@ export const MedicineDetails: React.FC = (props) => {
               sku,
               type_id,
               PharmaOverview,
+              url_key,
             } = data.productdp[0];
+            window.history.replaceState(null, '', url_key);
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
