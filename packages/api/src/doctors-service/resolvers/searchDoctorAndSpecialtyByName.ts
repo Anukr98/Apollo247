@@ -445,7 +445,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
-
     for (const doctor of earlyAvailableApolloPossibleDoctors) {
       if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
         earlyAvailableNearByPossibleApolloDoctors.push(doctor);
@@ -462,14 +461,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
+
     finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
       .concat(
         earlyAvailableNearByMatchedApolloDoctors.sort(
           (a, b) =>
@@ -542,13 +535,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       );
   } else {
     finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
       .concat(
         earlyAvailableApolloMatchedDoctors.sort(
           (a, b) =>
