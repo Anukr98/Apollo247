@@ -15,6 +15,21 @@ import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
 
+export type ONE_APOLLO_USER_REG = {
+  FirstName: string;
+  LastName: string;
+  MobileNumber: string;
+  Gender: Gender;
+  BusinessUnit: string;
+  StoreCode: string;
+};
+
+export enum ONE_APOLLO_STORE_CODE {
+  ANDCUS = 'ANDCUS',
+  IOSCUS = 'IOSCUS',
+  WEBCUS = 'WEBCUS',
+}
+
 export enum CouponApplicability {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',
@@ -793,6 +808,14 @@ export class Patient extends BaseEntity {
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
+
+  @Index('Patient_whatsAppConsult')
+  @Column({ default: true })
+  whatsAppConsult: Boolean;
+
+  @Index('Patient_whatsAppMedicine')
+  @Column({ default: true })
+  whatsAppMedicine: Boolean;
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];

@@ -49,6 +49,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -392,6 +393,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [doctorId, setDoctorId] = React.useState<string>('');
   const client = useApolloClient();
   const doctorName = doctorDetail && doctorDetail.fullName;
+  const readableDoctorname = readableParam(doctorName);
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -528,7 +530,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       callbackFunction: () => {
         props &&
           props.history &&
-          props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
+          props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
       },
     },
     PAYMENT_SUCCESS: {
@@ -545,7 +547,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       callbackFunction: () => {
         props &&
           props.history &&
-          props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
+          props.history.push(clientRoutes.doctorDetails(readableDoctorname, doctorId));
       },
     },
   };

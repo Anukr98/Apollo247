@@ -16,6 +16,7 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -157,7 +158,8 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                       specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
                       speciality(e.currentTarget.title);
                       disableFilter(false);
-                      const encoded = encodeURIComponent(`${e.currentTarget.title}`);
+                      const specialityUpdated = readableParam(`${e.currentTarget.title}`);
+                      const encoded = encodeURIComponent(specialityUpdated);
                       history.push(clientRoutes.specialties(encoded));
                     }}
                     key={_uniqueId('psearch_spl_')}

@@ -48,6 +48,7 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  DoctorPatientExternalConnect,
   Deeplink,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
@@ -160,6 +161,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

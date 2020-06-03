@@ -65,6 +65,7 @@ app.get(
   })
 );
 
+app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
@@ -997,6 +998,20 @@ app.get('/processOmsOrders', (req, res) => {
                     deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
                   }
                 }
+                if (orderDetails.shopId) {
+                  if (!orderDetails.shopAddress) {
+                    logger.error(
+                      `store address details not present for store pick ${orderDetails.orderAutoId}`
+                    );
+                    return;
+                  }
+                  const shopAddress = JSON.stringify(orderDetails.shopAddress);
+                  deliveryState = shopAddress.state;
+                  deliveryCity = shopAddress.city;
+                  deliveryZipcode = shopAddress.zipcode;
+                  deliveryAddress = shopAddress.address;
+                  deliveryStateCode = shopAddress.state;
+                }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
                 let orderType = 'fmcg';
@@ -1077,9 +1092,9 @@ app.get('/processOmsOrders', (req, res) => {
                   drname: '',
                   VendorName: 'Apollo247',
                   shippingmethod:
-                    orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'STOREPICKUP',
+                    orderDetails.deliveryType == 'HOME_DELIVERY' ? 'HOMEDELIVERY' : 'CURBSIDE',
                   paymentmethod: paymentDetails.paymentType === 'CASHLESS' ? 'PREPAID' : 'COD',
-                  prefferedsite: '',
+                  prefferedsite: orderDetails.shopId || '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
                   deliverydate: orderTat ? format(orderTat, 'MM-dd-yyyy HH:mm:ss') : '',

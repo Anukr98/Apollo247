@@ -10,6 +10,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 // const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
 
 export interface MedicineCartItem {
+  url_key: string;
   description: string;
   id: number;
   arrId?: any[];
@@ -45,6 +46,13 @@ export interface PrescriptionFormat {
   imageUrl: string | null;
   fileType: string;
   baseFormat: string;
+}
+
+export interface PharmaAddressDetails {
+  city: string;
+  pincode: string;
+  state: string;
+  country: string;
 }
 
 export interface EPrescription {
@@ -97,6 +105,10 @@ export interface MedicineCartContextProps {
   changeCartTatStatus: ((status: boolean) => void) | null;
   setCouponCode: ((couponCode: string) => void) | null;
   couponCode: string;
+  medicineAddress: string;
+  setMedicineAddress: ((medicineAddress: string) => void) | null;
+  setPharmaAddressDetails: ((pharmaAddressDetails: PharmaAddressDetails) => void) | null;
+  pharmaAddressDetails: PharmaAddressDetails;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -135,6 +147,10 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   changeCartTatStatus: null,
   couponCode: null,
   setCouponCode: null,
+  medicineAddress: null,
+  setMedicineAddress: null,
+  setPharmaAddressDetails: null,
+  pharmaAddressDetails: null,
 });
 
 enum CartTypes {
@@ -152,6 +168,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
     imageUrl: '',
     fileType: '',
     baseFormat: '',
+  };
+  const pharmaDefObject = {
+    city: '',
+    pincode: localStorage.getItem('pharmaPincode') || '',
+    state: '',
+    country: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 
@@ -201,6 +223,25 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
     JSON.stringify(cartItems || {})
   );
+  const [medicineAddress, setMedicineAddress] = useState<
+    MedicineCartContextProps['medicineAddress']
+  >(localStorage.getItem('pharmaAddress'));
+  const [pharmaAddressDetails, setPharmaAddressDetails] = useState<PharmaAddressDetails>(
+    pharmaDefObject
+  );
+
+  useEffect(() => {
+    if (medicineAddress) {
+      localStorage.setItem('pharmaAddress', medicineAddress);
+    }
+  }, [medicineAddress]);
+
+  useEffect(() => {
+    if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
+      localStorage.setItem('pharmaPincode', pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
+
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(cartItems);
@@ -356,7 +397,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setPrescriptions([]);
     setEPrescriptionData([]);
     setCouponCode('');
-    // setCartItems([]);
   };
 
   const changeCartTatStatus = (status: boolean) => {
@@ -401,6 +441,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         changeCartTatStatus,
         setCouponCode,
         couponCode,
+        medicineAddress,
+        setMedicineAddress,
+        pharmaAddressDetails,
+        setPharmaAddressDetails,
       }}
     >
       {props.children}
@@ -445,4 +489,8 @@ export const useShoppingCart = () => ({
   changeCartTatStatus: useShoppingCartContext().changeCartTatStatus,
   setCouponCode: useShoppingCartContext().setCouponCode,
   couponCode: useShoppingCartContext().couponCode,
+  medicineAddress: useShoppingCartContext().medicineAddress,
+  setMedicineAddress: useShoppingCartContext().setMedicineAddress,
+  pharmaAddressDetails: useShoppingCartContext().pharmaAddressDetails,
+  setPharmaAddressDetails: useShoppingCartContext().setPharmaAddressDetails,
 });

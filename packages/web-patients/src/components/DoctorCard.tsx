@@ -25,6 +25,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -233,11 +234,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <div
         className={classes.topContent}
         onClick={() => {
+          const readableDoctorName = readableParam(doctorName);
           params.specialty
             ? props.history.push(
-                clientRoutes.specialtyDoctorDetails(params.specialty, doctorName, doctorId)
+                clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
               )
-            : props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
+            : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
         }}
       >
         <Avatar
@@ -259,11 +261,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <div
           className={classes.doctorInfo}
           onClick={() => {
+            const readableDoctorName = readableParam(doctorName);
             params.specialty
               ? props.history.push(
-                  clientRoutes.specialtyDoctorDetails(params.specialty, doctorName, doctorId)
+                  clientRoutes.specialtyDoctorDetails(
+                    params.specialty,
+                    readableDoctorName,
+                    doctorId
+                  )
                 )
-              : props.history.push(clientRoutes.doctorDetails(doctorName, doctorId));
+              : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
           }}
         >
           {/* {loading ? (

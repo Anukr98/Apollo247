@@ -47,6 +47,7 @@ import {
   AdminAuditorMapper,
   CityPincodeMapper,
   Deeplink,
+  DoctorPatientExternalConnect,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -117,6 +118,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
