@@ -16,6 +16,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking } from '../../gtmTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -376,7 +377,8 @@ export const MedicineDetails: React.FC = (props) => {
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
-
+  const [productSchemaJSON, setProductSchemaJSON] = React.useState(null);
+  const [drugSchemaJSON, setDrugSchemaJSON] = React.useState(null);
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -395,6 +397,56 @@ export const MedicineDetails: React.FC = (props) => {
       )
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
+        /**schema markup  start*/
+        const {
+          manufacturer,
+          description,
+          image,
+          name,
+          special_price,
+          price,
+          id,
+          sku,
+          type_id,
+          PharmaOverview,
+        } = data.productdp[0];
+        setProductSchemaJSON({
+          '@context': 'https://schema.org/',
+          '@type': 'Product',
+          name: name,
+          image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+          description: description,
+          brand: manufacturer,
+          sku: params.sku,
+          gtin8: id,
+          offers: {
+            '@type': 'Offer',
+            url: `https://www.apollo247.com/medicine-details/${sku}`,
+            priceCurrency: 'INR',
+            price: special_price || price,
+            priceValidUntil: '2020-12-31',
+            availability: 'https://schema.org/InStock',
+            itemCondition: 'https://schema.org/NewCondition',
+          },
+        });
+        if (
+          type_id &&
+          type_id === 'Pharma' &&
+          Array.isArray(PharmaOverview) &&
+          PharmaOverview.length
+        ) {
+          const { generic, Doseform } = PharmaOverview[0];
+          setDrugSchemaJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'Drug',
+            name: name,
+            description: description,
+            activeIngredient: generic.length ? generic.split('+') : '',
+            dosageForm: Doseform,
+          });
+        }
+        /**schema markup End */
+
         /**Gtm code start  */
         data &&
           data.productdp &&
@@ -588,8 +640,11 @@ export const MedicineDetails: React.FC = (props) => {
       .replace(/&amp;amp;/g, '&')
       .replace(/&amp;nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
+
   return (
     <div className={classes.root}>
+      {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
+      {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>
         {() => (
           <>

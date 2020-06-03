@@ -397,7 +397,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
       if (doctor['activeSlotCount'] > 0) {
         if (doctor['earliestSlotavailableInMinutes'] < 241) {
-          if (doctor.facility[0].name.includes('Apollo')) {
+          if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
             earlyAvailableApolloPossibleDoctors.push(doctor);
           } else {
             earlyAvailableNonApolloPossibleDoctors.push(doctor);
@@ -433,6 +433,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
+
     for (const doctor of earlyAvailableApolloPossibleDoctors) {
       if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
         earlyAvailableNearByPossibleApolloDoctors.push(doctor);
@@ -450,6 +451,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
     finalMatchedDoctors = perfectMatchedDoctors
+      .concat(
+        earlyAvailableNearByMatchedApolloDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
+      )
       .concat(
         earlyAvailableNearByMatchedApolloDoctors.sort(
           (a, b) =>
@@ -522,6 +530,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       );
   } else {
     finalMatchedDoctors = perfectMatchedDoctors
+      .concat(
+        earlyAvailableApolloMatchedDoctors.sort(
+          (a, b) =>
+            parseFloat(a.earliestSlotavailableInMinutes) -
+            parseFloat(b.earliestSlotavailableInMinutes)
+        )
+      )
       .concat(
         earlyAvailableApolloMatchedDoctors.sort(
           (a, b) =>

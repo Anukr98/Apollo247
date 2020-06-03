@@ -21,18 +21,14 @@ import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
+import StatusModal, { defaultText, modalData, ModalContent } from './StatusModal';
 
 export interface Appointment {
   id: string;
   patientId: string;
   startTime: number;
+  isJdQuestionsComplete: boolean | null;
   endTime: number;
   isNew: boolean;
   type: string;
@@ -49,6 +45,8 @@ export interface AppointmentsProps {
   values: Appointment[];
   loading: boolean;
   selectedDate: Date;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -232,6 +230,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginBottom: 25,
         width: '95%',
         boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
+        cursor: 'pointer',
       },
       '&.upcoming': {
         '& .stepIcon': {
@@ -304,12 +303,70 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 2,
     },
     popoverTile: {
-      color: '#fcb716',
+      fontSize: '18px',
       fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: '1.33',
+      letterSpacing: 'normal',
+      color: '#02475b',
     },
     ApptTypeStyle: {
       fontSize: 15,
       paddingLeft: 10,
+    },
+    confirmation: {
+      fontSize: '16px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: '1.25',
+      letterSpacing: 'normal',
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: '24px',
+    },
+    message: {
+      fontSize: '13px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: 'rgba(0, 0, 0, 0.6)',
+      marginTop: '16px',
+    },
+    dialogBox: {
+      width: '400px',
+      height: '329px',
+      borderRadius: '10px',
+      boxShadow: '0 5px 30px 0 rgba(0, 0, 0, 0.25)',
+      backgroundColor: '#ffffff',
+    },
+    modalWrapper: {
+      marginTop: '12px',
+      marginLeft: '20px',
+      height: '77%',
+      marginRight: '20px',
+    },
+    modal: {
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    button: {
+      minWidth: 130,
+      fontSize: 13,
+      padding: '8px 16px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fc9916',
+      backgroundColor: '#fff',
+      // margin: theme.spacing(0, 1, 0, 1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+      '&:disabled': {
+        color: '#fc9916',
+        opacity: 0.7,
+      },
     },
   })
 );
@@ -326,18 +383,23 @@ const getActiveStep = (appointments: Appointment[]) => {
   }, 0);
 };
 
+function wait<R, E>(promise: Promise<R>): [R, E] {
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+}
+
 export const Appointments: React.FC<AppointmentsProps> = ({
   values,
   loading: loadingData,
   selectedDate,
+  setIsDialogOpen,
+  isDialogOpen,
 }) => {
   const classes = useStyles({});
   const [appointments, setAppointments] = useState<Appointment[]>(values);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-
+  const [text, setText] = useState<ModalContent>(defaultText);
   const upcomingElement = useRef(null);
 
   useImperativeHandle(upcomingElement, () => {
@@ -422,8 +484,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
             const jrdCaseSheet =
               appointment.caseSheet.length > 0
                 ? appointment.caseSheet.filter(
-                    (cdetails: caseSheetInfo) =>
-                      cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+                    (cdetails: caseSheetInfo) => cdetails.doctorType === 'JUNIOR'
                   )
                 : [];
             const appointmentCard = (
@@ -447,7 +508,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                         </Grid>
                         <Grid sm={9} xs={10} key={6} item className={classes.valign}>
                           <div className={classes.section2}>
-                            {appointment.isNew && (
+                            {/* {appointment.isNew && (
                               <Typography
                                 gutterBottom
                                 variant="caption"
@@ -455,7 +516,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                               >
                                 New
                               </Typography>
-                            )}
+                            )} */}
                             <Typography
                               gutterBottom
                               variant="body1"
@@ -570,7 +631,9 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   }}
                 >
                   <div>
-                    {jrdCaseSheet.length > 0 ? (
+                    {jrdCaseSheet.length > 0 &&
+                    appointment.isJdQuestionsComplete &&
+                    jrdCaseSheet[0].status === 'COMPLETED' ? (
                       <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
                         {appointmentCard}
                       </Link>
@@ -578,6 +641,32 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                       <div
                         onClick={() => {
                           setIsDialogOpen(true);
+                          let text: ModalContent = {
+                            ...defaultText,
+                            appointmentId: appointment.id,
+                            patientId: appointment.patientId,
+                          };
+                          if (!appointment.isJdQuestionsComplete) {
+                            text.headerText = modalData.questionNotField.headerText;
+                            text.confirmationText = modalData.questionNotField.confirmationText;
+                            text.messageText = modalData.questionNotField.messageText;
+                          } else if (
+                            (jrdCaseSheet.length === 0 && appointment.isJdQuestionsComplete) ||
+                            (jrdCaseSheet.length > 0 && !jrdCaseSheet[0].isJdConsultStarted)
+                          ) {
+                            text.headerText = modalData.jdPending.headerText;
+                            text.confirmationText = modalData.jdPending.confirmationText;
+                            text.messageText = modalData.jdPending.messageText;
+                          } else if (
+                            jrdCaseSheet.length > 0 &&
+                            jrdCaseSheet[0].isJdConsultStarted &&
+                            jrdCaseSheet[0].status !== 'COMPLETED'
+                          ) {
+                            text.headerText = modalData.jdInProgress.headerText;
+                            text.confirmationText = modalData.jdInProgress.confirmationText;
+                            text.messageText = modalData.jdInProgress.messageText;
+                          }
+                          setText(text);
                         }}
                       >
                         {appointmentCard}
@@ -592,41 +681,26 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       </div>
     );
   }
+
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled
+        {'No consults scheduled'}
         {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
 
-      <Dialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            As the patient has not done the pre-assessment, you will not be able to start the
-            consult.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={() => {
-              setIsDialogOpen(false);
-            }}
-            autoFocus
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <StatusModal
+        onClose={() => {
+          setIsDialogOpen(false);
+          setText(defaultText);
+        }}
+        isDialogOpen={isDialogOpen}
+        text={text}
+        setText={setText}
+      />
     </div>
   );
 };

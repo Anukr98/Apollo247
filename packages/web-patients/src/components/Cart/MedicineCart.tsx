@@ -1226,16 +1226,16 @@ export const MedicineCart: React.FC = (props) => {
                       } else {
                         /* GTM TRACKING START */
                         gtmTracking({
-                          category: 'Consultations',
+                          category: 'Pharmacy',
                           action: 'Order',
-                          label: `Coupon Applied - ${couponCode}`,
-                          value:
-                            validateCouponResult &&
+                          label: `Coupon Removed - ${couponCode}`,
+                          value: validateCouponResult &&
                             validateCouponResult.discountedTotals &&
-                            validateCouponResult.discountedTotals.couponDiscount.toFixed(2),
+                            validateCouponResult.discountedTotals.couponDiscount ?
+                            Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2)) :
+                            null
                         });
-                        // gtmTracking('Pharmacy','Order',`Coupon Removed - ${couponCode}`,'')
-                        /* GTM TRACKING START */
+
                         setValidateCouponResult(null);
                         setErrorMessage('');
                         setCouponCode && setCouponCode('');
