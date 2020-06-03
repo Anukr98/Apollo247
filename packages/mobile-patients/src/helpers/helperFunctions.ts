@@ -854,6 +854,7 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
+    revenue: price,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1052,6 +1053,7 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    revenue: price,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };

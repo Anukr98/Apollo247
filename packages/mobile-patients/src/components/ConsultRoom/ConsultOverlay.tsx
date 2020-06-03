@@ -258,6 +258,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
+      revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
     };
     return eventAttributes;
   };
