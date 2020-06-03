@@ -17,6 +17,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
+import { INVALID_FILE_SIZE_ERROR } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -376,7 +377,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                         const fileSize = file.size;
                         if (fileSize > 2000000) {
                           setIsAlertOpen(true);
-                          setAlertMessage('Invalid File Size. File size must be less than 2MB');
+                          setAlertMessage(INVALID_FILE_SIZE_ERROR);
                         } else if (
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||

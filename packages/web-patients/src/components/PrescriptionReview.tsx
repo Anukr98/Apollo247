@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
-
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import { Header } from './Header';
@@ -8,9 +7,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { useDropzone } from 'react-dropzone';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-
 import { Alerts } from 'components/Alerts/Alerts';
-
 import {
   AphInput,
   AphButton,
@@ -18,18 +15,22 @@ import {
   AphDialogTitle,
   AphDialogClose,
 } from '@aph/web-ui-components';
-
-import Popover from '@material-ui/core/Popover';
 import { isEmailValid } from '@aph/universal/dist/aphValidators';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useMutation } from 'react-apollo-hooks';
-
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { PrescriptionFormat, EPrescription } from 'components/MedicinesCartProvider';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { SAVE_PHARMACOLOGIST_CONSULT } from 'graphql/medicines';
 import { savePharmacologistConsultVariables } from 'graphql/types/savePharmacologistConsult';
+import {
+  acceptedFilesNamesForFileUpload,
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  INVALID_FILE_SIZE_ERROR,
+  INVALID_FILE_TYPE_ERROR,
+  toBase64,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -541,36 +542,22 @@ export const PrescriptionReview: React.FC = (props: any) => {
   const [ePrescriptionUploaded, setEPrescriptionUploaded] = React.useState<
     [EPrescription] | null
   >();
-
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [prescriptionArr, setPrescriptionArr] = useState([]);
   const [ePrescriptionArr, setEPrescriptionArr] = useState([]);
-
-  const toBase64 = (file: any) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-    });
 
   const onDrop = useCallback(async (acceptedFiles) => {
     acceptedFiles.forEach(async (file: any) => {
       const reader = new FileReader();
       const fileExtension = file.name.split('.').pop();
       const fileSize = file.size;
-      if (fileSize > 2000000) {
+      if (fileSize > MAX_FILE_SIZE_FOR_UPLOAD) {
         setIsAlertOpen(true);
-        setAlertMessage('Invalid File Size. File size must be less than 2MB');
+        setAlertMessage(INVALID_FILE_SIZE_ERROR);
       } else if (
         fileExtension &&
-        (fileExtension.toLowerCase() === 'png' ||
-          fileExtension.toLowerCase() === 'jpg' ||
-          fileExtension.toLowerCase() === 'jpeg' ||
-          fileExtension.toLowerCase() === 'pdf')
+        acceptedFilesNamesForFileUpload.includes(fileExtension.toLowerCase())
       ) {
         if (file) {
           const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
@@ -585,17 +572,13 @@ export const PrescriptionReview: React.FC = (props: any) => {
                 fileType: fileExtension.toLowerCase(),
                 baseFormat: res,
               });
-              // props.closeDialog();
-              // setIsUploading(false);
               return;
             });
           }
         }
       } else {
         setIsAlertOpen(true);
-        setAlertMessage(
-          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-        );
+        setAlertMessage(INVALID_FILE_TYPE_ERROR);
       }
 
       reader.onload = () => {
@@ -671,7 +654,10 @@ export const PrescriptionReview: React.FC = (props: any) => {
     const savePharmacologistConsultInput: savePharmacologistConsultVariables = {
       savePharmacologistConsultInput: {
         patientId: currentPatient ? currentPatient.id : '',
-        prescriptionImageUrl: prescriptionArr[0].imageUrl,
+        prescriptionImageUrl: [
+          ...prescriptionArr!.map((item) => item.imageUrl),
+          ...ePrescriptionArr!.map((item) => item.uploadedUrl),
+        ].join(','),
         emailId: userEmail,
         queries: userQuery,
       },

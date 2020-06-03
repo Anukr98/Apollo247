@@ -395,7 +395,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               setMutationLoading(true);
 
               if (props.isPresReview) {
-                props.setEPrescriptionForReview(selectedEPrescriptions);
+                props.setEPrescriptionForReview &&
+                  props.setEPrescriptionForReview(selectedEPrescriptions);
                 setMutationLoading(false);
                 props.setIsEPrescriptionOpen(false);
                 return;
