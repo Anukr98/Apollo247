@@ -93,6 +93,14 @@ const useStyles = makeStyles((theme: Theme) => {
         alignItems: 'center',
       },
     },
+    userBottom: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: 6,
+        marginTop: 6,
+      },
+    },
     userId: {
       fontSize: 12,
       fontWeight: 500,
@@ -216,6 +224,8 @@ export const ManageProfiles: React.FC = (props) => {
               accountDetails && accountDetails.dateOfBirth ? accountDetails.dateOfBirth : null;
             const photoUrl = accountDetails && accountDetails.photoUrl;
             const userId = accountDetails && accountDetails.id;
+            const mobileNumber =
+              (accountDetails && accountDetails.mobileNumber && accountDetails.mobileNumber) || '';
 
             return (
               <div
@@ -249,6 +259,9 @@ export const ManageProfiles: React.FC = (props) => {
                       <div className={classes.rightGroup}>
                         {dob ? `DOB : ${moment(dob).format('DD MMM, YYYY')}` : ''}
                       </div>
+                    </div>
+                    <div className={classes.userBottom}>
+                      <div className={classes.rightGroup}>{mobileNumber}</div>
                     </div>
                   </div>
                 </div>
