@@ -815,6 +815,7 @@ interface CallPopoverProps {
   isAppointmentEnded: boolean;
   setIsPdfPageOpen: (flag: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
+  createSDCasesheetCall: (flag: boolean) => void;
   pubnub: any;
   sessionClient: any;
   lastMsg: any;
@@ -1976,21 +1977,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </span> */}
         <div className={classes.consultButtonContainer}>
           <span>
-            {props.appointmentStatus === STATUS.COMPLETED &&
-            currentUserType !== LoggedInUserType.SECRETARY &&
-            props.sentToPatient === true ? (
-              <>
-                <Button
-                  className={classes.previewButton}
-                  onClick={() => {
-                    console.log('Preview Prescription');
-                  }}
-                >
-                  Preview Prescription
-                </Button>
-              </>
-            ) : (
-              props.appointmentStatus === STATUS.COMPLETED &&
+            {//   props.appointmentStatus === STATUS.COMPLETED &&
+            // currentUserType !== LoggedInUserType.SECRETARY &&
+            // props.sentToPatient === true ? (
+            //   <>
+            //     <Button
+            //       className={classes.previewButton}
+            //       onClick={() => {
+            //         console.log('Preview Prescription');
+            //       }}
+            //     >
+            //       Preview Prescription
+            //     </Button>
+            //   </>
+            // ) : (
+            props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
@@ -2050,7 +2051,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   )}
                 </span>
               )
-            )}
+            // )
+            }
             {(props.appointmentStatus !== STATUS.COMPLETED ||
               currentUserType === LoggedInUserType.SECRETARY) &&
               (props.startAppointment ? (
@@ -2376,6 +2378,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
+                                props.createSDCasesheetCall(true);
                                 console.log('Issue New Prescription');
                               }}
                             >

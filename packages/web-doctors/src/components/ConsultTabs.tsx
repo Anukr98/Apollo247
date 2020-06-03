@@ -404,7 +404,7 @@ export const ConsultTabs: React.FC = () => {
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
-  
+
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
@@ -524,7 +524,36 @@ export const ConsultTabs: React.FC = () => {
       }
     );
   };
+  const createSDCasesheetCall = (flag: boolean) => {
+    alert('creating new casesheet');
+    setError('Creating Casesheet. Please wait....');
+    mutationCreateSrdCaseSheet()
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, String(tabValue));
+      })
+      .catch((e: ApolloError) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'CreateSeniorDoctorCaseSheet',
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentDateTime
+            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+            : '',
+          error: JSON.stringify(e),
+        };
 
+        sessionClient.notify(JSON.stringify(logObject));
+        setError('Unable to load Consult.');
+      });
+  };
   /* case sheet data*/
   useEffect(() => {
     if (isSignedIn) {
@@ -789,37 +818,8 @@ export const ConsultTabs: React.FC = () => {
             .concat(networkErrorMessage ? networkErrorMessage : []);
           const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
-            setError('Creating Casesheet. Please wait....');
-            mutationCreateSrdCaseSheet()
-              .then((response) => {
-                window.location.href = clientRoutes.ConsultTabs(
-                  appointmentId,
-                  patientId,
-                  String(tabValue)
-                );
-              })
-              .catch((e: ApolloError) => {
-                const patientName =
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-                  ' ' +
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-                const logObject = {
-                  api: 'CreateSeniorDoctorCaseSheet',
-                  appointmentId: appointmentId,
-                  doctorId: currentPatient!.id,
-                  doctorDisplayName: currentPatient!.displayName,
-                  patientId: params.patientId,
-                  patientName: patientName,
-                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                  appointmentDateTime: appointmentDateTime
-                    ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
-                    : '',
-                  error: JSON.stringify(e),
-                };
-
-                sessionClient.notify(JSON.stringify(logObject));
-                setError('Unable to load Consult.');
-              });
+            //setError('Creating Casesheet. Please wait....');
+            createSDCasesheetCall(true);
           }
         })
         .finally(() => {
@@ -1711,6 +1711,7 @@ export const ConsultTabs: React.FC = () => {
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
+                createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
               />
               <div>
                 <div
