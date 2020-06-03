@@ -205,7 +205,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       ) {
                         setIsUploading(true);
                         if (file) {
-                          const aphBlob = await client
+                          await client
                             .uploadBrowserFile({ file })
                             .then((res: any) => {
                               if (res && res.name) {

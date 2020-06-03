@@ -450,7 +450,6 @@ export const MedicineLanding: React.FC = (props: any) => {
       window.location.href.includes('prescriptionSubmit=success')
     ) {
       setIsPopoverOpen(true);
-      // window.history.pushState('', '', '');
     }
   }, [props]);
 
