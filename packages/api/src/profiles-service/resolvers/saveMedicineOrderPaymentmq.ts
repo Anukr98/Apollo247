@@ -295,13 +295,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
         });
       });
     }
-
-    return {
-      errorCode,
-      errorMessage,
-      paymentOrderId,
-      orderStatus,
-    };
   } else {
     const paymentAttrsWebhook: Partial<MedicineOrderPayments> = {
       responseCode: medicinePaymentMqInput.responseCode,
