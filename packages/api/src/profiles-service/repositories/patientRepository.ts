@@ -103,6 +103,10 @@ export class PatientRepository extends Repository<Patient> {
           this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
+    } else {
+      if (patientList[0].primaryPatientId == null) {
+        this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
+      }
     }
 
     return this.find({
@@ -392,7 +396,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const healthChecks = await fetch(url, prismHeaders)
       .then((res) => {
@@ -422,7 +425,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const hospitalizations = await fetch(url, prismHeaders)
       .then((res) => {
@@ -452,7 +454,6 @@ export class PatientRepository extends Repository<Patient> {
     };
 
     const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-
     const reqStartTime = new Date();
     const opPrescriptions = await fetch(url, prismHeaders)
       .then((res) => {
@@ -808,5 +809,9 @@ export class PatientRepository extends Repository<Patient> {
       }
     }
     return primaryPatientIds;
+  }
+
+  updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
+    return this.update(id, { whatsAppConsult, whatsAppMedicine });
   }
 }

@@ -481,7 +481,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {renderApolloLogo()}
         {appointmentDetails && renderAppointmentData()}
         {renderComplaints()}
-        {diagnosis && renderDiagnosis()}
+        {diagnosis && diagnosis.length > 0 && renderDiagnosis()}
         {medicine && medicine.length > 0 && renderMedicine()}
         {tests && tests.length > 0 && renderTest()}
         {(advice && advice.length > 0) ||

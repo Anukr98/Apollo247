@@ -65,6 +65,7 @@ app.get(
   })
 );
 
+app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);
 app.get('/invokeArchiveMessages', cronTabs.archiveMessages);
 app.get('/invokesendUnreadMessagesNotification', cronTabs.sendUnreadMessagesNotification);
 app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
@@ -135,7 +136,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -156,7 +157,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -177,7 +178,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -199,7 +200,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -221,7 +222,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -259,7 +260,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -391,10 +392,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -832,7 +830,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -852,7 +850,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -934,7 +932,7 @@ app.get('/processOmsOrders', (req, res) => {
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
   azureServiceBus.receiveSubscriptionMessage(
     process.env.AZURE_SERVICE_BUS_OMS_QUEUE_NAME,
-    process.env.AZURE_SERVICE_BUS_SUBSCRIBER,
+    process.env.AZURE_SERVICE_BUS_OMS_SUBSCRIBER,
     { isPeekLock: false },
     (subscriptionError, result) => {
       if (subscriptionError) {
@@ -966,7 +964,11 @@ app.get('/processOmsOrders', (req, res) => {
               response.data.data.getMedicineOrderOMSDetails &&
               response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
             if (orderDetails) {
-              console.log(orderDetails.currentStatus, 'order details');
+              logger.info(
+                `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(
+                  orderDetails
+                )}`
+              );
               if (orderDetails.currentStatus != 'CANCELLED') {
                 let deliveryCity = 'Kakinada',
                   deliveryZipcode = '500034',
@@ -1062,7 +1064,10 @@ app.get('/processOmsOrders', (req, res) => {
                 if (!orderDetails.orderTat) {
                   orderDetails.orderTat = '';
                 }
-                const [tatDate, timeslot] = orderDetails.orderTat.split(' ');
+                const orderTat =
+                  orderDetails.orderTat && Date.parse(orderDetails.orderTat)
+                    ? new Date(orderDetails.orderTat)
+                    : '';
                 const medicineOrderPharma = {
                   orderid: orderDetails.orderAutoId,
                   orderdate: format(
@@ -1078,11 +1083,8 @@ app.get('/processOmsOrders', (req, res) => {
                   prefferedsite: '',
                   ordertype: requestType,
                   orderamount: orderDetails.estimatedAmount || 0,
-                  deliverydate:
-                    tatDate && Date.parse(tatDate)
-                      ? format(new Date(tatDate), 'MM-dd-yyyy HH:mm:ss')
-                      : '',
-                  timeslot: timeslot,
+                  deliverydate: orderTat ? format(orderTat, 'MM-dd-yyyy HH:mm:ss') : '',
+                  timeslot: orderTat ? format(orderTat, 'HH:mm') : '',
                   shippingcharges: orderDetails.devliveryCharges || 0,
                   categorytype: orderType,
                   customercomment: '',
@@ -1124,6 +1126,11 @@ app.get('/processOmsOrders', (req, res) => {
                   itemdetails: orderLineItems || [],
                   imageurl: orderPrescriptionUrl,
                 };
+                logger.info(
+                  `processOrders()->${orderAutoId}-> pushing to OMS - ${JSON.stringify(
+                    medicineOrderPharma
+                  )}`
+                );
                 axios
                   .post(
                     process.env.PHARMACY_MED_PLACE_OMS_ORDERS,
@@ -1136,13 +1143,12 @@ app.get('/processOmsOrders', (req, res) => {
                     }
                   )
                   .then((resp) => {
-                    logger.info(
-                      `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
-                        resp.data
-                      )}`
-                    );
-                    console.log('pharma resp', resp.data);
                     if (resp.data.Status == true) {
+                      logger.info(
+                        `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
+                          resp.data
+                        )}`
+                      );
                       const requestJSON = {
                         query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: "${resp.data.ReferenceNo}" }){ message }}`,
                       };
@@ -1169,6 +1175,12 @@ app.get('/processOmsOrders', (req, res) => {
                             console.log('message deleted');
                           });
                         });
+                    } else {
+                      logger.error(
+                        `processOrders()->${orderAutoId}-> pharamResponse from OMS - ${JSON.stringify(
+                          resp.data
+                        )}`
+                      );
                     }
                     res.send({
                       status: 'success',
@@ -1188,6 +1200,8 @@ app.get('/processOmsOrders', (req, res) => {
                     });
                   });
               }
+            } else {
+              logger.error(`error while fetching order details for oms -> ${response}`);
             }
           })
           .catch((error) => {
@@ -1519,7 +1533,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1534,7 +1548,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

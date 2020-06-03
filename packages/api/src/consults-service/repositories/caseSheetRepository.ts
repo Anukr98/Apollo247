@@ -33,6 +33,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getMany();
   }
 
+  getJDCaseSheetByAppointmentId(appointmentId: string) {
+    return this.createQueryBuilder('case_sheet')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
+      .getOne()
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
+      });
+  }
+
   getJuniorDoctorCaseSheet(appointmentId: string) {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
@@ -73,6 +83,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment IN (:...ids)', { ids })
+      .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
       .getMany()
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
@@ -101,5 +112,27 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
       .andWhere('status = :status', { status: CASESHEET_STATUS.PENDING })
       .execute();
+  }
+
+  getSeniorDoctorMultipleCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.version', 'DESC')
+      .getMany();
+  }
+
+  getSeniorDoctorCompletedCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.version', 'DESC')
+      .getOne();
   }
 }

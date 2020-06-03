@@ -296,9 +296,11 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
         (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
       );
       const addressData = selectedAddress
-        ? `${selectedAddress.addressLine1 || ''} ${selectedAddress.addressLine2 ||
-            ''}, ${selectedAddress.city || ''}, ${selectedAddress.state ||
-            ''}, ${selectedAddress.zipcode || ''}`
+        ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
+            selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
+          }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
+            selectedAddress.state ? `${selectedAddress.state}, ` : ''
+          }${selectedAddress.zipcode || ''}`
         : '';
       return addressData;
     } else {

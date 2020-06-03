@@ -82,6 +82,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       marginRight: 8,
@@ -100,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingLeft: 4,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
   },
   popupHeadingCenter: {
@@ -185,6 +187,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: 15,
     '&:hover': {
       backgroundColor: 'transparent',
+      boxShadow: 'none',
     },
     '& img': {
       maxWidth: 20,
@@ -311,14 +314,6 @@ export const Symptoms: React.FC = (props) => {
         sinceError: false,
         howOfftenError: false,
         severityError: false,
-      });
-    } else if (isEmpty(trim(severity))) {
-      setErrorState({
-        ...errorState,
-        symptomError: false,
-        sinceError: false,
-        howOfftenError: false,
-        severityError: true,
       });
     } else if (duplicate) {
       setErrorState({

@@ -21,6 +21,7 @@ exports.autoSubmitJDCasesheet = (req, res) => {
       console.log('error', error);
     });
 };
+
 exports.sendUnreadMessagesNotification = (req, res) => {
   const requestJSON = {
     query: Constants.SEND_UNREAD_MESSAGES_NOTIFICATION,
@@ -38,6 +39,7 @@ exports.sendUnreadMessagesNotification = (req, res) => {
       console.log('error', error);
     });
 };
+
 exports.archiveMessages = (req, res) => {
   const requestJSON = {
     query: Constants.ARCHIVE_MESSAGES,
@@ -71,7 +73,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -100,7 +102,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -129,7 +131,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -159,7 +161,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -217,7 +219,7 @@ exports.updateSdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -283,7 +285,7 @@ exports.updateJdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -355,7 +357,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -433,7 +435,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -445,6 +447,24 @@ exports.updateDoctorSlotsEs = (req, res) => {
           }, 5000 * i);
         }
       }
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.refreshDoctorDeepLinks = (req, res) => {
+  const requestJSON = {
+    query: Constants.DOCTORS_DEEPLINK_REFRESH,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
       res.send({
         status: 'success',
         message: response.data,

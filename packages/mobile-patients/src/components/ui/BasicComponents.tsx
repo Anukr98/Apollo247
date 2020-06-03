@@ -68,6 +68,38 @@ export const Spearator: React.FC<SpearatorProps> = (props) => {
   return <View style={[styles.separator, props.style]} />;
 };
 
+export interface BadgeProps {
+  label: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  badgeLabelStyle?: StyleProp<ViewStyle>;
+}
+
+export const Badge: React.FC<BadgeProps> = (props) => {
+  const styles = StyleSheet.create({
+    labelView: {
+      position: 'absolute',
+      top: -3,
+      right: -3,
+      backgroundColor: '#ff748e',
+      height: 14,
+      width: 14,
+      borderRadius: 7,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    labelText: {
+      ...theme.fonts.IBMPlexSansBold(9),
+      color: theme.colors.WHITE,
+    },
+  });
+
+  return (
+    <View style={[styles.labelView, props.containerStyle]}>
+      <Text style={[styles.labelText, props.badgeLabelStyle]}>{props.label}</Text>
+    </View>
+  );
+};
+
 export const ImagePlaceholderView = () => {
   return (
     <View

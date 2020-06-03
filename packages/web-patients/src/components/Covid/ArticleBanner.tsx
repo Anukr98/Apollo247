@@ -11,8 +11,12 @@ import { CallOurExperts } from 'components/CallOurExperts';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      position: 'relative',
-      backgroundColor: '#fff',
+      [theme.breakpoints.up('sm')]: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+      },
     },
     bannerTop: {
       position: 'relative',
@@ -22,6 +26,11 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '19px 20px',
       [theme.breakpoints.up(1220)]: {
         padding: 40,
+      },
+      '& button': {
+        [theme.breakpoints.up('sm')]: {
+          display: 'none',
+        },
       },
     },
     backArrow: {
@@ -74,14 +83,19 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
       color: '#01475b',
       fontWeight: 500,
+      display: 'flex',
+      [theme.breakpoints.up('sm')]: {
+        position: 'absolute',
+        width: '100%',
+        bottom: 0,
+        color: '#fff',
+      },
       [theme.breakpoints.up(1220)]: {
-        padding: '34px 40px',
-        marginTop: -118,
+        padding: '0 40px 34px 40px',
       },
       '& h2': {
         margin: 0,
         fontSize: 24,
-        color: '#01475b',
         fontWeight: 600,
         [theme.breakpoints.down('xs')]: {
           lineHeight: '30px',
@@ -92,11 +106,70 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
-    articleType: {
+    rightGroup: {
+      marginLeft: 'auto',
+      paddingLeft: 20,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    articleInformation: {
       fontSize: 12,
       lineHeight: '18px',
-      textTransform: 'uppercase',
       paddingTop: 10,
+      '& img': {
+        verticalAlign: 'middle',
+      },
+      '& span': {
+        [theme.breakpoints.up('sm')]: {
+          position: 'relative',
+          padding: '0 10px',
+          '&:after': {
+            content: '""',
+            position: 'absolute',
+            right: 0,
+            top: 2,
+            height: 12,
+            width: 1,
+            backgroundColor: '#ffffff',
+            opacity: 0.8,
+          },
+        },
+        '&:first-child': {
+          paddingLeft: 0,
+        },
+        '&:last-child': {
+          paddingRight: 0,
+          '&:after': {
+            display: 'none',
+          },
+        },
+      },
+    },
+    type: {
+      textTransform: 'uppercase',
+    },
+    views: {
+      opacity: 0.8,
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        opacity: 1,
+        float: 'right',
+        '& img': {
+          filter:
+            'invert(100%) sepia(86%) saturate(0%) hue-rotate(69deg) brightness(115%) contrast(100%)',
+        },
+      },
+    },
+    source: {
+      opacity: 0.8,
+      [theme.breakpoints.down('xs')]: {
+        opacity: 1,
+        display: 'flex',
+        fontSize: 14,
+        fontWeight: 'normal',
+        paddingTop: 5,
+      },
     },
     bottomPopover: {
       overflow: 'initial',
@@ -190,9 +263,6 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>
-      <div className={classes.callOurExpertsContainer}>
-        <CallOurExperts />
-      </div>
       <div className={classes.bannerTop}>
         <Link
           to={
@@ -211,9 +281,23 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
         </AphButton>
       </div>
       <div className={classes.content}>
-        <h2>{title}</h2>
-        <div className={classes.articleType}>{type}</div>
-        {source && source.length && <p>Sourced from {source}</p>}
+        <div>
+          <h2>{title}</h2>
+          <div className={classes.articleInformation}>
+            <span className={classes.type}>{type}</span>
+            <span className={classes.views}>
+              <img src={require('images/ic-views.svg')} alt="" /> 276 Views
+            </span>
+            <span className={classes.source}>
+              {source && source.length && <>Sourced from {source}</>}
+            </span>
+          </div>
+        </div>
+        <div className={classes.rightGroup}>
+          <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
+            Subscribe
+          </AphButton>
+        </div>
       </div>
       <Popover
         open={openSubscriptionForm}

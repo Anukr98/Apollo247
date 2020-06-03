@@ -46,6 +46,8 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
+  DoctorPatientExternalConnect,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -85,6 +87,7 @@ import {
   RegistrationCodes,
   CouponPharmaRules,
   MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -97,6 +100,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,
@@ -114,6 +118,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -205,6 +210,7 @@ export const connect = async () => {
         SearchHistory,
         RegistrationCodes,
         MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

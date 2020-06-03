@@ -26,6 +26,14 @@ export const GET_BLOCKED_CALENDAR = gql`
     }
   }
 `;
+export const SEND_MESSAGE_TO_MOBILE_NUMBER = gql`
+  query SendMessageToMobileNumber($mobileNumber: String, $textToSend: String) {
+    sendMessageToMobileNumber(mobileNumber: $mobileNumber, textToSend: $textToSend) {
+      status
+      message
+    }
+  }
+`;
 
 export const ADD_BLOCKED_CALENDAR_ITEM = gql`
   mutation AddBlockedCalendarItem($doctorId: String!, $start: DateTime!, $end: DateTime!) {
@@ -83,6 +91,14 @@ export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
     }
   }
 `;
+export const UPSERT_DOCTORS_DEEPLINK = gql`
+  mutation UpsertDoctorsDeeplink($doctorId: String) {
+    upsertDoctorsDeeplink(doctorId: $doctorId) {
+      deepLink
+    }
+  }
+`;
+
 /* get doctor details by doctor id */
 export const GET_DOCTOR_DETAILS_BY_ID_DOCTOR = gql`
   query GetDoctorDetailsByIdDoctor($id: String!) {

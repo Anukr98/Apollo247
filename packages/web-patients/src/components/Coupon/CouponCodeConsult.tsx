@@ -15,6 +15,7 @@ import {
   ValidateConsultCoupon_validateConsultCoupon,
   ValidateConsultCoupon,
 } from 'graphql/types/ValidateConsultCoupon';
+import { gtmTracking } from '../../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,6 +169,7 @@ interface ApplyCouponProps {
   appointmentDateTime: string;
   validityStatus: boolean;
   setValidityStatus: (validityStatus: boolean) => void;
+  speciality?: string
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
@@ -231,6 +233,17 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
               props.close(false);
               props.setValidateCouponResult(couponValidateResult);
               setMuationLoading(false);
+              /*GTM TRACKING START */
+              gtmTracking({
+                category: 'Consultations',
+                action: props.speciality,
+                label: `Coupon Applied - ${selectCouponCode}`,
+                value: couponValidateResult && couponValidateResult.revisedAmount
+                  ? Number((props.cartValue -
+                  parseFloat(couponValidateResult.revisedAmount)
+                ).toFixed(2)) : null
+              });
+              /*GTM TRACKING END */
             } else {
               setMuationLoading(false);
               setErrorMessage(couponValidateResult.reasonForInvalidStatus);

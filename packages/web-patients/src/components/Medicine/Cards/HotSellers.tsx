@@ -198,7 +198,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         </span>
                       </div>
                     )}
-                  <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
+                  <Link to={clientRoutes.medicineDetails(hotSeller.url_key)}>
                     <div className={classes.productIcon}>
                       <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
                     </div>
@@ -220,6 +220,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <AphButton
                           onClick={() => {
                             const cartItem: MedicineCartItem = {
+                              url_key: hotSeller.url_key,
                               description: hotSeller.description,
                               id: hotSeller.id,
                               image: hotSeller.image,

@@ -119,6 +119,7 @@ interface DataPair {
 
 export interface CaseSheetViewProps extends NavigationScreenProps {
   onStartConsult: () => void;
+  onEndConsult: () => void;
   onStopConsult: () => void;
   startConsult: boolean;
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
@@ -286,6 +287,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const client = useApolloClient();
 
   const {
+    onEndConsult,
     saveDetails,
     caseSheet,
     caseSheetEdit,
@@ -415,6 +417,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
       pdfUrl: pdf || prescriptionPdf,
+      isResend: pdf === undefined,
     };
     console.log(followupObj, 'followupObj');
 
@@ -479,10 +482,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         props.overlayDisplay(null);
         prescriptionView();
         setShowEditPreviewButtons(true);
+        onEndConsult();
         // endCallNotification();
         const text = {
           id: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
-          message: '^^#appointmentComplete',
+          message: messageCodes.appointmentComplete,
           isTyping: true,
           messageDate: new Date(),
           sentBy: REQUEST_ROLES.DOCTOR,
@@ -647,7 +651,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title={'RESEND PRESCRIPTION'}
               onPress={() => {
-                sendToPatientAction();
+                followUpMessage();
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Hi',
+                    description: 'Prescription has been sent to patient successfully',
+                    onPressOk: () => {
+                      props.navigation.popToTop();
+                      hideAphAlert && hideAphAlert();
+                    },
+                    unDismissable: true,
+                  });
               }}
               variant="white"
             />

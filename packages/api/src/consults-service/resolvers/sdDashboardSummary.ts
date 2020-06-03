@@ -32,7 +32,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { format, differenceInMinutes, isWithinInterval } from 'date-fns';
+import { format, differenceInMinutes, isWithinInterval, addDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 
@@ -241,24 +241,25 @@ const updateConsultRating: Resolver<
         poorRating = record.ratingcount;
       }
     });
-    const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
-    const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
-    const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
-      ratingDate: args.summaryDate,
-      goodRating,
-      noRating: 0,
-      poorRating,
-      greatRating,
-      okRating,
-      helpTickets: helpTicketCount,
-      validHubOrders: validHubOrders[0],
-      validHubOrdersDelivered: validHubOrders[1],
-      validVdcOrders: validHubOrders[2],
-      validVdcOrdersDelivered: validHubOrders[3],
-      updatedDate: new Date(),
-    };
-    await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
+  const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
+  const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
+  const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
+    ratingDate: args.summaryDate,
+    goodRating,
+    noRating: 0,
+    poorRating,
+    greatRating,
+    okRating,
+    helpTickets: helpTicketCount,
+    validHubOrders: validHubOrders[0],
+    validHubOrdersDelivered: validHubOrders[1],
+    validVdcOrders: validHubOrders[2],
+    validVdcOrdersDelivered: validHubOrders[3],
+    updatedDate: new Date(),
+  };
+  await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
+
   return { ratingRowsCount: feedbackData.length };
 };
 const updatePhrDocSummary: Resolver<
@@ -336,16 +337,24 @@ const updateSdSummary: Resolver<
       }
       const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      console.log('timeSlots==>', timeSlots);
       let difference = 0;
       let totalSlotsTime = 0;
       if (timeSlots.length) {
         timeSlots.forEach(async (timeSlot) => {
-          difference += differenceInMinutes(
-            new Date(ApiConstants.SAMPLE_DATE + timeSlot.endTime),
-            new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime)
-          );
+          const endTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.endTime);
+          let startTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime);
+          console.log('dates==>', startTime, endTime);
+          if (endTime < startTime) {
+            let stDt = new Date(ApiConstants.SAMPLE_DATE);
+            stDt = addDays(stDt, -1);
+            startTime = new Date(stDt + timeSlot.startTime);
+          }
+          difference += differenceInMinutes(endTime, startTime);
+          console.log('difference', difference);
         });
         totalSlotsTime = difference;
+        console.log('totalSlotsTime', totalSlotsTime);
       }
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,

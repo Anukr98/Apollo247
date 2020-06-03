@@ -117,6 +117,7 @@ import KeepAwake from 'react-native-keep-awake';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -283,6 +284,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       KeepAwake.deactivate();
     };
   }, []);
+
+  useEffect(() => {
+    if ((appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE') {
+      showPopup({
+        description: strings.popUP.awaiting_reschedule,
+      });
+    }
+  }, [appointmentData]);
 
   const backDataFunctionality = () => {
     try {
@@ -485,8 +494,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               (t) =>
                 t &&
                 item &&
-                (t.externalId || t.id || '').toLowerCase() ===
-                  (item.externalId || t.id || '').toLowerCase()
+                (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                  (item.externalId || item.id || item.medicineName || '').toLowerCase()
             )
         )
         .map((i) => {
@@ -501,6 +510,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
     );
     setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+      .filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex(
+            (t) =>
+              t &&
+              item &&
+              (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                (item.externalId || item.id || item.medicineName || '').toLowerCase()
+          )
+      )
       .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
       .filter((i) => i !== null || i !== '') as string[]);
     setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
@@ -727,17 +747,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
         .catch((e) => {
           setLoading && setLoading(false);
-          console.log('Error occured while update casesheet', e);
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          console.log('Error occured while adding Doctor', errorMessage, error);
-          if (errorMessage.search('INVALID_REFERRAL_DESCRIPTION') > -1) {
+          const errorMessage = e.graphQLErrors[0].message;
+          if (errorMessage.includes('INVALID_REFERRAL_DESCRIPTION')) {
             showAphAlert &&
               showAphAlert({
                 title: strings.common.alert,
                 description: strings.alerts.missing_referral_description,
               });
-          } else if (errorMessage.search('CASESHEET_SENT_TO_PATIENT_ALREADY') > -1) {
+          } else if (errorMessage.includes('CASESHEET_SENT_TO_PATIENT_ALREADY')) {
             showAphAlert &&
               showAphAlert({
                 title: strings.common.uh_oh,
@@ -855,46 +872,48 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const stopAllCalls = () => {
     console.log('isA', isAudioCall, '\nisVe', isCall);
-    endCallNotificationAPI(true);
-    setIsAudioCall(false);
-    setHideStatusBar(false);
-    setChatReceived(false);
-    setConvertVideo(false);
-    setShowVideo(true);
-    setIsCall(false);
-    const text = {
-      id: doctorId,
-      message: messageCodes.endCallMsg,
-      isTyping: true,
-      messageDate: new Date(),
-      sentBy: REQUEST_ROLES.DOCTOR,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status: any, response: any) => {}
-    );
-    const stoptext = {
-      id: doctorId,
-      message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
-      duration: callTimerStarted,
-      isTyping: true,
-      messageDate: new Date(),
-      sentBy: REQUEST_ROLES.DOCTOR,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: stoptext,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status: any, response: any) => {}
-    );
+    if (isAudioCall || isCall) {
+      endCallNotificationAPI(true);
+      setIsAudioCall(false);
+      setHideStatusBar(false);
+      setChatReceived(false);
+      setConvertVideo(false);
+      setShowVideo(true);
+      setIsCall(false);
+      const text = {
+        id: doctorId,
+        message: messageCodes.endCallMsg,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: REQUEST_ROLES.DOCTOR,
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: text,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status: any, response: any) => {}
+      );
+      const stoptext = {
+        id: doctorId,
+        message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
+        duration: callTimerStarted,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: REQUEST_ROLES.DOCTOR,
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: stoptext,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status: any, response: any) => {}
+      );
+    }
   };
 
   const callAbandonmentCall = () => {
@@ -1482,7 +1501,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 return;
               }
 
-              if (isAudioCall) {
+              if (isAudioCall || isCall) {
                 return;
               }
               //need to work form here
@@ -1554,7 +1573,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
                 return;
               }
-              if (isAudioCall) {
+              if (isAudioCall || isCall) {
                 return;
               }
               callhandelBack = false;
@@ -1630,7 +1649,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </View>
     );
   };
-
+  const onEndConsult = () => {
+    stopAllCalls();
+    endCallNotificationAPI(false);
+  };
   const renderTabPage = () => {
     return (
       <>
@@ -1654,6 +1676,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setOverlayDisplay(component);
                 }}
                 onStartConsult={onStartConsult}
+                onEndConsult={onEndConsult}
                 onStopConsult={onStopConsult}
                 startConsult={startConsult}
                 navigation={props.navigation}
@@ -2189,13 +2212,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
   const uploadPrescriptionPopup = () => {
-    return (
+    return isDropdownVisible ? (
       <UploadPrescriprionPopup
         heading={strings.consult_room.attach_files}
         instructionHeading={strings.consult_room.instruction_for_upload}
         instructions={[strings.consult_room.instruction_list]}
-        isVisible={isDropdownVisible}
         disabledOption={strings.consult_room.none}
+        blockCamera={isCall}
+        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: strings.consult_room.take_a_photo,
           gallery: strings.consult_room.choose_from_gallery,
@@ -2259,7 +2283,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }
         }}
       />
-    );
+    ) : null;
   };
   const closeviews = () => {
     setPatientImageshow(false);
@@ -2281,6 +2305,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             backgroundColor: 'transparent',
             marginRight: 16,
             marginTop: 30,
+            zIndex: 10,
           }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
@@ -2300,22 +2325,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const imageOpen = () => {
     console.log(url);
-
-    return popupView(
-      <Image
-        style={{
-          flex: 1,
-          resizeMode: 'contain',
-          marginTop: 20,
-          marginHorizontal: 20,
-          marginBottom: 20,
-          borderRadius: 10,
-        }}
-        source={{
-          uri: url,
-        }}
-      />
-    );
+    return popupView(<ImageZoom source={{ uri: url }} zoom pan />);
   };
   const showWeimageOpen = () => {
     console.log(url, 'showWeimageOpen url');
