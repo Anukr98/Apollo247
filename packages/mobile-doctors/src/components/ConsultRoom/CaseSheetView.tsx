@@ -856,7 +856,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View
           style={{
             minHeight: 44,
-            maxHeight: 110,
             marginTop: 8,
             marginBottom: 16,
             backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -868,7 +867,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInput
             style={{
               minHeight: 44,
-              maxHeight: 110,
               justifyContent: 'center',
               paddingTop: 12,
               paddingBottom: 12,
@@ -884,6 +882,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
             editable={caseSheetEdit}
+            scrollEnabled={false}
           />
         </View>
       </View>
