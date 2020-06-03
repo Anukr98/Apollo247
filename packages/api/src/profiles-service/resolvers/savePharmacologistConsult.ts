@@ -81,14 +81,19 @@ const savePharmacologistConsult: Resolver<
     date: date,
     patientQueries: savePharmacologistConsultInput.queries,
   });
-
   const attachments: EmailAttachMent[] = [];
-
   if (savePharmacologistConsultInput.prescriptionImageUrl) {
     const prescriptionImageUrls = savePharmacologistConsultInput.prescriptionImageUrl.split(',');
-    prescriptionImageUrls.forEach(async (url, index) => {
-      const response = await fetch(url);
-      const buffer = await response.buffer();
+    const imagePromises = prescriptionImageUrls.map(async (url, index) => {
+      return await fetch(url);
+    });
+    const imageResponse = await Promise.all(imagePromises);
+    const imageBufferPromises = imageResponse.map(async (response) => {
+      return await response.buffer();
+    });
+    const imageBuffers = await Promise.all(imageBufferPromises);
+    imageBuffers.forEach((buffer, index) => {
+      const url = prescriptionImageUrls[index];
       attachments.push({
         content: buffer.toString('base64'),
         filename: path.basename(url),
