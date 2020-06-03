@@ -46,6 +46,18 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     coupon: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
+    shopAddress: ShopAddress
+  }
+
+  input ShopAddress {
+    storename: String
+    address: String
+    workinghrs: String
+    phone: String
+    city: String
+    state: String
   }
 
   input MedicineCartOMSItem {
@@ -88,6 +100,18 @@ type MedicineCartOMSInput = {
   coupon: string;
   couponDiscount: number;
   productDiscount: number;
+  packagingCharges: number;
+  showPrescriptionAtStore: boolean;
+  shopAddress: ShopAddress;
+};
+
+type ShopAddress = {
+  storename: string;
+  address: string;
+  workinghrs: string;
+  phone: string;
+  city: string;
+  state: string;
 };
 
 type MedicineCartOMSItem = {
@@ -134,15 +158,17 @@ const saveMedicineOrderOMS: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  if (!medicineCartOMSInput.patientAddressId) {
+  if (!medicineCartOMSInput.patientAddressId && !medicineCartOMSInput.shopId) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
-  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const patientAddressDetails = await patientAddressRepo.findById(
-    medicineCartOMSInput.patientAddressId
-  );
-  if (!patientAddressDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  if (medicineCartOMSInput.patientAddressId) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      medicineCartOMSInput.patientAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
   }
 
   const itemsSkus = medicineCartOMSInput.items.map((item) => {
@@ -265,6 +291,9 @@ const saveMedicineOrderOMS: Resolver<
     coupon: medicineCartOMSInput.coupon,
     couponDiscount: medicineCartOMSInput.couponDiscount,
     productDiscount: medicineCartOMSInput.productDiscount,
+    packagingCharges: medicineCartOMSInput.packagingCharges,
+    showPrescriptionAtStore: medicineCartOMSInput.showPrescriptionAtStore,
+    shopAddress: JSON.stringify(medicineCartOMSInput.shopAddress),
     isOmsOrder: true,
   };
 

@@ -24,6 +24,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       doctorType
       starTeam {
         associatedDoctor {
+          fullName
           firstName
           lastName
           experience
@@ -95,6 +96,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         id
         firstName
         lastName
+        fullName
         specialty {
           id
           name

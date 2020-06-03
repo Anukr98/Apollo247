@@ -2,7 +2,6 @@ import {
   EntityRepository,
   Repository,
   Between,
-  LessThan,
   Brackets,
   Not,
   Connection,
@@ -22,7 +21,6 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   ES_DOCTOR_SLOT_STATUS,
-  REFUND_STATUS,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -54,6 +52,13 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+  }
+
+  getAppointmentsCount(doctorId: string, patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .getCount();
   }
 
   getAppointmentsByIds(ids: string[]) {
@@ -355,7 +360,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
     const inputStartDate =
       format(curDate, 'yyyy-MM-dd') + 'T' + curDate.getUTCHours() + ':' + curMin;
-    console.log('past appts', inputStartDate);
+    //console.log('past appts', inputStartDate);
     /*return this.find({
       where: {
         doctorId,
@@ -1200,7 +1205,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }
   followUpBookedCount(id: string) {

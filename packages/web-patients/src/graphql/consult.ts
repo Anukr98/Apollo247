@@ -117,6 +117,9 @@ export const CONSULT_COUPONS_LIST = gql`
           messageOnCouponScreen
           successMessage
         }
+        couponConsultRule {
+          isActive
+        }
         createdDate
         description
         id
@@ -144,6 +147,7 @@ export const GET_CONSULT_PAYMENTS = gql`
           paymentStatus
           paymentType
           responseMessage
+          paymentDateTime
         }
         status
         doctorId

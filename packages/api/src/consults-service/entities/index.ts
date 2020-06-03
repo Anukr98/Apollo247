@@ -14,6 +14,12 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+export enum APPOINTMENT_UPDATED_BY {
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
+  ADMIN = 'ADMIN',
+}
+
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -186,6 +192,12 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
 
+  @OneToMany(
+    (type) => AppointmentUpdateHistory,
+    (appointmentUpdateHistory) => appointmentUpdateHistory.appointment
+  )
+  appointmentUpdateHistory: AppointmentUpdateHistory[];
+
   @Column({ nullable: true })
   couponCode: string;
 
@@ -322,12 +334,6 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
-
-  @OneToMany(
-    (type) => AppointmentUpdateHistory,
-    (appointmentUpdateHistory) => appointmentUpdateHistory.appointment
-  )
-  appointmentUpdateHistory: AppointmentUpdateHistory[];
 }
 //Appointment ends
 
@@ -817,6 +823,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   referralDescription: string;
 
+  @Column({ nullable: true, type: 'json' })
+  removedMedicinePrescription: string;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
@@ -839,6 +848,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: 1 })
+  version: number;
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;
@@ -922,6 +934,38 @@ export class TransferAppointmentDetails extends BaseEntity {
   }
 }
 //transfer apppointment ends
+
+//AppointmentUpdateHistory starts
+@Entity()
+export class AppointmentUpdateHistory extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
+  appointment: Appointment;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  userType: APPOINTMENT_UPDATED_BY;
+
+  @Column({ nullable: true })
+  userName: string;
+
+  @Column({ nullable: true })
+  valueType: VALUE_TYPE;
+
+  @Column({ nullable: true })
+  fromValue: string;
+
+  @Column({ nullable: true })
+  toValue: string;
+
+  @Column({ nullable: true })
+  reason: string;
+}
+//AppointmentUpdateHistory ends
 
 //Reschedule-appointment starts
 @Entity()
@@ -1030,37 +1074,6 @@ export class AppointmentNoShow extends BaseEntity {
   }
 }
 //Appointment no show details end
-
-//AppointmentUpdateHistory starts
-@Entity()
-export class AppointmentUpdateHistory extends BaseEntity {
-  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
-  appointment: Appointment;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: true })
-  updatedAt: Date;
-
-  @Column({ nullable: true })
-  userType: REQUEST_ROLES;
-
-  @Column({ nullable: true })
-  userName: string;
-
-  @Column({ nullable: true }) // status/profile/....
-  valueType: VALUE_TYPE;
-
-  @Column({ nullable: true })
-  fromValue: string;
-
-  @Column({ nullable: true })
-  toValue: string;
-
-  @Column({ nullable: true })
-  reason: string;
-}
 
 //documents summary starts
 @Entity()
@@ -1740,4 +1753,5 @@ export interface RxPdfData {
   followUpDetails: string;
   referralSpecialtyName: string;
   referralSpecialtyDescription: string;
+  removedMedicinesList: string[];
 }

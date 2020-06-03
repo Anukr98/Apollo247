@@ -4,7 +4,6 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
-
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -54,7 +53,6 @@ const login: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const callStartTime = new Date();
   const apiCallId = Math.floor(Math.random() * 1000000);
-
   //create first order curried method with first 4 static parameters being passed.
   const loginLogger = debugLog(
     'otpVerificationAPILogger',
@@ -304,7 +302,6 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
 
   let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
   message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
-  console.log(encodeURIComponent(hashCode), 'hashcode encoded');
   if (hashCode) {
     message = message + ' ' + encodeURIComponent(hashCode);
   }
@@ -322,7 +319,7 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-
+  //sendNotificationWhatsapp(mobileNumber, message);
   //logging success response here
   log(
     'smsOtpAPILogger',

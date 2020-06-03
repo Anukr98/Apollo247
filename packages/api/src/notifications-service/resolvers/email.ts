@@ -1,5 +1,4 @@
 import gql from 'graphql-tag';
-import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
@@ -13,7 +12,7 @@ export const emailTypeDefs = gql`
 export async function sendMail(emailContent: EmailMessage) {
   let ccEmailList = [];
   ccEmailList = emailContent.ccEmail.split(',');
-  let sendgrid = require('@sendgrid/mail');
+  const sendgrid = require('@sendgrid/mail');
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
   sendgrid.send(
     {
@@ -25,11 +24,11 @@ export async function sendMail(emailContent: EmailMessage) {
       text: emailContent.messageContent,
       html: emailContent.messageContent,
     },
-    function(err: any, json: any) {
+    (err: any, json: any) => {
       if (err) {
         return console.error(err);
       }
-      let statusCode: { status: string } = { status: json.request.statusCode };
+      const statusCode: { status: string } = { status: json.request.statusCode };
       return statusCode;
     }
   );

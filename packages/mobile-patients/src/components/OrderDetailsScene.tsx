@@ -8,40 +8,50 @@ import {
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  DropdownGreen,
+  More,
+  NotifySymbol,
+  MedicalIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_MEDICINE_ORDER_DETAILS,
-  CANCEL_MEDICINE_ORDER,
-  GET_MEDICINE_ORDERS_LIST,
+  GET_MEDICINE_ORDER_CANCEL_REASONS,
+  GET_MEDICINE_ORDER_OMS_DETAILS,
+  GET_MEDICINE_ORDERS_OMS__LIST,
+  CANCEL_MEDICINE_ORDER_OMS,
+  GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetailsVariables,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+  getMedicineOrderOMSDetails,
+  getMedicineOrderOMSDetailsVariables,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
+  FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPatientAddressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
   g,
-  getOrderStatusText,
+  getNewOrderStatusText,
   handleGraphQlError,
-  postWEGNeedHelpEvent,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { FeedbackPopup } from './FeedbackPopup';
 import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -54,6 +64,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
@@ -63,15 +74,25 @@ import {
   StackActions,
 } from 'react-navigation';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '../graphql/types/GetMedicineOrdersList';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  cancelMedicineOrder,
-  cancelMedicineOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelMedicineOrder';
+  getMedicineOrdersOMSList,
+  getMedicineOrdersOMSListVariables,
+  getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
+} from '../graphql/types/getMedicineOrdersOMSList';
+import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyMyOrderTrackingClicked } from '../helpers/webEngageEventHelpers';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CancelMedicineOrderOMS,
+  CancelMedicineOrderOMSVariables,
+} from '../graphql/types/CancelMedicineOrderOMS';
+import {
+  GetMedicineOrderCancelReasons,
+  GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
+} from '../graphql/types/GetMedicineOrderCancelReasons';
+import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -98,71 +119,181 @@ const styles = StyleSheet.create({
   },
 });
 
-const cancelOptions: [string, string][] = [
-  ['MCCR0036', 'Placed order by mistake'],
-  ['MCCR0040', 'Higher discounts available on other app'],
-  ['MCCR0046', 'Delay in delivery'],
-  ['MCCR0047', 'Delay in order confirmation'],
-  ['MCCR0048', 'Do not require medicines any longer'],
-  ['MCCR0049', 'Already purchased'],
-];
-
 type OrderRefetch = (
-  variables?: GetMedicineOrdersListVariables
-) => Promise<ApolloQueryResult<GetMedicineOrdersList>>;
+  variables?: getMedicineOrdersOMSListVariables
+) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
 
-export interface OrderDetailsSceneProps extends NavigationScreenProps {
-  orderAutoId?: string;
-  showOrderSummaryTab?: boolean;
-  goToHomeOnBack?: boolean;
-  refetchOrders: OrderRefetch;
-}
-{
-}
+export interface OrderDetailsSceneProps
+  extends NavigationScreenProps<{
+    orderAutoId?: string;
+    showOrderSummaryTab?: boolean;
+    goToHomeOnBack?: boolean;
+    refetchOrders: OrderRefetch;
+    setOrders: (
+      orders: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
+    ) => void;
+    refetch: (
+      variables?: getMedicineOrdersOMSListVariables | undefined
+    ) => Promise<ApolloQueryResult<getMedicineOrdersOMSList>>;
+  }> {}
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
-
+  const [cancellationReasons, setCancellationReasons] = useState<
+    GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
+  >([]);
   const client = useApolloClient();
 
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
-
+  const [omsAPIError, setOMSAPIError] = useState(false);
+  const [addressData, setAddressData] = useState('');
   const { currentPatient } = useAllCurrentPatients();
-  const { getPatientApiCall } = useAuth();
-  const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
-  const { showAphAlert, setLoading } = useUIElements();
-  const vars: GetMedicineOrderDetailsVariables = {
+  const {
+    cartItems,
+    setCartItems,
+    ePrescriptions,
+    setEPrescriptions,
+    addresses,
+    setAddresses,
+  } = useShoppingCart();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const vars: getMedicineOrderOMSDetailsVariables = {
     patientId: currentPatient && currentPatient.id,
-    orderAutoId: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
+    orderAutoId: Number(orderAutoId),
   };
   const refetchOrders: OrderRefetch =
     props.navigation.getParam('refetch') ||
-    useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
-      variables: { patientId: currentPatient && currentPatient.id },
-      fetchPolicy: 'cache-first',
-    }).refetch;
-  console.log(JSON.stringify(vars));
+    useQuery<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>(
+      GET_MEDICINE_ORDERS_OMS__LIST,
+      {
+        variables: { patientId: currentPatient && currentPatient.id },
+        fetchPolicy: 'cache-first',
+      }
+    ).refetch;
   const { data, loading, refetch } = useQuery<
-    GetMedicineOrderDetails,
-    GetMedicineOrderDetailsVariables
-  >(GET_MEDICINE_ORDER_DETAILS, {
+    getMedicineOrderOMSDetails,
+    getMedicineOrderOMSDetailsVariables
+  >(GET_MEDICINE_ORDER_OMS_DETAILS, {
     variables: vars,
     fetchPolicy: 'no-cache',
   });
-  const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
-  console.log({ order });
+  const order = g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails');
+  const prescriptionRequired = !!(g(order, 'medicineOrderLineItems') || []).find(
+    (item) => item!.isPrescriptionNeeded
+  );
+  const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+  );
 
   const orderDetails = ((!loading && order) ||
-    {}) as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
+    {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
   );
+
+  const getAddressDatails = () => {
+    let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
+    if (!selectedAddressIndex) {
+      console.log('!selectedAddressIndex', selectedAddressIndex);
+      setShowSpinner(true);
+      client
+        .query<getPatientAddressList>({
+          query: GET_PATIENT_ADDRESS_LIST,
+          fetchPolicy: 'no-cache',
+          variables: {
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+        })
+        .then((data) => {
+          if (
+            data.data &&
+            data.data.getPatientAddressList &&
+            data.data.getPatientAddressList.addressList &&
+            addresses !== data.data.getPatientAddressList.addressList
+          ) {
+            setAddresses &&
+              setAddresses(
+                data.data.getPatientAddressList
+                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
+              );
+            selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
+              (address) => address.id == order!.patientAddressId
+            ) as savePatientAddress_savePatientAddress_patientAddress;
+            if (selectedAddressIndex) {
+              console.log('if selectedAddressIndex', selectedAddressIndex);
+              if (!selectedAddressIndex.addressLine1) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.addressLine2) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.city) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.state) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
+                );
+              } else if (!selectedAddressIndex.zipcode) {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
+                );
+              } else {
+                setAddressData(
+                  `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+                );
+              }
+            } else {
+              setAddressData('');
+            }
+          }
+        })
+        .catch((error) => {
+          handleGraphQlError(error);
+        })
+        .finally(() => {
+          setShowSpinner(false);
+        });
+    } else {
+      console.log('else selectedAddressIndex', selectedAddressIndex);
+      if (!selectedAddressIndex.addressLine1) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.addressLine2) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.city) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.state) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.zipcode}`
+        );
+      } else if (!selectedAddressIndex.zipcode) {
+        setAddressData(
+          `${selectedAddressIndex.addressLine1} ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}`
+        );
+      } else {
+        setAddressData(
+          selectedAddressIndex
+            ? `${selectedAddressIndex.addressLine1}, ${selectedAddressIndex.addressLine2}, ${selectedAddressIndex.city}, ${selectedAddressIndex.state}, ${selectedAddressIndex.zipcode}`
+            : ''
+        );
+      }
+    }
+  };
 
   const [isEventFired, setEventFired] = useState(false);
 
@@ -181,7 +312,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         g(order, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION ? 'Non Cart' : 'Cart',
         currentPatient
       );
+      getAddressDatails();
       setEventFired(true);
+    } else {
+      setOMSAPIError(true);
     }
   }, [order]);
 
@@ -224,11 +358,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const getFormattedDate = (time: string) => {
-    return moment(time).format('D MMM YYYY');
+    return moment(time).format('D MMMM, YYYY');
   };
 
   const getFormattedTime = (time: string) => {
     return moment(time).format('hh:mm A');
+  };
+
+  const getFormattedDateTime = (time: string) => {
+    let finalDateTime =
+      moment(time).format('D MMMM YYYY') + ' at ' + moment(time).format('hh:mm A');
+    return finalDateTime;
   };
 
   const reOrder = () => {
@@ -310,6 +450,48 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
+  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_FEEDBACK_GIVEN] = {
+      'Patient UHID': g(currentPatient, 'id'),
+      Rating: rating,
+      'Rating Reason': reason,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_FEEDBACK_GIVEN, eventAttributes);
+  };
+
+  const renderFeedbackPopup = () => {
+    const orderAutoId: string = orderDetails.orderAutoId!?.toString();
+    const orderId: string = orderDetails.id;
+    const title: string = `Medicines — #${orderAutoId}`;
+    const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
+      moment(orderDetails.orderTat).format('D MMM YYYY')}`;
+    return (
+      <>
+        <FeedbackPopup
+          containerStyle={{ paddingTop: 120 }}
+          title="We value your feedback! :)"
+          description="How was your overall experience with the following medicine delivery —"
+          info={{
+            title: title,
+            description: subtitle,
+            imageComponent: <MedicalIcon />,
+          }}
+          transactionId={orderId}
+          type={FEEDBACKTYPE.PHARMACY}
+          isVisible={showFeedbackPopup}
+          onComplete={(ratingStatus, ratingOption) => {
+            postRatingGivenWEGEvent(ratingStatus!, ratingOption);
+            setShowFeedbackPopup(false);
+            showAphAlert!({
+              title: 'Thanks :)',
+              description: 'Your feedback has been submitted. Thanks for your time.',
+            });
+          }}
+        />
+      </>
+    );
+  };
+
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
@@ -321,32 +503,315 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const tatInfo = orderDetails.orderTat;
     const expectedDeliveryDiff = moment.duration(
       moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
-      // moment('27-JAN-2020 10:51 AM').diff(moment())
     );
     const hours = expectedDeliveryDiff.asHours();
-    // const formattedDateDeliveryTime =
-    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
+    const orderCompleteText = `Your order no.#${orderAutoId} is successfully delivered on ${isDelivered &&
+      isDelivered.statusDate &&
+      getFormattedDateTime(isDelivered.statusDate)}.`;
+    let capsuleViewBGColor: string;
+    let capsuleTextColor: string;
+    let capsuleText: string;
+    if (
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
+    ) {
+      capsuleText =
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ? 'Cancelled' : 'Failed';
+      capsuleTextColor = '#FFF';
+      capsuleViewBGColor = '#890000';
+    } else {
+      capsuleText =
+        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
+          ? 'Pending'
+          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED
+          ? 'Return Initiated'
+          : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+          ? 'Returned'
+          : 'Successful';
+      capsuleTextColor = '#01475b';
+      capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
+    }
+
+    const getOrderDescription = (
+      status: MEDICINE_ORDER_STATUS,
+      isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
+      orderCancelText?: string
+    ) => {
+      const orderStatusDescMapping = {
+        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
+          ? ['', '']
+          : [
+              'Verification Pending: ',
+              'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+            ],
+        [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]: [
+          'Store Assigned: ',
+          'Your order has been assigned to our pharmacy.',
+        ],
+        [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
+          '',
+          `Your order #${orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`,
+        ],
+        [MEDICINE_ORDER_STATUS.CANCELLED]: [
+          '',
+          orderCancelText || `Your order #${orderAutoId} has been cancelled.`,
+        ],
+        [MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY]: [
+          'Out for delivery: ',
+          `Your order #${orderAutoId} would be reaching your doorstep soon.`,
+        ],
+        [MEDICINE_ORDER_STATUS.PAYMENT_FAILED]: [
+          '',
+          'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
+        ],
+      };
+
+      const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
+
+      return isStatusAvailable
+        ? {
+            heading: g(orderStatusDescMapping, status as any, '0'),
+            description: g(orderStatusDescMapping, status as any, '1'),
+          }
+        : null;
+    };
 
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
-    const statusList = orderStatusList
+
+    let statusList = orderStatusList
       .filter(
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
-      .concat(
-        showExpectedDelivery
-          ? [
-              {
-                statusDate: tatInfo,
-                id: 'idToBeDelivered',
-                orderStatus: 'TO_BE_DELIVERED' as any,
-              } as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
-            ]
-          : []
+      .concat([]);
+
+    if (
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+    ) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([
+          {
+            statusDate: tatInfo,
+            id: 'idToBeDelivered',
+            orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+          } as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
+        ]);
+    } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat([]);
+    }
+
+    const renderCapsuleView = (backgroundColor: string, capsuleText: string, textColor: string) => {
+      return (
+        <View
+          style={{
+            alignSelf: 'flex-end',
+            backgroundColor: backgroundColor ? backgroundColor : 'rgba(0, 179, 142, 0.2)',
+            borderRadius: 16,
+            paddingHorizontal: 15,
+            paddingTop: 4,
+            paddingBottom: 3,
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('M', 11, textColor) }}>{capsuleText}</Text>
+        </View>
       );
+    };
 
     return (
       <View>
+        <View
+          style={{
+            borderBottomColor: 'rgba(2,71,91,0.3)',
+            borderBottomWidth: 0.5,
+            paddingTop: 16,
+            paddingBottom: 6,
+            paddingHorizontal: 20,
+            marginBottom: 13,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, undefined, 0.5),
+                // alignSelf: 'center',
+                paddingTop: 2,
+              }}
+            >{`ORDER #${orderAutoId}`}</Text>
+            {renderCapsuleView(capsuleViewBGColor, capsuleText, capsuleTextColor)}
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 12 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b') }}>
+              {string.OrderSummery.name}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b') }}>
+              {orderDetails.patient?.firstName} {orderDetails.patient?.lastName}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 4, paddingRight: 20 }}>
+            <Text style={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingTop: 2 }}>
+              {string.OrderSummery.address}
+            </Text>
+            <Text style={{ ...theme.viewStyles.text('R', 13, '#01475b', 1, 24), paddingRight: 31 }}>
+              {addressData}
+            </Text>
+          </View>
+        </View>
+        {!!!orderStatusList.find(
+          (item) =>
+            item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED ||
+            item!.orderStatus == MEDICINE_ORDER_STATUS.ITEMS_RETURNED
+        ) && (
+          <View
+            style={{
+              backgroundColor: '#f7f8f5',
+              shadowColor: 'rgba(128, 128, 128, 0.3)',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 5,
+              elevation: 5,
+              paddingHorizontal: 20,
+              paddingTop: 14,
+              paddingBottom: 13,
+              flexDirection: 'row',
+            }}
+          >
+            <NotifySymbol />
+            <Text
+              style={{
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
+                marginLeft: 20,
+              }}
+            >
+              {isDelivered ? 'ORDER DELIVERED - ' : 'EXPECTED DELIVERY - '}
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
+              }}
+            >
+              {isDelivered
+                ? getFormattedDate(isDelivered.statusDate)
+                : tatInfo && getFormattedDate(tatInfo)}
+            </Text>
+          </View>
+        )}
         <View style={{ margin: 20 }}>
           {statusList.map((order, index, array) => {
             return (
@@ -360,7 +825,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         .replace(' hours', 'hrs')}`
                     : ''
                 }
-                status={getOrderStatusText(order!.orderStatus!)}
+                showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
+                getOrderDescription={getOrderDescription(
+                  orderDetails.currentStatus!,
+                  prescriptionRequired,
+                  (orderCancel && orderCancel.statusMessage) || ''
+                )}
+                status={getNewOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={order!.id != 'idToBeDelivered'}
@@ -376,19 +847,61 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           })}
         </View>
         {isDelivered ? (
-          <Button
-            style={{ flex: 1, width: '80%', alignSelf: 'center' }}
-            onPress={() => reOrder()}
-            title={'RE-ORDER'}
-          />
+          <View
+            style={{
+              borderTopColor: 'rgba(2,71,91,0.3)',
+              borderTopWidth: 0.5,
+              paddingHorizontal: 45,
+              paddingTop: 12,
+              paddingBottom: 25.5,
+            }}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                marginBottom: 6,
+                ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
+              }}
+            >
+              {orderCompleteText}
+            </Text>
+            <Text
+              style={{
+                textAlign: 'center',
+                marginBottom: 12,
+                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 21),
+              }}
+            >
+              {'Thank You for choosing Apollo 24|7'}
+            </Text>
+            <Button
+              style={{ flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' }}
+              onPress={() => setShowFeedbackPopup(true)}
+              titleTextStyle={{
+                ...theme.viewStyles.text(
+                  'B',
+                  isIphone5s() ? 11 : 13,
+                  theme.colors.BUTTON_TEXT,
+                  1,
+                  24
+                ),
+              }}
+              title={'RATE YOUR DELIVERY EXPERIENCE'}
+            />
+            <Button
+              style={{ flex: 1, width: '95%', alignSelf: 'center' }}
+              onPress={() => reOrder()}
+              title={'RE-ORDER'}
+            />
+          </View>
         ) : null}
-        <NeedHelpAssistant
+        {/* <NeedHelpAssistant
           onNeedHelpPress={() => {
             postWEGNeedHelpEvent(currentPatient, 'Medicines');
           }}
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
-        />
+        /> */}
       </View>
     );
   };
@@ -407,14 +920,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           cardContainer={{
             margin: 0,
           }}
-          options={cancelOptions.map(
-            (item, i) =>
+          options={cancellationReasons.map(
+            (cancellationReasons, i) =>
               ({
                 onPress: () => {
-                  setSelectedReason(item[1]);
+                  setSelectedReason(cancellationReasons.description);
                   setOverlayDropdown(false);
                 },
-                optionText: item[1],
+                optionText: cancellationReasons.description,
               } as Option)
           )}
         />
@@ -531,6 +1044,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               onPress={() => {
                 setCancelVisible(!isCancelVisible);
                 setSelectedReason('');
+                setComment('');
               }}
             >
               <CrossPopup />
@@ -557,23 +1071,31 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return <OrderSummary orderDetails={orderDetails as any} />;
+    return (
+      <View>
+        <OrderSummary orderDetails={orderDetails as any} addressData={addressData} />
+        <View style={{ marginTop: 30 }} />
+      </View>
+    );
   };
 
   const onPressConfirmCancelOrder = () => {
     setShowSpinner(true);
-    const variables: cancelMedicineOrderVariables = {
-      medicineOrderCancelInput: {
+    const variables: CancelMedicineOrderOMSVariables = {
+      medicineOrderCancelOMSInput: {
         orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
-        remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0],
+        cancelReasonCode:
+          cancellationReasons &&
+          cancellationReasons.find((item) => item.description == selectedReason)!.reasonCode,
+        cancelReasonText: comment,
       },
     };
 
     console.log(JSON.stringify(variables));
 
     client
-      .mutate<cancelMedicineOrder, cancelMedicineOrderVariables>({
-        mutation: CANCEL_MEDICINE_ORDER,
+      .mutate<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>({
+        mutation: CANCEL_MEDICINE_ORDER_OMS,
         variables,
       })
       .then(({ data }) => {
@@ -586,14 +1108,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setComment('');
           setSelectedReason('');
         };
-        const requestStatus = g(data, 'cancelMedicineOrder', 'orderStatus');
+        const requestStatus = g(data, 'cancelMedicineOrderOMS', 'orderStatus');
         if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
           showAphAlert &&
             showAphAlert({
-              title: 'Hi :),',
+              title: 'Hi :)',
               description:
-                'Cancel order has been initiated for order ' +
-                g(variables, 'medicineOrderCancelInput', 'orderNo'),
+                'Your cancellation request has been accepted and order is cancelled. If prepaid, the amount paid will be refunded automatically.',
             });
           refetch()
             .then(() => {
@@ -607,7 +1128,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             refetchOrders()
               .then((data) => {
                 const _orders = (
-                  g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
+                  g(data, 'data', 'getMedicineOrdersOMSList', 'medicineOrdersList') || []
                 ).filter(
                   (item) =>
                     !(
@@ -616,13 +1137,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     )
                 );
                 console.log(_orders, 'hdub');
-                setOrders(_orders);
+                setOrders(
+                  _orders as getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList[]
+                );
               })
               .catch((e) => {
                 CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
               });
         } else {
-          Alert.alert('Error', g(data, 'cancelMedicineOrder', 'orderStatus')!);
+          Alert.alert('Error', g(data, 'cancelMedicineOrderOMS', 'orderStatus')!);
         }
       })
       .catch((e) => {
@@ -632,46 +1155,56 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
-  // const onPressCancelOrder = () => {
-  // const isDelivered = orderStatusList.find(
-  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-  // );
-  // const isCancelled = orderStatusList.find(
-  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-  // );
-  // const isPrescriptionOrder = orderStatusList.find(
-  //   (item) =>
-  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-  // );
-  // if (isDelivered) {
-  //   showErrorPopup('You cannot cancel the order wich is delivered.');
-  //   // Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
-  // } else if (isCancelled) {
-  //   showErrorPopup('Order is already cancelled.');
-  //   // Alert.alert('Alert', 'Order is already cancelled.');
-  // } else {
-  //   setCancelVisible(true);
-  // }
-  // setCancelVisible(true);
-  // };
+  const getCancellationReasons = () => {
+    setShowSpinner(true);
+    client
+      .query<GetMedicineOrderCancelReasons>({
+        query: GET_MEDICINE_ORDER_CANCEL_REASONS,
+        variables: {},
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        if (
+          data.data.getMedicineOrderCancelReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons &&
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.length > 0
+        ) {
+          let cancellationArray: any = [];
+          data.data.getMedicineOrderCancelReasons.cancellationReasons.forEach(
+            (cancellationReasons, index) => {
+              if (cancellationReasons && cancellationReasons.isUserReason) {
+                cancellationArray.push(cancellationReasons);
+              }
+            }
+          );
+          setCancellationReasons(cancellationArray);
+          setCancelVisible(true);
+        }
+      })
+      .catch((error) => {
+        handleGraphQlError(error);
+      })
+      .finally(() => {
+        setShowSpinner(false);
+      });
+  };
 
   const [showSpinner, setShowSpinner] = useState(false);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   const renderMoreMenu = () => {
-    const cannotCancelOrder = orderStatusList.find(
+    const hideMenuIcon = !!orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PAYMENT_FAILED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_FAILED
     );
-    const isCancelOrderAllowed = orderStatusList.find(
-      (item) =>
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
+    const cannotCancelOrder = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
+      // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
     );
-    if (!isCancelOrderAllowed || cannotCancelOrder || !orderStatusList.length) return null;
+    if (hideMenuIcon || !orderStatusList.length) return null;
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
@@ -687,7 +1220,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
         onPress={(item) => {
           if (item.value == 'Cancel Order') {
-            setCancelVisible(true);
+            if (cannotCancelOrder) {
+              showAphAlert!({
+                title: string.common.uhOh,
+                description:
+                  'Your order has already been billed and we will not be able to take the cancellation request on the App. In case you still want to proceed with cancellation, please click on the link below to send the cancellation request through WhatsApp and our live Customer executives will be happy to help you.',
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'CLICK HERE',
+                    type: 'orange-link',
+                    onPress: () => {
+                      Linking.openURL('https://bit.ly/apollo247Medicines').catch((err) =>
+                        console.error('An error occurred', err)
+                      );
+                      hideAphAlert!();
+                    },
+                  },
+                ],
+              });
+            } else {
+              getCancellationReasons();
+            }
           }
         }}
       >
@@ -703,32 +1257,53 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderAutoId}`}
+            title={'ORDER DETAILS'}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={renderMoreMenu()}
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
           />
         </View>
 
-        <TabsComponent
-          style={styles.tabsContainer}
-          onChange={(title) => {
-            const isNonCartOrder = orderStatusList.find(
-              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
-            );
-            if (!isNonCartOrder) {
-              setSelectedTab(title);
-            }
-          }}
-          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-          selectedTab={selectedTab}
-        />
-        <ScrollView bounces={false}>
-          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-        </ScrollView>
+        {omsAPIError && !order && !loading ? (
+          <View
+            style={{ justifyContent: 'center', alignSelf: 'center', flex: 1, alignItems: 'center' }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 16, '#890000'),
+                paddingHorizontal: 16,
+                textAlign: 'center',
+              }}
+            >
+              {'Something went wrong. Unable fetch order details.'}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <TabsComponent
+              style={styles.tabsContainer}
+              onChange={(title) => {
+                const isNonCartOrder = orderStatusList.find(
+                  (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+                );
+                if (!isNonCartOrder) {
+                  setSelectedTab(title);
+                }
+              }}
+              data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+              selectedTab={selectedTab}
+            />
+            <ScrollView bounces={false}>
+              {selectedTab == string.orders.trackOrder
+                ? renderOrderHistory()
+                : !loading && renderOrderSummary()}
+            </ScrollView>
+          </>
+        )}
       </SafeAreaView>
+      {renderFeedbackPopup()}
       {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
