@@ -1171,7 +1171,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: doctorDetails ? doctorDetails.id : REQUEST_ROLES.DOCTOR,
+    uuid: `DOCTOR_${doctorId}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1290,7 +1290,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             const data = response.channels[channel].occupants;
 
             const occupancyPatient = data.filter((obj) => {
-              return obj.uuid === REQUEST_ROLES.PATIENT;
+              return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
             });
             console.log('occupancyPatient', occupancyPatient);
             if (occupancyPatient.length > 0) {
