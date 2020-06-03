@@ -1579,8 +1579,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            {renderDelivery()}
             <MedicineUploadPrescriptionView navigation={props.navigation} />
+            {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
           </View>
