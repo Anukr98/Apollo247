@@ -172,7 +172,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -187,6 +186,37 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   ) {
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
+  if (args.filterInput.experience && args.filterInput.experience.length > 0) {
+    let elasticExperience: { [index: string]: any } = [];
+    args.filterInput.experience.forEach((experience) => {
+      elasticExperience.push({
+        range: { experience: { gte: experience.minimum, lte: experience.maximum } },
+      });
+    });
+    if (elasticExperience.length > 0) {
+      elasticMatch.push({ bool: { should: elasticExperience } });
+    }
+  }
+  if (args.filterInput.fees && args.filterInput.fees.length > 0) {
+    let elasticFee: { [index: string]: any } = [];
+    args.filterInput.fees.forEach((fee) => {
+      elasticFee.push({
+        range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
+      });
+    });
+    if (elasticFee.length > 0) {
+      elasticMatch.push({ bool: { should: elasticFee } });
+    }
+  }
+  if (args.filterInput.gender && args.filterInput.gender.length > 0) {
+    elasticMatch.push({ match: { gender: args.filterInput.gender.join(',') } });
+  }
+  if (args.filterInput.language && args.filterInput.language.length > 0) {
+    args.filterInput.language.forEach((language) => {
+      elasticMatch.push({ match: { languages: language } });
+    });
+  }
+
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -198,6 +228,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
+
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   for (const doc of getDetails.body.hits.hits) {
@@ -205,6 +236,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['id'] = doctor.doctorId;
     doctor['onlineStatus'] = DOCTOR_ONLINE_STATUS.ONLINE;
     doctor['doctorHospital'] = [];
+    doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
@@ -216,6 +248,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
     for (const slots of doc._source.doctorSlots) {
+      doctor['openSlotDates'].push(slots.slotDate);
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
@@ -263,7 +296,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         },
       });
     }
-    if (doctor['activeSlotCount'] > 0) {
+    let availability = true;
+    if (args.filterInput.availability && args.filterInput.availability.length > 0) {
+      availability =
+        args.filterInput.availability.filter(
+          (value) => -1 !== doctor['openSlotDates'].indexOf(value)
+        ).length > 0;
+    }
+    if (doctor['activeSlotCount'] > 0 && availability) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
         if (doctor.doctorType === 'STAR_APOLLO') {
           earlyAvailableStarApolloDoctors.push(doctor);

@@ -293,3 +293,13 @@ export const ADD_PATIENT_FEEDBACK = gql`
     }
   }
 `;
+
+export const SAVE_PHARMACOLOGIST_CONSULT = gql`
+  mutation savePharmacologistConsult(
+    $savePharmacologistConsultInput: SavePharmacologistConsultInput!
+  ) {
+    savePharmacologistConsult(savePharmacologistConsultInput: $savePharmacologistConsultInput) {
+      status
+    }
+  }
+`;
