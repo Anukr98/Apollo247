@@ -6,12 +6,19 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PharmacologistConsultRepository } from 'profiles-service/repositories/patientPharmacologistConsults';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { pharmacologistEmailTemplate } from 'helpers/emailTemplates/pharmacologistEmailTemplate';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { ApiConstants } from 'ApiConstants';
+import { EmailMessage, EmailAttachMent } from 'types/notificationMessageTypes';
+import { format, addMinutes } from 'date-fns';
+import path from 'path';
+import fetch from 'node-fetch';
 
 export const savePharmacologistConsultTypeDefs = gql`
   input SavePharmacologistConsultInput {
     patientId: ID!
     prescriptionImageUrl: String
-    emailId: String
+    emailId: String!
     queries: String
   }
 
@@ -55,6 +62,7 @@ const savePharmacologistConsult: Resolver<
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   const pharmacologistRepo = profilesDb.getCustomRepository(PharmacologistConsultRepository);
   const pharmacologistAttrs: Partial<PharmacologistConsult> = {
     patient: patientDetails,
@@ -67,6 +75,54 @@ const savePharmacologistConsult: Resolver<
   } catch (e) {
     throw new AphError(AphErrorMessages.SAVE_PHARMACOLOGIST_CONSULT_ERROR, undefined, {});
   }
+  const date = format(addMinutes(new Date(), 330), 'yyyy-MM-dd hh:mm');
+  const mailContent = pharmacologistEmailTemplate({
+    patientName: patientDetails.firstName,
+    date: date,
+    patientQueries: savePharmacologistConsultInput.queries,
+  });
+
+  const attachments: EmailAttachMent[] = [];
+
+  if (savePharmacologistConsultInput.prescriptionImageUrl) {
+    const prescriptionImageUrls = savePharmacologistConsultInput.prescriptionImageUrl.split(',');
+    prescriptionImageUrls.forEach(async (url, index) => {
+      const response = await fetch(url);
+      const buffer = await response.buffer();
+      attachments.push({
+        content: buffer.toString('base64'),
+        filename: path.basename(url),
+        type: path.extname(url),
+        disposition: 'attachment',
+      });
+    });
+  }
+
+  let subjectLine: string = '';
+  subjectLine = ApiConstants.PHARMACOLOGIST_CONSULT_TITLE;
+  subjectLine = subjectLine.replace('{0}', patientDetails.firstName);
+  subjectLine = subjectLine.replace('{1}', date);
+  const subject =
+    process.env.NODE_ENV == 'production'
+      ? subjectLine
+      : subjectLine + ' from ' + process.env.NODE_ENV;
+
+  const toEmailId =
+    process.env.NODE_ENV == 'production'
+      ? ApiConstants.PHARMACOLOGIST_EMAIL_ID
+      : ApiConstants.PHARMACOLOGIST_EMAIL_ID_TEST;
+
+  const emailContent: EmailMessage = {
+    subject: subject,
+    fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
+    fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
+    messageContent: <string>mailContent,
+    toEmail: <string>toEmailId,
+    ccEmail: <string>savePharmacologistConsultInput.emailId,
+    attachments: attachments,
+  };
+
+  sendMail(emailContent);
 
   return {
     status: true,
