@@ -236,6 +236,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+  const [autoSavingLoader, setAutoSavingLoader] = useState<boolean>(false);
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
     CANCEL_APPOINTMENT
@@ -581,6 +582,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     followUpConsultationType,
     addedAdvices,
     medicinePrescriptionData,
+    selectedMedicinesId,
     lifeStyleData,
     familyValues,
     medicalHistory,
@@ -738,6 +740,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           setcaseSheet(modifiedData);
           setData(modifiedData);
           setIsAutoSaved(autoSave);
+          setAutoSavingLoader(false);
           if (callBack) {
             setLoading && setLoading(true);
             callBack();
@@ -747,6 +750,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
         .catch((e) => {
           setLoading && setLoading(false);
+          setAutoSavingLoader(false);
           const errorMessage = e.graphQLErrors[0].message;
           if (errorMessage.includes('INVALID_REFERRAL_DESCRIPTION')) {
             showAphAlert &&
@@ -856,9 +860,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const timerLoop = (timer: number) => {
-    startAutoSaveTimer(timer, async () => {
-      const data = await AsyncStorage.getItem('editedInputData');
-      saveDetails(false, true, JSON.parse(data || ''));
+    startAutoSaveTimer(timer, () => {
+      setAutoSavingLoader(true);
+      setTimeout(async () => {
+        const data = await AsyncStorage.getItem('editedInputData');
+        saveDetails(false, true, JSON.parse(data || ''));
+      }, 500);
       timerLoop(timer);
     });
   };
@@ -1672,6 +1679,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             {activeTabIndex == tabsData[0].title ? (
               <CaseSheetView
                 // disableConsultButton={!!PatientConsultTime}
+                autoSavingLoader={autoSavingLoader}
                 overlayDisplay={(component) => {
                   setOverlayDisplay(component);
                 }}

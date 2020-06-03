@@ -60,6 +60,7 @@ export enum DOCTOR_CALL_TYPE {
 
 export enum DOCTOR_DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -173,9 +174,11 @@ export enum PATIENT_ADDRESS_TYPE {
 }
 
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum ROUTE_OF_ADMINISTRATION {
@@ -381,6 +384,7 @@ export interface ModifyCaseSheetInput {
   followUpConsultType?: APPOINTMENT_TYPE | null;
   otherInstructions?: OtherInstructionsInput[] | null;
   medicinePrescription?: MedicinePrescriptionInput[] | null;
+  removedMedicinePrescription?: MedicinePrescriptionInput[] | null;
   id: string;
   status?: CASESHEET_STATUS | null;
   lifeStyle?: string | null;
