@@ -213,6 +213,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
+    resultsdisplayed: number;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
