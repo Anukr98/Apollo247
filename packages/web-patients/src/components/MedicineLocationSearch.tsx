@@ -206,6 +206,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
+  const [hedaerPincodeError, setHedaerPincodeError] = React.useState<string | null>(null);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
@@ -273,6 +274,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
     }
   }, [currentLocation, currentPincode]);
 
+  useEffect(() => {
+    if (!hedaerPincodeError && pharmaAddressDetails.pincode) {
+      isServiceable(pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
+
   const getAddressFromLocalStorage = () => {
     const currentAddress = localStorage.getItem('pharmaAddress');
     if (currentAddress) {
@@ -321,7 +328,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
               findAddrComponents('sublocality_level_1', addrComponents) ||
               findAddrComponents('sublocality_level_2', addrComponents) ||
               findAddrComponents('locality', addrComponents);
-
             setMedicineAddress(area);
             setPharmaAddressDetails({
               city,
@@ -372,19 +378,29 @@ export const MedicineLocationSearch: React.FC = (props) => {
       });
   };
 
+  const checkSelectedPincodeServiceability = (pincode: string, status: string) => {
+    if (pincode === pharmaAddressDetails.pincode) {
+      setHedaerPincodeError(status);
+      setPincodeError(false);
+    } else {
+      setPincodeError(status === '1');
+      setHedaerPincodeError('0');
+    }
+  };
+
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
       .then(({ data }: any) => {
         if (data && data.Availability) {
-          setPincodeError(false);
+          checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
         } else {
           setMutationLoading(false);
-          setPincodeError(true);
+          checkSelectedPincodeServiceability(pincode, '1');
         }
       })
       .catch((e) => {
-        setPincodeError(true);
+        checkSelectedPincodeServiceability(pincode, '1');
         setMutationLoading(false);
       });
   };
@@ -412,7 +428,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </span>
         </div>
-        {pincodeError && <div className={classes.noService}>Sorry, not serviceable here.</div>}
+        {hedaerPincodeError === '1' && (
+          <div className={classes.noService}>Sorry, not serviceable here.</div>
+        )}
       </div>
       <Popover
         open={isLocationPopover}
@@ -435,6 +453,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <ul>
           <li
             onClick={() => {
+              setHedaerPincodeError(null);
               locateCurrentLocation();
             }}
           >
