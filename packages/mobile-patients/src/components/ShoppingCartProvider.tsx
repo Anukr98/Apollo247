@@ -447,6 +447,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotalOfRxProducts]);
 
+  useEffect(() => {
+    // updating I will show the prescription at the store option on change in address
+    if (deliveryAddressId) {
+      setShowPrescriptionAtStore(false);
+    }
+  }, [deliveryAddressId]);
+
   return (
     <ShoppingCartContext.Provider
       value={{

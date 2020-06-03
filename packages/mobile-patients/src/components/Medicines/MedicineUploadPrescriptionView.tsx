@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   EPrescription,
@@ -13,8 +12,6 @@ import { CrossYellow, FileBig, Check, UnCheck } from '@aph/mobile-patients/src/c
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
@@ -22,6 +19,8 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -45,8 +44,6 @@ const styles = StyleSheet.create({
 export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
   isTest?: boolean;
 }
-{
-}
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
   props
@@ -55,6 +52,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
+  const { showAphAlert } = useUIElements();
   const {
     uploadPrescriptionRequired,
     setPhysicalPrescriptions,
@@ -65,7 +63,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     removeEPrescription,
   } = isTest ? useDiagnosticsCart() : useShoppingCart();
 
-  const { showPrescriptionAtStore, setShowPrescriptionAtStore, storeId } = useShoppingCart();
+  const {
+    showPrescriptionAtStore,
+    setShowPrescriptionAtStore,
+    deliveryAddressId,
+  } = useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -299,7 +301,16 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         <TouchableOpacity
           activeOpacity={1}
           style={{ marginTop: 9, flexDirection: 'row' }}
-          onPress={() => setShowPrescriptionAtStore!(!showPrescriptionAtStore)}
+          onPress={() => {
+            if (deliveryAddressId) {
+              showAphAlert!({
+                title: string.common.uhOh,
+                description: string.medicine_cart.showPresAtStoreForStorePickUp,
+              });
+            } else {
+              setShowPrescriptionAtStore!(!showPrescriptionAtStore);
+            }
+          }}
         >
           <View style={{ marginLeft: -2 }}>
             {showPrescriptionAtStore ? <Check /> : <UnCheck />}
@@ -351,9 +362,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                   UPLOAD PRESCRIPTION
                 </Text>
               </TouchableOpacity>
-              {(!isTest && !!storeId && showPrescriptionAtTheStoreView()) || (
-                <View style={{ height: 8 }} />
-              )}
+              {(!isTest && showPrescriptionAtTheStoreView()) || <View style={{ height: 8 }} />}
             </View>
           ) : (
             rendePrescriptions()
