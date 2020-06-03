@@ -43,6 +43,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -370,7 +371,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   onPress={() => {
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
-                        availableInMin && availableInMin < 60 && availableInMin > 0
+                        availableInMin &&
+                          availableInMin > 0 &&
+                          availableTime &&
+                          moment(availableTime).isValid()
                           ? 'consult-now'
                           : 'book-appointment'
                       );
@@ -381,7 +385,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   }}
                 >
                   <Text style={styles.buttonText}>
-                    {availableInMin && availableInMin < 60 && availableInMin > 0 && availableTime
+                    {availableInMin &&
+                    availableInMin > 0 &&
+                    availableTime &&
+                    moment(availableTime).isValid()
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}
                   </Text>

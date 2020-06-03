@@ -5,6 +5,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
+import moment from 'moment';
 
 export interface AvailabilityCapsuleProps {
   availableTime: string;
@@ -13,7 +14,7 @@ export interface AvailabilityCapsuleProps {
 
 export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) => {
   const timeDiff: Number = timeDiffFromNow(props.availableTime);
-  if (props.availableTime)
+  if (props.availableTime && moment(props.availableTime).isValid())
     return (
       <CapsuleView
         upperCase
