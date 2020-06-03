@@ -28801,6 +28801,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "stateCode",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,

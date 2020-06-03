@@ -59,6 +59,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     city: String
     state: String
     zipcode: String
+    stateCode: String
   }
 
   input MedicineCartOMSItem {
@@ -113,6 +114,8 @@ type ShopAddress = {
   phone: string;
   city: string;
   state: string;
+  zipcode: string;
+  stateCode: string;
 };
 
 type MedicineCartOMSItem = {
