@@ -278,6 +278,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 11,
       fontWeight: 500,
     },
+    outOfStock: {
+      textAlign: 'center',
+      padding: 16,
+    },
   });
 });
 
@@ -670,7 +674,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </div>
           </>
         ) : (
-          <>
+          <div className={classes.outOfStock}>
             <div className={classes.medicineNoStock}>Out Of Stock</div>
             <AphButton
               fullWidth
@@ -689,7 +693,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             >
               Notify when in stock
             </AphButton>
-          </>
+          </div>
         )}
       </div>
 
