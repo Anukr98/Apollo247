@@ -169,7 +169,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-
+  args.filterInput.sort = args.filterInput.sort || defaultSort();
+  const minsForSort = args.filterInput.sort == 'distance' ? 1441 : 241;
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -269,7 +270,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
-      if (doctor['earliestSlotavailableInMinutes'] < 1441) {
+      if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloDoctors.push(doctor);
         } else {
@@ -286,7 +287,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
 
-  args.filterInput.sort = args.filterInput.sort || defaultSort();
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(

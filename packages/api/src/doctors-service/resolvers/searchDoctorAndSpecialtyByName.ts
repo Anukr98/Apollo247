@@ -324,7 +324,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
-      if (doctor['earliestSlotavailableInMinutes'] < 1441) {
+      if (doctor['earliestSlotavailableInMinutes'] < 241) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloMatchedDoctors.push(doctor);
         } else {
@@ -434,7 +434,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         });
       }
       if (doctor['activeSlotCount'] > 0) {
-        if (doctor['earliestSlotavailableInMinutes'] < 1441) {
+        if (doctor['earliestSlotavailableInMinutes'] < 241) {
           if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
             earlyAvailableApolloPossibleDoctors.push(doctor);
           } else {
