@@ -36,6 +36,7 @@ const appStaticVariables = {
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 30,
+  PACKAGING_CHARGES: 0,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -55,7 +56,11 @@ const PharmaApiConfig = {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
     MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],
@@ -86,6 +91,10 @@ const PharmaApiConfig = {
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloProdBaseUrl],
@@ -140,8 +149,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.418',
-  Android_Version: '2.418',
+  iOS_Version: '2.513',
+  Android_Version: '2.513',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:

@@ -748,11 +748,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         setMedicineList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-        keyword: _searchText,
-        Source: 'Pharmacy Home',
-      };
-      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
 
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
@@ -761,6 +756,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
+          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+            keyword: _searchText,
+            Source: 'Pharmacy Home',
+            resultsdisplayed: products.length,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);

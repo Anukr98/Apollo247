@@ -539,6 +539,12 @@ export class DoctorSpecialty extends BaseEntity {
   userFriendlyNomenclature: string;
 
   @Column({ nullable: true })
+  groupName: string;
+  
+  @Column({ nullable: true })
+  commonSearchTerm: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
   @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
   doctor: Doctor[];
@@ -1149,4 +1155,24 @@ export class Deeplink extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+}
+
+@Entity()
+export class DoctorPatientExternalConnect extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('DoctorPatientExternalConnect_doctorId')
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Index('DoctorPatientExternalConnect_externalConnect')
+  @Column({ default: false })
+  externalConnect: Boolean;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  patientId: string;
 }

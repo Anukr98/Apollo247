@@ -1,17 +1,24 @@
 import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  CrossPopup,
-  CouponIcon,
   ArrowRight,
+  CouponIcon,
+  CrossPopup,
   GreenTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT,
   BOOK_FOLLOWUP_APPOINTMENT,
@@ -28,63 +35,59 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
+  AppointmentType,
   APPOINTMENT_TYPE,
   BookAppointmentInput,
-  DoctorType,
-  AppointmentType,
   BOOKINGSOURCE,
   DEVICETYPE,
+  ConsultMode,
+  DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  getNetStatus,
-  g,
-  handleGraphQlError,
-  postWebEngageEvent,
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
+import {
+  ValidateConsultCoupon,
+  ValidateConsultCouponVariables,
+} from '@aph/mobile-patients/src/graphql/types/ValidateConsultCoupon';
+import {
+  getNextAvailableSlots,
+  whatsAppUpdateAPICall,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
   callPermissions,
+  g,
+  getNetStatus,
+  handleGraphQlError,
   postAppsFlyerEvent,
-  postFirebaseEvent,
+  postWebEngageEvent,
   postWEGWhatsAppEvent,
+  dataSavedUserID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+// import { useAppCommonData } from '../AppCommonDataProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
   Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  StyleSheet,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-// import { useAppCommonData } from '../AppCommonDataProvider';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import {
-  ValidateConsultCoupon,
-  ValidateConsultCouponVariables,
-} from '@aph/mobile-patients/src/graphql/types/ValidateConsultCoupon';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import moment from 'moment';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const { width, height } = Dimensions.get('window');
@@ -100,6 +103,8 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   FollowUp: boolean;
   appointmentType: string;
   appointmentId: string;
+  consultModeSelected: ConsultMode;
+  externalConnect: boolean | null;
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
@@ -108,7 +113,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
-
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -118,7 +122,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -138,6 +142,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   // const { VirtualConsultationFee } = useAppCommonData();
+  const { getPatientApiCall } = useAuth();
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -149,9 +154,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
+  useEffect(() => {
+    if (props.consultModeSelected === ConsultMode.ONLINE) {
+      setselectedTab(tabs[0].title);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
+      setselectedTab(tabs[1].title);
+    }
+  }, [props.consultModeSelected]);
 
   useEffect(() => {
-    postWEGWhatsAppEvent(true);
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -348,6 +359,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       : selectedClinic
       ? selectedClinic.facility.id
       : '';
+    const externalConnectParam =
+      props.externalConnect !== null ? { externalConnect: props.externalConnect } : {};
     const appointmentInput: BookAppointmentInput = {
       patientId: props.patientId,
       doctorId: props.doctor ? props.doctor.id : '',
@@ -358,6 +371,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       couponCode: coupon ? coupon : null,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      ...externalConnectParam,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);
@@ -484,10 +498,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
+  const whatsappAPICalled = () => {
+    if (!g(currentPatient, 'whatsAppConsult')) {
+      postWEGWhatsAppEvent(whatsAppUpdate);
+      callWhatsOptAPICall(whatsAppUpdate);
+    }
+  };
+
   const onPressPay = () => {
     // Pay Button Clicked	event
     postWebEngagePayButtonClickedEvent();
     callPermissions();
+    whatsappAPICalled();
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(
       AppRoutes.DoctorDetails,
@@ -828,6 +850,25 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
   };
 
+  const callWhatsOptAPICall = async (optedFor: boolean) => {
+    const userId = await dataSavedUserID('selectedProfileId');
+
+    whatsAppUpdateAPICall(
+      client,
+      g(currentPatient, 'whatsAppMedicine'),
+      optedFor,
+      userId ? userId : g(currentPatient, 'id')
+    )
+      .then(({ data }: any) => {
+        console.log(data, 'whatsAppUpdateAPICall');
+        getPatientApiCall();
+      })
+      .catch((e: any) => {
+        CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
+        console.log('error', e);
+      });
+  };
+
   return (
     <View
       style={{
@@ -850,7 +891,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.setdisplayoverlay(false)}
+            onPress={() => {
+              props.setdisplayoverlay(false);
+            }}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
               backgroundColor: 'white',
@@ -950,15 +993,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {renderApplyCoupon()}
               {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
-              <WhatsAppStatus
-                // style={{ marginTop: 6 }}
-                onPress={() => {
-                  whatsAppUpdate
-                    ? (setWhatsAppUpdate(false), postWEGWhatsAppEvent(false))
-                    : (setWhatsAppUpdate(true), postWEGWhatsAppEvent(true));
-                }}
-                isSelected={whatsAppUpdate}
-              />
+              {!g(currentPatient, 'whatsAppConsult') ? (
+                <WhatsAppStatus
+                  // style={{ marginTop: 6 }}
+                  onPress={() => {
+                    whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
+                  }}
+                  isSelected={whatsAppUpdate}
+                />
+              ) : null}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}

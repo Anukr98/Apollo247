@@ -86,6 +86,7 @@ import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
+import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -164,6 +165,7 @@ export enum AppRoutes {
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
+  ConsultTypeScreen = 'ConsultTypeScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -423,6 +425,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OneApolloMembership]: {
     screen: OneApolloMembership,
+  },
+  [AppRoutes.ConsultTypeScreen]: {
+    screen: ConsultTypeScreen,
   },
 };
 

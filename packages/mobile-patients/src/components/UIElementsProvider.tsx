@@ -15,6 +15,10 @@ import {
 } from 'react-native';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import {
+  MedAndTestFeedbackPopup,
+  MedAndTestFeedbackPopupProps,
+} from '@aph/mobile-patients/src/components/Medicines/MedAndTestFeedbackPopup';
 
 const styles = StyleSheet.create({
   okButtonStyle: {
@@ -54,6 +58,7 @@ export interface UIElementsContextProps {
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
+  setMedFeedback: ((feedback: MedAndTestFeedbackPopupProps['feedback']) => void) | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -61,6 +66,7 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
+  setMedFeedback: null,
 });
 
 type AphAlertCTAs = {
@@ -89,6 +95,12 @@ export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
   const [alertParams, setAlertParams] = useState<AphAlertParams>({});
+  const [medFeedback, setMedFeedback] = useState<MedAndTestFeedbackPopupProps['feedback']>({
+    visible: false,
+    title: '',
+    subtitle: '',
+    transactionId: '',
+  });
 
   useEffect(() => {
     if (isAlertVisible || loading) {
@@ -196,6 +208,16 @@ export const UIElementsProvider: React.FC = (props) => {
     setAlertParams({});
   };
 
+  const renderMedAndTestFeedbackPopup = () =>
+    !!medFeedback.visible && (
+      <MedAndTestFeedbackPopup
+        onComplete={() => {
+          setMedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
+        }}
+        feedback={medFeedback}
+      />
+    );
+
   return (
     <UIElementsContext.Provider
       value={{
@@ -203,11 +225,13 @@ export const UIElementsProvider: React.FC = (props) => {
         setLoading,
         showAphAlert,
         hideAphAlert,
+        setMedFeedback,
       }}
     >
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1 }} pointerEvents={loading ? 'none' : 'auto'}>
           {props.children}
+          {renderMedAndTestFeedbackPopup()}
           {renderLoading()}
         </View>
         {renderAphAlert()}

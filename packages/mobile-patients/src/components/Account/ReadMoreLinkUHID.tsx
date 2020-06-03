@@ -179,19 +179,19 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
           >
             <LinkUHIDStep2first style={{
               resizeMode: 'contain',
-              width: 115,
+              width: '30%',
               height: 220,
             }} />
             <LinkUHIDStep2second style={{
               resizeMode: 'contain',
-              width: 115,
+              width: '30%',
               height: 220,
             }} />
             <View
               style={{
                 position: 'absolute',
                 justifyContent: 'center',
-                left: heightPercent <= 31 ? 125 : 130,
+                left: heightPercent <= 31 ? 110 : 120,
                 top: 80,
               }}
             >
@@ -260,7 +260,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             }} />
             <View
               style={{
-                paddingLeft: heightPercent <= 31 ? 8 : 20
+                paddingLeft: heightPercent <= 31 ? 5 : 8
               }}
             >
               <Text style={[
@@ -400,8 +400,8 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                 }} />
                 <View style={{
                   position: 'absolute',
-                  left: 130,
-                  top: 70
+                  left: 120,
+                  top: 60
                 }}>
                   <Text style={styles.instructionText}>Other UHID is Delinked</Text>
                   <Text style={styles.instructionText}>from Primary UHID</Text>
@@ -415,7 +415,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                   <DottedArrow3
                     style={{
                       resizeMode: 'stretch',
-                      width: heightPercent <= 31 ? 60 : 100,
+                      width: 60,
                       height: 7,
                     }}
                   />
@@ -446,10 +446,10 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                   <Text style={[styles.instructionText, { marginLeft: 35, marginTop: 10 }]}>Reconfirmation</Text>
                   <DottedArrow2 style={{
                     resizeMode: 'stretch',
-                    width: heightPercent <= 31 ? 100 : 120,
-                    height: heightPercent <= 31 ? 60 : 70,
+                    width: 100,
+                    height: 60,
                     position: 'absolute',
-                    left: heightPercent <= 31 ? -70 : -90
+                    left: -70
                   }} />
                 </View>
               </View>

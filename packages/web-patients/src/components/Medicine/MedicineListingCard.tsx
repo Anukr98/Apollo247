@@ -214,7 +214,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
             }`}
           >
             <div className={classes.medicineStripWrap}>
-              <Link to={clientRoutes.medicineDetails(item.sku)}>
+              <Link to={clientRoutes.medicineDetails(item.url_key)}>
                 <div className={classes.medicineInformation}>
                   <div className={classes.medicineIcon}>
                     <img
@@ -252,6 +252,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       onChange={(e: React.ChangeEvent<{ value: any }>) => {
                         updateCartItemQty &&
                           updateCartItemQty({
+                            url_key: item.url_key,
                             description: item.description,
                             id: item.id,
                             image: item.image,

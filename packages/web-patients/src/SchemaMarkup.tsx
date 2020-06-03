@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet';
 import React from 'react';
 interface StructuredJSON {
-  [name: string]: string;
+  [name: string]: any;
 }
 interface StructureSchema {
   structuredJSON: StructuredJSON;

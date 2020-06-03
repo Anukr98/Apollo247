@@ -176,6 +176,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Order Ready at Store';
+      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
@@ -387,19 +390,34 @@ export const getNetStatus = async () => {
 };
 
 export const nextAvailability = (nextSlot: string) => {
-  const today: Date = new Date();
-  const date2: Date = new Date(nextSlot);
-  const secs = (date2 as any) - (today as any);
-  const mins = Math.ceil(secs / (60 * 1000));
-  let hours: number = 0;
-  if (mins > 0 && mins < 60) {
-    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
-  } else if (mins >= 60 && mins < 1380) {
-    hours = Math.ceil(mins / 60);
-    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
-  } else if (mins >= 1380) {
-    const days = Math.ceil(mins / (24 * 60));
-    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  return `available in ${mhdMY(nextSlot, 'min')}`;
+};
+
+export const mhdMY = (
+  time: string,
+  mText: string = 'minute',
+  hText: string = 'hour',
+  dText: string = 'day',
+  MText: string = 'month',
+  YText: string = 'year'
+) => {
+  const current = moment(new Date());
+  const difference = moment.duration(moment(time).diff(current));
+  const min = Math.ceil(difference.asMinutes());
+  const hours = Math.ceil(difference.asHours());
+  const days = Math.ceil(difference.asDays());
+  const months = Math.ceil(difference.asMonths());
+  const year = Math.ceil(difference.asYears());
+  if (min > 0 && min < 24) {
+    return `${min} ${mText}${min !== 1 ? 's' : ''}`;
+  } else if (hours > 0 && hours < 24) {
+    return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
+  } else if (days > 0 && days < 30) {
+    return `${days} ${dText}${days !== 1 ? 's' : ''}`;
+  } else if (months > 0 && months < 12) {
+    return `${months} ${MText}${months !== 1 ? 's' : ''}`;
+  } else if (year > 0 && year < 30) {
+    return `${year} ${YText}${year !== 1 ? 's' : ''}`;
   }
 };
 
@@ -858,7 +876,8 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+  console.log(whatsAppAllow, 'whatsAppAllow');
+  webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
 
 export const permissionHandler = (
@@ -1130,19 +1149,6 @@ export const getFormattedLocation = (
     pincode: findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
-};
-
-export const getFormattedLocationFromPincode = async (pincode: string) => {
-  const placesResponse = await autoCompletePlaceSearch(pincode, true);
-  const placeId = g(placesResponse, 'data', 'predictions', '0' as any, 'place_id');
-  if (placeId) {
-    const placeIdResponse = await getPlaceInfoByPlaceId(placeId);
-    const addrComponents = g(placeIdResponse, 'data', 'result', 'address_components')!;
-    const latLng = g(placeIdResponse, 'data', 'result', 'geometry', 'location')!;
-    return getFormattedLocation(addrComponents, latLng);
-  } else {
-    throw 'No results found.';
-  }
 };
 
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
