@@ -25,7 +25,7 @@ import {
   SEARCH_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { g, mhdMY } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, mhdMY, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -217,7 +217,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       : null;
 
     props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-      DoctorName: rowData && rowData.fullName,
+      DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
       DoctorId: id,
       nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
       nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,

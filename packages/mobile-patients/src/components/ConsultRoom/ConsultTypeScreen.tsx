@@ -6,7 +6,6 @@ import { theme } from '../../theme/theme';
 import {
   CheckUnselectedIcon,
   CheckedIcon,
-  RemoveIcon,
   InPersonHeader,
   InPersonBlue,
   CTDoctor,
@@ -17,7 +16,7 @@ import {
   OnlineConsult,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { nextAvailability, mhdMY, g } from '../../helpers/helperFunctions';
+import { nextAvailability, mhdMY, g, timeDiffFromNow } from '../../helpers/helperFunctions';
 import { ConsultMode } from '../../graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -90,6 +89,12 @@ const styles = StyleSheet.create({
   },
   timeTextStyle: {
     ...theme.viewStyles.text('B', 9, theme.colors.SHERPA_BLUE, 1, undefined, 0.5),
+    marginTop: 6,
+    marginLeft: 1,
+    textTransform: 'uppercase',
+  },
+  timeText2Style: {
+    ...theme.viewStyles.text('B', 9, theme.colors.CAPSULE_ACTIVE_BG, 1),
     marginTop: 6,
     marginLeft: 1,
     textTransform: 'uppercase',
@@ -178,7 +183,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           CommonBugFender('ConsultTypeScreen_getCount', e);
         });
     }
-  }, []);
+  }, [DoctorId, client, currentPatientId, setLoading]);
 
   const renderHeader = () => {
     return (
@@ -224,6 +229,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     steps: stepsObject[],
     onPress: () => void
   ) => {
+    const timeDiff: Number = timeDiffFromNow(time || '');
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardHeaderStyle}>
@@ -232,7 +238,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             <Text style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}>
               {heading}
             </Text>
-            {time ? <Text style={styles.timeTextStyle}>{nextAvailability(time)}</Text> : null}
+            {time ? (
+              <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
+                {nextAvailability(time)}
+              </Text>
+            ) : null}
           </View>
           <Text style={styles.priceTextStyle}>{`Rs. ${price}`}</Text>
         </View>
