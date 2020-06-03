@@ -3,11 +3,12 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
-import { useAuth } from 'hooks/authHooks';
+
 import { useLocationDetails, GooglePlacesType } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -206,6 +207,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
+  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
@@ -273,6 +277,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
     }
   }, [currentLocation, currentPincode]);
 
+  useEffect(() => {
+    if (!headerPincodeError && pharmaAddressDetails.pincode) {
+      isServiceable(pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
+
   const getAddressFromLocalStorage = () => {
     const currentAddress = localStorage.getItem('pharmaAddress');
     if (currentAddress) {
@@ -321,7 +331,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
               findAddrComponents('sublocality_level_1', addrComponents) ||
               findAddrComponents('sublocality_level_2', addrComponents) ||
               findAddrComponents('locality', addrComponents);
-
             setMedicineAddress(area);
             setPharmaAddressDetails({
               city,
@@ -338,12 +347,16 @@ export const MedicineLocationSearch: React.FC = (props) => {
         } catch {
           (e: AxiosError) => {
             console.log(e);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong :(');
             setMutationLoading(false);
           };
         }
       })
       .catch((e: AxiosError) => {
         setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         console.log(e);
       });
   };
@@ -368,23 +381,36 @@ export const MedicineLocationSearch: React.FC = (props) => {
       })
       .catch((e: AxiosError) => {
         setMutationLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         console.log(e);
       });
+  };
+
+  const checkSelectedPincodeServiceability = (pincode: string, status: string) => {
+    if (pincode === pharmaAddressDetails.pincode) {
+      setHeaderPincodeError(status);
+      setPincodeError(false);
+    } else {
+      setPincodeError(status === '1');
+      setHeaderPincodeError('0');
+    }
   };
 
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
       .then(({ data }: any) => {
         if (data && data.Availability) {
-          setPincodeError(false);
+          checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
         } else {
           setMutationLoading(false);
-          setPincodeError(true);
+          checkSelectedPincodeServiceability(pincode, '1');
         }
       })
       .catch((e) => {
-        setPincodeError(true);
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
         setMutationLoading(false);
       });
   };
@@ -412,7 +438,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </span>
         </div>
-        {pincodeError && <div className={classes.noService}>Sorry, not serviceable here.</div>}
+        {headerPincodeError === '1' && (
+          <div className={classes.noService}>Sorry, not serviceable here.</div>
+        )}
       </div>
       <Popover
         open={isLocationPopover}
@@ -435,6 +463,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <ul>
           <li
             onClick={() => {
+              setHeaderPincodeError(null);
               locateCurrentLocation();
             }}
           >
@@ -519,6 +548,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
