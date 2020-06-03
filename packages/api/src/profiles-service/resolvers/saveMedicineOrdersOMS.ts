@@ -225,7 +225,6 @@ const saveMedicineOrderOMS: Resolver<
       });
     }
   });
-
   if (medicineCartOMSInput.coupon) {
     const pharmaCouponInput: PharmaCouponInputArgs = {
       pharmaCouponInput: {
@@ -255,8 +254,14 @@ const saveMedicineOrderOMS: Resolver<
         discountedTotals.mrpPriceTotal -
         discountedTotals.couponDiscount -
         discountedTotals.productDiscount;
-      if (medicineCartOMSInput.estimatedAmount != Number(finalAmount.toFixed(2))) {
-        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
+      if (
+        Math.abs(Math.floor(finalAmount) - Math.floor(medicineCartOMSInput.estimatedAmount)) > 1
+      ) {
+        throw new AphError(
+          AphErrorMessages.SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR,
+          undefined,
+          {}
+        );
       }
     }
   } else {
@@ -266,9 +271,10 @@ const saveMedicineOrderOMS: Resolver<
     if (medicineCartOMSInput.devliveryCharges) {
       estimatedAmount += medicineCartOMSInput.devliveryCharges;
     }
-
-    if (estimatedAmount != medicineCartOMSInput.estimatedAmount) {
-      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
+    if (
+      Math.abs(Math.floor(estimatedAmount) - Math.floor(medicineCartOMSInput.estimatedAmount)) > 1
+    ) {
+      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR, undefined, {});
     }
   }
 

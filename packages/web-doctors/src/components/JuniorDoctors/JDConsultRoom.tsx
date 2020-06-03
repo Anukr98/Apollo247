@@ -1205,6 +1205,7 @@ export const JDConsultRoom: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
+
   const createSessionAction = () => {
     setSaving(true);
     client
@@ -1218,11 +1219,20 @@ export const JDConsultRoom: React.FC = () => {
         },
       })
       .then((_data: any) => {
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
-        sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
-        setError('');
-        setSaving(false);
+        let sessId = _data.data.createAppointmentSession.sessionId;
+        let tok = _data.data.createAppointmentSession.appointmentToken;
+        if (sessId !== '' && tok !== '') {
+          setsessionId(sessId);
+          settoken(tok);
+          sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
+          setError('');
+          setSaving(false);
+        } else {
+          if (document.getElementById('homeId')) {
+            alert('Appointment already fast-tracked by Senior Doctor');
+            document.getElementById('homeId')!.click();
+          }
+        }
       })
       .catch((e: any) => {
         const logObject = {

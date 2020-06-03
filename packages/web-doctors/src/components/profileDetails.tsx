@@ -492,7 +492,7 @@ export const MyAccount: React.FC = (props) => {
   const onNext = () => {};
   const onBack = () => {};
   const shareDeepLink = () => {
-    if (mobileNumber.trim().length < 10) {
+    if (mobileNumber.trim().length < 10 || mobileNumber.trim() === '' || showErrorMessage) {
       setShowErrorMessage(true);
     } else {
       setShowErrorMessage(false);
@@ -515,7 +515,6 @@ export const MyAccount: React.FC = (props) => {
             data.data.sendMessageToMobileNumber.status === 'OK'
           ) {
             alert(data.data.sendMessageToMobileNumber.message);
-            setIsShareProfileDialogOpen(false);
             setDeepLink('');
             setMobileNumber('');
           } else {
@@ -946,7 +945,6 @@ export const MyAccount: React.FC = (props) => {
                             //setPhoneMessage(validPhoneMessage);
                             setShowErrorMessage(false);
                           } else {
-                            //setPhoneMessage(invalidPhoneMessage);
                             setShowErrorMessage(true);
                           }
                         } else {
@@ -973,7 +971,7 @@ export const MyAccount: React.FC = (props) => {
                       <div className={classes.errorText}>Please enter valid mobile number</div>
                     )}
 
-                    <AphButton color="primary" onClick={() => shareDeepLink()}>
+                    <AphButton disabled={(showErrorMessage || mobileNumber === '' || mobileNumber.trim().length < 10) ? true : false} color="primary" onClick={() => shareDeepLink()}>
                       Send
                     </AphButton>
                     {loading && <CircularProgress className={classes.loader} />}
