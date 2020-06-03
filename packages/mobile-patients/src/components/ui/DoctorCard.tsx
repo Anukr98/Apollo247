@@ -166,7 +166,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             : props.availableModes === ConsultMode.PHYSICAL
             ? g(filterData, '0' as any, 'physicalSlot')
             : g(filterData, '0' as any, 'referenceSlot');
-        console.log(props.availableModes, nextSlot, filterData);
+        // console.log(props.availableModes, nextSlot, filterData);
       } else if (filterData.length > 0 && g(filterData, '0' as any, 'referenceSlot')) {
         nextSlot = filterData[0] ? g(filterData, '0' as any, 'referenceSlot') : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
       }
@@ -371,10 +371,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   onPress={() => {
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
-                        availableInMin &&
-                          availableInMin > 0 &&
-                          availableTime &&
-                          moment(availableTime).isValid()
+                        availableTime && moment(availableTime).isValid()
                           ? 'consult-now'
                           : 'book-appointment'
                       );
@@ -385,10 +382,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   }}
                 >
                   <Text style={styles.buttonText}>
-                    {availableInMin &&
-                    availableInMin > 0 &&
-                    availableTime &&
-                    moment(availableTime).isValid()
+                    {availableTime && moment(availableTime).isValid()
                       ? `Consult in ${mhdMY(availableTime, 'min')}`
                       : string.common.book_apointment}
                   </Text>

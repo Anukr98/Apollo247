@@ -205,7 +205,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const { getPatientApiCall } = useAuth();
@@ -296,10 +296,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!g(currentPatient, 'whatsAppMedicine')) {
-      postWEGWhatsAppEvent(true);
-      // callWhatsOptAPICall(true);
-    }
     getUserAddress();
   }, []);
 
@@ -670,7 +666,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
           props.navigation.goBack();
-          whatsappAPICalled();
         }}
       />
     );
@@ -1565,7 +1560,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     )
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
-        getPatientApiCall();
       })
       .catch((e: any) => {
         CommonBugFender('YourCart_whatsAppUpdateAPICall_error', e);

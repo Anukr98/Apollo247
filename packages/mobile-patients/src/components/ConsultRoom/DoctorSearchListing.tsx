@@ -233,6 +233,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [value, setValue] = useState<boolean>(false);
+  const [sortValue, setSortValue] = useState<string>('');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -413,7 +414,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     filterMode: ConsultMode = ConsultMode.BOTH,
     SearchData: filterDataType[] = FilterData,
     location: locationType | null = latlng,
-    sort: string | null = value ? 'availability' : 'distance',
+    sort: string | null = sortValue,
     pinCode?: string
   ) => {
     const experienceArray: Range[] = [];
@@ -515,6 +516,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       ...geolocation,
       sort: sort,
     };
+    console.log('FilterInput', FilterInput);
 
     client
       .query<getDoctorsBySpecialtyAndFilters>({
@@ -1098,11 +1100,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
                     'Sort By': 'distance',
                   });
+                  setSortValue('distance');
                   fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
                 } else {
                   postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
                     'Sort By': 'availability',
                   });
+                  setSortValue('availability');
                   fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
                 }
               }}
