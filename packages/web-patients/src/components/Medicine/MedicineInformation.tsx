@@ -296,7 +296,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
   const { data } = props;
-  console.log('data', data);
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
