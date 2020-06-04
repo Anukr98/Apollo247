@@ -144,11 +144,35 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       margin: 0,
       lineHeight: 1,
+      paddingBottom: '10px',
     },
     circlularProgress: {
       display: 'flex',
       padding: 20,
       justifyContent: 'center',
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    scrollArrow: {
+      cursor: 'pointer',
+      [theme.breakpoints.up(1220)]: {
+        left: 0,
+        right: 0,
+        margin: '10px auto 0 auto',
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
     },
   };
 });
@@ -218,6 +242,7 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles({});
+  const scrollbar = useRef(null);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isLargeScreen = useMediaQuery('(min-width:901px)');
   const mascotRef = useRef(null);
@@ -421,14 +446,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           });
   }
 
+  const scrollToBottom = () => {
+    const { clientHeight, scrollTop, scrollHeight } = scrollbar.current.getValues();
+    const scrollBottom = clientHeight + scrollTop;
+    scrollBottom < scrollHeight
+      ? scrollbar.current.scrollTop(scrollBottom)
+      : scrollbar.current.scrollToTop();
+  };
+
   // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
   return (
     <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
-            <h2 className={classes.title}>Okay!</h2>
-            {specialistPlural ? `Here are our best ${specialistPlural}` : ''}
+            <h2 className={classes.title}>{`Found ${doctorsList.length} Results`}</h2>
+            <div style={{ paddingBottom: '10px' }}>{`Here are our best ${specialityName}`}</div>
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
@@ -456,71 +489,79 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       </div>
 
       {doctorsList.length > 0 ? (
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMax={
-            isMediumScreen
-              ? 'calc(100vh - 345px)'
-              : isLargeScreen
-              ? 'calc(100vh - 280px)'
-              : 'calc(100vh - 170px)'
-          }
-        >
-          <div className={classes.searchList}>
-            <Grid container spacing={2}>
-              {_map(doctorsList, (doctorDetails) => {
-                let availableMode = '';
-                let nextAvailabilityString = '';
-                const nextAvailability = _find(doctorsNextAvailability, (availability) => {
-                  const availabilityDoctorId =
-                    availability && availability.doctorId ? availability.doctorId : '';
-                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
-                  return availabilityDoctorId === currentDoctorId;
-                });
-                const availableModes = _find(doctorsAvailability, (availability) => {
-                  const availabilityDoctorId =
-                    availability && availability.doctorId ? availability.doctorId : '';
-                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
-                  return availabilityDoctorId === currentDoctorId;
-                });
-                if (
-                  availableModes &&
-                  availableModes.availableModes &&
-                  availableModes.availableModes.length > 0
-                ) {
-                  availableMode = availableModes.availableModes[0];
-                } else {
-                  availableMode = 'ONLINE';
-                }
-                if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
-                  nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                } else if (availableMode === 'PHYSICAL') {
-                  nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
-                }
+        <>
+          <Scrollbars
+            ref={scrollbar}
+            autoHide={true}
+            autoHeight
+            autoHeightMax={
+              isMediumScreen
+                ? 'calc(100vh - 345px)'
+                : isLargeScreen
+                ? 'calc(100vh - 280px)'
+                : 'calc(100vh - 170px)'
+            }
+          >
+            <div className={classes.searchList}>
+              <Grid container spacing={2}>
+                {_map(doctorsList, (doctorDetails) => {
+                  let availableMode = '';
+                  let nextAvailabilityString = '';
+                  const nextAvailability = _find(doctorsNextAvailability, (availability) => {
+                    const availabilityDoctorId =
+                      availability && availability.doctorId ? availability.doctorId : '';
+                    const currentDoctorId =
+                      doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                    return availabilityDoctorId === currentDoctorId;
+                  });
+                  const availableModes = _find(doctorsAvailability, (availability) => {
+                    const availabilityDoctorId =
+                      availability && availability.doctorId ? availability.doctorId : '';
+                    const currentDoctorId =
+                      doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                    return availabilityDoctorId === currentDoctorId;
+                  });
+                  if (
+                    availableModes &&
+                    availableModes.availableModes &&
+                    availableModes.availableModes.length > 0
+                  ) {
+                    availableMode = availableModes.availableModes[0];
+                  } else {
+                    availableMode = 'ONLINE';
+                  }
+                  if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
+                    nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
+                  } else if (availableMode === 'PHYSICAL') {
+                    nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
+                  }
 
-                // nextAvailabilityString =
-                //   availableMode === 'ONLINE'
-                //     ? nextAvailability && nextAvailability.onlineSlot
-                //       ? nextAvailability.onlineSlot
-                //       : ''
-                //     : '';
-                // const availableMode =
-                // console.log(nextAvailability, 'next availability....');
-                return (
-                  <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
-                    <DoctorCard
-                      history={props.history}
-                      doctorDetails={doctorDetails}
-                      key={_uniqueId('dcListing_')}
-                      nextAvailability={nextAvailabilityString}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
+                  // nextAvailabilityString =
+                  //   availableMode === 'ONLINE'
+                  //     ? nextAvailability && nextAvailability.onlineSlot
+                  //       ? nextAvailability.onlineSlot
+                  //       : ''
+                  //     : '';
+                  // const availableMode =
+                  // console.log(nextAvailability, 'next availability....');
+                  return (
+                    <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
+                      <DoctorCard
+                        history={props.history}
+                        doctorDetails={doctorDetails}
+                        key={_uniqueId('dcListing_')}
+                        nextAvailability={nextAvailabilityString}
+                      />
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </div>
+          </Scrollbars>
+          <div className={classes.scrollArrow} onClick={scrollToBottom}>
+            <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
-        </Scrollbars>
+        </>
       ) : (
         <>
           {!loading && data ? (
