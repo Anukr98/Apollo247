@@ -193,7 +193,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bool: {
           must: elasticMatch,
           should: {
-            match: {
+            match_phrase: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
@@ -206,6 +206,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
+  console.log(getDetails.body.hits);
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -270,7 +271,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       });
     }
     if (doctor['activeSlotCount'] > 0) {
-      console.log(doctor);
       if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloDoctors.push(doctor);
