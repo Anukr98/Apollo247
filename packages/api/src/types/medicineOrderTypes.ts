@@ -56,3 +56,16 @@ export interface PrescriptionUrl {
 export interface PrescriptionPrismFileId {
   fileId: string;
 }
+
+export interface StoreInventoryResp {
+  shopId: string;
+  requestStatus: string;
+  requestMessage: string;
+  itemDetails: StoreItemDetail[];
+}
+
+export interface StoreItemDetail {
+  itemId: string;
+  qty: number;
+  mrp: number;
+}
