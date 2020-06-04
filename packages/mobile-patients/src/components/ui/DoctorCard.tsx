@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
   educationTextStyles: {
-    paddingTop: 12,
+    paddingTop: 10,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
@@ -232,33 +232,31 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       parseInt(rowData.physicalConsultationFees, 10)
     ) {
       return (
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+          <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
             {string.common.Rs}
             {'  '}
           </Text>
-          <Text style={theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE)}>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
             {rowData.onlineConsultationFees}
           </Text>
         </View>
       );
     } else {
       return (
-        <View style={{ flexDirection: 'row' }}>
-          <Text
-            style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 14 }}
-          >
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+          <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
             Starts at{'  '}
-            <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
-              {string.common.Rs}
-              {'  '}
-            </Text>
-            <Text style={theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE)}>
-              {Math.min(
-                Number(rowData.physicalConsultationFees),
-                Number(rowData.onlineConsultationFees)
-              )}
-            </Text>
+          </Text>
+          <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+            {string.common.Rs}
+            {'  '}
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+            {Math.min(
+              Number(rowData.physicalConsultationFees),
+              Number(rowData.onlineConsultationFees)
+            )}
           </Text>
         </View>
       );
@@ -365,8 +363,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.fullName}</Text>
               <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
-                {rowData.experience} YR
+                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''}
+                {'   '}|{'  '} {rowData.experience} YR
                 {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
               </Text>
               {calculatefee(rowData)}
@@ -384,11 +382,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   </Text>
                 </Text>
               ) : null} */}
-              {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
+              {/* {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
                 <Text style={styles.doctorSpecializationStyles}>
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
-              ) : null}
+              ) : null} */}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
                 {rowData.qualification}
               </Text>

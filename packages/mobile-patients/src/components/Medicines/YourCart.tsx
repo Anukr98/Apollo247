@@ -214,7 +214,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 

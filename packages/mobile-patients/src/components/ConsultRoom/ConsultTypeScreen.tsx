@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     paddingBottom: 9,
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
   headingTextContainer: {

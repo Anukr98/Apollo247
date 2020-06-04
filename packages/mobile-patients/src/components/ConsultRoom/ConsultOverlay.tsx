@@ -124,7 +124,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const doctorFees =
     tabs[0].title === selectedTab

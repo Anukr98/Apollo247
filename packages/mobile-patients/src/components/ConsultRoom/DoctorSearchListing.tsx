@@ -275,12 +275,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const vaueChange = (data: any) => {
     const filterGetData =
       data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-
+    console.log('vaueChange', filterGetData);
     if (filterGetData.sort === 'distance') {
-      setNearyByFlag(!nearyByFlag);
+      setNearyByFlag(true);
       setAvailabilityFlag(false);
     } else {
-      setAvailabilityFlag(!availabilityFlag);
+      setAvailabilityFlag(true);
       setNearyByFlag(false);
     }
   };
@@ -691,7 +691,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           width: screenWidth / 2,
           alignItems: 'center',
           justifyContent: 'flex-end',
-          marginLeft: -40,
+          marginLeft: -20,
         }}
       >
         {currentLocation === '' ? (
@@ -791,7 +791,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 setSearchIconClicked(!searchIconClicked);
               }}
             >
-              <SearchIcon />
+              <View
+                style={{ height: 32, width: 32, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <SearchIcon />
+              </View>
             </TouchableOpacity>
           }
           onPressLeftIcon={backDataFunctionality}
@@ -1152,17 +1156,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
               }}
             >
-              {nearyByFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {nearyByFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      nearyByFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.near}
+                </Text>
+              </View>
             </TouchableOpacity>
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, nearyByFlag ? 1 : 0.6),
-                marginLeft: 1,
-                paddingTop: -5,
-              }}
-            >
-              {string.doctor_search_listing.near}
-            </Text>
 
             <TouchableOpacity
               activeOpacity={1}
@@ -1178,22 +1190,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
               }}
             >
-              {availabilityFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {availabilityFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      availabilityFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.avaliablity}
+                </Text>
+              </View>
             </TouchableOpacity>
-            <Text
-              style={{
-                ...theme.viewStyles.text(
-                  'B',
-                  10,
-                  theme.colors.SHERPA_BLUE,
-                  availabilityFlag ? 1 : 0.6
-                ),
-                marginLeft: 1,
-                paddingTop: -5,
-              }}
-            >
-              {string.doctor_search_listing.avaliablity}
-            </Text>
           </View>
           <View style={styles.seperator} />
           <View style={styles.bottomItemContainer}>
@@ -1207,21 +1226,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   }
                 }}
               >
-                {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        onlineCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.online}
+                  </Text>
+                </View>
               </TouchableOpacity>
-              <Text
-                style={{
-                  ...theme.viewStyles.text(
-                    'B',
-                    10,
-                    theme.colors.SHERPA_BLUE,
-                    onlineCheckBox ? 1 : 0.6
-                  ),
-                  marginLeft: 4,
-                }}
-              >
-                {string.doctor_search_listing.online}
-              </Text>
             </View>
             <View style={styles.bottomCenterContainer}>
               <TouchableOpacity
@@ -1233,21 +1260,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   }
                 }}
               >
-                {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        physicalCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.inperson}
+                  </Text>
+                </View>
               </TouchableOpacity>
-              <Text
-                style={{
-                  ...theme.viewStyles.text(
-                    'B',
-                    10,
-                    theme.colors.SHERPA_BLUE,
-                    physicalCheckBox ? 1 : 0.6
-                  ),
-                  marginLeft: 4,
-                }}
-              >
-                {string.doctor_search_listing.inperson}
-              </Text>
             </View>
           </View>
           <View style={styles.seperator} />
