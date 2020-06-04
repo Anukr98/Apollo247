@@ -114,8 +114,9 @@ const readableParam = (param: string) => {
     param && param.includes('-')
       ? param.replace(/-/g, ' ')
       : param.replace(/\s+/g, '-').toLowerCase();
-  const second = first.includes('/') ? first.replace(/[\/]/g, '_') : first.replace(/_/g, '/');
-  return second.replace(/\./, '');
+  const second =
+    first && first.includes('/') ? first.replace(/[\/]/g, '_') : first.replace(/_/g, '/');
+  return first && second ? second.replace(/\./, '') : '';
 };
 const dayMapping = {
   MONDAY: 'Mo',
