@@ -99,6 +99,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Keyboard,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -839,6 +840,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const [keyBoardVisible, setKeyBoardVisible] = useState<boolean>(false);
+  useEffect(() => {
+    const keyboardShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyBoardVisible(true);
+      }
+    );
+    const keyboardHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyBoardVisible(false);
+      }
+    );
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
 
   const renderFields = (
     heading: string,
@@ -855,6 +875,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View
           style={{
             minHeight: 44,
+            maxHeight: keyBoardVisible ? 110 : undefined,
             marginTop: 8,
             marginBottom: 16,
             backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -866,6 +887,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInput
             style={{
               minHeight: 44,
+              maxHeight: keyBoardVisible ? 110 : undefined,
               justifyContent: 'center',
               paddingTop: 12,
               paddingBottom: 12,
@@ -881,7 +903,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
             editable={caseSheetEdit}
-            scrollEnabled={false}
+            scrollEnabled={keyBoardVisible}
           />
         </View>
       </View>
