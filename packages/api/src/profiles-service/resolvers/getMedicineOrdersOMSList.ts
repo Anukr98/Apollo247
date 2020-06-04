@@ -27,6 +27,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     quoteDateTime: DateTime
+    createdDate: DateTime
     coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
@@ -178,6 +179,9 @@ const getMedicineOrderOMSDetails: Resolver<
       }
     }
   }
+  medicineOrderDetails.medicineOrdersStatus.sort((a, b) => {
+    return (new Date(a.statusDate) as any) - (new Date(b.statusDate) as any);
+  });
   return { medicineOrderDetails };
 };
 

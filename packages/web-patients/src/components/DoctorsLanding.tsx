@@ -453,6 +453,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                         setSpecialitySelected('');
                         setFilterOptions(searchObject);
                         setDisableFilters(true);
+                        setShowSearchAndPastSearch(true);
                       } else {
                         props.history.push(clientRoutes.welcome());
                       }

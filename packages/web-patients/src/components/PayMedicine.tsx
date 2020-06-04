@@ -873,7 +873,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${
+                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
+                        } on delivery`
                       )}
                     </AphButton>
                   )}
