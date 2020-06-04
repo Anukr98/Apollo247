@@ -1951,7 +1951,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {(props.appointmentStatus !== STATUS.COMPLETED || isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link to="/calendar">
+          <Link to={localStorage.getItem('callBackUrl')}>
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -1968,13 +1968,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               : ''}
           </div>
         </div>
-        {/* <span className={classes.timeLeft}>
-          {props.startAppointment
-            ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-                seconds.toString().length < 2 ? '0' + seconds : seconds
-              }`
-            : getTimerText()}
-        </span> */}
         <div className={classes.consultButtonContainer}>
           <span>
             {//   props.appointmentStatus === STATUS.COMPLETED &&
@@ -2379,7 +2372,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             <li
                               onClick={() => {
                                 props.createSDCasesheetCall(true);
-                                console.log('Issue New Prescription');
                               }}
                             >
                               Issue New Prescription
