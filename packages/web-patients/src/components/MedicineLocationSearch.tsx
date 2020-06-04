@@ -9,6 +9,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -291,25 +292,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
         : currentAddress;
     }
     return 'No location';
-  };
-
-  const checkServiceAvailability = (zipCode: string) => {
-    return axios.post(
-      apiDetails.service_url || '',
-      {
-        postalcode: zipCode || '',
-        skucategory: [
-          {
-            SKU: 'PHARMA',
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-        },
-      }
-    );
   };
 
   const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
