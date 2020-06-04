@@ -440,7 +440,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    //console.log('ordersList====>', ordersList);
+    console.log('ordersList====>', ordersList.length);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,

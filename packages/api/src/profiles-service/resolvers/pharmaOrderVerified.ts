@@ -108,7 +108,7 @@ const saveOrderShipments: Resolver<
   }
 
   let shipmentsInput = saveOrderShipmentsInput.shipments;
-  let existingShipments: Shipment[] = [];
+  const existingShipments: Shipment[] = [];
   if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
     shipmentsInput = shipmentsInput.filter((shipment) => {
       const savedShipment = orderDetails.medicineOrderShipments.find((savdShipment) => {

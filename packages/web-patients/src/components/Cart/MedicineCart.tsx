@@ -652,9 +652,17 @@ export const MedicineCart: React.FC = (props) => {
             (item.special_price && item.special_price !== updatedCartItems[index].special_price)
           ) {
             const newItem = { ...item, ...updatedCartItems[index] };
+            if (item.special_price && !updatedCartItems[index].special_price) {
+              newItem['special_price'] = '';
+            }
+            /* the below commented code are the price difference
+              values which could be used in the near future */
             const changedDetailObj = {
-              pDiff: item.price - updatedCartItems[index].price,
+              // pDiff: item.price - updatedCartItems[index].price,
               availabilityChange: updatedCartItems[index].is_in_stock !== 1 ? true : false,
+              // splPDiff: item.special_price
+              //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
+              //   : 0,
             };
             const updatedObj = Object.assign({}, item, changedDetailObj);
             updateCartItemPrice(newItem);
@@ -784,12 +792,14 @@ export const MedicineCart: React.FC = (props) => {
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
 
-  const getTypeOfProduct = (type: string | null) => {
-    switch (type) {
-      case 'Pharma':
+  const getTypeOfProduct = (type: string) => {
+    switch (_lowerCase(type)) {
+      case 'pharma':
         return CouponCategoryApplicable.PHARMA;
-      case 'Fmcg':
+      case 'fmcg':
         return CouponCategoryApplicable.FMCG;
+      default:
+        return null;
     }
   };
 
@@ -804,7 +814,7 @@ export const MedicineCart: React.FC = (props) => {
               return {
                 mrp: item.price,
                 productName: item.name,
-                productType: getTypeOfProduct(item.type_id),
+                productType: getTypeOfProduct(item.type_id || ''),
                 quantity: item.quantity,
                 specialPrice: item.special_price ? item.special_price : item.price,
                 itemId: item.id.toString(),
@@ -1582,19 +1592,13 @@ export const MedicineCart: React.FC = (props) => {
               <Typography variant="h2">Hi!</Typography>
               <p>
                 <span>Important message for items in your Cart:</span> <br />
-                <div>Items in your cart will reflect the most recent price in your region.</div>
                 <br />
-                {priceDiffArr &&
-                  priceDiffArr.map((item) =>
-                    item.availbilityChange ? (
-                      <div>We’re Sorry. {item.name} is now out of stock in your region.</div>
-                    ) : (
-                      <div>
-                        {item.name} MRP has {item.pDiff > 0 ? 'decreased' : 'increased'} from{' '}
-                        {item.price} to {item.price - item.pDiff}
-                      </div>
-                    )
-                  )}
+                {priceDiffArr && priceDiffArr.length && (
+                  <div>
+                    We have updated your cart with the latest prices. Please check before you place
+                    the order.
+                  </div>
+                )}
               </p>
               <div className={classes.bottomActions}>
                 <AphButton

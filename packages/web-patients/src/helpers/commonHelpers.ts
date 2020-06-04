@@ -110,9 +110,13 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  return param && param.includes('-')
-    ? param.replace(/-/g, ' ')
-    : param.replace(/\s+/g, '-').toLowerCase();
+  const first =
+    param && param.includes('-')
+      ? param.replace(/-/g, ' ')
+      : param.replace(/\s+/g, '-').toLowerCase();
+  const second =
+    first && first.includes('/') ? first.replace(/[\/]/g, '_') : first.replace(/_/g, '/');
+  return first && second ? second.replace(/\./, '') : '';
 };
 const dayMapping = {
   MONDAY: 'Mo',
