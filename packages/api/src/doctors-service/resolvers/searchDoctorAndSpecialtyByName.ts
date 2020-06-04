@@ -125,17 +125,33 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             {
               multi_match: {
-                fields: ['fullName', 'specialty.name'],
+                fields: [
+                  'fullName',
+                  'specialty.name',
+                  'specialty.groupName',
+                  'specialty.commonSearchTerm',
+                  'specialty.userFriendlyNomenclature',
+                ],
                 type: 'phrase_prefix',
                 query: searchTextLowerCase,
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
         },
       },
     },
   };
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+  console.log(responsePerfectMatchDoctors.body.hits.hits);
+
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -214,12 +230,26 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             {
               multi_match: {
-                fields: ['fullName', 'specialty.name'],
+                fields: [
+                  'fullName',
+                  'specialty.name',
+                  'specialty.groupName',
+                  'specialty.commonSearchTerm',
+                  'specialty.userFriendlyNomenclature',
+                ],
                 fuzziness: 'AUTO',
                 query: searchTextLowerCase,
               },
             },
           ],
+          should: {
+            match: {
+              doctorType: {
+                query: 'STAR_APOLLO',
+                boost: 10,
+              },
+            },
+          },
           must_not: [
             {
               ids: { values: perfectMatchedDoctorsId },
@@ -328,6 +358,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 },
               },
             ],
+            should: {
+              match: {
+                doctorType: {
+                  query: 'STAR_APOLLO',
+                  boost: 10,
+                },
+              },
+            },
           },
         },
       },
@@ -433,7 +471,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
-
     for (const doctor of earlyAvailableApolloPossibleDoctors) {
       if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
         earlyAvailableNearByPossibleApolloDoctors.push(doctor);
@@ -450,14 +487,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
       }
     }
+
     finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
       .concat(
         earlyAvailableNearByMatchedApolloDoctors.sort(
           (a, b) =>
@@ -530,13 +561,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       );
   } else {
     finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
       .concat(
         earlyAvailableApolloMatchedDoctors.sort(
           (a, b) =>

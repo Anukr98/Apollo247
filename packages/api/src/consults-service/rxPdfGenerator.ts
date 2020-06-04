@@ -721,8 +721,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         }
 
         const instructionsArray = advice.instruction.split('\n');
-        const labelText = index == 0 ? "Doctor's Advice" : ' ';
-        instructionsArray.forEach((instruction) => {
+
+        instructionsArray.forEach((instruction, newIndex) => {
+          const labelText = newIndex == 0 && index == 0 ? "Doctor's Advice" : ' ';
           if (doc.y > doc.page.height - 150) {
             pageBreak();
           }

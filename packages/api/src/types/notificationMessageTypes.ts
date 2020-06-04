@@ -16,4 +16,12 @@ export interface EmailMessage {
   toEmail: string;
   subject: string;
   ccEmail: string;
+  attachments?: EmailAttachMent[];
+}
+
+export interface EmailAttachMent {
+  content: string;
+  filename: string;
+  type: string;
+  disposition: string;
 }

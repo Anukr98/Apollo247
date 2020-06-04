@@ -449,16 +449,17 @@ export const MedicineDetails: React.FC = (props) => {
               Array.isArray(PharmaOverview) &&
               PharmaOverview.length
             ) {
-              const { generic, Doseform } = PharmaOverview[0];
+              const { generic, Doseform, Overview } = PharmaOverview[0];
+              const description = Overview.filter((desc: any) => desc.Caption === 'USES');
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name: name,
-                description: description,
+                description: description.length ? description[0].CaptionDesc : '',
                 activeIngredient: generic.length ? generic.split('+') : '',
                 dosageForm: Doseform,
               });
-            }
+            };
             /**schema markup End */
 
             /**Gtm code start  */

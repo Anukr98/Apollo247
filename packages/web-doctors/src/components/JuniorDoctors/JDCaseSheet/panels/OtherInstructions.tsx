@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { Chip, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
@@ -171,8 +171,7 @@ export const OtherInstructions: React.FC = () => {
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContextJrd
   );
-
-  const [otherInstruct, setOtherInstruct] = useState('');
+  const adviceInputRef = useRef(null);
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [idx, setIdx] = React.useState(0);
   const [isEditing, setIsEditing] = useState<any>(null);
@@ -188,7 +187,6 @@ export const OtherInstructions: React.FC = () => {
     if (isEditing === idx) {
       if (showAddInputText) {
         setShowAddInputText(false);
-        setOtherInstruct(item.instruction);
       }
 
       return (
@@ -204,29 +202,34 @@ export const OtherInstructions: React.FC = () => {
             fullWidth
             multiline
             placeholder="Enter instruction here.."
-            value={otherInstruct || item.instruction}
-            onChange={(e) => {
-              setOtherInstruct(e.target.value);
-            }}
+            defaultValue={item.instruction}
+            inputRef={adviceInputRef}
           />
           <AphButton
             classes={{ root: classes.addBtn }}
             disableRipple
             onClick={() => {
-              const updatedText = otherInstruct || item.instruction;
-              if (updatedText.trim() !== '') {
-                selectedValues!.splice(idx, 1, {
-                  instruction: updatedText,
-                  __typename: 'OtherInstructions',
-                });
+              const node = (adviceInputRef as any).current;
+              if (node) {
+                const adviceValue = node.value;
+                const updatedText = adviceValue || item.instruction;
+                if (updatedText.trim() !== '') {
+                  selectedValues!.splice(idx, 1, {
+                    instruction: updatedText,
+                    __typename: 'OtherInstructions',
+                  });
 
-                setSelectedValues(selectedValues);
-                setTimeout(() => {
-                  setOtherInstruct('');
+                  setSelectedValues(selectedValues);
+                  setTimeout(() => {
+                    node.value = '';
+                    setIsEditing(false);
+                  }, 10);
+                } else {
+                  node.value = item.instruction;
                   setIsEditing(false);
-                }, 10);
+                }
               } else {
-                setOtherInstruct('');
+                console.log('No node selected');
               }
             }}
           >
@@ -286,27 +289,27 @@ export const OtherInstructions: React.FC = () => {
             fullWidth
             multiline
             placeholder="Enter instruction here.."
-            value={otherInstruct}
-            onChange={(e) => {
-              setOtherInstruct(e.target.value);
-            }}
+            inputRef={adviceInputRef}
           />
           <AphButton
             classes={{ root: classes.addBtn }}
             disableRipple
             onClick={() => {
-              if (otherInstruct.trim() !== '') {
-                selectedValues!.splice(idx, 0, {
-                  instruction: otherInstruct,
-                  __typename: 'OtherInstructions',
-                });
-                setSelectedValues(selectedValues);
-                setIdx(selectedValues!.length + 1);
-                setTimeout(() => {
-                  setOtherInstruct('');
-                }, 10);
+              const node = (adviceInputRef as any).current;
+              if (node) {
+                const adviceValue = node.value;
+                if (adviceValue.trim() !== '') {
+                  selectedValues!.splice(idx, 0, {
+                    instruction: adviceValue,
+                    __typename: 'OtherInstructions',
+                  });
+                  setSelectedValues(selectedValues);
+                  setIdx(selectedValues!.length + 1);
+                }
+                node.value = '';
+                node.focus();
               } else {
-                setOtherInstruct('');
+                console.log('No node selected');
               }
             }}
           >

@@ -153,7 +153,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
       if (key.length == 6) {
         axios
           .get(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${key}&key=${apiDetails.googleAPIKey}`
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${key}&components=country:in&key=${apiDetails.googleAPIKey}`
           )
           .then((data) => {
             const city = (
