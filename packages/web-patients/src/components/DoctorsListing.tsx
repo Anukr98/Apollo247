@@ -11,13 +11,17 @@ import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConsultMode } from 'graphql/types/globalTypes';
+import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
 import { useLocationDetails } from 'components/LocationProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { readableParam } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,16 +172,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -235,6 +235,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [tabValue, setTabValue] = useState('All Consults');
   const apolloClient = useApolloClient();
   const [data, setData] = useState<any>();
+  const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const consultOptions = {
@@ -313,6 +314,37 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
+        let potentialActionSchema: any[] = [];
+        if (
+          response &&
+          response.data &&
+          response.data.getDoctorsBySpecialtyAndFilters &&
+          response.data.getDoctorsBySpecialtyAndFilters.doctors &&
+          response.data.getDoctorsBySpecialtyAndFilters.doctors.length
+        ) {
+          const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+          doctors.map((doc: docDetails) => {
+            potentialActionSchema.push({
+              '@type': 'EntryPoint',
+              name: doc.fullName,
+              url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                specialityName,
+                readableParam(doc.fullName),
+                doc.id
+              )}`,
+            });
+          });
+        }
+        setStructuredJSON({
+          '@context': 'https://schema.org/',
+          '@type': 'MedicalSpecialty',
+          name: specialityName,
+          description: `Find the best ${specialityName} doctors & specialists and consult with them instantly on Apollo24|7`,
+          potentialAction: {
+            '@type': 'ViewAction',
+            target: potentialActionSchema,
+          },
+        });
         setData(response.data);
         setLoading(false);
       });
@@ -424,6 +456,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
   return (
     <div className={classes.root}>
+      {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
