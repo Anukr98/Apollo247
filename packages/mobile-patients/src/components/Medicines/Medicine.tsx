@@ -1033,7 +1033,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           price: price,
           specialPrice: special_price
             ? typeof special_price == 'string'
-              ? parseInt(special_price)
+              ? Number(special_price)
               : special_price
             : undefined,
           prescriptionRequired: is_prescription_required == '1',
@@ -1062,7 +1062,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       price,
       specialPrice: special_price
         ? typeof special_price == 'string'
-          ? parseInt(special_price)
+          ? Number(special_price)
           : special_price
         : undefined,
       isAddedToCart: foundMedicineInCart,

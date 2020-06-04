@@ -429,15 +429,24 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
-        if (g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE') {
+
+        const isPriceMismatch =
+          g(error, 'graphQLErrors', '0', 'message') == 'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+        const isCouponError =
+          g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+
+        if (isPriceMismatch || isCouponError) {
           props.navigation.goBack();
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: 'Sorry, invalid coupon applied. Remove the coupon and try again.',
-          });
-        } else {
-          handleGraphQlError(error);
         }
+
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: isPriceMismatch
+            ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+            : isCouponError
+            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+            : `Your order failed due to some temporary issue :( Please submit the order again.`,
+        });
       });
   };
 
