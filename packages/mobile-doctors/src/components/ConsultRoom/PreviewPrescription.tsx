@@ -15,6 +15,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { APPOINTMENT_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { g, medicineDescription } from '@aph/mobile-doctors/src/helpers/helperFunctions';
@@ -33,6 +34,10 @@ export interface PreviewPrescriptionProps
     caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
     complaints: (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
     diagnosis: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
+    medication:
+      | GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory
+      | null
+      | undefined;
     medicine:
       | (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[]
       | null
@@ -72,7 +77,8 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
 
   const patientDetails = g(caseSheet, 'caseSheetDetails', 'patientDetails');
   const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
-  const medicalHistory = g(patientDetails, 'patientMedicalHistory');
+  const medicalHistory =
+    props.navigation.getParam('medication') || g(patientDetails, 'patientMedicalHistory');
 
   const complaints =
     props.navigation.getParam('complaints') || g(caseSheet, 'caseSheetDetails', 'symptoms');

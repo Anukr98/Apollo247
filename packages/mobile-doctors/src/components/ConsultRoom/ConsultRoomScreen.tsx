@@ -236,7 +236,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
-  const [autoSavingLoader, setAutoSavingLoader] = useState<boolean>(false);
+
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
     CANCEL_APPOINTMENT
@@ -261,6 +261,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
     AsyncStorage.removeItem('editedInputData');
+    AsyncStorage.removeItem('prevSavedData');
     KeepAwake.activate();
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
@@ -281,6 +282,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
+      AsyncStorage.removeItem('prevSavedData');
       AsyncStorage.removeItem('chatFileData');
       KeepAwake.deactivate();
     };
@@ -732,15 +734,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
-          console.log('savecasesheet', _data);
           const modifiedData = {
             ...caseSheet,
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
           } as GetCaseSheet_getCaseSheet | null | undefined;
-          setcaseSheet(modifiedData);
-          setData(modifiedData);
+          if (!autoSave) {
+            setcaseSheet(modifiedData);
+            setData(modifiedData);
+          }
           setIsAutoSaved(autoSave);
-          setAutoSavingLoader(false);
+          AsyncStorage.setItem(
+            'prevSavedData',
+            JSON.stringify(inputdata ? inputdata : getInputData())
+          );
           if (callBack) {
             setLoading && setLoading(true);
             callBack();
@@ -750,7 +756,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         })
         .catch((e) => {
           setLoading && setLoading(false);
-          setAutoSavingLoader(false);
           const errorMessage = e.graphQLErrors[0].message;
           if (errorMessage.includes('INVALID_REFERRAL_DESCRIPTION')) {
             showAphAlert &&
@@ -860,12 +865,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const timerLoop = (timer: number) => {
-    startAutoSaveTimer(timer, () => {
-      setAutoSavingLoader(true);
-      setTimeout(async () => {
-        const data = await AsyncStorage.getItem('editedInputData');
+    startAutoSaveTimer(timer, async () => {
+      const data = await AsyncStorage.getItem('editedInputData');
+      const prevData = await AsyncStorage.getItem('prevSavedData');
+      if (prevData !== data) {
         saveDetails(false, true, JSON.parse(data || ''));
-      }, 500);
+      }
       timerLoop(timer);
     });
   };
@@ -1679,7 +1684,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             {activeTabIndex == tabsData[0].title ? (
               <CaseSheetView
                 // disableConsultButton={!!PatientConsultTime}
-                autoSavingLoader={autoSavingLoader}
                 overlayDisplay={(component) => {
                   setOverlayDisplay(component);
                 }}
