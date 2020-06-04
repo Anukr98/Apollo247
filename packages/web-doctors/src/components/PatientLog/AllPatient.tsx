@@ -112,7 +112,6 @@ const useStyles = makeStyles((theme: Theme) =>
     chatIcon: {
       height: 10,
       width: 10,
-      marginTop: -18,
       paddingRight: 15,
     },
     pastConsult: {
