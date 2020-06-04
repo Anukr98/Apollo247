@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import {
@@ -355,7 +355,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       {
         (membershipType !== 'Platinum') && renderMembershipUpgrades()
       }
-      <TouchableOpacity onPress={() => { console.log('know more') }}>
+      <TouchableOpacity onPress={() => { Linking.openURL('https://www.oneapollo.com/') }}>
         <Text
           style={{
             paddingLeft: 20,
