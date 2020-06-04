@@ -786,14 +786,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
-      'DoctorName': doctorDetails.fullName!,
+      DoctorName: doctorDetails.fullName!,
       Source: source,
-      'DoctorID': doctorDetails.id,
-      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
-      'DoctorCategory': doctorDetails.doctorType,
-      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
-      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
-      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+      DoctorID: doctorDetails.id,
+      SpecialityID: g(doctorDetails, 'specialty', 'id')!,
+      DoctorCategory: doctorDetails.doctorType,
+      OnlinePrice: Number(doctorDetails.onlineConsultationFees),
+      PhysicalPrice: Number(doctorDetails.physicalConsultationFees),
+      DoctorSpeciality: g(doctorDetails, 'specialty', 'name')!,
     };
 
     if (type == 'consult-now') {
@@ -1149,6 +1149,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 activeOpacity={1}
                 onPress={() => {
                   setOnlineCheckbox(!onlineCheckBox);
+                  if (!physicalCheckBox) {
+                    setPhysicalCheckbox(!physicalCheckBox);
+                  }
                 }}
               >
                 {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
@@ -1172,6 +1175,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 activeOpacity={1}
                 onPress={() => {
                   setPhysicalCheckbox(!physicalCheckBox);
+                  if (!onlineCheckBox) {
+                    setOnlineCheckbox(!onlineCheckBox);
+                  }
                 }}
               >
                 {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
