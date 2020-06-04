@@ -130,6 +130,9 @@ const getMedicineOrdersOMSList: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  medicineOrdersList.sort((a, b) => {
+    return (new Date(b.createdDate) as any) - (new Date(a.createdDate) as any);
+  });
   return { medicineOrdersList };
 };
 
@@ -178,6 +181,9 @@ const getMedicineOrderOMSDetails: Resolver<
       }
     }
   }
+  medicineOrderDetails.medicineOrdersStatus.sort((a, b) => {
+    return (new Date(a.statusDate) as any) - (new Date(b.statusDate) as any);
+  });
   return { medicineOrderDetails };
 };
 
