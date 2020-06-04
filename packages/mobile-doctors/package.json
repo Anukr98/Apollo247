@@ -123,7 +123,6 @@
     "react-native-swipe-gestures": "^1.0.3",
     "react-native-switch": "^1.5.0",
     "react-native-vector-icons": "^6.6.0",
-    "react-native-webview": "^8.0.4",
     "react-navigation": "^3.11.0",
     "rn-fetch-blob": "^0.12.0"
   },

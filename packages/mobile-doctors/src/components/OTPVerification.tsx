@@ -28,9 +28,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import Hyperlink from 'react-native-hyperlink';
-import { WebView } from 'react-native-webview';
+
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import SmsRetriever from 'react-native-sms-retriever';
@@ -457,48 +458,49 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const openWebView = () => {
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewWebStyles}>
-        <Header
-          headerText={strings.login.terms_conditions}
-          leftIcon="close"
-          containerStyle={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/TnC.html',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            // useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setshowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setshowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setshowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    Linking.openURL('https://www.apollo247.com/TnC.html');
+    // return (
+    //   <View style={styles.viewWebStyles}>
+    //     <Header
+    //       headerText={strings.login.terms_conditions}
+    //       leftIcon="close"
+    //       containerStyle={{
+    //         borderBottomWidth: 0,
+    //       }}
+    //       onPressLeftIcon={() => setonClickOpen(false)}
+    //     />
+    //     <View
+    //       style={{
+    //         flex: 1,
+    //         overflow: 'hidden',
+    //         backgroundColor: 'white',
+    //       }}
+    //     >
+    //       <WebView
+    //         source={{
+    //           uri: 'https://www.apollo247.com/TnC.html',
+    //         }}
+    //         style={{
+    //           flex: 1,
+    //           backgroundColor: 'white',
+    //         }}
+    //         // useWebKit={true}
+    //         onLoadStart={() => {
+    //           console.log('onLoadStart');
+    //           setshowSpinner(true);
+    //         }}
+    //         onLoadEnd={() => {
+    //           console.log('onLoadEnd');
+    //           setshowSpinner(false);
+    //         }}
+    //         onLoad={() => {
+    //           console.log('onLoad');
+    //           setshowSpinner(false);
+    //         }}
+    //       />
+    //     </View>
+    //   </View>
+    // );
   };
 
   const renderHyperLink = () => {
@@ -519,7 +521,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           linkText={(url) =>
             url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
           }
-          onPress={(url, text) => setonClickOpen(true)}
+          onPress={(url, text) => openWebView()}
         >
           <Text
             style={{
@@ -681,7 +683,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </Card>
         )}
-        {onClickOpen && openWebView()}
+        {/* {onClickOpen && openWebView()} */}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
