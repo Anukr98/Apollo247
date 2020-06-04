@@ -8,9 +8,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       display: 'flex',
-      padding: '16px 0 0',
-      margin: '20px 0 0',
-      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginLeft: 'auto',
     },
     linkItem: {
       display: 'none',
@@ -24,6 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         verticalAlign: 'middle',
         marginRight: 5,
+        marginTop: -3,
       },
       '& span': {
         '& span': {
@@ -164,15 +163,21 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.linkItem} onClick={() => handleLikeButton()}>
         <span>
+        {!articleLiked ?
           <img
-            className={!articleLiked ? classes.likeFilter : ''}
+            src={require('images/ic-like.svg')}
+            alt="Likes"
+            onContextMenu={(e) => e.preventDefault()}
+          /> :
+          <img
             src={require('images/noun-like.svg')}
             alt="Likes"
             onContextMenu={(e) => e.preventDefault()}
           />
+          }
         </span>
         <span>
-          {Number(likeCount) === 1 ? 'Like' : 'Likes'} <span>({likeCount})</span>
+          {likeCount} {Number(likeCount) === 1 ? 'Like' : 'Likes'}
         </span>
       </div>
       <div className={classes.linkItem} onClick={() => handleDislikeButton()}>
