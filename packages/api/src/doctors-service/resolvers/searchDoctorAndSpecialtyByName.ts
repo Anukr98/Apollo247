@@ -138,7 +138,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
           ],
           should: {
-            match_pharse: {
+            match: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
@@ -243,7 +243,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
           ],
           should: {
-            match_pharse: {
+            match: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
@@ -359,7 +359,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               },
             ],
             should: {
-              match_pharse: {
+              match: {
                 doctorType: {
                   query: 'STAR_APOLLO',
                   boost: 10,

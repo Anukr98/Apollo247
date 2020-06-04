@@ -224,7 +224,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bool: {
           must: elasticMatch,
           should: {
-            match_pharse: {
+            match: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
