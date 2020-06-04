@@ -341,11 +341,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
     throw new AphError(AphErrorMessages.FETCH_STORE_INVENTORY_FROM_PHARMACY_ERROR, undefined, {});
   }
 
-  console.log(pharmaResp);
-
   const storeItemsDetails: StoreInventoryResp = await pharmaResp.json();
-
-  console.log(storeItemsDetails);
 
   if (!storeItemsDetails.requestStatus) {
     log(
