@@ -350,7 +350,7 @@ export async function sendCallsNotification(
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
       sound: 'incallmanager_ringtone.mp3',
-      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+      android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
       callType,
       appointmentCallId,
       doctorType,
