@@ -123,11 +123,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     sectionHead: {
-      fontSize: 16,
+      fontSize: 12,
       padding: 16,
-      textTransform: 'uppercase',
       fontWeight: 600,
       color: '#0087ba',
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.up('sm')]: {
         paddingTop: 40,
       },
@@ -336,17 +337,19 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                       </a>
                     </>
                   )}
-                  <FeedbackWidget
-                    totalComments={totalComments}
-                    totalLike={totalLike}
-                    totalDislike={totalDislike}
-                    articleId={titleId}
-                  />
                 </div>
                 <div className={classes.rightSidebar}>
                   <div className={classes.formCard}>
                     <div className={classes.sectionHead}>
-                      <img src={require('images/ic-feed.svg')} alt="" /> Comments ({totalComments})
+                      <div>
+                        <img src={require('images/ic-feed.svg')} alt="" /> {totalComments} Comments
+                      </div>
+                      <FeedbackWidget
+                        totalComments={totalComments}
+                        totalLike={totalLike}
+                        totalDislike={totalDislike}
+                        articleId={titleId}
+                      />
                     </div>
 
                     {showCommentForm ? (

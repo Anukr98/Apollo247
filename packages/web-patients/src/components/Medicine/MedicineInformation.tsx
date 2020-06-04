@@ -278,6 +278,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 11,
       fontWeight: 500,
     },
+    outOfStock: {
+      textAlign: 'center',
+      padding: 16,
+    },
   });
 });
 
@@ -316,41 +320,26 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.url || '',
+        { params: data.sku || params.sku },
         {
           headers: {
             Authorization: apiDetails.authToken,
           },
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.url || '',
-            { params: data.sku || params.sku },
-            {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
+      .then(({ data }) => {
+        try {
+          if (data) {
+            if (data.products && data.products.length > 0) {
+              setSubstitutes(data.products);
             }
-          )
-          .then(({ data }) => {
-            try {
-              if (data) {
-                if (data.products && data.products.length > 0) {
-                  setSubstitutes(data.products);
-                }
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((err) => alert({ err }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
       })
-      .catch((e) => {
-        alert(e);
-      });
+      .catch((err) => alert({ err }));
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -359,66 +348,50 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setTatLoading(true);
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.deliveryUrl || '',
+        {
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: data.sku || params.sku,
+              qty: 1,
+            },
+          ],
+        },
         {
           headers: {
-            Authorization: apiDetails.authToken,
+            Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.deliveryUrl || '',
-            {
-              postalcode: pinCode,
-              ordertype: 'pharma',
-              lookup: [
-                {
-                  sku: data.sku || params.sku,
-                  qty: 1,
-                },
-              ],
-            },
-            {
-              headers: {
-                Authentication: apiDetails.deliveryAuthToken,
-              },
-              cancelToken: new CancelToken((c) => {
-                // An executor function receives a cancel function as a parameter
-                cancelGetDeliveryTimeApi = c;
-              }),
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (res.data.errorMsg) {
+              setErrorMessage(res.data.errorMsg);
             }
-          )
-          .then((res: AxiosResponse) => {
-            try {
-              if (res && res.data) {
-                if (res.data.errorMsg) {
-                  setErrorMessage(res.data.errorMsg);
-                }
-                setTatLoading(false);
-                if (
-                  typeof res.data === 'object' &&
-                  Array.isArray(res.data.tat) &&
-                  res.data.tat.length
-                ) {
-                  setDeliveryTime(res.data.tat[0].deliverydate);
-                  setErrorMessage('');
-                } else if (typeof res.data.errorMSG === 'string') {
-                  setErrorMessage(res.data.errorMSG);
-                }
-              }
-            } catch (error) {
-              setTatLoading(false);
-            }
-          })
-          .catch((error: any) => {
             setTatLoading(false);
-          });
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+              setErrorMessage('');
+            } else if (typeof res.data.errorMSG === 'string') {
+              setErrorMessage(res.data.errorMSG);
+            }
+          }
+        } catch (error) {
+          setTatLoading(false);
+        }
       })
-      .catch((e) => {
-        alert(e);
+      .catch((error: any) => {
         setTatLoading(false);
       });
   };
@@ -670,7 +643,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </div>
           </>
         ) : (
-          <>
+          <div className={classes.outOfStock}>
             <div className={classes.medicineNoStock}>Out Of Stock</div>
             <AphButton
               fullWidth
@@ -689,7 +662,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             >
               Notify when in stock
             </AphButton>
-          </>
+          </div>
         )}
       </div>
 

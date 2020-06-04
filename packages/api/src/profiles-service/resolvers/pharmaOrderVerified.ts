@@ -38,6 +38,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    packSize: Int
   }
 
   type SaveOrderShipmentsResult {
@@ -81,6 +82,7 @@ type ItemArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentsInputArgs = {
@@ -105,7 +107,45 @@ const saveOrderShipments: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
-  const shipmentsInput = saveOrderShipmentsInput.shipments;
+  let shipmentsInput = saveOrderShipmentsInput.shipments;
+  let existingShipments: Shipment[] = [];
+  if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
+    shipmentsInput = shipmentsInput.filter((shipment) => {
+      const savedShipment = orderDetails.medicineOrderShipments.find((savdShipment) => {
+        return savdShipment.apOrderNo == shipment.apOrderNo;
+      });
+      if (savedShipment) {
+        existingShipments.push({ ...savedShipment, ...shipment });
+      }
+      return !savedShipment;
+    });
+  }
+  if (existingShipments.length > 0) {
+    try {
+      const shipmentsPromise = existingShipments.map(async (shipment, index) => {
+        const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
+          siteId: shipment.siteId,
+          siteName: shipment.siteName,
+          itemDetails: JSON.stringify(shipment.itemDetails),
+        };
+        return await medicineOrdersRepo.updateMedicineOrderShipment(
+          orderShipmentsAttrs,
+          shipment.apOrderNo
+        );
+      });
+      await Promise.all(shipmentsPromise);
+    } catch (e) {
+      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
+    }
+  }
+  if (shipmentsInput.length == 0) {
+    return {
+      status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      errorCode: 0,
+      errorMessage: '',
+      orderId: orderDetails.orderAutoId,
+    };
+  }
   let shipmentsResults;
   try {
     const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {

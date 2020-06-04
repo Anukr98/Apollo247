@@ -344,12 +344,10 @@ const updateSdSummary: Resolver<
         timeSlots.forEach(async (timeSlot) => {
           const endTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.endTime);
           let startTime = new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime);
-          console.log('dates==>', startTime, endTime);
           if (endTime < startTime) {
-            let stDt = new Date(ApiConstants.SAMPLE_DATE);
-            stDt = addDays(stDt, -1);
-            startTime = new Date(stDt + timeSlot.startTime);
+            startTime = addDays(startTime, -1);
           }
+          console.log('dates==>', startTime, endTime);
           difference += differenceInMinutes(endTime, startTime);
           console.log('difference', difference);
         });
@@ -611,19 +609,23 @@ const Result = async (
     docList.map(async (doctor, index, array) => {
       const weekDay = format(summaryDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      console.log('timeSlots==>', timeSlots);
       if (timeSlots.length) {
         timeSlots.forEach(async (timeSlot) => {
           const currentTime = new Date();
           const startTime = new Date(
             format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
           );
+          console.log('startTime==>', startTime);
           const endTime = new Date(
             format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
           );
+          console.log('endTime==>', endTime);
           const betweenConsultHours = isWithinInterval(currentTime, {
             start: startTime,
             end: endTime,
           });
+
           if (betweenConsultHours == true) {
             if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
               awayCount++;
@@ -634,6 +636,7 @@ const Result = async (
         });
       }
       if (index + 1 === array.length) {
+        console.log('finalCounts==>', [onlineCount, awayCount]);
         resolve([onlineCount, awayCount]);
       }
     });
