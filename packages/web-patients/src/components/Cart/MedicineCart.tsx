@@ -784,12 +784,14 @@ export const MedicineCart: React.FC = (props) => {
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
 
-  const getTypeOfProduct = (type: string | null) => {
-    switch (type) {
-      case 'Pharma':
+  const getTypeOfProduct = (type: string) => {
+    switch (_lowerCase(type)) {
+      case 'pharma':
         return CouponCategoryApplicable.PHARMA;
-      case 'Fmcg':
+      case 'fmcg':
         return CouponCategoryApplicable.FMCG;
+      default:
+        return null;
     }
   };
 
@@ -804,7 +806,7 @@ export const MedicineCart: React.FC = (props) => {
               return {
                 mrp: item.price,
                 productName: item.name,
-                productType: getTypeOfProduct(item.type_id),
+                productType: getTypeOfProduct(item.type_id || ''),
                 quantity: item.quantity,
                 specialPrice: item.special_price ? item.special_price : item.price,
                 itemId: item.id.toString(),
@@ -1015,7 +1017,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
