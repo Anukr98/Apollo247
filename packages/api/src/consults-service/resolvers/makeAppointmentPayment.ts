@@ -307,11 +307,19 @@ const makeAppointmentPayment: Resolver<
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorDetails = await doctorRepo.findById(processingAppointment.doctorId);
     const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : null;
+    console.log(
+      'timeDiference',
+      timeDifference / 60 <=
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10),
+      'isJdAllowed',
+      isJdAllowed === false
+    );
     if (
       timeDifference / 60 <=
         parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
-      isJdAllowed == false
+      isJdAllowed === false
     ) {
+      console.log('isJdAlowedddddddddddddd', isJdAllowed);
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
