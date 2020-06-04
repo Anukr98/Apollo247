@@ -412,7 +412,6 @@ export const MedicineDetails: React.FC = (props) => {
             /**schema markup  start*/
             const {
               manufacturer,
-              description,
               image,
               name,
               special_price,
@@ -423,7 +422,13 @@ export const MedicineDetails: React.FC = (props) => {
               PharmaOverview,
               url_key,
             } = data.productdp[0];
+            let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
+            if (!description && Array.isArray(PharmaOverview) && PharmaOverview.length) {
+              const { Overview } = PharmaOverview[0];
+              const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
+              description = desc.length ? desc[0].CaptionDesc : '';
+            }
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -443,23 +448,17 @@ export const MedicineDetails: React.FC = (props) => {
                 itemCondition: 'https://schema.org/NewCondition',
               },
             });
-            if (
-              type_id &&
-              type_id === 'Pharma' &&
-              Array.isArray(PharmaOverview) &&
-              PharmaOverview.length
-            ) {
-              const { generic, Doseform, Overview } = PharmaOverview[0];
-              const description = Overview.filter((desc: any) => desc.Caption === 'USES');
+            if (type_id && type_id === 'Pharma') {
+              const { generic, Doseform } = PharmaOverview[0];
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name: name,
-                description: description.length ? description[0].CaptionDesc : '',
+                description,
                 activeIngredient: generic.length ? generic.split('+') : '',
                 dosageForm: Doseform,
               });
-            };
+            }
             /**schema markup End */
 
             /**Gtm code start  */
