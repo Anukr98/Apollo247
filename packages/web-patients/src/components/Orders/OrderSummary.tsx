@@ -430,9 +430,9 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               {orderItems &&
                 orderItems.length > 0 &&
                 orderItems.map(
-                  (item, index) =>
+                  (item) =>
                     item && (
-                      <div key={index} className={classes.tableRow}>
+                      <div key={item.medicineSKU} className={classes.tableRow}>
                         <div className={classes.medicineName}>
                           {getMedicineName(item.medicineName, item.mou)}
                         </div>
