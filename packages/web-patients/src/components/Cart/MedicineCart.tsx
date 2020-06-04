@@ -61,6 +61,7 @@ import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { getItemSpecialPrice } from '../PayMedicine';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -686,9 +687,9 @@ export const MedicineCart: React.FC = (props) => {
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
-              cartItemDetails.type_id === 'Pharma'
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
                 ? '1'
-                : cartItemDetails.type_id === 'Fmcg'
+                : _lowerCase(cartItemDetails.type_id) === 'fmcg'
                 ? '0'
                 : null,
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
@@ -1229,11 +1230,14 @@ export const MedicineCart: React.FC = (props) => {
                           category: 'Pharmacy',
                           action: 'Order',
                           label: `Coupon Removed - ${couponCode}`,
-                          value: validateCouponResult &&
+                          value:
+                            validateCouponResult &&
                             validateCouponResult.discountedTotals &&
-                            validateCouponResult.discountedTotals.couponDiscount ?
-                            Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2)) :
-                            null
+                            validateCouponResult.discountedTotals.couponDiscount
+                              ? Number(
+                                  validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+                                )
+                              : null,
                         });
 
                         setValidateCouponResult(null);

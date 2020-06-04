@@ -1010,7 +1010,7 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryCity = shopAddress.city;
                   deliveryZipcode = shopAddress.zipcode;
                   deliveryAddress = shopAddress.address;
-                  deliveryStateCode = shopAddress.state;
+                  deliveryStateCode = shopAddress.stateCode;
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';
