@@ -1076,14 +1076,14 @@ export const postFirebaseAddToCartEvent = (
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
-      'product name': name,
-      'product id': sku,
+      'productname': name,
+      'productid': sku,
       Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id || '',
+      'BrandID': '',
+      'categoryname': '',
+      'categoryID': category_id || '',
       Price: price,
-      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      'DiscountedPrice': typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
     };

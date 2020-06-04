@@ -62,6 +62,7 @@ import {
   handleGraphQlError,
   postAppsFlyerEvent,
   postWebEngageEvent,
+  postFirebaseEvent,
   postWEGWhatsAppEvent,
   dataSavedUserID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -89,6 +90,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -496,6 +498,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
   const whatsappAPICalled = () => {

@@ -53,11 +53,13 @@ import {
   isValidSearch,
   postAppsFlyerEvent,
   postWebEngageEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -77,6 +79,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Alert,
 } from 'react-native';
 import {
   NavigationActions,
@@ -781,15 +784,30 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
+      'DoctorName': doctorDetails.fullName!,
+      Source: source,
+      'DoctorID': doctorDetails.id,
+      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
+      'DoctorCategory': doctorDetails.doctorType,
+      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
+      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
+      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+    };
+
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
     }
   };
 
