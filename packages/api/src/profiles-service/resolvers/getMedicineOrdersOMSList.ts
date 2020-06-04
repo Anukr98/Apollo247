@@ -27,6 +27,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     quoteDateTime: DateTime
+    createdDate: DateTime
     coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
@@ -130,9 +131,6 @@ const getMedicineOrdersOMSList: Resolver<
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
-  medicineOrdersList.sort((a, b) => {
-    return (new Date(b.createdDate) as any) - (new Date(a.createdDate) as any);
-  });
   return { medicineOrdersList };
 };
 
