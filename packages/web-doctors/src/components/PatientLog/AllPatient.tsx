@@ -224,6 +224,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         <div
                           className={classes.ChatStyle}
                           onClick={() => {
+                            localStorage.setItem('callBackUrl', '/patientlog');
                             if (
                               patient.appointmentids.length > 0 &&
                               patient.unreadMessagesCount.length > 0 &&
