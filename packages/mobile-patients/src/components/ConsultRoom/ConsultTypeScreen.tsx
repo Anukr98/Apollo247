@@ -17,7 +17,17 @@ import {
   OnlineHeader,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { nextAvailability, mhdMY, g, timeDiffFromNow } from '../../helpers/helperFunctions';
+import {
+  nextAvailability,
+  mhdMY,
+  g,
+  timeDiffFromNow,
+  postWebEngageEvent,
+} from '../../helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { ConsultMode } from '../../graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -158,7 +168,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const ConsultType = props.navigation.getParam('ConsultType');
   const params = props.navigation.getParam('params');
   const { setLoading } = useUIElements();
-  const { currentPatientId } = useAllCurrentPatients();
+  const { currentPatientId, currentPatient } = useAllCurrentPatients();
 
   const client = useApolloClient();
 
@@ -286,6 +296,18 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     );
   };
 
+  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
+      'Consult Type': consultType,
+      'Doctor ID': DoctorId,
+      'Doctor Name': DoctorName,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
+  };
   const renderOnlineCard = () => {
     return renderCard(
       <OnlineHeader />,
@@ -316,6 +338,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
+        postWebengaegConsultType('Online');
       }
     );
   };
@@ -350,6 +373,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
+        postWebengaegConsultType('In Person');
       }
     );
   };
