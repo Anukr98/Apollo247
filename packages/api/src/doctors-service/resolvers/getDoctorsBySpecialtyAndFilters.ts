@@ -383,38 +383,20 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     let i = 0,
       j = 0;
 
-    console.log('earlyAvailableStarApolloDoctors', earlyAvailableStarApolloDoctors);
-
-    console.log(
-      'earlyAvailableNonStarApolloDoctors.length',
-      earlyAvailableNonStarApolloDoctors.length
-    );
     while (
       i < earlyAvailableStarApolloDoctors.length &&
       j < earlyAvailableNonStarApolloDoctors.length
     ) {
-      console.log(
-        'starearlydoc',
-        earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes
-      );
-      console.log(
-        'nonstarearlydoc',
-        earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes
-      );
       if (
         i < earlyAvailableStarApolloDoctors.length &&
         earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
           earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes
       ) {
-        console.log('starEarlyDoc');
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
-        console.log('i', i);
       } else {
-        console.log('nonstarEarlyDoc');
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
-        console.log('j', j);
       }
     }
     starDoctor = starDoctor.sort(
@@ -428,23 +410,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     (i = 0), (j = 0);
     while (i < starDoctor.length && j < nonStarDoctor.length) {
-      console.log('stardoc', starDoctor[i].earliestSlotavailableInMinutes);
-      console.log('nonstardoc', nonStarDoctor[j].earliestSlotavailableInMinutes);
       if (
         i < starDoctor.length &&
         starDoctor[i].earliestSlotavailableInMinutes <=
           nonStarDoctor[j].earliestSlotavailableInMinutes
       ) {
-        console.log('starDoc');
         docs.push(starDoctor[i]);
         i++;
-        console.log('i', i);
       } else {
-        console.log('starNonDoc');
-        console.log('j', j);
         docs.push(nonStarDoctor[j]);
         j++;
-        console.log('j', j);
       }
     }
     doctors = earlyAvailableApolloDoctors
