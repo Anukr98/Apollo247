@@ -101,6 +101,7 @@ export interface GetStoreInventoryResponse {
   itemDetails: {
     itemId: string;
     qty: number;
+    mrp: number;
   }[];
 }
 
