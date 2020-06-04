@@ -246,6 +246,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [currentPatient]);
 
   useEffect(() => {
+    checkTime();
+
     if (doctorsList.length === 0) {
       if (
         generalPhysicians &&
@@ -275,9 +277,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
 
     if (filterGetData.sort === 'distance') {
-      setValue(false);
+      setNearyByFlag(!nearyByFlag);
+      setAvailabilityFlag(false);
     } else {
-      setValue(true);
+      setAvailabilityFlag(!availabilityFlag);
+      setNearyByFlag(false);
     }
   };
 
@@ -288,7 +292,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getNetStatus()
       .then((status) => {
         if (status) {
-          fetchSpecialityFilterData(filterMode, FilterData);
+          // fetchSpecialityFilterData(filterMode, FilterData);
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -384,6 +388,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
+
+  const checkTime = () => {
+    const currentTime = moment().format('HH');
+    console.log('currentTime', currentTime);
+    if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
+      setAvailabilityFlag(!availabilityFlag);
+      setNearyByFlag(false);
+    } else {
+      setNearyByFlag(!nearyByFlag);
+      setAvailabilityFlag(false);
+    }
+  };
 
   const setData = (data: getDoctorsBySpecialtyAndFilters) => {
     try {
@@ -1113,7 +1129,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
   const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(true);
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
-  const [nearyByFlag, setNearyByFlag] = useState<boolean>(true);
+  const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
   const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(false);
 
   const renderBottomOptions = () => {
