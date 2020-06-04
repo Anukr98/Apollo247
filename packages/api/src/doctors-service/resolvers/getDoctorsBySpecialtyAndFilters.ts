@@ -224,7 +224,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bool: {
           must: elasticMatch,
           should: {
-            match: {
+            match_phrase: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
@@ -238,6 +238,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
+  console.log(getDetails.body.hits);
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -390,7 +391,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         )
       );
   } else {
-    earlyAvailableApolloDoctors
+    doctors = earlyAvailableApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
