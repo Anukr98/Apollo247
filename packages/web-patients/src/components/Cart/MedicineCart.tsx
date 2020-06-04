@@ -652,9 +652,17 @@ export const MedicineCart: React.FC = (props) => {
             (item.special_price && item.special_price !== updatedCartItems[index].special_price)
           ) {
             const newItem = { ...item, ...updatedCartItems[index] };
+            if (item.special_price && !updatedCartItems[index].special_price) {
+              newItem['special_price'] = '';
+            }
+            /* the below commented code are the price difference
+              values which could be used in the near future */
             const changedDetailObj = {
-              pDiff: item.price - updatedCartItems[index].price,
+              // pDiff: item.price - updatedCartItems[index].price,
               availabilityChange: updatedCartItems[index].is_in_stock !== 1 ? true : false,
+              // splPDiff: item.special_price
+              //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
+              //   : 0,
             };
             const updatedObj = Object.assign({}, item, changedDetailObj);
             updateCartItemPrice(newItem);
@@ -1017,7 +1025,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1584,19 +1592,13 @@ export const MedicineCart: React.FC = (props) => {
               <Typography variant="h2">Hi!</Typography>
               <p>
                 <span>Important message for items in your Cart:</span> <br />
-                <div>Items in your cart will reflect the most recent price in your region.</div>
                 <br />
-                {priceDiffArr &&
-                  priceDiffArr.map((item) =>
-                    item.availbilityChange ? (
-                      <div>We’re Sorry. {item.name} is now out of stock in your region.</div>
-                    ) : (
-                      <div>
-                        {item.name} MRP has {item.pDiff > 0 ? 'decreased' : 'increased'} from{' '}
-                        {item.price} to {item.price - item.pDiff}
-                      </div>
-                    )
-                  )}
+                {priceDiffArr && priceDiffArr.length && (
+                  <div>
+                    We have updated your cart with the latest prices. Please check before you place
+                    the order.
+                  </div>
+                )}
               </p>
               <div className={classes.bottomActions}>
                 <AphButton
