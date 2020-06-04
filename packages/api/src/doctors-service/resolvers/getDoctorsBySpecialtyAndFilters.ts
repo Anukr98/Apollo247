@@ -224,7 +224,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bool: {
           must: elasticMatch,
           should: {
-            match: {
+            match_pharse: {
               doctorType: {
                 query: 'STAR_APOLLO',
                 boost: 10,
@@ -259,17 +259,17 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             finalDoctorNextAvailSlots.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doc._source.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -390,7 +390,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         )
       );
   } else {
-    earlyAvailableApolloDoctors
+    doctors = earlyAvailableApolloDoctors
       .sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
