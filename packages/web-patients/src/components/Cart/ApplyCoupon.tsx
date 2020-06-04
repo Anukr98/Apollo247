@@ -18,6 +18,7 @@ import {
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -185,12 +186,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
 
-  const getTypeOfProduct = (type: string | null) => {
-    switch (type) {
-      case 'Pharma':
+  const getTypeOfProduct = (type: string) => {
+    switch (_lowerCase(type)) {
+      case 'pharma':
         return CouponCategoryApplicable.PHARMA;
-      case 'Fmcg':
+      case 'fmcg':
         return CouponCategoryApplicable.FMCG;
+      default:
+        return null;
     }
   };
 
@@ -203,7 +206,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           return {
             mrp: item.price,
             productName: item.name,
-            productType: getTypeOfProduct(item.type_id),
+            productType: getTypeOfProduct(item.type_id || ''),
             quantity: item.quantity,
             specialPrice: item.special_price ? item.special_price : item.price,
             itemId: item.id.toString(),
@@ -257,8 +260,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 props.setValidateCouponResult(couponValidateResult);
                 setCouponCode && setCouponCode(selectCouponCode);
                 props.close(false);
-                 /*GTM TRACKING START */
-                 gtmTracking({
+                /*GTM TRACKING START */
+                gtmTracking({
                   category: 'Pharmacy',
                   action: 'Order',
                   label: `Coupon Applied - ${selectCouponCode}`,
