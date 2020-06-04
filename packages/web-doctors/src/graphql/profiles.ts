@@ -870,6 +870,7 @@ export const GET_CASESHEET = gql`
         followUpConsultType
         consultType
         notes
+        version
       }
       pastAppointments {
         id
