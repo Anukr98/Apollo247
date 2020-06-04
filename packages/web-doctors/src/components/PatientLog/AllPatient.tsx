@@ -112,7 +112,6 @@ const useStyles = makeStyles((theme: Theme) =>
     chatIcon: {
       height: 10,
       width: 10,
-      marginTop: -18,
       paddingRight: 15,
     },
     pastConsult: {
@@ -225,6 +224,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         <div
                           className={classes.ChatStyle}
                           onClick={() => {
+                            localStorage.setItem('callBackUrl', '/patientlog');
                             if (
                               patient.appointmentids.length > 0 &&
                               patient.unreadMessagesCount.length > 0 &&
