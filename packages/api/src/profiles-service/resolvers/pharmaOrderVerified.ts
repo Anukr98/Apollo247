@@ -38,6 +38,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    packSize: Int
   }
 
   type SaveOrderShipmentsResult {
@@ -81,6 +82,7 @@ type ItemArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentsInputArgs = {
