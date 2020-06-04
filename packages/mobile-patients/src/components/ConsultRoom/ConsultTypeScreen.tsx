@@ -67,11 +67,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    marginTop: 18,
-    marginHorizontal: 20,
+    marginTop: 14,
+    marginHorizontal: 0,
+    width: '100%',
+    height: 46,
+    backgroundColor: '#f0fffc',
   },
   checkboxTextStyle: {
-    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE),
     marginLeft: 8,
   },
   cardContainer: {
@@ -186,6 +189,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         })
         .then((data) => {
           const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
+          console.log('getPastAppointmentsCount', data);
           if (count && count > 0) {
             setHideCheckbox(true);
           }
@@ -222,7 +226,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const renderCheckbox = () => {
     return (
       <View style={styles.checkboxContainer}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setConsultedChecked(!consultedChecked)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ marginLeft: 17 }}
+          onPress={() => setConsultedChecked(!consultedChecked)}
+        >
           {consultedChecked ? <CheckedIcon /> : <CheckUnselectedIcon />}
         </TouchableOpacity>
         <Text style={styles.checkboxTextStyle}>
@@ -377,6 +385,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       }
     );
   };
+  // let ScrollViewRef: any;
 
   return (
     <View style={styles.mainContainer}>
@@ -387,6 +396,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           bounces={false}
           style={styles.mainContainer}
           contentContainerStyle={styles.ScrollViewStyle}
+          // ref={(ref) => (ScrollViewRef = ref)}
+          // onScroll={(event) => {
+          //   console.log('event', event.nativeEvent.contentOffset.y);
+          // }}
         >
           {hideCheckbox ? null : renderCheckbox()}
           {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}
