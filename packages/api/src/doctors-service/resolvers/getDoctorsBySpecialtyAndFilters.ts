@@ -211,7 +211,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -249,17 +248,17 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             finalDoctorNextAvailSlots.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doc._source.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -337,22 +336,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       ).toString();
     });
 
-    // for (const doctor of earlyAvailableApolloDoctors) {
-    //   if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-    //     earlyAvailableNearByApolloDoctors.push(doctor);
-    //   } else {
-    //     earlyAvailableFarApolloDoctors.push(doctor);
-    //   }
-    // }
-    // for (const doctor of docs) {
-    //   if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-    //     if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-    //       nearByApolloDoctors.push(doctor);
-    //     } else {
-    //       remainingApolloDoctors.push(doctor);
-    //     }
-    //   }
-    // }
     doctors = earlyAvailableApolloDoctors
       .sort(
         (a, b) =>
