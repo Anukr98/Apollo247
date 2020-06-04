@@ -393,7 +393,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [doctorId, setDoctorId] = React.useState<string>('');
   const client = useApolloClient();
   const doctorName = doctorDetail && doctorDetail.fullName;
-  const readableDoctorname = readableParam(doctorName);
+  const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
