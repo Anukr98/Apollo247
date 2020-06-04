@@ -284,7 +284,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             latitude = doctorHospital[0].facility.latitude;
             longitude = doctorHospital[0].facility.longitude;
             name = doctorHospital[0].facility.name;
-            imageUrl = doctorHospital[0].facility.imageUrl || 'https://aph.staging.web-patients.popcornapps.com/images/hospital_image-e202f2.webp';
+            imageUrl =
+              doctorHospital[0].facility.imageUrl ||
+              'https://aph.staging.web-patients.popcornapps.com/images/hospital_image-e202f2.webp';
           }
           setStructuredJSON({
             '@context': 'http://schema.org/',
@@ -296,7 +298,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             photo: [
               {
                 '@type': 'CreativeWork',
-                url: photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
+                url:
+                  photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
               },
             ],
             openingHours: openingHours,
