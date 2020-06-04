@@ -424,7 +424,7 @@ export const MedicineDetails: React.FC = (props) => {
             } = data.productdp[0];
             let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
-            if (type_id && type_id === 'Pharma' && Array.isArray(PharmaOverview) && PharmaOverview.length) {
+            if (type_id && type_id.toLowerCase() === 'pharma' && Array.isArray(PharmaOverview) && PharmaOverview.length) {
               const { Overview } = PharmaOverview[0];
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
@@ -448,7 +448,7 @@ export const MedicineDetails: React.FC = (props) => {
                 itemCondition: 'https://schema.org/NewCondition',
               },
             });
-            if (type_id && type_id === 'Pharma') {
+            if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform } = PharmaOverview[0];
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
