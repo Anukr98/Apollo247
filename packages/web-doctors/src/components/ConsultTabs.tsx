@@ -359,6 +359,9 @@ export const ConsultTabs: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [removedMedicinePrescription, setRemovedMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
   const [favouriteMedicines, setFavouriteMedicines] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
@@ -589,6 +592,10 @@ export const ConsultTabs: React.FC = () => {
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
+            ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+            : setRemovedMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setSRDNotes('');
@@ -1248,7 +1255,8 @@ export const ConsultTabs: React.FC = () => {
         diagnosisFinal = null,
         diagnosticPrescriptionFinal = null,
         medicinePrescriptionFinal = null,
-        otherInstructionsFinal = null;
+        otherInstructionsFinal = null,
+        removedMedicinePrescriptionFinal = null;
       if (symptoms && symptoms.length > 0) {
         symptomsFinal = symptoms.map((symptom) => {
           return _omit(symptom, '__typename');
@@ -1272,6 +1280,11 @@ export const ConsultTabs: React.FC = () => {
       }
       if (medicinePrescription && medicinePrescription.length > 0) {
         medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
+          return _omit(prescription, ['__typename']);
+        });
+      }
+      if (removedMedicinePrescription && removedMedicinePrescription.length > 0) {
+        removedMedicinePrescriptionFinal = removedMedicinePrescription.map((prescription) => {
           return _omit(prescription, ['__typename']);
         });
       }
@@ -1311,6 +1324,7 @@ export const ConsultTabs: React.FC = () => {
             : APPOINTMENT_TYPE.ONLINE,
         otherInstructions: otherInstructionsFinal,
         medicinePrescription: medicinePrescriptionFinal,
+        removedMedicinePrescription: removedMedicinePrescriptionFinal,
         id: caseSheetId,
         lifeStyle: lifeStyle,
         familyHistory: familyHistory,
@@ -1620,6 +1634,8 @@ export const ConsultTabs: React.FC = () => {
             setFavouriteTests,
             medicinePrescription,
             setMedicinePrescription,
+            removedMedicinePrescription,
+            setRemovedMedicinePrescription,
             favouriteMedicines,
             setFavouriteMedicines,
             consultType,
