@@ -431,7 +431,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const ordersList = await this.find({
       where: {
         createdDate: Between(newStartDate, newEndDate),
-        orderTat: Not(null),
+        orderTat: Not(''),
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         currentStatus: In([
           MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
@@ -450,7 +450,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         console.log('orderAutoId=>', orderDetails.orderAutoId);
         if (
-          orderDetails.orderTat.toString() != '' &&
+          orderDetails.orderTat.toString() != null &&
           Date.parse(orderDetails.orderTat.toString())
         ) {
           const tatDate = new Date(orderDetails.orderTat.toString());
