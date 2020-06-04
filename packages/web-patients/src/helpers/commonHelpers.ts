@@ -1,6 +1,6 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
-
+import _isUndefined from 'lodash/isUndefined';
 declare global {
   interface Window {
     opera: any;
@@ -111,7 +111,9 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-').toLowerCase();
+  return param && !_isUndefined(param) && param.includes('-')
+    ? param.replace(/-/g, ' ')
+    : param.replace(/\s+/g, '-').toLowerCase();
 };
 const dayMapping = {
   MONDAY: 'Mo',
