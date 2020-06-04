@@ -322,4 +322,10 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
+
+  // pharmacologist email config
+  PHARMACOLOGIST_CONSULT_TITLE = 'Prescription Review for {0} | {1}',
+  PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
+  PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
+  // end of pharmacologist email config
 }

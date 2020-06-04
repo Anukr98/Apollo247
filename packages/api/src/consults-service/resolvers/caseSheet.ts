@@ -45,11 +45,7 @@ import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepos
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import {
-  sendNotification,
-  NotificationType,
-  sendNotificationSMS,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
@@ -1168,15 +1164,6 @@ const submitJDCaseSheet: Resolver<
     };
     await caseSheetRepo.savecaseSheet(casesheetAttrsToAdd);
   }
-
-  //Getting patient details for mobile number
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(appointmentData.patientId);
-  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-  const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace('{0}', patientData.firstName)
-    .replace('{1}', doctorData.firstName)
-    .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
-  sendNotificationSMS(patientData.mobileNumber, messageBody);
 
   return true;
 };

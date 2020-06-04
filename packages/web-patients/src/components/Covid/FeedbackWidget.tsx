@@ -7,26 +7,30 @@ import { makeStyles } from '@material-ui/styles';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: '#fff',
       display: 'flex',
-      padding: '0 0 16px',
-      margin: '0 0 16px',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      [theme.breakpoints.down('xs')]: {
-        padding: '16px 20px',
-        margin: 0,
-      },
+      marginLeft: 'auto',
     },
     linkItem: {
-      display: 'flex',
+      display: 'none',
       alignItems: 'center',
       cursor: 'pointer',
-      fontSize: 9,
+      fontSize: 12,
+      lineHeight: '26px',
       fontWeight: 600,
       minWidth: 90,
+      color: '#0087ba',
       '& img': {
         verticalAlign: 'middle',
         marginRight: 5,
+        marginTop: -3,
+      },
+      '& span': {
+        '& span': {
+          color: '#7098a3',
+        },
+      },
+      '&:first-child': {
+        display: 'flex',
       },
     },
     likeFilter: {
@@ -159,12 +163,18 @@ export const FeedbackWidget: React.FC<FeedbackWidgetProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.linkItem} onClick={() => handleLikeButton()}>
         <span>
+        {!articleLiked ?
           <img
-            className={!articleLiked ? classes.likeFilter : ''}
-            src={require('images/ic_like.svg')}
+            src={require('images/ic-like.svg')}
+            alt="Likes"
+            onContextMenu={(e) => e.preventDefault()}
+          /> :
+          <img
+            src={require('images/noun-like.svg')}
             alt="Likes"
             onContextMenu={(e) => e.preventDefault()}
           />
+          }
         </span>
         <span>
           {likeCount} {Number(likeCount) === 1 ? 'Like' : 'Likes'}

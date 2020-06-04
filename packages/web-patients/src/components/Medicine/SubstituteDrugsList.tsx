@@ -65,7 +65,7 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
               <li
                 onClick={() => {
                   props.setIsSubDrugsPopoverOpen(false);
-                  window.location.href = clientRoutes.medicineDetails(substitute.sku);
+                  window.location.href = clientRoutes.medicineDetails(substitute.url_key);
                 }}
               >
                 <div className={classes.name}>{substitute.name}</div>

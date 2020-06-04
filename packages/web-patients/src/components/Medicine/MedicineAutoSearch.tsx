@@ -327,7 +327,9 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
       </div>
       {showError ? (
         props.fromPDP ? (
-          <span className={classes.noData}>Hit enter to search <b>'{searchText}'</b></span>
+          <span className={classes.noData}>
+            Hit enter to search <b>'{searchText}'</b>
+          </span>
         ) : (
           <FormHelperText className={classes.helpText} component="div" error={showError}>
             Sorry, we couldn't find what you are looking for :("
@@ -348,7 +350,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
               <ul>
                 {searchMedicines.map((medicine) => (
                   <li key={medicine.id}>
-                    <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                    <Link to={clientRoutes.medicineDetails(medicine.url_key)}>
                       <div className={classes.medicineImg}>
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />
@@ -374,6 +376,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                           onClick={() => {
                             if (medicine.is_in_stock) {
                               const cartItem: MedicineCartItem = {
+                                url_key: medicine.url_key,
                                 description: medicine.description,
                                 id: medicine.id,
                                 image: medicine.image,
@@ -439,6 +442,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                                 removeCartItem && removeCartItem(medicine.id);
                               } else {
                                 const cartItem: MedicineCartItem = {
+                                  url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
                                   image: medicine.image,
@@ -476,6 +480,7 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                               const medicineQtyInCart = getQuantity(medicine);
                               if (medicineQtyInCart < MEDICINE_QUANTITY) {
                                 const cartItem: MedicineCartItem = {
+                                  url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
                                   image: medicine.image,

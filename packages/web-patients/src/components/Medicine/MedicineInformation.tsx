@@ -278,6 +278,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 11,
       fontWeight: 500,
     },
+    outOfStock: {
+      textAlign: 'center',
+      padding: 16,
+    },
   });
 });
 
@@ -306,6 +310,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
+    skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
     url: process.env.PHARMACY_MED_INFO_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
@@ -316,7 +321,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     await axios
       .post(
         apiDetails.url || '',
-        { params: params.sku },
+        { params: data.sku || params.sku },
         {
           headers: {
             Authorization: apiDetails.authToken,
@@ -349,7 +354,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           ordertype: 'pharma',
           lookup: [
             {
-              sku: params.sku,
+              sku: data.sku || params.sku,
               qty: 1,
             },
           ],
@@ -555,6 +560,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setAddMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
                         description: data.description,
                         id: data.id,
                         image: data.image,
@@ -602,6 +608,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     onClick={() => {
                       setUpdateMutationLoading(true);
                       const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
                         description: data.description,
                         id: data.id,
                         image: data.image,
@@ -636,7 +643,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </div>
           </>
         ) : (
-          <>
+          <div className={classes.outOfStock}>
             <div className={classes.medicineNoStock}>Out Of Stock</div>
             <AphButton
               fullWidth
@@ -655,7 +662,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             >
               Notify when in stock
             </AphButton>
-          </>
+          </div>
         )}
       </div>
 

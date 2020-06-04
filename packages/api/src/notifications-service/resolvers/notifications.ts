@@ -343,14 +343,13 @@ export async function sendCallsNotification(
       title: notificationTitle,
       body: notificationBody,
       sound: 'incallmanager_ringtone.mp3',
+      android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
     },
     data: {
       type: 'call_started',
       appointmentId: appointment.id.toString(),
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      sound: 'incallmanager_ringtone.mp3',
-      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       callType,
       appointmentCallId,
       doctorType,
@@ -794,7 +793,7 @@ export async function sendNotification(
         '{0}',
         Number(refundsInfo.refundAmount).toFixed(2)
       );
-      notificationBody = notificationBody.replace('{1}', appointment.id);
+      notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
       notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
 
       sendNotificationSMS(patientDetails.mobileNumber, notificationBody);

@@ -10,7 +10,7 @@ import {
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
 } from 'consults-service/entities';
-import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -216,7 +216,7 @@ const makeAppointmentPayment: Resolver<
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
-        await initiateRefund(
+        let refundResponse = await initiateRefund(
           {
             appointment: processingAppointment,
             appointmentPayments: paymentInfo,
@@ -228,16 +228,27 @@ const makeAppointmentPayment: Resolver<
         );
 
         paymentInfo.appointment = processingAppointment;
-        sendNotification(
-          {
-            appointmentId: processingAppointment.id,
-            notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
-          },
-          patientsDb,
-          consultsDb,
-          doctorsDb
-        );
-        isRefunded = true;
+        refundResponse = refundResponse as PaytmResponse;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: processingAppointment.id,
+              notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+          isRefunded = true;
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed makeAppointmentPayment',
+            'makeAppointmentPayment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
       }
 
       return {
@@ -293,10 +304,22 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDetails = await doctorRepo.findById(processingAppointment.doctorId);
+    const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : null;
+    console.log(
+      'timeDiference',
+      timeDifference / 60 <=
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10),
+      'isJdAllowed',
+      isJdAllowed === false
+    );
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      isJdAllowed === false
     ) {
+      console.log('isJdAlowedddddddddddddd', isJdAllowed);
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
@@ -335,6 +358,16 @@ const makeAppointmentPayment: Resolver<
       status: STATUS.PAYMENT_FAILED,
       paymentInfo,
     });
+    //NOTIFICATION logic starts here
+    sendNotification(
+      {
+        appointmentId: processingAppointment.id,
+        notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+      },
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {
       status: STATUS.PAYMENT_PENDING_PG,

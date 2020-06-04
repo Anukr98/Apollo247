@@ -1,4 +1,5 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
+import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 
 declare global {
   interface Window {
@@ -110,8 +111,42 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-');
+  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-').toLowerCase();
 };
+const dayMapping = {
+  MONDAY: 'Mo',
+  TUESDAY: 'Tu',
+  WEDNESDAY: 'We',
+  THURSDAY: 'Th',
+  FRIDAY: 'Fr',
+  SATURDAY: 'SA',
+  SUNDAY: 'Su',
+};
+
+const getOpeningHrs = (
+  consultHours: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[]
+) => {
+  return consultHours.map((consult) => {
+    const { startTime, endTime, weekDay } = consult;
+    return `${dayMapping[weekDay]} ${startTime}-${endTime}`;
+  });
+};
+
+const toBase64 = (file: any) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+
+const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
+const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
+const INVALID_FILE_TYPE_ERROR =
+  'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 
 export {
   sortByProperty,
@@ -122,4 +157,10 @@ export {
   customerCareNumber,
   MEDICINE_QUANTITY,
   readableParam,
+  getOpeningHrs,
+  acceptedFilesNamesForFileUpload,
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  INVALID_FILE_SIZE_ERROR,
+  INVALID_FILE_TYPE_ERROR,
+  toBase64,
 };
