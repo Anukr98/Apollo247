@@ -674,6 +674,8 @@ export const MedicinePrescription: React.FC = () => {
     removedMedicinePrescription,
     setRemovedMedicinePrescription,
   } = useContext(CaseSheetContext);
+  const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
+  const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
   const [dosageList, setDosageList] = useState<any>([]);
   const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('');
   const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('');
@@ -690,6 +692,7 @@ export const MedicinePrescription: React.FC = () => {
   >([]);
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
+  const { caseSheetEdit } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
   useEffect(() => {
@@ -719,13 +722,20 @@ export const MedicinePrescription: React.FC = () => {
       });
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setRemovedMedicinePrescriptionState([...removedMedicinePrescription]);
+      setMedicinePrescriptionState([...selectedMedicinesArr]);
+    }, 2000);
+  }, []);
+
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
     dosageErr: false,
   });
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<string>('1');
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
@@ -1231,26 +1241,77 @@ export const MedicinePrescription: React.FC = () => {
     setLoading(false);
   };
 
-  const deletemedicine = (idx: any) => {
-    const removedMedicineArr = [...removedMedicinePrescription];
-    const existingRemovedMedicineIndex = findIndex(
-      removedMedicineArr,
-      (medicine) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+  const removedMedicinePrescriptionFn = (type: string, idx: any) => {
+    let existingRemovedMedicineIndex = findIndex(
+      removedMedicinePrescription,
+      (medicine) => medicine.medicineName === selectedValue
     );
-    if (existingRemovedMedicineIndex === -1) removedMedicineArr.push(selectedMedicinesArr[idx]);
 
+    let presetMedicineIndex = findIndex(
+      medicinePrescriptionState,
+      (medicine: any) => medicine.medicineName === selectedValue
+    );
+
+    if (type === 'add') {
+      const removedMedicineArr = [...removedMedicinePrescription];
+
+      const initialRemovedMedicinePrescriptionIndex = findIndex(
+        removedMedicinePrescriptionState,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      existingRemovedMedicineIndex = findIndex(
+        removedMedicineArr,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      presetMedicineIndex = findIndex(
+        medicinePrescriptionState,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      if (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+        removedMedicineArr.push(selectedMedicinesArr[idx]);
+
+      const storageItem = getLocalStorageItem(params.id);
+
+      if (
+        storageItem &&
+        (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+      ) {
+        storageItem.removedMedicinePrescription = removedMedicineArr;
+        updateLocalStorageItem(params.id, storageItem);
+      }
+
+      if (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+        setRemovedMedicinePrescription(removedMedicineArr);
+    } else if (type === 'delete') {
+      if (existingRemovedMedicineIndex !== -1)
+        removedMedicinePrescription.splice(existingRemovedMedicineIndex, 1);
+
+      const storageItem = getLocalStorageItem(params.id);
+      if (storageItem && existingRemovedMedicineIndex !== -1) {
+        storageItem.removedMedicinePrescription = removedMedicinePrescription;
+        updateLocalStorageItem(params.id, storageItem);
+      }
+
+      if (existingRemovedMedicineIndex === -1)
+        setRemovedMedicinePrescription(removedMedicinePrescription);
+    }
+  };
+
+  const deletemedicine = (idx: any) => {
+    removedMedicinePrescriptionFn('add', idx);
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);
     const storageItem = getLocalStorageItem(params.id);
     if (storageItem) {
       storageItem.medicinePrescription = selectedMedicinesArr;
-      if (existingRemovedMedicineIndex === -1)
-        storageItem.removedMedicinePrescription = removedMedicineArr;
       updateLocalStorageItem(params.id, storageItem);
     }
     setSelectedMedicinesArr(selectedMedicinesArr);
-    if (existingRemovedMedicineIndex === -1) setRemovedMedicinePrescription(removedMedicineArr);
+
     const sum = idx + Math.random();
     setIdx(sum);
   };
@@ -1687,27 +1748,18 @@ export const MedicinePrescription: React.FC = () => {
         medicineObj.splice(idx, 1, inputParams);
         setSelectedMedicines(medicineObj);
       } else {
+        removedMedicinePrescriptionFn('delete', null);
         const storageItem = getLocalStorageItem(params.id);
-
-        const existingRemovedMedicineIndex = findIndex(
-          removedMedicinePrescription,
-          (medicine) => medicine.medicineName === selectedValue
-        );
-
-        if (existingRemovedMedicineIndex !== -1)
-          removedMedicinePrescription.splice(existingRemovedMedicineIndex, 1);
 
         const medicineArray = selectedMedicinesArr;
         medicineArray!.push(inputParamsArr);
 
         if (storageItem) {
           storageItem.medicinePrescription = medicineArray;
-          if (existingRemovedMedicineIndex !== -1)
-            storageItem.removedMedicinePrescription = removedMedicinePrescription;
+
           updateLocalStorageItem(params.id, storageItem);
         }
-        if (existingRemovedMedicineIndex !== -1)
-          setRemovedMedicinePrescription(removedMedicinePrescription);
+
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.push(inputParams);
@@ -1904,261 +1956,172 @@ export const MedicinePrescription: React.FC = () => {
   };
   const horizontal = medicineForm ? 'right' : 'left';
 
-  const removedMedicineHtml =
-    removedMedicinePrescription &&
-    removedMedicinePrescription.length > 0 &&
-    removedMedicinePrescription!.map((_medicine: any, index: number) => {
-      const medicine = _medicine!;
-      const duration =
-        medicine.medicineConsumptionDurationInDays &&
-        ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
-          medicine.medicineConsumptionDurationUnit
-            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-            : 'day(s)'
-        } `;
+  const medicineHtml = (type: string) => {
+    const isPresent = type === 'present';
+    const medicines = isPresent ? selectedMedicinesArr : removedMedicinePrescription;
 
-      const whenString =
-        medicine.medicineToBeTaken.length > 0
-          ? toBeTaken(medicine.medicineToBeTaken)
-              .join(', ')
-              .toLowerCase()
-          : '';
+    return (
+      medicines &&
+      medicines.length > 0 &&
+      medicines!.map((_medicine: any, index: number) => {
+        const medicine = _medicine!;
+        const duration =
+          medicine.medicineConsumptionDurationInDays &&
+          ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+            medicine.medicineConsumptionDurationUnit
+              ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+              : 'day(s)'
+          } `;
 
-      const unitHtmls =
-        medUnitObject && medUnitObject[medicine.medicineUnit]
-          ? medUnitObject[medicine.medicineUnit].value
-          : medicine.medicineUnit.toLowerCase();
+        const whenString =
+          medicine.medicineToBeTaken.length > 0
+            ? toBeTaken(medicine.medicineToBeTaken)
+                .join(', ')
+                .toLowerCase()
+            : '';
 
-      const isInDuration =
-        (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
-        (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
-          ? ''
-          : 'in the ';
-      let timesString =
-        medicine.medicineTimings.length > 0
-          ? isInDuration +
-            medicine.medicineTimings
-              .join(' , ')
-              .toLowerCase()
-              .replace('_', ' ')
-          : '';
-      if (timesString && timesString !== '') {
-        timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
-      }
-      let dosageHtml = '';
-      if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
-        const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
-        const customTimingArray = [];
-        if (dosageTimingArray && dosageTimingArray[0])
-          customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-        if (dosageTimingArray && dosageTimingArray[1])
-          customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-        if (dosageTimingArray && dosageTimingArray[2])
-          customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-        if (dosageTimingArray && dosageTimingArray[3])
-          customTimingArray.push(dosageTimingArray[3] + unitHtmls);
-        dosageHtml = customTimingArray.join(' - ');
-      } else {
-        dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
-      }
-      return (
-        <div style={{ position: 'relative' }} key={index}>
-          <Paper className={classes.medicineCard}>
-            <h5>
-              <s>{medicine.medicineName}</s>
-            </h5>
-            <p className={classes.removed}>This medicine has been discontinued</p>
-            <h6>
-              {`${
-                medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-              } ${dosageHtml.toLowerCase()}${
-                timesString.length > 0 &&
-                medicine.medicineCustomDosage &&
-                medicine.medicineCustomDosage !== ''
-                  ? ' (' + timesString + ') '
-                  : ' '
-              }${
-                medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
-                  ? ''
-                  : medicine.medicineFrequency
-                  ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                    ? 'STAT (Immediately)'
+        const unitHtmls =
+          medUnitObject && medUnitObject[medicine.medicineUnit]
+            ? medUnitObject[medicine.medicineUnit].value
+            : medicine.medicineUnit.toLowerCase();
+
+        const isInDuration =
+          (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
+          (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
+            ? ''
+            : 'in the ';
+        let timesString =
+          medicine.medicineTimings.length > 0
+            ? isInDuration +
+              medicine.medicineTimings
+                .join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
+            : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
+        let dosageHtml = '';
+        if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+          const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+          const customTimingArray = [];
+          if (dosageTimingArray && dosageTimingArray[0])
+            customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[1])
+            customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[2])
+            customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[3])
+            customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          dosageHtml = customTimingArray.join(' - ');
+        } else {
+          dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+        }
+
+        const actionButtons = isPresent
+          ? [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={() => updateMedicine(index)}
+              >
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>,
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.deleteSymptom }}
+                onClick={() => deletemedicine(index)}
+              >
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>,
+            ]
+          : [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={(id) => {
+                  setIsEditFavMedicine(true);
+                  updateFavMedicine(medicine);
+                }}
+                style={{ right: 10 }}
+              >
+                <img
+                  src={favouriteMedicine && require('images/add_doctor_white.svg')}
+                  alt=""
+                  className={classes.addMedicineIcon}
+                />
+              </AphButton>,
+            ];
+
+        return (
+          <div style={{ position: 'relative' }} key={index}>
+            <Paper className={classes.medicineCard}>
+              {isPresent ? (
+                <h5>{medicine.medicineName}</h5>
+              ) : (
+                <h5>
+                  <s>{medicine.medicineName}</s>
+                </h5>
+              )}
+              {!isPresent && <p className={classes.removed}>This medicine has been discontinued</p>}
+              <h6>
+                {`${
+                  medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                } ${dosageHtml.toLowerCase()}${
+                  timesString.length > 0 &&
+                  medicine.medicineCustomDosage &&
+                  medicine.medicineCustomDosage !== ''
+                    ? ' (' + timesString + ') '
+                    : ' '
+                }${
+                  medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                    ? ''
                     : medicine.medicineFrequency
+                    ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                      ? 'STAT (Immediately)'
+                      : medicine.medicineFrequency
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                    : dosageFrequency[0].id
                         .split('_')
                         .join(' ')
                         .toLowerCase()
-                  : dosageFrequency[0].id
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
-              }
-            ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 &&
-                medicine.medicineCustomDosage &&
-                medicine.medicineCustomDosage !== ''
-                  ? ''
-                  : timesString
-              }
-            `}
-            </h6>
-            {medicine.routeOfAdministration && (
-              <h6>{`To be taken: ${medicine.routeOfAdministration
-                .split('_')
-                .join(' ')
-                .toLowerCase()}`}</h6>
-            )}
-            {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-          </Paper>
-          {caseSheetEdit && (
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.updateSymptom }}
-              onClick={(id) => {
-                setIsEditFavMedicine(true);
-                updateFavMedicine(medicine);
-              }}
-            >
-              <img
-                src={favouriteMedicine && require('images/add_doctor_white.svg')}
-                alt=""
-                className={classes.addMedicineIcon}
-              />
-            </AphButton>
-          )}
-        </div>
-      );
-    });
+                }
+              ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                  timesString.length > 0 &&
+                  medicine.medicineCustomDosage &&
+                  medicine.medicineCustomDosage !== ''
+                    ? ''
+                    : timesString
+                }
+              `}
+              </h6>
+              {medicine.routeOfAdministration && (
+                <h6>{`To be taken: ${medicine.routeOfAdministration
+                  .split('_')
+                  .join(' ')
+                  .toLowerCase()}`}</h6>
+              )}
+              {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+            </Paper>
+            {caseSheetEdit && actionButtons}
+          </div>
+        );
+      })
+    );
+  };
 
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
         <Grid item lg={6} xs={12}>
           <div className={classes.medicineHeading}>Medicines</div>
-          {selectedMedicinesArr!.map((_medicine: any, index: number) => {
-            const medicine = _medicine!;
-            const duration =
-              medicine.medicineConsumptionDurationInDays &&
-              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
-                medicine.medicineConsumptionDurationUnit
-                  ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-                  : 'day(s)'
-              } `;
-
-            const whenString =
-              medicine.medicineToBeTaken.length > 0
-                ? toBeTaken(medicine.medicineToBeTaken)
-                    .join(', ')
-                    .toLowerCase()
-                : '';
-
-            const unitHtmls =
-              medUnitObject && medUnitObject[medicine.medicineUnit]
-                ? medUnitObject[medicine.medicineUnit].value
-                : medicine.medicineUnit.toLowerCase();
-
-            const isInDuration =
-              (medicine.medicineTimings.length === 1 &&
-                medicine.medicineTimings[0] === 'AS_NEEDED') ||
-              (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
-                ? ''
-                : 'in the ';
-            let timesString =
-              medicine.medicineTimings.length > 0
-                ? isInDuration +
-                  medicine.medicineTimings
-                    .join(' , ')
-                    .toLowerCase()
-                    .replace('_', ' ')
-                : '';
-            if (timesString && timesString !== '') {
-              timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
-            }
-            let dosageHtml = '';
-            if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
-              const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
-              const customTimingArray = [];
-              if (dosageTimingArray && dosageTimingArray[0])
-                customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[1])
-                customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[2])
-                customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[3])
-                customTimingArray.push(dosageTimingArray[3] + unitHtmls);
-              dosageHtml = customTimingArray.join(' - ');
-            } else {
-              dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
-            }
-            return (
-              <div style={{ position: 'relative' }} key={index}>
-                <Paper className={classes.medicineCard}>
-                  <h5>{medicine.medicineName}</h5>
-                  <h6>
-                    {`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                    } ${dosageHtml.toLowerCase()}${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ' (' + timesString + ') '
-                        : ' '
-                    }${
-                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : medicine.medicineFrequency
-                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                          ? 'STAT (Immediately)'
-                          : medicine.medicineFrequency
-                              .split('_')
-                              .join(' ')
-                              .toLowerCase()
-                        : dosageFrequency[0].id
-                            .split('_')
-                            .join(' ')
-                            .toLowerCase()
-                    }
-                    ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : timesString
-                    }
-                    `}
-                  </h6>
-                  {medicine.routeOfAdministration && (
-                    <h6>{`To be taken: ${medicine.routeOfAdministration
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()}`}</h6>
-                  )}
-                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-                </Paper>
-                {caseSheetEdit && (
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.updateSymptom }}
-                    onClick={() => updateMedicine(index)}
-                  >
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
-                )}
-                {caseSheetEdit && (
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.deleteSymptom }}
-                    onClick={() => deletemedicine(index)}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                )}
-              </div>
-            );
-          })}
-          {removedMedicineHtml}
+          {medicineHtml('present')}
+          {medicineHtml('removed')}
           {caseSheetEdit && (
             <AphButton
               variant="contained"
