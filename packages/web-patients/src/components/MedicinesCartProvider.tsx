@@ -337,6 +337,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
       if (cartItems && itemUpdates && itemUpdates.price) {
         cartItems[foundIndex].price = itemUpdates.price;
         cartItems[foundIndex].special_price = itemUpdates.special_price;
+        cartItems[foundIndex].is_in_stock = itemUpdates.is_in_stock;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
       }
