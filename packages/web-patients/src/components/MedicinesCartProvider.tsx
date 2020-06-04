@@ -5,9 +5,8 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-
-// import axios from 'axios';
-// const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -301,8 +300,28 @@ export const MedicinesCartProvider: React.FC = (props) => {
   }, [prescriptionUploaded, ePrescriptionData, uploadedEPrescription]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
-    setCartItems([...cartItems, itemToAdd]);
-    setIsCartUpdated(true);
+    if (
+      currentPatient &&
+      currentPatient.id &&
+      pharmaAddressDetails &&
+      pharmaAddressDetails.pincode
+    ) {
+      checkServiceAvailability(pharmaAddressDetails.pincode)
+        .then(({ data }: any) => {
+          if (data && data.Availability) {
+            setCartItems([...cartItems, itemToAdd]);
+            setIsCartUpdated(true);
+          } else {
+            window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } else {
+      setCartItems([...cartItems, itemToAdd]);
+      setIsCartUpdated(true);
+    }
   };
 
   const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
