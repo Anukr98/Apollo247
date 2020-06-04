@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   imageView: {
     marginHorizontal: 16,
-    marginTop: 34,
+    marginTop: 40,
     width: 80,
     height: 80,
     borderRadius: 40,
