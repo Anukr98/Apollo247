@@ -525,7 +525,6 @@ export const ConsultTabs: React.FC = () => {
     );
   };
   const createSDCasesheetCall = (flag: boolean) => {
-    alert('creating new casesheet');
     setError('Creating Casesheet. Please wait....');
     mutationCreateSrdCaseSheet()
       .then((response) => {

@@ -848,6 +848,22 @@ export const GET_CASESHEET = gql`
           routeOfAdministration
           medicineCustomDosage
         }
+        removedMedicinePrescription{
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
         otherInstructions {
           instruction
         }
@@ -1149,6 +1165,20 @@ export const MODIFY_CASESHEET = gql`
       followUpConsultType
       id
       medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineUnit
+        medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
+      }
+      removedMedicinePrescription{
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage
