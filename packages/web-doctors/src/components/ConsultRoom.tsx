@@ -591,6 +591,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       return rowData.message;
     }
   };
+
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     const { patientDetails } = useContext(CaseSheetContext);
     if (
@@ -622,11 +623,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
               <>
-                <span className={classes.none}>
+                <span className={classes.missCall}>
                   <img src={require('images/ic_missedcall.svg')} />
                   {rowData.message.toLocaleLowerCase() === 'video call ended'
-                    ? 'You missed a video call'
-                    : 'You missed a voice call'}
+                    ? 'Patient missed a video call'
+                    : 'Patient missed a voice call'}
                 </span>
               </>
             ) : rowData.duration ? (
