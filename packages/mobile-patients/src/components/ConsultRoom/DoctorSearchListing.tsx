@@ -15,9 +15,9 @@ import {
   DoctorFilter,
   LocationOff,
   LocationOn,
-  ToggleOn,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -47,6 +47,7 @@ import {
   getPlaceInfoByPlaceId,
   GooglePlacesType,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
   doRequestAndAccessLocation,
@@ -54,16 +55,14 @@ import {
   getNetStatus,
   isValidSearch,
   postAppsFlyerEvent,
-  postWebEngageEvent,
   postFirebaseEvent,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -81,7 +80,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Alert,
 } from 'react-native';
 import {
   NavigationActions,
@@ -239,6 +237,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
+  const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -766,7 +765,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <Header
           leftIcon="backArrow"
           container={{ borderBottomWidth: 1 }}
-          rightComponent={<RightHeader />}
+          titleComponent={<RightHeader />}
+          rightComponent={
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                console.log('data1111111111');
+                setSearchIconClicked(!searchIconClicked);
+              }}
+            >
+              <SearchIcon />
+            </TouchableOpacity>
+          }
           onPressLeftIcon={backDataFunctionality}
         />
       </View>
@@ -1117,7 +1127,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setNearyByFlag(!nearyByFlag);
                 setAvailabilityFlag(false);
-
+                setshowSpinner(true);
                 postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
                   'Sort By': 'distance',
                 });
@@ -1143,7 +1153,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setAvailabilityFlag(!availabilityFlag);
                 setNearyByFlag(false);
-
+                setshowSpinner(true);
                 postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
                   'Sort By': 'availability',
                 });
@@ -1244,7 +1254,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
-        {renderDoctorSearchBar()}
+        {searchIconClicked && renderDoctorSearchBar()}
         <ScrollView bounces={false} style={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()
