@@ -1095,3 +1095,12 @@ export const InPersonBlue: React.FC<IconProps> = (props) => (
     source={require('./icons/ic_hospital_blue.png')}
   />
 );
+
+export const SearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 23, height: 23 }}
+    {...props}
+    source={require('./icons/loupe.png')}
+    resizeMode="contain"
+  />
+);
