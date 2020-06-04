@@ -691,6 +691,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           width: screenWidth / 2,
           alignItems: 'center',
           justifyContent: 'flex-end',
+          marginLeft: -40,
         }}
       >
         {currentLocation === '' ? (

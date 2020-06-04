@@ -828,10 +828,10 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
     console.log('\n********* WebEngageEvent End *********\n');
-    if (getBuildEnvironment() !== 'DEV') {
-      // Don't post events in DEV environment
-      webengage.track(eventName, attributes);
-    }
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    webengage.track(eventName, attributes);
+    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1097,14 +1097,14 @@ export const postFirebaseAddToCartEvent = (
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
-      'productname': name,
-      'productid': sku,
+      productname: name,
+      productid: sku,
       Brand: '',
-      'BrandID': '',
-      'categoryname': '',
-      'categoryID': category_id || '',
+      BrandID: '',
+      categoryname: '',
+      categoryID: category_id || '',
       Price: price,
-      'DiscountedPrice': typeof special_price == 'string' ? Number(special_price) : special_price,
+      DiscountedPrice: typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
     };

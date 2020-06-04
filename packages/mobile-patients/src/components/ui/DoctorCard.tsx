@@ -226,6 +226,45 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     });
   };
 
+  const calculatefee = (rowData: any) => {
+    if (
+      parseInt(rowData.onlineConsultationFees, 10) ===
+      parseInt(rowData.physicalConsultationFees, 10)
+    ) {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+            {string.common.Rs}
+            {'  '}
+          </Text>
+          <Text style={theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE)}>
+            {rowData.onlineConsultationFees}
+          </Text>
+        </View>
+      );
+    } else {
+      return (
+        <View style={{ flexDirection: 'row' }}>
+          <Text
+            style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 14 }}
+          >
+            Starts at{'  '}
+            <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+              {string.common.Rs}
+              {'  '}
+            </Text>
+            <Text style={theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE)}>
+              {Math.min(
+                Number(rowData.physicalConsultationFees),
+                Number(rowData.onlineConsultationFees)
+              )}
+            </Text>
+          </Text>
+        </View>
+      );
+    }
+  };
+
   if (rowData) {
     const doctorClinics = rowData.doctorHospital.filter((item: any) => {
       if (item && item.facility && item.facility.facilityType)
@@ -330,7 +369,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {rowData.experience} YR
                 {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
               </Text>
-              {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
+              {calculatefee(rowData)}
+              {/* {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE)}>
                   {isPhysical && isOnline ? 'Starts at  ' : ''}
                   <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
@@ -343,7 +383,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     )}
                   </Text>
                 </Text>
-              ) : null}
+              ) : null} */}
               {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
                 <Text style={styles.doctorSpecializationStyles}>
                   {rowData.specialty.userFriendlyNomenclature}
