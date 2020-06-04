@@ -51,10 +51,10 @@ const styles = StyleSheet.create({
   },
   shadowStyle: {
     shadowColor: theme.colors.SHADOW_GRAY,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 15 },
     zIndex: 1,
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: 12,
     elevation: 10,
   },
   headerTextContainer: {
