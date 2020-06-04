@@ -875,7 +875,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <View
           style={{
             minHeight: 44,
-            maxHeight: keyBoardVisible ? 110 : undefined,
             marginTop: 8,
             marginBottom: 16,
             backgroundColor: 'rgba(0, 0, 0, 0.03)',
@@ -887,7 +886,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <TextInput
             style={{
               minHeight: 44,
-              maxHeight: keyBoardVisible ? 110 : undefined,
               justifyContent: 'center',
               paddingTop: 12,
               paddingBottom: 12,
@@ -903,7 +901,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
             editable={caseSheetEdit}
-            scrollEnabled={keyBoardVisible}
+            scrollEnabled={Platform.OS === 'android' ? keyBoardVisible : false}
           />
         </View>
       </View>
@@ -2748,11 +2746,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={{ height: 80 }} />
           </ScrollView>
         </KeyboardAwareScrollView>
-        {showEditPreviewButtons
-          ? renderEditPreviewButtons()
-          : stastus == STATUS.COMPLETED
-          ? renderCompletedButtons()
-          : renderButtonsView()}
+        {!keyBoardVisible
+          ? showEditPreviewButtons
+            ? renderEditPreviewButtons()
+            : stastus == STATUS.COMPLETED
+            ? renderCompletedButtons()
+            : renderButtonsView()
+          : null}
       </View>
       {yesorno && renderyesorno()}
     </SafeAreaView>

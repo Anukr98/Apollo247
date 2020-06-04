@@ -114,7 +114,6 @@ import {
   View,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
-import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
@@ -228,7 +227,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   // });
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
-  const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
   const [showMorePopup, setshowMorePopup] = useState<boolean>(false);
   const [showCancelPopup, setshowCancelPopup] = useState<boolean>(false);
@@ -2299,7 +2297,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const closeviews = () => {
     setPatientImageshow(false);
-    setShowWeb(false);
   };
   const popupView = (children: React.ReactNode) => {
     return (
@@ -2338,23 +2335,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const imageOpen = () => {
     console.log(url);
     return popupView(<ImageZoom source={{ uri: url }} zoom pan />);
-  };
-  const showWeimageOpen = () => {
-    console.log(url, 'showWeimageOpen url');
-
-    return popupView(
-      <WebView
-        style={{
-          marginTop: 20,
-          marginHorizontal: 20,
-          marginBottom: 20,
-          borderRadius: 10,
-        }}
-        source={{
-          uri: url,
-        }}
-      />
-    );
   };
 
   return (
@@ -2532,7 +2512,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         )}
         {uploadPrescriptionPopup()}
         {patientImageshow && imageOpen()}
-        {showweb && showWeimageOpen()}
         {showPDF && (
           <RenderPdf
             uri={url}
