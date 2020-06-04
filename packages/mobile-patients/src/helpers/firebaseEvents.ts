@@ -80,13 +80,13 @@ export enum FirebaseEventName {
 }
 
 export interface PatientInfo {
-  'Patient Name': string;
-  'Patient UHID': string;
+  'PatientName': string;
+  'PatientUHID': string;
   Relation: string;
-  'Patient Age': number;
-  'Patient Gender': string;
-  'Mobile Number': string;
-  'Customer ID': string;
+  'PatientAge': number;
+  'PatientGender': string;
+  'MobileNumber': string;
+  'CustomerID': string;
 }
 
 export interface defaultinfo {
