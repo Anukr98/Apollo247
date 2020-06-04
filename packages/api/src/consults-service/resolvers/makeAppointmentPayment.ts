@@ -306,7 +306,7 @@ const makeAppointmentPayment: Resolver<
     if (
       timeDifference / 60 <=
         parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
-      isJdAllowed == false
+      isJdAllowed === false
     ) {
       console.log('isJdAlowedddddddddddddd', isJdAllowed);
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
