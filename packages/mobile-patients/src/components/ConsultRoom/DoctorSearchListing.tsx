@@ -16,6 +16,8 @@ import {
   LocationOff,
   LocationOn,
   ToggleOn,
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -530,6 +532,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
+        console.log('data', data);
+
         setData(data);
         vaueChange(data);
       })
@@ -1099,6 +1103,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
   const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(true);
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
+  const [nearyByFlag, setNearyByFlag] = useState<boolean>(true);
+  const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(false);
 
   const renderBottomOptions = () => {
     return (
@@ -1106,39 +1112,59 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
         <View style={styles.bottomOptionsContainer}>
           <View style={styles.bottomItemContainer}>
-            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 0.6 : 1)}>
-              {string.doctor_search_listing.near}
-            </Text>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                setValue(!value);
-                setshowSpinner(true);
-                if (value) {
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'distance',
-                  });
-                  setSortValue('distance');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
-                } else {
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'availability',
-                  });
-                  setSortValue('availability');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
-                }
+                setNearyByFlag(!nearyByFlag);
+                setAvailabilityFlag(false);
+
+                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                  'Sort By': 'distance',
+                });
+                setSortValue('distance');
+                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
               }}
             >
-              <ToggleOn
-                style={{
-                  marginHorizontal: 8,
-                  height: 32,
-                  width: 32,
-                  transform: [{ rotate: value ? '0deg' : '180deg' }],
-                }}
-              />
+              {nearyByFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
             </TouchableOpacity>
-            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 1 : 0.6)}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, nearyByFlag ? 1 : 0.6),
+                marginLeft: 1,
+                paddingTop: -5,
+              }}
+            >
+              {string.doctor_search_listing.near}
+            </Text>
+
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ marginLeft: 8 }}
+              onPress={() => {
+                setAvailabilityFlag(!availabilityFlag);
+                setNearyByFlag(false);
+
+                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                  'Sort By': 'availability',
+                });
+                setSortValue('availability');
+                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+              }}
+            >
+              {availabilityFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+            </TouchableOpacity>
+            <Text
+              style={{
+                ...theme.viewStyles.text(
+                  'B',
+                  10,
+                  theme.colors.SHERPA_BLUE,
+                  availabilityFlag ? 1 : 0.6
+                ),
+                marginLeft: 1,
+                paddingTop: -5,
+              }}
+            >
               {string.doctor_search_listing.avaliablity}
             </Text>
           </View>
