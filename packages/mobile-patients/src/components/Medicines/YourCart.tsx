@@ -213,6 +213,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
+  const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
 
@@ -459,9 +460,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       // clear storeId
       setLastStoreIdReplica(storeId);
       setStoreId!('');
+      setStoreInventoryCheck(true);
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && storeId) {
+      if (!storeInventoryCheck) {
+        setStoreInventoryCheck(true);
+        return;
+      }
+
       setLoading!(true);
       setLastStoreIdReplica(storeId);
       getStoreInventoryApi(
@@ -471,7 +478,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         .then(({ data }) => {
           const storeItems = g(data, 'itemDetails');
           if (storeItems && areItemsAvailableInStore(storeItems, cartItems)) {
-            !isOnlyCartItemsChange && setShowDriveWayPopup(true);
+            const onComplete = () => {
+              !isOnlyCartItemsChange && setShowDriveWayPopup(true);
+            };
+            updateCartItemsWithStorePrice(storeItems, cartItems, onComplete);
           } else {
             clearStoreIdAndShowAlert(string.medicine_cart.cartItemsNotAvailableInStore);
           }
@@ -494,6 +504,48 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       title: string.common.uhOh,
       description: message,
     });
+  };
+
+  const getDiscountMulBy100 = (price: number, specialPrice: number) =>
+    Math.floor((Number(price) - Number(specialPrice)) / price);
+
+  const updateCartItemsWithStorePrice = (
+    storeItems: GetStoreInventoryResponse['itemDetails'],
+    cartItems: ShoppingCartItem[],
+    onComplete: () => void
+  ) => {
+    const validation = cartValidation(
+      storeItems.map((storeItem) => {
+        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        return {
+          sku: cartItem.id,
+          name: cartItem.name,
+          is_in_stock: 1,
+          price: Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2)),
+          special_price: cartItem.specialPrice
+            ? Number(
+                (
+                  getDiscountMulBy100(cartItem.price, cartItem.specialPrice) *
+                  (storeItem.mrp * Number(cartItem.mou))
+                ).toFixed(2)
+              )
+            : 0,
+        } as MedicineProduct;
+      }),
+      cartItems
+    );
+    if (validation.alertText) {
+      setStoreInventoryCheck(false);
+      setLoading!(false);
+      showAphAlert!({
+        title: 'Hi! :)',
+        description: validation.alertText,
+      });
+      setTimeout(() => {
+        setCartItems!(validation.newItems);
+      }, 30);
+    }
+    onComplete();
   };
 
   const clearStoreIdAndShowAlert = (message: string) => {
