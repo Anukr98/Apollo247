@@ -1614,7 +1614,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             />
             {renderDelivery()}
             {renderTotalCharges()}
-            {renderOneapollotext()}
+            {/* {renderOneapollotext()} */}
             {/* {renderMedicineSuggestions()} */}
           </View>
           {!g(currentPatient, 'whatsAppMedicine') ? (
