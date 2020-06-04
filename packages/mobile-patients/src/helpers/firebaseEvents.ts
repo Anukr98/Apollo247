@@ -216,7 +216,7 @@ export interface FirebaseEvents {
     'productname': string;
     'productid': string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    'DiscountedPrice': number;
     Quantity: number;
     Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
     Brand?: string;
