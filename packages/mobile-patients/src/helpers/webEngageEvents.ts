@@ -53,6 +53,7 @@ export enum WebEngageEventName {
   CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
   PAST_DOCTOR_SEARCH = 'Past Doctor Search',
+  CONSULT_TYPE_SELECTION = 'Consult Type Selection',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -492,6 +493,15 @@ export interface WebEngageEvents {
     Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CONSULT_TYPE_SELECTION] : {
+    'Consult Type': 'Online' | 'In Person';
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Mobile Number':string,
     'Customer ID': string;
   };
   // confirm the type of data for the below
