@@ -634,9 +634,12 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                     {jrdCaseSheet.length > 0 &&
                     appointment.isJdQuestionsComplete &&
                     jrdCaseSheet[0].status === 'COMPLETED' ? (
-                      <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
-                        {appointmentCard}
-                      </Link>
+                      <>
+                        {localStorage.setItem('callBackUrl', '/calendar')}
+                        <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
+                          {appointmentCard}
+                        </Link>
+                      </>
                     ) : (
                       <div
                         onClick={() => {
