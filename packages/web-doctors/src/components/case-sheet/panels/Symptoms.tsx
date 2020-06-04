@@ -94,7 +94,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: 'absolute',
     right: 0,
     color: '#666666',
-    top: 7,
     minWidth: 10,
     fontSize: 14,
     fontWeight: theme.typography.fontWeightBold,
@@ -184,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: 0,
     position: 'absolute',
     right: 50,
-    top: 15,
+    top: 9,
     '&:hover': {
       backgroundColor: 'transparent',
       boxShadow: 'none',
