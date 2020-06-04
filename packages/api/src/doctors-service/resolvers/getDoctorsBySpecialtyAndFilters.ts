@@ -205,7 +205,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
   const getDetails = await client.search(searchParams);
+  debugLog('debugSearchSearchParams', searchParams);
+  debugLog('debugSearchResult', getDetails);
   console.log(getDetails.body.hits);
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
