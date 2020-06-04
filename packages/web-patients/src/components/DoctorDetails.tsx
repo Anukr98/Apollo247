@@ -286,7 +286,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             name = doctorHospital[0].facility.name;
             imageUrl =
               doctorHospital[0].facility.imageUrl ||
-              'https://aph.staging.web-patients.popcornapps.com/images/hospital_image-e202f2.webp';
+              '';
           }
           setStructuredJSON({
             '@context': 'http://schema.org/',
