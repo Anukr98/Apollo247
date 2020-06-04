@@ -324,7 +324,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
           doctors.map((doc: docDetails) => {
-            potentialActionSchema.push({
+            doc && doc.fullName && potentialActionSchema.push({
               '@type': 'EntryPoint',
               name: doc.fullName,
               url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
