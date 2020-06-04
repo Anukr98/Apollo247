@@ -202,11 +202,42 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 600,
     },
+    appDownloadBtn: {
+      paddingLeft: 16,
+      paddingRight: 16,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
+      [theme.breakpoints.down(460)]: {
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
+      [theme.breakpoints.down(360)]: {
+        display: 'none',
+      },
+      '& a': {
+        backgroundColor: '#fcb716',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        borderRadius: 10,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 'bold',
+        padding: '11px 15px',
+        display: 'block',
+        textTransform: 'uppercase',
+        [theme.breakpoints.down(460)]: {
+          padding: '10px 10px',
+        },
+      },
+    },
   };
 });
 
 interface OrdersSummaryProps {
   orderDetailsData: OrderDetails | null;
+  isShipmentListHasBilledState: () => boolean;
   isLoading: boolean;
 }
 
@@ -390,29 +421,27 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             <div className={classes.totalItems}>
               <b>{item_quantity}</b> in this shipment
             </div>
-            {orderItems && orderItems.length > 0 && (
-              <>
-                <div className={`${classes.tableRow} ${classes.rowHead}`}>
-                  <div>ITEM NAME</div>
-                  <div>QTY</div>
-                  <div>Charges</div>
-                </div>
-                {orderItems &&
-                  orderItems.length > 0 &&
-                  orderItems.map(
-                    (item, index) =>
-                      item && (
-                        <div key={index} className={classes.tableRow}>
-                          <div className={classes.medicineName}>
-                            {getMedicineName(item.medicineName, item.mou)}
-                          </div>
-                          <div>{item.quantity}</div>
-                          <div>Rs.{item.price}</div>
+            <>
+              <div className={`${classes.tableRow} ${classes.rowHead}`}>
+                <div>ITEM NAME</div>
+                <div>QTY</div>
+                <div>Charges</div>
+              </div>
+              {orderItems &&
+                orderItems.length > 0 &&
+                orderItems.map(
+                  (item, index) =>
+                    item && (
+                      <div key={index} className={classes.tableRow}>
+                        <div className={classes.medicineName}>
+                          {getMedicineName(item.medicineName, item.mou)}
                         </div>
-                      )
-                  )}
-              </>
-            )}
+                        <div>{item.quantity}</div>
+                        <div>Rs.{item.price}</div>
+                      </div>
+                    )
+                )}
+            </>
           </div>
         </div>
         <div className={classes.addressHead}>
@@ -445,7 +474,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               <span>{paymentMethodToDisplay}</span>
             </div>
           )}
-          <div className={ classes.orderValue}>
+          {/* <div className={ classes.orderValue}>
             <div className={`${classes.priceRow}`}>
               <span>Total Ordered Value</span>
               <span>Rs. 270</span>
@@ -460,7 +489,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               <span>Refund to be initiated</span>
               <span>Rs. 20</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
       <div className={classes.disclaimerText}>
@@ -473,3 +502,55 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     </>
   ) : null;
 };
+
+{
+  /* 
+
+    const shipmentInvoiceDetails =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderShipments &&
+    orderDetailsData.medicineOrderShipments.length > 0
+      ? orderDetailsData.medicineOrderShipments[0].medicineOrderInvoice
+      : [];
+
+    const getShipmentItemDetails = (itemDetails: string) => {
+    return JSON.parse(itemDetails);
+  };
+  
+  {props.isShipmentListHasBilledState()
+                ? shipmentInvoiceDetails &&
+                  shipmentInvoiceDetails.length > 0 &&
+                  getShipmentItemDetails(shipmentInvoiceDetails[0].itemDetails) &&
+                  getShipmentItemDetails(shipmentInvoiceDetails[0].itemDetails).map(
+                    (item: any) =>
+                      item && (
+                        <div key={item.itemId} className={classes.tableRow}>
+                          <div className={classes.medicineName}>{item.itemName}</div>
+                          <div>{item.issuedQty}</div>
+                          <div>Rs.{item.mrp}</div>
+                        </div>
+                      )
+                  )
+                : orderItems &&
+                  orderItems.length > 0 &&
+                  orderItems.map(
+                    (item, index) =>
+                      item && (
+                        <div key={index} className={classes.tableRow}>
+                          <div className={classes.medicineName}>
+                            {getMedicineName(item.medicineName, item.mou)}
+                          </div>
+                          <div>{item.quantity}</div>
+                          <div>Rs.{item.price}</div>
+                        </div>
+                      )
+                  )} 
+                   <div className={classes.bottomActions}>
+        <div className={`${classes.appDownloadBtn}`}>
+          <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
+            Download App
+          </a>
+        </div>
+      </div> 
+                  */
+}
