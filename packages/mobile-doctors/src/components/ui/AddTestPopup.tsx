@@ -70,25 +70,18 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   ) => {
     if (Testitemname) {
       if (tempTestArray.length > 0) {
-        console.log('length is greater than  zero');
         for (let i = 0; i < tempTestArray.length; i++) {
-          console.log('for loop');
           if (tempTestArray[i].itemName === Testitemname.itemName) {
             Alert.alert(strings.common.alert, 'Test existed in the list.');
-            console.log('same test name');
           } else {
-            console.log(' test name not same');
             settempTestArray([...tempTestArray, Testitemname].filter((i) => i.itemName !== ''));
           }
         }
       } else {
-        console.log('length is zero');
         settempTestArray([Testitemname].filter((i) => i.itemName !== ''));
       }
     }
     // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
-
-    console.log('temparr', '.....vlaue', tempTestArray, '//////');
   };
 
   const GetSearchResultOfTests = () => {
@@ -164,7 +157,6 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
             }
 
             dataArray.push(...searchTestResp);
-            console.log(searchTestResp, dataArray, 'sdfghjk');
             settestsSearchList(dataArray);
           }
 
@@ -172,7 +164,24 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
-          console.log('Error occured while fetching Diagnostic results.');
+          settestsSearchList([
+            {
+              __typename: 'Diagnostics',
+              id: '',
+              itemId: -1,
+              itemName: search_value.trim(),
+              gender: '',
+              rate: -1,
+              itemRemarks: '',
+              city: '',
+              state: '',
+              itemType: null,
+              fromAgeInDays: -1,
+              toAgeInDays: -1,
+              testPreparationData: '',
+              collectionType: null,
+            } as searchDiagnostics_searchDiagnostics_diagnostics,
+          ]);
         });
     } else {
       settestsSearchList([]);
@@ -251,21 +260,18 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 <ActivityIndicator animating={true} size="small" color="green" />
               ) : (
                 <>
-                  <View style={{ top: -38, bottom: 0, marginLeft: -20 }}>
+                  <View style={{ top: -36, bottom: 0, marginLeft: -20 }}>
                     {isSearchTestListVisible && GetSearchResultOfTests()}
                   </View>
                   <View style={{ marginRight: 20 }}>
                     {tempTestArray &&
                       tempTestArray.map((item, index) => {
-                        console.log('......tempTestArray:', tempTestArray);
                         return (
                           <ChipIconView
                             title={item.itemName || ''}
-                            onPress={(e: any) => {
-                              console.log('deleted');
+                            onPress={() => {
                               settempTestArray(tempTestArray.slice(1));
                               setsearchTestVal('');
-                              console.log('delete tempTestArray:', tempTestArray);
                               setisSearchTestListVisible(false);
                             }}
                           />
