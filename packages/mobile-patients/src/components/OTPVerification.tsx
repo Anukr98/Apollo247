@@ -23,6 +23,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   postAppsFlyerEvent,
+  SetAppsFlyerCustID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -571,7 +572,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
-
+    console.log('mePatient-----------------------', mePatient);
+    SetAppsFlyerCustID(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PRE_APOLLO_CUSTOMER] = {

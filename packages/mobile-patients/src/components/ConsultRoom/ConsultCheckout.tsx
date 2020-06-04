@@ -164,6 +164,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Doctor ID': g(doctor, 'id')!,
       'Doctor Name': g(doctor, 'fullName')!,
       'Net Amount': price,
+      revenue: price,
     };
     return eventAttributes;
   };

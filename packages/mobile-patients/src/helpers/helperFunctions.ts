@@ -854,6 +854,7 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
+    revenue: price,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -878,6 +879,11 @@ export const postWEGNeedHelpEvent = (
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
   console.log(whatsAppAllow, 'whatsAppAllow');
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
+export const postWEGReferralCodeEvent = (ReferralCode: string) => {
+  console.log(ReferralCode, 'Referral Code');
+  webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
 export const permissionHandler = (
@@ -1037,6 +1043,20 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
   }
 };
 
+export const SetAppsFlyerCustID = (patientId: string) => {
+  try {
+    console.log('\n********* SetAppsFlyerCustID Start *********\n');
+    console.log(`SetAppsFlyerCustID ${patientId}`);
+    console.log('\n********* SetAppsFlyerCustID End *********\n');
+
+    appsFlyer.setCustomerUserId(patientId, (res) => {
+      console.log('AppsFlyerEventSuccess', res);
+    });
+  } catch (error) {
+    console.log('********* Unable to post AppsFlyerEvent *********', { error });
+  }
+};
+
 export const postAppsFlyerAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
   source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
@@ -1052,6 +1072,7 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    revenue: price,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
