@@ -228,7 +228,7 @@ export const CovidLanding: React.FC = (props: any) => {
       defaultExpanded: true,
     },
     {
-      heading: 'What to do if I have symptoms?',
+      heading: 'What to do if I have symptoms',
       subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
       category: 'covid-symptoms',
       defaultExpanded: false,
