@@ -227,7 +227,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-
+  console.log(process.env.ELASTIC_CONNECTION_URL);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   console.log('elasticsearch result count', getDetails.body.hits.hits.length);
@@ -403,12 +403,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     ) {
       if (
         i < earlyAvailableStarApolloDoctors.length &&
-        earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes
+        (j >= earlyAvailableNonStarApolloDoctors.length ||
+          earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
+            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
+        console.log('i', i);
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
       } else {
+        console.log('j', j);
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -426,8 +429,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     while (i < starDoctor.length || j < nonStarDoctor.length) {
       if (
         i < starDoctor.length &&
-        starDoctor[i].earliestSlotavailableInMinutes <=
-          nonStarDoctor[j].earliestSlotavailableInMinutes
+        (j >= nonStarDoctor.length ||
+          starDoctor[i].earliestSlotavailableInMinutes <=
+            nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;
