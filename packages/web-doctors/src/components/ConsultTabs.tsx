@@ -404,6 +404,8 @@ export const ConsultTabs: React.FC = () => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
+  const [isNewprescriptionEdittable, setIsNewprescriptionEdittable] = useState<boolean>(false);
+  const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -646,9 +648,25 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails &&
             _data.data.getCaseSheet.caseSheetDetails.appointment &&
             _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+            _data.data.getCaseSheet.caseSheetDetails.version === 1
           ) {
             setIsPdfPageOpen(true);
+            setIsNewprescriptionEdittable(false);
+            setIsNewPrescription(false);
+          }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+            _data.data.getCaseSheet.caseSheetDetails.version > 1
+          ) {
+            setIsPdfPageOpen(false);
+            setIsNewprescriptionEdittable(true);
+            setIsNewPrescription(true);
           }
           if (
             _data.data &&
@@ -1727,6 +1745,8 @@ export const ConsultTabs: React.FC = () => {
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
                 createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
+                isNewprescriptionEdittable={isNewprescriptionEdittable}
+                isNewPrescription={isNewPrescription}
               />
               <div>
                 <div

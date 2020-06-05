@@ -821,6 +821,8 @@ interface CallPopoverProps {
   lastMsg: any;
   presenceEventObject: any;
   hasCameraMicPermission: boolean;
+  isNewprescriptionEdittable: boolean;
+  isNewPrescription: boolean;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1145,6 +1147,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if(props.isNewprescriptionEdittable){
+      setIsClickedOnEdit(true);
+      setIsClickedOnPriview(false);
+      setCaseSheetEdit(true);
+      props.setIsPdfPageOpen(false);
+    }
+  },[props.isNewprescriptionEdittable]);
   useEffect(() => {
     if (remainingCallTime === 0) {
       clearInterval(intervalcallId);
@@ -1595,6 +1605,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         doctorInfo: currentPatient,
         pdfUrl: props.prescriptionPdf,
         isResend: isResend,
+        isNewPrescription: props.isNewPrescription
       };
       const timeToLoad = isResend ? 1000 : 100;
 
@@ -2379,7 +2390,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           </>
                         )}
 
-                      {(appointmentInfo!.status === STATUS.PENDING ||
+                      {props.appointmentStatus !== STATUS.COMPLETED && (appointmentInfo!.status === STATUS.PENDING ||
                         appointmentInfo!.status === STATUS.IN_PROGRESS) && (
                         <li
                           onClick={() => {
