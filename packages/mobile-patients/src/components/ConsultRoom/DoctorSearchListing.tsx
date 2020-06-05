@@ -689,10 +689,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       <View
         style={{
           flexDirection: 'row',
-          width: screenWidth / 2,
+          flex: 1,
           alignItems: 'center',
-          justifyContent: 'flex-end',
-          marginLeft: -20,
+          justifyContent: 'center',
         }}
       >
         {currentLocation === '' ? (
@@ -734,6 +733,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     color: theme.colors.SHERPA_BLUE,
                     ...theme.fonts.IBMPlexSansSemiBold(13),
                     textTransform: 'uppercase',
+                    maxWidth: screenWidth / 2,
                   }}
                   numberOfLines={1}
                 >
@@ -783,6 +783,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <Header
           leftIcon="backArrow"
           container={{ borderBottomWidth: 1 }}
+          titleTextViewStyle={{ maxWidth: screenWidth / 1.8 }}
           titleComponent={<RightHeader />}
           rightComponent={
             <TouchableOpacity
