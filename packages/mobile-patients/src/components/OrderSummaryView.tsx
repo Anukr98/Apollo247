@@ -137,6 +137,26 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const deliveredOrder = medicineOrderStatus.find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
   );
+  const item_details = g(
+    orderDetails,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice',
+    '0' as any,
+    'itemDetails'
+  );
+  const itemDetails = item_details ? JSON.parse(item_details) : null;
+  console.log('itemDetails', itemDetails, JSON.stringify(itemDetails));
+  const billDetails = g(
+    orderDetails,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice',
+    '0' as any,
+    'billDetails'
+  );
+  const billingDetails = billDetails ? JSON.parse(billDetails) : null;
+  console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
   const orderBilledAndPacked = medicineOrderStatus.find(
     (item) =>
       item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
@@ -144,15 +164,23 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
   );
   let item_quantity: string;
-  if (medicineOrderLineItems.length == 1) {
+  if (!orderBilledAndPacked && medicineOrderLineItems.length == 1) {
     item_quantity = medicineOrderLineItems.length + ' item ';
+  } else if (orderBilledAndPacked && itemDetails && itemDetails.length == 1) {
+    item_quantity = itemDetails.length + ' item ';
   } else {
-    item_quantity = medicineOrderLineItems.length + ' item(s) ';
+    item_quantity =
+      orderBilledAndPacked && itemDetails
+        ? orderBilledAndPacked && itemDetails.length + ' item(s) '
+        : medicineOrderLineItems.length + ' item(s) ';
   }
   const mrpTotal = medicineOrderLineItems.reduce(
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
+  const billedMrpTotal =
+    orderBilledAndPacked &&
+    itemDetails.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.issuedQty!, 0);
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
@@ -169,10 +197,20 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
   ) => {
     const isCOD = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD;
-    const orderedValue = 0;
+    const orderedValue = orderInfo.estimatedAmount;
     const orderedDiscount = (orderInfo.productDiscount || 0) + (orderInfo.couponDiscount || 0);
-    const billedDiscount = 0;
-    const billedValue = 0;
+    const billDetails = g(
+      orderInfo,
+      'medicineOrderShipments',
+      '0' as any,
+      'medicineOrderInvoice',
+      '0' as any,
+      'billDetails'
+    );
+    const billingDetails = billDetails ? JSON.parse(billDetails) : null;
+    console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
+    const billedDiscount = billingDetails.discountValue || 0;
+    const billedValue = billingDetails.invoiceValue || 0;
 
     const refundOrExtraAmountToPay =
       orderedValue && billedValue
@@ -254,6 +292,50 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     );
   };
 
+  const renderOrderBilledMedicineRow = (item: any) => {
+    const isTablet = (item.itemName || '').includes('TABLET');
+    const medicineName = `${item.itemName}${
+      item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
+    }`;
+    return (
+      <View
+        key={item.itemId!}
+        style={{ flexDirection: 'row', paddingLeft: 11, paddingRight: 16, marginBottom: 8 }}
+      >
+        <View
+          style={{
+            flex: 0.4,
+            alignItems: 'flex-start',
+            borderRightColor: 'rgba(2, 71, 91, 0.3)',
+          }}
+        >
+          <Text numberOfLines={2} style={styles.medicineText1}>
+            {medicineName}
+          </Text>
+        </View>
+        <View
+          style={{
+            flex: 0.3,
+            alignItems: 'center',
+            borderRightColor: 'rgba(2, 71, 91, 0.3)',
+          }}
+        >
+          <Text style={styles.medicineText1}>{Math.ceil(item.issuedQty)}</Text>
+        </View>
+        <View
+          style={{
+            flex: 0.3,
+            alignItems: 'flex-end',
+          }}
+        >
+          <Text style={styles.medicineText1}>
+            Rs. {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const getDeliveredDate = (
     medicineOrderStatus: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus
   ) => {
@@ -280,7 +362,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <Text style={styles.totalTextStyle}> {string.OrderSummery.total} </Text>
             <Text style={styles.totalPriceStyle}>
               {' '}
-              Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+              Rs.{' '}
+              {orderBilledAndPacked && billingDetails
+                ? (billingDetails.invoiceValue || 0).toFixed(2)
+                : (orderDetails.estimatedAmount || 0).toFixed(2)}
             </Text>
           </View>
         </View>
@@ -409,7 +494,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <Text style={styles.medicineText}>{'MRP VALUE'}</Text>
             </View>
           </View>
-          {medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
+          {orderBilledAndPacked && billingDetails.discountValue
+            ? itemDetails.map((item) => renderOrderBilledMedicineRow(item!))
+            : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
         </View>
 
         <View style={styles.paymentCard}>
@@ -427,14 +514,24 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                {mrpTotal.toFixed(2)}
+                {orderBilledAndPacked && itemDetails
+                  ? billedMrpTotal.toFixed(2)
+                  : mrpTotal.toFixed(2)}
               </Text>
             </View>
-            {product_discount > 0 && (
+            {!orderBilledAndPacked && product_discount > 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
                   - Rs. {product_discount.toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {orderBilledAndPacked && billingDetails && billingDetails.discountValue > 0 && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  - Rs. {billingDetails.discountValue.toFixed(2)}
                 </Text>
               </View>
             )}
@@ -462,7 +559,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
               <Text style={[styles.boldTotal, { textAlign: 'right' }]}>
-                Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                Rs.{' '}
+                {orderBilledAndPacked && billingDetails
+                  ? (billingDetails.invoiceValue || 0).toFixed(2)
+                  : (orderDetails.estimatedAmount || 0).toFixed(2)}
               </Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -503,79 +603,84 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                       },
                     ]}
                   >
-                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                    Rs. {billingDetails && (billingDetails.invoiceValue || 0).toFixed(2)}
                   </Text>
                 </View>
                 <View style={[styles.horizontalline, { marginTop: 9, marginBottom: 9 }]} />
                 <View
                   style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
                 >
-                  <Text style={{ ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0) }}>
-                    {string.OrderSummaryText.amount_to_be_paid_on_delivery}
+                  <Text
+                    style={
+                      billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                        ? { ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0) }
+                        : { ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0) }
+                    }
+                  >
+                    {billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                      ? string.OrderSummaryText.amount_to_be_paid_on_delivery
+                      : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
+                      ? string.OrderSummaryText.cod_amount_to_pay
+                      : string.OrderSummaryText.refund_amount}
                   </Text>
                   <Text
                     style={[
-                      {
-                        ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0),
-                        textAlign: 'right',
-                      },
+                      billingDetails.invoiceValue > orderDetails.estimatedAmount!
+                        ? {
+                            ...theme.viewStyles.text('SB', 14, '#01475b', 1, 24, 0),
+                            textAlign: 'right',
+                          }
+                        : {
+                            ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
+                            textAlign: 'right',
+                          },
                     ]}
                   >
-                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
-                  </Text>
-                </View>
-                <View
-                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}
-                >
-                  <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0) }}>
-                    {string.OrderSummaryText.refund_amount}
-                  </Text>
-                  <Text
-                    style={[
-                      {
-                        ...theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
-                        textAlign: 'right',
-                      },
-                    ]}
-                  >
-                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                    Rs.{' '}
+                    {orderBilledAndPacked && billingDetails
+                      ? (billingDetails.invoiceValue || 0).toFixed(2)
+                      : (orderDetails.estimatedAmount || 0).toFixed(2)}
                   </Text>
                 </View>
               </>
             )}
           </View>
         </View>
-        {orderBilledAndPacked && (
-          <View
-            style={[
-              styles.paymentCard,
-              {
-                marginTop: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 6,
-                borderWidth: 1.5,
-                borderColor: '#00b38e',
-                flexDirection: 'row',
-              },
-            ]}
-          >
-            <DiscountIcon style={{ width: 55, height: 51 }} />
+        {orderBilledAndPacked &&
+          billingDetails.discountValue &&
+          product_discount + coupon_discount < billingDetails.discountValue && (
             <View
-              style={{
-                marginLeft: 14,
-                alignSelf: 'center',
-                flex: 1,
-              }}
+              style={[
+                styles.paymentCard,
+                {
+                  marginTop: 8,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderWidth: 1.5,
+                  borderColor: '#00b38e',
+                  flexDirection: 'row',
+                },
+              ]}
             >
-              <Text style={{ ...theme.viewStyles.text('B', 18, '#00b38e', 1, undefined, 0) }}>
-                {'YAY!'}
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
-                {`You got an additional discount of Rs. ${product_discount.toFixed(2)}`}
-              </Text>
+              <DiscountIcon style={{ width: 55, height: 51 }} />
+              <View
+                style={{
+                  marginLeft: 14,
+                  alignSelf: 'center',
+                  flex: 1,
+                }}
+              >
+                <Text style={{ ...theme.viewStyles.text('B', 18, '#00b38e', 1, undefined, 0) }}>
+                  {'YAY!'}
+                </Text>
+                <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
+                  {`You got an additional discount of Rs. ${billingDetails.discountValue.toFixed(
+                    2
+                  )}`}
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
+          )}
         {!orderBilledAndPacked && (
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, marginTop: 16 }}>
             <Text style={[styles.DisclaimerTitle]}>Disclaimer: </Text>

@@ -282,7 +282,7 @@
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
     "total_billed_value": "Total Billed Value",
-    "cod_amount_to_pay": "Total Billed Value",
+    "cod_amount_to_pay": "COD amount to Pay",
     "refund_amount": "Refund amount",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
   },
