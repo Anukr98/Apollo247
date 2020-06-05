@@ -655,6 +655,7 @@ export const ConsultTabs: React.FC = () => {
             setIsNewprescriptionEditable(false);
             setIsNewPrescription(false);
           }
+          console.log()
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -669,7 +670,6 @@ export const ConsultTabs: React.FC = () => {
               setIsNewprescriptionEditable(false);
               setIsNewPrescription(false);
             }else{
-
               setIsPdfPageOpen(false);
               setIsNewprescriptionEditable(true);
               setIsNewPrescription(true);
