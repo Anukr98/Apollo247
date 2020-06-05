@@ -506,8 +506,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     });
   };
 
-  const getDiscountMulBy100 = (price: number, specialPrice: number) =>
-    Math.floor((Number(price) - Number(specialPrice)) / price);
+  const getSpecialPriceFromRelativePrices = (
+    price: number,
+    specialPrice: number,
+    newPrice: number
+  ) => Number(((specialPrice / price) * newPrice).toFixed(2));
 
   const updateCartItemsWithStorePrice = (
     storeItems: GetStoreInventoryResponse['itemDetails'],
@@ -517,19 +520,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const validation = cartValidation(
       storeItems.map((storeItem) => {
         const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+        const storeItemSP =
+          cartItem.specialPrice && cartItem.price != storeItemPrice
+            ? getSpecialPriceFromRelativePrices(
+                cartItem.price,
+                cartItem.specialPrice,
+                storeItem.mrp * Number(cartItem.mou)
+              )
+            : cartItem.specialPrice;
         return {
           sku: cartItem.id,
           name: cartItem.name,
           is_in_stock: 1,
-          price: Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2)),
-          special_price: cartItem.specialPrice
-            ? Number(
-                (
-                  getDiscountMulBy100(cartItem.price, cartItem.specialPrice) *
-                  (storeItem.mrp * Number(cartItem.mou))
-                ).toFixed(2)
-              )
-            : 0,
+          price: storeItemPrice,
+          special_price: storeItemSP,
         } as MedicineProduct;
       }),
       cartItems
@@ -1641,7 +1646,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             .replace('{{newPrice}}', `${item.updatedItemFromApi!.special_price}`);
         }
       })
-      .join('\n\n');
+      .join('\n');
 
     const isPriceChange = alertText && alertText.indexOf('from Rs.') > -1;
 
@@ -1698,7 +1703,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     return {
       newItems: newCartItems,
-      alertText: getItemsChangeAlert(cartItemChanges),
+      // alertText: getItemsChangeAlert(cartItemChanges),
+      alertText: cartItemChanges.length
+        ? `Important message for items in your Cart:\n\nItems in your cart will reflect the most recent price in your region.\n\nWe have updated your cart with the latest prices. Please check before you place the order.`
+        : '',
     };
   };
 
