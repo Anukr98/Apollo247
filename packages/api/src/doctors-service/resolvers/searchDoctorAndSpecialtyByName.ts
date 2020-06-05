@@ -437,9 +437,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
-  console.log('earlyAvailableApolloPossibleDoctors', earlyAvailableApolloPossibleDoctors);
-  console.log('earlyAvailableNonApolloPossibleDoctors', earlyAvailableNonApolloPossibleDoctors);
-  console.log('possibleDoctors', possibleDoctors);
   finalMatchedDoctors = perfectMatchedDoctors
     .concat(
       earlyAvailableApolloMatchedDoctors.sort(

@@ -349,6 +349,7 @@ export interface ModifyCaseSheetInput {
   followUpConsultType?: APPOINTMENT_TYPE | null;
   otherInstructions?: OtherInstructionsInput[] | null;
   medicinePrescription?: MedicinePrescriptionInput[] | null;
+  removedMedicinePrescription?: MedicinePrescriptionInput[] | null;
   id: string;
   status?: CASESHEET_STATUS | null;
   lifeStyle?: string | null;

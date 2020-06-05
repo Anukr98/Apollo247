@@ -382,6 +382,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
     let i = 0,
       j = 0;
+    if (earlyAvailableStarApolloDoctors.length == 0) {
+      for (const doctor of earlyAvailableNonStarApolloDoctors) {
+        earlyAvailableApolloDoctors.push(doctor);
+      }
+    }
+    if (earlyAvailableNonStarApolloDoctors.length == 0) {
+      for (const doctor of earlyAvailableStarApolloDoctors) {
+        earlyAvailableApolloDoctors.push(doctor);
+      }
+    }
 
     while (
       i < earlyAvailableStarApolloDoctors.length &&
@@ -422,6 +432,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         j++;
       }
     }
+    if (starDoctor.length == 0) {
+      for (const doctor of nonStarDoctor) {
+        docs.push(doctor);
+      }
+    }
+    if (nonStarDoctor.length == 0) {
+      for (const doctor of starDoctor) {
+        docs.push(doctor);
+      }
+    }
     doctors = earlyAvailableApolloDoctors
       .concat(
         earlyAvailableNonApolloDoctors.sort(
@@ -434,6 +454,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
   searchLogger(`API_CALL___END`);
+
   return {
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
