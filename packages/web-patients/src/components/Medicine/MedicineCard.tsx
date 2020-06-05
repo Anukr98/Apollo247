@@ -199,7 +199,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
         props.medicineList.map((product: MedicineProduct) => (
           <Grid key={product.id} item xs={6} sm={6} md={4} lg={4}>
             <div className={classes.root}>
-              <Link to={clientRoutes.medicineDetails(product.url_key)}>
+              <Link
+                to={clientRoutes.medicineCategoryDetails(
+                  params.searchMedicineType,
+                  product.url_key
+                )}
+              >
                 <div className={classes.bigAvatar}>
                   <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
                 </div>
