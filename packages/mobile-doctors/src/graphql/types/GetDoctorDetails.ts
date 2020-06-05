@@ -36,6 +36,8 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital_facility {
   city: string | null;
   country: string | null;
   facilityType: string;
+  id: string;
+  imageUrl: string | null;
   latitude: string | null;
   longitude: string | null;
   name: string;
@@ -43,6 +45,7 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital_facility {
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
+  zipcode: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
@@ -138,6 +141,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
+  signature: string | null;
   specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;

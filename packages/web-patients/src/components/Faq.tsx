@@ -57,17 +57,34 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 17,
         color: '#0087ba',
       },
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        '& h1': {
+          fontSize: 36,
+          lineHeight: '36px',
+          margin: '0 0 10px',
+        },
+        '& h5': {
+          fontSize: 16,
+        },
+      },
     },
     faqBody: {
       padding: 50,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
     },
     tabsRoot: {
       borderBottom: '1px solid rgba(2, 71, 91, .3)',
       '& button': {
         flex: '1 0 auto',
+        [theme.breakpoints.down('xs')]: {
+          flex: '0 0 auto',
+        },
       },
     },
     tabRoot: {
@@ -88,6 +105,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       background: '#ffffff',
       overflow: 'hidden',
+      position: 'relative',
     },
     tabContent: {},
     heading: {
@@ -123,21 +141,35 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 16,
         margin: '0 !important',
+        color: '#02475b',
+        fontFamily: 'IBM Plex Sans,sans-serif !important',
+        '& *': {
+          color: '#02475b',
+          fontFamily: 'IBM Plex Sans,sans-serif !important',
+        },
+      },
+      '& ul': {
+        listStyleType: 'decimal',
+        margin: 0,
+        padding: ' 0 0 0 30px',
+        '& li': {
+          padding: '10px 0',
+          fontSize: 16,
+        },
       },
     },
     fontBold: {
       fontWeight: 'bold',
     },
-    faqList: {
-      listStyleType: 'decimal',
-      margin: 0,
-      '& li': {
-        padding: '10px 0',
-        fontSize: 16,
-      },
-    },
+
     pt0: {
       paddingTop: '0 !important',
+    },
+    tabScrollArrows: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'inline-flex',
+      },
     },
   };
 });
@@ -148,8 +180,8 @@ const TabPanel = (props: any) => {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`scrollable-force-tabpanel-${index}`}
+      aria-labelledby={`scrollable-force-tab-${index}`}
       {...other}
     >
       {value === index && <div>{children}</div>}
@@ -224,9 +256,13 @@ export const Faq: React.FC = (props) => {
                 classes={{
                   root: classes.tabsRoot,
                   indicator: classes.tabsIndicator,
+                  scrollButtons: classes.tabScrollArrows,
                 }}
+                variant="scrollable"
                 onChange={handleChange}
-                aria-label="Faq tabs"
+                scrollButtons="on"
+                indicatorColor="primary"
+                aria-label="scrollable force tabs example"
               >
                 <Tab
                   classes={{
@@ -269,13 +305,12 @@ export const Faq: React.FC = (props) => {
                   }}
                 />
               </Tabs>
-
-              {isLoading ? (
-                <div className={classes.loader}>
-                  <CircularProgress />
-                </div>
-              ) : (
-                <div className={classes.tabContent}>
+              <div className={classes.tabContent}>
+                {isLoading ? (
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
+                ) : (
                   <TabPanel>
                     <div className={classes.expansionContainer}>
                       {faqData &&
@@ -304,8 +339,8 @@ export const Faq: React.FC = (props) => {
                         })}
                     </div>
                   </TabPanel>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

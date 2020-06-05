@@ -10,7 +10,7 @@ import {
   ES_DOCTOR_SLOT_STATUS,
   CASESHEET_STATUS,
 } from 'consults-service/entities';
-import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -216,7 +216,7 @@ const makeAppointmentPayment: Resolver<
       await apptsRepo.systemCancelAppointment(processingAppointment.id);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
-        await initiateRefund(
+        let refundResponse = await initiateRefund(
           {
             appointment: processingAppointment,
             appointmentPayments: paymentInfo,
@@ -228,16 +228,27 @@ const makeAppointmentPayment: Resolver<
         );
 
         paymentInfo.appointment = processingAppointment;
-        sendNotification(
-          {
-            appointmentId: processingAppointment.id,
-            notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
-          },
-          patientsDb,
-          consultsDb,
-          doctorsDb
-        );
-        isRefunded = true;
+        refundResponse = refundResponse as PaytmResponse;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: processingAppointment.id,
+              notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+          isRefunded = true;
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed makeAppointmentPayment',
+            'makeAppointmentPayment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
       }
 
       return {
@@ -299,7 +310,7 @@ const makeAppointmentPayment: Resolver<
     if (
       timeDifference / 60 <=
         parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
-      isJdAllowed == false
+      isJdAllowed === false
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -325,10 +336,13 @@ const makeAppointmentPayment: Resolver<
         patientId: processingAppointment.patientId,
         appointment: processingAppointment,
         status: CASESHEET_STATUS.COMPLETED,
-        notes: ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-          '{0}',
-          ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-        ),
+        notes:
+          isJdAllowed === false
+            ? ApiConstants.NOT_APPLICABLE
+            : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+                '{0}',
+                ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+              ),
         isJdConsultStarted: true,
       };
       caseSheetRepo.savecaseSheet(casesheetAttrs);
@@ -339,6 +353,18 @@ const makeAppointmentPayment: Resolver<
       status: STATUS.PAYMENT_FAILED,
       paymentInfo,
     });
+    if (paymentInfo.paymentStatus === 'PENDING') {
+      //NOTIFICATION logic starts here
+      sendNotification(
+        {
+          appointmentId: processingAppointment.id,
+          notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+        },
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+    }
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {
       status: STATUS.PAYMENT_PENDING_PG,

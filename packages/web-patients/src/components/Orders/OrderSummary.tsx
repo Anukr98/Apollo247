@@ -18,6 +18,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -190,12 +191,66 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    orderValue: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 10,
+      fontSize: 14,
+      fontWeight: 600,
+      opacity: 0.7,
+    },
+    refundValue: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 10,
+      fontSize: 14,
+      fontWeight: 600,
+    },
+    appDownloadBtn: {
+      marginTop: 7,
+      paddingLeft: 16,
+      paddingRight: 16,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
+      [theme.breakpoints.down(460)]: {
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
+      [theme.breakpoints.down(360)]: {
+        display: 'none',
+      },
+      '& a': {
+        backgroundColor: '#fcb716',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        borderRadius: 10,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 'bold',
+        padding: '11px 15px',
+        display: 'block',
+        textTransform: 'uppercase',
+        [theme.breakpoints.down(460)]: {
+          padding: '10px 10px',
+        },
+      },
+    },
   };
 });
 
 interface OrdersSummaryProps {
   orderDetailsData: OrderDetails | null;
+  isShipmentListHasBilledState: () => boolean;
   isLoading: boolean;
+}
+
+interface ItemObject {
+  itemId: string;
+  itemName: string;
+  batchId: string;
+  issuedQty: number;
+  mou: number;
+  mrp: number;
 }
 
 export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
@@ -215,6 +270,13 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0 &&
     orderDetailsData.medicineOrderPayments[0];
+  const shipmentInvoiceDetails =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderShipments &&
+    orderDetailsData.medicineOrderShipments.length > 0
+      ? orderDetailsData.medicineOrderShipments[0].medicineOrderInvoice
+      : [];
+
   const mrpTotal =
     orderItems &&
     orderItems.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!, 0);
@@ -231,6 +293,26 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   } else {
     item_quantity = orderItems.length + ' item(s) ';
   }
+
+  const getShipmentDetails = (itemDetails: string) => {
+    return JSON.parse(itemDetails);
+  };
+
+  const billedPaymentDetails =
+    shipmentInvoiceDetails && shipmentInvoiceDetails[0] && shipmentInvoiceDetails[0].billDetails
+      ? getShipmentDetails(shipmentInvoiceDetails[0].billDetails)
+      : null;
+  const billedItemDetails =
+    shipmentInvoiceDetails && shipmentInvoiceDetails[0] && shipmentInvoiceDetails[0].itemDetails
+      ? getShipmentDetails(shipmentInvoiceDetails[0].itemDetails)
+      : [];
+
+  const billedMRPValue = billedItemDetails
+    ? billedItemDetails.reduce(
+        (sum: number, itemDetails: ItemObject) => sum + itemDetails.mrp * itemDetails.issuedQty,
+        0
+      )
+    : 0;
 
   const getFormattedDateTime = () => {
     const orderPlacedExist =
@@ -313,6 +395,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     return `${medicineName}${mou! > 1 ? ` (${mou}${isTablet ? ' tabs' : ''})` : ''}`;
   };
 
+  const shouldShow = (time: string) => {
+    return moment('2020-06-06T00:00:00.000Z').diff(time) < 0;
+  };
+
   return isLoading ? (
     <div className={classes.loader}>
       <CircularProgress />
@@ -378,65 +464,146 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             <div className={classes.totalItems}>
               <b>{item_quantity}</b> in this shipment
             </div>
-            {orderItems && orderItems.length > 0 && (
-              <>
-                <div className={`${classes.tableRow} ${classes.rowHead}`}>
-                  <div>ITEM NAME</div>
-                  <div>QTY</div>
-                  <div>Charges</div>
-                </div>
-                {orderItems &&
+            <>
+              <div className={`${classes.tableRow} ${classes.rowHead}`}>
+                <div>ITEM NAME</div>
+                <div>QTY</div>
+                <div>Charges</div>
+              </div>
+              {props.isShipmentListHasBilledState() &&
+              shipmentInvoiceDetails &&
+              shipmentInvoiceDetails.length > 0 &&
+              billedPaymentDetails &&
+              billedPaymentDetails.discountValue // check for supporting old orders
+                ? billedItemDetails.map(
+                    (item: ItemObject) =>
+                      item && (
+                        <div key={item.itemId} className={classes.tableRow}>
+                          <div className={classes.medicineName}>{item.itemName}</div>
+                          <div>{item.issuedQty.toFixed(1)}</div>
+                          <div>Rs.{item.mrp}</div>
+                        </div>
+                      )
+                  )
+                : orderItems &&
                   orderItems.length > 0 &&
                   orderItems.map(
-                    (item, index) =>
+                    (item) =>
                       item && (
-                        <div key={index} className={classes.tableRow}>
+                        <div key={item.medicineSKU} className={classes.tableRow}>
                           <div className={classes.medicineName}>
                             {getMedicineName(item.medicineName, item.mou)}
                           </div>
-                          <div>{item.quantity}</div>
+                          <div>{item.quantity.toFixed(2)}</div>
                           <div>Rs.{item.price}</div>
                         </div>
                       )
                   )}
-              </>
-            )}
+            </>
           </div>
         </div>
         <div className={classes.addressHead}>
           <span>Payment Details</span>
         </div>
         <div className={classes.totalDetails}>
-          <div className={classes.priceRow}>
-            <span>MRP Total</span>
-            <span>Rs. {mrpTotal.toFixed(2)}</span>
-          </div>
-          <div className={classes.priceRow}>
-            <span>Product Discount</span>
-            <span>- Rs. {discount.toFixed(2)}</span>
-          </div>
-          <div className={classes.priceRow}>
-            <span>Delivery Charges</span>
-            <span>+ Rs. {(orderDetailsData.devliveryCharges || 0).toFixed(2)}</span>
-          </div>
-          <div className={classes.priceRow}>
-            <span>Packaging Charges</span>
-            <span>+ Rs. 0.00</span>
-          </div>
-          <div className={`${classes.priceRow} ${classes.totalPaid}`}>
-            <span>Total</span>
-            <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
-          </div>
+          {props.isShipmentListHasBilledState() &&
+          billedPaymentDetails &&
+          billedPaymentDetails.discountValue ? ( // check for supporting old orders
+            <>
+              <div className={classes.priceRow}>
+                <span>MRP Total</span>
+                <span>Rs. {Number(billedMRPValue).toFixed(2)}</span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Product Discount</span>
+                <span>
+                  - Rs.{' '}
+                  {billedPaymentDetails.discountValue
+                    ? billedPaymentDetails.discountValue.toFixed(2)
+                    : '0.00'}
+                </span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Delivery Charges</span>
+                <span>
+                  + Rs.{' '}
+                  {billedPaymentDetails.deliveryCharges
+                    ? billedPaymentDetails.deliveryCharges.toFixed(2)
+                    : '0.00'}
+                </span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Packaging Charges</span>
+                <span>+ Rs. 0.00</span>
+              </div>
+              <div className={`${classes.priceRow} ${classes.totalPaid}`}>
+                <span>Total</span>
+                <span>
+                  Rs.
+                  {billedPaymentDetails.invoiceValue
+                    ? billedPaymentDetails.invoiceValue.toFixed(2)
+                    : '0.00'}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={classes.priceRow}>
+                <span>MRP Total</span>
+                <span>Rs. {mrpTotal.toFixed(2)}</span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Product Discount</span>
+                <span>- Rs. {discount.toFixed(2)}</span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Delivery Charges</span>
+                <span>+ Rs. {(orderDetailsData.devliveryCharges || 0).toFixed(2)}</span>
+              </div>
+              <div className={classes.priceRow}>
+                <span>Packaging Charges</span>
+                <span>+ Rs. 0.00</span>
+              </div>
+              <div className={`${classes.priceRow} ${classes.totalPaid}`}>
+                <span>Total</span>
+                <span>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
+              </div>
+            </>
+          )}
+
           {orderPayment && (
             <div className={`${classes.priceRow} ${classes.lastRow}`}>
               <span>Payment method</span>
               <span>{paymentMethodToDisplay}</span>
             </div>
           )}
+          {/* <div className={ classes.orderValue}>
+            <div className={`${classes.priceRow}`}>
+              <span>Total Ordered Value</span>
+              <span>Rs. 270</span>
+            </div>
+            <div className={`${classes.priceRow}`}>
+              <span>Total Billed Value</span>
+              <span>Rs. 250 </span>
+            </div>
+          </div>
+          <div className={ classes.refundValue}>
+            <div className={`${classes.priceRow}`}>
+              <span>Refund to be initiated</span>
+              <span>Rs. 20</span>
+            </div>
+          </div> */}
         </div>
       </div>
-      <div className={classes.disclaimerText}>
+      {/* <div className={classes.disclaimerText}>
         <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
+      </div> */}
+      <div className={classes.bottomActions}>
+        <div className={`${classes.appDownloadBtn}`}>
+          <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
+            Download App
+          </a>
+        </div>
       </div>
       {/* <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
