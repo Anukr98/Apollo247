@@ -362,16 +362,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         earlyAvailableApolloDoctors.push(doctor);
       }
     }
-    if (starDoctor.length == 0) {
-      for (const doctor of nonStarDoctor) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
-    if (nonStarDoctor.length == 0) {
-      for (const doctor of starDoctor) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
+
     while (
       i < earlyAvailableStarApolloDoctors.length &&
       j < earlyAvailableNonStarApolloDoctors.length
@@ -409,6 +400,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       } else {
         docs.push(nonStarDoctor[j]);
         j++;
+      }
+    }
+    if (starDoctor.length == 0) {
+      for (const doctor of nonStarDoctor) {
+        docs.push(doctor);
+      }
+    }
+    if (nonStarDoctor.length == 0) {
+      for (const doctor of starDoctor) {
+        docs.push(doctor);
       }
     }
     doctors = earlyAvailableApolloDoctors
