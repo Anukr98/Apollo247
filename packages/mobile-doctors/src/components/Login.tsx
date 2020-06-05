@@ -15,13 +15,23 @@ import {
 } from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import React, { useEffect, useState } from 'react';
-import { Alert, Keyboard, Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  Platform,
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+  Linking,
+} from 'react-native';
 import firebase from 'react-native-firebase';
 import HyperLink from 'react-native-hyperlink';
-import { WebView } from 'react-native-webview';
+
 import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppSignature } from '@aph/mobile-doctors/src/helpers/AppSignature';
 
 const styles = LoginStyles;
 
@@ -41,12 +51,17 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const { setLoading } = useUIElements();
   const { setDoctorDetailsError, setDoctorDetails, clearFirebaseUser } = useAuth();
+  const [appSign, setAppSign] = useState<string>('');
 
   useEffect(() => {
     try {
       fireBaseFCM();
       clearFirebaseUser && clearFirebaseUser();
       setLoading && setLoading(false);
+      if (Platform.OS === 'android')
+        AppSignature.getAppSignature().then((sign: string[]) => {
+          setAppSign(sign[0] || '');
+        });
     } catch (error) {}
   }, []);
 
@@ -125,7 +140,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI('+91' + phoneNumber)
+            loginAPI('+91' + phoneNumber, appSign)
               .then((confirmResult) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
@@ -155,48 +170,49 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const openWebView = () => {
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewWebStyles}>
-        <Header
-          headerText={strings.login.terms_conditions}
-          leftIcon="close"
-          containerStyle={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/TnC.html',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            // useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setShowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setShowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setShowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    Linking.openURL('https://www.apollo247.com/TnC.html');
+    // return (
+    //   <View style={styles.viewWebStyles}>
+    //     <Header
+    //       headerText={strings.login.terms_conditions}
+    //       leftIcon="close"
+    //       containerStyle={{
+    //         borderBottomWidth: 0,
+    //       }}
+    //       onPressLeftIcon={() => setonClickOpen(false)}
+    //     />
+    //     <View
+    //       style={{
+    //         flex: 1,
+    //         overflow: 'hidden',
+    //         backgroundColor: 'white',
+    //       }}
+    //     >
+    //       <WebView
+    //         source={{
+    //           uri: 'https://www.apollo247.com/TnC.html',
+    //         }}
+    //         style={{
+    //           flex: 1,
+    //           backgroundColor: 'white',
+    //         }}
+    //         // useWebKit={true}
+    //         onLoadStart={() => {
+    //           console.log('onLoadStart');
+    //           setShowSpinner(true);
+    //         }}
+    //         onLoadEnd={() => {
+    //           console.log('onLoadEnd');
+    //           setShowSpinner(false);
+    //         }}
+    //         onLoad={() => {
+    //           console.log('onLoad');
+    //           setShowSpinner(false);
+    //         }}
+    //       />
+    //     </View>
+    //   </View>
+    // );
   };
 
   return (
@@ -260,7 +276,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
               }
-              onPress={(url, text) => setonClickOpen(true)}
+              onPress={(url, text) => openWebView()}
             >
               <Text
                 style={{
@@ -276,7 +292,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             </HyperLink>
           </View>
         </Card>
-        {onClickOpen && openWebView()}
+        {/* {onClickOpen && openWebView()} */}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
