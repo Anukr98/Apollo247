@@ -358,16 +358,18 @@ const makeAppointmentPayment: Resolver<
       status: STATUS.PAYMENT_FAILED,
       paymentInfo,
     });
-    //NOTIFICATION logic starts here
-    sendNotification(
-      {
-        appointmentId: processingAppointment.id,
-        notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
-      },
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    if (paymentInfo.paymentStatus === 'PENDING') {
+      //NOTIFICATION logic starts here
+      sendNotification(
+        {
+          appointmentId: processingAppointment.id,
+          notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+        },
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+    }
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {
       status: STATUS.PAYMENT_PENDING_PG,
