@@ -385,7 +385,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       '& a': {
         color: '#fc9916',
-      }, 
+      },
       '& p': {
         marginBottom: 0,
       },
@@ -431,6 +431,7 @@ export const MedicineLanding: React.FC = (props: any) => {
     if (localStorage.getItem('pharmaCoupon')) {
       localStorage.removeItem('pharmaCoupon');
     }
+    sessionStorage.removeItem('cartValues');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
@@ -578,7 +579,12 @@ export const MedicineLanding: React.FC = (props: any) => {
                         </div>
                       </div>
                       <div className={classes.medicineReview}>
-                        <p>Want to check medicine interactions? <Link to={clientRoutes.prescriptionReview()}>CONSULT A PHARMACOLOGIST</Link></p>
+                        <p>
+                          Want to check medicine interactions?{' '}
+                          <Link to={clientRoutes.prescriptionReview()}>
+                            CONSULT A PHARMACOLOGIST
+                          </Link>
+                        </p>
                       </div>
                     </div>
                   </div>

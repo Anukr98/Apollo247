@@ -622,7 +622,6 @@ export const PayMedicine: React.FC = (props) => {
       })
       .finally(() => {
         setMutationLoading(false);
-        sessionStorage.removeItem('cartValues');
       });
   };
 
