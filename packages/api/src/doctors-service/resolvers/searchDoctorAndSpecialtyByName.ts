@@ -171,17 +171,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             matchedDoctorsNextAvailability.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doctor.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -279,17 +279,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             matchedDoctorsNextAvailability.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doctor.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -389,17 +389,19 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         for (const slot of slots['slots']) {
           if (
             slot.status == 'OPEN' &&
-            differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+            differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
           ) {
             if (doctor['activeSlotCount'] === 0) {
               doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
                 new Date(slot.slot),
-                new Date()
+                callStartTime
               );
               possibleDoctorsNextAvailability.push({
-                availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+                availableInMinutes: Math.abs(
+                  differenceInMinutes(callStartTime, new Date(slot.slot))
+                ),
                 physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-                currentDateTime: new Date(),
+                currentDateTime: callStartTime,
                 doctorId: doctor.doctorId,
                 onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
                 referenceSlot: slot.slot,
