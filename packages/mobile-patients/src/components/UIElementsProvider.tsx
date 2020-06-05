@@ -78,8 +78,8 @@ type AphAlertCTAs = {
 };
 
 type AphAlertParams = {
-  title?: string;
-  description?: string;
+  title?: string | JSX.Element; // (only Text tag allowed)
+  description?: string | JSX.Element; // (only Text tag allowed)
   CTAs?: AphAlertCTAs[];
   ctaContainerStyle?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
