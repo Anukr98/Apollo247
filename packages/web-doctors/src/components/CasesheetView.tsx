@@ -267,6 +267,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(0, 0, 0, 0.8)',
       lineHeight: 1.5,
     },
+    removed: {
+      fontSize: 12,
+      color: '#890000 !important',
+      marginLeft: 10,
+    },
   };
 });
 interface savingProps {
@@ -294,6 +299,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptoms,
     diagnosticPrescription,
     medicinePrescription,
+    removedMedicinePrescription,
     referralDescription,
     referralSpecialtyName,
   } = useContext(CaseSheetContext);
@@ -411,6 +417,21 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     }
     `;
   };
+
+  const removedMedicineHtml =
+    removedMedicinePrescription &&
+    removedMedicinePrescription.length > 0 &&
+    removedMedicinePrescription.map(
+      (
+        prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+        index: number
+      ) => (
+        <li key={`removed-${index}`}>
+          <s>{prescription.medicineName}</s>{' '}
+          <span className={classes.removed}>( This medication has been disontinued )</span>
+        </li>
+      )
+    );
 
   const medicineHtml =
     medicinePrescription &&
@@ -714,7 +735,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
               </div>
               <div className={classes.medicationList}>
-                <ol>{medicineHtml}</ol>
+                <ol>
+                  {medicineHtml}
+                  {removedMedicineHtml}
+                </ol>
               </div>
             </div>
           ) : null}

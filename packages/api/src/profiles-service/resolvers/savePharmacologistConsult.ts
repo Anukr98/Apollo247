@@ -83,7 +83,7 @@ const savePharmacologistConsult: Resolver<
   });
   const attachments: EmailAttachMent[] = [];
   if (savePharmacologistConsultInput.prescriptionImageUrl) {
-    const prescriptionImageUrls = savePharmacologistConsultInput.prescriptionImageUrl.split(',');
+    const prescriptionImageUrls = savePharmacologistConsultInput.prescriptionImageUrl.split(' ');
     const imagePromises = prescriptionImageUrls.map(async (url, index) => {
       return await fetch(url);
     });

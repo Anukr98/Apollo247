@@ -6,6 +6,7 @@ import { MedicineOrders, MEDICINE_ORDER_STATUS } from 'profiles-service/entities
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { getUnixTime } from 'date-fns';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
@@ -180,7 +181,7 @@ const getMedicineOrderOMSDetails: Resolver<
     }
   }
   medicineOrderDetails.medicineOrdersStatus.sort((a, b) => {
-    return (new Date(a.statusDate) as any) - (new Date(b.statusDate) as any);
+    return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
   });
   return { medicineOrderDetails };
 };

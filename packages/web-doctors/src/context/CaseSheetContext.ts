@@ -61,6 +61,17 @@ export interface CaseSheetContextProps {
       >
     | (() => void);
 
+  removedMedicinePrescription:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+    | null;
+  setRemovedMedicinePrescription:
+    | React.Dispatch<
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+        >
+      >
+    | (() => void);
+
   favouriteMedicines: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null;
   setFavouriteMedicines:
     | React.Dispatch<
@@ -152,6 +163,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFavouriteTests: () => {},
   medicinePrescription: null,
   setMedicinePrescription: () => {},
+  removedMedicinePrescription: null,
+  setRemovedMedicinePrescription: () => {},
   favouriteMedicines: [],
   setFavouriteMedicines: () => {},
   consultType: [],
