@@ -71,6 +71,7 @@ export interface Store {
   phone: string;
   city: string;
   state: string;
+  state_id: string;
   message: string;
 }
 

@@ -109,6 +109,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     addresses,
     stores,
     coupon,
+    pinCode,
   } = useShoppingCart();
 
   type bankOptions = {
@@ -337,7 +338,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
-    const { storename, address, workinghrs, phone, city, state } = selectedStore || {};
+    const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         coupon: coupon ? coupon.code : '',
@@ -346,7 +347,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
-        shopAddress: selectedStore ? { storename, address, workinghrs, phone, city, state } : null,
+        shopAddress: selectedStore
+          ? {
+              storename,
+              address,
+              workinghrs,
+              phone,
+              city,
+              state,
+              zipcode: pinCode,
+              stateCode: state_id,
+            }
+          : null,
         showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
