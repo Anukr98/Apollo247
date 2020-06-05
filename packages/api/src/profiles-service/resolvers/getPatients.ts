@@ -5,7 +5,11 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import {
+  sendPatientRegistrationNotification,
+  sendNotificationWhatsapp,
+} from 'notifications-service/resolvers/notifications';
+import { ApiConstants } from 'ApiConstants';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -206,13 +210,45 @@ const updateWhatsAppStatus: Resolver<
   { whatsAppMedicine: boolean; whatsAppConsult: boolean; patientId: string },
   ProfilesServiceContext,
   UpdateWhatsAppStatusResult
-> = async (parent, args, { profilesDb, mobileNumber }) => {
+> = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   await patientRepo.updateWhatsAppStatus(
     args.patientId,
     args.whatsAppConsult,
     args.whatsAppMedicine
   );
+  const patientDetails = await patientRepo.findById(args.patientId);
+  const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
+  if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
+    sendNotificationWhatsapp(mobileNumber, '');
+    const WHATSAPP_NOTIFICATION_URL = `https://api.in.webengage.com/v1/accounts/in~~c2ab3533/users`;
+    const details = {
+      userId: mobileNumber,
+      whatsappOptIn: true,
+    };
+    // const APIInput = {
+    //   new_name: '',
+    //   new_eventtype: 'Insert',
+    //   new_jsonentity: JSON.stringify(details),
+    // };
+    console.log('APIInput=============>', JSON.stringify(details));
+    const saveResponse = await fetch(WHATSAPP_NOTIFICATION_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + ApiConstants.WHATSAPP_AUTHORIZATION,
+      },
+      body: JSON.stringify(details),
+    });
+    const saveResult = await saveResponse.text();
+    console.log('case save result: ', saveResult);
+
+    if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
+      console.error(`Invalid response status ${saveResponse.status}.`);
+      // throw new Error(`case save Error ${saveCaseResponse.status}`);
+    }
+  }
   return { status: true };
 };
 
