@@ -664,9 +664,15 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
             _data.data.getCaseSheet.caseSheetDetails.version > 1
           ) {
-            setIsPdfPageOpen(false);
-            setIsNewprescriptionEditable(true);
-            setIsNewPrescription(true);
+            if(_data.data.getCaseSheet.caseSheetDetails.sentToPatient){
+              setIsPdfPageOpen(true);
+              setIsNewprescriptionEditable(false);
+              setIsNewPrescription(false);
+            }else{
+              setIsPdfPageOpen(false);
+              setIsNewprescriptionEditable(true);
+              setIsNewPrescription(true);
+            }
           }
           if (
             _data.data &&
