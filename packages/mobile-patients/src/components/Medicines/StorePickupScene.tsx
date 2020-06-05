@@ -171,8 +171,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
 
   const renderStoreDriveWayPickupView = () => {
     return (
-      !!stores.length &&
-      !!selectedStore && <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
+      !!stores.length && <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
     );
   };
 
@@ -200,7 +199,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             onPress={() => {
               CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${item.storeid}`);
               setSelectedStore(item.storeid);
-              // setShowDriveWayPopup(true);
+              setShowDriveWayPopup(true);
             }}
             containerStyle={{
               marginTop: 16,
@@ -237,7 +236,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
         <ScrollView bounces={false}>{renderStorePickupCard()}</ScrollView>
         {renderBottomButton()}
       </SafeAreaView>
-      {showDriveWayPopup && !!selectedStore && (
+      {!!showDriveWayPopup && (
         <StoreDriveWayPickupPopup
           store={stores.find((item) => item.storeid == selectedStore)!}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}
