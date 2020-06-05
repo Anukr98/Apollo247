@@ -430,7 +430,7 @@ export const MedicineDetails: React.FC = (props) => {
               Array.isArray(PharmaOverview) &&
               PharmaOverview.length
             ) {
-              const { Overview } = PharmaOverview[0];
+              const { Overview } = PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
@@ -454,13 +454,14 @@ export const MedicineDetails: React.FC = (props) => {
               },
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
-              const { generic, Doseform } = PharmaOverview[0];
+              const { generic, Doseform } =
+                PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name: name,
                 description,
-                activeIngredient: generic.length ? generic.split('+') : '',
+                activeIngredient: generic && generic.length ? generic.split('+') : '',
                 dosageForm: Doseform,
               });
             }
@@ -478,11 +479,11 @@ export const MedicineDetails: React.FC = (props) => {
             /**Gtm code End  */
           })
           .catch((e) => {
-            alert(e);
+            console.log(e);
           });
       })
       .catch((e) => {
-        alert(e);
+        console.log(e);
       });
   };
 
