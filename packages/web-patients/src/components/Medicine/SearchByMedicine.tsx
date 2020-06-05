@@ -452,7 +452,7 @@ export const SearchByMedicine: React.FC = (props) => {
             </AphButton>
           </div>
           <div className={classes.autoSearch}>
-            <MedicineAutoSearch fromPDP={true} />
+            <MedicineAutoSearch />
             <div className={classes.searchRight}>
               <AphButton
                 className={classes.uploadPreBtn}

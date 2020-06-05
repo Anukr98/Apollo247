@@ -535,7 +535,7 @@ export const MedicineLanding: React.FC = (props: any) => {
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <MedicineAutoSearch fromPDP={false} />
+                <MedicineAutoSearch />
                 {loading && (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />
