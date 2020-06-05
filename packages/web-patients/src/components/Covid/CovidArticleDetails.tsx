@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -195,6 +195,22 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       margin: '0 16px',
     },
+    emptyCommentSection: {
+      height: 'calc(100% - 124px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    noComments: {
+      width: '70%',
+      textAlign: 'center',
+      '& p': {
+        margin: '20px 0',
+        fontSize: 12,
+        color: '#02475b',
+        lineHeight: '18px',
+      },
+    },
   };
 });
 
@@ -265,10 +281,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     '@type': 'Organization',
                     name: 'Apollo24|7',
                   },
-                  datePublished: moment(Number(createdAt)*1000)
+                  datePublished: moment(Number(createdAt) * 1000)
                     .utc()
                     .format(),
-                  dateModified: moment(Number(updatedAt)*1000)
+                  dateModified: moment(Number(updatedAt) * 1000)
                     .utc()
                     .format(),
                   publisher: {
@@ -364,6 +380,14 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                         Enter your comments here..
                       </div>
                     )}
+                    <div className={classes.emptyCommentSection}>
+                      <div className={classes.noComments}>
+                        <img src={require('images/ic-nocomments.svg')} />
+                        <Typography>
+                          There are currently no comments for this. Be the first to comment.
+                        </Typography>
+                      </div>
+                    </div>
                     <CommentsList
                       titleId={titleId}
                       commentData={comments}
