@@ -227,10 +227,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-  console.log(process.env.ELASTIC_CONNECTION_URL);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
-  console.log('elasticsearch result count', getDetails.body.hits.hits.length);
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -331,18 +329,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       console.log('no available slot:', doctor.id);
     }
   }
-  console.log(
-    'earlyAvailableStarApolloDoctors:',
-    earlyAvailableStarApolloDoctors.length,
-    'earlyAvailableNonStarApolloDoctors',
-    earlyAvailableNonStarApolloDoctors.length,
-    'earlyAvailableNonApolloDoctors',
-    earlyAvailableNonApolloDoctors.length,
-    'starDoctor',
-    starDoctor.length,
-    'nonStarDoctor',
-    nonStarDoctor.length
-  );
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
@@ -407,11 +393,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
             earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
-        console.log('i', i);
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
       } else {
-        console.log('j', j);
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -451,16 +435,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       )
       .concat(docs);
   }
-  console.log(
-    'earlyAvailableApolloDoctors',
-    earlyAvailableApolloDoctors.length,
-    'earlyAvailableNonApolloDoctors',
-    earlyAvailableNonApolloDoctors.length,
-    'docs',
-    docs.length
-  );
   searchLogger(`API_CALL___END`);
-  console.log('final doctors count', doctors.length);
   return {
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
