@@ -339,7 +339,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((err) => alert({ err }));
+      .catch((err) => console.log(err));
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
