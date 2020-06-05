@@ -164,6 +164,50 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? 'Prepaid'
       : 'No Payment';
 
+  const getOrderDifferenceAmounts = (
+    paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
+    orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+  ) => {
+    const isCOD = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD;
+    const orderedValue = 0;
+    const orderedDiscount = (orderInfo.productDiscount || 0) + (orderInfo.couponDiscount || 0);
+    const billedDiscount = 0;
+    const billedValue = 0;
+
+    const refundOrExtraAmountToPay =
+      orderedValue && billedValue
+        ? orderedValue > billedValue
+          ? isCOD
+            ? billedValue
+            : orderedValue - billedValue
+          : billedValue > orderedValue
+          ? billedValue - orderedValue
+          : 0
+        : 0;
+
+    const refundOrExtraAmountText =
+      orderedValue && billedValue
+        ? orderedValue > billedValue
+          ? isCOD
+            ? 'COD amount to Pay'
+            : 'Refund amount'
+          : billedValue > orderedValue
+          ? 'Amount to be paid on delivery'
+          : ''
+        : '';
+
+    const extraDiscount = billedDiscount > orderedDiscount ? billedDiscount - orderedDiscount : 0;
+
+    return {
+      noChange: !refundOrExtraAmountToPay && !extraDiscount,
+      orderedValue,
+      billedValue,
+      refundOrExtraAmountText,
+      refundOrExtraAmountToPay,
+      extraDiscount,
+    };
+  };
+
   const renderMedicineRow = (
     item: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems
   ) => {
