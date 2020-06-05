@@ -324,7 +324,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
       </div>
       {showError ? (
         <span className={classes.noData}>
-          Hit enter to search <b>'{searchText}'</b>
+          Hit enter to search for <b>'{searchText}'</b>
         </span>
       ) : (
         ''
