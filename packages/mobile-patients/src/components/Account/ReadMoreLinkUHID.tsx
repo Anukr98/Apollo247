@@ -419,7 +419,7 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
                       height: 7,
                     }}
                   />
-                  <View style={{ left: heightPercent <= 31 ? 5 : 40 }}>
+                  <View style={{ left: 5 }}>
                     <Text style={[
                       styles.instructionText,
                       heightPercent <= 31 ? { ...fonts.IBMPlexSansMedium(8), marginLeft: -3 } : { ...fonts.IBMPlexSansMedium(9) }
