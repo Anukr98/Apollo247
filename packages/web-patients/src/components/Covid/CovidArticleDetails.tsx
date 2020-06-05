@@ -380,19 +380,22 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                         Enter your comments here..
                       </div>
                     )}
-                    <div className={classes.emptyCommentSection}>
-                      <div className={classes.noComments}>
-                        <img src={require('images/ic-nocomments.svg')} />
-                        <Typography>
-                          There are currently no comments for this. Be the first to comment.
-                        </Typography>
+                    {comments && comments.length ? (
+                      <CommentsList
+                        titleId={titleId}
+                        commentData={comments}
+                        totalComments={totalComments}
+                      />
+                    ) : (
+                      <div className={classes.emptyCommentSection}>
+                        <div className={classes.noComments}>
+                          <img src={require('images/ic-nocomments.svg')} />
+                          <Typography>
+                            There are currently no comments for this. Be the first to comment.
+                          </Typography>
+                        </div>
                       </div>
-                    </div>
-                    <CommentsList
-                      titleId={titleId}
-                      commentData={comments}
-                      totalComments={totalComments}
-                    />
+                    )}
                   </div>
                 </div>
               </div>
