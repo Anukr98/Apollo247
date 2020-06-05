@@ -657,7 +657,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
         prescriptionImageUrl: [
           ...prescriptionArr!.map((item) => item.imageUrl),
           ...ePrescriptionArr!.map((item) => item.uploadedUrl),
-        ].join(','),
+        ].join(' '),
         emailId: userEmail,
         queries: userQuery,
       },
