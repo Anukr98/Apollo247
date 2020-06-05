@@ -200,6 +200,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
+        height: 'calc(100% - 112px)',
+        padding: 20,
+      },
     },
     noComments: {
       width: '70%',
@@ -209,6 +213,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 12,
         color: '#02475b',
         lineHeight: '18px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: '80%',
       },
     },
   };
