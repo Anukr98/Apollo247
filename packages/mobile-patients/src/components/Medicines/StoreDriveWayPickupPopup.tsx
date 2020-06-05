@@ -94,17 +94,27 @@ export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> =
   const renderStoreDetails = () => (
     <View>
       <Spearator style={{ marginTop: 10 }} />
-      <View style={styles.storeDetailView}>
-        <Text style={styles.storeDetailText1}>Store Selected :</Text>
-        <Text
-          style={styles.storeDetailText2}
-        >{`${props.store.storename}\n${props.store.address}`}</Text>
-      </View>
-      <View style={[styles.storeDetailView, { marginTop: 17 }]}>
-        <Text style={styles.storeDetailText1}>Store Timings :</Text>
-        <Text style={styles.storeDetailText2}>{props.store.workinghrs}</Text>
-      </View>
-      <Spearator style={{ marginTop: 10 }} />
+      {!!props.store && (
+        <>
+          <View style={styles.storeDetailView}>
+            <Text style={styles.storeDetailText1}>Store Selected :</Text>
+            <Text
+              style={styles.storeDetailText2}
+            >{`${props.store.storename}\n${props.store.address}`}</Text>
+          </View>
+          <View style={[styles.storeDetailView, { marginTop: 17 }]}>
+            <Text style={styles.storeDetailText1}>Store Timings :</Text>
+            <Text style={styles.storeDetailText2}>{props.store.workinghrs}</Text>
+          </View>
+          {!!props.store.phone && (
+            <View style={[styles.storeDetailView, { marginTop: 17 }]}>
+              <Text style={styles.storeDetailText1}>Store Phone Number :</Text>
+              <Text style={styles.storeDetailText2}>{props.store.phone}</Text>
+            </View>
+          )}
+          <Spearator style={{ marginTop: 10 }} />
+        </>
+      )}
     </View>
   );
 

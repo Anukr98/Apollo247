@@ -1026,7 +1026,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const renderStorePickup = () => {
     return (
       <View style={{}}>
-        {!!slicedStoreList.length && !!storeId && (
+        {!!slicedStoreList.length && (
           <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
         )}
         <View style={{ margin: 16 }}>
@@ -1861,7 +1861,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {showDriveWayPopup && !!storeId && (
+      {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
           store={stores.find((item) => item.storeid == storeId)!}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}
