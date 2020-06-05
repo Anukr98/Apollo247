@@ -64,8 +64,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the camera for image upload and video calling.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This will enable the nearby location functionality to get nearest locations. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Uses Location</string>
+	<string>This will enable the nearby location functionality to get nearest locations. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the microphone for audio and video calling.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

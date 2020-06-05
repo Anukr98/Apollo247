@@ -210,13 +210,13 @@ export const sendNotificationWhatsapp = async (mobileNumber: string, message: st
         process.env.WHATSAPP_PASSWORD +
         '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
         message;
-      await fetch(sendApiUrl)
-        .then((res) => {
-          console.log(res, 'res of actual msg send');
-        })
-        .catch((error) => {
-          console.log(error, 'send message api error');
-        });
+      // await fetch(sendApiUrl)
+      //   .then((res) => {
+      //     console.log(res, 'res of actual msg send');
+      //   })
+      //   .catch((error) => {
+      //     console.log(error, 'send message api error');
+      //   });
     })
     .catch((error) => {
       console.log(error, 'optInResponse error');

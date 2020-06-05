@@ -13,7 +13,7 @@
     "physical": " physical ",
     "consult_fee": "consultation fees?",
     "not_applicable": "  N/A",
-    "toll_free_num": "1800 - 3455 - 3455",
+    "toll_free_num": " ",
     "call": "Call",
     "yrs": "YRS",
     "from": "From",
@@ -86,7 +86,13 @@
     "please_add_other_instructions": "Please add other instructions",
     "instruction_already_added": "This instruction already added",
     "oops": "Oops!",
-    "no_internet": "There is no internet. Please check your internet connection."
+    "no_internet": "There is no internet. Please check your internet connection.",
+    "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
+    "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed",
+    "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
+  },
+  "popUP": {
+    "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
   },
   "buttons": {
     "done": "DONE",
@@ -201,6 +207,8 @@
       "TABLET",
       "PUFF",
       "UNIT",
+      "DROP",
+      "CAPSULE",
       "SPRAY",
       "PATCH",
       "AS_PRESCRIBED"
@@ -221,6 +229,14 @@
       {
         "single": "spray",
         "multiple": "spray(s)"
+      },
+      {
+        "single": "drop",
+        "multiple": "drop(s)"
+      },
+      {
+        "single": "capsule",
+        "multiple": "capsule(s)"
       }
     ]
   },
@@ -328,10 +344,13 @@
     "weight": "Weight (kgs)",
     "bp": "BP (mm Hg)",
     "temperature": "Temperature (°F)",
-    "medication_history": "Medication History*",
+    "medical_history": "Medical History",
+    "medication_history": "Medication History",
+    "surgical_history": "Surgical History",
     "drug_allergies": "Drug Allergies",
     "diet_allergies": "Diet Allergies/Restrictions",
     "lifestyle_habits": "Personal History, Lifestyle & Habits",
+    "occupational_history": "Environmental & Occupational History",
     "menstrual_history": "Menstrual History",
     "family_medical_history": "Family Medical History",
     "tests": "Tests",
@@ -354,10 +373,13 @@
     "sort_by": "SORT BY",
     "symptoms": "Symptoms",
     "patients_medi_family_history": "Patient’s Medical & Family History",
+    "referral_headding": "Referral (Optional)",
+    "referral_drop_selection_header": "Which speciality should the patient consult?",
     "referral": "Referral",
     "pulmologist": "Pulmologist",
     "submitted_by": "Submitted by Dr.",
-    "on": "on"
+    "on": "on",
+    "select_Speciality": "Select Speciality"
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",
@@ -381,7 +403,7 @@
     "reschedule_consult": "Reschedule Consult",
     "attach_files": "Attach File(s)",
     "instruction_for_upload": "Instructions For Uploading Files",
-    "instruction_list": " Take clear Picture of your entire file. \n Doctor details & date of the test should be clearly visible. \n Only JPG / PNG type files up to 2 mb are allowed.",
+    "instruction_list": "Only JPG / PNG type files up to 2 mb are allowed.",
     "none": "NONE",
     "take_a_photo": "TAKE A PHOTO",
     "choose_from_gallery": "CHOOSE FROM\nGALLERY",
