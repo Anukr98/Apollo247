@@ -1461,6 +1461,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
+        setIsClickedOnPriview(true);
         const text = {
           id: doctorId,
           message: '^^#appointmentComplete',

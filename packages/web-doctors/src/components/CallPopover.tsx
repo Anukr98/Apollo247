@@ -1460,6 +1460,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
       setConsultStart(false);
+      props.setIsClickedOnPriview(true);
     }
   }, [props.appointmentStatus]);
   const pubnub = props.pubnub;
