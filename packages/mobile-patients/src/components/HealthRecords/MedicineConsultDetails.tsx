@@ -213,7 +213,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           addEPrescription!({
             id: data!.id,
             date: moment(me).format('DD MMMM YYYY'),
-            doctorName: '',
+            doctorName: `Meds Rx ${(data.id && data.id.substring(0, data.id.indexOf('-'))) || ''}`,
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: `${data.medicineName}`,
             uploadedUrl: arr[0],
