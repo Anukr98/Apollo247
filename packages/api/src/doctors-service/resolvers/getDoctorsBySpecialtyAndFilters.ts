@@ -382,29 +382,20 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
     let i = 0,
       j = 0;
-    if (earlyAvailableStarApolloDoctors.length == 0) {
-      for (const doctor of earlyAvailableNonStarApolloDoctors) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
-    if (earlyAvailableNonStarApolloDoctors.length == 0) {
-      for (const doctor of earlyAvailableStarApolloDoctors) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
 
     while (
-      i < earlyAvailableStarApolloDoctors.length &&
+      i < earlyAvailableStarApolloDoctors.length ||
       j < earlyAvailableNonStarApolloDoctors.length
     ) {
       if (
         i < earlyAvailableStarApolloDoctors.length &&
-        earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes
+        (earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
+          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes ||
+          j >= earlyAvailableNonStarApolloDoctors.length)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
-      } else {
+      } else if (j < earlyAvailableNonStarApolloDoctors.length) {
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -418,28 +409,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
     );
 
-    (i = 0), (j = 0);
-    while (i < starDoctor.length && j < nonStarDoctor.length) {
+    while (i < starDoctor.length || j < nonStarDoctor.length) {
       if (
         i < starDoctor.length &&
-        starDoctor[i].earliestSlotavailableInMinutes <=
-          nonStarDoctor[j].earliestSlotavailableInMinutes
+        (starDoctor[i].earliestSlotavailableInMinutes <=
+          nonStarDoctor[j].earliestSlotavailableInMinutes ||
+          j >= nonStarDoctor.length)
       ) {
         docs.push(starDoctor[i]);
         i++;
       } else {
         docs.push(nonStarDoctor[j]);
         j++;
-      }
-    }
-    if (starDoctor.length == 0) {
-      for (const doctor of nonStarDoctor) {
-        docs.push(doctor);
-      }
-    }
-    if (nonStarDoctor.length == 0) {
-      for (const doctor of starDoctor) {
-        docs.push(doctor);
       }
     }
     doctors = earlyAvailableApolloDoctors
