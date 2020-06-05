@@ -657,7 +657,7 @@ export interface MedicineCartOMSInput {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
-  patientAddressId: string;
+  patientAddressId?: string | null;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   prismPrescriptionFileId?: string | null;
@@ -856,6 +856,8 @@ export interface ShopAddress {
   phone?: string | null;
   city?: string | null;
   state?: string | null;
+  zipcode?: string | null;
+  stateCode?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {
