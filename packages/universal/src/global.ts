@@ -73,6 +73,7 @@ declare namespace NodeJS {
 
     INACTIVE_CONSULT_QUEUE_LIMT: string;
     VIRTUAL_JD_ID: string;
+    WEB_ENGAGE_URL: string;
     NOTIFICATION_SMS_SECRECT_KEY: string;
 
     AZURE_STORAGE_CONNECTION_STRING_API_SIGNATURE: string;

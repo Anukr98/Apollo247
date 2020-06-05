@@ -325,7 +325,7 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
 
   // whatsapp constants
-  WHATSAPP_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
+  WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
   // pharmacologist email config
   PHARMACOLOGIST_CONSULT_TITLE = 'Prescription Review for {0} | {1}',

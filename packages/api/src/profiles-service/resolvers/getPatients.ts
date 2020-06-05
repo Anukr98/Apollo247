@@ -221,7 +221,6 @@ const updateWhatsAppStatus: Resolver<
   const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
   if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
     sendNotificationWhatsapp(mobileNumber, '');
-    const WHATSAPP_NOTIFICATION_URL = `https://api.in.webengage.com/v1/accounts/in~~c2ab3533/users`;
     const details = {
       userId: mobileNumber,
       whatsappOptIn: true,
@@ -232,17 +231,16 @@ const updateWhatsAppStatus: Resolver<
     //   new_jsonentity: JSON.stringify(details),
     // };
     console.log('APIInput=============>', JSON.stringify(details));
-    const saveResponse = await fetch(WHATSAPP_NOTIFICATION_URL, {
+    const saveResponse = await fetch(process.env.WEB_ENGAGE_URL, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + ApiConstants.WHATSAPP_AUTHORIZATION,
+        Authorization: 'Bearer ' + ApiConstants.WEB_ENGAGE_AUTHORIZATION,
       },
       body: JSON.stringify(details),
     });
     const saveResult = await saveResponse.text();
-    console.log('case save result: ', saveResult);
 
     if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
       console.error(`Invalid response status ${saveResponse.status}.`);
