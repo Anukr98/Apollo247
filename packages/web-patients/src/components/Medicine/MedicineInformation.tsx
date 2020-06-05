@@ -506,51 +506,66 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={classes.bottomGroupResponsive}>
         {!errorMessage ? (
           <>
-            <div className={classes.priceGroup}>
-              <div className={classes.priceWrap}>
-                {data.is_in_stock ? (
-                  <>
-                    <div className={classes.leftGroup}>
-                      <div className={classes.medicinePack}>
-                        <div>QTY :</div>
-                        <div className={classes.dropDown}>
-                          <AphCustomDropdown
-                            classes={{ selectMenu: classes.selectMenuItem }}
-                            value={medicineQty}
-                            onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                              setMedicineQty(parseInt(e.target.value))
-                            }
-                          >
-                            {options.map((option, index) => (
-                              <MenuItem
-                                key={index}
-                                classes={{
-                                  root: classes.menuRoot,
-                                  selected: classes.menuSelected,
-                                }}
-                                value={option}
-                              >
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </AphCustomDropdown>
-                        </div>
+            {data.is_in_stock ? (
+              <div className={classes.priceGroup}>
+                <div className={classes.priceWrap}>
+                  <div className={classes.leftGroup}>
+                    <div className={classes.medicinePack}>
+                      <div>QTY :</div>
+                      <div className={classes.dropDown}>
+                        <AphCustomDropdown
+                          classes={{ selectMenu: classes.selectMenuItem }}
+                          value={medicineQty}
+                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                            setMedicineQty(parseInt(e.target.value))
+                          }
+                        >
+                          {options.map((option, index) => (
+                            <MenuItem
+                              key={index}
+                              classes={{
+                                root: classes.menuRoot,
+                                selected: classes.menuSelected,
+                              }}
+                              value={option}
+                            >
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </AphCustomDropdown>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className={classes.leftGroup}>
-                    <div className={classes.medicineNoStock}>Out Of Stock</div>
                   </div>
-                )}
-                <div className={classes.medicinePrice}>
-                  {data.special_price && (
-                    <span className={classes.regularPrice}>(Rs. {data.price})</span>
-                  )}
-                  Rs. {data.special_price || data.price}
+                  <div className={classes.medicinePrice}>
+                    {data.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {data.price})</span>
+                    )}
+                    Rs. {data.special_price || data.price}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className={classes.outOfStock}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+                <AphButton
+                  fullWidth
+                  className={classes.notifyBtn}
+                  onClick={() => {
+                    const { sku, name, category_id } = data;
+                    /* WebEngage event start */
+                    notifyMeTracking({
+                      sku,
+                      category_id,
+                      name,
+                    });
+                    /* WebEngage event end */
+                    setIsPopoverOpen(true);
+                  }}
+                >
+                  Notify when in stock
+                </AphButton>
+              </div>
+            )}
 
             <div className={classes.bottomActions}>
               {data.is_in_stock ? (
