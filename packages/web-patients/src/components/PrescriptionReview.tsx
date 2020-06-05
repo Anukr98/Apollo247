@@ -740,11 +740,11 @@ export const PrescriptionReview: React.FC = (props: any) => {
                     <Typography>
                       You can also send us the prescriptions by email on{' '}
                       <a
-                        href="mailto:pharmacologist@apollo.org"
+                        href={`mailto:${process.env.PHARMACOLOGIST_EMAIL}`}
                         target="_blank"
                         className={classes.bold}
                       >
-                        pharmacologist@apollo.org
+                        ${process.env.PHARMACOLOGIST_EMAIL}
                       </a>
                     </Typography>
                   </div>
