@@ -437,7 +437,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         medication: medicalHistory,
         complaints: symptonsData,
         diagnosis: diagnosisData,
-        medicine: medicinePrescriptionData,
+        medicine:
+          (medicinePrescriptionData &&
+            medicinePrescriptionData.filter(
+              (med) =>
+                selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >= 0
+            )) ||
+          [],
         tests: tests.filter((i) => i.isSelected).map((i) => ({ itemname: i.itemname })),
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
