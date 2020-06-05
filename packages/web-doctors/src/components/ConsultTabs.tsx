@@ -311,6 +311,8 @@ export const ConsultTabs: React.FC = () => {
       appointmentId: paramId,
     },
   });
+  const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
+  const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [tabValue, setTabValue] = useState<number>(
@@ -664,11 +666,11 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
             _data.data.getCaseSheet.caseSheetDetails.version > 1
           ) {
-            if(_data.data.getCaseSheet.caseSheetDetails.sentToPatient){
+            if (_data.data.getCaseSheet.caseSheetDetails.sentToPatient) {
               setIsPdfPageOpen(true);
               setIsNewprescriptionEditable(false);
               setIsNewPrescription(false);
-            }else{
+            } else {
               setIsPdfPageOpen(false);
               setIsNewprescriptionEditable(true);
               setIsNewPrescription(true);
@@ -1604,6 +1606,11 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
   };
+
+  const inEditMode = !isPdfPageOpen || isSecretary;
+
+  console.log({ inEditMode });
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -1753,17 +1760,13 @@ export const ConsultTabs: React.FC = () => {
                 createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
                 isNewprescriptionEditable={isNewprescriptionEditable}
                 isNewPrescription={isNewPrescription}
+                isClickedOnEdit={isClickedOnEdit}
+                setIsClickedOnEdit={setIsClickedOnEdit}
+                isClickedOnPriview={isClickedOnPriview}
+                setIsClickedOnPriview={setIsClickedOnPriview}
               />
               <div>
-                <div
-                  className={
-                    !isPdfPageOpen ||
-                    isSecretary ||
-                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
-                      ? classes.block
-                      : classes.none
-                  }
-                >
+                <div className={inEditMode && isClickedOnEdit ? classes.block : classes.none}>
                   <div className={classes.stickyConsultTabs}>
                     <Tabs
                       value={tabValue}
@@ -1817,15 +1820,8 @@ export const ConsultTabs: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div
-                  className={
-                    !isPdfPageOpen ||
-                    isSecretary ||
-                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
-                      ? classes.none
-                      : classes.block
-                  }
-                >
+
+                <div className={!inEditMode && isClickedOnPriview ? classes.block : classes.none}>
                   <CasesheetView saving={saving} />
                 </div>
               </div>

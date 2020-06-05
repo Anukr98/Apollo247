@@ -823,6 +823,10 @@ interface CallPopoverProps {
   hasCameraMicPermission: boolean;
   isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
+  isClickedOnEdit: boolean;
+  setIsClickedOnEdit: (flag: boolean) => void;
+  isClickedOnPriview: boolean;
+  setIsClickedOnPriview: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1112,8 +1116,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [otherTextValue, setOtherTextValue] = useState('');
   const [textOtherCancel, setTextOtherCancel] = useState(false);
   const [otherTextCancelValue, setOtherTextCancelValue] = useState('');
-  const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
-  const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [isResendLoading, setIsResendLoading] = useState(false);
   const {
     currentPatient,
@@ -1149,8 +1151,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }, [isCallAccepted]);
   useEffect(() => {
     if (props.isNewprescriptionEditable) {
-      setIsClickedOnEdit(true);
-      setIsClickedOnPriview(false);
+      props.setIsClickedOnEdit(true);
+      props.setIsClickedOnPriview(false);
       setCaseSheetEdit(true);
       props.setIsPdfPageOpen(false);
     }
@@ -1837,8 +1839,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const showCallMoreBtns =
     props.appointmentStatus === STATUS.COMPLETED &&
     props.sentToPatient === false &&
-    (isClickedOnPriview || props.sentToPatient === false) &&
-    !isClickedOnEdit
+    (props.isClickedOnPriview || props.sentToPatient === false) &&
+    !props.isClickedOnEdit
       ? true
       : false;
 
@@ -1959,7 +1961,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
-          {(props.appointmentStatus !== STATUS.COMPLETED || isClickedOnEdit) && (
+          {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
           <Link to={localStorage.getItem('callBackUrl')}>
@@ -1999,39 +2001,40 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
-                  {(isClickedOnPriview || props.sentToPatient === false) && !isClickedOnEdit && (
-                    <Fragment>
-                      <Button
-                        className={classes.backButton}
-                        disabled={sendToPatientButtonDisable}
-                        onClick={() => {
-                          setIsClickedOnEdit(true);
-                          setIsClickedOnPriview(false);
-                          setCaseSheetEdit(true);
-                          props.setIsPdfPageOpen(false);
-                        }}
-                      >
-                        Edit Case Sheet
-                      </Button>
-                      <Button
-                        className={classes.endconsultButton}
-                        disabled={sendToPatientButtonDisable}
-                        onClick={() => {
-                          localStorage.removeItem(`${params.id}`);
-                          setSendToPatientButtonDisable(true);
-                          props.saveCasesheetAction(true, true);
-                        }}
-                      >
-                        {sendToPatientButtonDisable && 'Please wait...'}
-                        {sendToPatientButtonDisable ? (
-                          <CircularProgress size={22} />
-                        ) : (
-                          'Send To Patient'
-                        )}
-                      </Button>
-                    </Fragment>
-                  )}
-                  {isClickedOnEdit && (
+                  {(props.isClickedOnPriview || props.sentToPatient === false) &&
+                    !props.isClickedOnEdit && (
+                      <Fragment>
+                        <Button
+                          className={classes.backButton}
+                          disabled={sendToPatientButtonDisable}
+                          onClick={() => {
+                            props.setIsClickedOnEdit(true);
+                            props.setIsClickedOnPriview(false);
+                            setCaseSheetEdit(true);
+                            props.setIsPdfPageOpen(false);
+                          }}
+                        >
+                          Edit Case Sheet
+                        </Button>
+                        <Button
+                          className={classes.endconsultButton}
+                          disabled={sendToPatientButtonDisable}
+                          onClick={() => {
+                            localStorage.removeItem(`${params.id}`);
+                            setSendToPatientButtonDisable(true);
+                            props.saveCasesheetAction(true, true);
+                          }}
+                        >
+                          {sendToPatientButtonDisable && 'Please wait...'}
+                          {sendToPatientButtonDisable ? (
+                            <CircularProgress size={22} />
+                          ) : (
+                            'Send To Patient'
+                          )}
+                        </Button>
+                      </Fragment>
+                    )}
+                  {props.isClickedOnEdit && (
                     <Fragment>
                       <Button
                         className={classes.backButton}
@@ -2044,8 +2047,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         disabled={props.saving}
                         onClick={() => {
                           props.saveCasesheetAction(true, false);
-                          setIsClickedOnEdit(false);
-                          setIsClickedOnPriview(true);
+                          props.setIsClickedOnEdit(false);
+                          props.setIsClickedOnPriview(true);
                           props.setIsPdfPageOpen(true);
                         }}
                       >
