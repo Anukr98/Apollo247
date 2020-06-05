@@ -213,7 +213,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
-  const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
+  // const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
@@ -460,14 +460,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       // clear storeId
       setLastStoreIdReplica(storeId);
       setStoreId!('');
-      setStoreInventoryCheck(true);
+      // setStoreInventoryCheck(true);
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && storeId) {
-      if (!storeInventoryCheck) {
-        setStoreInventoryCheck(true);
-        return;
-      }
+      // if (!storeInventoryCheck) {
+      //   setStoreInventoryCheck(true);
+      //   return;
+      // }
 
       setLoading!(true);
       setLastStoreIdReplica(storeId);
@@ -540,17 +540,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       cartItems
     );
     if (validation.alertText) {
-      setStoreInventoryCheck(false);
+      // setStoreInventoryCheck(false);
       setLoading!(false);
       showAphAlert!({
         title: 'Hi! :)',
         description: validation.alertText,
+        unDismissable: true,
+        onPressOk: () => {
+          hideAphAlert!();
+          setCartItems!(validation.newItems);
+        },
       });
-      setTimeout(() => {
-        setCartItems!(validation.newItems);
-      }, 30);
+    } else {
+      onComplete();
     }
-    onComplete();
   };
 
   const clearStoreIdAndShowAlert = (message: string) => {
