@@ -222,11 +222,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface MedicineAutoSearchProps {
-  fromPDP: boolean;
-}
 
-export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => {
+export const MedicineAutoSearch: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -326,15 +323,9 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
         </AphButton>
       </div>
       {showError ? (
-        props.fromPDP ? (
-          <span className={classes.noData}>
-            Hit enter to search <b>'{searchText}'</b>
-          </span>
-        ) : (
-          <FormHelperText className={classes.helpText} component="div" error={showError}>
-            Sorry, we couldn't find what you are looking for :("
-          </FormHelperText>
-        )
+        <span className={classes.noData}>
+          Hit enter to search <b>'{searchText}'</b>
+        </span>
       ) : (
         ''
       )}
