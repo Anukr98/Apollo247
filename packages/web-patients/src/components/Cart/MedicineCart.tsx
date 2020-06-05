@@ -61,6 +61,7 @@ import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { getItemSpecialPrice } from '../PayMedicine';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -84,6 +85,25 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
       },
+    },
+    bottomActions: {
+      paddingTop: 15,
+      paddingBottom: 15,
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      display: 'flex',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        fontWeight: 'bold',
+        color: '#fc9916',
+        padding: 0,
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+      },
+    },
+    trackBtn: {
+      marginLeft: 'auto',
     },
     rightSection: {
       width: 328,
@@ -185,6 +205,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
     },
     count: {
       paddingLeft: 10,
@@ -686,9 +718,9 @@ export const MedicineCart: React.FC = (props) => {
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
-              cartItemDetails.type_id === 'Pharma'
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
                 ? '1'
-                : cartItemDetails.type_id === 'Fmcg'
+                : _lowerCase(cartItemDetails.type_id) === 'fmcg'
                 ? '0'
                 : null,
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
@@ -700,12 +732,14 @@ export const MedicineCart: React.FC = (props) => {
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
 
-  const getTypeOfProduct = (type: string | null) => {
-    switch (type) {
-      case 'Pharma':
+  const getTypeOfProduct = (type: string) => {
+    switch (_lowerCase(type)) {
+      case 'pharma':
         return CouponCategoryApplicable.PHARMA;
-      case 'Fmcg':
+      case 'fmcg':
         return CouponCategoryApplicable.FMCG;
+      default:
+        return null;
     }
   };
 
@@ -720,7 +754,7 @@ export const MedicineCart: React.FC = (props) => {
               return {
                 mrp: item.price,
                 productName: item.name,
-                productType: getTypeOfProduct(item.type_id),
+                productType: getTypeOfProduct(item.type_id || ''),
                 quantity: item.quantity,
                 specialPrice: item.special_price ? item.special_price : item.price,
                 itemId: item.id.toString(),
@@ -931,7 +965,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1229,13 +1263,16 @@ export const MedicineCart: React.FC = (props) => {
                           category: 'Pharmacy',
                           action: 'Order',
                           label: `Coupon Removed - ${couponCode}`,
-                          value: validateCouponResult &&
+                          value:
+                            validateCouponResult &&
                             validateCouponResult.discountedTotals &&
-                            validateCouponResult.discountedTotals.couponDiscount ?
-                            Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2)) :
-                            null
+                            validateCouponResult.discountedTotals.couponDiscount
+                              ? Number(
+                                  validateCouponResult.discountedTotals.couponDiscount.toFixed(2)
+                                )
+                              : null,
                         });
-                         /* GTM TRACKING START */
+                        /* GTM TRACKING START */
                         setValidateCouponResult(null);
                         setErrorMessage('');
                         setCouponCode && setCouponCode('');
@@ -1378,7 +1415,6 @@ export const MedicineCart: React.FC = (props) => {
                           validateCouponResult: validateCouponResult,
                         })
                       );
-                      // window.location.href = clientRoutes.payMedicine('pharmacy');
                       history.push(clientRoutes.payMedicine('pharmacy'));
                     } else if (
                       nonCartFlow &&
