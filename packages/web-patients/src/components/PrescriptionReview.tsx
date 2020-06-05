@@ -513,6 +513,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const pharmacologistEmail = process.env.PHARMACOLOGIST_EMAIL || '';
+
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
@@ -657,7 +659,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
         prescriptionImageUrl: [
           ...prescriptionArr!.map((item) => item.imageUrl),
           ...ePrescriptionArr!.map((item) => item.uploadedUrl),
-        ].join(','),
+        ].join(' '),
         emailId: userEmail,
         queries: userQuery,
       },
@@ -737,16 +739,18 @@ export const PrescriptionReview: React.FC = (props: any) => {
                         </Typography>
                       </div>
                     </div>
-                    <Typography>
-                      You can also send us the prescriptions by email on{' '}
-                      <a
-                        href="mailto:pharmacologist@apollo.org"
-                        target="_blank"
-                        className={classes.bold}
-                      >
-                        pharmacologist@apollo.org
-                      </a>
-                    </Typography>
+                    {pharmacologistEmail && pharmacologistEmail.length && (
+                      <Typography>
+                        You can also send us the prescriptions by email on{' '}
+                        <a
+                          href={`mailto:${pharmacologistEmail}`}
+                          target="_blank"
+                          className={classes.bold}
+                        >
+                          {pharmacologistEmail}
+                        </a>
+                      </Typography>
+                    )}
                   </div>
                 </div>
               </div>
