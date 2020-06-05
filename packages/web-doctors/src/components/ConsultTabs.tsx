@@ -1607,9 +1607,10 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
-  const inEditMode = !isPdfPageOpen || isSecretary;
-
-  console.log({ inEditMode });
+  const inEditMode =
+    !isPdfPageOpen ||
+    isSecretary ||
+    (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
 
   return (
     <div className={classes.consultRoom}>
@@ -1766,7 +1767,13 @@ export const ConsultTabs: React.FC = () => {
                 setIsClickedOnPriview={setIsClickedOnPriview}
               />
               <div>
-                <div className={inEditMode && isClickedOnEdit ? classes.block : classes.none}>
+                <div
+                  className={
+                    (inEditMode || isClickedOnEdit) && !isClickedOnPriview
+                      ? classes.block
+                      : classes.none
+                  }
+                >
                   <div className={classes.stickyConsultTabs}>
                     <Tabs
                       value={tabValue}
@@ -1821,7 +1828,13 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                 </div>
 
-                <div className={!inEditMode && isClickedOnPriview ? classes.block : classes.none}>
+                <div
+                  className={
+                    inEditMode && isClickedOnPriview && !isClickedOnEdit
+                      ? classes.block
+                      : classes.none
+                  }
+                >
                   <CasesheetView saving={saving} />
                 </div>
               </div>
