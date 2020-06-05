@@ -389,9 +389,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     ) {
       if (
         i < earlyAvailableStarApolloDoctors.length &&
-        (earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes ||
-          j >= earlyAvailableNonStarApolloDoctors.length)
+        (j >= earlyAvailableNonStarApolloDoctors.length ||
+          earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
+            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
@@ -412,9 +412,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     while (i < starDoctor.length || j < nonStarDoctor.length) {
       if (
         i < starDoctor.length &&
-        (starDoctor[i].earliestSlotavailableInMinutes <=
-          nonStarDoctor[j].earliestSlotavailableInMinutes ||
-          j >= nonStarDoctor.length)
+        (j >= nonStarDoctor.length ||
+          starDoctor[i].earliestSlotavailableInMinutes <=
+            nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;
