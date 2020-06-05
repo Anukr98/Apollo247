@@ -474,7 +474,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               shipmentInvoiceDetails &&
               shipmentInvoiceDetails.length > 0 &&
               billedPaymentDetails &&
-              billedPaymentDetails.discountValue
+              billedPaymentDetails.discountValue // check for supporting old orders
                 ? billedItemDetails.map(
                     (item: ItemObject) =>
                       item && (
@@ -508,7 +508,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
         <div className={classes.totalDetails}>
           {props.isShipmentListHasBilledState() &&
           billedPaymentDetails &&
-          billedPaymentDetails.discountValue ? (
+          billedPaymentDetails.discountValue ? ( // check for supporting old orders
             <>
               <div className={classes.priceRow}>
                 <span>MRP Total</span>
