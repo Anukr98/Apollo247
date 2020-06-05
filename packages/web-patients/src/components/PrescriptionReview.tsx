@@ -607,15 +607,13 @@ export const PrescriptionReview: React.FC = (props: any) => {
   useEffect(() => {
     if (
       isEmailValid(userEmail) &&
-      ((prescriptionArr && prescriptionArr.length) ||
-        (ePrescriptionArr && ePrescriptionArr.length)) &&
-      userQuery.length
+      ((prescriptionArr && prescriptionArr.length) || (ePrescriptionArr && ePrescriptionArr.length))
     ) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, prescriptionArr, ePrescriptionArr, userQuery]);
+  }, [userEmail, prescriptionArr, ePrescriptionArr]);
 
   const handleEmailValidityCheck = () => {
     if (userEmail.length && !isEmailValid(userEmail)) {
@@ -645,6 +643,8 @@ export const PrescriptionReview: React.FC = (props: any) => {
       })
       .catch((e) => {
         setIsLoading(false);
+        setAlertMessage('Something went wrong!');
+        setIsAlertOpen(true);
         console.log(e);
       });
   };
@@ -739,7 +739,11 @@ export const PrescriptionReview: React.FC = (props: any) => {
                     </div>
                     <Typography>
                       You can also send us the prescriptions by email on{' '}
-                      <a href="mailto:pharmacologist@apollo.org" className={classes.bold}>
+                      <a
+                        href="mailto:pharmacologist@apollo.org"
+                        target="_blank"
+                        className={classes.bold}
+                      >
                         pharmacologist@apollo.org
                       </a>
                     </Typography>
@@ -880,7 +884,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
                   {!emailValid && <div className={classes.error}>Invalid email</div>}
                 </div>
                 <div className={` ${classes.box} ${classes.queryBox}`}>
-                  <span>Queries(if any)</span>
+                  <span>Queries (if any)</span>
                   <AphInput
                     className={classes.queries}
                     value={userQuery}
