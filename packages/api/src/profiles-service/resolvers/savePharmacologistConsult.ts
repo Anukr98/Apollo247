@@ -94,10 +94,12 @@ const savePharmacologistConsult: Resolver<
     const imageBuffers = await Promise.all(imageBufferPromises);
     imageBuffers.forEach((buffer, index) => {
       const url = prescriptionImageUrls[index];
+      const baseUrl = path.basename(url);
+      const extname = path.extname(url);
       attachments.push({
         content: buffer.toString('base64'),
-        filename: path.basename(url),
-        type: path.extname(url),
+        filename: baseUrl.split('?')[0],
+        type: extname.split('?')[0],
         disposition: 'attachment',
       });
     });
