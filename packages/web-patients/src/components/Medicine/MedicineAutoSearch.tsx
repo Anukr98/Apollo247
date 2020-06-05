@@ -15,6 +15,8 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { MEDICINE_QUANTITY } from 'helpers/commonHelpers';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
+// @TODO : Fix the below line
+// @ts-ignore
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
