@@ -821,7 +821,7 @@ interface CallPopoverProps {
   lastMsg: any;
   presenceEventObject: any;
   hasCameraMicPermission: boolean;
-  isNewprescriptionEdittable: boolean;
+  isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
 }
 let countdowntimer: any;
@@ -1148,13 +1148,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   }, [isCallAccepted]);
   useEffect(() => {
-    if(props.isNewprescriptionEdittable){
+    if(props.isNewprescriptionEditable){
       setIsClickedOnEdit(true);
       setIsClickedOnPriview(false);
       setCaseSheetEdit(true);
       props.setIsPdfPageOpen(false);
     }
-  },[props.isNewprescriptionEdittable]);
+  },[props.isNewprescriptionEditable]);
   useEffect(() => {
     if (remainingCallTime === 0) {
       clearInterval(intervalcallId);

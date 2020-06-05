@@ -404,7 +404,7 @@ export const ConsultTabs: React.FC = () => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
-  const [isNewprescriptionEdittable, setIsNewprescriptionEdittable] = useState<boolean>(false);
+  const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
@@ -652,7 +652,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails.version === 1
           ) {
             setIsPdfPageOpen(true);
-            setIsNewprescriptionEdittable(false);
+            setIsNewprescriptionEditable(false);
             setIsNewPrescription(false);
           }
           if (
@@ -665,7 +665,7 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails.version > 1
           ) {
             setIsPdfPageOpen(false);
-            setIsNewprescriptionEdittable(true);
+            setIsNewprescriptionEditable(true);
             setIsNewPrescription(true);
           }
           if (
@@ -1745,7 +1745,7 @@ export const ConsultTabs: React.FC = () => {
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
                 createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
-                isNewprescriptionEdittable={isNewprescriptionEdittable}
+                isNewprescriptionEditable={isNewprescriptionEditable}
                 isNewPrescription={isNewPrescription}
               />
               <div>
