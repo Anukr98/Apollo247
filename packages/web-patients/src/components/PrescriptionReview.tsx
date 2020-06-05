@@ -513,6 +513,8 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const pharmacologistEmail = process.env.PHARMACOLOGIST_EMAIL || '';
+
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
@@ -737,16 +739,18 @@ export const PrescriptionReview: React.FC = (props: any) => {
                         </Typography>
                       </div>
                     </div>
-                    <Typography>
-                      You can also send us the prescriptions by email on{' '}
-                      <a
-                        href={`mailto:${process.env.PHARMACOLOGIST_EMAIL}`}
-                        target="_blank"
-                        className={classes.bold}
-                      >
-                        ${process.env.PHARMACOLOGIST_EMAIL}
-                      </a>
-                    </Typography>
+                    {pharmacologistEmail && pharmacologistEmail.length && (
+                      <Typography>
+                        You can also send us the prescriptions by email on{' '}
+                        <a
+                          href={`mailto:${pharmacologistEmail}`}
+                          target="_blank"
+                          className={classes.bold}
+                        >
+                          {pharmacologistEmail}
+                        </a>
+                      </Typography>
+                    )}
                   </div>
                 </div>
               </div>
