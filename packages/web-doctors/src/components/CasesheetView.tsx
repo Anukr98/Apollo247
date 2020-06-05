@@ -267,6 +267,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(0, 0, 0, 0.8)',
       lineHeight: 1.5,
     },
+    removed: {
+      fontSize: 12,
+      color: '#890000 !important',
+      marginLeft: 10,
+    },
   };
 });
 interface savingProps {
@@ -294,6 +299,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptoms,
     diagnosticPrescription,
     medicinePrescription,
+    removedMedicinePrescription,
     referralDescription,
     referralSpecialtyName,
   } = useContext(CaseSheetContext);
@@ -411,6 +417,21 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     }
     `;
   };
+
+  const removedMedicineHtml =
+    removedMedicinePrescription &&
+    removedMedicinePrescription.length > 0 &&
+    removedMedicinePrescription.map(
+      (
+        prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+        index: number
+      ) => (
+        <li key={`removed-${index}`}>
+          <s>{prescription.medicineName}</s>{' '}
+          <span className={classes.removed}>( This medication has been disontinued )</span>
+        </li>
+      )
+    );
 
   const medicineHtml =
     medicinePrescription &&
@@ -714,7 +735,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
               </div>
               <div className={classes.medicationList}>
-                <ol>{medicineHtml}</ol>
+                <ol>
+                  {medicineHtml}
+                  {removedMedicineHtml}
+                </ol>
               </div>
             </div>
           ) : null}
@@ -744,12 +768,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 !isEmpty(referralDescription)) ? (
                 <div className={classes.prescriptionSection}>
                   <div className={classes.sectionHeader}>
-                    <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
+                    <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
                   </div>
                   <div className={classes.adviceInstruction}>
                     {otherInstructions && otherInstructions.length > 0 && (
                       <div className={classes.advice}>
-                        <span>Doctor’s Advise</span>
+                        <span>Doctor’s Advice</span>
                         <div>
                           {otherInstructions.map((instruction) => (
                             <div className={classes.instruction}>{instruction.instruction}</div>
@@ -851,8 +875,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             <span>Disclaimer:</span>
             <span>
               This prescription is issued on the basis of your inputs during teleconsultation. It is
-              valid from the date of issue for upto 90 days (for the specific period/dosage of each
-              medicine as advised).
+              valid from the date of issue until the specific period/dosage of each medicine as
+              advised.
             </span>
           </div>
         </div>

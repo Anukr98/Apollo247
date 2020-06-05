@@ -166,8 +166,7 @@ const useStyles = makeStyles((theme: Theme) => {
     preServiceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: '10px 15px',
-      paddingbottom: 8,
+      padding: 16,
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
@@ -213,18 +212,27 @@ const useStyles = makeStyles((theme: Theme) => {
     prescriptionGroup: {
       display: 'flex',
       width: '100%',
-      paddingBottom: 15,
+      '& button': {
+        backgroundColor: '#fff',
+        color: '#fcb716',
+        border: '1px solid #fcb716',
+        minWidth: 105,
+        '&:hover': {
+          backgroundColor: '#fff',
+          color: '#fcb716',
+        },
+      },
     },
     prescriptionIcon: {
       marginLeft: 'auto',
       paddingLeft: 10,
       '& img': {
-        maxWidth: 30,
+        maxWidth: 42,
       },
     },
     groupTitle: {
       fontSize: 16,
-      paddingBottom: 7,
+      paddingBottom: 16,
     },
     marginNone: {
       marginBottom: 0,
@@ -287,6 +295,13 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    windowWrapNew: {
+      width: 368,
+      borderRadius: 10,
+      padding: 20,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
     windowBody: {
       padding: 20,
       paddingTop: 0,
@@ -315,6 +330,44 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    thankyouPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: '0 0 10px',
+      },
+      '& h4': {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#0087ba',
+      },
+    },
+    pUploadSuccess: {
+      '& h2': {
+        fontSize: 36,
+        lineHeight: '44px',
+        fontWeight: 'bold',
+      },
+      '& p': {
+        fontSize: 17,
+        color: '#0087ba',
+        lineHeight: '24px',
+        margin: '20px 0',
+        fontWeight: '600',
+      },
+      '& a': {
+        fontSize: 13,
+        fontWeight: '600',
+        display: 'block',
+        textAlign: 'right',
+        textTransform: 'uppercase',
+        color: '#fc9916',
+      },
+    },
     trackBtn: {
       marginLeft: 'auto',
     },
@@ -326,10 +379,21 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 72,
       },
     },
+    medicineReview: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginTop: 16,
+      fontSize: 13,
+      '& a': {
+        color: '#fc9916',
+      },
+      '& p': {
+        marginBottom: 0,
+      },
+    },
   };
 });
 
-export const MedicineLanding: React.FC = (props) => {
+export const MedicineLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
@@ -367,6 +431,7 @@ export const MedicineLanding: React.FC = (props) => {
     if (localStorage.getItem('pharmaCoupon')) {
       localStorage.removeItem('pharmaCoupon');
     }
+    sessionStorage.removeItem('cartValues');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
@@ -380,12 +445,25 @@ export const MedicineLanding: React.FC = (props) => {
   );
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const mascotRef = useRef(null);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+
+  useEffect(() => {
+    if (
+      (props &&
+        props.location &&
+        props.location.search.substring(1) === 'prescriptionSubmit=success') ||
+      window.location.href.includes('prescriptionSubmit=success')
+    ) {
+      setIsPopoverOpen(true);
+    }
+  }, [props]);
 
   /* Gtm code Start */
   useEffect(() => {
@@ -426,7 +504,6 @@ export const MedicineLanding: React.FC = (props) => {
   };
 
   useEffect(() => {
-    localStorage.removeItem('searchText');
     if (apiDetails.url != null && !data) {
       getMedicinePageProducts();
     }
@@ -487,25 +564,27 @@ export const MedicineLanding: React.FC = (props) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>Have a prescription ready?</div>
+                          <div className={classes.groupTitle}>
+                            Now place your order via prescription
+                          </div>
                           <AphButton
-                            color="primary"
-                            // onClick={() => setIsUploadPreDialogOpen(true)}
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
-                            Upload Prescription
+                            Upload
                           </AphButton>
                         </div>
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
                         </div>
                       </div>
-                      <div className={classes.consultLink}>
-                        Don’t have a prescription? Don’t worry!
-                        <Link to={clientRoutes.doctorsLanding()} title={'Consult a doctor'}>
-                          Consult a Doctor
-                        </Link>
+                      <div className={classes.medicineReview}>
+                        <p>
+                          Want to check medicine interactions?{' '}
+                          <Link to={clientRoutes.prescriptionReview()}>
+                            CONSULT A PHARMACOLOGIST
+                          </Link>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -606,6 +685,40 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.thankyouPopoverWindow}>
+          <div className={classes.windowWrapNew}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.pUploadSuccess}>
+              <Typography component="h2">Thankyou :)</Typography>
+              <Typography>Your prescriptions have been submitted successfully.</Typography>
+              <Typography>Our pharmacologist will reply to your email within 24 hours.</Typography>
+              <Link
+                to={clientRoutes.medicines()}
+                onClick={() => {
+                  setIsPopoverOpen(false);
+                }}
+              >
+                Ok, Got It
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Popover>
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
@@ -614,12 +727,16 @@ export const MedicineLanding: React.FC = (props) => {
             setIsUploadPreDialogOpen(false);
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
         />
       </AphDialog>
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-        <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
       </AphDialog>
       {!onePrimaryUser && <ManageProfile />}
       <BottomLinks />

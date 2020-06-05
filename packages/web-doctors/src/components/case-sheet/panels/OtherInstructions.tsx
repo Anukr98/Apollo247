@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Typography, Chip, Theme, Grid } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Button } from '@material-ui/core';
@@ -47,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 12,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -160,6 +161,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -174,13 +176,13 @@ const useStyles = makeStyles((theme: Theme) =>
 type Params = { id: string; patientId: string; tabValue: string };
 export const OtherInstructions: React.FC = () => {
   const classes = useStyles({});
+  const adviceInputRef = useRef(null);
   const params = useParams<Params>();
 
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContext
   );
   const client = useApolloClient();
-  const [otherInstruct, setOtherInstruct] = useState('');
   const [isEditing, setIsEditing] = useState<any>(null);
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState(0);
@@ -218,7 +220,6 @@ export const OtherInstructions: React.FC = () => {
     if (isEditing === idx) {
       if (showAddInputText) {
         setShowAddInputText(false);
-        setOtherInstruct(item.instruction);
       }
 
       return (
@@ -234,35 +235,40 @@ export const OtherInstructions: React.FC = () => {
             fullWidth
             multiline
             placeholder="Enter instruction here.."
-            value={otherInstruct || item.instruction}
-            onChange={(e) => {
-              setOtherInstruct(e.target.value);
-            }}
+            defaultValue={item.instruction}
+            inputRef={adviceInputRef}
           />
           <Button
             className={classes.chatSubmitBtn}
             disableRipple
             onClick={() => {
-              const updatedText = otherInstruct || item.instruction;
-              if (updatedText.trim() !== '') {
-                selectedValues!.splice(idx, 1, {
-                  instruction: updatedText,
-                  __typename: 'OtherInstructions',
-                });
+              const node = (adviceInputRef as any).current;
+              if (node) {
+                const adviceValue = node.value;
+                const updatedText = adviceValue || item.instruction;
+                if (updatedText.trim() !== '') {
+                  selectedValues!.splice(idx, 1, {
+                    instruction: updatedText,
+                    __typename: 'OtherInstructions',
+                  });
 
-                const storageItem = getLocalStorageItem(params.id);
-                if (storageItem) {
-                  storageItem.otherInstructions = selectedValues;
-                  updateLocalStorageItem(params.id, storageItem);
-                }
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.otherInstructions = selectedValues;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
 
-                setSelectedValues(selectedValues);
-                setTimeout(() => {
-                  setOtherInstruct('');
+                  setSelectedValues(selectedValues);
+                  setTimeout(() => {
+                    node.value = '';
+                    setIsEditing(false);
+                  }, 10);
+                } else {
+                  node.value = item.instruction;
                   setIsEditing(false);
-                }, 10);
+                }
               } else {
-                setOtherInstruct('');
+                console.log('No node selected');
               }
             }}
           >
@@ -325,32 +331,32 @@ export const OtherInstructions: React.FC = () => {
                 fullWidth
                 multiline
                 placeholder="Enter instruction here.."
-                value={otherInstruct}
-                onChange={(e) => {
-                  setOtherInstruct(e.target.value);
-                }}
+                inputRef={adviceInputRef}
               />
               <Button
                 className={classes.chatSubmitBtn}
                 disableRipple
                 onClick={() => {
-                  if (otherInstruct.trim() !== '') {
-                    selectedValues!.splice(idx, 0, {
-                      instruction: otherInstruct,
-                      __typename: 'OtherInstructions',
-                    });
-                    const storageItem = getLocalStorageItem(params.id);
-                    if (storageItem) {
-                      storageItem.otherInstructions = selectedValues;
-                      updateLocalStorageItem(params.id, storageItem);
+                  const node = (adviceInputRef as any).current;
+                  if (node) {
+                    const adviceValue = node.value;
+                    if (adviceValue.trim() !== '') {
+                      selectedValues!.splice(idx, 0, {
+                        instruction: adviceValue,
+                        __typename: 'OtherInstructions',
+                      });
+                      const storageItem = getLocalStorageItem(params.id);
+                      if (storageItem) {
+                        storageItem.otherInstructions = selectedValues;
+                        updateLocalStorageItem(params.id, storageItem);
+                      }
+                      setSelectedValues(selectedValues);
+                      setIdx(selectedValues!.length + 1);
                     }
-                    setSelectedValues(selectedValues);
-                    setIdx(selectedValues!.length + 1);
-                    setTimeout(() => {
-                      setOtherInstruct('');
-                    }, 10);
+                    node.value = '';
+                    node.focus();
                   } else {
-                    setOtherInstruct('');
+                    console.log('No node selected');
                   }
                 }}
               >
@@ -390,6 +396,7 @@ export const OtherInstructions: React.FC = () => {
                           <img
                             src={caseSheetEdit && require('images/add_doctor_white.svg')}
                             onClick={() => {
+                              const node = (adviceInputRef as any).current;
                               if (item!.instruction.trim() !== '') {
                                 selectedValues!.splice(idx, 0, {
                                   instruction: item!.instruction,
@@ -403,10 +410,10 @@ export const OtherInstructions: React.FC = () => {
                                 setSelectedValues(selectedValues);
                                 setIdx(selectedValues!.length + 1);
                                 setTimeout(() => {
-                                  setOtherInstruct('');
+                                  if (node) node.value = '';
                                 }, 10);
                               } else {
-                                setOtherInstruct('');
+                                if (node) node.value = '';
                               }
                             }}
                             alt=""

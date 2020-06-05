@@ -22,7 +22,7 @@ export default StyleSheet.create({
   inputView: {
     borderRadius: 0,
     borderBottomColor: '#30c1a3',
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     color: theme.colors.SHARP_BLUE,
     marginLeft: 0,
     marginRight: 0,

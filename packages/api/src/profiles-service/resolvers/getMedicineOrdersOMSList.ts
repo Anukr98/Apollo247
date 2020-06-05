@@ -6,6 +6,7 @@ import { MedicineOrders, MEDICINE_ORDER_STATUS } from 'profiles-service/entities
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { getUnixTime } from 'date-fns';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
@@ -21,11 +22,13 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     orderAutoId: Int
     quoteId: String
     shopId: String
+    shopAddress: String
     estimatedAmount: Float
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     quoteDateTime: DateTime
+    createdDate: DateTime
     coupon: String
     devliveryCharges: Float
     prescriptionImageUrl: String
@@ -34,6 +37,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     orderTat: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -175,6 +180,9 @@ const getMedicineOrderOMSDetails: Resolver<
       }
     }
   }
+  medicineOrderDetails.medicineOrdersStatus.sort((a, b) => {
+    return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
+  });
   return { medicineOrderDetails };
 };
 

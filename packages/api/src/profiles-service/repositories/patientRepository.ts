@@ -103,6 +103,10 @@ export class PatientRepository extends Repository<Patient> {
           this.update(patient.id, { primaryPatientId: patient.id });
         }
       });
+    } else {
+      if (patientList[0].primaryPatientId == null) {
+        this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
+      }
     }
 
     return this.find({
@@ -805,5 +809,9 @@ export class PatientRepository extends Repository<Patient> {
       }
     }
     return primaryPatientIds;
+  }
+
+  updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
+    return this.update(id, { whatsAppConsult, whatsAppMedicine });
   }
 }

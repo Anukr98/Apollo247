@@ -7,13 +7,14 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   REQUEST_ROLES,
+  ES_DOCTOR_SLOT_STATUS,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
@@ -29,6 +30,8 @@ import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { log } from 'customWinstonLogger';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -352,16 +355,75 @@ const bookRescheduleAppointment: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
+    const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+    const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    let apptDt = format(appointmentDateTime, 'yyyy-MM-dd');
+    if (appointmentDateTime >= new Date(slotApptDt)) {
+      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
+    }
+    const sl = `${actualApptDt}T${appointmentDateTime
+      .getUTCHours()
+      .toString()
+      .padStart(2, '0')}:${appointmentDateTime
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
+    console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
+    const esDocotrStatusOpen =
+      status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
+    const DoctorSLotStatus = await appointmentRepo.updateDoctorSlotStatusES(
+      appointment.doctorId,
+      apptDt,
+      sl,
+      appointment.appointmentType,
+      esDocotrStatusOpen
+    );
+  }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
-      appointmentRepo.cancelAppointment(
+      await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
         'MAX_RESCHEDULES_EXCEEDED'
       );
+      const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
+      if (appointmentPayment) {
+        let refundResponse = await initiateRefund(
+          {
+            appointment: apptDetails,
+            appointmentPayments: appointmentPayment,
+            refundAmount: appointmentPayment.amountPaid,
+            txnId: appointmentPayment.paymentRefId,
+            orderId: appointmentPayment.orderId,
+          },
+          consultsDb
+        );
+        refundResponse = refundResponse as PaytmResponse;
+        const notificationType = NotificationType.APPOINTMENT_PAYMENT_REFUND;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: apptDetails.id,
+              notificationType,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed',
+            'rescheduleAppointment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
+      }
     } else {
       await appointmentRepo.rescheduleAppointment(
         bookRescheduleAppointmentInput.appointmentId,
@@ -369,6 +431,12 @@ const bookRescheduleAppointment: Resolver<
         apptDetails.rescheduleCount + 1,
         APPOINTMENT_STATE.RESCHEDULE
       );
+      // update on ES, should update new slot to booked and previous slot to open
+      //open old slot
+      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
+      // book new slot
+      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
+      //ends
     }
 
     const notificationType = NotificationType.PATIENT_APPOINTMENT_RESCHEDULE;
@@ -392,12 +460,46 @@ const bookRescheduleAppointment: Resolver<
       apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
     ) {
       //cancel appt
-      appointmentRepo.cancelAppointment(
+      await appointmentRepo.cancelAppointment(
         bookRescheduleAppointmentInput.appointmentId,
         REQUEST_ROLES.PATIENT,
         apptDetails.patientId,
         'MAX_RESCHEDULES_EXCEEDED'
       );
+      const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
+      if (appointmentPayment) {
+        let refundResponse = await initiateRefund(
+          {
+            appointment: apptDetails,
+            appointmentPayments: appointmentPayment,
+            refundAmount: appointmentPayment.amountPaid,
+            txnId: appointmentPayment.paymentRefId,
+            orderId: appointmentPayment.orderId,
+          },
+          consultsDb
+        );
+        refundResponse = refundResponse as PaytmResponse;
+        const notificationType = NotificationType.APPOINTMENT_PAYMENT_REFUND;
+        if (refundResponse.refundId) {
+          sendNotification(
+            {
+              appointmentId: apptDetails.id,
+              notificationType,
+            },
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+        } else {
+          log(
+            'consultServiceLogger',
+            'Refund failed Doctor Reschedule  ',
+            'rescheduleAppointment()',
+            JSON.stringify(refundResponse),
+            'true'
+          );
+        }
+      }
     } else {
       await appointmentRepo.rescheduleAppointmentByDoctor(
         bookRescheduleAppointmentInput.appointmentId,
@@ -405,6 +507,12 @@ const bookRescheduleAppointment: Resolver<
         apptDetails.rescheduleCountByDoctor + 1,
         APPOINTMENT_STATE.RESCHEDULE
       );
+      // update on ES, should update new slot to booked and previous slot to open
+      //open old slot
+      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
+      // book new slot
+      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
+      //ends
     }
   }
 

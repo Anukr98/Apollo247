@@ -5,7 +5,7 @@ import { DatePicker } from '@aph/mobile-doctors/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
-  DropdownGreen,
+  Dropdown,
   Remove,
   Selected,
   UnSelected,
@@ -493,7 +493,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 : strings.block_homepage.sele_option}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
+              <Dropdown />
             </View>
           </View>
         </View>

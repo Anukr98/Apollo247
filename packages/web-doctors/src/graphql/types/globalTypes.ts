@@ -154,9 +154,11 @@ export enum MEDICINE_UNIT {
 }
 
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum ROUTE_OF_ADMINISTRATION {
@@ -347,6 +349,7 @@ export interface ModifyCaseSheetInput {
   followUpConsultType?: APPOINTMENT_TYPE | null;
   otherInstructions?: OtherInstructionsInput[] | null;
   medicinePrescription?: MedicinePrescriptionInput[] | null;
+  removedMedicinePrescription?: MedicinePrescriptionInput[] | null;
   id: string;
   status?: CASESHEET_STATUS | null;
   lifeStyle?: string | null;

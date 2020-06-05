@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
@@ -32,5 +32,27 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  counterContainer: {
+    borderRadius: 100,
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    backgroundColor: theme.colors.WHITE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 1,
+  },
+  counterTextContainer: {
+    height: 12,
+    width: 12,
+    borderRadius: 100,
+    backgroundColor: theme.colors.NOTIFICATION_DOT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  counterText: {
+    ...theme.viewStyles.text('SB', 9, theme.colors.WHITE, 1),
+    marginTop: Platform.OS === 'android' ? -1 : 0,
   },
 });

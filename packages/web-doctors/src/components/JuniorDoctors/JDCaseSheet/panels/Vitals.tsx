@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       marginLeft: 12,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         maxWidth: 20,
@@ -83,9 +84,9 @@ const useStyles = makeStyles((theme: Theme) => ({
       paddingRight: 40,
     },
     '& textarea:focus': {
-      borderRadius: "5px",
-      boxShadow: "0 0 5px #00b38e",
-      backgroundColor: "#ffffff"
+      borderRadius: '5px',
+      boxShadow: '0 0 5px #00b38e',
+      backgroundColor: '#ffffff',
     },
   },
 }));

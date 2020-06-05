@@ -5,7 +5,11 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import {
+  sendPatientRegistrationNotification,
+  sendNotificationWhatsapp,
+} from 'notifications-service/resolvers/notifications';
+import { ApiConstants } from 'ApiConstants';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -44,6 +48,9 @@ export const getPatientTypeDefs = gql`
     photoUrl: String!
     id: ID!
   }
+  type UpdateWhatsAppStatusResult {
+    status: Boolean
+  }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getAthsToken(patientId: String): PatientInfo
@@ -55,6 +62,11 @@ export const getPatientTypeDefs = gql`
     deleteProfile(patientId: String): DeleteProfileResult!
     addNewProfile(patientProfileInput: PatientProfileInput): PatientInfo!
     editProfile(editProfileInput: EditProfileInput): PatientInfo!
+    updateWhatsAppStatus(
+      whatsAppMedicine: Boolean
+      whatsAppConsult: Boolean
+      patientId: String
+    ): UpdateWhatsAppStatusResult!
   }
 `;
 
@@ -88,6 +100,10 @@ type PatientList = {
 };
 
 type DeleteProfileResult = {
+  status: Boolean;
+};
+
+type UpdateWhatsAppStatusResult = {
   status: Boolean;
 };
 
@@ -189,6 +205,51 @@ const getDeviceCodeCount: Resolver<
   return { deviceCount };
 };
 
+const updateWhatsAppStatus: Resolver<
+  null,
+  { whatsAppMedicine: boolean; whatsAppConsult: boolean; patientId: string },
+  ProfilesServiceContext,
+  UpdateWhatsAppStatusResult
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  await patientRepo.updateWhatsAppStatus(
+    args.patientId,
+    args.whatsAppConsult,
+    args.whatsAppMedicine
+  );
+  const patientDetails = await patientRepo.findById(args.patientId);
+  const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
+  if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
+    sendNotificationWhatsapp(mobileNumber, '');
+    const details = {
+      userId: mobileNumber,
+      whatsappOptIn: true,
+    };
+    // const APIInput = {
+    //   new_name: '',
+    //   new_eventtype: 'Insert',
+    //   new_jsonentity: JSON.stringify(details),
+    // };
+    console.log('APIInput=============>', JSON.stringify(details));
+    const saveResponse = await fetch(process.env.WEB_ENGAGE_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + ApiConstants.WEB_ENGAGE_AUTHORIZATION,
+      },
+      body: JSON.stringify(details),
+    });
+    const saveResult = await saveResponse.text();
+
+    if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
+      console.error(`Invalid response status ${saveResponse.status}.`);
+      // throw new Error(`case save Error ${saveCaseResponse.status}`);
+    }
+  }
+  return { status: true };
+};
+
 const getAthsToken: Resolver<
   null,
   { patientId: string },
@@ -226,5 +287,6 @@ export const getPatientResolvers = {
     deleteProfile,
     addNewProfile,
     editProfile,
+    updateWhatsAppStatus,
   },
 };

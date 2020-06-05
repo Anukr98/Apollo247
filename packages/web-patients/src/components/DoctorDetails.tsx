@@ -33,8 +33,8 @@ import { useAuth } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
-
-type Params = { id: string };
+import { getOpeningHrs } from '../helpers/commonHelpers';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -228,7 +228,7 @@ const TabContainer: React.FC = (props) => {
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const params = useParams<Params>();
+  const params = useParams<{ id: string; specialty: string }>();
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
@@ -239,6 +239,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const apolloClient = useApolloClient();
   const [data, setData] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [structuredJSON, setStructuredJSON] = useState(null);
 
   const currentUserId = currentPatient && currentPatient.id;
 
@@ -252,6 +253,90 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then((response) => {
         setData(response.data);
         setLoading(false);
+        if (
+          response.data &&
+          response.data.getDoctorDetailsById &&
+          Object.keys(response.data.getDoctorDetailsById).length
+        ) {
+          const {
+            getDoctorDetailsById: {
+              fullName,
+              photoUrl,
+              firstName,
+              lastName,
+              doctorHospital,
+              specialty,
+              onlineConsultationFees,
+              physicalConsultationFees,
+              consultHours,
+            },
+          } = response.data;
+          const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
+          let streetLine1 = '',
+            city = '',
+            latitude,
+            longitude,
+            name = '',
+            imageUrl;
+          if (doctorHospital.length && doctorHospital[0].facility) {
+            streetLine1 = doctorHospital[0].facility.streetLine1;
+            city = doctorHospital[0].facility.city;
+            latitude = doctorHospital[0].facility.latitude;
+            longitude = doctorHospital[0].facility.longitude;
+            name = doctorHospital[0].facility.name;
+            imageUrl =
+              doctorHospital[0].facility.imageUrl ||
+              '';
+          }
+          setStructuredJSON({
+            '@context': 'http://schema.org/',
+            '@type': 'Physician',
+            name: fullName ? fullName : `${firstName} ${lastName}`,
+            url: window && window.location ? window.location.href : null,
+            currenciesAccepted: 'INR',
+            image: photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
+            photo: [
+              {
+                '@type': 'CreativeWork',
+                url:
+                  photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
+              },
+            ],
+            openingHours: openingHours,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: streetLine1,
+              addressRegion: city,
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: latitude,
+              longitude: longitude,
+            },
+            priceRange:
+              onlineConsultationFees === physicalConsultationFees
+                ? `Rs. ${onlineConsultationFees}`
+                : `Rs. ${Math.min(
+                    Number(onlineConsultationFees),
+                    Number(physicalConsultationFees)
+                  )} - Rs. ${Math.max(
+                    Number(onlineConsultationFees),
+                    Number(physicalConsultationFees)
+                  )}`,
+            branchOf: {
+              '@type': 'MedicalClinic',
+              name: name,
+              url: window && window.location ? window.location.href : null,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: streetLine1,
+                addressRegion: city,
+              },
+              image: imageUrl,
+            },
+            medicalSpecialty: specialty ? specialty.name : '',
+          });
+        }
       });
   }, []);
 
@@ -318,10 +403,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <div className={classes.root}>
         <Header />
+        {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <Link to={clientRoutes.doctorsLanding()} title={'Back to doctors search'}>
+              <Link
+                to={
+                  params.specialty
+                    ? clientRoutes.specialties(params.specialty)
+                    : clientRoutes.doctorsLanding()
+                }
+                title={'Back to doctors search'}
+              >
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

@@ -70,7 +70,7 @@ const updateOrderStatus: Resolver<
   ProfilesServiceContext,
   UpdateOrderStatusResult
 > = async (parent, { updateOrderStatusInput }, { profilesDb }) => {
-  const status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
+  let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
     updateOrderStatusInput.orderId
@@ -110,6 +110,9 @@ const updateOrderStatus: Resolver<
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   }
 
+  if (status == MEDICINE_ORDER_STATUS.DELIVERED && orderDetails.shopId) {
+    status = MEDICINE_ORDER_STATUS.PICKEDUP;
+  }
   if (shipmentDetails) {
     if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});

@@ -28,6 +28,7 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -239,7 +240,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     cartItems,
     setStoreAddressId,
     medicineCartType,
-    removeCartItem,
+    removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
   } = useShoppingCart();
@@ -329,36 +330,19 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     }
   }, [currentPatient, deliveryAddressId]);
 
-  const checkServiceAvailability = (zipCode: string | null) => {
-    // setIsLoading(true);
+  const checkServiceAvailabilityCheck = (zipCode: string | null) => {
     changeCartTatStatus && changeCartTatStatus(false);
-
-    return axios.post(
-      apiDetails.service_url || '',
-      {
-        postalcode: zipCode || '',
-        skucategory: [
-          {
-            SKU: 'PHARMA',
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-        },
-      }
-    );
+    return checkServiceAvailability(zipCode);
   };
 
   const removeNonDeliverableItemsFromCart = () => {
     if (nonServicableSKU.length) {
+      let arrId: any[] = [];
       nonServicableSKU.map((nonDeliverableSKU: string) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
-        if (obj) {
-          removeCartItem && removeCartItem(obj.id);
-        }
+        arrId.push(obj.id);
       });
+      removeCartItems && removeCartItems(arrId);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -493,7 +477,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {
@@ -603,7 +587,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         control={<AphRadio color="primary" />}
                         label={formatAddress(address)}
                         onChange={() => {
-                          checkServiceAvailability(address.zipcode)
+                          checkServiceAvailabilityCheck(address.zipcode)
                             .then((res: AxiosResponse) => {
                               if (res && res.data && res.data.Availability) {
                                 /**Gtm code start  */
@@ -671,7 +655,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
-          checkServiceAvailability={checkServiceAvailability}
+          checkServiceAvailability={checkServiceAvailabilityCheck}
           setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>
@@ -682,7 +666,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <ViewAllAddress
           setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
           formatAddress={formatAddress}
-          checkServiceAvailability={checkServiceAvailability}
+          checkServiceAvailability={checkServiceAvailabilityCheck}
           setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>

@@ -3,7 +3,9 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
+
+import { NotifyMeNotification } from './NotifyMeNotification';
+import { notifyMeTracking } from '../../webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -270,17 +272,26 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
       paddingRight: 5,
     },
+    errorText: {
+      color: '#890000',
+      padding: '6px 16px',
+      fontSize: 11,
+      fontWeight: 500,
+    },
+    outOfStock: {
+      textAlign: 'center',
+      padding: 16,
+    },
   });
 });
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
-  // setShowPopup: (showPopup: boolean) => void;
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, pharmaAddressDetails } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -299,6 +310,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
+    skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
     url: process.env.PHARMACY_MED_INFO_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
@@ -309,7 +321,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     await axios
       .post(
         apiDetails.url || '',
-        { params: params.sku },
+        { params: data.sku || params.sku },
         {
           headers: {
             Authorization: apiDetails.authToken,
@@ -327,10 +339,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((err) => alert({ err }));
+      .catch((err) => console.log(err));
   };
 
-  const fetchDeliveryTime = async () => {
+  const fetchDeliveryTime = async (pinCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
     setTatLoading(true);
@@ -342,7 +354,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           ordertype: 'pharma',
           lookup: [
             {
-              sku: params.sku,
+              sku: data.sku || params.sku,
               qty: 1,
             },
           ],
@@ -370,11 +382,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               res.data.tat.length
             ) {
               setDeliveryTime(res.data.tat[0].deliverydate);
-            } else if (typeof res.data === 'string') {
-              // console.log(res.data);
+              setErrorMessage('');
             } else if (typeof res.data.errorMSG === 'string') {
               setErrorMessage(res.data.errorMSG);
-              // console.log(res.data.errorMSG);
             }
           }
         } catch (error) {
@@ -383,7 +393,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       })
       .catch((error: any) => {
         setTatLoading(false);
-        // console.log(error);
       });
   };
 
@@ -392,6 +401,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       fetchSubstitutes();
     }
   }, [substitutes]);
+
+  useEffect(() => {
+    if (pharmaAddressDetails.pincode) {
+      setPinCode(pharmaAddressDetails.pincode);
+      fetchDeliveryTime(pharmaAddressDetails.pincode);
+    }
+  }, [pharmaAddressDetails]);
 
   const itemIndexInCart = (item: MedicineProduct) => {
     return cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -468,12 +484,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         root: classes.checkBtn,
                         disabled: classes.checkBtnDisabled,
                       }}
-                      onClick={() => fetchDeliveryTime()}
+                      onClick={() => fetchDeliveryTime(pinCode)}
                     >
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
-                  {errorMessage && <span>{errorMessage}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
@@ -482,155 +497,173 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     </div>
                   )}
                 </div>
+                {errorMessage && <div className={classes.errorText}>{errorMessage}</div>}
               </>
             ) : null}
           </div>
         </Scrollbars>
       </div>
       <div className={classes.bottomGroupResponsive}>
-        <div className={classes.priceGroup}>
-          <div className={classes.priceWrap}>
-            {data.is_in_stock ? (
-              <>
-                <div className={classes.leftGroup}>
-                  <div className={classes.medicinePack}>
-                    <div>QTY :</div>
-                    <div className={classes.dropDown}>
-                      <AphCustomDropdown
-                        classes={{ selectMenu: classes.selectMenuItem }}
-                        value={medicineQty}
-                        onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                          setMedicineQty(parseInt(e.target.value))
-                        }
-                      >
-                        {options.map((option, index) => (
-                          <MenuItem
-                            key={index}
-                            classes={{
-                              root: classes.menuRoot,
-                              selected: classes.menuSelected,
-                            }}
-                            value={option}
+        {!errorMessage ? (
+          <>
+            <div className={classes.priceGroup}>
+              <div className={classes.priceWrap}>
+                {data.is_in_stock ? (
+                  <>
+                    <div className={classes.leftGroup}>
+                      <div className={classes.medicinePack}>
+                        <div>QTY :</div>
+                        <div className={classes.dropDown}>
+                          <AphCustomDropdown
+                            classes={{ selectMenu: classes.selectMenuItem }}
+                            value={medicineQty}
+                            onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                              setMedicineQty(parseInt(e.target.value))
+                            }
                           >
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </AphCustomDropdown>
+                            {options.map((option, index) => (
+                              <MenuItem
+                                key={index}
+                                classes={{
+                                  root: classes.menuRoot,
+                                  selected: classes.menuSelected,
+                                }}
+                                value={option}
+                              >
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </AphCustomDropdown>
+                        </div>
+                      </div>
                     </div>
+                  </>
+                ) : (
+                  <div className={classes.leftGroup}>
+                    <div className={classes.medicineNoStock}>Out Of Stock</div>
                   </div>
+                )}
+                <div className={classes.medicinePrice}>
+                  {data.special_price && (
+                    <span className={classes.regularPrice}>(Rs. {data.price})</span>
+                  )}
+                  Rs. {data.special_price || data.price}
                 </div>
-              </>
-            ) : (
-              <div className={classes.leftGroup}>
-                <div className={classes.medicineNoStock}>Out Of Stock</div>
               </div>
-            )}
-            <div className={classes.medicinePrice}>
-              {data.special_price && (
-                <span className={classes.regularPrice}>(Rs. {data.price})</span>
-              )}
-              Rs. {data.special_price || data.price}
             </div>
+
+            <div className={classes.bottomActions}>
+              {data.is_in_stock ? (
+                <>
+                  <AphButton
+                    disabled={addMutationLoading || updateMutationLoading}
+                    onClick={() => {
+                      setAddMutationLoading(true);
+                      const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
+                        description: data.description,
+                        id: data.id,
+                        image: data.image,
+                        is_in_stock: data.is_in_stock,
+                        is_prescription_required: data.is_prescription_required,
+                        name: data.name,
+                        price: data.price,
+                        sku: data.sku,
+                        special_price: data.special_price,
+                        small_image: data.small_image,
+                        status: data.status,
+                        thumbnail: data.thumbnail,
+                        type_id: data.type_id,
+                        mou: data.mou,
+                        quantity: medicineQty,
+                        isShippable: true,
+                      };
+                      /**Gtm code start  */
+                      itemIndexInCart(data) == -1 &&
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: 'Add to Cart',
+                          label: data.name,
+                          value: data.special_price || data.price,
+                        });
+                      /**Gtm code End  */
+                      applyCartOperations(cartItem);
+                      setAddMutationLoading(false);
+                      setShowPopup(true);
+                    }}
+                  >
+                    {' '}
+                    {addMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : itemIndexInCart(data) !== -1 ? (
+                      'Added To Cart'
+                    ) : (
+                      'Add To Cart'
+                    )}
+                  </AphButton>
+
+                  <AphButton
+                    color="primary"
+                    disabled={addMutationLoading || updateMutationLoading}
+                    onClick={() => {
+                      setUpdateMutationLoading(true);
+                      const cartItem: MedicineCartItem = {
+                        url_key: data.url_key,
+                        description: data.description,
+                        id: data.id,
+                        image: data.image,
+                        is_in_stock: data.is_in_stock,
+                        is_prescription_required: data.is_prescription_required,
+                        name: data.name,
+                        price: data.price,
+                        sku: data.sku,
+                        special_price: data.special_price,
+                        small_image: data.small_image,
+                        status: data.status,
+                        thumbnail: data.thumbnail,
+                        type_id: data.type_id,
+                        mou: data.mou,
+                        quantity: medicineQty,
+                        isShippable: true,
+                      };
+                      applyCartOperations(cartItem);
+                      setTimeout(() => {
+                        window.location.href = clientRoutes.medicinesCart();
+                      }, 3000);
+                    }}
+                  >
+                    {updateMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      'Buy Now'
+                    )}
+                  </AphButton>
+                </>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <div className={classes.outOfStock}>
+            <div className={classes.medicineNoStock}>Out Of Stock</div>
+            <AphButton
+              fullWidth
+              className={classes.notifyBtn}
+              onClick={() => {
+                const { sku, name, category_id } = data;
+                /* WebEngage event start */
+                notifyMeTracking({
+                  sku,
+                  category_id,
+                  name,
+                });
+                /* WebEngage event end */
+                setIsPopoverOpen(true);
+              }}
+            >
+              Notify when in stock
+            </AphButton>
           </div>
-        </div>
-
-        <div className={classes.bottomActions}>
-          {data.is_in_stock ? (
-            <>
-              <AphButton
-                disabled={addMutationLoading || updateMutationLoading}
-                onClick={() => {
-                  setAddMutationLoading(true);
-                  const cartItem: MedicineCartItem = {
-                    description: data.description,
-                    id: data.id,
-                    image: data.image,
-                    is_in_stock: data.is_in_stock,
-                    is_prescription_required: data.is_prescription_required,
-                    name: data.name,
-                    price: data.price,
-                    sku: data.sku,
-                    special_price: data.special_price,
-                    small_image: data.small_image,
-                    status: data.status,
-                    thumbnail: data.thumbnail,
-                    type_id: data.type_id,
-                    mou: data.mou,
-                    quantity: medicineQty,
-                    isShippable: true,
-                  };
-                  /**Gtm code start  */
-                  itemIndexInCart(data) == -1 &&
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Add to Cart',
-                      label: data.name,
-                      value: data.special_price || data.price,
-                    });
-                  /**Gtm code End  */
-                  applyCartOperations(cartItem);
-                  setAddMutationLoading(false);
-                  setShowPopup(true);
-                }}
-              >
-                {' '}
-                {addMutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : itemIndexInCart(data) !== -1 ? (
-                  'Added To Cart'
-                ) : (
-                  'Add To Cart'
-                )}
-              </AphButton>
-
-              <AphButton
-                color="primary"
-                disabled={addMutationLoading || updateMutationLoading}
-                onClick={() => {
-                  setUpdateMutationLoading(true);
-                  const cartItem: MedicineCartItem = {
-                    description: data.description,
-                    id: data.id,
-                    image: data.image,
-                    is_in_stock: data.is_in_stock,
-                    is_prescription_required: data.is_prescription_required,
-                    name: data.name,
-                    price: data.price,
-                    sku: data.sku,
-                    special_price: data.special_price,
-                    small_image: data.small_image,
-                    status: data.status,
-                    thumbnail: data.thumbnail,
-                    type_id: data.type_id,
-                    mou: data.mou,
-                    quantity: medicineQty,
-                    isShippable: true,
-                  };
-                  applyCartOperations(cartItem);
-                  setTimeout(() => {
-                    window.location.href = clientRoutes.medicinesCart();
-                  }, 3000);
-                }}
-              >
-                {updateMutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : (
-                  'Buy Now'
-                )}
-              </AphButton>
-            </>
-          ) : null
-          // (
-          //   <AphButton
-          //     fullWidth
-          //     className={classes.notifyBtn}
-          //     onClick={() => setIsPopoverOpen(true)}
-          //   >
-          //     Notify when in stock
-          //   </AphButton>
-          // )
-          }
-        </div>
+        )}
       </div>
 
       <Popover
@@ -651,7 +684,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
-            <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
+            <NotifyMeNotification
+              medicineName={data.name}
+              setIsNotifyMeDialogOpen={setIsPopoverOpen}
+            />
           </div>
         </div>
       </Popover>
@@ -699,22 +735,3 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     </div>
   );
 };
-
-{
-  /* {substitute && (
-                ? (
-                <span>Pick from 9 available substitutes</span>
-              ) : (
-                <>
-                  <div className={classes.selectedDrugs}>
-                    <div>{substitute.name}</div>
-                    <div
-                      className={classes.price}
-                    >{`Rs. ${substitute.price}`}</div>
-                  </div>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require("images/ic_dropdown_green.svg")} alt="" />
-                  </div>
-                </>
-              )}  */
-}

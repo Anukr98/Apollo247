@@ -33,6 +33,7 @@ export interface MaterialMenuProps {
   lastTextStyle?: StyleProp<TextStyle> | undefined;
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
   bottomPadding?: StyleProp<ViewStyle> | undefined;
+  disable?: boolean;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
@@ -52,7 +53,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
     <Menu
       ref={menuRef}
       button={
-        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+        <TouchableOpacity activeOpacity={1} onPress={() => !props.disable && showMenu()}>
           {props.children}
         </TouchableOpacity>
       }

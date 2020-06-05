@@ -12,11 +12,16 @@ import {
   TRANSFER_STATUS,
   APPOINTMENT_STATE,
   AppointmentNoShow,
+  CASESHEET_STATUS,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
-import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
+import {
+  NotificationType,
+  sendNotification,
+  sendNotificationSMS,
+} from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
@@ -29,6 +34,7 @@ import { FacilityRepository } from 'doctors-service/repositories/facilityReposit
 import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -227,6 +233,21 @@ const createAppointmentSession: Resolver<
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+
+  if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(apptDetails.id);
+    if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.status == CASESHEET_STATUS.COMPLETED) {
+      return {
+        sessionId: '',
+        appointmentToken: '',
+        patientId: '',
+        doctorId: '',
+        appointmentDateTime,
+      };
+    }
+  }
+
   if (
     apptDetails &&
     (apptDetails.status === STATUS.PENDING || apptDetails.status === STATUS.CONFIRMED)
@@ -240,7 +261,7 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.appointmentId
   );
 
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const currentDate = new Date();
   if (apptSessionDets) {
     const doctorTokenExpiryDate = apptSessionDets.doctorToken
       ? await getExpirationTime(apptSessionDets.doctorToken)
@@ -283,6 +304,26 @@ const createAppointmentSession: Resolver<
       doctorsDb
     );
     console.log(notificationResult, 'notificationResult');
+    if (
+      createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
+      currentDate < apptDetails.appointmentDateTime
+    ) {
+      const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+      const patientData = await patientRepo.findById(apptDetails.patientId);
+      const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+      const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(
+        apptDetails.doctorId
+      );
+      if (patientData && doctorData) {
+        const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+          '{0}',
+          patientData.firstName
+        )
+          .replace('{1}', doctorData.firstName)
+          .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
+        sendNotificationSMS(patientData.mobileNumber, messageBody);
+      }
+    }
     return {
       sessionId: apptSessionDets.sessionId,
       appointmentToken: apptSessionDets.doctorToken,
@@ -331,6 +372,25 @@ const createAppointmentSession: Resolver<
     doctorsDb
   );
   console.log(notificationResult, 'notificationResult');
+
+  if (
+    createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
+    currentDate < apptDetails.appointmentDateTime
+  ) {
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientData = await patientRepo.findById(apptDetails.patientId);
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorData = await doctorRepository.findDoctorByIdWithoutRelations(apptDetails.doctorId);
+    if (patientData && doctorData) {
+      const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+        '{0}',
+        patientData.firstName
+      )
+        .replace('{1}', doctorData.firstName)
+        .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
+      sendNotificationSMS(patientData.mobileNumber, messageBody);
+    }
+  }
   return {
     sessionId: sessionId,
     appointmentToken: token,
