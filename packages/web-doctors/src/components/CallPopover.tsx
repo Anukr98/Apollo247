@@ -1148,13 +1148,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   }, [isCallAccepted]);
   useEffect(() => {
-    if(props.isNewprescriptionEditable){
+    if (props.isNewprescriptionEditable) {
       setIsClickedOnEdit(true);
       setIsClickedOnPriview(false);
       setCaseSheetEdit(true);
       props.setIsPdfPageOpen(false);
     }
-  },[props.isNewprescriptionEditable]);
+  }, [props.isNewprescriptionEditable]);
   useEffect(() => {
     if (remainingCallTime === 0) {
       clearInterval(intervalcallId);
@@ -1605,7 +1605,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         doctorInfo: currentPatient,
         pdfUrl: props.prescriptionPdf,
         isResend: isResend,
-        isNewPrescription: props.isNewPrescription
+        isNewPrescription: props.isNewPrescription,
       };
       const timeToLoad = isResend ? 1000 : 100;
 
@@ -2390,24 +2390,25 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           </>
                         )}
 
-                      {props.appointmentStatus !== STATUS.COMPLETED && (appointmentInfo!.status === STATUS.PENDING ||
-                        appointmentInfo!.status === STATUS.IN_PROGRESS) && (
-                        <li
-                          onClick={() => {
-                            if (
-                              appointmentInfo!.status === STATUS.PENDING ||
-                              appointmentInfo!.status === STATUS.IN_PROGRESS
-                            ) {
-                              handleCloseThreeDots();
-                              setIsCancelPopoverOpen(true);
-                            } else {
-                              alert('You are not allowed to cancel the appointment.');
-                            }
-                          }}
-                        >
-                          End or Cancel Consult
-                        </li>
-                      )}
+                      {props.appointmentStatus !== STATUS.COMPLETED &&
+                        (appointmentInfo!.status === STATUS.PENDING ||
+                          appointmentInfo!.status === STATUS.IN_PROGRESS) && (
+                          <li
+                            onClick={() => {
+                              if (
+                                appointmentInfo!.status === STATUS.PENDING ||
+                                appointmentInfo!.status === STATUS.IN_PROGRESS
+                              ) {
+                                handleCloseThreeDots();
+                                setIsCancelPopoverOpen(true);
+                              } else {
+                                alert('You are not allowed to cancel the appointment.');
+                              }
+                            }}
+                          >
+                            End or Cancel Consult
+                          </li>
+                        )}
                     </>
                   )}
                 </ul>

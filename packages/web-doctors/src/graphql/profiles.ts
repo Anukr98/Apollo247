@@ -848,7 +848,7 @@ export const GET_CASESHEET = gql`
           routeOfAdministration
           medicineCustomDosage
         }
-        removedMedicinePrescription{
+        removedMedicinePrescription {
           id
           medicineName
           medicineDosage
@@ -1178,7 +1178,7 @@ export const MODIFY_CASESHEET = gql`
         routeOfAdministration
         medicineCustomDosage
       }
-      removedMedicinePrescription{
+      removedMedicinePrescription {
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage
