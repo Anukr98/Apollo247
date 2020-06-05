@@ -117,10 +117,10 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   const renderCreditsCard = () => {
     return (
       <View style={styles.creditsCard}>
-        <View style={{ flex: 0.25, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 10 }}>
           <CreditsIcon style={{ height: 32, width: 41 }} />
         </View>
-        <View style={{ flex: 0.75, alignItems: 'center', flexDirection: 'row' }}>
+        <View style={{ alignItems: 'center', flexDirection: 'row', marginRight: 20 }}>
           <Text style={styles.creditText}>Available HC</Text>
           <Text style={styles.credits}>{credits}</Text>
         </View>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   creditsCard: {
     height: 0.14 * windowWidth,
-    width: 0.6 * windowWidth,
+    // width: 0.7 * windowWidth,
     marginTop: 0.12 * windowWidth,
     flexDirection: 'row',
     borderRadius: 10,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(15),
     color: theme.colors.LIGHT_BLUE,
     lineHeight: 24,
-    marginRight: 25,
+    marginRight: 20,
   },
   credits: {
     ...theme.fonts.IBMPlexSansMedium(19),

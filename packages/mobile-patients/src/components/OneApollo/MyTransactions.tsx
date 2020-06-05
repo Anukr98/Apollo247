@@ -93,7 +93,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
         <View style={{ flex: 0.1 }}>
           <TxnIcon style={{ height: 26, width: 24, marginTop: 5 }} />
         </View>
-        <View style={{ flex: 0.45 }}>
+        <View style={{ flex: 0.4 }}>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#000000', lineHeight: 22 }}>
             {item.businessUnit}
           </Text>
@@ -132,7 +132,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
             Redeemed
           </Text>
         </View>
-        <View style={{ flex: 0.2, alignItems: 'flex-end' }}>
+        <View style={{ flex: 0.25, alignItems: 'flex-end' }}>
           <Text
             style={{
               ...theme.fonts.IBMPlexSansSemiBold(17),
