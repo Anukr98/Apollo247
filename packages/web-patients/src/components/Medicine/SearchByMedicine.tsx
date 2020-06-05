@@ -468,7 +468,7 @@ export const SearchByMedicine: React.FC = (props) => {
                 }
               >
                 <span>
-                  <img src={require('images/ic_notification.svg')} alt="" />
+                  <img src={require('images/offer-icon.svg')} alt="" />
                 </span>
                 <span>Special offers</span>
               </div>
