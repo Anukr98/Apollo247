@@ -474,7 +474,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -516,7 +516,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

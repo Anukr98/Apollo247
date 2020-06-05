@@ -7,13 +7,13 @@ target 'ApolloDoctor' do
 
 # Pods for ApolloPatient
 
- pod 'Firebase/Core', '~> 6.2.0'
- pod 'Firebase/Messaging', '~> 6.2.0'
+ pod 'FirebaseCore'
+ pod 'FirebaseMessaging'
  pod 'GoogleIDFASupport', '~> 3.14.0'
- pod 'Firebase/RemoteConfig', '~> 6.2.0'
- pod 'Firebase/Database', '~> 6.2.0'
- pod 'Firebase/Analytics'
- pod 'Firebase/Auth'
+ pod 'FirebaseRemoteConfig'
+ pod 'FirebaseDatabase'
+ pod 'FirebaseAnalytics'
+ pod 'FirebaseAuth'
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.16.3'
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
