@@ -1753,4 +1753,5 @@ export interface RxPdfData {
   followUpDetails: string;
   referralSpecialtyName: string;
   referralSpecialtyDescription: string;
+  removedMedicinesList: string[];
 }

@@ -284,7 +284,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             latitude = doctorHospital[0].facility.latitude;
             longitude = doctorHospital[0].facility.longitude;
             name = doctorHospital[0].facility.name;
-            imageUrl = doctorHospital[0].facility.imageUrl;
+            imageUrl = doctorHospital[0].facility.imageUrl || require('images/no_photo.png');
           }
           setStructuredJSON({
             '@context': 'http://schema.org/',

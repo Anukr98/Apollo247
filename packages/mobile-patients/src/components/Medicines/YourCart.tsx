@@ -51,6 +51,8 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
   Store,
+  medCartItemsDetailsApi,
+  MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -96,6 +98,7 @@ import {
 import { whatsAppUpdateAPICall } from '../../helpers/clientCalls';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
 import { StoreDriveWayPickupView } from './StoreDriveWayPickupView';
 
@@ -153,6 +156,12 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
+  oneApollotxt: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 10,
+    alignItems: 'center',
+  },
 });
 
 export interface YourCartProps extends NavigationScreenProps {}
@@ -185,7 +194,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     stores,
     setStores,
     ePrescriptions,
-    deliveryType,
+    setShowPrescriptionAtStore,
     setAddresses,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
@@ -204,11 +213,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
+  const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
   const scrollViewRef = useRef<ScrollView | null>();
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
-  const { getPatientApiCall } = useAuth();
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -451,9 +460,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       // clear storeId
       setLastStoreIdReplica(storeId);
       setStoreId!('');
+      setStoreInventoryCheck(true);
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && storeId) {
+      if (!storeInventoryCheck) {
+        setStoreInventoryCheck(true);
+        return;
+      }
+
       setLoading!(true);
       setLastStoreIdReplica(storeId);
       getStoreInventoryApi(
@@ -463,7 +478,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         .then(({ data }) => {
           const storeItems = g(data, 'itemDetails');
           if (storeItems && areItemsAvailableInStore(storeItems, cartItems)) {
-            !isOnlyCartItemsChange && setShowDriveWayPopup(true);
+            const onComplete = () => {
+              !isOnlyCartItemsChange && setShowDriveWayPopup(true);
+            };
+            updateCartItemsWithStorePrice(storeItems, cartItems, onComplete);
           } else {
             clearStoreIdAndShowAlert(string.medicine_cart.cartItemsNotAvailableInStore);
           }
@@ -486,6 +504,48 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       title: string.common.uhOh,
       description: message,
     });
+  };
+
+  const getDiscountMulBy100 = (price: number, specialPrice: number) =>
+    Math.floor((Number(price) - Number(specialPrice)) / price);
+
+  const updateCartItemsWithStorePrice = (
+    storeItems: GetStoreInventoryResponse['itemDetails'],
+    cartItems: ShoppingCartItem[],
+    onComplete: () => void
+  ) => {
+    const validation = cartValidation(
+      storeItems.map((storeItem) => {
+        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        return {
+          sku: cartItem.id,
+          name: cartItem.name,
+          is_in_stock: 1,
+          price: Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2)),
+          special_price: cartItem.specialPrice
+            ? Number(
+                (
+                  getDiscountMulBy100(cartItem.price, cartItem.specialPrice) *
+                  (storeItem.mrp * Number(cartItem.mou))
+                ).toFixed(2)
+              )
+            : 0,
+        } as MedicineProduct;
+      }),
+      cartItems
+    );
+    if (validation.alertText) {
+      setStoreInventoryCheck(false);
+      setLoading!(false);
+      showAphAlert!({
+        title: 'Hi! :)',
+        description: validation.alertText,
+      });
+      setTimeout(() => {
+        setCartItems!(validation.newItems);
+      }, 30);
+    }
+    onComplete();
   };
 
   const clearStoreIdAndShowAlert = (message: string) => {
@@ -1048,6 +1108,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setselectedTab(selectedTab);
               setStoreId!('');
               setDeliveryAddressId!('');
+              setShowPrescriptionAtStore!(false);
               // delivery time related
               setdeliveryTime('');
               setdeliveryError('');
@@ -1513,7 +1574,160 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const whatsappAPICalled = () => {
     if (!g(currentPatient, 'whatsAppMedicine')) {
-      getPatientApiCall();
+      postWEGWhatsAppEvent(whatsAppUpdate);
+      callWhatsOptAPICall(whatsAppUpdate);
+    }
+  };
+
+  const trimText = (text: string, count: number) =>
+    text.length > count ? `${text.slice(0, count)}...` : text;
+
+  type CartItemChange = 'not-available' | 'out-of-stock' | 'MRP-change' | 'SP-change' | 'no-change';
+  type CartItemChanges = {
+    change: CartItemChange;
+    updatedItemFromApi?: MedicineProduct;
+    cartItem: ShoppingCartItem;
+  };
+
+  const isChangeInItem = (
+    cartItem: ShoppingCartItem,
+    updatedItemsFromApi: MedicineProduct[]
+  ): { change: CartItemChange; updatedItem?: MedicineProduct } => {
+    const item = updatedItemsFromApi.find((item) => item.sku == cartItem.id);
+    const change = item
+      ? !item.is_in_stock
+        ? 'out-of-stock'
+        : cartItem.price != item.price
+        ? 'MRP-change'
+        : cartItem.specialPrice && cartItem.specialPrice != item.special_price
+        ? 'SP-change'
+        : 'no-change'
+      : 'not-available';
+
+    return { change: change, updatedItem: item! };
+  };
+
+  const getItemsChangeAlert = (cartItemChanges: CartItemChanges[]) => {
+    const mrpIncMsg = `{{medName}} - MRP has increased from Rs.{{oldPrice}} to Rs.{{newPrice}}.`;
+    const mrpDecMsg = `{{medName}} - MRP has decreased from Rs.{{oldPrice}} to Rs.{{newPrice}}.`;
+    const spIncMsg = `{{medName}} - Special Price has increased from Rs.{{oldPrice}} to Rs.{{newPrice}}.`;
+    const spDecMsg = `{{medName}} - Special Price has decreased from Rs.{{oldPrice}} to Rs.{{newPrice}}.`;
+    const outOfStockMsg = `We’re Sorry. {{medName}} is now out of stock in your region.`;
+    const unavailableMsg = `We’re Sorry. {{medName}} is now unavailable in your region.`;
+
+    const alertText = cartItemChanges
+      .map((item) => {
+        const unAvlOrOutOfStock = item.change == 'not-available' || item.change == 'out-of-stock';
+
+        if (unAvlOrOutOfStock) {
+          return (item.change == 'out-of-stock' ? outOfStockMsg : unavailableMsg).replace(
+            '{{medName}}',
+            trimText(item.cartItem.name, 20)
+          );
+        } else if (item.change == 'MRP-change') {
+          const isIncreased = item.cartItem.price < item.updatedItemFromApi!.price;
+
+          return (isIncreased ? mrpIncMsg : mrpDecMsg)
+            .replace('{{medName}}', trimText(item.cartItem.name, 20))
+            .replace('{{oldPrice}}', `${item.cartItem.price}`)
+            .replace('{{newPrice}}', `${item.updatedItemFromApi!.price}`);
+        } else {
+          const isIncreased =
+            item.cartItem.specialPrice! < Number(item.updatedItemFromApi!.special_price);
+
+          return (isIncreased ? spIncMsg : spDecMsg)
+            .replace('{{medName}}', trimText(item.cartItem.name, 20))
+            .replace('{{oldPrice}}', `${item.cartItem.specialPrice}`)
+            .replace('{{newPrice}}', `${item.updatedItemFromApi!.special_price}`);
+        }
+      })
+      .join('\n\n');
+
+    const isPriceChange = alertText && alertText.indexOf('from Rs.') > -1;
+
+    return alertText
+      ? `Important message for items in your Cart:\n\n${
+          isPriceChange
+            ? 'Items in your cart will reflect the most recent price in your region.\n\n'
+            : ''
+        }${alertText}`
+      : '';
+  };
+
+  const cartValidation = (
+    updatedItemsFromApi: MedicineProduct[],
+    cartItems: ShoppingCartItem[]
+  ): { newItems: ShoppingCartItem[]; alertText: string } => {
+    let newCartItems: ShoppingCartItem[] = [];
+    let cartItemChanges: CartItemChanges[] = [];
+
+    cartItems.forEach((cartItem) => {
+      const response = isChangeInItem(cartItem, updatedItemsFromApi);
+      if (response.change == 'no-change') {
+        newCartItems = [...newCartItems, cartItem];
+      } else if (response.change == 'not-available') {
+        cartItemChanges = [
+          ...cartItemChanges,
+          {
+            change: response.change,
+            updatedItemFromApi: undefined,
+            cartItem: cartItem,
+          },
+        ];
+      } else {
+        newCartItems = [
+          ...newCartItems,
+          {
+            ...cartItem,
+
+            isInStock: !!g(response, 'updatedItem', 'is_in_stock'),
+            price: Number(g(response, 'updatedItem', 'price')!),
+            specialPrice: Number(g(response, 'updatedItem', 'special_price')!),
+          },
+        ];
+        cartItemChanges = [
+          ...cartItemChanges,
+          {
+            change: response.change,
+            updatedItemFromApi: response.updatedItem,
+            cartItem: cartItem,
+          },
+        ];
+      }
+    });
+
+    return {
+      newItems: newCartItems,
+      alertText: getItemsChangeAlert(cartItemChanges),
+    };
+  };
+
+  const cartItemsInStockAndPriceVerification = async (
+    cartItems: ShoppingCartItem[],
+    onComplete: () => void
+  ) => {
+    try {
+      const response = await medCartItemsDetailsApi(cartItems.map((item) => item.id));
+      const validation = cartValidation(response.data.productdp, cartItems);
+      if (validation.alertText) {
+        setLoading!(false);
+        showAphAlert!({
+          title: 'Hi! :)',
+          description: validation.alertText,
+          onPressOk: () => {
+            hideAphAlert!();
+            if (validation.newItems.find((item) => !item.isInStock)) {
+              scrollViewRef.current && scrollViewRef.current.scrollTo(0, 0, true);
+            }
+          },
+        });
+        setCartItems!(validation.newItems);
+      } else {
+        onComplete();
+      }
+    } catch (error) {
+      setLoading!(false);
+      renderAlert('Sorry! We’re unable to check availability of cart items.');
     }
   };
 
@@ -1535,20 +1749,47 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       }
     };
 
-    const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
-
-    if (
-      g(selectedAddress, 'latitude') &&
-      g(selectedAddress, 'longitude') &&
-      g(selectedAddress, 'stateCode')
-    ) {
-      proceed();
-    } else {
+    const addressLatLongCheckAndProceed = () => {
+      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
+      if (
+        g(selectedAddress, 'latitude') &&
+        g(selectedAddress, 'longitude') &&
+        g(selectedAddress, 'stateCode')
+      ) {
+        proceed();
+      } else {
+        setLoading!(true);
+        updateAddressLatLong(selectedAddress!, proceed);
+      }
+    };
+    if (deliveryAddressId) {
       setLoading!(true);
-      updateAddressLatLong(selectedAddress!, proceed);
+      cartItemsInStockAndPriceVerification(cartItems, addressLatLongCheckAndProceed);
+    } else {
+      proceed();
     }
   };
 
+  const renderOneapollotext = () => {
+    return (
+      <View style={styles.oneApollotxt}>
+        <View style={{ flex: 0.13 }}>
+          <OneApollo style={{ height: 25, width: 33 }} />
+        </View>
+        <View style={{ flex: 0.87 }}>
+          <Text
+            numberOfLines={2}
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(13),
+              color: theme.colors.SHADE_GREY,
+            }}
+          >
+            You will earn OneApollo Health Credits for this transaction.
+          </Text>
+        </View>
+      </View>
+    );
+  };
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
@@ -1579,22 +1820,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView navigation={props.navigation} />
+            <MedicineUploadPrescriptionView
+              selectedTab={selectedTab}
+              navigation={props.navigation}
+            />
             {renderDelivery()}
             {renderTotalCharges()}
+            {/* {renderOneapollotext()} */}
             {/* {renderMedicineSuggestions()} */}
           </View>
           {!g(currentPatient, 'whatsAppMedicine') ? (
             <WhatsAppStatus
               style={{ marginTop: 6 }}
               onPress={() => {
-                whatsAppUpdate
-                  ? (setWhatsAppUpdate(false),
-                    postWEGWhatsAppEvent(false),
-                    callWhatsOptAPICall(false))
-                  : (setWhatsAppUpdate(true),
-                    postWEGWhatsAppEvent(true),
-                    callWhatsOptAPICall(true));
+                whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
               }}
               isSelected={whatsAppUpdate}
             />

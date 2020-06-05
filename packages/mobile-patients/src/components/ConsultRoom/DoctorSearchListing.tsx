@@ -15,7 +15,9 @@ import {
   DoctorFilter,
   LocationOff,
   LocationOn,
-  ToggleOn,
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
+  SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -45,6 +47,7 @@ import {
   getPlaceInfoByPlaceId,
   GooglePlacesType,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
   doRequestAndAccessLocation,
@@ -52,6 +55,7 @@ import {
   getNetStatus,
   isValidSearch,
   postAppsFlyerEvent,
+  postFirebaseEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -59,7 +63,6 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -234,6 +237,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
+  const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -242,6 +246,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [currentPatient]);
 
   useEffect(() => {
+    checkTime();
+
     if (doctorsList.length === 0) {
       if (
         generalPhysicians &&
@@ -269,11 +275,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const vaueChange = (data: any) => {
     const filterGetData =
       data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-
+    console.log('vaueChange', filterGetData);
     if (filterGetData.sort === 'distance') {
-      setValue(false);
+      setNearyByFlag(true);
+      setAvailabilityFlag(false);
     } else {
-      setValue(true);
+      setAvailabilityFlag(true);
+      setNearyByFlag(false);
     }
   };
 
@@ -284,7 +292,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getNetStatus()
       .then((status) => {
         if (status) {
-          fetchSpecialityFilterData(filterMode, FilterData);
+          // fetchSpecialityFilterData(filterMode, FilterData);
         } else {
           setshowSpinner(false);
           setshowOfflinePopup(true);
@@ -380,6 +388,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
+
+  const checkTime = () => {
+    const currentTime = moment().format('HH');
+    console.log('currentTime', currentTime);
+    if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
+      setAvailabilityFlag(!availabilityFlag);
+      setNearyByFlag(false);
+    } else {
+      setNearyByFlag(!nearyByFlag);
+      setAvailabilityFlag(false);
+    }
+  };
 
   const setData = (data: getDoctorsBySpecialtyAndFilters) => {
     try {
@@ -527,6 +547,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
+        console.log('data', data);
+
         setData(data);
         vaueChange(data);
       })
@@ -669,6 +691,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           width: screenWidth / 2,
           alignItems: 'center',
           justifyContent: 'flex-end',
+          marginLeft: -20,
         }}
       >
         {currentLocation === '' ? (
@@ -759,7 +782,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <Header
           leftIcon="backArrow"
           container={{ borderBottomWidth: 1 }}
-          rightComponent={<RightHeader />}
+          titleComponent={<RightHeader />}
+          rightComponent={
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                console.log('data1111111111');
+                setSearchIconClicked(!searchIconClicked);
+              }}
+            >
+              <View
+                style={{ height: 32, width: 32, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <SearchIcon />
+              </View>
+            </TouchableOpacity>
+          }
           onPressLeftIcon={backDataFunctionality}
         />
       </View>
@@ -781,15 +819,30 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
+
+    const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
+      DoctorName: doctorDetails.fullName!,
+      Source: source,
+      DoctorID: doctorDetails.id,
+      SpecialityID: g(doctorDetails, 'specialty', 'id')!,
+      DoctorCategory: doctorDetails.doctorType,
+      OnlinePrice: Number(doctorDetails.onlineConsultationFees),
+      PhysicalPrice: Number(doctorDetails.physicalConsultationFees),
+      DoctorSpeciality: g(doctorDetails, 'specialty', 'name')!,
+    };
+
     if (type == 'consult-now') {
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
     }
   };
 
@@ -1081,6 +1134,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
   const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(true);
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
+  const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
+  const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(false);
 
   const renderBottomOptions = () => {
     return (
@@ -1088,41 +1143,76 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
         <View style={styles.bottomOptionsContainer}>
           <View style={styles.bottomItemContainer}>
-            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 0.6 : 1)}>
-              {string.doctor_search_listing.near}
-            </Text>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                setValue(!value);
+                setNearyByFlag(!nearyByFlag);
+                setAvailabilityFlag(false);
                 setshowSpinner(true);
-                if (value) {
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'distance',
-                  });
-                  setSortValue('distance');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
-                } else {
-                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                    'Sort By': 'availability',
-                  });
-                  setSortValue('availability');
-                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
-                }
+                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                  'Sort By': 'distance',
+                });
+                setSortValue('distance');
+                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
               }}
             >
-              <ToggleOn
-                style={{
-                  marginHorizontal: 8,
-                  height: 32,
-                  width: 32,
-                  transform: [{ rotate: value ? '0deg' : '180deg' }],
-                }}
-              />
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {nearyByFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      nearyByFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.near}
+                </Text>
+              </View>
             </TouchableOpacity>
-            <Text style={theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE, value ? 1 : 0.6)}>
-              {string.doctor_search_listing.avaliablity}
-            </Text>
+
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ marginLeft: 8 }}
+              onPress={() => {
+                setAvailabilityFlag(!availabilityFlag);
+                setNearyByFlag(false);
+                setshowSpinner(true);
+                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                  'Sort By': 'availability',
+                });
+                setSortValue('availability');
+                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {availabilityFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      availabilityFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.avaliablity}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.seperator} />
           <View style={styles.bottomItemContainer}>
@@ -1131,46 +1221,68 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 activeOpacity={1}
                 onPress={() => {
                   setOnlineCheckbox(!onlineCheckBox);
+                  if (!physicalCheckBox) {
+                    setPhysicalCheckbox(!physicalCheckBox);
+                  }
                 }}
               >
-                {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        onlineCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.online}
+                  </Text>
+                </View>
               </TouchableOpacity>
-              <Text
-                style={{
-                  ...theme.viewStyles.text(
-                    'B',
-                    10,
-                    theme.colors.SHERPA_BLUE,
-                    onlineCheckBox ? 1 : 0.6
-                  ),
-                  marginLeft: 4,
-                }}
-              >
-                {string.doctor_search_listing.online}
-              </Text>
             </View>
             <View style={styles.bottomCenterContainer}>
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
                   setPhysicalCheckbox(!physicalCheckBox);
+                  if (!onlineCheckBox) {
+                    setOnlineCheckbox(!onlineCheckBox);
+                  }
                 }}
               >
-                {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        physicalCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.inperson}
+                  </Text>
+                </View>
               </TouchableOpacity>
-              <Text
-                style={{
-                  ...theme.viewStyles.text(
-                    'B',
-                    10,
-                    theme.colors.SHERPA_BLUE,
-                    physicalCheckBox ? 1 : 0.6
-                  ),
-                  marginLeft: 4,
-                }}
-              >
-                {string.doctor_search_listing.inperson}
-              </Text>
             </View>
           </View>
           <View style={styles.seperator} />
@@ -1194,7 +1306,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderTopView()}
-        {renderDoctorSearchBar()}
+        {searchIconClicked && renderDoctorSearchBar()}
         <ScrollView bounces={false} style={{ flex: 1 }}>
           {showSpinner ? (
             renderSearchLoadingView()

@@ -10,6 +10,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 // const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
 
 export interface MedicineCartItem {
+  url_key: string;
   description: string;
   id: number;
   arrId?: any[];

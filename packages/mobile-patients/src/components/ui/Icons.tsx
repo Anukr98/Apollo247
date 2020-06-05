@@ -1008,11 +1008,63 @@ export const LinkedUhidIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/linkeduhid.png')} />
 );
 
+export const CreditsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/credits.png')} />
+);
+
+export const SilverMembershipBanner: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver_membership.png')} />
+);
+
+export const MembershipBenefitsOne: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_1.png')} />
+);
+
+export const MembershipBenefitsTwo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_2.png')} />
+);
+
+export const MembershipBenefitsThree: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/oneapollo_benefits_3.png')} />
+);
+
+export const TriangleGreyBulletPoint: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/triangle_grey.png')} />
+);
+
+export const OneApolloGold: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/gold.png')} />
+);
+
+export const OneApolloSilver: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/silver.png')} />
+);
+
+export const OneApolloPlatinum: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/platinum.png')} />
+);
+
+export const OneApolloLockIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/padlock.png')} />
+);
+
+export const TxnIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
+);
+
 export const InPersonHeader: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 49, height: 56 }}
     {...props}
     source={require('./icons/illustration_search_specialist.png')}
+  />
+);
+
+export const OnlineHeader: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 49, height: 49 }}
+    {...props}
+    source={require('./icons/video_calling.png')}
   />
 );
 
@@ -1036,10 +1088,23 @@ export const CTPrescription: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_prescription.png')} />
 );
 
+export const CTChat: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 18, height: 16 }} {...props} source={require('./icons/chat.png')} />
+);
+
 export const InPersonBlue: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ width: 18, height: 20 }}
+    style={{ width: 18, height: 22 }}
     {...props}
     source={require('./icons/ic_hospital_blue.png')}
+  />
+);
+
+export const SearchIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 23, height: 23 }}
+    {...props}
+    source={require('./icons/loupe.png')}
+    resizeMode="contain"
   />
 );

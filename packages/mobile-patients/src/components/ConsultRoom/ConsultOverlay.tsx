@@ -62,6 +62,7 @@ import {
   handleGraphQlError,
   postAppsFlyerEvent,
   postWebEngageEvent,
+  postFirebaseEvent,
   postWEGWhatsAppEvent,
   dataSavedUserID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -89,6 +90,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -122,7 +124,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -258,6 +260,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Doctor ID': g(props.doctor, 'id')!,
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
+      revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
     };
     return eventAttributes;
   };
@@ -496,11 +499,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
   const whatsappAPICalled = () => {
-    if (!g(currentPatient, 'whatsAppMedicine')) {
-      getPatientApiCall();
+    if (!g(currentPatient, 'whatsAppConsult')) {
+      postWEGWhatsAppEvent(whatsAppUpdate);
+      callWhatsOptAPICall(whatsAppUpdate);
     }
   };
 
@@ -860,6 +865,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     )
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
+        getPatientApiCall();
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
@@ -995,13 +1001,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 <WhatsAppStatus
                   // style={{ marginTop: 6 }}
                   onPress={() => {
-                    whatsAppUpdate
-                      ? (setWhatsAppUpdate(false),
-                        postWEGWhatsAppEvent(false),
-                        callWhatsOptAPICall(false))
-                      : (setWhatsAppUpdate(true),
-                        postWEGWhatsAppEvent(true),
-                        callWhatsOptAPICall(true));
+                    whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
                   }}
                   isSelected={whatsAppUpdate}
                 />

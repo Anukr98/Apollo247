@@ -2,22 +2,18 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import {
   DoctorPlaceholderImage,
-  Online,
   InPerson,
+  Online,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import { getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
-  getDoctorDetailsById_getDoctorDetailsById_specialty,
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import {
   ConsultMode,
@@ -30,6 +26,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -43,7 +40,6 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
-import moment from 'moment';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -71,12 +67,13 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   imageView: {
-    margin: 16,
-    marginTop: 36,
+    marginHorizontal: 16,
+    marginTop: 40,
     width: 80,
     height: 80,
     borderRadius: 40,
     overflow: 'hidden',
+    marginBottom: 12,
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -99,7 +96,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SEARCH_EDUCATION_COLOR,
   },
   educationTextStyles: {
-    paddingTop: 12,
+    paddingTop: 10,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
@@ -229,6 +226,43 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     });
   };
 
+  const calculatefee = (rowData: any) => {
+    if (
+      parseInt(rowData.onlineConsultationFees, 10) ===
+      parseInt(rowData.physicalConsultationFees, 10)
+    ) {
+      return (
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+          <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
+            {string.common.Rs}
+            {'  '}
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+            {rowData.onlineConsultationFees}
+          </Text>
+        </View>
+      );
+    } else {
+      return (
+        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+          <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
+            Starts at{'  '}
+          </Text>
+          <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+            {string.common.Rs}
+            {'  '}
+          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+            {Math.min(
+              Number(rowData.physicalConsultationFees),
+              Number(rowData.onlineConsultationFees)
+            )}
+          </Text>
+        </View>
+      );
+    }
+  };
+
   if (rowData) {
     const doctorClinics = rowData.doctorHospital.filter((item: any) => {
       if (item && item.facility && item.facility.facilityType)
@@ -294,7 +328,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {isOnline && (
                   <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Online />
-                    <Text style={{ ...theme.viewStyles.text('M', 7, theme.colors.light_label) }}>
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 7, theme.colors.light_label),
+                        marginBottom: 5,
+                      }}
+                    >
                       Online
                     </Text>
                   </View>
@@ -307,10 +346,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       marginLeft: isOnline ? 12 : 0,
                     }}
                   >
-                    <InPerson style={{ width: 14, height: 16, marginBottom: 2 }} />
+                    <InPerson style={{ width: 14, height: 16, marginBottom: 5 }} />
                     <Text
                       style={{
                         ...theme.viewStyles.text('M', 7, theme.colors.light_label),
+                        marginBottom: 5,
                       }}
                     >
                       In-Person
@@ -323,11 +363,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.fullName}</Text>
               <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
-                {rowData.experience} YR
-                {Number(rowData.experience) != 1 ? 'S' : ''}
+                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''}
+                {'   '}|{'  '} {rowData.experience} YR
+                {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
               </Text>
-              {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
+              {calculatefee(rowData)}
+              {/* {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE)}>
                   {isPhysical && isOnline ? 'Starts at  ' : ''}
                   <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
@@ -340,12 +381,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     )}
                   </Text>
                 </Text>
-              ) : null}
-              {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
+              ) : null} */}
+              {/* {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
                 <Text style={styles.doctorSpecializationStyles}>
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
-              ) : null}
+              ) : null} */}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
                 {rowData.qualification}
               </Text>
