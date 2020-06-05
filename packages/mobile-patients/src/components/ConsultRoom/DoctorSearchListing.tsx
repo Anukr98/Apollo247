@@ -243,6 +243,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (!currentPatient) {
       getPatientApiCall();
     }
+    checkTime();
   }, [currentPatient]);
 
   useEffect(() => {
@@ -393,10 +394,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const currentTime = moment().format('HH');
     console.log('currentTime', currentTime);
     if (parseInt(currentTime, 10) < 8 || 16 <= parseInt(currentTime, 10)) {
-      setAvailabilityFlag(!availabilityFlag);
+      setAvailabilityFlag(true);
       setNearyByFlag(false);
     } else {
-      setNearyByFlag(!nearyByFlag);
+      setNearyByFlag(true);
       setAvailabilityFlag(false);
     }
   };
@@ -1146,14 +1147,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                setNearyByFlag(!nearyByFlag);
-                setAvailabilityFlag(false);
-                setshowSpinner(true);
-                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                  'Sort By': 'distance',
-                });
-                setSortValue('distance');
-                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
+                if (!nearyByFlag) {
+                  setNearyByFlag(!nearyByFlag);
+                  setAvailabilityFlag(false);
+                  setshowSpinner(true);
+                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                    'Sort By': 'distance',
+                  });
+                  setSortValue('distance');
+                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'distance');
+                }
               }}
             >
               <View
@@ -1180,14 +1183,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               activeOpacity={1}
               style={{ marginLeft: 8 }}
               onPress={() => {
-                setAvailabilityFlag(!availabilityFlag);
-                setNearyByFlag(false);
-                setshowSpinner(true);
-                postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
-                  'Sort By': 'availability',
-                });
-                setSortValue('availability');
-                fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+                if (!availabilityFlag) {
+                  setAvailabilityFlag(!availabilityFlag);
+                  setNearyByFlag(false);
+                  setshowSpinner(true);
+                  postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+                    'Sort By': 'availability',
+                  });
+                  setSortValue('availability');
+                  fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability');
+                }
               }}
             >
               <View
