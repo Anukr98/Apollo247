@@ -824,6 +824,7 @@ interface CallPopoverProps {
   isNewprescriptionEditable: boolean;
   isNewPrescription: boolean;
   isClickedOnEdit: boolean;
+  tabValue: number;
   setIsClickedOnEdit: (flag: boolean) => void;
   isClickedOnPriview: boolean;
   setIsClickedOnPriview: (flag: boolean) => void;
@@ -1169,6 +1170,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       props.setIsPdfPageOpen(false);
     }
   }, [props.isNewprescriptionEditable]);
+
+  useEffect(() => {
+    if (props.tabValue === 1) {
+      props.setIsClickedOnEdit(true);
+      props.setIsClickedOnPriview(false);
+    }
+  }, [props.tabValue]);
+
   useEffect(() => {
     if (remainingCallTime === 0) {
       clearInterval(intervalcallId);
@@ -1988,21 +1997,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </div>
         <div className={classes.consultButtonContainer}>
           <span>
-            {//   props.appointmentStatus === STATUS.COMPLETED &&
-            // currentUserType !== LoggedInUserType.SECRETARY &&
-            // props.sentToPatient === true ? (
-            //   <>
-            //     <Button
-            //       className={classes.previewButton}
-            //       onClick={() => {
-            //         console.log('Preview Prescription');
-            //       }}
-            //     >
-            //       Preview Prescription
-            //     </Button>
-            //   </>
-            // ) : (
-            props.appointmentStatus === STATUS.COMPLETED &&
+            {props.appointmentStatus === STATUS.COMPLETED &&
+              currentUserType !== LoggedInUserType.SECRETARY &&
+              props.sentToPatient === true && (
+                <>
+                  <Button
+                    className={classes.previewButton}
+                    onClick={() => {
+                      if (props.isClickedOnEdit) {
+                        props.setIsClickedOnEdit(false);
+                        props.setIsClickedOnPriview(true);
+                        setCaseSheetEdit(false);
+                      } else {
+                        props.setIsClickedOnEdit(true);
+                        props.setIsClickedOnPriview(false);
+                        setCaseSheetEdit(false);
+                      }
+                    }}
+                  >
+                    {props.isClickedOnEdit ? 'Preview Prescription' : 'View Casesheet'}
+                  </Button>
+                </>
+              )}
+            {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>

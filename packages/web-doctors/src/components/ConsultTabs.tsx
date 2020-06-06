@@ -1769,6 +1769,7 @@ export const ConsultTabs: React.FC = () => {
                 setIsClickedOnEdit={setIsClickedOnEdit}
                 isClickedOnPriview={isClickedOnPriview}
                 setIsClickedOnPriview={setIsClickedOnPriview}
+                tabValue={tabValue}
               />
               <div>
                 <div
