@@ -141,22 +141,33 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const renderMedical = () => {
     const data = [
       {
+        label: 'Medical History',
+        desc: patientMedicalHistory ? patientMedicalHistory.pastMedicalHistory || '-' : '-',
+      },
+      {
         label: 'Medication History',
-        desc: patientMedicalHistory ? patientMedicalHistory.pastMedicalHistory : '-',
+        desc: patientMedicalHistory ? patientMedicalHistory.medicationHistory || '-' : '-',
       },
       {
         label: 'Drug Allergies',
-        desc: patientMedicalHistory ? patientMedicalHistory.drugAllergies : '-',
+        desc: patientMedicalHistory ? patientMedicalHistory.drugAllergies || '-' : '-',
       },
       {
         label: 'Diet Allergies/Restrictions',
-        desc: patientMedicalHistory ? patientMedicalHistory.dietAllergies : '-',
+        desc: patientMedicalHistory ? patientMedicalHistory.dietAllergies || '-' : '-',
       },
       {
         label: 'Lifestyle and Habits',
         desc:
-          patientDetails && patientDetails.lifeStyle && patientDetails.lifeStyle.description
-            ? patientDetails.lifeStyle.description
+          patientDetails && patientDetails.lifeStyle
+            ? patientDetails.lifeStyle.map((i) => i.description).join('\n') || '-'
+            : '-',
+      },
+      {
+        label: 'Occupational History',
+        desc:
+          patientDetails && patientDetails.lifeStyle
+            ? patientDetails.lifeStyle.map((i) => i.occupationHistory).join('\n') || '-'
             : '-',
       },
       {
@@ -291,7 +302,9 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         containerStyle={{ marginVertical: 10 }}
       >
         <View style={styles.referralView}>
-          <Text style={styles.referralText}>{strings.case_sheet.pulmologist}</Text>
+          <Text style={styles.referralText}>{`${caseSheet[0].referralSpecialtyName}${
+            caseSheet[0].referralDescription ? `:${caseSheet[0].referralDescription}` : ''
+          }`}</Text>
         </View>
       </CollapseCard>
     );
@@ -321,7 +334,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderDiagnosis()}
           {renderMP()}
           {renderTP()}
-          {renderReferral()}
+          {caseSheet[0].referralSpecialtyName && renderReferral()}
         </ScrollView>
       </SafeAreaView>
       {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}

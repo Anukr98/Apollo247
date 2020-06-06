@@ -47,7 +47,6 @@ import {
   GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
-  MEDICINE_FORM_TYPES,
   SaveDoctorsFavouriteMedicineInput,
   UpdateDoctorsFavouriteMedicineInput,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
@@ -55,7 +54,7 @@ import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SaveDoctorsFavouriteMedicine';
-import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import { searchDiagnostics_searchDiagnostics_diagnostics } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostics';
 import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
@@ -72,11 +71,11 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = SmartPrescriptionStyles;
 
@@ -217,16 +216,16 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const updateFavouriteTest = (
     updateTestId: string,
-    tempTestArray: searchDiagnostic_searchDiagnostic[]
+    tempTestArray: searchDiagnostics_searchDiagnostics_diagnostics[]
   ) => {
-    if (tempTestArray.length > 0 && tempTestArray[0].itemname) {
+    if (tempTestArray.length > 0 && tempTestArray[0].itemName) {
       setLoading(true);
       client
         .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
           mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
           variables: {
             id: updateTestId,
-            itemname: tempTestArray[0].itemname,
+            itemname: tempTestArray[0].itemName,
           },
           fetchPolicy: 'no-cache',
         })
@@ -250,7 +249,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         });
     }
     if (tempTestArray.length > 1) {
-      AddFavouriteTest(tempTestArray.slice(1).filter((item) => item && item.itemname));
+      AddFavouriteTest(tempTestArray.slice(1).filter((item) => item && item.itemName));
     }
   };
 
@@ -522,15 +521,15 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       });
   };
 
-  const AddFavouriteTest = (tempTestArray: searchDiagnostic_searchDiagnostic[]) => {
+  const AddFavouriteTest = (tempTestArray: searchDiagnostics_searchDiagnostics_diagnostics[]) => {
     tempTestArray.forEach((item, index) => {
-      if (item && item.itemname) {
+      if (item && item.itemName) {
         setLoading(true);
         client
           .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
             mutation: ADD_DOCTOR_FAVOURITE_TEST,
             variables: {
-              itemname: item.itemname,
+              itemname: item.itemName,
             },
           })
           .then((_data) => {
@@ -550,7 +549,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
             } else {
               Alert.alert(
                 strings.common.error,
-                strings.smartPrescr.add_test_error + `(${item.itemname})`
+                strings.smartPrescr.add_test_error + `(${item.itemName})`
               );
             }
           });
@@ -567,9 +566,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         }}
         onPressDone={(searchTestVal, tempTestArray) => {
           if (EditTestId != '') {
-            updateFavouriteTest(EditTestId, tempTestArray.filter((item) => item && item.itemname));
+            updateFavouriteTest(EditTestId, tempTestArray.filter((item) => item && item.itemName));
           } else {
-            AddFavouriteTest(tempTestArray.filter((item) => item && item.itemname));
+            AddFavouriteTest(tempTestArray.filter((item) => item && item.itemName));
           }
           setsearchTestVal('');
           setIsTest(!isTest);

@@ -31,6 +31,8 @@ import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
 import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
+import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 
 const styles = AppointmentsStyles;
 
@@ -57,6 +59,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.displayName) || ''
   );
+  const { fetchNotifications } = useNotification();
 
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
@@ -72,6 +75,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   useEffect(() => {
     setDoctorName((doctorDetails && doctorDetails.displayName) || '');
+    if (doctorDetails) {
+      fetchNotifications();
+    }
   }, [doctorDetails]);
 
   const isPastDate = (date: Date) => {
@@ -210,28 +216,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     );
   };
 
-  const renderMainHeader = () => {
-    return (
-      <Header
-        leftIcons={[
-          {
-            icon: <ApploLogo />,
-          },
-        ]}
-        rightIcons={[
-          {
-            icon: <RoundIcon />,
-            onPress: () => setshowNeedHelp(true),
-          },
-          // {
-          //   icon: <Notification />,
-          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          // },
-        ]}
-      />
-    );
-  };
-
   const renderDoctorGreeting = () => {
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
@@ -326,14 +310,13 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   return (
     <SafeAreaView style={[theme.viewStyles.container]}>
-      {renderMainHeader()}
+      <CommonNotificationHeader navigation={props.navigation} />
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
       <View>
         {renderHeader()}
         <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
       </View>
       {/* {isDropdownVisible ? renderDropdown() : null} */}
-
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
       <View style={[{ zIndex: -1 }, theme.viewStyles.container]}>
         <View style={[styles.weekViewContainer, { zIndex: 0 }]}>
@@ -368,7 +351,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           />
         )}
       </View>
-      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
       <NotificationListener navigation={props.navigation} />
     </SafeAreaView>
   );

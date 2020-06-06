@@ -48,6 +48,11 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
 export enum DOCTOR_CALL_TYPE {
   JUNIOR = "JUNIOR",
   SENIOR = "SENIOR",
@@ -55,14 +60,21 @@ export enum DOCTOR_CALL_TYPE {
 
 export enum DOCTOR_DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  CLINIC = "CLINIC",
+  CRADLE = "CRADLE",
+  DOCTOR_CONNECT = "DOCTOR_CONNECT",
+  FERTILITY = "FERTILITY",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
+  SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
+  SUGAR = "SUGAR",
 }
 
 export enum Gender {
@@ -99,6 +111,7 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_MONTH = "ONCE_A_MONTH",
   ONCE_A_WEEK = "ONCE_A_WEEK",
   ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  STAT = "STAT",
   THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
@@ -123,7 +136,7 @@ export enum MEDICINE_UNIT {
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
-  DROPS = "DROPS",
+  DROP = "DROP",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -154,10 +167,18 @@ export enum OTP_STATUS {
   VERIFIED = "VERIFIED",
 }
 
+export enum PATIENT_ADDRESS_TYPE {
+  HOME = "HOME",
+  OFFICE = "OFFICE",
+  OTHER = "OTHER",
+}
+
 export enum REQUEST_ROLES {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SYSTEM = "SYSTEM",
 }
 
 export enum ROUTE_OF_ADMINISTRATION {
@@ -166,6 +187,7 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
   NASAL_DROPS = "NASAL_DROPS",
@@ -203,7 +225,9 @@ export enum STATUS {
   JUNIOR_DOCTOR_ENDED = "JUNIOR_DOCTOR_ENDED",
   JUNIOR_DOCTOR_STARTED = "JUNIOR_DOCTOR_STARTED",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
@@ -212,6 +236,12 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+  MS = "MS",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -233,6 +263,19 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum notificationEventName {
+  APPOINTMENT = "APPOINTMENT",
+}
+
+export enum notificationStatus {
+  READ = "READ",
+  UNREAD = "UNREAD",
+}
+
+export enum notificationType {
+  CHAT = "CHAT",
 }
 
 export enum patientLogSort {
@@ -320,6 +363,16 @@ export interface MedicinePrescriptionInput {
   medicineCustomDosage?: string | null;
 }
 
+export interface MessageInput {
+  fromId: string;
+  toId: string;
+  eventName: notificationEventName;
+  eventId: string;
+  message: string;
+  status: notificationStatus;
+  type: notificationType;
+}
+
 export interface ModifyCaseSheetInput {
   symptoms?: SymptomInput[] | null;
   notes?: string | null;
@@ -331,6 +384,7 @@ export interface ModifyCaseSheetInput {
   followUpConsultType?: APPOINTMENT_TYPE | null;
   otherInstructions?: OtherInstructionsInput[] | null;
   medicinePrescription?: MedicinePrescriptionInput[] | null;
+  removedMedicinePrescription?: MedicinePrescriptionInput[] | null;
   id: string;
   status?: CASESHEET_STATUS | null;
   lifeStyle?: string | null;
@@ -344,6 +398,10 @@ export interface ModifyCaseSheetInput {
   temperature?: string | null;
   weight?: string | null;
   bp?: string | null;
+  medicationHistory?: string | null;
+  occupationHistory?: string | null;
+  referralSpecialtyName?: string | null;
+  referralDescription?: string | null;
 }
 
 export interface OtherInstructionsInput {

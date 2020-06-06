@@ -7,9 +7,13 @@ target 'ApolloDoctor' do
 
 # Pods for ApolloPatient
 
- pod 'Firebase/Analytics'
- pod 'Firebase/Auth'
- pod 'Firebase/Messaging'
+ pod 'FirebaseCore'
+ pod 'FirebaseMessaging'
+ pod 'GoogleIDFASupport', '~> 3.14.0'
+ pod 'FirebaseRemoteConfig'
+ pod 'FirebaseDatabase'
+ pod 'FirebaseAnalytics'
+ pod 'FirebaseAuth'
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.16.3'
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
@@ -51,7 +55,6 @@ target 'ApolloDoctor' do
   use_native_modules!
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
   pod 'QBImagePickerController', :path => '../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec'
-  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
   pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
   pod 'RNExitApp', :path => '../node_modules/react-native-exit-app'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'

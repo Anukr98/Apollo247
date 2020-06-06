@@ -171,7 +171,6 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             </View>
           </View>
         ) : null}
-        <HelpView />
       </ScrollView>
       {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </SafeAreaView>

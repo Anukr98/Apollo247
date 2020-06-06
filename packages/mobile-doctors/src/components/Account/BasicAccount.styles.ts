@@ -55,9 +55,9 @@ export default StyleSheet.create({
     marginTop: 12,
   },
   imageStyle: {
-    height: 178,
+    minHeight: 178,
     width: '100%',
-    resizeMode: 'center',
+    resizeMode: 'contain',
     backgroundColor: theme.colors.WHITE,
   },
 });

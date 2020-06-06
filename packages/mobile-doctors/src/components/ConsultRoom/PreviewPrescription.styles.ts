@@ -1,25 +1,53 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { StyleSheet } from 'react-native';
-
+import { StyleSheet, Dimensions } from 'react-native';
+const { width } = Dimensions.get('screen');
 export const PreviewPrescriptionStyles = StyleSheet.create({
   flexStyle: {
     flex: 1,
   },
   headingContainer: {
-    backgroundColor: '#f1f1f1',
+    flexDirection: 'row',
+    borderColor: theme.colors.SHARP_BLUE,
+    borderBottomWidth: 0.5,
     paddingVertical: 6,
-    paddingLeft: 16,
+    marginHorizontal: 16,
+    paddingHorizontal: 4,
     marginBottom: 10,
+    alignItems: 'center',
   },
-  headingText: { ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 1), padding: 0 },
+  headingIconContainer: {
+    marginRight: 4,
+  },
+  headingText: {
+    ...theme.viewStyles.text('M', 11, theme.colors.SHARP_BLUE),
+    padding: 0,
+    textTransform: 'uppercase',
+  },
+  vitalsTitle: {
+    ...theme.viewStyles.text('M', 11, theme.colors.SHARP_BLUE),
+    textTransform: 'uppercase',
+  },
   subHeadingText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 1, 18, 0),
+    ...theme.viewStyles.text('M', 12, theme.colors.blackColor(0.8)),
+  },
+  subHeading2Text: {
+    ...theme.viewStyles.text('S', 10, theme.colors.blackColor(0.5)),
   },
   descriptionText: {
-    ...theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE, 1, 18, 0),
-    marginLeft: 20,
+    ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.6)),
   },
-  disclamerText: theme.viewStyles.text('I', 10, theme.colors.SHARP_BLUE, 0.6),
+  description2Text: {
+    ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
+  },
+  vitalsDescription: {
+    ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
+  },
+  disclamerText: {
+    flex: 1,
+    ...theme.viewStyles.text('S', 9, theme.colors.blackColor(0.4)),
+    marginLeft: 10,
+  },
+  disclamerHeaderText: theme.viewStyles.text('S', 10, theme.colors.blackColor(0.4)),
   seperatorText: theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 0.4, 19, 0),
   subItemsContainer: {
     flexDirection: 'row',
@@ -28,7 +56,8 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
     marginVertical: 4,
   },
   subContainer: {
-    marginHorizontal: 20,
+    marginRight: 20,
+    marginLeft: 28,
   },
   itemContainer: {
     marginBottom: 8,
@@ -43,6 +72,13 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
     height: 1,
     backgroundColor: '#f1f1f1',
     width: '100%',
+    marginVertical: 10,
+  },
+  seperatorView2: {
+    height: 0.5,
+    backgroundColor: theme.colors.SHARP_BLUE,
+    width: width - 32,
+    marginLeft: 16,
     marginVertical: 10,
   },
   stickyBottomStyle: {
@@ -89,11 +125,36 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
   paddingView: {
     height: 90,
   },
+  padding2View: {
+    height: 30,
+  },
   appoitmentMainFlex: { flex: 0.25 },
   appointmentColonFlex: { flex: 0.02 },
   appointmentTextFlex: { flex: 0.7 },
   ApolloLogo: {
-    marginLeft: 20,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+  },
+  logoContainer: {
+    marginTop: 16,
+    flex: 0.5,
+  },
+  doctorDetailsStyle: {
+    flex: 1,
+    alignItems: 'flex-start',
     marginTop: 10,
+  },
+  rowFlex: {
+    flexDirection: 'row',
+    marginVertical: 4,
+    alignItems: 'center',
+  },
+  addressText: {
+    ...theme.viewStyles.text('S', 8, theme.colors.blackColor(0.6)),
+  },
+  signatureStyle: {
+    width: 106,
+    height: 60,
+    resizeMode: 'contain',
   },
 });
