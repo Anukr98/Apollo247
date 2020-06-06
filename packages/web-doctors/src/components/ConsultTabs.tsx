@@ -1462,6 +1462,7 @@ export const ConsultTabs: React.FC = () => {
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
         setIsClickedOnPriview(true);
+        setIsClickedOnEdit(false);
         const text = {
           id: doctorId,
           message: '^^#appointmentComplete',
@@ -1612,6 +1613,8 @@ export const ConsultTabs: React.FC = () => {
     !isPdfPageOpen ||
     isSecretary ||
     (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
+
+  //console.log({ inEditMode, isClickedOnPriview, isClickedOnEdit });
 
   return (
     <div className={classes.consultRoom}>

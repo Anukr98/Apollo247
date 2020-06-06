@@ -1149,6 +1149,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    if (props.appointmentStatus === STATUS.COMPLETED) {
+      setRemainingCallTime(0);
+      clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
+      setConsultStart(false);
+      props.setIsClickedOnPriview(true);
+      props.setIsClickedOnEdit(false);
+    }
+  }, [props.appointmentStatus]);
+
   useEffect(() => {
     if (props.isNewprescriptionEditable) {
       props.setIsClickedOnEdit(true);
@@ -1454,15 +1466,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
     clearError();
   }, [cancelReason]);
-  useEffect(() => {
-    if (props.appointmentStatus === STATUS.COMPLETED) {
-      setRemainingCallTime(0);
-      clearInterval(intervalcallId);
-      clearInterval(intervalCallAbundant);
-      setConsultStart(false);
-      props.setIsClickedOnPriview(true);
-    }
-  }, [props.appointmentStatus]);
+
   const pubnub = props.pubnub;
 
   useEffect(() => {
@@ -2133,6 +2137,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.createSessionAction();
                     setCaseSheetEdit(true);
                     setConsultStart(true);
+                    props.setIsClickedOnEdit(true);
+                    props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
                     if (
                       appointmentInfo &&
