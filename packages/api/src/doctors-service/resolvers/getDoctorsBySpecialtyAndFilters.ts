@@ -226,7 +226,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
@@ -326,9 +325,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
+    } else {
+      console.log('no available slot:', doctor.id);
     }
   }
-
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
@@ -409,6 +409,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
     );
 
+    (i = 0), (j = 0);
     while (i < starDoctor.length || j < nonStarDoctor.length) {
       if (
         i < starDoctor.length &&
@@ -433,9 +434,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       )
       .concat(docs);
   }
-
   searchLogger(`API_CALL___END`);
-
   return {
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
@@ -444,6 +443,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     sort: args.filterInput.sort,
   };
 };
+
 function defaultSort() {
   const ISTOffset: number = 330;
   const currentTime: Date = new Date();
