@@ -229,6 +229,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
+
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -246,17 +247,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
     for (const slots of doc._source.doctorSlots) {
-      doctor['openSlotDates'].push(slots.slotDate);
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
           differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
+          doctor['openSlotDates'].push(slots.slotDate);
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
               callStartTime
             );
+            doctor['earliestSlotavailable'] = new Date(slot.slot);
             finalDoctorNextAvailSlots.push({
               availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
@@ -296,11 +298,28 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
 
     let availability = true;
+    if (
+      (args.filterInput.availability && args.filterInput.availability.length > 0) ||
+      args.filterInput.availableNow
+    ) {
+      availability = false;
+    }
     if (args.filterInput.availability && args.filterInput.availability.length > 0) {
       availability =
         args.filterInput.availability.filter(
           (value) => -1 !== doctor['openSlotDates'].indexOf(value)
         ).length > 0;
+    }
+    if (
+      args.filterInput.availableNow &&
+      Math.abs(
+        differenceInMinutes(
+          new Date(doctor['earliestSlotavailable']),
+          new Date(args.filterInput.availableNow)
+        )
+      ) < 241
+    ) {
+      availability = true;
     }
     if (doctor['activeSlotCount'] > 0 && availability) {
       if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
@@ -325,8 +344,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
-    } else {
-      console.log('no available slot:', doctor.id);
     }
   }
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
