@@ -169,7 +169,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-  args.filterInput.sort = args.filterInput.sort || defaultSort();
+  args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
@@ -325,8 +325,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
-    } else {
-      console.log('no available slot:', doctor.id);
     }
   }
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
@@ -445,14 +443,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   };
 };
 
-function defaultSort() {
-  const ISTOffset: number = 330;
-  const currentTime: Date = new Date();
-  const ISTTime: Date = new Date(
-    currentTime.getTime() + (ISTOffset - currentTime.getTimezoneOffset()) * 60000
-  );
-  return ISTTime.getHours() > 7 && ISTTime.getHours() < 16 ? 'distance' : 'availability';
-}
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
