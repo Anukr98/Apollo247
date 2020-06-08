@@ -244,6 +244,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     patientDetails: PatientFullDetails @provides(fields: "id")
+    prescriptionGeneratedDate: DateTime
     sentToPatient: Boolean
     status: String
     symptoms: [SymptomList]
@@ -1230,6 +1231,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
