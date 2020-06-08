@@ -325,12 +325,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                     if (e.target.checked) {
                       const selectedRecords = selectedEPrescriptions;
                       selectedRecords.push(pastPrescription);
-                      !props.isPresReview && setSelectedEPrescriptions(selectedRecords);
+                      setSelectedEPrescriptions(selectedRecords);
                     } else {
                       const selectedRecords = selectedEPrescriptions.filter(
                         (record) => record.id != pastPrescription.id
                       );
-                      !props.isPresReview && setSelectedEPrescriptions(selectedRecords);
+                      setSelectedEPrescriptions(selectedRecords);
                     }
                     setIsRecordChecked(!isRecordChecked);
                   }}
@@ -368,12 +368,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                     if (e.target.checked) {
                       const selectedRecords = selectedEPrescriptions;
                       selectedRecords.push(pastPrescription);
-                      !props.isPresReview && setSelectedEPrescriptions(selectedRecords);
+                      setSelectedEPrescriptions(selectedRecords);
                     } else {
                       const selectedRecords = selectedEPrescriptions.filter(
                         (record) => record.id != pastPrescription.id
                       );
-                      !props.isPresReview && setSelectedEPrescriptions(selectedRecords);
+                      setSelectedEPrescriptions(selectedRecords);
                     }
                     setIsRecordChecked(!isRecordChecked);
                   }}
