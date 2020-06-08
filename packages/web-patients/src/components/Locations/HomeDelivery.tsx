@@ -27,7 +27,7 @@ import {
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
+import { pharmaStateCodeMapping, getDiffInDays } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 export const formatAddress = (address: Address) => {
@@ -458,16 +458,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         }
       })
       .catch((error: any) => console.log(error));
-  };
-  const getDiffInDays = (nextAvailability: string) => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
-      return Math.round(differenceInDays) + 1;
-    } else {
-      return 0;
-    }
   };
 
   if (isError) {
