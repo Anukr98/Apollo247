@@ -202,13 +202,14 @@ export const Navigation: React.FC = (props) => {
     sku: string;
   }>();
 
-  const medicineActiveClass =
-    currentPath === clientRoutes.medicines() ||
-    currentPath === clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText) ||
-    currentPath === clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku) ||
-    currentPath === clientRoutes.medicineDetails(params.sku) ||
-    currentPath === clientRoutes.medicineAllBrands() ||
-    currentPath === clientRoutes.prescriptionsLanding();
+  const medcineRoutes = [
+    clientRoutes.medicines(),
+    clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
+    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
+    clientRoutes.medicineDetails(params.sku),
+    clientRoutes.medicineAllBrands(),
+    clientRoutes.prescriptionsLanding(),
+  ];
 
   return (
     <div
@@ -232,7 +233,9 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             to={clientRoutes.medicines()}
-            className={medicineActiveClass ? classes.menuItemActive : ''}
+            className={
+              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+            }
             title={'Medicines'}
           >
             Medicines
@@ -267,7 +270,9 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             to={clientRoutes.medicines()}
-            className={medicineActiveClass ? classes.menuItemActive : ''}
+            className={
+              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+            }
             title={'Pharmacy'}
           >
             <span className={classes.menuTitle}>Pharmacy</span>
