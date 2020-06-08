@@ -169,7 +169,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-  args.filterInput.sort = args.filterInput.sort || defaultSort();
+  args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
@@ -223,21 +223,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       query: {
         bool: {
           must: elasticMatch,
-          should: {
-            match: {
-              doctorType: {
-                query: 'STAR_APOLLO',
-                boost: 10,
-              },
-            },
-          },
         },
       },
     },
   };
-
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
+
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -245,27 +237,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
       bufferTime = consultHour['consultBuffer'];
+      if (!doctor['availableMode'].includes(consultHour.consultMode)) {
+        doctor['availableMode'].push(consultHour.consultMode);
+      }
+    }
+    if (doctor['availableMode'].length > 1) {
+      doctor['availableMode'] = ['BOTH'];
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
     for (const slots of doc._source.doctorSlots) {
-      doctor['openSlotDates'].push(slots.slotDate);
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
           differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
+          doctor['openSlotDates'].push(slots.slotDate);
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
               callStartTime
             );
+            doctor['earliestSlotavailable'] = new Date(slot.slot);
             finalDoctorNextAvailSlots.push({
               availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
@@ -305,11 +305,28 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
 
     let availability = true;
+    if (
+      (args.filterInput.availability && args.filterInput.availability.length > 0) ||
+      args.filterInput.availableNow
+    ) {
+      availability = false;
+    }
     if (args.filterInput.availability && args.filterInput.availability.length > 0) {
       availability =
         args.filterInput.availability.filter(
           (value) => -1 !== doctor['openSlotDates'].indexOf(value)
         ).length > 0;
+    }
+    if (
+      args.filterInput.availableNow &&
+      Math.abs(
+        differenceInMinutes(
+          new Date(doctor['earliestSlotavailable']),
+          new Date(args.filterInput.availableNow)
+        )
+      ) < 241
+    ) {
+      availability = true;
     }
     if (doctor['activeSlotCount'] > 0 && availability) {
       if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
@@ -330,13 +347,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
       finalDoctorsConsultModeAvailability.push({
-        availableModes: [doctor.consultHours[0].consultMode],
+        availableModes: doctor['availableMode'],
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
     }
   }
-
   if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
     facilityIds.forEach((facilityId: string, index: number) => {
       facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
@@ -390,25 +406,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
     let i = 0,
       j = 0;
-    if (earlyAvailableStarApolloDoctors.length == 0) {
-      for (const doctor of earlyAvailableNonStarApolloDoctors) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
-    if (earlyAvailableNonStarApolloDoctors.length == 0) {
-      for (const doctor of earlyAvailableStarApolloDoctors) {
-        earlyAvailableApolloDoctors.push(doctor);
-      }
-    }
 
     while (
-      i < earlyAvailableStarApolloDoctors.length &&
+      i < earlyAvailableStarApolloDoctors.length ||
       j < earlyAvailableNonStarApolloDoctors.length
     ) {
       if (
         i < earlyAvailableStarApolloDoctors.length &&
-        earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes
+        (j >= earlyAvailableNonStarApolloDoctors.length ||
+          earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
+            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
@@ -427,11 +434,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
 
     (i = 0), (j = 0);
-    while (i < starDoctor.length && j < nonStarDoctor.length) {
+    while (i < starDoctor.length || j < nonStarDoctor.length) {
       if (
         i < starDoctor.length &&
-        starDoctor[i].earliestSlotavailableInMinutes <=
-          nonStarDoctor[j].earliestSlotavailableInMinutes
+        (j >= nonStarDoctor.length ||
+          starDoctor[i].earliestSlotavailableInMinutes <=
+            nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;
@@ -440,16 +448,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         j++;
       }
     }
-    if (starDoctor.length == 0) {
-      for (const doctor of nonStarDoctor) {
-        docs.push(doctor);
-      }
-    }
-    if (nonStarDoctor.length == 0) {
-      for (const doctor of starDoctor) {
-        docs.push(doctor);
-      }
-    }
+
     doctors = earlyAvailableApolloDoctors
       .concat(
         earlyAvailableNonApolloDoctors.sort(
@@ -460,9 +459,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       )
       .concat(docs);
   }
-
   searchLogger(`API_CALL___END`);
-
   return {
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
@@ -471,14 +468,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     sort: args.filterInput.sort,
   };
 };
-function defaultSort() {
-  const ISTOffset: number = 330;
-  const currentTime: Date = new Date();
-  const ISTTime: Date = new Date(
-    currentTime.getTime() + (ISTOffset - currentTime.getTimezoneOffset()) * 60000
-  );
-  return ISTTime.getHours() > 7 && ISTTime.getHours() < 16 ? 'distance' : 'availability';
-}
+
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,

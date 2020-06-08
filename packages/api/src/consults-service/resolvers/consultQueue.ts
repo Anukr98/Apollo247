@@ -57,6 +57,7 @@ export const consultQueueTypeDefs = gql`
     totalJuniorDoctors: Int!
     totalJuniorDoctorsOnline: Int!
     juniorDoctorsList: [JuniorDoctorsList]!
+    isJdAllowed: Boolean
   }
 
   type RemoveFromConsultQueueResult {
@@ -196,6 +197,7 @@ type AddToConsultQueueResult = {
   totalJuniorDoctors: number;
   totalJuniorDoctorsOnline: number;
   juniorDoctorsList: JuniorDoctorsList[];
+  isJdAllowed: Boolean;
 };
 type JuniorDoctorsList = {
   juniorDoctorId: string;
@@ -221,6 +223,7 @@ const addToConsultQueue: Resolver<
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
+      isJdAllowed: true,
     };
     return queueResult;
   }
@@ -274,6 +277,7 @@ const addToConsultQueue: Resolver<
     totalJuniorDoctors: juniorDocs.length,
     totalJuniorDoctorsOnline: onlineJrDocs.length,
     juniorDoctorsList: jrDocList,
+    isJdAllowed: true,
   };
 };
 
@@ -324,6 +328,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   const appointmentData = await apptRepo.findOneOrFail(appointmentId);
   const jrDocList: JuniorDoctorsList[] = [];
+  const doctorRepo = context.doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findById(appointmentData.doctorId);
+  const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : true;
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
@@ -332,6 +339,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
+      isJdAllowed,
     };
     return queueResult;
   }
@@ -353,7 +361,39 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const createdDate = new Date();
   let doctorId = '';
   const jdQueueCounts: { [key: string]: number } = {};
-  if (onlineJuniorDoctors.length) {
+  //create jd casesheet if isjdallowed is false
+  if (isJdAllowed == false) {
+    const consultQueueAttrs = {
+      appointmentId: appointmentData.id,
+      createdDate: createdDate,
+      doctorId: virtualJDId,
+      isActive: false,
+    };
+    const { id } = await cqRepo.save(cqRepo.create(consultQueueAttrs));
+    queueId = id;
+    doctorId = virtualJDId;
+    //Insert case sheet record
+    const casesheetAttrs = {
+      createdDate: new Date(),
+      consultType: appointmentData.appointmentType,
+      createdDoctorId: process.env.VIRTUAL_JD_ID,
+      doctorType: DoctorType.JUNIOR,
+      doctorId: appointmentData.doctorId,
+      patientId: appointmentData.patientId,
+      appointment: appointmentData,
+      status: CASESHEET_STATUS.COMPLETED,
+      notes:
+        isJdAllowed === false
+          ? ApiConstants.NOT_APPLICABLE
+          : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
+              '{0}',
+              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+            ),
+      isJdConsultStarted: true,
+    };
+    caseSheetRepo.savecaseSheet(casesheetAttrs);
+    apptRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
+  } else if (onlineJuniorDoctors.length) {
     const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
     //Get queue items of online JDs
     const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
@@ -541,6 +581,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     totalJuniorDoctors: juniorDoctors.length,
     totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
     juniorDoctorsList: jrDocList,
+    isJdAllowed,
   };
 };
 
