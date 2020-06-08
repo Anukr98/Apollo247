@@ -30,6 +30,34 @@ export enum ONE_APOLLO_STORE_CODE {
   WEBCUS = 'WEBCUS',
 }
 
+export enum ONE_APOLLO_PRODUCT_CATEGORY {
+  PRIVATE_LABEL = 'A',
+  NON_PHARMA = 'F',
+  PHARMA = 'P',
+}
+
+export type OneApollTransaction = {
+  BillNo: string;
+  BU: string;
+  StoreCode: string;
+  NetAmount: number;
+  GrossAmount: number;
+  TransactionDate: Date;
+  MobileNumber: string;
+  SendCommunication: boolean;
+  CalculateHealthCredits: boolean;
+  Gender: Gender;
+  TransactionLineItems: Partial<TransactionLineItems>[];
+};
+
+export type TransactionLineItems = {
+  ProductCode: string;
+  ProductName: string;
+  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
+  NetAmount: number;
+  GrossAmount: number;
+};
+
 export enum CouponApplicability {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',

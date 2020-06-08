@@ -10,6 +10,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   ONE_APOLLO_USER_REG,
+  OneApollTransaction,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -62,6 +63,31 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     } catch (e) {
       throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
     }
+  }
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
+        method: 'POST',
+        body: JSON.stringify(transaction),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
+        e,
+      });
+    }
+  }
+
+  getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails'],
+      where: { orderNo: orderId },
+    });
   }
 
   async getOneApolloUserTransactions(mobileNumber: string) {
