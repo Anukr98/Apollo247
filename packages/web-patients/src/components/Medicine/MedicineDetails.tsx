@@ -731,7 +731,7 @@ export const MedicineDetails: React.FC = (props) => {
                                     : ''
                                 }`}
                               </div>
-                              {medicineDetails.is_prescription_required !== '0' && (
+                              {Number(medicineDetails.is_prescription_required) !== 0 && (
                                 <div className={classes.prescriptionBox}>
                                   <span>This medicine requires doctor’s prescription</span>
                                   <span className={classes.preImg}>
