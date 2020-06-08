@@ -74,7 +74,6 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   const [_stores, _setStores] = useState<Store[]>(stores);
   const [selectedStore, setSelectedStore] = useState<string>(storeId || '');
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const loading = fetchStores ? globalLoading : storePickUpLoading;
 
   useEffect(() => {
     _setPinCode(pinCode);
@@ -163,8 +162,10 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
           autoCorrect={false}
           icon={rightIconView()}
         />
-        {loading && <ActivityIndicator color="green" size="large" style={{ marginTop: 24 }} />}
-        {!loading && _pinCode.length == 6 && _stores.length == 0 && (
+        {storePickUpLoading && (
+          <ActivityIndicator color="green" size="large" style={{ marginTop: 24 }} />
+        )}
+        {!storePickUpLoading && _pinCode.length == 6 && _stores.length == 0 && (
           <Text
             style={{
               paddingTop: 24,
@@ -192,7 +193,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   };
 
   const renderCardTitle = () => {
-    if (!loading && _pinCode.length == 6 && _stores.length > 0) {
+    if (!storePickUpLoading && _pinCode.length == 6 && _stores.length > 0) {
       return (
         <>
           <Text style={styles.heading}>{'Stores In This Region'}</Text>
@@ -207,6 +208,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
       <FlatList
         bounces={false}
         data={_stores || []}
+        extraData={globalLoading}
         renderItem={({ item, index }) => (
           <RadioSelectionItem
             key={item.storeid}
@@ -215,7 +217,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             onPress={() => {
               CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${item.storeid}`);
               setSelectedStore(item.storeid);
-              setShowDriveWayPopup(true);
+              // setShowDriveWayPopup(true);
             }}
             containerStyle={{
               marginTop: 16,
@@ -233,8 +235,12 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
         {renderInputWithValidation()}
         {renderStoreDriveWayPickupView()}
         <View style={{ padding: 16, paddingTop: 29 }}>
-          {renderCardTitle()}
-          {renderRadioButtonList()}
+          {!globalLoading && (
+            <>
+              {renderCardTitle()}
+              {renderRadioButtonList()}
+            </>
+          )}
         </View>
       </View>
     );
