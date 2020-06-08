@@ -993,7 +993,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setActiveStores(activeStores);
     setSlicedStoreList(activeStores.length ? activeStores.slice(0, 2) : []);
     setStoresInventory!(storesInventory);
-    !activeStores.length && setStoreId!('');
+    // !activeStores.length && setStoreId!('');
+    setStoreId!('');
   };
 
   const checkStoreInventoryAndUpdateStores = (
@@ -1034,10 +1035,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const fetchStorePickup = (pincode: string, globalLoading?: boolean) => {
-    console.log(
-      'fetchStorePickup-- fetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickup'
-    );
-
     if (isValidPinCode(pincode)) {
       setPinCode && setPinCode(pincode);
       if (pincode.length == 6) {

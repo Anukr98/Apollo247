@@ -1,14 +1,21 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { searchPickupStoresApi, Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  searchPickupStoresApi,
+  Store,
+  GetStoreInventoryResponse,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -59,26 +66,63 @@ const styles = StyleSheet.create({
 export interface StorePickupSceneProps
   extends NavigationScreenProps<{
     fetchStores?: (pincode: string, globalLoading?: boolean | undefined) => void;
-  }> {
-  // pincode: string;
-  // stores: Store[];
-}
+    pincode: string;
+    stores: Store[];
+  }> {}
 
 export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   const fetchStores = props.navigation.getParam('fetchStores');
+  // const pincodeFromProp = props.navigation.getParam('pincode');
+  const storesFromProp = props.navigation.getParam('stores');
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
-  const { storeId, setStoreId, pinCode, setStores, stores, setPinCode } = useShoppingCart();
+  const {
+    storeId,
+    setStoreId,
+    pinCode,
+    setStores,
+    stores,
+    setPinCode,
+    storesInventory,
+    cartItems,
+  } = useShoppingCart();
   const { loading: globalLoading } = useUIElements();
   const [_pinCode, _setPinCode] = useState(pinCode);
-  const [_stores, _setStores] = useState<Store[]>(stores);
+  const [_stores, _setStores] = useState<Store[]>(storesFromProp);
   const [selectedStore, setSelectedStore] = useState<string>(storeId || '');
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
 
+  const areItemsAvailableInStore = (
+    storeItems: GetStoreInventoryResponse['itemDetails'],
+    cartItems: ShoppingCartItem[]
+  ) => {
+    const isInventoryAvailable = (cartItem: ShoppingCartItem) =>
+      !!storeItems.find((item) => item.itemId == cartItem.id && item.qty >= cartItem.quantity);
+
+    return !cartItems.find((item) => !isInventoryAvailable(item));
+  };
+
+  const getStores = (
+    storeItemsInventory: GetStoreInventoryResponse[],
+    stores: Store[],
+    cartItems: ShoppingCartItem[]
+  ) => {
+    const storesWithInventory = storeItemsInventory.filter((item) => {
+      const storeItems = g(item, 'itemDetails');
+      return storeItems && areItemsAvailableInStore(storeItems, cartItems);
+    });
+    console.log({ storeItemsInventory, storesWithInventory });
+    const storeIdsWithInventory = storesWithInventory.map((item) => item.shopId);
+    const storesWithFullInventory = stores.filter((item) =>
+      storeIdsWithInventory.includes(item.storeid)
+    );
+    return storesWithFullInventory;
+  };
+
   useEffect(() => {
     _setPinCode(pinCode);
-    _pinCode.length == 6 && _setStores(stores);
-  }, [pinCode, stores]);
+    _pinCode.length == 6 && _setStores(getStores(storesInventory, stores, cartItems));
+  }, [pinCode, stores, storesInventory]);
 
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
