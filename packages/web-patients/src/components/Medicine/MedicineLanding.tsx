@@ -542,9 +542,9 @@ export const MedicineLanding: React.FC = (props: any) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            <div className={classes.userName}>
+            {/* <div className={classes.userName}>
               hi {currentPatient ? currentPatient.firstName : 'User'} :)
-            </div>
+            </div> */}
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <MedicineAutoSearch />
