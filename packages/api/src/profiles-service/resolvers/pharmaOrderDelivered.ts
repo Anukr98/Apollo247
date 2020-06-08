@@ -1,7 +1,18 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/entities';
+import {
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+  MedicineOrders,
+  TransactionLineItems,
+  OneApollTransaction,
+  ONE_APOLLO_PRODUCT_CATEGORY,
+  Patient,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
+  ONE_APOLLO_STORE_CODE,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -10,6 +21,7 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { log } from 'customWinstonLogger';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -72,13 +84,55 @@ type orderDeliveryInputArgs = {
 type OutForDeliveryInputArgs = {
   outForDeliveryInput: OutForDeliveryInput;
 };
+type ItemDetails = {
+  itemId: string;
+  itemName: string;
+  batchId: string;
+  issuedQty: number;
+  mrp: number;
+  discountPrice: number;
+};
+
+type BillDetails = {
+  billDateTime: Date;
+  billNumber: string;
+  invoiceValue: number;
+};
+
+interface ItemsSkuTypeMap {
+  [key: string]: string;
+}
+
+enum ProductTypes {
+  PHARMA = 'Pharma',
+  FMCG = 'Non Pharma',
+  PL = 'Private Label',
+}
+type ProductDP = {
+  id: number;
+  sku: string;
+  price: number;
+  name: string;
+  status: string;
+  type_id: ProductTypes;
+  url_key: string;
+  is_in_stock: string;
+  mou: string;
+  is_prescription_required: string;
+  Message: string;
+};
+
+type PharmaSKUResp = {
+  productdp: ProductDP[];
+};
 
 const saveOrderDeliveryStatus: Resolver<
   null,
   orderDeliveryInputArgs,
   ProfilesServiceContext,
   OrderDeliveryResult
-> = async (parent, { orderDeliveryInput }, { profilesDb }) => {
+> = async (parent, { orderDeliveryInput }, { mobileNumber, profilesDb }) => {
+  const mobileNumberIn = mobileNumber.slice(3);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByAp(
     orderDeliveryInput.ordersResult.apOrderNo
@@ -103,16 +157,140 @@ const saveOrderDeliveryStatus: Resolver<
     new Date(),
     MEDICINE_ORDER_STATUS.DELIVERED
   );
+  await createOneApolloTransaction(
+    medicineOrdersRepo,
+    orderDetails,
+    orderDetails.patient,
+    mobileNumberIn
+  );
 
   const pushNotificationInput = {
     orderAutoId: orderDetails.orderAutoId,
     notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
   };
-  console.log(pushNotificationInput, 'pushNotificationInput');
   const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
   console.log(notificationResult, 'medicine order delivered notification');
 
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
+};
+
+const createOneApolloTransaction = async (
+  medicineOrdersRepo: MedicineOrdersRepository,
+  order: MedicineOrders,
+  patient: Patient,
+  mobileNumber: string
+) => {
+  const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
+  if (!invoiceDetails.length) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
+  const Transaction: Partial<OneApollTransaction> = {
+    Gender: patient.gender,
+    BU: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+    SendCommunication: true,
+    CalculateHealthCredits: true,
+    MobileNumber: mobileNumber,
+  };
+
+  Transaction.StoreCode = ONE_APOLLO_STORE_CODE.WEBCUS;
+  if (order.bookingSource == BOOKING_SOURCE.MOBILE) {
+    if (order.deviceType == DEVICE_TYPE.ANDROID) {
+      Transaction.StoreCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+    } else {
+      Transaction.StoreCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
+  }
+
+  const transactionLineItems: Partial<TransactionLineItems>[] = [];
+
+  const itemTypemap: ItemsSkuTypeMap = {};
+  const itemSku: string[] = [];
+  invoiceDetails.forEach((val) => {
+    const itemDetails = JSON.parse(val.itemDetails);
+    itemDetails.forEach((item: ItemDetails) => {
+      itemSku.push(item.itemId);
+      transactionLineItems.push({
+        ProductCode: item.itemId,
+        NetAmount:
+          item.discountPrice * item.issuedQty
+            ? item.discountPrice * item.issuedQty
+            : item.mrp * item.issuedQty,
+        GrossAmount: item.mrp * item.issuedQty,
+      });
+    });
+
+    const billDetails: BillDetails = JSON.parse(val.billDetails);
+    Transaction.BillNo = billDetails.billNumber;
+    Transaction.NetAmount = billDetails.invoiceValue;
+    Transaction.TransactionDate = billDetails.billDateTime;
+  });
+  const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
+  const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
+  const pharmaResp = await fetch(skusInfoUrl, {
+    method: 'POST',
+    body: JSON.stringify({
+      params: itemSku.join(','),
+    }),
+    headers: { 'Content-Type': 'application/json', authorization: authToken },
+  });
+  const pharmaResponse = (await pharmaResp.json()) as PharmaSKUResp;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl} - ${order.orderAutoId}`,
+    'createOneApolloTransaction()->API_CALL_STARTING',
+    JSON.stringify(pharmaResponse),
+    ''
+  );
+  if (!pharmaResponse) {
+    throw new AphError(AphErrorMessages.PHARMACY_SKU_FETCH_FAILED, undefined, {});
+  }
+
+  if (pharmaResponse.productdp) {
+    pharmaResponse.productdp.forEach((val) => {
+      if (val.type_id) {
+        itemTypemap[val.sku] = val.type_id;
+      } else {
+        throw new AphError(AphErrorMessages.PHARMACY_SKU_NOT_FOUND, undefined, {});
+      }
+    });
+    transactionLineItems.forEach((val, i, arr) => {
+      if (val.ProductCode) {
+        switch (itemTypemap[val.ProductCode]) {
+          case 'PHARMA':
+            arr[i].ProductName = ProductTypes.PHARMA;
+            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
+            break;
+          case 'FMCG':
+            arr[i].ProductName = ProductTypes.FMCG;
+            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
+            break;
+          case 'PL':
+            arr[i].ProductName = ProductTypes.PL;
+            arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
+            break;
+        }
+      }
+    });
+    Transaction.TransactionLineItems = transactionLineItems;
+    log(
+      'profileServiceLogger',
+      `oneApollo Transaction Payload- ${order.orderAutoId}`,
+      'createOneApolloTransaction()',
+      JSON.stringify(Transaction),
+      ''
+    );
+    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+    log(
+      'profileServiceLogger',
+      `oneApollo Transaction response- ${order.orderAutoId}`,
+      'createOneApolloTransaction()',
+      JSON.stringify(oneApolloResponse),
+      ''
+    );
+  } else {
+    throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
+  }
 };
 
 const saveOrderOutForDeliveryStatus: Resolver<
