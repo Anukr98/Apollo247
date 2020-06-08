@@ -149,7 +149,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [loading, setLoading] = useState<boolean>(false);
   const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
   const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
-    ePrescriptionData || []
+    props.isPresReview ? [] : ePrescriptionData || []
   );
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
 
@@ -401,7 +401,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                 props.setIsEPrescriptionOpen(false);
                 return;
               }
-
               setEPrescriptionData && setEPrescriptionData(selectedEPrescriptions);
               setUploadedEPrescription && setUploadedEPrescription(true);
 
