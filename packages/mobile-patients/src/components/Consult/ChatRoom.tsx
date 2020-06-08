@@ -6,7 +6,6 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  AddAttachmentIcon,
   BackCameraIcon,
   ChatCallIcon,
   ChatIcon,
@@ -5896,8 +5895,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 <Image
                   style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
                   resizeMode={'contain'}
+                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
                 />
               </TouchableOpacity>
               <View>
@@ -6001,8 +6000,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 <Image
                   style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
                   resizeMode={'contain'}
+                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
                 />
               </TouchableOpacity>
               <View>
