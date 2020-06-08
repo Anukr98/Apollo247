@@ -635,12 +635,16 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
-          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          // _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          //   ? setSdConsultationDate(
+          //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          //     )
+          //   : setSdConsultationDate('');
+            _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+                _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
               )
             : setSdConsultationDate('');
-
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
@@ -1239,6 +1243,13 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
         }
+        if (
+          _data &&
+          _data!.data!.updatePatientPrescriptionSentStatus &&
+          _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+        ) {
+          setSdConsultationDate(_data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate);
+        }
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
         setIsPdfPageOpen(true);
@@ -1378,11 +1389,11 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setSaving(false);
-          setSdConsultationDate(
-            _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-              ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-              : ''
-          );
+          // setSdConsultationDate(
+          //   _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+          //     ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+          //     : ''
+          // );
           //setSdConsultationDate('');
           if (!flag) {
             setIsConfirmDialogOpen(true);

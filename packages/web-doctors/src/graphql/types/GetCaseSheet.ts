@@ -210,6 +210,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   consultType: string | null;
   notes: string | null;
   version: number | null;
+  prescriptionGeneratedDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
