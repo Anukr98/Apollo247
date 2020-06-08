@@ -1281,22 +1281,23 @@ export async function sendReminderNotification(
     );
     whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
     //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
-
-    payload = {
-      notification: {
-        title: notificationTitle,
-        body: notificationBody,
-        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
-      },
-      data: {
-        type: 'Reminder_Appointment_15',
-        appointmentId: appointment.id.toString(),
-        patientName: patientDetails.firstName,
-        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
-        content: notificationBody,
-      },
-    };
+    if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
+      payload = {
+        notification: {
+          title: notificationTitle,
+          body: notificationBody,
+          sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        },
+        data: {
+          type: 'Reminder_Appointment_15',
+          appointmentId: appointment.id.toString(),
+          patientName: patientDetails.firstName,
+          doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+          android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+          content: notificationBody,
+        },
+      };
+    }
     //send doctor SMS starts
     if (diffMins <= 1) {
       doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_1_SMS.replace(
