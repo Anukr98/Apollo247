@@ -484,7 +484,7 @@ export const caseSheetTypeDefs = gql`
     success: Boolean
     blobName: String
     prismFileId: String
-    prescriptionGeneratedDate: DateTime | null
+    prescriptionGeneratedDate: DateTime
   }
 
   extend type Mutation {
