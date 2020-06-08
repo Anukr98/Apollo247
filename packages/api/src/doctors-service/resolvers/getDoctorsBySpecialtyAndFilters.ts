@@ -169,7 +169,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-  args.filterInput.sort = args.filterInput.sort || defaultSort();
+  args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
@@ -237,11 +237,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
       bufferTime = consultHour['consultBuffer'];
+      if (!doctor['availableMode'].includes(consultHour.consultMode)) {
+        doctor['availableMode'].push(consultHour.consultMode);
+      }
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
@@ -340,7 +344,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
       finalDoctorsConsultModeAvailability.push({
-        availableModes: [doctor.consultHours[0].consultMode],
+        availableModes: doctor['availableMode'],
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
@@ -461,14 +465,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   };
 };
 
-function defaultSort() {
-  const ISTOffset: number = 330;
-  const currentTime: Date = new Date();
-  const ISTTime: Date = new Date(
-    currentTime.getTime() + (ISTOffset - currentTime.getTimezoneOffset()) * 60000
-  );
-  return ISTTime.getHours() > 7 && ISTTime.getHours() < 16 ? 'distance' : 'availability';
-}
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
