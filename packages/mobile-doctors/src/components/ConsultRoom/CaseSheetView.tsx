@@ -119,6 +119,7 @@ interface DataPair {
 }
 
 export interface CaseSheetViewProps extends NavigationScreenProps {
+  inCall: boolean;
   onStartConsult: () => void;
   onEndConsult: () => void;
   onStopConsult: () => void;
@@ -336,6 +337,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setSelectedReferral,
     referralReason,
     setReferralReason,
+    inCall,
   } = props;
 
   const sendToPatientAction = () => {
@@ -1981,12 +1983,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         flex: 1,
                         justifyContent: 'space-between',
                       }}
-                      // onPress={() =>
-                      //   props.navigation.navigate(AppRoutes.CaseSheetDetails, {
-                      //     consultDetails: i,
-                      //     patientDetails: props.patientDetails,
-                      //   })
-                      // }
+                      onPress={() => {
+                        if (!inCall) {
+                          props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                            consultDetails: i,
+                            patientDetails: props.patientDetails,
+                          });
+                        } else {
+                          showAphAlert &&
+                            showAphAlert({
+                              title: strings.common.alert,
+                              description: strings.alerts.disable_Casesheet_view,
+                            });
+                        }
+                      }}
                     >
                       <Text
                         style={theme.viewStyles.text(
@@ -1997,7 +2007,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           12
                         )}
                       >
-                        {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                        {moment(i.sdConsultationDate || i.appointmentDateTime).format(
+                          'D MMM YYYY, HH:MM A'
+                        )}
                       </Text>
                       <View style={{ flexDirection: 'row' }}>
                         <View style={{ marginRight: 24 }}>
