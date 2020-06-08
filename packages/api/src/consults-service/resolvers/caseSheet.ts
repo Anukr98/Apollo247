@@ -484,6 +484,7 @@ export const caseSheetTypeDefs = gql`
     success: Boolean
     blobName: String
     prismFileId: String
+    prescriptionGeneratedDate: DateTime | null
   }
 
   extend type Mutation {
@@ -695,6 +696,7 @@ type PatientPrescriptionSentResponse = {
   success: boolean;
   blobName: string;
   prismFileId: string;
+  prescriptionGeneratedDate: Date | undefined;
 };
 
 type ModifyCaseSheetInput = {
@@ -1193,6 +1195,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1240,6 +1243,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 
@@ -1268,6 +1272,7 @@ const generatePrescriptionTemp: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1306,6 +1311,7 @@ const generatePrescriptionTemp: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1314,6 +1320,7 @@ const generatePrescriptionTemp: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 
