@@ -1580,7 +1580,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       sentBy: REQUEST_ROLES.DOCTOR,
     };
     unSubscribeBrowserButtonsListener();
-    if (!isResend) {
+    if (!isResend && !props.isNewPrescription) {
       pubnub.publish(
         {
           message: text,
