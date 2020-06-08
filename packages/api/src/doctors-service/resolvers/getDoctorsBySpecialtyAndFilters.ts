@@ -237,11 +237,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
       bufferTime = consultHour['consultBuffer'];
+      if (!doctor['availableMode'].includes(consultHour.consultMode)) {
+        doctor['availableMode'].push(consultHour.consultMode);
+      }
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
@@ -340,7 +344,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
       finalDoctorsConsultModeAvailability.push({
-        availableModes: [doctor.consultHours[0].consultMode],
+        availableModes: doctor['availableMode'],
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
