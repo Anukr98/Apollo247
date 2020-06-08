@@ -9,6 +9,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -188,7 +189,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
   const mascotRef = useRef(null);
-  const { currentLocation, currentPincode } = useLocationDetails();
   const {
     medicineAddress,
     setMedicineAddress,
@@ -210,6 +210,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = React.useState<
+    boolean | null
+  >(null);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
@@ -231,9 +234,13 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const locateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
+        setIsPopoverOpen(false);
+        setIsUserDeniedLocationAccess(false);
         getCurrentLocationDetails(latitude.toString(), longitude.toString());
       },
       (err) => {
+        setIsPopoverOpen(false);
+        setIsUserDeniedLocationAccess(true);
         console.log(err.message);
       },
       {
@@ -245,16 +252,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (
-      !localStorage.getItem('pharmaAddress') &&
-      !localStorage.getItem('currentAddress') &&
-      !isLocationDenied
-    ) {
+    if (!localStorage.getItem('pharmaAddress') && !isUserDeniedLocationAccess) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
           if (PermissionStatus.state === 'denied') {
             setIsPopoverOpen(false);
-            setIsLocationDenied(true);
+            setIsUserDeniedLocationAccess(true);
           } else if (PermissionStatus.state !== 'granted' && !isForceFullyClosePopover) {
             setIsPopoverOpen(true);
           } else if (PermissionStatus.state === 'granted') {
@@ -266,16 +269,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
       setIsPopoverOpen(false);
     }
   });
-
-  useEffect(() => {
-    const medicineAddr = localStorage.getItem('pharmaAddress') || medicineAddress;
-    if (!medicineAddr && currentLocation) {
-      setMedicineAddress(currentLocation);
-    }
-    if (!pharmaAddressDetails.pincode && currentPincode) {
-      setPharmaAddressDetails({ ...pharmaAddressDetails, pincode: currentPincode });
-    }
-  }, [currentLocation, currentPincode]);
 
   useEffect(() => {
     if (!headerPincodeError && pharmaAddressDetails.pincode) {
@@ -291,25 +284,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
         : currentAddress;
     }
     return 'No location';
-  };
-
-  const checkServiceAvailability = (zipCode: string) => {
-    return axios.post(
-      apiDetails.service_url || '',
-      {
-        postalcode: zipCode || '',
-        skucategory: [
-          {
-            SKU: 'PHARMA',
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-        },
-      }
-    );
   };
 
   const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
@@ -331,7 +305,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
               findAddrComponents('sublocality_level_1', addrComponents) ||
               findAddrComponents('sublocality_level_2', addrComponents) ||
               findAddrComponents('locality', addrComponents);
-            setMedicineAddress(area);
+            setMedicineAddress(city);
             setPharmaAddressDetails({
               city,
               state,
@@ -429,10 +403,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <div className={classes.selectedLocation}>
           <span>
             {`${
-              !isPopoverOpen && medicineAddress
-                ? medicineAddress || currentLocation
-                : getAddressFromLocalStorage()
-            } ${pharmaAddressDetails ? pharmaAddressDetails.pincode || currentPincode : ''}`}
+              !isPopoverOpen && medicineAddress ? medicineAddress : getAddressFromLocalStorage()
+            } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
@@ -493,6 +465,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             inputProps={{
               maxLength: 6,
             }}
+            onKeyPress={(e) => {
+              if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+            }}
             value={pincode}
           />
           {pincodeError && (
@@ -544,6 +519,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
               setIsPincodeDialogOpen={setIsPincodeDialogOpen}
               setIsPopoverOpen={setIsPopoverOpen}
               isPopoverOpen={isPopoverOpen}
+              locateCurrentLocation={locateCurrentLocation}
             />
           </div>
         </div>

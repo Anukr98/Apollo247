@@ -403,7 +403,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                 {noOrderDetails ? (
                   'No Order is Found'
                 ) : (
-                  <OrdersSummary orderDetailsData={orderDetailsData} isLoading={isLoading} />
+                  <OrdersSummary
+                    orderDetailsData={orderDetailsData}
+                    isShipmentListHasBilledState={isShipmentListHasBilledState}
+                    isLoading={isLoading}
+                  />
                 )}
               </div>
             </Scrollbars>

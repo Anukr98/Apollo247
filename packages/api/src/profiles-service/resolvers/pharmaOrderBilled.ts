@@ -187,9 +187,10 @@ const saveOrderShipmentInvoice: Resolver<
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: item.quantity,
+          issuedQty: Number((item.quantity / item.packSize).toFixed(2)),
           mou: item.packSize,
-          mrp: item.quantity * item.unitPrice,
+          discountPrice: Number((item.packSize * item.discountPrice).toFixed(2)),
+          mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
         };
       })
     ),

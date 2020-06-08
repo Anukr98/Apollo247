@@ -1482,7 +1482,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const formatDateTime =
       format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
     return this.createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .where('(appointment.appointmentDateTime = :fromDate)', {
         fromDate: formatDateTime,
       })

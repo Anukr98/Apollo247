@@ -142,6 +142,11 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
           <Route
             exact
+            path={clientRoutes.medicineCategoryDetails(':searchMedicineType', ':sku')}
+            component={MedicineDetails}
+          />
+          <Route
+            exact
             path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
             component={MedicineCartLanding}
           />

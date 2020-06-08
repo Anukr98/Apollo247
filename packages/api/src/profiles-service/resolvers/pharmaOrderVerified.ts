@@ -38,6 +38,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    packSize: Int
   }
 
   type SaveOrderShipmentsResult {
@@ -81,6 +82,7 @@ type ItemArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentsInputArgs = {
@@ -106,7 +108,7 @@ const saveOrderShipments: Resolver<
   }
 
   let shipmentsInput = saveOrderShipmentsInput.shipments;
-  let existingShipments: Shipment[] = [];
+  const existingShipments: Shipment[] = [];
   if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
     shipmentsInput = shipmentsInput.filter((shipment) => {
       const savedShipment = orderDetails.medicineOrderShipments.find((savdShipment) => {
@@ -124,7 +126,6 @@ const saveOrderShipments: Resolver<
         const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
           siteId: shipment.siteId,
           siteName: shipment.siteName,
-          itemDetails: JSON.stringify(shipment.itemDetails),
         };
         return await medicineOrdersRepo.updateMedicineOrderShipment(
           orderShipmentsAttrs,
@@ -147,13 +148,20 @@ const saveOrderShipments: Resolver<
   let shipmentsResults;
   try {
     const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
+      const itemDetails = shipment.itemDetails.map((item) => {
+        return {
+          ...item,
+          quantity: Number((item.quantity / item.packSize).toFixed(2)),
+          mrp: Number((item.unitPrice * item.packSize).toFixed(2)),
+        };
+      });
       const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
         currentStatus: MEDICINE_ORDER_STATUS[shipment.status],
         medicineOrders: orderDetails,
         apOrderNo: shipment.apOrderNo,
         siteId: shipment.siteId,
         siteName: shipment.siteName,
-        itemDetails: JSON.stringify(shipment.itemDetails),
+        itemDetails: JSON.stringify(itemDetails),
       };
       return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
     });

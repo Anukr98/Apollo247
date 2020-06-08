@@ -4,7 +4,7 @@ import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/
 import {
   Afternoon,
   AfternoonUnselected,
-  DropdownGreen,
+  Dropdown,
   Evening,
   EveningUnselected,
   Morning,
@@ -331,7 +331,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
                     {reasons[selectedReason - 1].value}
                   </Text>
                   <View style={[{ flex: 1, alignItems: 'flex-end', marginRight: 5 }]}>
-                    <DropdownGreen />
+                    <Dropdown />
                   </View>
                 </View>
               </View>

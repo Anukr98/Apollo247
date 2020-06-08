@@ -1,5 +1,6 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
+import moment from 'moment';
 
 declare global {
   interface Window {
@@ -111,7 +112,13 @@ const pharmaStateCodeMapping: PharmaStateCodeMappingType = {
 const customerCareNumber = '04048217222';
 
 const readableParam = (param: string) => {
-  return param.includes('-') ? param.replace(/-/g, ' ') : param.replace(/\s+/g, '-').toLowerCase();
+  const first =
+    param && param.includes('-')
+      ? param.replace(/-/g, ' ')
+      : param.replace(/\s+/g, '-').toLowerCase();
+  const second =
+    first && first.includes('/') ? first.replace(/[\/]/g, '_') : first.replace(/_/g, '/');
+  return first && second ? second.replace(/\./, '') : '';
 };
 const dayMapping = {
   MONDAY: 'Mo',
@@ -142,13 +149,27 @@ const toBase64 = (file: any) =>
     reader.onerror = (error) => reject(error);
   });
 
+const getDiffInDays = (nextAvailability: string) => {
+  if (nextAvailability && nextAvailability.length > 0) {
+    const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+    const currentTime = moment(new Date());
+    const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
+    return differenceInDays;
+  } else {
+    return 0;
+  }
+};
+
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
 const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
 const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
+const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 
 export {
+  getDiffInDays,
+  NO_SERVICEABLE_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,

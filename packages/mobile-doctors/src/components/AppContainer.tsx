@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import RNExitApp from 'react-native-exit-app';
+import { NotificationProvider } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 
 const reporter = (error: Error, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
@@ -63,7 +64,9 @@ export const AppContainer: React.FC = () => {
   return (
     <AuthProvider>
       <UIElementsProvider>
-        <NavigatorContainer />
+        <NotificationProvider>
+          <NavigatorContainer />
+        </NotificationProvider>
       </UIElementsProvider>
     </AuthProvider>
   );

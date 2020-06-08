@@ -32,6 +32,7 @@ export const GET_DOCTOR_DETAILS = gql`
       streetLine2
       streetLine3
       zip
+      signature
       specialty {
         name
       }
@@ -54,6 +55,8 @@ export const GET_DOCTOR_DETAILS = gql`
           city
           country
           facilityType
+          id
+          imageUrl
           latitude
           longitude
           name
@@ -61,6 +64,7 @@ export const GET_DOCTOR_DETAILS = gql`
           streetLine1
           streetLine2
           streetLine3
+          zipcode
         }
       }
       starTeam {
@@ -179,6 +183,10 @@ export const GET_PATIENT_LOG = gql`
             city
           }
         }
+        unreadMessagesCount {
+          appointmentId
+          count
+        }
       }
       totalResultCount
     }
@@ -204,6 +212,57 @@ export const END_APPOINTMENT_SESSION = gql`
 export const MODIFY_CASESHEET = gql`
   mutation modifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
+      patientDetails {
+        allergies
+        dateOfBirth
+        emailAddress
+        firstName
+        familyHistory {
+          description
+          relation
+        }
+        gender
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+        id
+        lastName
+        lifeStyle {
+          description
+          occupationHistory
+        }
+        mobileNumber
+        patientAddress {
+          id
+          addressLine1
+          addressLine2
+          city
+          mobileNumber
+          state
+          zipcode
+          landmark
+          createdDate
+          updatedDate
+          addressType
+          otherAddressType
+        }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+          medicationHistory
+        }
+        photoUrl
+        uhid
+        relation
+      }
       appointment {
         id
         appointmentDateTime
@@ -320,6 +379,8 @@ export const MODIFY_CASESHEET = gql`
       status
       sentToPatient
       updatedDate
+      referralSpecialtyName
+      referralDescription
     }
   }
 `;
@@ -472,6 +533,7 @@ export const GET_CASESHEET = gql`
         allergies
         lifeStyle {
           description
+          occupationHistory
         }
         patientMedicalHistory {
           bp
@@ -483,6 +545,7 @@ export const GET_CASESHEET = gql`
           pastSurgicalHistory
           temperature
           weight
+          medicationHistory
         }
         familyHistory {
           description
@@ -512,6 +575,59 @@ export const GET_CASESHEET = gql`
         patientId
         sentToPatient
         status
+        referralSpecialtyName
+        referralDescription
+        patientDetails {
+          allergies
+          dateOfBirth
+          emailAddress
+          firstName
+          familyHistory {
+            description
+            relation
+          }
+          gender
+          healthVault {
+            imageUrls
+            reportUrls
+          }
+          id
+          lastName
+          lifeStyle {
+            description
+            occupationHistory
+          }
+          mobileNumber
+          patientAddress {
+            id
+            addressLine1
+            addressLine2
+            city
+            mobileNumber
+            state
+            zipcode
+            landmark
+            createdDate
+            updatedDate
+            addressType
+            otherAddressType
+          }
+          patientMedicalHistory {
+            bp
+            dietAllergies
+            drugAllergies
+            height
+            menstrualHistory
+            pastMedicalHistory
+            pastSurgicalHistory
+            temperature
+            weight
+            medicationHistory
+          }
+          photoUrl
+          uhid
+          relation
+        }
         appointment {
           id
           appointmentDateTime
@@ -519,12 +635,20 @@ export const GET_CASESHEET = gql`
             documentPath
             prismFileId
           }
-          status
           appointmentState
+          appointmentType
           displayId
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
           rescheduleCount
           rescheduleCountByDoctor
-          appointmentType
+          isFollowUp
+          followUpParentId
+          isTransfer
+          transferParentId
           sdConsultationDate
         }
         createdDoctorProfile {
@@ -612,6 +736,8 @@ export const GET_CASESHEET = gql`
         caseSheet {
           consultType
           doctorType
+          referralSpecialtyName
+          referralDescription
           diagnosis {
             name
           }
@@ -865,6 +991,28 @@ export const SEARCH_DIAGNOSTIC = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($searchText: String!, $patientId: String, $city: String) {
+    searchDiagnostics(searchText: $searchText, patientId: $patientId, city: $city) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        gender
+        rate
+        itemRemarks
+        city
+        state
+        itemType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+        collectionType
+      }
+    }
+  }
+`;
+
 export const NEXT_AVAILABLE_SLOT = gql`
   query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput!) {
     getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
@@ -1073,8 +1221,8 @@ export const DOWNLOAD_DOCUMENT = gql`
 `;
 
 export const LOGIN = gql`
-  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!) {
-    login(mobileNumber: $mobileNumber, loginType: $loginType) {
+  query Login($mobileNumber: String!, $loginType: LOGIN_TYPE!, $hashCode: String) {
+    login(mobileNumber: $mobileNumber, loginType: $loginType, hashCode: $hashCode) {
       status
       message
       loginId
@@ -1250,6 +1398,71 @@ export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
       status
+    }
+  }
+`;
+
+export const INSERT_MESSAGE = gql`
+  mutation insertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const MARK_MESSAGE_UNREAD = gql`
+  mutation markMessageToUnread($eventId: String) {
+    markMessageToUnread(eventId: $eventId) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
+
+export const GET_NOTIFICATIONS = gql`
+  query getNotifications($toId: String!, $startDate: Date, $endDate: Date) {
+    getNotifications(toId: $toId, startDate: $startDate, endDate: $endDate) {
+      notificationData {
+        appointmentId
+        doctorId
+        lastUnreadMessageDate
+        patientId
+        patientFirstName
+        patientLastName
+        patientPhotoUrl
+        unreadNotificationsCount
+      }
+    }
+  }
+`;
+
+export const GET_ALL_SPECIALTIES = gql`
+  query getAllSpecialties {
+    getAllSpecialties {
+      id
+      name
+      image
+      # specialistSingularTerm
+      # specialistPluralTerm
+      userFriendlyNomenclature
+      # displayOrder
     }
   }
 `;

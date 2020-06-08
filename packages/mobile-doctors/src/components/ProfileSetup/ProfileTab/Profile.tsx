@@ -1,7 +1,7 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
 import ProfileStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile.styles';
 import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
-import { Down, Star, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Down, Star, Up, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import {
   ADD_SECRETARY,
@@ -204,18 +204,17 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
       <SquareCardWithTitle title={strings.account.your_profile} containerStyle={{ marginTop: 0 }}>
         <View style={styles.cardView}>
           <View style={styles.profileDateView}>
-            {profileData!.photoUrl ? (
-              <Image style={styles.imageview} source={{ uri: profileData!.photoUrl }} />
-            ) : (
-              <Image
-                style={styles.imageview}
-                source={require('../../../images/doctor/doctor.png')}
-              />
-            )}
+            <View style={styles.profileContainerStyle}>
+              {profileData.photoUrl ? (
+                <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
+              ) : (
+                <UserPlaceHolder style={styles.imageview} />
+              )}
+            </View>
+            {profileData.doctorType == 'STAR_APOLLO' ? (
+              <Star style={styles.starIconStyle}></Star>
+            ) : null}
           </View>
-          {profileData!.doctorType == 'STAR_APOLLO' ? (
-            <Star style={styles.starIconStyle}></Star>
-          ) : null}
           <View style={styles.columnContainer}>
             <Text style={[styles.drname]} numberOfLines={1}>
               {`${strings.common.dr} ${profileData!.firstName} ${profileData!.lastName}`}
