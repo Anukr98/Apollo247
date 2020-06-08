@@ -1,11 +1,16 @@
 import React from 'react';
-import { ActivityIndicator, View, StyleProp, ViewStyle } from 'react-native';
+import { ActivityIndicator, View, StyleProp, ViewStyle, Text, TextStyle } from 'react-native';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 export interface SpinnerProps {
   style?: StyleProp<ViewStyle>;
+  indicatorColor?: string;
+  message?: string;
+  messageStyle?: StyleProp<TextStyle>;
 }
 
 export const Spinner: React.FC<SpinnerProps> = (props) => {
+  const { style, indicatorColor, message, messageStyle } = props;
   return (
     <View
       style={[
@@ -23,10 +28,28 @@ export const Spinner: React.FC<SpinnerProps> = (props) => {
           zIndex: 10,
           elevation: 1000,
         },
-        props.style,
+        style,
       ]}
     >
-      <ActivityIndicator animating={true} size="large" color="green" />
+      <ActivityIndicator
+        animating={true}
+        size="large"
+        color={indicatorColor ? indicatorColor : 'green'}
+      />
+      {message ? (
+        <Text
+          style={[
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.APP_GREEN),
+              textAlign: 'center',
+              marginTop: 5,
+            },
+            messageStyle,
+          ]}
+        >
+          {message}
+        </Text>
+      ) : null}
     </View>
   );
 };

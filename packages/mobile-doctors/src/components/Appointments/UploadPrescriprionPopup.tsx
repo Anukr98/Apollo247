@@ -1,3 +1,4 @@
+import UploadPrescriprionPopupStyles from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup.styles';
 import {
   CameraIcon,
   CrossPopup,
@@ -5,22 +6,29 @@ import {
   Path,
   PrescriptionIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Overlay } from 'react-native-elements';
-import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
-import { ScrollView } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import UploadPrescriprionPopupStyles from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup.styles';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect } from 'react';
+import {
+  BackHandler,
+  Platform,
+  SafeAreaView,
+  StyleProp,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import { ScrollView } from 'react-navigation';
 
 const styles = UploadPrescriprionPopupStyles;
 
 export interface UploadPrescriprionPopupProps {
   type?: 'cartOrMedicineFlow' | 'nonCartFlow';
-  isVisible: boolean;
   disabledOption?: any;
   heading: string;
   optionTexts: {
@@ -28,6 +36,8 @@ export interface UploadPrescriprionPopupProps {
     gallery?: string;
     prescription?: string;
   };
+  blockCamera?: boolean;
+  blockCameraMessage?: string;
   instructionHeading?: string;
   instructions?: string[];
   hideTAndCs?: boolean;
@@ -37,7 +47,7 @@ export interface UploadPrescriprionPopupProps {
 }
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const { showAphAlert, setLoading } = useUIElements();
   const formatResponse = (response: ImageCropPickerResponse[]) => {
     console.log('response Img', response);
     if (props.isProfileImage) {
@@ -70,46 +80,68 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       } as any;
     });
   };
-
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+  const handleBack = async () => {
+    props.onClickClose();
+    return false;
+  };
   const onClickTakePhoto = () => {
-    setshowSpinner(true);
-    ImagePicker.openCamera({
-      cropping: props.isProfileImage ? true : false,
-      hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
-      includeBase64: true,
-      multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
-    })
-      .then((response: any) => {
-        setshowSpinner(false);
-        props.onResponse(
-          'CAMERA_AND_GALLERY',
-          formatResponse([response] as ImageCropPickerResponse[])
-        );
+    if (!props.blockCamera) {
+      setLoading && setLoading(true);
+      ImagePicker.openCamera({
+        cropping: props.isProfileImage ? true : false,
+        hideBottomControls: true,
+        width: props.isProfileImage ? 2096 : undefined,
+        height: props.isProfileImage ? 2096 : undefined,
+        includeBase64: true,
+        multiple: props.isProfileImage ? false : true,
+        compressImageQuality: 0.5,
+        compressImageMaxHeight: 2096,
+        compressImageMaxWidth: 2096,
+        writeTempFile: false,
       })
-      .catch((e: any) => {
-        CommonBugFender('Image_Picker_UploadPrescription', e);
-        setshowSpinner(false);
-      });
+        .then((response: any) => {
+          setLoading && setLoading(false);
+          props.onResponse(
+            'CAMERA_AND_GALLERY',
+            formatResponse([response] as ImageCropPickerResponse[])
+          );
+        })
+        .catch((e: any) => {
+          CommonBugFender('Image_Picker_UploadPrescription', e);
+          setLoading && setLoading(false);
+        });
+    } else {
+      showAphAlert &&
+        showAphAlert({
+          title: 'Alert',
+          description: props.blockCameraMessage || strings.alerts.Open_camera_in_video_call,
+        });
+    }
   };
 
   const onClickGallery = async () => {
-    setshowSpinner(true);
+    setLoading && setLoading(true);
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
     })
       .then((response: any) => {
         console.log('res', response);
-
-        setshowSpinner(false);
+        setLoading && setLoading(false);
         props.onResponse(
           'CAMERA_AND_GALLERY',
           formatResponse(response as ImageCropPickerResponse[])
@@ -118,7 +150,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       .catch((e: any) => {
         CommonBugFender('Image_Picker_Open_UploadPrescriptionPopup', e);
         console.log('fail', e);
-        setshowSpinner(false);
+        setLoading && setLoading(false);
       });
   };
 
@@ -160,7 +192,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     return (
       <View style={styles.close}>
         <TouchableOpacity onPress={() => props.onClickClose()}>
-          <CrossPopup style={{ marginRight: 1 }} />
+          <CrossPopup style={{ marginRight: 1, width: 30, height: 30 }} />
         </TouchableOpacity>
       </View>
     );
@@ -263,31 +295,24 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   return (
-    <Overlay
-      onRequestClose={() => props.onClickClose()}
-      isVisible={props.isVisible}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-      containerStyle={{
-        marginBottom: 20,
-      }}
-      fullScreen
-      transparent
-      overlayStyle={{
-        padding: 0,
-        margin: 0,
-        width: '88.88%',
-        height: '88.88%',
-        borderRadius: 10,
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-        elevation: 0,
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 15,
+        elevation: 500,
       }}
     >
       <View
         style={{
           flexGrow: 1,
+          marginHorizontal: 20,
+          marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
           backgroundColor: 'transparent',
         }}
       >
@@ -314,8 +339,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             {!props.hideTAndCs && renderTermsAndCondns()}
           </ScrollView>
         </SafeAreaView>
-        {showSpinner && <Spinner />}
       </View>
-    </Overlay>
+    </View>
   );
 };

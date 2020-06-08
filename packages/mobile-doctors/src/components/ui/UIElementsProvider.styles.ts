@@ -1,8 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
-export default StyleSheet.create({
+const { width } = Dimensions.get('screen');
+export const UIElementsProviderStyles = StyleSheet.create({
   okButtonStyle: {
     paddingHorizontal: 25,
     backgroundColor: 'transparent',
@@ -32,5 +34,47 @@ export default StyleSheet.create({
     textAlign: 'center',
     ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
     marginHorizontal: 5,
+  },
+  popUpContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    zIndex: 5000,
+    elevation: 500,
+  },
+  popUpMainContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    width: width - 40,
+    marginHorizontal: 20,
+    marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 100 : 75) : 55,
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 10,
+  },
+  popUpPointer: {
+    position: 'absolute',
+    backgroundColor: theme.colors.WHITE,
+    top: -9,
+    right: 50,
+    height: 20,
+    width: 20,
+    transform: [{ rotate: '45deg' }],
+  },
+  popUpTitleText: {
+    ...theme.viewStyles.text('B', 16, theme.colors.SKY_BLUE, 1),
+  },
+  popUpDescriptionText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE, 1, 22),
+  },
+  okContainer: {
+    marginTop: 8,
+    alignItems: 'flex-end',
+  },
+  okText: {
+    ...theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW, 1, 24),
   },
 });

@@ -213,7 +213,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
-  const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
+  // const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
@@ -460,14 +460,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       // clear storeId
       setLastStoreIdReplica(storeId);
       setStoreId!('');
-      setStoreInventoryCheck(true);
+      // setStoreInventoryCheck(true);
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && storeId) {
-      if (!storeInventoryCheck) {
-        setStoreInventoryCheck(true);
-        return;
-      }
+      // if (!storeInventoryCheck) {
+      //   setStoreInventoryCheck(true);
+      //   return;
+      // }
 
       setLoading!(true);
       setLastStoreIdReplica(storeId);
@@ -506,8 +506,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     });
   };
 
-  const getDiscountMulBy100 = (price: number, specialPrice: number) =>
-    Math.floor((Number(price) - Number(specialPrice)) / price);
+  const getSpecialPriceFromRelativePrices = (
+    price: number,
+    specialPrice: number,
+    newPrice: number
+  ) => Number(((specialPrice / price) * newPrice).toFixed(2));
 
   const updateCartItemsWithStorePrice = (
     storeItems: GetStoreInventoryResponse['itemDetails'],
@@ -517,35 +520,40 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const validation = cartValidation(
       storeItems.map((storeItem) => {
         const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+        const storeItemSP =
+          cartItem.specialPrice && cartItem.price != storeItemPrice
+            ? getSpecialPriceFromRelativePrices(
+                cartItem.price,
+                cartItem.specialPrice,
+                storeItem.mrp * Number(cartItem.mou)
+              )
+            : cartItem.specialPrice;
         return {
           sku: cartItem.id,
           name: cartItem.name,
           is_in_stock: 1,
-          price: Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2)),
-          special_price: cartItem.specialPrice
-            ? Number(
-                (
-                  getDiscountMulBy100(cartItem.price, cartItem.specialPrice) *
-                  (storeItem.mrp * Number(cartItem.mou))
-                ).toFixed(2)
-              )
-            : 0,
+          price: storeItemPrice,
+          special_price: storeItemSP,
         } as MedicineProduct;
       }),
       cartItems
     );
     if (validation.alertText) {
-      setStoreInventoryCheck(false);
+      // setStoreInventoryCheck(false);
       setLoading!(false);
       showAphAlert!({
         title: 'Hi! :)',
         description: validation.alertText,
+        unDismissable: true,
+        onPressOk: () => {
+          hideAphAlert!();
+          setCartItems!(validation.newItems);
+        },
       });
-      setTimeout(() => {
-        setCartItems!(validation.newItems);
-      }, 30);
+    } else {
+      onComplete();
     }
-    onComplete();
   };
 
   const clearStoreIdAndShowAlert = (message: string) => {
@@ -1021,7 +1029,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const renderStorePickup = () => {
     return (
       <View style={{}}>
-        {!!slicedStoreList.length && !!storeId && (
+        {!!slicedStoreList.length && (
           <StoreDriveWayPickupView onPress={() => setShowDriveWayPopup(true)} />
         )}
         <View style={{ margin: 16 }}>
@@ -1641,7 +1649,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             .replace('{{newPrice}}', `${item.updatedItemFromApi!.special_price}`);
         }
       })
-      .join('\n\n');
+      .join('\n');
 
     const isPriceChange = alertText && alertText.indexOf('from Rs.') > -1;
 
@@ -1698,7 +1706,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     return {
       newItems: newCartItems,
-      alertText: getItemsChangeAlert(cartItemChanges),
+      // alertText: getItemsChangeAlert(cartItemChanges),
+      alertText: cartItemChanges.length
+        ? `Important message for items in your Cart:\n\nItems in your cart will reflect the most recent price in your region.\n\nWe have updated your cart with the latest prices. Please check before you place the order.`
+        : '',
     };
   };
 
@@ -1793,12 +1804,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
-    whatsAppUpdateAPICall(
-      client,
-      optedFor,
-      g(currentPatient, 'whatsAppConsult'),
-      userId ? userId : g(currentPatient, 'id')
-    )
+    whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
       })
@@ -1822,6 +1828,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {renderItemsInCart()}
             <MedicineUploadPrescriptionView
               selectedTab={selectedTab}
+              setSelectedTab={setselectedTab}
               navigation={props.navigation}
             />
             {renderDelivery()}
@@ -1853,7 +1860,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {showDriveWayPopup && !!storeId && (
+      {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
           store={stores.find((item) => item.storeid == storeId)!}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}

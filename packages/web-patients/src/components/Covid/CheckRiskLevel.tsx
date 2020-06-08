@@ -18,8 +18,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         alignItems: 'center',
-        borderRadius: '10px 10px 0 0',
         padding: 20,
+        marginBottom: 20,
       },
     },
     leftIcon: {

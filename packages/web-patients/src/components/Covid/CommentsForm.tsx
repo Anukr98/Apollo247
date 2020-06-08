@@ -171,7 +171,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       <div className={classes.formRow}>
         <div className={classes.commentsBox}>
           <AphTextField
-            label="Your Comment"
+            label="Comment"
             onChange={(event) => setComment(event.target.value)}
             value={comment}
             multiline
@@ -184,15 +184,24 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       </div>
       <div className={classes.formRow}>
         <AphTextField
+          onChange={(event) => handleNameChange(event)}
+          label="Name"
+          placeholder="Enter your name"
+          value={userName}
+        />
+        {!userNameValid && <div className={classes.error}>Invalid name</div>}
+      </div>
+      <div className={classes.formRow}>
+        <AphTextField
           onChange={(event) => setUserEmail(event.target.value)}
-          label="Email*"
-          placeholder="Add your email"
+          label="Email"
+          placeholder="Enter your email ID"
           value={userEmail}
           onBlur={handleEmailValidityCheck}
         />
         {!emailValid && <div className={classes.error}>Invalid email</div>}
 
-        <div className={classes.checkboxGroup}>
+        {/* <div className={classes.checkboxGroup}>
           <FormControlLabel
             control={
               <Checkbox
@@ -205,16 +214,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
             }
             label="Mask Email address while posting comment"
           />
-        </div>
-      </div>
-      <div className={classes.formRow}>
-        <AphTextField
-          onChange={(event) => handleNameChange(event)}
-          label="Full Name*"
-          placeholder="Add your name"
-          value={userName}
-        />
-        {!userNameValid && <div className={classes.error}>Invalid name</div>}
+        </div> */}
       </div>
       <div className={classes.formRow}>
         <div className={classes.checkboxGroup}>
@@ -228,7 +228,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
                 }}
               />
             }
-            label="I would like to subscribe to Apollo 24|7 newsletter"
+            label="Subscribe to the Apollo 247 newsletter"
           />
         </div>
       </div>

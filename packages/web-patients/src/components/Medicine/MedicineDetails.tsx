@@ -412,7 +412,6 @@ export const MedicineDetails: React.FC = (props) => {
             /**schema markup  start*/
             const {
               manufacturer,
-              description,
               image,
               name,
               special_price,
@@ -423,13 +422,24 @@ export const MedicineDetails: React.FC = (props) => {
               PharmaOverview,
               url_key,
             } = data.productdp[0];
+            let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
+            if (
+              type_id &&
+              type_id.toLowerCase() === 'pharma' &&
+              Array.isArray(PharmaOverview) &&
+              PharmaOverview.length
+            ) {
+              const { Overview } = PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
+              const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
+              description = desc.length ? desc[0].CaptionDesc : '';
+            }
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
               name: name,
               image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
-              description: description,
+              description,
               brand: manufacturer,
               sku: params.sku,
               gtin8: id,
@@ -443,23 +453,18 @@ export const MedicineDetails: React.FC = (props) => {
                 itemCondition: 'https://schema.org/NewCondition',
               },
             });
-            if (
-              type_id &&
-              type_id === 'Pharma' &&
-              Array.isArray(PharmaOverview) &&
-              PharmaOverview.length
-            ) {
-              const { generic, Doseform, Overview } = PharmaOverview[0];
-              const description = Overview.filter((desc: any) => desc.Caption === 'USES');
+            if (type_id && type_id.toLowerCase() === 'pharma') {
+              const { generic, Doseform } =
+                PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name: name,
-                description: description.length ? description[0].CaptionDesc : '',
-                activeIngredient: generic.length ? generic.split('+') : '',
+                description,
+                activeIngredient: generic && generic.length ? generic.split('+') : '',
                 dosageForm: Doseform,
               });
-            };
+            }
             /**schema markup End */
 
             /**Gtm code start  */
@@ -474,11 +479,11 @@ export const MedicineDetails: React.FC = (props) => {
             /**Gtm code End  */
           })
           .catch((e) => {
-            alert(e);
+            console.log(e);
           });
       })
       .catch((e) => {
-        alert(e);
+        console.log(e);
       });
   };
 
@@ -648,17 +653,19 @@ export const MedicineDetails: React.FC = (props) => {
       />
     ));
   };
-  const description =
-    medicineDetails &&
-    medicineDetails.description
-      .split('&lt;')
-      .join('<')
-      .split('&gt;')
-      .join('>')
-      .replace(/(<([^>]+)>)/gi, '')
-      .replace(/&amp;amp;/g, '&')
-      .replace(/&amp;nbsp;/g, ' ')
-      .replace(/&amp;/g, '&');
+
+  const renderInfo = () => {
+    return (
+      medicineDetails.description &&
+      medicineDetails.description
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;rn/g, '>')
+        .replace(/&gt;r/g, '>')
+        .replace(/&gt;/g, '>')
+        .replace(/\.t/, '.')
+    );
+  };
 
   return (
     <div className={classes.root}>
@@ -758,10 +765,9 @@ export const MedicineDetails: React.FC = (props) => {
                               <div className={classes.productDetailed}>
                                 <div className={classes.productInfo}>Product Information</div>
                                 <div className={classes.productDescription}>
-                                  {description &&
-                                    description.split('rn').map((data, index) => {
-                                      return <p key={index}>{data}</p>;
-                                    })}
+                                  {medicineDetails.description && (
+                                    <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                  )}
                                 </div>
                               </div>
                             ) : null}

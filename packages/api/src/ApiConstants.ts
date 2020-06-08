@@ -299,6 +299,7 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
+  NOT_APPLICABLE = 'Not Applicable',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
   AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, if you wish to start the consultation now, please join the consultation room by clicking here  {2}.',
@@ -322,4 +323,13 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
+
+  // whatsapp constants
+  WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
+
+  // pharmacologist email config
+  PHARMACOLOGIST_CONSULT_TITLE = 'Prescription Review for {0} | {1}',
+  PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
+  PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
+  // end of pharmacologist email config
 }

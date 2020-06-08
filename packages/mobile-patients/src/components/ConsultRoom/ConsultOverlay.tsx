@@ -857,12 +857,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
-    whatsAppUpdateAPICall(
-      client,
-      g(currentPatient, 'whatsAppMedicine'),
-      optedFor,
-      userId ? userId : g(currentPatient, 'id')
-    )
+    whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();

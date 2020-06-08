@@ -7,7 +7,6 @@ import {
   Geolocation,
   FacilityDistanceMap,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -92,29 +91,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     perfectMatchedDoctorsId = [],
     earlyAvailableApolloMatchedDoctors = [],
     earlyAvailableNonApolloMatchedDoctors = [],
-    earlyAvailableNearByMatchedApolloDoctors = [],
-    earlyAvailableFarMatchedApolloDoctors = [],
-    nearByApolloMatchedDoctors = [],
-    remainingApolloMatchedDoctors = [],
-    earlyAvailableStarApolloMatchedDoctors = [],
-    earlyAvailableNearByMatchedStarApolloDoctors = [],
-    earlyAvailableFarMatchedStarApolloDoctors = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const possibleDoctors = [],
     earlyAvailableApolloPossibleDoctors = [],
     earlyAvailableNonApolloPossibleDoctors = [],
-    earlyAvailableNearByPossibleApolloDoctors = [],
-    earlyAvailableFarPossiblepolloDoctors = [],
-    nearByApolloPossibleDoctors = [],
-    earlyAvailableStarApolloPossibleDoctors = [],
-    earlyAvailableNearByPossibleStarApolloDoctors = [],
-    earlyAvailableFarStarPossibleApolloDoctors = [],
-    remainingApolloPossibleDoctors = [],
     possibleSpecialties: DoctorSpecialty[] = [],
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  const facilityDistances: FacilityDistanceMap = {};
 
   // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
@@ -148,6 +132,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     },
   };
   const responsePerfectMatchDoctors = await client.search(PerfectdocSearchParams);
+
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -167,17 +152,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             matchedDoctorsNextAvailability.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doctor.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -213,7 +198,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
     if (doctor['activeSlotCount'] > 0) {
       perfectMatchedDoctorsId.push(doctor['id']);
-      perfectMatchedDoctors.push(doctor);
+      if (doctor.doctorType === 'STAR_APOLLO') {
+        perfectMatchedDoctors.unshift(doctor);
+      } else {
+        perfectMatchedDoctors.push(doctor);
+      }
     }
   }
   const docSearchParams: RequestParams.Search = {
@@ -267,17 +256,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       for (const slot of slots['slots']) {
         if (
           slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
         ) {
           if (doctor['activeSlotCount'] === 0) {
             doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
               new Date(slot.slot),
-              new Date()
+              callStartTime
             );
             matchedDoctorsNextAvailability.push({
-              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: new Date(),
+              currentDateTime: callStartTime,
               doctorId: doctor.doctorId,
               onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
@@ -313,15 +302,21 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
     if (doctor['activeSlotCount'] > 0) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
-        if (doctor.doctorType === 'STAR_APOLLO') {
-          earlyAvailableStarApolloMatchedDoctors.push(doctor);
-        } else if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-          earlyAvailableApolloMatchedDoctors.push(doctor);
+        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
+          if (doctor.doctorType === 'STAR_APOLLO') {
+            earlyAvailableApolloMatchedDoctors.unshift(doctor);
+          } else {
+            earlyAvailableApolloMatchedDoctors.push(doctor);
+          }
         } else {
           earlyAvailableNonApolloMatchedDoctors.push(doctor);
         }
       } else {
-        matchedDoctors.push(doctor);
+        if (doctor.doctorType === 'STAR_APOLLO') {
+          matchedDoctors.unshift(doctor);
+        } else {
+          matchedDoctors.push(doctor);
+        }
       }
     }
   }
@@ -348,6 +343,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 },
               },
             ],
+            should: {
+              match: {
+                doctorType: {
+                  query: 'STAR_APOLLO',
+                  boost: 10,
+                },
+              },
+            },
           },
         },
       },
@@ -371,17 +374,19 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         for (const slot of slots['slots']) {
           if (
             slot.status == 'OPEN' &&
-            differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime
+            differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
           ) {
             if (doctor['activeSlotCount'] === 0) {
               doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
                 new Date(slot.slot),
-                new Date()
+                callStartTime
               );
               possibleDoctorsNextAvailability.push({
-                availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+                availableInMinutes: Math.abs(
+                  differenceInMinutes(callStartTime, new Date(slot.slot))
+                ),
                 physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-                currentDateTime: new Date(),
+                currentDateTime: callStartTime,
                 doctorId: doctor.doctorId,
                 onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
                 referenceSlot: slot.slot,
@@ -417,250 +422,68 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
       if (doctor['activeSlotCount'] > 0) {
         if (doctor['earliestSlotavailableInMinutes'] < 241) {
-          if (doctor.doctorType === 'STAR_APOLLO') {
-            earlyAvailableStarApolloPossibleDoctors.push(doctor);
-          } else if (
-            doctor.facility[0].name.includes('Apollo') ||
-            doctor.doctorType === 'PAYROLL'
-          ) {
-            earlyAvailableApolloPossibleDoctors.push(doctor);
+          if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
+            if (doctor.doctorType === 'STAR_APOLLO') {
+              earlyAvailableApolloPossibleDoctors.unshift(doctor);
+            } else {
+              earlyAvailableApolloPossibleDoctors.push(doctor);
+            }
           } else {
             earlyAvailableNonApolloPossibleDoctors.push(doctor);
           }
         } else {
-          possibleDoctors.push(doctor);
+          if (doctor.doctorType === 'STAR_APOLLO') {
+            possibleDoctors.unshift(doctor);
+          } else {
+            possibleDoctors.push(doctor);
+          }
         }
       }
     }
   }
-  if (args.geolocation) {
-    facilityIds.forEach((facilityId: string, index: number) => {
-      facilityDistances[facilityId] = distanceBetweenTwoLatLongInMeters(
-        facilityLatLongs[index][0],
-        facilityLatLongs[index][1],
-        args.geolocation.latitude,
-        args.geolocation.longitude
-      ).toString();
-    });
-    for (const doctor of earlyAvailableStarApolloMatchedDoctors) {
-      if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-        earlyAvailableNearByMatchedStarApolloDoctors.push(doctor);
-      } else {
-        earlyAvailableFarMatchedStarApolloDoctors.push(doctor);
-      }
-    }
-    for (const doctor of earlyAvailableApolloMatchedDoctors) {
-      if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-        earlyAvailableNearByMatchedApolloDoctors.push(doctor);
-      } else {
-        earlyAvailableFarMatchedApolloDoctors.push(doctor);
-      }
-    }
-    for (const doctor of matchedDoctors) {
-      if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-        if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-          nearByApolloMatchedDoctors.push(doctor);
-        } else {
-          remainingApolloMatchedDoctors.push(doctor);
-        }
-      }
-    }
-    for (const doctor of earlyAvailableStarApolloPossibleDoctors) {
-      if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-        earlyAvailableNearByPossibleStarApolloDoctors.push(doctor);
-      } else {
-        earlyAvailableFarStarPossibleApolloDoctors.push(doctor);
-      }
-    }
-    for (const doctor of earlyAvailableApolloPossibleDoctors) {
-      if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-        earlyAvailableNearByPossibleApolloDoctors.push(doctor);
-      } else {
-        earlyAvailableFarPossiblepolloDoctors.push(doctor);
-      }
-    }
-    for (const doctor of possibleDoctors) {
-      if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-        if (parseFloat(facilityDistances[doctor.doctorHospital[0].facility.id]) < 50000) {
-          nearByApolloPossibleDoctors.push(doctor);
-        } else {
-          remainingApolloPossibleDoctors.push(doctor);
-        }
-      }
-    }
 
-    finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNearByMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableFarMatchedStarApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableFarMatchedApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNonApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        nearByApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        remainingApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      );
-
-    finalPossibleDoctors = earlyAvailableNearByPossibleStarApolloDoctors
-      .sort(
+  finalMatchedDoctors = perfectMatchedDoctors
+    .concat(
+      earlyAvailableApolloMatchedDoctors.sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
           parseFloat(b.earliestSlotavailableInMinutes)
       )
-      .concat(
-        earlyAvailableNearByPossibleApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableFarStarPossibleApolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableFarPossiblepolloDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNonApolloPossibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        nearByApolloPossibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        remainingApolloPossibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      );
-  } else {
-    finalMatchedDoctors = perfectMatchedDoctors
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        earlyAvailableNonApolloMatchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      )
-      .concat(
-        matchedDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      );
-
-    finalPossibleDoctors = earlyAvailableStarApolloPossibleDoctors
-      .sort(
+    )
+    .concat(
+      earlyAvailableNonApolloMatchedDoctors.sort(
         (a, b) =>
           parseFloat(a.earliestSlotavailableInMinutes) -
           parseFloat(b.earliestSlotavailableInMinutes)
       )
-      .concat(
-        earlyAvailableApolloPossibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
+    )
+    .concat(
+      matchedDoctors.sort(
+        (a, b) =>
+          parseFloat(a.earliestSlotavailableInMinutes) -
+          parseFloat(b.earliestSlotavailableInMinutes)
       )
-      .concat(
-        earlyAvailableNonApolloPossibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
+    );
+
+  finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
+    .sort(
+      (a, b) =>
+        parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
+    )
+    .concat(
+      earlyAvailableNonApolloPossibleDoctors.sort(
+        (a, b) =>
+          parseFloat(a.earliestSlotavailableInMinutes) -
+          parseFloat(b.earliestSlotavailableInMinutes)
       )
-      .concat(
-        possibleDoctors.sort(
-          (a, b) =>
-            parseFloat(a.earliestSlotavailableInMinutes) -
-            parseFloat(b.earliestSlotavailableInMinutes)
-        )
-      );
-  }
+    )
+    .concat(
+      possibleDoctors.sort(
+        (a, b) =>
+          parseFloat(a.earliestSlotavailableInMinutes) -
+          parseFloat(b.earliestSlotavailableInMinutes)
+      )
+    );
 
   searchLogger(`API_CALL___END`);
   return {

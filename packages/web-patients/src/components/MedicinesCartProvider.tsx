@@ -5,9 +5,8 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-
-// import axios from 'axios';
-// const quoteUrl = 'http://api.apollopharmacy.in/apollo_api.php?type=guest_quote';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -75,6 +74,9 @@ export interface MedicineCartContextProps {
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
+  updateCartItemPrice:
+    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+    | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
   storePickupPincode: string | null;
@@ -119,6 +121,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   removeCartItem: null,
   removeCartItems: null,
   updateCartItem: null,
+  updateCartItemPrice: null,
   updateCartItemQty: null,
   cartTotal: 0,
   storePickupPincode: null,
@@ -297,8 +300,28 @@ export const MedicinesCartProvider: React.FC = (props) => {
   }, [prescriptionUploaded, ePrescriptionData, uploadedEPrescription]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
-    setCartItems([...cartItems, itemToAdd]);
-    setIsCartUpdated(true);
+    if (
+      currentPatient &&
+      currentPatient.id &&
+      pharmaAddressDetails &&
+      pharmaAddressDetails.pincode
+    ) {
+      checkServiceAvailability(pharmaAddressDetails.pincode)
+        .then(({ data }: any) => {
+          if (data && data.Availability) {
+            setCartItems([...cartItems, itemToAdd]);
+            setIsCartUpdated(true);
+          } else {
+            window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } else {
+      setCartItems([...cartItems, itemToAdd]);
+      setIsCartUpdated(true);
+    }
   };
 
   const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
@@ -317,6 +340,23 @@ export const MedicinesCartProvider: React.FC = (props) => {
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates && itemUpdates.quantity) {
         cartItems[foundIndex].quantity = cartItems[foundIndex].quantity + itemUpdates.quantity;
+      }
+      setCartItems([...cartItems]);
+      setIsCartUpdated(true);
+    }
+  };
+
+  /* The function below should be deleted when
+   updateCartItem is modified to update the cart as 
+    per the passed input and its usages are corrected everywhere
+  */
+  const updateCartItemPrice: MedicineCartContextProps['updateCartItemPrice'] = (itemUpdates) => {
+    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    if (foundIndex !== -1) {
+      if (cartItems && itemUpdates && itemUpdates.price) {
+        cartItems[foundIndex].price = itemUpdates.price;
+        cartItems[foundIndex].special_price = itemUpdates.special_price;
+        cartItems[foundIndex].is_in_stock = itemUpdates.is_in_stock;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
       }
@@ -414,6 +454,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         removeCartItem,
         removeCartItems,
         updateCartItem,
+        updateCartItemPrice,
         updateCartItemQty,
         cartTotal,
         setStorePickupPincode,
@@ -461,6 +502,8 @@ export const useShoppingCart = () => ({
   removeCartItem: useShoppingCartContext().removeCartItem,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
+
+  updateCartItemPrice: useShoppingCartContext().updateCartItemPrice,
   updateCartItemQty: useShoppingCartContext().updateCartItemQty,
   cartTotal: useShoppingCartContext().cartTotal,
   setStorePickupPincode: useShoppingCartContext().setStorePickupPincode,

@@ -6,8 +6,8 @@ const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
-const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const apolloProdBaseUrl = 'https://magento.apollo247.com';
+const apolloUatBaseUrl = 'https://magento.apollo247.com';
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -19,7 +19,7 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
-enum AppEnv {
+export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   PROD = 'PROD',
@@ -149,8 +149,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.513',
-  Android_Version: '2.515',
+  iOS_Version: '2.5131',
+  Android_Version: '2.5151',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -225,8 +225,8 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.41',
-  Android_Version: '2.41',
+  iOS_Version: '2.42',
+  Android_Version: '2.42',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -641,6 +641,7 @@ const Specialities: SpecialitiesType = {
 };
 
 export const AppConfig = {
+  APP_ENV,
   Configuration,
   Specialities,
 };

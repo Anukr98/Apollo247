@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalView: {
-    margin: 90,
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 25,
@@ -272,9 +271,9 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         <TouchableOpacity
           style={[
             styles.closeButton,
-            heightPercent <= 31 ?
-              { top: 140, right: 40 } :
-              { top: '31%', right: 60 }
+            pixelRatio <= 2 ?
+              { top: 160, right: 30 } :
+              { top: '31%', right: 50 }
           ]}
           onPress={() => {
             setShowAlert(false);
@@ -286,7 +285,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
           <View
             style={[
               styles.modalView,
-              heightPercent <= 31 ? { margin: 70 } : { margin: 90 },
+              pixelRatio <= 2 ? { margin: 60 } : { margin: 80 },
             ]}>
             <Text
               style={{
