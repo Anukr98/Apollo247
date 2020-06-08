@@ -1833,6 +1833,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {renderItemsInCart()}
             <MedicineUploadPrescriptionView
               selectedTab={selectedTab}
+              setSelectedTab={setselectedTab}
               navigation={props.navigation}
             />
             {renderDelivery()}
