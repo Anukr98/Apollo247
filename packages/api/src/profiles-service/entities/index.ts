@@ -31,9 +31,9 @@ export enum ONE_APOLLO_STORE_CODE {
 }
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {
-  PRIVATE_LABEL = 'A',
-  NON_PHARMA = 'F',
-  PHARMA = 'P',
+  PRIVATE_LABEL = 'A247',
+  NON_PHARMA = 'F247',
+  PHARMA = 'P247',
 }
 
 export type OneApollTransaction = {
