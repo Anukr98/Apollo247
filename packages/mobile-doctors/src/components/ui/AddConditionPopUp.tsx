@@ -101,7 +101,9 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
             diagnosisData.push(...apiData);
             setSearchData(diagnosisData.filter((i) => i !== null));
           })
-          .catch(() => {})
+          .catch(() => {
+            setSearchData([{ name: searchVal, id: '' } as searchDiagnosis_searchDiagnosis]);
+          })
           .finally(() => setLoading(false));
       } else {
         setSearchData([]);
