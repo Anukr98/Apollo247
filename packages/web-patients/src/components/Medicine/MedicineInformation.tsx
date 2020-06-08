@@ -16,7 +16,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { gtmTracking } from '../../gtmTracking';
-import moment from 'moment';
+import { NO_SERVICEABLE_MESSAGE, getDiffInDays } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -318,17 +318,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
   };
 
-  const getDiffInDays = (nextAvailability: string) => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
-      return differenceInDays;
-    } else {
-      return 0;
-    }
-  };
-
   const fetchSubstitutes = async () => {
     await axios
       .post(
@@ -385,7 +374,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
-              setErrorMessage('Sorry, not serviceable in your area');
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
             if (
@@ -397,10 +386,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 setDeliveryTime(res.data.tat[0].deliverydate);
                 setErrorMessage('');
               } else {
-                setErrorMessage('Sorry, not serviceable in your area');
+                setErrorMessage(NO_SERVICEABLE_MESSAGE);
               }
             } else if (typeof res.data.errorMSG === 'string') {
-              setErrorMessage('Sorry, not serviceable in your area');
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
           }
         } catch (error) {
