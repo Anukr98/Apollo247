@@ -424,7 +424,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setHealthWalletArrayData(
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
     );
-    setPastList(g(caseSheet, 'pastAppointments') || null);
+    setPastList(
+      (g(caseSheet, 'pastAppointments') || []).sort(
+        (a, b) =>
+          moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
+            .toDate()
+            .getTime() -
+          moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
+            .toDate()
+            .getTime()
+      )
+    );
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
     setappointmentData(g(caseSheet, 'caseSheetDetails', 'appointment'));
     setdoctorId(g(caseSheet, 'caseSheetDetails', 'doctorId') || '');
@@ -1700,6 +1710,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     (status, response) => {}
                   );
                 }}
+                inCall={isCall || isAudioCall}
                 chatFiles={chatFiles}
                 setUrl={setUrl}
                 setPatientImageshow={setPatientImageshow}
