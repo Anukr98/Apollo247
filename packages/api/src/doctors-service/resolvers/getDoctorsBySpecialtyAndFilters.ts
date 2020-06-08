@@ -247,6 +247,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         doctor['availableMode'].push(consultHour.consultMode);
       }
     }
+    if (doctor['availableMode'].length > 1) {
+      doctor['availableMode'] = ['BOTH'];
+    }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
