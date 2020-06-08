@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
@@ -195,6 +196,19 @@ export const Navigation: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
+  const params = useParams<{
+    searchMedicineType: string;
+    searchText: string;
+    sku: string;
+  }>();
+
+  const medicineActiveClass =
+    currentPath === clientRoutes.medicines() ||
+    currentPath === clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText) ||
+    currentPath === clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku) ||
+    currentPath === clientRoutes.medicineDetails(params.sku) ||
+    currentPath === clientRoutes.medicineAllBrands() ||
+    currentPath === clientRoutes.prescriptionsLanding();
 
   return (
     <div
@@ -218,12 +232,7 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             to={clientRoutes.medicines()}
-            className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
-                ? classes.menuItemActive
-                : ''
-            }
+            className={medicineActiveClass ? classes.menuItemActive : ''}
             title={'Medicines'}
           >
             Medicines
@@ -258,12 +267,7 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             to={clientRoutes.medicines()}
-            className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
-                ? classes.menuItemActive
-                : ''
-            }
+            className={medicineActiveClass ? classes.menuItemActive : ''}
             title={'Pharmacy'}
           >
             <span className={classes.menuTitle}>Pharmacy</span>
