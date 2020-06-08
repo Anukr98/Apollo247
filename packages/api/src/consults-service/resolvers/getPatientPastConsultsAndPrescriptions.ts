@@ -14,6 +14,8 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import _ from 'lodash';
+import { app } from 'firebase-admin';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
@@ -178,6 +180,15 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
       filter,
       offset,
       limit
+    );
+
+    patientAppointments.map(
+      (appointment) =>
+        (appointment.caseSheet = _.orderBy(
+          appointment.caseSheet,
+          (caseSheet) => caseSheet.version,
+          'desc'
+        ))
     );
   }
 
