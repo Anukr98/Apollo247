@@ -135,15 +135,16 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
             </View>
             <View>
               <LinkUHIDStep1 style={{
+                marginTop: 20,
                 resizeMode: 'contain',
-                width: 100,
+                width: 90,
                 height: 220,
               }} />
               <View
                 style={{
                   position: 'absolute',
-                  left: 80,
-                  top: 95,
+                  left: 72,
+                  top: 115,
                   backgroundColor: '#d8d8d8',
                   padding: 4,
                   borderRadius: 7,

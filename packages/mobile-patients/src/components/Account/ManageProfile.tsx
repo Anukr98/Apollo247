@@ -462,7 +462,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
           ...viewStyles.cardViewStyle,
           ...viewStyles.shadowStyle,
           padding: 16,
-          paddingBottom: 25,
+          paddingBottom: 28,
           backgroundColor: colors.LIGHT_BLUE,
           flexDirection: 'row',
         }}
@@ -494,7 +494,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
               <Text 
                 style={[
                   styles.readMoreText,
-                  heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(11)}
+                  heightPercent <= 31 ? {...fonts.IBMPlexSansMedium(9)} : {...fonts.IBMPlexSansMedium(10)}
                 ]}>
                   Read More
                 </Text>
