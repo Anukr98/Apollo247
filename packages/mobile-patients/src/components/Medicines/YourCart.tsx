@@ -1879,12 +1879,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
-    whatsAppUpdateAPICall(
-      client,
-      optedFor,
-      g(currentPatient, 'whatsAppConsult'),
-      userId ? userId : g(currentPatient, 'id')
-    )
+    whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
       })

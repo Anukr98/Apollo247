@@ -243,11 +243,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (!currentPatient) {
       getPatientApiCall();
     }
-    checkTime();
+    // checkTime();
   }, [currentPatient]);
 
   useEffect(() => {
-    checkTime();
+    // checkTime();
 
     if (doctorsList.length === 0) {
       if (
@@ -1137,7 +1137,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(true);
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
   const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
-  const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(false);
+  const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(true);
 
   const renderBottomOptions = () => {
     return (
