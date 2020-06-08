@@ -191,19 +191,22 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     physicalPrescriptions,
     pinCode,
     setPinCode,
-    stores,
+    stores: storesFromContext,
     setStores,
+    storesInventory,
+    setStoresInventory,
     ePrescriptions,
     setShowPrescriptionAtStore,
     setAddresses,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
+  const [activeStores, setActiveStores] = useState<Store[]>([]);
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [deliveryTime, setdeliveryTime] = useState<string>('');
@@ -212,8 +215,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
-  const [lastStoreIdReplica, setLastStoreIdReplica] = useState('');
-  // const [storeInventoryCheck, setStoreInventoryCheck] = useState(true);
+  const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
@@ -454,44 +456,51 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [deliveryAddressId, cartItems]);
 
   useEffect(() => {
-    const isOnlyCartItemsChange = lastStoreIdReplica == storeId;
+    // update cart item prices if any
+    if (storeId && cartItems.length) {
+      const onComplete = () => {
+        setShowDriveWayPopup(true);
+      };
+      updateCartItemsWithStorePrice(
+        g(storesInventory.find((item) => item.shopId == storeId)!, 'itemDetails') || [],
+        cartItems,
+        onComplete
+      );
+    }
+  }, [storeId]);
 
-    if (cartItems.length == 0 && storeId) {
-      // clear storeId
-      setLastStoreIdReplica(storeId);
+  useEffect(() => {
+    const pincodeReplica = lastPincodeReplica;
+    const cartItemsReplica =
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
+    if (lastCartItemsReplica == cartItemsReplica) {
+      return;
+    }
+
+    if (cartItems.length == 0 && activeStores.length) {
+      // clear storeId & stores
       setStoreId!('');
-      // setStoreInventoryCheck(true);
+      // setStores!([]);
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
-    } else if (cartItems.length > 0 && storeId) {
-      // if (!storeInventoryCheck) {
-      //   setStoreInventoryCheck(true);
-      //   return;
-      // }
-
-      setLoading!(true);
-      setLastStoreIdReplica(storeId);
-      getStoreInventoryApi(
-        storeId,
-        cartItems.map((item) => item.id)
-      )
-        .then(({ data }) => {
-          const storeItems = g(data, 'itemDetails');
-          if (storeItems && areItemsAvailableInStore(storeItems, cartItems)) {
-            const onComplete = () => {
-              !isOnlyCartItemsChange && setShowDriveWayPopup(true);
-            };
-            updateCartItemsWithStorePrice(storeItems, cartItems, onComplete);
-          } else {
-            clearStoreIdAndShowAlert(string.medicine_cart.cartItemsNotAvailableInStore);
-          }
-        })
-        .catch(() => {
-          clearStoreIdAndShowAlert(string.medicine_cart.storeItemsAvailabilityApiFailMsg);
-        })
-        .finally(() => setLoading!(false));
+    } else if (cartItems.length > 0 && pinCode.length == 6) {
+      if (
+        pincodeReplica == pinCode &&
+        cartItems.filter(
+          (cartItem) =>
+            !storesInventory.find((item) =>
+              item.itemDetails.map((i) => i.itemId).includes(cartItem.id)
+            )
+        )
+      ) {
+        checkStoreInventoryAndUpdateStores(storesFromContext, cartItems, storesInventory);
+      } else {
+        fetchStorePickup(pinCode, true);
+      }
     }
-  }, [storeId, cartItems]);
+    setLastCartItemsReplica(cartItemsReplica);
+    setLastPincodeReplica(pinCode);
+  }, [cartItems]);
 
   useEffect(() => {
     if (coupon && cartTotal > 0) {
@@ -954,28 +963,100 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
+  const [storePickUpLoading, setStorePickUpLoading] = useState<boolean | undefined>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const fetchStorePickup = (pincode: string) => {
+  const getStoresInventory = (storeIds: string[], cartItems: ShoppingCartItem[]) =>
+    Promise.all(
+      storeIds.map((storeId) =>
+        getStoreInventoryApi(
+          storeId,
+          cartItems.map((item) => item.id)
+        )
+      )
+    );
+
+  const handleStoresError = (e?: Error) => {
+    e && CommonBugFender('YourCart_fetchStorePickup', e);
+    setStorePickUpLoading(false);
+    setLoading!(false);
+  };
+
+  const updateStores = (
+    activeStores: Store[],
+    stores: Store[],
+    storesInventory: GetStoreInventoryResponse[]
+  ) => {
+    setStorePickUpLoading(false);
+    setLoading!(false);
+    setStores!(stores);
+    setActiveStores(activeStores);
+    setSlicedStoreList(activeStores.length ? activeStores.slice(0, 2) : []);
+    setStoresInventory!(storesInventory);
+    !activeStores.length && setStoreId!('');
+  };
+
+  const checkStoreInventoryAndUpdateStores = (
+    stores: Store[],
+    cartItems: ShoppingCartItem[],
+    storeItemsInventory?: GetStoreInventoryResponse[]
+  ) => {
+    const handle = (
+      storeItemsInventory: GetStoreInventoryResponse[],
+      stores: Store[],
+      cartItems: ShoppingCartItem[]
+    ) => {
+      const storesWithInventory = storeItemsInventory.filter((item) => {
+        const storeItems = g(item, 'itemDetails');
+        return storeItems && areItemsAvailableInStore(storeItems, cartItems);
+      });
+      const storeIdsWithInventory = storesWithInventory.map((item) => item.shopId);
+      const storesWithFullInventory = stores.filter((item) =>
+        storeIdsWithInventory.includes(item.storeid)
+      );
+      updateStores(storesWithFullInventory, stores, storeItemsInventory);
+    };
+
+    storeItemsInventory
+      ? handle(storeItemsInventory, stores, cartItems)
+      : getStoresInventory(
+          stores.map((s) => s.storeid),
+          cartItems
+        )
+          .then((storeItemsInventory) => {
+            handle(
+              storeItemsInventory.map((v) => v.data),
+              stores,
+              cartItems
+            );
+          })
+          .catch(handleStoresError);
+  };
+
+  const fetchStorePickup = (pincode: string, globalLoading?: boolean) => {
+    console.log(
+      'fetchStorePickup-- fetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickupfetchStorePickup'
+    );
+
     if (isValidPinCode(pincode)) {
       setPinCode && setPinCode(pincode);
       if (pincode.length == 6) {
-        setStorePickUpLoading(true);
+        globalLoading ? setLoading!(true) : setStorePickUpLoading(true);
         searchPickupStoresApi(pincode)
           .then(({ data: { Stores, stores_count } }) => {
-            setStorePickUpLoading(false);
-            setStores && setStores(stores_count > 0 ? Stores : []);
-            setSlicedStoreList(stores_count > 0 ? Stores.slice(0, 2) : []);
-            setStoreId && setStoreId('');
+            const stores = (stores_count && Stores) || [];
+            if (stores.length) {
+              checkStoreInventoryAndUpdateStores(stores, cartItems);
+            } else {
+              updateStores([], [], []);
+            }
           })
-          .catch((e) => {
-            CommonBugFender('YourCart_fetchStorePickup', e);
-            setStorePickUpLoading(false);
-          });
+          .catch(handleStoresError);
       } else {
-        setStores && setStores([]);
-        setStoreId && setStoreId('');
+        setStores!([]);
+        setStoresInventory!([]);
+        setActiveStores([]);
+        setStoreId!('');
       }
     }
   };
@@ -986,12 +1067,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   >([]);
 
   const updateStoreSelection = () => {
-    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
-    const storesLength = stores.length;
+    const selectedStoreIndex = activeStores.findIndex(({ storeid }) => storeid == storeId);
+    const storesLength = activeStores.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const _slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    const _slicedStoreList = [...activeStores].slice(startIndex, startIndex + 2);
     setSlicedStoreList(_slicedStoreList);
   };
 
@@ -1020,7 +1101,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
     };
-  }, [stores, storeId, addresses, deliveryAddressId]);
+  }, [activeStores, storeId, addresses, deliveryAddressId]);
 
   useEffect(() => {
     pinCode.length !== 6 && setSlicedStoreList([]);
@@ -1040,7 +1121,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             placeholder={'Enter Pincode'}
           />
           {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-          {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+          {!storePickUpLoading && pinCode.length == 6 && activeStores.length == 0 && (
             <Text
               style={{
                 paddingTop: 10,
@@ -1068,13 +1149,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             />
           ))}
           <View>
-            {stores.length > 2 && (
+            {activeStores.length > 2 && (
               <Text
                 style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.StorPickupScene, {
                     pincode: pinCode,
-                    stores: stores,
+                    stores: activeStores,
+                    fetchStores: fetchStorePickup,
                   })
                 }
               >
@@ -1862,7 +1944,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       </SafeAreaView>
       {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
-          store={stores.find((item) => item.storeid == storeId)!}
+          store={activeStores.find((item) => item.storeid == storeId)!}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}
         />
       )}
