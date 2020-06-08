@@ -15,7 +15,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
-import { app } from 'firebase-admin';
 //import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
