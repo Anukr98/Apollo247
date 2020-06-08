@@ -187,7 +187,11 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
   console.log(smsResp, 'sms resp');
 }*/
 
-export const sendNotificationWhatsapp = async (mobileNumber: string, message: string) => {
+export const sendNotificationWhatsapp = async (
+  mobileNumber: string,
+  message: string,
+  loginType: number
+) => {
   const apiUrl =
     process.env.WHATSAPP_URL +
     '?method=OPT_IN&phone_number=' +
@@ -200,23 +204,25 @@ export const sendNotificationWhatsapp = async (mobileNumber: string, message: st
   const optInResponse = await fetch(apiUrl)
     .then(async (res) => {
       console.log(res, 'res of opt id');
-      const sendApiUrl =
-        process.env.WHATSAPP_URL +
-        '?method=SendMessage&send_to=' +
-        mobileNumber +
-        '&userid=' +
-        process.env.WHATSAPP_USERNAME +
-        '&password=' +
-        process.env.WHATSAPP_PASSWORD +
-        '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
-        message;
-      // await fetch(sendApiUrl)
-      //   .then((res) => {
-      //     console.log(res, 'res of actual msg send');
-      //   })
-      //   .catch((error) => {
-      //     console.log(error, 'send message api error');
-      //   });
+      if (loginType == 1) {
+        const sendApiUrl =
+          process.env.WHATSAPP_URL +
+          '?method=SendMessage&send_to=' +
+          mobileNumber +
+          '&userid=' +
+          process.env.WHATSAPP_USERNAME +
+          '&password=' +
+          process.env.WHATSAPP_PASSWORD +
+          '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
+          message;
+        await fetch(sendApiUrl)
+          .then((res) => {
+            console.log(res, 'res of actual msg send');
+          })
+          .catch((error) => {
+            console.log(error, 'send message api error');
+          });
+      }
     })
     .catch((error) => {
       console.log(error, 'optInResponse error');
