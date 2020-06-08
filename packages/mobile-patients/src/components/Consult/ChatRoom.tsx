@@ -5885,14 +5885,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   height: 40,
                   marginTop: 9,
                   marginLeft: 5,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <AddAttachmentIcon
-                  style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
+                <Image
+                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
+                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                  resizeMode={'contain'}
                 />
               </TouchableOpacity>
               <View>
@@ -5985,14 +5990,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   height: 40,
                   marginTop: 9,
                   marginLeft: 5,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <AddAttachmentIcon
-                  style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
+                <Image
+                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
+                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                  resizeMode={'contain'}
                 />
               </TouchableOpacity>
               <View>
