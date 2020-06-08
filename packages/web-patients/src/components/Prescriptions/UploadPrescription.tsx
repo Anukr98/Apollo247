@@ -139,6 +139,7 @@ const client = new AphStorageClient(
 interface UploadPrescriptionProps {
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
+  isNonCartFlow: boolean;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -202,35 +203,34 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       ) {
                         setIsUploading(true);
                         if (file) {
-                          const aphBlob = await client
+                          await client
                             .uploadBrowserFile({ file })
+                            .then((res: any) => {
+                              if (res && res.name) {
+                                const fileName = res.name as string;
+                                const url = client.getBlobUrl(fileName);
+                                toBase64(file).then((res: any) => {
+                                  setPrescriptionUploaded &&
+                                    setPrescriptionUploaded({
+                                      imageUrl: url,
+                                      name: fileName,
+                                      fileType: fileExtension.toLowerCase(),
+                                      baseFormat: res,
+                                    });
+                                });
+                                if (props.isNonCartFlow) {
+                                  setTimeout(() => {
+                                    window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                                  }, 3000);
+                                } else {
+                                  props.closeDialog();
+                                  setIsUploading(false);
+                                }
+                              }
+                            })
                             .catch((error) => {
                               throw error;
                             });
-                          if (aphBlob && aphBlob.name) {
-                            const url = client.getBlobUrl(aphBlob.name);
-                            toBase64(file).then((res: any) => {
-                              setPrescriptionUploaded &&
-                                setPrescriptionUploaded({
-                                  imageUrl: url,
-                                  name: aphBlob.name,
-                                  fileType: fileExtension.toLowerCase(),
-                                  baseFormat: res,
-                                });
-                            });
-                            const currentUrl = window.location.href;
-                            if (
-                              currentUrl.endsWith('/medicines') ||
-                              currentUrl.includes('/medicines/')
-                            ) {
-                              setTimeout(() => {
-                                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                              }, 3000);
-                            } else {
-                              props.closeDialog();
-                              setIsUploading(false);
-                            }
-                          }
                         }
                       } else {
                         setIsAlertOpen(true);

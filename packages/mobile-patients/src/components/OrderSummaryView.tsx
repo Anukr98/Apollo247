@@ -1,23 +1,21 @@
-import { Delivery, Pharamacy } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+  MEDICINE_DELIVERY_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { g, postWEGNeedHelpEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { colors } from '../theme/colors';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAllCurrentPatients } from '../hooks/authHooks';
-import { NavigationScreenProps } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
-  MEDICINE_ORDER_PAYMENT_TYPE,
-  MEDICINE_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus,
-} from '../graphql/types/getMedicineOrderOMSDetails';
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+
 const styles = StyleSheet.create({
   horizontalline: {
     borderBottomColor: '#02475b',
@@ -25,9 +23,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     height: 1,
   },
-  orderName: { ...theme.fonts.IBMPlexSansMedium(12), color: '#01475b' },
-  hideText: { opacity: 0.6, paddingLeft: 10 },
-  subView: { flexDirection: 'row', marginBottom: 8 },
   medicineText: {
     ...theme.fonts.IBMPlexSansMedium(11),
     color: '#01475b',
@@ -38,55 +33,6 @@ const styles = StyleSheet.create({
     color: '#01475b',
     letterSpacing: 0,
     // lineHeight: 20,
-  },
-  medicineView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 23,
-    paddingLeft: 11,
-    paddingRight: 16,
-  },
-  medicineOrders: {
-    //backgroundColor: '#f0f1ec',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-    paddingLeft: 11,
-    paddingRight: 16,
-    flex: 0.5,
-  },
-  medicineSubView: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    flex: 0.5,
-    alignSelf: 'flex-end',
-  },
-  commonText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#01475b',
-    marginBottom: 5,
-    marginTop: 5,
-    paddingRight: 60,
-  },
-  commonTax: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    //flex: 0.5,
-    alignSelf: 'flex-end',
-    marginHorizontal: 25,
-  },
-  paid: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#01475b',
-    marginRight: 5,
-    marginBottom: 5,
-    marginTop: 5,
-  },
-  deliveryText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: '#0087ba',
-    marginHorizontal: 25,
-    marginBottom: 14.5,
   },
   orderStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -174,12 +120,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface OrderSummaryViewProps extends NavigationScreenProps {
+export interface OrderSummaryViewProps {
   orderDetails: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   isTest?: boolean;
   addressData?: string;
-}
-{
 }
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
@@ -187,7 +131,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   isTest,
   addressData,
 }) => {
-  const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
+  const medicineOrderLineItems = orderDetails.medicineOrderLineItems || [];
   const medicineOrderStatus = orderDetails.medicineOrdersStatus || [];
   const deliveredOrder = medicineOrderStatus.find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
@@ -202,9 +146,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
-  const discount = orderDetails!.devliveryCharges! + mrpTotal - orderDetails.estimatedAmount!;
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
+  const packaging_charges = orderDetails.packagingCharges;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
   const paymentMethodToDisplay =
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
@@ -312,12 +256,16 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', marginBottom: 6 }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.name}</Text>
               <Text style={styles.nameStyle}>
-                {orderDetails.patient?.firstName}
-                {orderDetails.patient?.lastName}
+                {orderDetails.patient && orderDetails.patient.firstName}{' '}
+                {orderDetails.patient && orderDetails.patient.lastName}
               </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.shippingDetails}>{string.OrderSummery.address} </Text>
+              <Text style={styles.shippingDetails}>
+                {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                  ? string.OrderSummery.store_address
+                  : string.OrderSummery.address}
+              </Text>
               <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
@@ -455,7 +403,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>+ Rs.0.00</Text>
+              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                + Rs.{(packaging_charges || 0).toFixed(2)}
+              </Text>
             </View>
             <View style={[styles.horizontalline, { marginTop: 4, marginBottom: 7 }]} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>

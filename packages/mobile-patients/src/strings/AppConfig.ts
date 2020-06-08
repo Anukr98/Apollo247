@@ -28,7 +28,7 @@ enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
@@ -36,6 +36,7 @@ const appStaticVariables = {
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 30,
+  PACKAGING_CHARGES: 0,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -52,22 +53,26 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const PharmaApiConfig = {
   dev: {
-    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
-    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH: [apolloUatBaseUrl, pharmaToken201], //later cahnge to UAT
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
-    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
       testApiCredentialsDev,
@@ -86,8 +91,12 @@ const PharmaApiConfig = {
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
@@ -140,8 +149,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.418',
-  Android_Version: '2.418',
+  iOS_Version: '2.513',
+  Android_Version: '2.515',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -176,10 +185,10 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.426',
-  Android_Version: '2.426',
+  iOS_Version: '2.513',
+  Android_Version: '2.513',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:

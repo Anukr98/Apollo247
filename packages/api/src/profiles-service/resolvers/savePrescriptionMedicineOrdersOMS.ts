@@ -43,6 +43,7 @@ export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
     email: String
     NonCartOrderCity: NonCartOrderOMSCity
     orderAutoId: Int
+    shopAddress: ShopAddress
   }
 
   enum NonCartOrderOMSCity {
@@ -92,6 +93,16 @@ type PrescriptionMedicineOrderOMSInput = {
   payment?: PrescriptionMedicinePaymentOMSDetails;
   email: string;
   NonCartOrderCity: NonCartOrderOMSCity;
+  shopAddress: ShopAddress;
+};
+
+type ShopAddress = {
+  storename: string;
+  address: string;
+  workinghrs: string;
+  phone: string;
+  city: string;
+  state: string;
 };
 
 type PrescriptionMedicinePaymentOMSDetails = {
@@ -129,6 +140,19 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
+  if (!prescriptionMedicineOMSInput.patinetAddressId && !prescriptionMedicineOMSInput.shopId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  }
+  if (prescriptionMedicineOMSInput.patinetAddressId) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      prescriptionMedicineOMSInput.patinetAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+  }
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
@@ -146,6 +170,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     patientAddressId: prescriptionMedicineOMSInput.patinetAddressId,
     currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
     isEprescription: prescriptionMedicineOMSInput.isEprescription,
+    shopAddress: JSON.stringify(prescriptionMedicineOMSInput.shopAddress),
     isOmsOrder: true,
   };
   let patientAddressDetails;

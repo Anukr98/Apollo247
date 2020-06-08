@@ -931,7 +931,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1224,6 +1224,18 @@ export const MedicineCart: React.FC = (props) => {
                       if (couponCode === '') {
                         setIsApplyCouponDialogOpen(true);
                       } else {
+                        /* GTM TRACKING START */
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: 'Order',
+                          label: `Coupon Removed - ${couponCode}`,
+                          value: validateCouponResult &&
+                            validateCouponResult.discountedTotals &&
+                            validateCouponResult.discountedTotals.couponDiscount ?
+                            Number(validateCouponResult.discountedTotals.couponDiscount.toFixed(2)) :
+                            null
+                        });
+
                         setValidateCouponResult(null);
                         setErrorMessage('');
                         setCouponCode && setCouponCode('');
@@ -1467,6 +1479,7 @@ export const MedicineCart: React.FC = (props) => {
             setIsUploadPreDialogOpen(false);
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={false}
         />
       </AphDialog>
 
@@ -1495,7 +1508,10 @@ export const MedicineCart: React.FC = (props) => {
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-        <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={false}
+        />
       </AphDialog>
       <Alerts
         setAlertMessage={setAlertMessage}

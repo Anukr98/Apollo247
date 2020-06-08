@@ -539,6 +539,12 @@ export class DoctorSpecialty extends BaseEntity {
   userFriendlyNomenclature: string;
 
   @Column({ nullable: true })
+  groupName: string;
+  
+  @Column({ nullable: true })
+  commonSearchTerm: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
   @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
   doctor: Doctor[];
@@ -1096,3 +1102,77 @@ export class CityPincodeMapper extends BaseEntity {
   zone: string;
 }
 // citypincode mapper ends
+
+//citypincode mapper starts
+export enum DeepLinkType {
+  DOCTOR = 'DOCTOR',
+}
+
+@Entity()
+export class Deeplink extends BaseEntity {
+  @Column({ nullable: true })
+  campaignName: string;
+
+  @Column({ nullable: true })
+  channelName: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('Deeplink_deepLink')
+  @Column({ nullable: true, type: 'text' })
+  deepLink: string;
+
+  @Index('Deeplink_doctorId')
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp' })
+  linkRefreshDate: Date;
+
+  @Column({ nullable: true })
+  partnerId: string;
+
+  @Column({ nullable: true })
+  referralCode: string;
+
+  @Column({ nullable: true })
+  shortId: string;
+
+  @Column({ nullable: true })
+  templateId: string;
+
+  @Column({ nullable: true })
+  type: DeepLinkType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class DoctorPatientExternalConnect extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('DoctorPatientExternalConnect_doctorId')
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Index('DoctorPatientExternalConnect_externalConnect')
+  @Column({ default: false })
+  externalConnect: Boolean;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  patientId: string;
+}

@@ -239,7 +239,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     cartItems,
     setStoreAddressId,
     medicineCartType,
-    removeCartItem,
+    removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
   } = useShoppingCart();
@@ -353,12 +353,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const removeNonDeliverableItemsFromCart = () => {
     if (nonServicableSKU.length) {
+      let arrId: any[] = [];
       nonServicableSKU.map((nonDeliverableSKU: string) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
-        if (obj) {
-          removeCartItem && removeCartItem(obj.id);
-        }
+        arrId.push(obj.id);
       });
+      removeCartItems && removeCartItems(arrId);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -493,7 +493,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {

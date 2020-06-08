@@ -41,9 +41,9 @@ export type Option = {
 type OptionsObject = {
   key: string;
   value: string | number;
-  isPrimary: boolean;
+  isPrimary?: boolean;
   data?: any;
-  uhid: string;
+  uhid?: string;
 };
 
 export interface MaterialMenuProps {

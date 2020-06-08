@@ -89,9 +89,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
         )}
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-          }
+          onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
           // style={{ right: 20 }}
         >
           <CartIcon style={{}} />

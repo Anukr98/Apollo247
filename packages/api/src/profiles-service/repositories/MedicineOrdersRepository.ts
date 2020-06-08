@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  ONE_APOLLO_USER_REG,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -24,6 +25,62 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  async getOneApolloUser(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetByMobile?mobilenumber=${mobileNumber}&BusinessUnit=${process.env.ONEAPOLLO_BUSINESS_UNIT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      console.log('error occured in getOneApolloUser()', e);
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+
+  async createOneApolloUser(oneApollUser: ONE_APOLLO_USER_REG) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/Customer/Register', {
+        method: 'POST',
+        body: JSON.stringify(oneApollUser),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+
+  async getOneApolloUserTransactions(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
+    }
   }
 
   findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
@@ -374,7 +431,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const ordersList = await this.find({
       where: {
         createdDate: Between(newStartDate, newEndDate),
-        orderTat: Not(['', null]),
+        orderTat: Not(null),
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         currentStatus: In([
           MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
@@ -383,7 +440,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    console.log('ordersList====>', ordersList);
+    //console.log('ordersList====>', ordersList);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -391,31 +448,50 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
     if (ordersList.length > 0) {
       ordersList.map(async (orderDetails) => {
-        if (Date.parse(orderDetails.orderTat.toString())) {
+        console.log('orderAutoId=>', orderDetails.orderAutoId);
+        if (
+          orderDetails.orderTat.toString() != '' &&
+          Date.parse(orderDetails.orderTat.toString())
+        ) {
           const tatDate = new Date(orderDetails.orderTat.toString());
+          console.log('tatDate==>', tatDate);
           const istCreatedDate = orderDetails.createdDate;
+          console.log('istCreatedDate==>', istCreatedDate);
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
+          console.log('orderTat==>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {
             vdcCount++;
           }
+          console.log('counts==>', totalCount, vdcCount);
           if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+            console.log('inside condition');
             const orderStatusDetails = await MedicineOrdersStatus.findOne({
               where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
             });
+            console.log('orderStatusDetails=>', orderStatusDetails);
             if (orderStatusDetails) {
+              console.log('inside orderStatusDetails');
+              console.log(orderStatusDetails.statusDate, orderDetails.createdDate);
+              console.log(
+                'difference==>',
+                Math.abs(
+                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
+                )
+              );
               const deliveryTat = Math.floor(
                 Math.abs(
                   differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
                 )
               );
-
+              console.log('deliveryTat=>', deliveryTat);
               if (deliveryTat <= 120) {
                 deliveryCount++;
               } else {
                 vdcDeliveryCount++;
               }
+              console.log('delivery,VdcCounts=>', deliveryCount, vdcCount);
             }
           }
         }

@@ -3,12 +3,8 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Check,
   CheckUnselectedIcon,
   MedicineIcon,
-  OneApollo,
-  RadioButtonIcon,
-  RadioButtonUnselectedIcon,
   CheckedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -40,30 +36,23 @@ import {
   postWebEngageEvent,
   formatAddress,
   postAppsFlyerEvent,
-  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
-  StyleProp,
-  BackHandler,
   StyleSheet,
   Text,
   TouchableOpacity,
   FlatList,
   Image,
   View,
-  ViewStyle,
   Dimensions,
   Platform,
-  KeyboardAvoidingView,
   ScrollView,
-  Alert,
 } from 'react-native';
-import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
@@ -91,20 +80,23 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
 
   const { currentPatient } = useAllCurrentPatients();
-  const [isCashOnDelivery, setCashOnDelivery] = useState(isChennaiOrder ? true : false);
-  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
+  const [chennaiOrderFormInfo, setChennaiOrderFormInfo] = useState(['', '']); // storing paymentMode, bankCode for Chennai Order
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string>(g(currentPatient, 'emailAddress') || '');
   const [emailIdCheckbox, setEmailIdCheckbox] = useState<boolean>(
-    g(currentPatient, 'emailAddress') ? false : true
+    !g(currentPatient, 'emailAddress')
   );
   const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
     deliveryAddressId,
     storeId,
+    showPrescriptionAtStore,
     grandTotal,
     deliveryCharges,
+    packagingCharges,
     cartItems,
     deliveryType,
     clearCartInfo,
@@ -138,10 +130,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   };
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
-  const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
+  useEffect(() => {
+    if (email) {
+      setEmailIdCheckbox(false);
+    } else {
+      setEmailIdCheckbox(true);
+    }
+  }, [emailIdCheckbox, email]);
+
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const handleBackPressFromChennaiOrderForm = () => setShowChennaiOrderForm(false);
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
     client.mutate<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>({
@@ -228,6 +229,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
+        revenue: getFormattedAmount(grandTotal),
       };
       return eventAttributes;
     } catch (error) {
@@ -298,8 +300,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const redirectToPaymentGateway = async (
     orderId: string,
     orderAutoId: number,
-    paymentMode: any,
-    bankCode: any
+    paymentMode: string,
+    bankCode: string
   ) => {
     try {
       const paymentEventAttributes = {
@@ -327,8 +329,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
   };
 
-  const initiateOrder = async (paymentMode: any, bankCode: any, isCOD: boolean) => {
+  const initiateOrder = async (paymentMode: string, bankCode: string, isCOD: boolean) => {
+    if (isChennaiOrder && !showChennaiOrderForm) {
+      setChennaiOrderFormInfo([paymentMode, bankCode]);
+      setShowChennaiOrderForm(true);
+      return;
+    }
     setLoading && setLoading(true);
+    const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
+    const { storename, address, workinghrs, phone, city, state } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         coupon: coupon ? coupon.code : '',
@@ -337,9 +346,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
+        shopAddress: selectedStore ? { storename, address, workinghrs, phone, city, state } : null,
+        showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
+        packagingCharges: packagingCharges,
         estimatedAmount: getFormattedAmount(grandTotal),
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
@@ -417,15 +429,24 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
-        if (g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE') {
+
+        const isPriceMismatch =
+          g(error, 'graphQLErrors', '0', 'message') == 'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+        const isCouponError =
+          g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+
+        if (isPriceMismatch || isCouponError) {
           props.navigation.goBack();
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: 'Sorry, invalid coupon applied. Remove the coupon and try again.',
-          });
-        } else {
-          handleGraphQlError(error);
         }
+
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: isPriceMismatch
+            ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+            : isCouponError
+            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+            : `Your order failed due to some temporary issue :( Please submit the order again.`,
+        });
       });
   };
 
@@ -551,7 +572,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         title={'PAYMENT'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
-          props.navigation.goBack();
+          if (showChennaiOrderForm) {
+            handleBackPressFromChennaiOrderForm();
+          } else {
+            props.navigation.goBack();
+          }
         }}
       />
     );
@@ -571,7 +596,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }
-      initiateOrder(null, null, true);
+      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery);
     }
   };
 
@@ -647,8 +672,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
           </Text>
         </TouchableOpacity>
-        <Spearator style={styles.separatorStyle} />
-        <Text style={styles.checkboxTextStyle}>{'Payment Mode: Cash on Delivery'}</Text>
       </>
     );
   };
@@ -727,7 +750,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             <TouchableOpacity
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder(item.paymentMode, null, false);
+                initiateOrder(item.paymentMode, '', false);
               }}
               style={styles.paymentModeCard}
             >
@@ -840,7 +863,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }}
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder('NB', null, false);
+                initiateOrder('NB', '', false);
               }}
             >
               <Text
@@ -920,7 +943,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           }}
           title={'PLACE ORDER'}
           onPress={() => {
-            initiateOrder(null, null, true);
+            initiateOrder('', '', true);
           }}
         />
       </View>
@@ -933,7 +956,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {/* {renderOneApolloAndHealthCreditsCard()} */}
-        {isChennaiOrder ? (
+        {showChennaiOrderForm ? (
           !loading ? (
             renderChennaiOrderFormAndPayButton()
           ) : (

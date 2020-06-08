@@ -335,7 +335,6 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const searchParams: RequestParams.Search = {
     index: 'doctors',
-    type: 'posts',
     body: {
       query: {
         bool: {

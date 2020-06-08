@@ -21,6 +21,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     orderAutoId: Int
     quoteId: String
     shopId: String
+    shopAddress: String
     estimatedAmount: Float
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
@@ -34,6 +35,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     orderTat: String
     couponDiscount: Float
     productDiscount: Float
+    packagingCharges: Float
+    showPrescriptionAtStore: Boolean
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -125,7 +128,6 @@ const getMedicineOrdersOMSList: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
   return { medicineOrdersList };

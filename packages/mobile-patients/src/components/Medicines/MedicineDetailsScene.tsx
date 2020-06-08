@@ -396,7 +396,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       price: price,
       specialPrice: special_price
         ? typeof special_price == 'string'
-          ? parseInt(special_price)
+          ? Number(special_price)
           : special_price
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
@@ -645,7 +645,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     'Service Area': 'Pharmacy',
                   };
                   postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
-                  props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
+                  props.navigation.navigate(AppRoutes.YourCart);
                 }}
                 title="BUY NOW"
                 style={{ flex: 1 }}
@@ -1184,7 +1184,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
+                props.navigation.navigate(
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                )
               }
               style={{ right: 20 }}
             >
@@ -1205,7 +1207,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             size="large"
             color="green"
           />
-        ) : !isEmptyObject(medicineDetails) && !!medicineDetails.sku ? (
+        ) : !isEmptyObject(medicineDetails) && !!medicineDetails.id ? (
           <KeyboardAwareScrollView
             ref={scrollViewRef}
             bounces={false}
@@ -1222,7 +1224,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         )}
         {!loading &&
           !isEmptyObject(medicineDetails) &&
-          !!medicineDetails.sku &&
+          !!medicineDetails.id &&
           renderBottomButtons()}
       </SafeAreaView>
       {showPopup && Popup()}

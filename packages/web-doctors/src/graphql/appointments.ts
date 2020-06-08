@@ -6,6 +6,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
       appointmentsHistory {
         id
         patientId
+        isJdQuestionsComplete
         appointmentDateTime
         status
         bookingDate
@@ -16,6 +17,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           }
           status
           doctorType
+          isJdConsultStarted
         }
         patientInfo {
           id
@@ -26,5 +28,10 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
       }
       newPatientsList
     }
+  }
+`;
+export const SUBMIT_JD_CASESHEET = gql`
+  mutation SubmitJdCasesheet($appointmentId: String) {
+    submitJDCaseSheet(appointmentId: $appointmentId)
   }
 `;

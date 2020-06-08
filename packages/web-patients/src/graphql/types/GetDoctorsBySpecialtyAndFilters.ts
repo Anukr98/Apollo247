@@ -53,6 +53,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   id: string;
   firstName: string;
   lastName: string;
+  fullName: string | null;
   specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;

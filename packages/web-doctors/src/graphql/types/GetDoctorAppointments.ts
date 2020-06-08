@@ -18,6 +18,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
   status: string | null;
   doctorType: DoctorType | null;
+  isJdConsultStarted: boolean | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
@@ -32,6 +33,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   __typename: "AppointmentHistory";
   id: string;
   patientId: string;
+  isJdQuestionsComplete: boolean | null;
   appointmentDateTime: any;
   status: STATUS;
   bookingDate: any | null;

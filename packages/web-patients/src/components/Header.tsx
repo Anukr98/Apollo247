@@ -11,10 +11,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { locationRoutesBlackList } from 'helpers/commonHelpers';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { LocationSearch } from './LocationSearch';
+import { LocationSearch } from 'components/LocationSearch';
 import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -194,7 +195,8 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {checkIfDisabled() && currentPath !== '/' && <LocationSearch />}
+          {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
+          {checkIfDisabled() && currentPath !== '/' && <MedicineLocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div

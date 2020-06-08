@@ -128,9 +128,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     missCall: {
@@ -250,9 +252,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     imageUpload: {
@@ -413,6 +417,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -505,7 +510,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== covertAudioMsg &&
           message.message.message !== cancelConsultInitiated &&
           message.message.message !== callAbandonment &&
-          message.message.message !== appointmentComplete
+          message.message.message !== appointmentComplete &&
+          message.message.message !== doctorAutoResponse
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -681,7 +687,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -789,7 +796,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent = 0;
       rightComponent++;

@@ -53,6 +53,7 @@ export enum WebEngageEventName {
   CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
   PAST_DOCTOR_SEARCH = 'Past Doctor Search',
+  CONSULT_TYPE_SELECTION = 'Consult Type Selection',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -213,6 +214,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
+    resultsdisplayed: number;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
@@ -262,6 +264,7 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
+    revenue: number;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -400,6 +403,7 @@ export interface WebEngageEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    revenue: number;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -491,6 +495,15 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.CONSULT_TYPE_SELECTION] : {
+    'Consult Type': 'Online' | 'In Person';
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Mobile Number':string,
+    'Customer ID': string;
+  };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
     'Consult Mode': 'Online' | 'Physical';
@@ -571,6 +584,7 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Doctor Name': string;
     'Net Amount': number;
+    revenue: number;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

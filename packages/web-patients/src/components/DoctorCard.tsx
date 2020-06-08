@@ -24,8 +24,8 @@ import moment from 'moment';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
-// import { getIstTimestamp } from 'helpers/dateHelpers';
-// import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import { useParams } from 'hooks/routerHooks';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -137,6 +137,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorCardProps {
   doctorDetails: any;
   nextAvailability: string | null;
+  history?: any;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -147,8 +148,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
+  const doctorName = doctorDetails && doctorDetails.fullName;
 
   const clinics: any = [];
+
+  const params = useParams<{
+    specialty: string;
+  }>();
 
   const getDiffInMinutes = () => {
     if (nextAvailability && nextAvailability.length > 0) {
@@ -227,7 +233,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
-        onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+        onClick={() => {
+          const readableDoctorName = readableParam(doctorName);
+          params.specialty
+            ? props.history.push(
+                clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
+              )
+            : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+        }}
       >
         <Avatar
           alt={doctorDetails.firstName || ''}
@@ -247,7 +260,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         />
         <div
           className={classes.doctorInfo}
-          onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
+          onClick={() => {
+            const readableDoctorName = readableParam(doctorName);
+            params.specialty
+              ? props.history.push(
+                  clientRoutes.specialtyDoctorDetails(
+                    params.specialty,
+                    readableDoctorName,
+                    doctorId
+                  )
+                )
+              : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
+          }}
         >
           {/* {loading ? (
             <div className={classes.cardLoader}>

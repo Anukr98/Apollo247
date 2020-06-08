@@ -159,6 +159,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     textboxContainer: {
@@ -173,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,

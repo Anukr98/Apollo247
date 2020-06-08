@@ -126,6 +126,7 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     cosultMode: {
@@ -147,6 +148,7 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     addDocter: {
@@ -160,6 +162,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnContainer: {
