@@ -189,6 +189,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
+  const WebEngageEventForNonServicablePinCode = (pincode: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
+      'Mobile Number': currentPatient.mobileNumber,
+      Pincode: pincode,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
+  };
+
   const updateServiceability = (pincode: string) => {
     const onPresChangeAddress = () => {
       hideAphAlert!();
@@ -198,7 +206,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pinCodeServiceabilityApi(pincode)
       .then(({ data: { Availability } }) => {
         setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
-        !Availability &&
+        if (!Availability) {
+          WebEngageEventForNonServicablePinCode(pincode);
           showAphAlert!({
             title: 'We’re sorry!',
             description:
@@ -213,6 +222,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               },
             ],
           });
+        }
       })
       .catch((e) => {
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
@@ -382,11 +392,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Customer ID': currentPatient.id,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
+
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
+        response && WebEngageEventForNonServicablePinCode(response.pincode);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);

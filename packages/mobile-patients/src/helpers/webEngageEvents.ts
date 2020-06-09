@@ -119,6 +119,7 @@ export enum WebEngageEventName {
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
+  PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
 
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
@@ -436,6 +437,10 @@ export interface WebEngageEvents {
     Serviceable: string;
     Keyword: string;
     Source: string;
+  };
+  [WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE]: {
+    'Mobile Number': string;
+    Pincode: string;
   };
 
   // ********** ConsultEvents ********** \\
