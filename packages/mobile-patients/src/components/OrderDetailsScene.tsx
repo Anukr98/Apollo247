@@ -198,7 +198,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
-  console.log({ order });
+  // console.log({ order }, currentPatient.id);
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -1444,7 +1444,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 const isNonCartOrder = orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
                 );
-                if (!isNonCartOrder) {
+                const isNonCartOrderBilledAndReadyAtStore = orderStatusList.find(
+                  (item) =>
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
+                    item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+                );
+                if (!isNonCartOrder || isNonCartOrderBilledAndReadyAtStore) {
                   setSelectedTab(title);
                 }
               }}
