@@ -160,6 +160,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
   const orderBilledAndPacked = medicineOrderStatus.find(
     (item) =>
+      item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
       item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED ||
       item!.orderStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY ||
       item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
@@ -193,7 +194,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? 'COD'
       : paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
       ? 'Prepaid'
-      : 'No Payment';
+      : 'COD';
 
   const isPrepaid = paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
 
@@ -577,12 +578,22 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             )}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
-              <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                + Rs. {(orderDetails.devliveryCharges || 0).toFixed(2)}
-              </Text>
-            </View>
+            {!orderBilledAndPacked && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  + Rs. {(orderDetails.devliveryCharges || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            {orderBilledAndPacked && billingDetails && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
+                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                  + Rs. {(billingDetails.deliveryCharges || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
