@@ -184,6 +184,17 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    location: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '36px 16px 34px',
+      '& p': {
+        fontSize: 13,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        margin: '0 0 0 10px',
+      },
+    },
   };
 });
 
@@ -213,6 +224,24 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     >
       {isSignedIn ? (
         <>
+          <div className={classes.location}>
+            <img src={require('images/ic_location_on.svg')} />
+            <p>Madhapur</p>
+          </div>
+          <Link
+            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.doctorsLanding()}
+            title={'Doctors'}
+          >
+            Doctors
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.covidLanding()}
+            title={'Covid 19'}
+          >
+            Covid 19
+          </Link>
           <Link
             className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
             to={clientRoutes.appointments()}
@@ -294,7 +323,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ||
+      {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
@@ -304,7 +333,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
         </div>
       ) : (
         ''
-      )}
+      )} */}
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
