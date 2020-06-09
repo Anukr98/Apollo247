@@ -305,9 +305,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     cartItems,
     updateCartItem,
     pharmaAddressDetails,
-    medicineAddress,
     setMedicineAddress,
     setPharmaAddressDetails,
+    setHeaderPincodeError,
   } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
@@ -397,6 +397,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               pincode,
               country,
             });
+            setHeaderPincodeError('0');
           }
         } catch {
           (e: AxiosError) => {
@@ -469,6 +470,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
+              setDeliveryTime('');
               setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
@@ -484,6 +486,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   getPlaceDetails(pinCode);
                 }
               } else {
+                setDeliveryTime('');
                 setErrorMessage(NO_SERVICEABLE_MESSAGE);
               }
             } else if (
@@ -521,10 +524,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         if (data && data.Availability) {
           fetchDeliveryTime(pinCode);
         } else {
+          setDeliveryTime('');
           setErrorMessage(NO_SERVICEABLE_MESSAGE);
         }
       })
-      .catch((e) => setErrorMessage(NO_SERVICEABLE_MESSAGE));
+      .catch((e) => {
+        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setDeliveryTime('');
+      });
   };
 
   const itemIndexInCart = (item: MedicineProduct) => {
