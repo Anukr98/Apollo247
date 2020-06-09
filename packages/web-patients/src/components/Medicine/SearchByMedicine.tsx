@@ -182,8 +182,10 @@ const useStyles = makeStyles((theme: Theme) => {
     noData: {
       marginTop: 10,
       fontSize: 14,
+      color: '#01475b',
       lineHeight: '18px',
-      paddingLeft: 10,
+      paddingBottom: 16,
+      fontWeight: 500,
       [theme.breakpoints.down('xs')]: {
         marginTop: 25,
         paddingLeft: 10,
