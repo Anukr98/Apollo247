@@ -476,7 +476,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && pinCode.length == 6) {
       const inventory =
-        (storesInventory.length && storesInventory[0].itemDetails.map((v) => v.itemId)) || [];
+        (g(storesInventory, 'length') &&
+          (g(storesInventory, '0' as any, 'itemDetails') || []).map((v) => v.itemId)) ||
+        [];
       const isInventoryFetched =
         inventory.length && !cartItems.find((item) => !inventory.includes(item.id));
       if (pincodeReplica == pinCode && isInventoryFetched) {
