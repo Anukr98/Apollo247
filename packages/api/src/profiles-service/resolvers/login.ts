@@ -225,6 +225,10 @@ const resendOtp: Resolver<
   //call sms gateway service to send the OTP here
   resendLogger('SEND_SMS___START');
   const smsResult = await sendSMS(mobileNumber, otp, hashCode);
+  if (loginType == LOGIN_TYPE.DOCTOR) {
+    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    sendNotificationWhatsapp(mobileNumber, message, 1);
+  }
   resendLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
