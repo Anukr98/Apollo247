@@ -392,14 +392,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       'Customer ID': currentPatient.id,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
-    const pincode = g(locationDetails, 'pincode');
-    WebEngageEventForNonServicablePinCode(pincode ? pincode : '');
 
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         globalLoading!(false);
         response && setPharmacyLocation!(response);
+        response && WebEngageEventForNonServicablePinCode(response.pincode);
       })
       .catch((e) => {
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
