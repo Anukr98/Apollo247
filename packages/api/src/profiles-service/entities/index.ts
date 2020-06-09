@@ -47,6 +47,7 @@ export type OneApollTransaction = {
   SendCommunication: boolean;
   CalculateHealthCredits: boolean;
   Gender: Gender;
+  Discount: number;
   TransactionLineItems: Partial<TransactionLineItems>[];
 };
 
@@ -56,6 +57,7 @@ export type TransactionLineItems = {
   ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
   NetAmount: number;
   GrossAmount: number;
+  DiscountAmount: number;
 };
 
 export enum CouponApplicability {

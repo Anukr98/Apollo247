@@ -280,13 +280,16 @@ const createOneApolloTransaction = async (
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-      const netPrice = item.discountPrice
+      let netPrice = item.discountPrice
         ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
         : +item.mrp.toFixed(1) * item.issuedQty;
 
-      const netMrp = +item.mrp.toFixed(1) * item.issuedQty;
-      const netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
+      let netMrp = +item.mrp.toFixed(1) * item.issuedQty;
+      let netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
 
+      netPrice = +netPrice.toFixed(1);
+      netMrp = +netMrp.toFixed(1);
+      netDiscount = +netDiscount.toFixed(1);
       transactionLineItems.push({
         ProductCode: item.itemId,
         NetAmount: netPrice,
