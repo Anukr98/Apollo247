@@ -403,6 +403,11 @@ export interface WebEngageEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Mode of Delivery'?: 'Home' | 'Pickup';
+    'Store Id'?: string;
+    'Store Name'?: string;
+    'Store Number'?: string;
+    'Store Address'?: string;
     revenue: number;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -495,13 +500,13 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.CONSULT_TYPE_SELECTION] : {
+  [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
     'Doctor ID': string;
     'Doctor Name': string;
     'Patient Name': string;
     'Patient UHID': string;
-    'Mobile Number':string,
+    'Mobile Number': string;
     'Customer ID': string;
   };
   // confirm the type of data for the below

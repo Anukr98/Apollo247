@@ -1216,15 +1216,18 @@ export const addPharmaItemToCart = (
   })
     .then((res) => {
       const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate && isDeliveryDateWithInXDays(deliveryDate)) {
-        addCartItem!(cartItem);
+      if (deliveryDate) {
+        if (isDeliveryDateWithInXDays(deliveryDate)) {
+          addCartItem!(cartItem);
+        } else {
+          navigate();
+        }
       } else {
-        navigate();
+        addCartItem!(cartItem);
       }
     })
-    .catch((err) => {
-      CommonBugFender('helperFunctions_fetchDeliveryTime', err);
-      navigate();
+    .catch(() => {
+      addCartItem!(cartItem);
     })
     .finally(() => {
       setLoading && setLoading(false);

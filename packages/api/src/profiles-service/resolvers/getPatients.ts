@@ -220,18 +220,13 @@ const updateWhatsAppStatus: Resolver<
   const patientDetails = await patientRepo.findById(args.patientId);
   const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
   if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
-    sendNotificationWhatsapp(mobileNumber, '');
+    sendNotificationWhatsapp(mobileNumber, '', 0);
     const details = {
       userId: mobileNumber,
       whatsappOptIn: true,
     };
-    // const APIInput = {
-    //   new_name: '',
-    //   new_eventtype: 'Insert',
-    //   new_jsonentity: JSON.stringify(details),
-    // };
     console.log('APIInput=============>', JSON.stringify(details));
-    const saveResponse = await fetch(process.env.WEB_ENGAGE_URL, {
+    const saveResponse = await fetch(process.env.WEB_ENGAGE_URL ? process.env.WEB_ENGAGE_URL : '', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -240,11 +235,10 @@ const updateWhatsAppStatus: Resolver<
       },
       body: JSON.stringify(details),
     });
-    const saveResult = await saveResponse.text();
+    await saveResponse.text();
 
     if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
       console.error(`Invalid response status ${saveResponse.status}.`);
-      // throw new Error(`case save Error ${saveCaseResponse.status}`);
     }
   }
   return { status: true };

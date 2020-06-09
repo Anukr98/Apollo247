@@ -10,6 +10,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
+import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -126,6 +127,10 @@ const login: Resolver<
   //call sms gateway service to send the OTP here
   loginLogger('SEND_SMS___START');
   const smsResult = await sendSMS(mobileNumber, otp, hashCode);
+  if (loginType == LOGIN_TYPE.DOCTOR) {
+    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    sendNotificationWhatsapp(mobileNumber, message, 1);
+  }
   loginLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);

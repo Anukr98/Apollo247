@@ -16,6 +16,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { gtmTracking } from '../../gtmTracking';
+import { NO_SERVICEABLE_MESSAGE, getDiffInDays } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -373,7 +374,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
-              setErrorMessage(res.data.errorMsg);
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
             if (
@@ -381,10 +382,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               Array.isArray(res.data.tat) &&
               res.data.tat.length
             ) {
-              setDeliveryTime(res.data.tat[0].deliverydate);
-              setErrorMessage('');
+              if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
+                setDeliveryTime(res.data.tat[0].deliverydate);
+                setErrorMessage('');
+              } else {
+                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              }
             } else if (typeof res.data.errorMSG === 'string') {
-              setErrorMessage(res.data.errorMSG);
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
           }
         } catch (error) {

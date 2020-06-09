@@ -465,6 +465,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             inputProps={{
               maxLength: 6,
             }}
+            onKeyPress={(e) => {
+              if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+            }}
             value={pincode}
           />
           {pincodeError && (

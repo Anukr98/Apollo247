@@ -219,7 +219,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                   <div className={classes.medicineIcon}>
                     <img
                       src={
-                        item.is_prescription_required === '1'
+                        Number(item.is_prescription_required) === 1
                           ? require('images/ic_tablets_rx.svg')
                           : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
                       }

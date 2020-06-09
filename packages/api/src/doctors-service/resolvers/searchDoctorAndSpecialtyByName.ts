@@ -303,20 +303,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     if (doctor['activeSlotCount'] > 0) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
         if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-          if (doctor.doctorType === 'STAR_APOLLO') {
-            earlyAvailableApolloMatchedDoctors.unshift(doctor);
-          } else {
-            earlyAvailableApolloMatchedDoctors.push(doctor);
-          }
+          earlyAvailableApolloMatchedDoctors.push(doctor);
         } else {
           earlyAvailableNonApolloMatchedDoctors.push(doctor);
         }
       } else {
-        if (doctor.doctorType === 'STAR_APOLLO') {
-          matchedDoctors.unshift(doctor);
-        } else {
-          matchedDoctors.push(doctor);
-        }
+        matchedDoctors.push(doctor);
       }
     }
   }
@@ -327,6 +319,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   if (
     earlyAvailableApolloMatchedDoctors.length === 0 &&
     earlyAvailableNonApolloMatchedDoctors.length === 0 &&
+    perfectMatchedDoctors.length === 0 &&
     matchedDoctors.length === 0 &&
     matchedSpecialties.length === 0
   ) {
@@ -343,14 +336,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 },
               },
             ],
-            should: {
-              match: {
-                doctorType: {
-                  query: 'STAR_APOLLO',
-                  boost: 10,
-                },
-              },
-            },
           },
         },
       },
@@ -423,11 +408,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       if (doctor['activeSlotCount'] > 0) {
         if (doctor['earliestSlotavailableInMinutes'] < 241) {
           if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
-            if (doctor.doctorType === 'STAR_APOLLO') {
-              earlyAvailableApolloPossibleDoctors.unshift(doctor);
-            } else {
-              earlyAvailableApolloPossibleDoctors.push(doctor);
-            }
+            earlyAvailableApolloPossibleDoctors.push(doctor);
           } else {
             earlyAvailableNonApolloPossibleDoctors.push(doctor);
           }

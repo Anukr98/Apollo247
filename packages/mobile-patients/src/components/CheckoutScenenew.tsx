@@ -230,8 +230,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
+        'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         revenue: getFormattedAmount(grandTotal),
       };
+      if (store) {
+        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store Name'] = store.storename;
+        eventAttributes['Store Number'] = store.phone;
+        eventAttributes['Store Address'] = store.address;
+      }
       return eventAttributes;
     } catch (error) {
       return {};
