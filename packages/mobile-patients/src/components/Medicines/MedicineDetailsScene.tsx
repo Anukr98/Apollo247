@@ -422,7 +422,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       .add(2, 'days')
       .set('hours', 20)
       .set('minutes', 0)
-      .format('Do MMM YYYY');
+      .format('DD-MMM-YYYY hh:mm');
 
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
