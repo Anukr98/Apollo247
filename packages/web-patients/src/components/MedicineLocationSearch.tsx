@@ -187,6 +187,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
     setMedicineAddress,
     setPharmaAddressDetails,
     pharmaAddressDetails,
+    headerPincodeError,
+    setHeaderPincodeError,
   } = useShoppingCart();
 
   const [isLocationPopover, setIsLocationPopover] = React.useState<boolean>(false);
@@ -198,7 +200,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
-  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = React.useState<
