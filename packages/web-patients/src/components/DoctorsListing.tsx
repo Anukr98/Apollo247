@@ -196,12 +196,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -262,6 +266,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [data, setData] = useState<any>();
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [scrollArrowUp, setScrollArrowUp] = useState<boolean>(false);
 
   const consultOptions = {
     all: 'All Consults',
@@ -349,15 +354,17 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
           doctors.map((doc: docDetails) => {
-            doc && doc.fullName && potentialActionSchema.push({
-              '@type': 'EntryPoint',
-              name: doc.fullName,
-              url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                specialityName,
-                readableParam(doc.fullName),
-                doc.id
-              )}`,
-            });
+            doc &&
+              doc.fullName &&
+              potentialActionSchema.push({
+                '@type': 'EntryPoint',
+                name: doc.fullName,
+                url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                  specialityName,
+                  readableParam(doc.fullName),
+                  doc.id
+                )}`,
+              });
           });
         }
         setStructuredJSON({
@@ -481,12 +488,16 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const scrollToBottom = () => {
     const { clientHeight, scrollTop, scrollHeight } = scrollbar.current.getValues();
     const scrollBottom = clientHeight + scrollTop;
+    if (scrollHeight - scrollBottom < clientHeight && scrollHeight !== scrollBottom) {
+      setScrollArrowUp(true);
+    } else {
+      setScrollArrowUp(false);
+    }
     scrollBottom < scrollHeight
       ? scrollbar.current.scrollTop(scrollBottom)
       : scrollbar.current.scrollToTop();
   };
 
-  // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
   return (
     <div className={classes.root}>
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
@@ -591,9 +602,15 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               </Grid>
             </div>
           </Scrollbars>
-          <div className={classes.scrollArrow} onClick={scrollToBottom}>
-            <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-          </div>
+          {doctorsList.length > 4 && (
+            <div className={classes.scrollArrow} onClick={scrollToBottom}>
+              {scrollArrowUp ? (
+                <img className={classes.whiteArrow} src={require('images/ic-arrow-up.svg')} />
+              ) : (
+                <img className={classes.whiteArrow} src={require('images/ic-arrow-down.svg')} />
+              )}
+            </div>
+          )}
         </>
       ) : (
         <>
