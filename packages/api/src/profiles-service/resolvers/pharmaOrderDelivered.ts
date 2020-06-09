@@ -209,21 +209,27 @@ const createOneApolloTransaction = async (
   const itemSku: string[] = [];
   let grossAmount: number = 0;
   let netAmount: number = 0;
+  let totalDiscount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-      const priceForItem = item.discountPrice
-        ? (item.mrp - item.discountPrice) * item.issuedQty
-        : item.mrp * item.issuedQty;
+      const netPrice = item.discountPrice
+        ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
+        : +item.mrp.toFixed(1) * item.issuedQty;
+
+      const netMrp = +item.mrp.toFixed(1) * item.issuedQty;
+      const netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
 
       transactionLineItems.push({
         ProductCode: item.itemId,
-        NetAmount: priceForItem,
-        GrossAmount: priceForItem,
+        NetAmount: netPrice,
+        GrossAmount: netMrp,
+        DiscountAmount: netDiscount,
       });
-      grossAmount += priceForItem;
-      netAmount += priceForItem;
+      totalDiscount += netDiscount;
+      grossAmount += netMrp;
+      netAmount += netPrice;
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
@@ -231,6 +237,7 @@ const createOneApolloTransaction = async (
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = grossAmount;
+      Transaction.Discount = totalDiscount;
     }
   });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
