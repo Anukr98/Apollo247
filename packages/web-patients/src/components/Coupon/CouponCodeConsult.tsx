@@ -169,7 +169,7 @@ interface ApplyCouponProps {
   appointmentDateTime: string;
   validityStatus: boolean;
   setValidityStatus: (validityStatus: boolean) => void;
-  speciality?: string
+  speciality?: string;
 }
 
 export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
@@ -238,10 +238,14 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 category: 'Consultations',
                 action: props.speciality,
                 label: `Coupon Applied - ${selectCouponCode}`,
-                value: couponValidateResult && couponValidateResult.revisedAmount
-                  ? Number((props.cartValue -
-                  parseFloat(couponValidateResult.revisedAmount)
-                ).toFixed(2)) : null
+                value:
+                  couponValidateResult && couponValidateResult.revisedAmount
+                    ? Number(
+                        (props.cartValue - parseFloat(couponValidateResult.revisedAmount)).toFixed(
+                          2
+                        )
+                      )
+                    : null,
               });
               /*GTM TRACKING END */
             } else {
@@ -312,7 +316,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                   {availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
-                        couponDetails && couponDetails.couponConsultRule && couponDetails.couponConsultRule.isActive && (
+                        couponDetails &&
+                        couponDetails.displayStatus &&
+                        couponDetails.couponConsultRule &&
+                        couponDetails.couponConsultRule.isActive && (
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
