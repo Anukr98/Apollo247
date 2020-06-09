@@ -184,17 +184,6 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    location: {
-      display: 'flex',
-      alignItems: 'center',
-      padding: '36px 16px 34px',
-      '& p': {
-        fontSize: 13,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        margin: '0 0 0 10px',
-      },
-    },
   };
 });
 
@@ -224,10 +213,6 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     >
       {isSignedIn ? (
         <>
-          <div className={classes.location}>
-            <img src={require('images/ic_location_on.svg')} />
-            <p>Madhapur</p>
-          </div>
           <Link
             className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
             to={clientRoutes.doctorsLanding()}
