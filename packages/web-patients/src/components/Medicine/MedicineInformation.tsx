@@ -538,7 +538,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     </div>
                   )}
                 </div>
-                {errorMessage && <div className={classes.errorText}>{errorMessage}</div>}
+                {errorMessage && pinCode.length === 6 && (
+                  <div className={classes.errorText}>{errorMessage}</div>
+                )}
               </>
             ) : null}
           </div>
