@@ -5,6 +5,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -110,7 +111,10 @@ const updateOrderStatus: Resolver<
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   }
 
-  if (status == MEDICINE_ORDER_STATUS.DELIVERED && orderDetails.shopId) {
+  if (
+    status == MEDICINE_ORDER_STATUS.DELIVERED &&
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+  ) {
     status = MEDICINE_ORDER_STATUS.PICKEDUP;
   }
   if (shipmentDetails) {

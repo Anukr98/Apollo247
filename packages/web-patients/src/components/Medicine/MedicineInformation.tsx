@@ -16,6 +16,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { gtmTracking } from '../../gtmTracking';
+import { NO_SERVICEABLE_MESSAGE, getDiffInDays } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -339,7 +340,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((err) => alert({ err }));
+      .catch((err) => console.log(err));
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -373,7 +374,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
-              setErrorMessage(res.data.errorMsg);
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
             if (
@@ -381,10 +382,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               Array.isArray(res.data.tat) &&
               res.data.tat.length
             ) {
-              setDeliveryTime(res.data.tat[0].deliverydate);
-              setErrorMessage('');
+              if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
+                setDeliveryTime(res.data.tat[0].deliverydate);
+                setErrorMessage('');
+              } else {
+                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              }
             } else if (typeof res.data.errorMSG === 'string') {
-              setErrorMessage(res.data.errorMSG);
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
           }
         } catch (error) {
@@ -506,51 +511,66 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={classes.bottomGroupResponsive}>
         {!errorMessage ? (
           <>
-            <div className={classes.priceGroup}>
-              <div className={classes.priceWrap}>
-                {data.is_in_stock ? (
-                  <>
-                    <div className={classes.leftGroup}>
-                      <div className={classes.medicinePack}>
-                        <div>QTY :</div>
-                        <div className={classes.dropDown}>
-                          <AphCustomDropdown
-                            classes={{ selectMenu: classes.selectMenuItem }}
-                            value={medicineQty}
-                            onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                              setMedicineQty(parseInt(e.target.value))
-                            }
-                          >
-                            {options.map((option, index) => (
-                              <MenuItem
-                                key={index}
-                                classes={{
-                                  root: classes.menuRoot,
-                                  selected: classes.menuSelected,
-                                }}
-                                value={option}
-                              >
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </AphCustomDropdown>
-                        </div>
+            {data.is_in_stock ? (
+              <div className={classes.priceGroup}>
+                <div className={classes.priceWrap}>
+                  <div className={classes.leftGroup}>
+                    <div className={classes.medicinePack}>
+                      <div>QTY :</div>
+                      <div className={classes.dropDown}>
+                        <AphCustomDropdown
+                          classes={{ selectMenu: classes.selectMenuItem }}
+                          value={medicineQty}
+                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                            setMedicineQty(parseInt(e.target.value))
+                          }
+                        >
+                          {options.map((option, index) => (
+                            <MenuItem
+                              key={index}
+                              classes={{
+                                root: classes.menuRoot,
+                                selected: classes.menuSelected,
+                              }}
+                              value={option}
+                            >
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </AphCustomDropdown>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className={classes.leftGroup}>
-                    <div className={classes.medicineNoStock}>Out Of Stock</div>
                   </div>
-                )}
-                <div className={classes.medicinePrice}>
-                  {data.special_price && (
-                    <span className={classes.regularPrice}>(Rs. {data.price})</span>
-                  )}
-                  Rs. {data.special_price || data.price}
+                  <div className={classes.medicinePrice}>
+                    {data.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {data.price})</span>
+                    )}
+                    Rs. {data.special_price || data.price}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className={classes.outOfStock}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+                <AphButton
+                  fullWidth
+                  className={classes.notifyBtn}
+                  onClick={() => {
+                    const { sku, name, category_id } = data;
+                    /* WebEngage event start */
+                    notifyMeTracking({
+                      sku,
+                      category_id,
+                      name,
+                    });
+                    /* WebEngage event end */
+                    setIsPopoverOpen(true);
+                  }}
+                >
+                  Notify when in stock
+                </AphButton>
+              </div>
+            )}
 
             <div className={classes.bottomActions}>
               {data.is_in_stock ? (

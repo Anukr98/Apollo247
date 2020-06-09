@@ -1332,7 +1332,6 @@ export const MedicineCart: React.FC = (props) => {
                                 )
                               : null,
                         });
-
                         setValidateCouponResult(null);
                         setErrorMessage('');
                         setCouponCode && setCouponCode('');

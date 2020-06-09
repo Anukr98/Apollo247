@@ -315,9 +315,12 @@ export const convertCaseSheetToRxPdfData = async (
   };
 
   if (caseSheet.appointment) {
-    const consultDate = caseSheet.appointment.sdConsultationDate
+    /*const consultDate = caseSheet.appointment.sdConsultationDate
       ? caseSheet.appointment.sdConsultationDate
-      : caseSheet.appointment.appointmentDateTime;
+      : caseSheet.appointment.appointmentDateTime; */
+    const consultDate = caseSheet.prescriptionGeneratedDate
+      ? caseSheet.prescriptionGeneratedDate
+      : new Date();
     const istDateTime = addMilliseconds(consultDate, 19800000);
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),

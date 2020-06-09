@@ -12,6 +12,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 
 export interface PatientsProps extends NavigationScreenProps {}
 
@@ -36,27 +37,6 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
     return modelvisible ? <NeedHelpCard onPress={() => setmodelvisible(false)} /> : null;
   };
 
-  const renderMainHeader = () => {
-    return (
-      <Header
-        leftIcons={[
-          {
-            icon: <ApploLogo />,
-          },
-        ]}
-        rightIcons={[
-          {
-            icon: <RoundIcon />,
-            onPress: () => setmodelvisible(true),
-          },
-          // {
-          //   icon: <Notification />,
-          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          // },
-        ]}
-      />
-    );
-  };
   const searchFilterFunction = (searchText: string) => {
     setDoctorSearchText(searchText);
     if (!searchText) {
@@ -169,7 +149,7 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
 
   return (
     <SafeAreaView style={[theme.viewStyles.container]}>
-      {renderMainHeader()}
+      <CommonNotificationHeader navigation={props.navigation} />
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
       {renderTabPage()}
       {renderNeedHelpModal()}
