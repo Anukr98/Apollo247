@@ -98,23 +98,6 @@ enum ProductTypes {
   FMCG = 'Non Pharma',
   PL = 'Private Label',
 }
-type ProductDP = {
-  id: number;
-  sku: string;
-  price: number;
-  name: string;
-  status: string;
-  type_id: ProductTypes;
-  url_key: string;
-  is_in_stock: string;
-  mou: string;
-  is_prescription_required: string;
-  Message: string;
-};
-
-type PharmaSKUResp = {
-  productdp: ProductDP[];
-};
 
 const updateOrderStatus: Resolver<
   null,
