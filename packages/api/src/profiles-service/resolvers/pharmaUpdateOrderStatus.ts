@@ -25,6 +25,7 @@ import {
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -97,23 +98,6 @@ enum ProductTypes {
   FMCG = 'Non Pharma',
   PL = 'Private Label',
 }
-type ProductDP = {
-  id: number;
-  sku: string;
-  price: number;
-  name: string;
-  status: string;
-  type_id: ProductTypes;
-  url_key: string;
-  is_in_stock: string;
-  mou: string;
-  is_prescription_required: string;
-  Message: string;
-};
-
-type PharmaSKUResp = {
-  productdp: ProductDP[];
-};
 
 const updateOrderStatus: Resolver<
   null,
@@ -228,7 +212,7 @@ const updateOrderStatus: Resolver<
           profilesDb
         );
       }
-      if (status == MEDICINE_ORDER_STATUS.DELIVERED) {
+      if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
         await createOneApolloTransaction(
           medicineOrdersRepo,
           orderDetails,
@@ -237,7 +221,10 @@ const updateOrderStatus: Resolver<
         );
         const pushNotificationInput = {
           orderAutoId: orderDetails.orderAutoId,
-          notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
+          notificationType:
+            status == MEDICINE_ORDER_STATUS.DELIVERED
+              ? NotificationType.MEDICINE_ORDER_DELIVERED
+              : NotificationType.MEDICINE_ORDER_PICKEDUP,
         };
         console.log(pushNotificationInput, 'pushNotificationInput');
         const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
@@ -318,7 +305,7 @@ const createOneApolloTransaction = async (
     }),
     headers: { 'Content-Type': 'application/json', authorization: authToken },
   });
-  const pharmaResponse = (await pharmaResp.json()) as PharmaSKUResp;
+  const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
   log(
     'profileServiceLogger',
     `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl} - ${order.orderAutoId}`,
