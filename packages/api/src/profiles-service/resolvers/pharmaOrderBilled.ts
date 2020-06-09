@@ -5,6 +5,7 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -149,9 +150,10 @@ const saveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
-  const currentStatus = orderDetails.shopId
-    ? MEDICINE_ORDER_STATUS.READY_AT_STORE
-    : MEDICINE_ORDER_STATUS.ORDER_BILLED;
+  const currentStatus =
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? MEDICINE_ORDER_STATUS.READY_AT_STORE
+      : MEDICINE_ORDER_STATUS.ORDER_BILLED;
   const statusDate = format(
     addMinutes(parseISO(saveOrderShipmentInvoiceInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
@@ -187,9 +189,10 @@ const saveOrderShipmentInvoice: Resolver<
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: item.quantity,
+          issuedQty: Number((item.quantity / item.packSize).toFixed(2)),
           mou: item.packSize,
-          mrp: item.quantity * item.unitPrice,
+          discountPrice: Number((item.packSize * item.discountPrice).toFixed(2)),
+          mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
         };
       })
     ),

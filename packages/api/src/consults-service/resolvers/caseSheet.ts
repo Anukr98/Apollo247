@@ -45,11 +45,7 @@ import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepos
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import {
-  sendNotification,
-  NotificationType,
-  sendNotificationSMS,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
@@ -248,6 +244,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     patientDetails: PatientFullDetails @provides(fields: "id")
+    prescriptionGeneratedDate: DateTime
     sentToPatient: Boolean
     status: String
     symptoms: [SymptomList]
@@ -487,6 +484,7 @@ export const caseSheetTypeDefs = gql`
     success: Boolean
     blobName: String
     prismFileId: String
+    prescriptionGeneratedDate: DateTime
   }
 
   extend type Mutation {
@@ -698,6 +696,7 @@ type PatientPrescriptionSentResponse = {
   success: boolean;
   blobName: string;
   prismFileId: string;
+  prescriptionGeneratedDate: Date | undefined;
 };
 
 type ModifyCaseSheetInput = {
@@ -1196,6 +1195,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1234,6 +1234,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1242,6 +1243,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 
@@ -1270,6 +1272,7 @@ const generatePrescriptionTemp: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1308,6 +1311,7 @@ const generatePrescriptionTemp: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1316,6 +1320,7 @@ const generatePrescriptionTemp: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 

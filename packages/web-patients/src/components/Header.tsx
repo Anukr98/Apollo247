@@ -9,15 +9,14 @@ import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { locationRoutesBlackList } from 'helpers/commonHelpers';
-
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { LocationSearch } from 'components/LocationSearch';
 import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
-import { MyProfile } from 'components/MyAccount/MyProfile';
 import { AphButton } from '@aph/web-ui-components';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -223,12 +222,21 @@ export const Header: React.FC = (props) => {
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
 
-  const checkIfDisabled = () => {
-    const x = locationRoutesBlackList.some((v) => {
-      return currentPath.indexOf(v) > -1;
-    });
-    return !x;
-  };
+  const params = useParams<{
+    searchMedicineType: string;
+    searchText: string;
+    sku: string;
+  }>();
+
+  const MedicineRoutes = [
+    clientRoutes.medicines(),
+    clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
+    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
+    clientRoutes.medicineDetails(params.sku),
+    clientRoutes.medicineAllBrands(),
+    clientRoutes.prescriptionsLanding(),
+  ];
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
@@ -239,8 +247,10 @@ export const Header: React.FC = (props) => {
             </Link>
           </div>
           {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
-          {checkIfDisabled() && currentPath !== '/' && <MedicineLocationSearch />}
-          <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
+          {MedicineRoutes.find((route) => route === currentPath) && <MedicineLocationSearch />}
+          <MedicinesCartContext.Consumer>
+            {() => <Navigation activeMedicineRoutes={MedicineRoutes} />}
+          </MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${

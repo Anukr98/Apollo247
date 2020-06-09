@@ -187,7 +187,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Navigation: React.FC = (props) => {
+interface NavigationProps {
+  activeMedicineRoutes: Array<string>;
+}
+
+export const Navigation: React.FC<NavigationProps> = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
@@ -219,8 +223,7 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
+              props.activeMedicineRoutes.find((route) => route === currentPath)
                 ? classes.menuItemActive
                 : ''
             }
@@ -259,8 +262,7 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
+              props.activeMedicineRoutes.find((route) => route === currentPath)
                 ? classes.menuItemActive
                 : ''
             }

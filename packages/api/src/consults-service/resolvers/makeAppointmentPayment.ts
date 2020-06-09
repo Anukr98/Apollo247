@@ -304,13 +304,9 @@ const makeAppointmentPayment: Resolver<
       currentTime
     );
 
-    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctorDetails = await doctorRepo.findById(processingAppointment.doctorId);
-    const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : null;
     if (
       timeDifference / 60 <=
-        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
-      isJdAllowed == false
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10)
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -350,16 +346,18 @@ const makeAppointmentPayment: Resolver<
       status: STATUS.PAYMENT_FAILED,
       paymentInfo,
     });
-    //NOTIFICATION logic starts here
-    sendNotification(
-      {
-        appointmentId: processingAppointment.id,
-        notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
-      },
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    if (paymentInfo.paymentStatus === 'PENDING') {
+      //NOTIFICATION logic starts here
+      sendNotification(
+        {
+          appointmentId: processingAppointment.id,
+          notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+        },
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+    }
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {
       status: STATUS.PAYMENT_PENDING_PG,

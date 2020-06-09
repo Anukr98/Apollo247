@@ -52,12 +52,11 @@ type AllowLocationProps = {
   setIsPincodeDialogOpen: (isPincodeDialogOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
   isPopoverOpen: boolean;
-  //   setDetectBy?: (detectBy: string) => void;
+  locateCurrentLocation: () => void;
 };
 
 export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
   const classes = useStyles({});
-  const { locateCurrentLocation } = useContext(LocationContext);
 
   return (
     <div className={classes.root}>
@@ -80,8 +79,7 @@ export const MedicineAllowLocation: React.FC<AllowLocationProps> = (props) => {
         <AphButton
           color="primary"
           onClick={() => {
-            props.setIsPopoverOpen(false);
-            locateCurrentLocation();
+            props.locateCurrentLocation();
           }}
           title={'Allow Auto Detect'}
         >

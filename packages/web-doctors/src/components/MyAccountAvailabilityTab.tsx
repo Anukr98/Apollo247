@@ -324,10 +324,10 @@ export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
           )}
         </Grid>
       </Grid>
-      <div className={classes.helpTxt}>
+      {/* <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
-      </div>
+      </div> */}
       <BlockedCalendar doctorId={data.id} />
     </div>
   );

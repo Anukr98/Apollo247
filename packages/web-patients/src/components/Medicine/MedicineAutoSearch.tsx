@@ -39,6 +39,15 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
+    strikeThroughPrice: {
+      opacity: '0.6',
+      fontWeight: 500,
+      paddingRight: 5,
+      textDecoration: 'line-through',
+    },
+    specialPrice: {
+      paddingLeft: 12,
+    },
     searchInput: {
       '& input': {
         [theme.breakpoints.down('xs')]: {
@@ -222,14 +231,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-interface MedicineAutoSearchProps {
-  fromPDP: boolean;
-}
 
-export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => {
+export const MedicineAutoSearch: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
+    url: process.env.PHARMACY_MED_SEARCH_SUGGEST_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
@@ -326,15 +332,9 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
         </AphButton>
       </div>
       {showError ? (
-        props.fromPDP ? (
-          <span className={classes.noData}>
-            Hit enter to search <b>'{searchText}'</b>
-          </span>
-        ) : (
-          <FormHelperText className={classes.helpText} component="div" error={showError}>
-            Sorry, we couldn't find what you are looking for :("
-          </FormHelperText>
-        )
+        <span className={classes.noData}>
+          Hit enter to search for <b>'{searchText}'</b>
+        </span>
       ) : (
         ''
       )}
@@ -361,7 +361,17 @@ export const MedicineAutoSearch: React.FC<MedicineAutoSearchProps> = (props) => 
                       <div className={classes.medicineInfo}>
                         <div className={classes.medicineName}>{medicine.name}</div>
                         {medicine.is_in_stock ? (
-                          <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
+                          <div className={classes.medicinePrice}>
+                            <span
+                              className={medicine.special_price ? classes.strikeThroughPrice : ''}
+                            >{`Rs. ${medicine.price}`}</span>
+                            {medicine.special_price && (
+                              <span className={classes.specialPrice}>
+                                {' '}
+                                {`Rs. ${medicine.special_price}`}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <div className={classes.bottomInfo}>
                             <div className={classes.medicinePrice}>Rs. {medicine.price}</div>

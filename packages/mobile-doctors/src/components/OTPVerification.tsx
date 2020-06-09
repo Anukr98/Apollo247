@@ -28,9 +28,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import Hyperlink from 'react-native-hyperlink';
-import { WebView } from 'react-native-webview';
+
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import SmsRetriever from 'react-native-sms-retriever';
@@ -94,7 +95,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             if (event.message) {
               const messageOTP = event.message.match(/[0-9]{6}/g);
               if (messageOTP) {
-                setOtp(messageOTP.toString());
+                isOtpValid(messageOTP[0]);
+                // onClickOk(messageOTP[0]);
               }
             }
             SmsRetriever.removeSmsListener();
@@ -115,13 +117,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
-    // smsListenerAndroid();
+    if (Platform.OS === 'android') {
+      smsListenerAndroid();
+    }
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
-      // if (Platform.OS === 'android') {
-      //   SmsRetriever.removeSmsListener();
-      // }
+      if (Platform.OS === 'android') {
+        SmsRetriever.removeSmsListener();
+      }
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
@@ -306,7 +310,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const onClickOk = () => {
+  const onClickOk = (readOtp?: string) => {
     try {
       Keyboard.dismiss();
     } catch (error) {}
@@ -317,7 +321,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
         const { loginId } = props.navigation.state.params!;
 
-        verifyOTP(loginId, otp)
+        verifyOTP(loginId, readOtp || otp)
           .then((data: any) => {
             console.log(data.status === true, data.status, 'status');
 
@@ -454,48 +458,49 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const openWebView = () => {
     Keyboard.dismiss();
-    return (
-      <View style={styles.viewWebStyles}>
-        <Header
-          headerText={strings.login.terms_conditions}
-          leftIcon="close"
-          containerStyle={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/TnC.html',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            // useWebKit={true}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setshowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setshowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setshowSpinner(false);
-            }}
-          />
-        </View>
-      </View>
-    );
+    Linking.openURL('https://www.apollo247.com/TnC.html');
+    // return (
+    //   <View style={styles.viewWebStyles}>
+    //     <Header
+    //       headerText={strings.login.terms_conditions}
+    //       leftIcon="close"
+    //       containerStyle={{
+    //         borderBottomWidth: 0,
+    //       }}
+    //       onPressLeftIcon={() => setonClickOpen(false)}
+    //     />
+    //     <View
+    //       style={{
+    //         flex: 1,
+    //         overflow: 'hidden',
+    //         backgroundColor: 'white',
+    //       }}
+    //     >
+    //       <WebView
+    //         source={{
+    //           uri: 'https://www.apollo247.com/TnC.html',
+    //         }}
+    //         style={{
+    //           flex: 1,
+    //           backgroundColor: 'white',
+    //         }}
+    //         // useWebKit={true}
+    //         onLoadStart={() => {
+    //           console.log('onLoadStart');
+    //           setshowSpinner(true);
+    //         }}
+    //         onLoadEnd={() => {
+    //           console.log('onLoadEnd');
+    //           setshowSpinner(false);
+    //         }}
+    //         onLoad={() => {
+    //           console.log('onLoad');
+    //           setshowSpinner(false);
+    //         }}
+    //       />
+    //     </View>
+    //   </View>
+    // );
   };
 
   const renderHyperLink = () => {
@@ -516,7 +521,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           linkText={(url) =>
             url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
           }
-          onPress={(url, text) => setonClickOpen(true)}
+          onPress={(url, text) => openWebView()}
         >
           <Text
             style={{
@@ -616,7 +621,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             heading={string.login.great}
             description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
-            onClickButton={onClickOk}
+            onClickButton={() => onClickOk()}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
@@ -678,7 +683,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </Card>
         )}
-        {onClickOpen && openWebView()}
+        {/* {onClickOpen && openWebView()} */}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

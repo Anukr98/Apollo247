@@ -7,24 +7,19 @@ import {
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
   DoctorType,
-  STATUS,
   REQUEST_ROLES,
+  STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import {
-  UpdatePatientPrescriptionSentStatus,
-  UpdatePatientPrescriptionSentStatusVariables,
-} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { callPermissions, g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import moment from 'moment';
+import Pubnub from 'pubnub';
 import React from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { View } from 'react-native';
@@ -35,7 +30,6 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
-import Pubnub from 'pubnub';
 
 const styles = AppointmentsListStyles;
 
@@ -213,95 +207,56 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                               onPress: () => {
                                 if (caseSheetId) {
                                   setLoading && setLoading(true);
-                                  client
-                                    .mutate<
-                                      UpdatePatientPrescriptionSentStatus,
-                                      UpdatePatientPrescriptionSentStatusVariables
-                                    >({
-                                      mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
-                                      variables: {
-                                        caseSheetId: caseSheetId,
-                                        sentToPatient: true,
+                                  const config: Pubnub.PubnubConfig = {
+                                    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                                    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+                                    ssl: true,
+                                  };
+
+                                  const pubnub = new Pubnub(config);
+
+                                  const followupObj = {
+                                    appointmentId: appId,
+                                    folloupDateTime: caseSheet!.followUp
+                                      ? moment()
+                                          .add(Number(caseSheet!.followUpAfterInDays), 'd')
+                                          .format('YYYY-MM-DD')
+                                      : '',
+                                    doctorId: caseSheet!.doctorId,
+                                    caseSheetId: caseSheetId,
+                                    doctorInfo: doctorDetails,
+                                    pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                                    isResend: true,
+                                  };
+
+                                  pubnub.publish(
+                                    {
+                                      channel: appId,
+                                      storeInHistory: true,
+                                      message: {
+                                        id: followupObj.doctorId || '',
+                                        message: messageCodes.followupconsult,
+                                        transferInfo: followupObj,
+                                        messageDate: new Date(),
+                                        sentBy: REQUEST_ROLES.DOCTOR,
                                       },
-                                    })
-                                    .then((_data) => {
-                                      if (
-                                        g(
-                                          _data,
-                                          'data',
-                                          'updatePatientPrescriptionSentStatus',
-                                          'success'
-                                        )
-                                      ) {
-                                        const config: Pubnub.PubnubConfig = {
-                                          subscribeKey:
-                                            'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b', //'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-                                          publishKey: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e', //'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
-                                          ssl: true,
-                                          uuid: REQUEST_ROLES.DOCTOR,
-                                        };
-
-                                        const pubnub = new Pubnub(config);
-
-                                        const followupObj = {
-                                          appointmentId: appId,
-                                          folloupDateTime: caseSheet!.followUp
-                                            ? moment()
-                                                .add(Number(caseSheet!.followUpAfterInDays), 'd')
-                                                .format('YYYY-MM-DD')
-                                            : '',
-                                          doctorId: caseSheet!.doctorId,
-                                          caseSheetId: caseSheetId,
-                                          doctorInfo: doctorDetails,
-                                          pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
-                                        };
-                                        console.log(followupObj, 'followupObj');
-                                        console.log(
-                                          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
-                                            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`
-                                          ),
-                                          'prescriptionPdf'
-                                        );
-
-                                        pubnub.publish(
-                                          {
-                                            channel: appId,
-                                            storeInHistory: true,
-                                            message: {
-                                              id: followupObj.doctorId || '',
-                                              message: messageCodes.followupconsult,
-                                              transferInfo: followupObj,
-                                              messageDate: new Date(),
-                                              sentBy: REQUEST_ROLES.DOCTOR,
-                                            },
-                                          },
-                                          (status, response) => {
-                                            pubnub.stop();
-                                          }
-                                        );
-                                        setLoading && setLoading(false);
-                                        showAphAlert &&
-                                          showAphAlert({
-                                            title: 'Hi',
-                                            description:
-                                              'Prescription has been sent to patient successfully',
-                                            onPressOk: () => {
-                                              props.navigation.popToTop();
-                                              hideAphAlert && hideAphAlert();
-                                            },
-                                            unDismissable: true,
-                                          });
-                                      }
-                                    })
-                                    .catch((e) => {
-                                      console.log(e, 'e');
+                                    },
+                                    (status, response) => {
+                                      pubnub.stop();
                                       setLoading && setLoading(false);
                                       showAphAlert &&
                                         showAphAlert({
-                                          title: strings.common.uh_oh,
-                                          description: strings.common.oops_msg,
+                                          title: 'Hi',
+                                          description:
+                                            'Prescription has been sent to patient successfully',
+                                          onPressOk: () => {
+                                            props.navigation.popToTop();
+                                            hideAphAlert && hideAphAlert();
+                                          },
+                                          unDismissable: true,
                                         });
-                                    });
+                                    }
+                                  );
                                 }
                               },
                             },
@@ -314,7 +269,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             DoctorId: doctorId,
                             PatientId: patientId,
                             PatientConsultTime: null,
-                            PatientInfoAll: PatientInfo,
                             AppId: appId,
                             Appintmentdatetime: i.appointmentDateTime,
                             AppointmentStatus: i.status,
@@ -338,12 +292,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
                   symptoms={
-                    (i.caseSheet &&
-                      g(
-                        i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR),
-                        'symptoms'
-                      )) ||
-                    []
+                    i.caseSheet
+                      ? i.caseSheet.length > 0 &&
+                        i.caseSheet[0] !== null &&
+                        i.caseSheet[0].symptoms !== null
+                        ? i.caseSheet[0].symptoms || []
+                        : i.caseSheet.length > 1 &&
+                          i.caseSheet[1] !== null &&
+                          i.caseSheet[1]!.symptoms !== null
+                        ? i.caseSheet[1].symptoms || []
+                        : []
+                      : []
                   }
                   doctorId={i.doctorId}
                   patientId={i.patientId}

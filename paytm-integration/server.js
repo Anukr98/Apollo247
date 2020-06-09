@@ -1005,12 +1005,12 @@ app.get('/processOmsOrders', (req, res) => {
                     );
                     return;
                   }
-                  const shopAddress = JSON.stringify(orderDetails.shopAddress);
+                  const shopAddress = JSON.parse(orderDetails.shopAddress);
                   deliveryState = shopAddress.state;
                   deliveryCity = shopAddress.city;
                   deliveryZipcode = shopAddress.zipcode;
-                  deliveryAddress = shopAddress.address;
-                  deliveryStateCode = shopAddress.state;
+                  deliveryAddress = shopAddress.address || '';
+                  deliveryStateCode = shopAddress.stateCode;
                 }
                 const orderLineItems = [];
                 let requestType = 'NONCART';

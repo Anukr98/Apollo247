@@ -16,6 +16,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { gtmTracking } from '../../gtmTracking';
+import { NO_SERVICEABLE_MESSAGE, getDiffInDays } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -320,41 +321,26 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.url || '',
+        { params: data.sku || params.sku },
         {
           headers: {
             Authorization: apiDetails.authToken,
           },
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.url || '',
-            { params: data.sku || params.sku },
-            {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
+      .then(({ data }) => {
+        try {
+          if (data) {
+            if (data.products && data.products.length > 0) {
+              setSubstitutes(data.products);
             }
-          )
-          .then(({ data }) => {
-            try {
-              if (data) {
-                if (data.products && data.products.length > 0) {
-                  setSubstitutes(data.products);
-                }
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((err) => alert({ err }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
       })
-      .catch((e) => {
-        alert(e);
-      });
+      .catch((err) => console.log(err));
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -363,66 +349,54 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setTatLoading(true);
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.deliveryUrl || '',
+        {
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: data.sku || params.sku,
+              qty: 1,
+            },
+          ],
+        },
         {
           headers: {
-            Authorization: apiDetails.authToken,
+            Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.deliveryUrl || '',
-            {
-              postalcode: pinCode,
-              ordertype: 'pharma',
-              lookup: [
-                {
-                  sku: data.sku || params.sku,
-                  qty: 1,
-                },
-              ],
-            },
-            {
-              headers: {
-                Authentication: apiDetails.deliveryAuthToken,
-              },
-              cancelToken: new CancelToken((c) => {
-                // An executor function receives a cancel function as a parameter
-                cancelGetDeliveryTimeApi = c;
-              }),
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (res.data.errorMsg) {
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
-          )
-          .then((res: AxiosResponse) => {
-            try {
-              if (res && res.data) {
-                if (res.data.errorMsg) {
-                  setErrorMessage(res.data.errorMsg);
-                }
-                setTatLoading(false);
-                if (
-                  typeof res.data === 'object' &&
-                  Array.isArray(res.data.tat) &&
-                  res.data.tat.length
-                ) {
-                  setDeliveryTime(res.data.tat[0].deliverydate);
-                  setErrorMessage('');
-                } else if (typeof res.data.errorMSG === 'string') {
-                  setErrorMessage(res.data.errorMSG);
-                }
-              }
-            } catch (error) {
-              setTatLoading(false);
-            }
-          })
-          .catch((error: any) => {
             setTatLoading(false);
-          });
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
+                setDeliveryTime(res.data.tat[0].deliverydate);
+                setErrorMessage('');
+              } else {
+                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              }
+            } else if (typeof res.data.errorMSG === 'string') {
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
+            }
+          }
+        } catch (error) {
+          setTatLoading(false);
+        }
       })
-      .catch((e) => {
-        alert(e);
+      .catch((error: any) => {
         setTatLoading(false);
       });
   };
@@ -537,51 +511,66 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={classes.bottomGroupResponsive}>
         {!errorMessage ? (
           <>
-            <div className={classes.priceGroup}>
-              <div className={classes.priceWrap}>
-                {data.is_in_stock ? (
-                  <>
-                    <div className={classes.leftGroup}>
-                      <div className={classes.medicinePack}>
-                        <div>QTY :</div>
-                        <div className={classes.dropDown}>
-                          <AphCustomDropdown
-                            classes={{ selectMenu: classes.selectMenuItem }}
-                            value={medicineQty}
-                            onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                              setMedicineQty(parseInt(e.target.value))
-                            }
-                          >
-                            {options.map((option, index) => (
-                              <MenuItem
-                                key={index}
-                                classes={{
-                                  root: classes.menuRoot,
-                                  selected: classes.menuSelected,
-                                }}
-                                value={option}
-                              >
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </AphCustomDropdown>
-                        </div>
+            {data.is_in_stock ? (
+              <div className={classes.priceGroup}>
+                <div className={classes.priceWrap}>
+                  <div className={classes.leftGroup}>
+                    <div className={classes.medicinePack}>
+                      <div>QTY :</div>
+                      <div className={classes.dropDown}>
+                        <AphCustomDropdown
+                          classes={{ selectMenu: classes.selectMenuItem }}
+                          value={medicineQty}
+                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                            setMedicineQty(parseInt(e.target.value))
+                          }
+                        >
+                          {options.map((option, index) => (
+                            <MenuItem
+                              key={index}
+                              classes={{
+                                root: classes.menuRoot,
+                                selected: classes.menuSelected,
+                              }}
+                              value={option}
+                            >
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </AphCustomDropdown>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className={classes.leftGroup}>
-                    <div className={classes.medicineNoStock}>Out Of Stock</div>
                   </div>
-                )}
-                <div className={classes.medicinePrice}>
-                  {data.special_price && (
-                    <span className={classes.regularPrice}>(Rs. {data.price})</span>
-                  )}
-                  Rs. {data.special_price || data.price}
+                  <div className={classes.medicinePrice}>
+                    {data.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {data.price})</span>
+                    )}
+                    Rs. {data.special_price || data.price}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className={classes.outOfStock}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+                <AphButton
+                  fullWidth
+                  className={classes.notifyBtn}
+                  onClick={() => {
+                    const { sku, name, category_id } = data;
+                    /* WebEngage event start */
+                    notifyMeTracking({
+                      sku,
+                      category_id,
+                      name,
+                    });
+                    /* WebEngage event end */
+                    setIsPopoverOpen(true);
+                  }}
+                >
+                  Notify when in stock
+                </AphButton>
+              </div>
+            )}
 
             <div className={classes.bottomActions}>
               {data.is_in_stock ? (

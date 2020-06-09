@@ -189,6 +189,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setDiagnosis,
     medicinePrescription,
     setMedicinePrescription,
+    removedMedicinePrescription,
+    setRemovedMedicinePrescription,
     followUp,
     setFollowUp,
     followUpAfterInDays,
@@ -331,6 +333,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           familyHistory: familyHistory,
           diagnosis: diagnosis,
           medicinePrescription: medicinePrescription,
+          removedMedicinePrescription: removedMedicinePrescription,
           otherInstructions: otherInstructions,
           followUp: followUp,
           followUpAfterInDays: followUpAfterInDays,
@@ -360,6 +363,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setFamilyHistory(storageItem.familyHistory);
         setDiagnosis(storageItem.diagnosis);
         setMedicinePrescription(storageItem.medicinePrescription);
+        setRemovedMedicinePrescription(storageItem.removedMedicinePrescription);
         setFollowUp(storageItem.followUp);
         setFollowUpAfterInDays(storageItem.followUpAfterInDays);
         setFollowUpDate(storageItem.followUpDate);

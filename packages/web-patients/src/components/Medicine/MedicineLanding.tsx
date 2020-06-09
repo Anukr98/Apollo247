@@ -379,6 +379,17 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 72,
       },
     },
+    medicineReview: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginTop: 16,
+      fontSize: 13,
+      '& a': {
+        color: '#fc9916',
+      },
+      '& p': {
+        marginBottom: 0,
+      },
+    },
   };
 });
 
@@ -420,6 +431,7 @@ export const MedicineLanding: React.FC = (props: any) => {
     if (localStorage.getItem('pharmaCoupon')) {
       localStorage.removeItem('pharmaCoupon');
     }
+    sessionStorage.removeItem('cartValues');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
@@ -530,12 +542,12 @@ export const MedicineLanding: React.FC = (props: any) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            <div className={classes.userName}>
+            {/* <div className={classes.userName}>
               hi {currentPatient ? currentPatient.firstName : 'User'} :)
-            </div>
+            </div> */}
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <MedicineAutoSearch fromPDP={false} />
+                <MedicineAutoSearch />
                 {loading && (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />
@@ -565,6 +577,14 @@ export const MedicineLanding: React.FC = (props: any) => {
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
                         </div>
+                      </div>
+                      <div className={classes.medicineReview}>
+                        <p>
+                          Want to check medicine interactions?{' '}
+                          <Link to={clientRoutes.prescriptionReview()}>
+                            CONSULT A PHARMACOLOGIST
+                          </Link>
+                        </p>
                       </div>
                     </div>
                   </div>
