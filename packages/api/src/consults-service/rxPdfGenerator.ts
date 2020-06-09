@@ -2,7 +2,7 @@ import { format, getTime, addMilliseconds } from 'date-fns';
 import path from 'path';
 import util from 'util';
 
-import PDFDocument, { widthOfString } from 'pdfkit';
+import PDFDocument from 'pdfkit';
 import {
   RxPdfData,
   CaseSheet,
