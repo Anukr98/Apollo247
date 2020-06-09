@@ -96,6 +96,11 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           eventAttributes
         );
         if (!Availability) {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
+            'Mobile Number': currentPatient.mobileNumber,
+            Pincode: pincode,
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
           globalLoading!(false);
           setError(
             'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
