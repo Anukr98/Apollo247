@@ -206,6 +206,7 @@ const createOneApolloTransaction = async (
 
   const itemTypemap: ItemsSkuTypeMap = {};
   const itemSku: string[] = [];
+  let grossAmount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
@@ -218,12 +219,15 @@ const createOneApolloTransaction = async (
             : item.mrp * item.issuedQty,
         GrossAmount: item.mrp * item.issuedQty,
       });
+      grossAmount += item.mrp * item.issuedQty;
     });
-
-    const billDetails: BillDetails = JSON.parse(val.billDetails);
-    Transaction.BillNo = billDetails.billNumber;
-    Transaction.NetAmount = billDetails.invoiceValue;
-    Transaction.TransactionDate = billDetails.billDateTime;
+    if (val.billDetails) {
+      const billDetails: BillDetails = JSON.parse(val.billDetails);
+      Transaction.BillNo = billDetails.billNumber;
+      Transaction.NetAmount = billDetails.invoiceValue;
+      Transaction.TransactionDate = billDetails.billDateTime;
+      Transaction.GrossAmount = grossAmount;
+    }
   });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
