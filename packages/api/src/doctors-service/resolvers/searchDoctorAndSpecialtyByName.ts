@@ -312,6 +312,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
+  console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
+  console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
+  console.log('matchedDoctors', matchedDoctors);
   matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
