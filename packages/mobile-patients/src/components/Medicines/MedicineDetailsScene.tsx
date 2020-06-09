@@ -417,8 +417,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
-    const genericErrorMsg = 'Sorry, unable to check serviceability.';
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
+    const genericServiceableDate = moment()
+      .add(2, 'days')
+      .set('hours', 20)
+      .set('minutes', 0)
+      .format('Do MMM YYYY');
+
     Keyboard.dismiss();
     setshowDeliverySpinner(true);
     getDeliveryTime({
@@ -432,11 +437,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ],
     })
       .then((res) => {
-        const errorMSG = g(res, 'data', 'errorMSG');
-        if (errorMSG) {
-          setdeliveryError(unServiceableMsg);
-          return;
-        }
         const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
         if (deliveryDate) {
           if (isDeliveryDateWithInXDays(deliveryDate)) {
@@ -447,12 +447,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             setdeliveryTime('');
           }
         } else {
-          setdeliveryError(genericErrorMsg);
+          setdeliveryTime(genericServiceableDate);
+          setdeliveryError('');
         }
       })
-      .catch((err) => {
-        CommonBugFender('MedicineDetailsScene_fetchDeliveryTime', err);
-        setdeliveryError(genericErrorMsg);
+      .catch(() => {
+        // Intentionally show T+2 days as Delivery Date
+        setdeliveryTime(genericServiceableDate);
+        setdeliveryError('');
       })
       .finally(() => setshowDeliverySpinner(false));
   };
