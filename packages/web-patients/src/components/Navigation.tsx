@@ -4,7 +4,6 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
-import { useParams } from 'hooks/routerHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
@@ -188,7 +187,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Navigation: React.FC = (props) => {
+interface NavigationProps {
+  activeMedicineRoutes: Array<string>;
+}
+
+export const Navigation: React.FC<NavigationProps> = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
@@ -196,20 +199,6 @@ export const Navigation: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
-  const params = useParams<{
-    searchMedicineType: string;
-    searchText: string;
-    sku: string;
-  }>();
-
-  const medcineRoutes = [
-    clientRoutes.medicines(),
-    clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
-    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
-    clientRoutes.medicineDetails(params.sku),
-    clientRoutes.medicineAllBrands(),
-    clientRoutes.prescriptionsLanding(),
-  ];
 
   return (
     <div
@@ -234,7 +223,9 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
             }
             title={'Medicines'}
           >
@@ -271,7 +262,9 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              medcineRoutes.find((route) => route === currentPath) ? classes.menuItemActive : ''
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
             }
             title={'Pharmacy'}
           >
