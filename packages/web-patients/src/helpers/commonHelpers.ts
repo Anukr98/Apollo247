@@ -1,6 +1,7 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
+import { GooglePlacesType } from 'components/LocationProvider';
 
 declare global {
   interface Window {
@@ -168,6 +169,18 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const TAT_API_TIMEOUT_IN_SEC = 20;
 
+const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
+  return findItem ? findItem.short_name || findItem.long_name : '';
+};
+
 export {
   getDiffInDays,
   NO_SERVICEABLE_MESSAGE,
@@ -186,4 +199,5 @@ export {
   INVALID_FILE_TYPE_ERROR,
   toBase64,
   TAT_API_TIMEOUT_IN_SEC,
+  findAddrComponents,
 };

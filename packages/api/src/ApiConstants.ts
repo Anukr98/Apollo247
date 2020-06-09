@@ -72,6 +72,14 @@ export enum ApiConstants {
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
+  //medicine order ready at store
+  ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly contact the store 20 minutes before reaching the store.',
+
+  //medicine order picked up
+  ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
+  ORDER_PICKEDUP_BODY = 'Order Picked Up: Greetings from Apollo 24|7 Your order {0} is picked up successfully. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
   ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} is out for delivery. Our executive will be there soon :)',

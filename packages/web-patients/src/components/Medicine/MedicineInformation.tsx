@@ -9,7 +9,7 @@ import { notifyMeTracking } from '../../webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, Canceler } from 'axios';
+import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -23,6 +23,8 @@ import {
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
+import { Alerts } from 'components/Alerts/Alerts';
+import { findAddrComponents } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -298,7 +300,15 @@ type MedicineInformationProps = {
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
-  const { addCartItem, cartItems, updateCartItem, pharmaAddressDetails } = useShoppingCart();
+  const {
+    addCartItem,
+    cartItems,
+    updateCartItem,
+    pharmaAddressDetails,
+    setMedicineAddress,
+    setPharmaAddressDetails,
+    setHeaderPincodeError,
+  } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -315,6 +325,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
   const [tatLoading, setTatLoading] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -360,6 +372,70 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setDeliveryTime(nextDeliveryDate);
     setErrorMessage('');
     setTatLoading(false);
+    getPlaceDetails(pinCode);
+  };
+
+  const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
+    await axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addrComponents = data.results[0].address_components || [];
+            const pincode = findAddrComponents('postal_code', addrComponents);
+            const city =
+              findAddrComponents('administrative_area_level_2', addrComponents) ||
+              findAddrComponents('locality', addrComponents);
+            const state = findAddrComponents('administrative_area_level_1', addrComponents);
+            const country = findAddrComponents('country', addrComponents);
+            setMedicineAddress(city);
+            setPharmaAddressDetails({
+              city,
+              state,
+              pincode,
+              country,
+            });
+            setHeaderPincodeError('0');
+          }
+        } catch {
+          (e: AxiosError) => {
+            console.log(e);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong :(');
+          };
+        }
+      })
+      .catch((e: AxiosError) => {
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        console.log(e);
+      });
+  };
+
+  const getPlaceDetails = (pincode: string) => {
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const { lat, lng } = data.results[0].geometry.location;
+            getCurrentLocationDetails(lat, lng);
+          }
+        } catch {
+          (e: AxiosError) => {
+            console.log(e);
+          };
+        }
+      })
+      .catch((e: AxiosError) => {
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        console.log(e);
+      });
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -394,6 +470,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
+              setDeliveryTime('');
               setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
@@ -405,7 +482,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
                 setDeliveryTime(res.data.tat[0].deliverydate);
                 setErrorMessage('');
+                if (pharmaAddressDetails.pincode !== pinCode) {
+                  getPlaceDetails(pinCode);
+                }
               } else {
+                setDeliveryTime('');
                 setErrorMessage(NO_SERVICEABLE_MESSAGE);
               }
             } else if (
@@ -443,10 +524,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         if (data && data.Availability) {
           fetchDeliveryTime(pinCode);
         } else {
+          setDeliveryTime('');
           setErrorMessage(NO_SERVICEABLE_MESSAGE);
         }
       })
-      .catch((e) => setErrorMessage(NO_SERVICEABLE_MESSAGE));
+      .catch((e) => {
+        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setDeliveryTime('');
+      });
   };
 
   const itemIndexInCart = (item: MedicineProduct) => {
@@ -538,9 +623,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     </div>
                   )}
                 </div>
-                {errorMessage && pinCode.length === 6 && (
-                  <div className={classes.errorText}>{errorMessage}</div>
-                )}
+                {errorMessage && <div className={classes.errorText}>{errorMessage}</div>}
               </>
             ) : null}
           </div>
@@ -790,6 +873,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
