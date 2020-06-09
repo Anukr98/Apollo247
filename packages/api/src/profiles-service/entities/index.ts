@@ -728,7 +728,6 @@ export class Patient extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('Patient_dateofbirth')
   @Column({ nullable: true })
   dateOfBirth: Date;
 
@@ -746,7 +745,6 @@ export class Patient extends BaseEntity {
   @Validate(NameValidator)
   firstName: string;
 
-  @Index('Patient_gender')
   @Column({ nullable: true })
   gender: Gender;
 
@@ -826,6 +824,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryPatientId: string;
 
+  @Index('Patient_uhid')
   @Column({ nullable: true })
   uhid: string;
 
