@@ -131,8 +131,7 @@ const saveOrderDeliveryStatus: Resolver<
   orderDeliveryInputArgs,
   ProfilesServiceContext,
   OrderDeliveryResult
-> = async (parent, { orderDeliveryInput }, { mobileNumber, profilesDb }) => {
-  const mobileNumberIn = mobileNumber.slice(3);
+> = async (parent, { orderDeliveryInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByAp(
     orderDeliveryInput.ordersResult.apOrderNo
@@ -157,6 +156,8 @@ const saveOrderDeliveryStatus: Resolver<
     new Date(),
     MEDICINE_ORDER_STATUS.DELIVERED
   );
+  const mobileNumberIn = orderDetails.patient.mobileNumber.slice(3);
+
   await createOneApolloTransaction(
     medicineOrdersRepo,
     orderDetails,
