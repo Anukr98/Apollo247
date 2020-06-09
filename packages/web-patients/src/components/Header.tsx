@@ -205,9 +205,7 @@ export const Header: React.FC = (props) => {
             </Link>
           </div>
           {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
-          {MedicineRoutes.find((route) => route === currentPath) && currentPath !== '/' && (
-            <MedicineLocationSearch />
-          )}
+          {MedicineRoutes.find((route) => route === currentPath) && <MedicineLocationSearch />}
           <MedicinesCartContext.Consumer>
             {() => <Navigation activeMedicineRoutes={MedicineRoutes} />}
           </MedicinesCartContext.Consumer>
