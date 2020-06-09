@@ -279,24 +279,27 @@ const createOneApolloTransaction = async (
   const itemTypemap: ItemsSkuTypeMap = {};
   const itemSku: string[] = [];
   let grossAmount: number = 0;
+  let netAmount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
+      const priceForItem = item.discountPrice
+        ? (item.mrp - item.discountPrice) * item.issuedQty
+        : item.mrp * item.issuedQty;
+
       transactionLineItems.push({
         ProductCode: item.itemId,
-        NetAmount:
-          item.discountPrice * item.issuedQty
-            ? item.discountPrice * item.issuedQty
-            : item.mrp * item.issuedQty,
-        GrossAmount: item.mrp * item.issuedQty,
+        NetAmount: priceForItem,
+        GrossAmount: priceForItem,
       });
-      grossAmount += item.mrp * item.issuedQty;
+      grossAmount += priceForItem;
+      netAmount += priceForItem;
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
       Transaction.BillNo = billDetails.billNumber;
-      Transaction.NetAmount = billDetails.invoiceValue;
+      Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
       Transaction.GrossAmount = grossAmount;
     }
