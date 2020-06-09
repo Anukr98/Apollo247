@@ -824,6 +824,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryPatientId: string;
 
+  @Index('Patient_uhid')
   @Column({ nullable: true })
   uhid: string;
 

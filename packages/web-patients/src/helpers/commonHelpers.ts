@@ -166,6 +166,7 @@ const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
+const TAT_API_TIMEOUT_IN_SEC = 20;
 
 export {
   getDiffInDays,
@@ -184,4 +185,5 @@ export {
   INVALID_FILE_SIZE_ERROR,
   INVALID_FILE_TYPE_ERROR,
   toBase64,
+  TAT_API_TIMEOUT_IN_SEC,
 };
