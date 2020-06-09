@@ -221,11 +221,16 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     noAdditionalDiscount &&
     Math.round(product_discount + coupon_discount) <
       Math.round(billingDetails && billingDetails.discountValue);
+  const billingDiscount =
+    (additionalDisount &&
+      billingDetails &&
+      billingDetails.discountValue - product_discount + coupon_discount) ||
+    0;
 
   const prescriptionUpload =
     g(orderDetails, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
 
-  // console.log('prescriptionUpload', prescriptionUpload);
+  // console.log('prescriptionUpload', prescriptionUpload, billingDiscount);
 
   const getOrderDifferenceAmounts = (
     paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
@@ -722,7 +727,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 {'YAY!'}
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
-                {`You got an additional discount of Rs. ${billingDetails.discountValue.toFixed(2)}`}
+                {`You got an additional discount of Rs. ${billingDiscount.toFixed(2)}`}
               </Text>
             </View>
           </View>
