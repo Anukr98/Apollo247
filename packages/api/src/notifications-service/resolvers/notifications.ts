@@ -119,6 +119,8 @@ export enum NotificationType {
   MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
+  MEDICINE_ORDER_PICKEDUP = 'MEDICINE_ORDER_PICKEDUP',
+  MEDICINE_ORDER_READY_AT_STORE = 'MEDICINE_ORDER_READY_AT_STORE',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
   PATIENT_REGISTRATION = 'PATIENT_REGISTRATION',
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
@@ -1576,6 +1578,13 @@ export async function sendCartNotification(
       pushNotificationInput.orderAutoId.toString()
     );
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP) {
+    notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
+    notificationBody = ApiConstants.ORDER_PICKEDUP_BODY.replace(
+      '{0}',
+      pushNotificationInput.orderAutoId.toString()
+    );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1850,6 +1859,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_READY_AT_STORE:
+      payloadDataType = 'Order_ready_at_store';
+      notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
+      notificationBody = ApiConstants.ORDER_READY_AT_STORE_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
       payloadDataType = 'Order_Payment_Failed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
@@ -1877,9 +1891,17 @@ export async function sendMedicineOrderStatusNotification(
   notificationBody = notificationBody.replace('{1}', orderNumber);
   const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
-  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
-    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
-  notificationBody = notificationBody.replace('{2}', inTatHours);
+  if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
+    const shopAddress = JSON.parse(orderDetails.shopAddress);
+    notificationBody = notificationBody.replace('{2}', shopAddress.storename);
+    notificationBody = notificationBody.replace('{3}', shopAddress.phone);
+  } else {
+    if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED) {
+      notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+    }
+    notificationBody = notificationBody.replace('{2}', inTatHours);
+  }
+
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {

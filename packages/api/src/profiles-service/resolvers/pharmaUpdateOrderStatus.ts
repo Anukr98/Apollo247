@@ -212,15 +212,7 @@ const updateOrderStatus: Resolver<
           profilesDb
         );
       }
-      if (status == MEDICINE_ORDER_STATUS.PICKEDUP) {
-        await createOneApolloTransaction(
-          medicineOrdersRepo,
-          orderDetails,
-          orderDetails.patient,
-          mobileNumberIn
-        );
-      }
-      if (status == MEDICINE_ORDER_STATUS.DELIVERED) {
+      if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
         await createOneApolloTransaction(
           medicineOrdersRepo,
           orderDetails,
@@ -229,7 +221,10 @@ const updateOrderStatus: Resolver<
         );
         const pushNotificationInput = {
           orderAutoId: orderDetails.orderAutoId,
-          notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
+          notificationType:
+            status == MEDICINE_ORDER_STATUS.DELIVERED
+              ? NotificationType.MEDICINE_ORDER_DELIVERED
+              : NotificationType.MEDICINE_ORDER_PICKEDUP,
         };
         console.log(pushNotificationInput, 'pushNotificationInput');
         const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
