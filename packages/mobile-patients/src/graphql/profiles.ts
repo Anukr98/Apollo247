@@ -2127,9 +2127,10 @@ export const ADD_TO_CONSULT_QUEUE = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;
@@ -2328,9 +2329,10 @@ export const AUTOMATED_QUESTIONS = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;

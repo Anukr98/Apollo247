@@ -153,6 +153,9 @@ let callAbandonmentStoppedTimer: number = 620;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
+let jdCount: any = 1;
+let isJdAllowed: boolean = true;
+let abondmentStarted = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -924,8 +927,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  let jdCount: any = 1;
-
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
@@ -937,6 +938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
             10
           );
+          isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
@@ -948,6 +950,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .then(({ data }: any) => {
           console.log(data, 'data res');
           jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
+          isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueue', e);
@@ -1044,6 +1047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
         setStatus(STATUS.COMPLETED);
         AsyncStorage.setItem('endAPICalled', 'true');
+        stopCallAbondmentTimer();
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_endCallSessionAppointment', e);
@@ -1363,7 +1367,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
-  let abondmentStarted = false;
 
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
@@ -1423,7 +1426,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         // if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        console.log('presenceEvent', presenceEvent);
+        // console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -1513,7 +1516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
-  const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
+  const callAbondmentMethod = async (isSeniorConsultStarted: boolean) => {
     if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
 
     const startConsultJRResult = insertText.filter((obj: any) => {
@@ -1553,6 +1556,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.status === STATUS.CANCELLED) return;
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
         if (status === STATUS.COMPLETED) return;
+        if (callAbandonmentStoppedTimer < 620) return;
+
+        const APICalled = await AsyncStorage.getItem('endAPICalled');
+
+        if (APICalled === 'true') {
+          setBugFenderLog('Chat_Room_NO_SHOW_DOCTOR', APICalled);
+          setStatus(STATUS.COMPLETED);
+          stopCallAbondmentTimer();
+          return;
+        }
 
         abondmentStarted = true;
         startCallAbondmentTimer(620, false);
@@ -1863,7 +1876,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
         !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0
+        jdCount > 0 &&
+        isJdAllowed === true
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
@@ -1934,7 +1948,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
         !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0
+        jdCount > 0 &&
+        isJdAllowed === true
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
