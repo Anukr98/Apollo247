@@ -119,6 +119,7 @@ export enum WebEngageEventName {
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
+  PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
 
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
@@ -432,6 +433,10 @@ export interface WebEngageEvents {
     Keyword: string;
     Source: string;
   };
+  [WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE]: {
+    'Mobile Number': string;
+    Pincode: string;
+  };
 
   // ********** ConsultEvents ********** \\
 
@@ -495,13 +500,13 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.CONSULT_TYPE_SELECTION] : {
+  [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
     'Doctor ID': string;
     'Doctor Name': string;
     'Patient Name': string;
     'Patient UHID': string;
-    'Mobile Number':string,
+    'Mobile Number': string;
     'Customer ID': string;
   };
   // confirm the type of data for the below
