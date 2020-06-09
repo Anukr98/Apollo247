@@ -126,7 +126,6 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
     setUserNameValid(true);
     setMaskEmail(false);
     setSubscribe(true);
-    props.onCancel();
   };
 
   const handleEmailValidityCheck = () => {
@@ -234,7 +233,13 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
       </div>
       {!isLoading ? (
         <div className={classes.bottomActions}>
-          <AphButton className={classes.cancelBtn} onClick={() => handleCancelForm()}>
+          <AphButton
+            className={classes.cancelBtn}
+            onClick={() => {
+              handleCancelForm();
+              props.onCancel();
+            }}
+          >
             Cancel
           </AphButton>
           <AphButton
@@ -269,6 +274,7 @@ export const CommentsForm: React.FC<CommentsFormProps> = (props) => {
           message="We have received your comment. We will let you know once it is approved."
           closeButtonLabel="OK"
           closeMascot={() => {
+            props.onCancel();
             setIsPopoverOpen(false);
           }}
           // refreshPage
