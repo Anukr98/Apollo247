@@ -1612,9 +1612,15 @@ export async function sendCartNotification(
     },
   };
 
-  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED ||
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP
+  ) {
     payload.data = {
-      type: 'Order_Delivered',
+      type:
+        pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED
+          ? 'Order_Delivered'
+          : 'Order_pickedup',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
