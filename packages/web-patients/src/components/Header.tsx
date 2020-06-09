@@ -262,18 +262,18 @@ export const Header: React.FC = (props) => {
               }`}
             >
               {isSignedIn ? (
-                <div
+                <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  // to={clientRoutes.myAccount()}
+                  to={clientRoutes.myAccount()}
                   title={'Control profile'}
-                  onClick={() => setProfileVisible(!profileVisible)}
+                  onClick={() => setProfileVisible(true)}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
                     <img src={require('images/ic_account.svg')} />
                   )}
-                </div>
+                </Link>
               ) : (
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (
