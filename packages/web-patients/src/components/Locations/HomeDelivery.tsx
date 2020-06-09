@@ -467,8 +467,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               typeof res.data.errorMsg === 'string'
             ) {
               setDefaultDeliveryTime();
-              // setErrorDeliveryTimeMsg(res.data.errorMSG);
-              // setDeliveryTime('');
             }
           }
           setSelectingAddress(false);
