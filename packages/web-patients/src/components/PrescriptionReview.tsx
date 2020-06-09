@@ -676,14 +676,14 @@ export const PrescriptionReview: React.FC = (props: any) => {
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div> */}
           <div className={classes.pageHeader}>
-            <h6>Check Drug Interactions</h6>
+            <h6>Check Medicine Interactions</h6>
           </div>
           <Grid container spacing={2} className={classes.reviewContainer}>
             <Grid item xs={12} sm={6}>
               <div className={classes.pContent}>
                 <div className={classes.consultDetails}>
                   <div className={classes.cdContent}>
-                    <img src={require('images/pharmacologist.png')} />
+                    <img src={require('images/pharmacologist.svg')} />
                     <div>
                       <h4>
                         Consult a <span className={classes.whiteText}>Pharmacologist</span>
@@ -694,9 +694,9 @@ export const PrescriptionReview: React.FC = (props: any) => {
                           potential impact that it can have on your health.
                         </li>
                         <li>
-                          To know if your medications react with each other or with certain foods?
+                          To know if your medications react with each other or with certain foods
                         </li>
-                        <li>To know how to store &amp; take your medications? </li>
+                        <li>To know how to store &amp; take your medications </li>
                       </ul>
                     </div>
                   </div>
