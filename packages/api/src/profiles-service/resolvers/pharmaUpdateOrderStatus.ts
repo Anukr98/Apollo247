@@ -131,6 +131,13 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
