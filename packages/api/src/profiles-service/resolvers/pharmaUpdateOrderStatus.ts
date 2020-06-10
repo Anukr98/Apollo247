@@ -213,12 +213,12 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
-        await createOneApolloTransaction(
-          medicineOrdersRepo,
-          orderDetails,
-          orderDetails.patient,
-          mobileNumberIn
-        );
+        // await createOneApolloTransaction(
+        //   medicineOrdersRepo,
+        //   orderDetails,
+        //   orderDetails.patient,
+        //   mobileNumberIn
+        // );
         const pushNotificationInput = {
           orderAutoId: orderDetails.orderAutoId,
           notificationType:
