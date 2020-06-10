@@ -181,6 +181,14 @@ const findAddrComponents = (
   return findItem ? findItem.short_name || findItem.long_name : '';
 };
 
+const ORDER_BILLING_STATUS_STRINGS = {
+  TOTAL_ORDER_BILLED: 'Total Ordered Value',
+  TOTAL_BILLED_VALUE: 'Total Billed Value',
+  COD_AMOUNT_TO_PAY: 'COD amount to Pay',
+  REFUND_TO_BE_INITIATED: 'Refund to be initiated',
+  AMOUNT_TO_BE_PAID_ON_DELIVERY: 'Amount to be paid on delivery',
+};
+
 export {
   getDiffInDays,
   NO_SERVICEABLE_MESSAGE,
@@ -200,4 +208,5 @@ export {
   toBase64,
   TAT_API_TIMEOUT_IN_SEC,
   findAddrComponents,
+  ORDER_BILLING_STATUS_STRINGS,
 };
