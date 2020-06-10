@@ -22,7 +22,12 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CouponIcon,
+  MedicineIcon,
+  FreeShippingIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -766,6 +771,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       cartItems.length > 10 || cartItems.length == 0
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
+    const FreeShipping =
+      AppConfig.Configuration.FREE_SHIPPING_VALUE > 0 &&
+      cartTotal - couponDiscount > AppConfig.Configuration.FREE_SHIPPING_VALUE &&
+      cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
+      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY - (cartTotal - couponDiscount);
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
@@ -786,7 +796,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
             index == 0 ? { marginTop: 20 } : {},
-            index == array.length - 1 ? { marginBottom: 20 } : {},
+            index == array.length - 1 ? (FreeShipping ? {} : { marginBottom: 20 }) : {},
           ];
           const imageUrl = medicine.prescriptionRequired
             ? ''
@@ -838,6 +848,36 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             />
           );
         })}
+        {cartItems.length > 0 && FreeShipping && (
+          <View
+            style={{
+              shadowColor: 'rgba(128, 128, 128, 0.3)',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 5,
+              elevation: 5,
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              marginBottom: 20,
+              backgroundColor: '#f7f8f5',
+              borderRadius: 10,
+              paddingHorizontal: 17,
+              paddingVertical: 11,
+              paddingBottom: 9,
+            }}
+          >
+            <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0),
+                alignSelf: 'center',
+              }}
+            >
+              Add <Text style={{ color: '#fc9916' }}>Rs. {FreeShipping.toFixed(2)}</Text> worth more
+              of product for FREE Delivery
+            </Text>
+          </View>
+        )}
       </View>
     );
   };

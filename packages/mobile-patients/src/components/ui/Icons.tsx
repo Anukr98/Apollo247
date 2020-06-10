@@ -503,6 +503,10 @@ export const DiscountIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/discount.png')} />
 );
 
+export const FreeShippingIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ic_priority_high.png')} />
+);
+
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
 );
