@@ -1864,7 +1864,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               color: theme.colors.SHADE_GREY,
             }}
           >
-            You will earn OneApollo Health Credits for this transaction.
+            {`You will earn OneApollo Health Credits for this transaction, if applicable. T&C apply.`}
           </Text>
         </View>
       </View>
