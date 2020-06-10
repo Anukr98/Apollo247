@@ -131,6 +131,13 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -213,12 +220,12 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
-        await createOneApolloTransaction(
-          medicineOrdersRepo,
-          orderDetails,
-          orderDetails.patient,
-          mobileNumberIn
-        );
+        // await createOneApolloTransaction(
+        //   medicineOrdersRepo,
+        //   orderDetails,
+        //   orderDetails.patient,
+        //   mobileNumberIn
+        // );
         const pushNotificationInput = {
           orderAutoId: orderDetails.orderAutoId,
           notificationType:
