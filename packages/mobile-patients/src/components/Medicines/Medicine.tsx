@@ -1158,8 +1158,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           leftText={title}
           rightText={'VIEW ALL'}
           rightTextStyle={{
+            textAlign: 'right',
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+            width: '25%',
           }}
+          leftTextStyle={{ width: '75%' }}
           onPressRightText={() =>
             props.navigation.navigate(AppRoutes.ShopByBrand, {
               allBrandData: allBrandData,
