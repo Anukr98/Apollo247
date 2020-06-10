@@ -220,12 +220,12 @@ const updateOrderStatus: Resolver<
         );
       }
       if (status == MEDICINE_ORDER_STATUS.DELIVERED || status == MEDICINE_ORDER_STATUS.PICKEDUP) {
-        // await createOneApolloTransaction(
-        //   medicineOrdersRepo,
-        //   orderDetails,
-        //   orderDetails.patient,
-        //   mobileNumberIn
-        // );
+        await createOneApolloTransaction(
+          medicineOrdersRepo,
+          orderDetails,
+          orderDetails.patient,
+          mobileNumberIn
+        );
         const pushNotificationInput = {
           orderAutoId: orderDetails.orderAutoId,
           notificationType:
@@ -255,8 +255,16 @@ const createOneApolloTransaction = async (
   mobileNumber: string
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
+  //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -371,14 +379,15 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction response- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(oneApolloResponse),
-      ''
-    );
+    //const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+    // log(
+    //   'profileServiceLogger',
+    //   `oneApollo Transaction response- ${order.orderAutoId}`,
+    //   'createOneApolloTransaction()',
+    //   JSON.stringify(oneApolloResponse),
+    //   ''
+    // );
+    return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
   }
