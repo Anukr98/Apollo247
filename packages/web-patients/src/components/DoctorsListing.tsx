@@ -504,8 +504,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
-            <h2 className={classes.title}>{`Found ${doctorsList.length} Results`}</h2>
-            <div style={{ paddingBottom: '10px' }}>{`Here are our best ${specialityName}`}</div>
+            <h2 className={classes.title}>{`Found ${doctorsList.length} Results for`}</h2>
+            <div style={{ paddingBottom: '10px' }}>{`${specialityName}`}</div>
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
