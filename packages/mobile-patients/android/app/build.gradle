@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 35
-        versionName "2.41"
+        versionCode 38
+        versionName "2.52"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
