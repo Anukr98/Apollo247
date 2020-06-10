@@ -1400,6 +1400,7 @@ export const ConsultTabs: React.FC = () => {
           }
           if (sendToPatientFlag) {
             sendToPatientAction();
+            setIsNewprescriptionEditable(false);
           }
         })
         .catch((e) => {
