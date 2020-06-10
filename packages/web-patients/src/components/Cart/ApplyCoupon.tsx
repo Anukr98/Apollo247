@@ -218,13 +218,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [couponCallFlag, setCouponCallFlag] = useState<boolean>(false);
 
   useEffect(() => {
     localStorage.getItem('pharmaCoupon') && props.setValidityStatus(true);
   }, []);
 
   useEffect(() => {
-    if (availableCoupons.length === 0) {
+    if (availableCoupons.length === 0 && !couponCallFlag) {
       setIsLoading(true);
       getCouponMutation()
         .then(({ data }) => {
@@ -240,6 +241,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             setAvailableCoupons(visibleCoupons);
             setIsLoading(false);
           }
+          setCouponCallFlag(true);
         })
         .catch((e) => {
           setIsLoading(false);
