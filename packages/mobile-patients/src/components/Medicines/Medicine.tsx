@@ -822,11 +822,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByHealthAreas = () => {
+  const renderShopByHealthAreas = (title: string) => {
     if (healthAreas.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -841,7 +841,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY HEALTH AREAS',
+                  title,
                   `${config.IMAGES_BASE_URL[0]}${item.image_url}`
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
@@ -862,11 +862,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderDealsOfTheDay = () => {
+  const renderDealsOfTheDay = (title: string) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'DEALS OF THE DAY'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -881,12 +881,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   postwebEngageCategoryClickedEvent(
                     item.category_id,
                     'Banner',
-                    'DEALS OF THE DAY',
+                    title,
                     `${config.IMAGES_BASE_URL[0]}${item.image_url}`
                   );
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
-                    title: 'DEALS OF THE DAY',
+                    title: title,
                   });
                 }}
               >
@@ -1023,7 +1023,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>, title: string) => {
     const {
       sku,
       is_prescription_required,
@@ -1061,7 +1061,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         currentPatient
       );
 
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', 'HOT SELLERS');
+      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
       postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
 
@@ -1080,7 +1080,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
-        postwebEngageProductClickedEvent(data.item, 'HOT SELLERS', 'Home');
+        postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
       style: {
@@ -1092,28 +1092,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  const renderHotSellers = () => {
+  const renderHotSellers = (title: string) => {
     if (hotSellers.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
           data={hotSellers}
-          renderItem={renderHotSellerItem}
+          renderItem={(itemData) => renderHotSellerItem(itemData, title)}
         />
       </View>
     );
   };
 
-  const renderShopByCategory = () => {
+  const renderShopByCategory = (title: string) => {
     if (shopByCategory.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY CATEGORY'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -1128,7 +1128,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY CATEGORY',
+                  title,
                   `${config.IMAGES_BASE_URL[0]}${item.image_url}`
                 );
 
@@ -1150,12 +1150,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByBrand = () => {
+  const renderShopByBrand = (title: string) => {
     if (shopByBrand.length == 0) return null;
     return (
       <View>
         <SectionHeader
-          leftText={'SHOP BY BRAND'}
+          leftText={title}
           rightText={'VIEW ALL'}
           rightTextStyle={{
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
@@ -1184,7 +1184,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY BRAND',
+                  title,
                   `${config.IMAGES_BASE_URL[0]}${item.image_url}`
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
@@ -1195,27 +1195,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {
                 marginHorizontal: 4,
                 marginTop: 16,
-                marginBottom: 40,
+                marginBottom: 20,
                 ...(index == 0 ? { marginLeft: 20 } : {}),
               }
             );
           }}
         />
       </View>
-    );
-  };
-
-  const renderNeedHelp = () => {
-    return (
-      <NeedHelpAssistant
-        navigation={props.navigation}
-        containerStyle={{
-          paddingBottom: 20,
-        }}
-        onNeedHelpPress={() => {
-          postWEGNeedHelpEvent(currentPatient, 'Medicines');
-        }}
-      />
     );
   };
 
@@ -1546,6 +1532,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderSectionsWithOrdering = () => {
+    const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
+    const sectionMapping = {
+      healthareas: renderShopByHealthAreas,
+      deals_of_the_day: renderDealsOfTheDay,
+      shop_by_category: renderShopByCategory,
+      shop_by_brand: renderShopByBrand,
+      hot_sellers: renderHotSellers,
+    };
+    const sectionsView = info
+      .filter((item) => item.visible)
+      .sort((a, b) => Number(a.section_position) - Number(b.section_position))
+      .map((item) => {
+        const sectionsView =
+          item.section_key &&
+          item.section_name &&
+          sectionMapping[item.section_key as keyof typeof sectionMapping];
+        return sectionsView ? sectionsView(item.section_name) : null;
+      });
+
+    return sectionsView;
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1561,18 +1570,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderOfferBannerCover()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
-        {loading
-          ? renderSectionLoader()
-          : !error && (
-              <>
-                {renderShopByHealthAreas()}
-                {renderDealsOfTheDay()}
-                {renderHotSellers()}
-                {renderShopByCategory()}
-                {renderShopByBrand()}
-              </>
-            )}
-        {/* {renderNeedHelp()} */}
+        {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );
   };
