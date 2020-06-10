@@ -140,6 +140,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const [primaryUHIDs, setPrimaryUHIDs] = useState<string>('');
   const [secondaryUHIDs, setSecondaryUHIDs] = useState<string[]>([]);
   const [firstSecondaryUHID, setFirstSecondaryUHID] = useState<string>('');
+  const [showLinkUHIDButton, setShowLinkUHIDButton] = useState<boolean>(true);
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -172,16 +173,21 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     let primary;
     let secondary = [];
     let areUhidsLinked = false;
+    let count = 0;
+
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
+        count++;
         setPrimaryUHIDs(profile!.uhid);
         primary = profile;
         areUhidsLinked = true;
       } else if (profile!.isLinked) {
+        count++;
         secondary.push(profile!.uhid);
         areUhidsLinked = true;
       }
     });
+    setShowLinkUHIDButton(count !== profiles.length);
 
     if (areUhidsLinked) {
       // shuffle array as [primary, [...secondary], [...unlined]]
@@ -538,26 +544,43 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
             style={{
               display: 'flex',
               flexDirection: 'row',
-              justifyContent: 'space-between',
+              justifyContent: !showLinkUHIDButton ? 'center' : 'space-between',
             }}
           >
-            <Button
-              title="LINK"
-              style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE }}
-              titleTextStyle={{
-                color: theme.colors.BUTTON_BG,
-                ...fonts.IBMPlexSansSemiBold(16),
-              }}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.LinkUHID, {
-                  action: 'link',
-                  profiles: profiles,
-                });
-              }}
-            />
+            {
+              showLinkUHIDButton &&
+              <Button
+                title="LINK"
+                style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE }}
+                titleTextStyle={{
+                  color: theme.colors.BUTTON_BG,
+                  ...fonts.IBMPlexSansSemiBold(16),
+                }}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.LinkUHID, {
+                    action: 'link',
+                    profiles: profiles,
+                  });
+                }}
+              />
+            }
             <Button
               title="DELINK"
-              style={{ flex: 1, marginHorizontal: 20, backgroundColor: colors.WHITE }}
+              style={
+                showLinkUHIDButton ?
+                  { 
+                    flex: 1, 
+                    marginHorizontal: 20, 
+                    backgroundColor: colors.WHITE 
+                  } :
+                  {
+                    backgroundColor: colors.WHITE,
+                    marginHorizontal: 20,
+                    width: '45%',
+                    alignSelf: 'center',
+                    marginBottom: 15,
+                  }
+              }
               titleTextStyle={{
                 color: theme.colors.BUTTON_BG,
                 ...fonts.IBMPlexSansSemiBold(16),
