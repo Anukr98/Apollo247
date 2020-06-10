@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, Between, In } from 'typeorm';
+import { EntityRepository, Repository, Not, Between, In, MoreThan } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -84,9 +84,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    const startDateTime = '2020-06-10 21:15:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
-      where: { orderNo: orderId },
+      where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
     });
   }
 
