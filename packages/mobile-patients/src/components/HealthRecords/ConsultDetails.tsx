@@ -185,7 +185,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
-  console.log('phr', data);
 
   // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
@@ -488,11 +487,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
           );
         }
+        setLoading!(false);
+        props.navigation.push(AppRoutes.TestsCart);
       })
       .catch((e) => {
-        Alert.alert('Uh oh.. :(', e);
+        setLoading!(false);
+        handleGraphQlError(e);
       });
-    props.navigation.push(AppRoutes.TestsCart);
   };
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
@@ -962,7 +963,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderTestNotes = () => {
-    console.log('caseSheetDetails', caseSheetDetails);
     return (
       <View>
         <CollapseCard
