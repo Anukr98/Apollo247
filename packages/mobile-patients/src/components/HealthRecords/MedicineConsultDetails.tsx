@@ -117,23 +117,28 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface RecordDetailsProps extends NavigationScreenProps {}
+export interface RecordDetailsProps
+  extends NavigationScreenProps<{
+    data: any;
+    medicineDate: string;
+    PrescriptionUrl: string;
+    prismPrescriptionFileId: string;
+  }> {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   const blobURL: string = props.navigation.state.params
     ? props.navigation.state.params.PrescriptionUrl
-    : {};
+    : '';
   var arr = url;
 
   const prismFile = props.navigation.state.params
     ? props.navigation.state.params.prismPrescriptionFileId
-    : {};
+    : '';
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -197,21 +202,18 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           id: medicineDetails.sku,
           mou: medicineDetails.mou,
           price: medicineDetails.price,
-          specialPrice: medicineDetails.special_price
-            ? typeof medicineDetails.special_price == 'string'
-              ? parseInt(medicineDetails.special_price)
-              : medicineDetails.special_price
-            : undefined,
+          specialPrice: medicineDetails.special_price && Number(medicineDetails.special_price),
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
           isMedicine: medicineDetails.type_id == 'Pharma',
+          isInStock: true,
         } as ShoppingCartItem);
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
             id: data!.id,
             date: moment(me).format('DD MMMM YYYY'),
-            doctorName: '',
+            doctorName: `Meds Rx ${(data.id && data.id.substring(0, data.id.indexOf('-'))) || ''}`,
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: `${data.medicineName}`,
             uploadedUrl: arr[0],

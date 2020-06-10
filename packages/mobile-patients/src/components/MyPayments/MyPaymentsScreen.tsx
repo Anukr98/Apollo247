@@ -20,7 +20,8 @@ import { IPatientDetails } from '@aph/mobile-patients/src/models/IPatientDetails
 
 interface MyPaymentsScreenProps extends NavigationScreenProps<{}> {}
 const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
-  const patientInfo: IPatientDetails = props.navigation.getParam('patientId');
+  const patientId = props.navigation.getParam('patientId');
+  const fromNotification = props.navigation.getParam('fromNotification');
   const tabs = [{ title: 'Consult Payments' }, { title: 'Pharmacy Payments' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   useEffect(() => {}, []);
@@ -58,11 +59,16 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
   };
 
   const getPaymentsList = () => {
-    const { id } = patientInfo;
     if (selectedTab === 'Pharmacy Payments') {
-      return <PharmacyPaymentsList patientId={id} navigationProps={props.navigation} />;
+      return <PharmacyPaymentsList patientId={patientId} navigationProps={props.navigation} />;
     }
-    return <ConsultPaymentsList patientId={id} navigationProps={props.navigation} />;
+    return (
+      <ConsultPaymentsList
+        fromNotification={fromNotification}
+        patientId={patientId}
+        navigationProps={props.navigation}
+      />
+    );
   };
   return (
     <View style={styles.mainContainer}>

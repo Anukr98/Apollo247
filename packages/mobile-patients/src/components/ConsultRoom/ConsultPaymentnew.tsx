@@ -122,12 +122,14 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-      >
-        {renderwebView()}
-      </KeyboardAvoidingView>
+      {Platform.OS == 'android' ? (
+        <KeyboardAvoidingView style={styles.container} behavior={'height'}>
+          {renderwebView()}
+        </KeyboardAvoidingView>
+      ) : (
+        renderwebView()
+      )}
+
       {loading && <Spinner />}
     </View>
   );

@@ -11,10 +11,7 @@ import {
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  getFormattedLocation,
-  getFormattedLocationFromPincode,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -99,6 +96,11 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           eventAttributes
         );
         if (!Availability) {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
+            'Mobile Number': currentPatient.mobileNumber,
+            Pincode: pincode,
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE, eventAttributes);
           globalLoading!(false);
           setError(
             'Sorry, we are not servicing your area currently. Call 1860 500 0101 for Pharmacy stores nearby.'
@@ -124,12 +126,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           setPharmacyLocation!(response);
           props.onComplete(true, response);
         } catch (e) {
-          getFormattedLocationFromPincode(pincode)
-            .then((res) => {
-              setPharmacyLocation!(res);
-              props.onComplete(true, res);
-            })
-            .catch(handleUpdatePlaceInfoByPincodeError);
+          handleUpdatePlaceInfoByPincodeError(e);
         }
       })
       .catch(handleUpdatePlaceInfoByPincodeError)

@@ -784,9 +784,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           {renderLocation()}
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-            }
+            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
             // style={{ right: 20 }}
           >
             <CartIcon />

@@ -349,12 +349,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS == 'ios' ? 'padding' : 'height'}
-        >
-          {renderWebView()}
-        </KeyboardAvoidingView>
+        {Platform.OS == 'android' ? (
+          <KeyboardAvoidingView style={styles.container} behavior={'height'}>
+            {renderWebView()}
+          </KeyboardAvoidingView>
+        ) : (
+          renderWebView()
+        )}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
