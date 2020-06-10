@@ -9,7 +9,7 @@ import {
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossYellow, FileBig, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -68,6 +68,7 @@ import {
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { RadioSelectionItem } from './RadioSelectionItem';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -117,6 +118,22 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setAddresses,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
+  const [durationDays, setDurationDays] = useState<string>('');
+  const medicineDetailOptions = [
+    {
+      id: 'search',
+      title: 'Search and add medicine'
+    },
+    {
+      id: 'all',
+      title: 'All medicine from prescription'
+    },
+    {
+      id: 'call',
+      title: 'Call me for details'
+    },
+  ];
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
 
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
@@ -262,7 +279,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         setLoading!(false);
         props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
       } else {
-        onSubmitOrder(false);
+        if (selectedMedicineOption === 'search') {
+          setLoading!(false);
+          props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
+        } else {
+          onSubmitOrder(false);
+        }
       }
     };
 
@@ -495,6 +517,150 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     );
   };
 
+  const renderMedicineDetailOptions = () => {
+    if (PhysicalPrescriptions.length > 0) {
+      return (
+        <View style={styles.prescriptionCardStyle}>
+          <View>{renderLabel('Specify Your Medicine Details')}</View>
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              shadowRadius: 4,
+              marginHorizontal: 20,
+              backgroundColor: theme.colors.WHITE,
+              alignItems: 'center',
+              margin: 16,
+            }}
+          >
+            {medicineDetailOptions.map((item, index, array) => {
+              return (
+                <RadioSelectionItem
+                  key={item.id}
+                  title={item.title}
+                  isSelected={selectedMedicineOption == item.id}
+                  onPress={() => {
+                    setSelectedMedicineOption(item.id);
+                  }}
+                  containerStyle={{ 
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    paddingTop: index + 1 === 1 ? 16 : 10,
+                    paddingBottom: index + 1 === array.length ? 16 : 10,
+                    padding: 10,
+                  }}
+                  hideSeparator={index + 1 === array.length || (selectedMedicineOption == item.id && selectedMedicineOption == 'all')}
+                  textStyle={{
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                  }}
+                  radioSubBody={selectedMedicineOption == item.id ? getRadioButtonAction() : <></>}
+                />
+              );
+            })}
+          </View>
+        </View>
+      );
+    }
+  };
+
+  const getRadioButtonAction = () => {
+    if (selectedMedicineOption === 'call') {
+      return (
+        <View style={{
+          backgroundColor: theme.colors.CARD_BG,
+          padding: 16,
+          margin: 0,
+          borderBottomRightRadius: 10,
+          borderBottomLeftRadius: 10,
+        }}>
+          <Text style={{
+            color: theme.colors.LIGHT_BLUE,
+            ...theme.fonts.IBMPlexSansMedium(13),
+            textAlign: 'center',
+          }}>
+            Our pharmacist will call you within 2 hours to confirm medicines (8 AM to 8 PM).
+          </Text>
+        </View>
+      );
+    } else if (selectedMedicineOption === 'all') {
+      return (
+        <View style={{
+          backgroundColor: theme.colors.WHITE,
+          margin: 0,
+          width: '100%',
+        }}>
+          <View style={{
+            display: 'flex',
+            flexDirection: 'row',
+            backgroundColor: theme.colors.CARD_BG,
+            padding: 10,
+            shadowColor: theme.colors.SHADOW_GRAY,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.4,
+            shadowRadius: 8,
+            elevation: 4,
+          }}>
+            <Text style={{
+              color: theme.colors.APP_GREEN,
+              ...theme.fonts.IBMPlexSansMedium(13),
+              marginLeft: 35,
+              marginRight: 25,
+            }}>
+              As specified in prescription
+            </Text>
+            <GreenTickIcon style={{
+              resizeMode: 'contain',
+            }} />
+          </View>
+          <View style={{
+            margin: 10,
+            marginBottom: 0,
+            marginLeft: 45,
+            display: 'flex',
+            flexDirection: 'row',
+          }}>
+            <Text style={{
+              color: theme.colors.LIGHT_BLUE,
+              ...theme.fonts.IBMPlexSansMedium(13),
+            }}>
+              Duration -
+            </Text>
+            <TextInputComponent
+              conatinerstyles={{
+                width: 30,
+                marginLeft: 10,
+                marginRight: 10,
+                marginTop: -5,
+                paddingTop: 0,
+              }}
+              inputStyle={{
+                color: theme.colors.LIGHT_BLUE,
+                opacity: 0.5,
+                ...theme.fonts.IBMPlexSansMedium(13),
+                textAlign: 'center',
+                borderBottomWidth: 1,
+                paddingBottom: 0,
+              }}
+              keyboardType={'numeric'}
+              value={durationDays}
+              onChangeText={(value) => setDurationDays(value)}
+            />
+            <Text style={{
+              color: theme.colors.LIGHT_BLUE,
+              ...theme.fonts.IBMPlexSansMedium(13),
+            }}>
+              Days
+            </Text>
+          </View>
+          <View 
+            style={{
+              height: 1,
+              opacity: 0.1,
+              backgroundColor: theme.colors.LIGHT_BLUE,
+            }} />
+        </View>
+      );
+    }
+  };
+
   return (
     <View
       style={{
@@ -503,7 +669,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     >
       <SafeAreaView style={{ flex: 1 }}>
         <Header
-          title={'UPLOAD PRESCRIPTION'}
+          title={'SUBMIT PRESCRIPTION'}
           leftIcon="backArrow"
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => props.navigation.goBack()}
@@ -512,34 +678,37 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
           {/* {!![...PhysicalPrescriptions, ...EPrescriptions].length && ( */}
-          <View style={{ marginTop: 20 }}>{renderLabel('Where should we deliver?')}</View>
-          <StorePickupOrAddressSelectionView navigation={props.navigation} />
+          {/* <View style={{ marginTop: 20 }}>{renderLabel('Where should we deliver?')}</View>
+          <StorePickupOrAddressSelectionView navigation={props.navigation} /> */}
           {/* )} */}
+          <Text
+            style={{
+              ...fonts.IBMPlexSansBold(13),
+              color: theme.colors.APP_YELLOW,
+              lineHeight: 24,
+              paddingBottom: 4,
+              marginBottom: 16,
+              paddingRight: 24,
+              paddingTop: 16,
+              textAlign: 'right',
+            }}
+            onPress={() => setShowPopop(true)}
+          >
+            ADD MORE PRESCRIPTIONS
+          </Text>
+          {renderMedicineDetailOptions()}
         </ScrollView>
       </SafeAreaView>
-      <Text
-        style={{
-          ...fonts.IBMPlexSansBold(13),
-          color: theme.colors.APP_YELLOW,
-          lineHeight: 24,
-          paddingBottom: 4,
-          marginBottom: 16,
-          paddingRight: 24,
-          paddingTop: 16,
-          textAlign: 'right',
-        }}
-        onPress={() => setShowPopop(true)}
-      >
-        ADD MORE PRESCRIPTIONS
-      </Text>
+      
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Button
           disabled={
             !(PhysicalPrescriptions.length || EPrescriptions.length) ||
-            !(storeId || deliveryAddressId) ||
+            !selectedMedicineOption ||
+            // !(storeId || deliveryAddressId) ||
             loading
           }
-          title={'SUBMIT PRESCRIPTION'}
+          title={'SUBMIT'}
           onPress={onPressSubmit}
           style={{ marginHorizontal: 60, flex: 1 }}
         />
