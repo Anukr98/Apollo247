@@ -1541,14 +1541,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const onFinishUpload = () => {
-    console.log(
-      physicalPrescriptions,
-      ePrescriptions,
-      isEPrescriptionUploadComplete,
-      isPhysicalUploadComplete,
-      'hhruso'
-    );
-
     if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length == 0 &&
@@ -1592,6 +1584,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
     };
+    const selectedStore = storeId && storesFromContext.find((item) => item.storeid == storeId);
+    if (selectedStore) {
+      eventAttributes['Store Id'] = selectedStore.storeid;
+      eventAttributes['Store Name'] = selectedStore.storename;
+    }
     postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 

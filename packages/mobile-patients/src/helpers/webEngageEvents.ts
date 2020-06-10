@@ -24,6 +24,9 @@ export enum WebEngageEventName {
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
+  SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
+  PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
+  PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -247,6 +250,20 @@ export interface WebEngageEvents {
     'Section Name': string;
     imageUrl: string;
   };
+  [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
+    value: boolean;
+  };
+  [WebEngageEventName.PHARMACY_STORE_PICKUP_VIEWED]: {
+    Pincode: string;
+    'Store display success': 'Yes' | 'No';
+  };
+  [WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS]: {
+    Pincode: string;
+    'Store Id': string;
+    'Store Name': string;
+    'Store Number': string;
+    'Store Address': string;
+  };
   [WebEngageEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -352,6 +369,8 @@ export interface WebEngageEvents {
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    'Store Id'?: string;
+    'Store Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;

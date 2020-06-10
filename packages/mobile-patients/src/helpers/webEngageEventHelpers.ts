@@ -98,3 +98,11 @@ export const postPhamracyCartAddressSelectedFailure = (
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE, eventAttributes);
 };
+
+type ShowPrescriptionAtStoreSelected = WebEngageEvents[WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED];
+
+export const postShowPrescriptionAtStoreSelected = (
+  eventAttributes: ShowPrescriptionAtStoreSelected
+) => {
+  postWebEngageEvent(WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED, eventAttributes);
+};
