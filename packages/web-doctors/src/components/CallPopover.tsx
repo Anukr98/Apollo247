@@ -2034,6 +2034,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             props.setIsClickedOnPriview(false);
                             setCaseSheetEdit(true);
                             props.setIsPdfPageOpen(false);
+                            if(props.isNewPrescription){
+                              handleCloseThreeDots();
+                            }
                           }}
                         >
                           Edit Case Sheet
@@ -2365,6 +2368,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 //     appointmentInfo!.status !== STATUS.PENDING)
                 // }
+                disabled={(props.isNewPrescription && props.isNewprescriptionEditable) || 
+                  (!props.isNewPrescription && props.appointmentStatus === STATUS.COMPLETED && !props.sentToPatient)}
                 onClick={(e) => handleClickThreeDots(e)}
               >
                 <img src={require('images/ic_more.svg')} />
@@ -2375,6 +2380,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.dotPaper}
               open={openThreeDots}
               anchorEl={anchorElThreeDots}
+              
               onClose={handleCloseThreeDots}
               classes={{ paper: classes.popPaper }}
               anchorOrigin={{
