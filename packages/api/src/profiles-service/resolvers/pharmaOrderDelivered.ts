@@ -131,8 +131,7 @@ const saveOrderDeliveryStatus: Resolver<
   orderDeliveryInputArgs,
   ProfilesServiceContext,
   OrderDeliveryResult
-> = async (parent, { orderDeliveryInput }, { mobileNumber, profilesDb }) => {
-  const mobileNumberIn = mobileNumber.slice(3);
+> = async (parent, { orderDeliveryInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByAp(
     orderDeliveryInput.ordersResult.apOrderNo
@@ -157,6 +156,8 @@ const saveOrderDeliveryStatus: Resolver<
     new Date(),
     MEDICINE_ORDER_STATUS.DELIVERED
   );
+  const mobileNumberIn = orderDetails.patient.mobileNumber.slice(3);
+
   await createOneApolloTransaction(
     medicineOrdersRepo,
     orderDetails,
@@ -206,24 +207,42 @@ const createOneApolloTransaction = async (
 
   const itemTypemap: ItemsSkuTypeMap = {};
   const itemSku: string[] = [];
+  let grossAmount: number = 0;
+  let netAmount: number = 0;
+  let totalDiscount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
+      let netPrice = item.discountPrice
+        ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
+        : +item.mrp.toFixed(1) * item.issuedQty;
+
+      let netMrp = +item.mrp.toFixed(1) * item.issuedQty;
+      let netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
+
+      netPrice = +netPrice.toFixed(1);
+      netMrp = +netMrp.toFixed(1);
+      netDiscount = +netDiscount.toFixed(1);
+
       transactionLineItems.push({
         ProductCode: item.itemId,
-        NetAmount:
-          item.discountPrice * item.issuedQty
-            ? item.discountPrice * item.issuedQty
-            : item.mrp * item.issuedQty,
-        GrossAmount: item.mrp * item.issuedQty,
+        NetAmount: netPrice,
+        GrossAmount: netMrp,
+        DiscountAmount: netDiscount,
       });
+      totalDiscount += netDiscount;
+      grossAmount += netMrp;
+      netAmount += netPrice;
     });
-
-    const billDetails: BillDetails = JSON.parse(val.billDetails);
-    Transaction.BillNo = billDetails.billNumber;
-    Transaction.NetAmount = billDetails.invoiceValue;
-    Transaction.TransactionDate = billDetails.billDateTime;
+    if (val.billDetails) {
+      const billDetails: BillDetails = JSON.parse(val.billDetails);
+      Transaction.BillNo = billDetails.billNumber;
+      Transaction.NetAmount = netAmount;
+      Transaction.TransactionDate = billDetails.billDateTime;
+      Transaction.GrossAmount = grossAmount;
+      Transaction.Discount = totalDiscount;
+    }
   });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
