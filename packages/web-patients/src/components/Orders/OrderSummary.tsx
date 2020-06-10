@@ -239,6 +239,28 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    additionalDiscount: {
+      backgroundColor: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      border: 'solid 1.5px #00b38e',
+      padding: '5px 16px 5px 10px',
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      marginTop: 16,
+      marginLeft: 10,
+    },
+    disContent: {
+      fontSize: 12,
+      color: '#00b38e',
+      fontWeight: 500,
+      paddingLeft: 10,
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: 0,
+      },
+    },
   };
 });
 
@@ -646,11 +668,17 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
         </div>
       </div>
       {!isPrescriptionUploadOrder && additionalDisount && (
-        <div className={classes.disclaimerText}>
-          <span>{`You got an additional discount of Rs. ${(
-            billedPaymentDetails.discountValue -
-            (orderDetailsData.productDiscount + orderDetailsData.couponDiscount)
-          ).toFixed(2)}`}</span>
+        <div className={classes.additionalDiscount}>
+          <span>
+            <img src={require('images/discount.svg')} alt="" />
+          </span>
+          <div className={classes.disContent}>
+            <h3>YAY!</h3>
+            <span>{`You got an additional discount of Rs. ${(
+        billedPaymentDetails.discountValue -
+        (orderDetailsData.productDiscount + orderDetailsData.couponDiscount)
+      ).toFixed(2)}`}</span>
+          </div>
         </div>
       )}
 
