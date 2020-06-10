@@ -84,7 +84,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
-    const startDateTime = '2020-06-10 21:15:29.453';
+    const startDateTime = '2020-06-10 15:45:29.453';
     return MedicineOrderInvoice.find({
       select: ['billDetails', 'itemDetails'],
       where: { orderNo: orderId, createdDate: MoreThan(startDateTime) },
