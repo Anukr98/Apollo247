@@ -353,16 +353,16 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           response.data.getDoctorsBySpecialtyAndFilters.doctors.length
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-          doctors.map((doc: docDetails) => {
-            doc &&
-              doc.fullName &&
+          doctors.map((doctorDetails: docDetails) => {
+            doctorDetails &&
+              doctorDetails.fullName &&
               potentialActionSchema.push({
                 '@type': 'EntryPoint',
-                name: doc.fullName,
+                name: doctorDetails.fullName,
                 url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
                   specialityName,
-                  readableParam(doc.fullName),
-                  doc.id
+                  readableParam(doctorDetails.fullName),
+                  doctorDetails.id
                 )}`,
               });
           });
