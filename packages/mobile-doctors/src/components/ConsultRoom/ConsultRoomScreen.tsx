@@ -117,23 +117,17 @@ import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps } from 'react-navigation';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
+import { useAudioVideo } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
-let missedCallTimer: NodeJS.Timeout;
 const styles = ConsultRoomScreenStyles;
 
-let connectionCount = 0;
 const timer = 900;
 let intervalId: NodeJS.Timeout;
 let stoppedTimer: number;
-let timerId: NodeJS.Timeout;
 let callhandelBack: boolean = true;
 let autoSaveTimerId: NodeJS.Timeout;
-// let joinTimerId: any;
-// let diffInHours: number;
-// let callAbandonmentTimer: any;
-// let callAbandonmentStoppedTimer: number = 200;
 
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
@@ -144,10 +138,8 @@ export interface ConsultRoomScreenProps
     Appintmentdatetime: string; //Date;
     AppoinementData: any;
     activeTabIndex?: number;
-    // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
   activeTabIndex?: number;
-  // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
 interface DataPair {
@@ -191,16 +183,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     preselectTabIndex ? tabsData[preselectTabIndex].title : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
-  const otSessionRef = React.createRef();
+
   const [messages, setMessages] = useState([]);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
-  const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [showVideo, setShowVideo] = useState<boolean>(true);
+
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
-  const [isCall, setIsCall] = useState<boolean>(false);
-  const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
@@ -210,25 +197,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
-  // const [textinputStyles, setTextInputStyles] = useState<Object>({
-  //   width: width,
-  //   height: 66,
-  //   backgroundColor: 'white',
-  //   top: 0,
-  //   // bottom: -20,
-  // });
-  // const [linestyles, setLinestyles] = useState<Object>({
-  //   marginLeft: 20,
-  //   marginRight: 64,
-  //   marginTop: 0,
-  //   height: 2,
-  //   backgroundColor: '#00b38e',
-  //   zIndex: -1,
-  // });
+
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [url, setUrl] = useState('');
-  const [showMorePopup, setshowMorePopup] = useState<boolean>(false);
   const [showCancelPopup, setshowCancelPopup] = useState<boolean>(false);
   const [showCancelReason, setshowCancelReason] = useState<boolean>(false);
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
@@ -251,7 +223,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestLoading,
     // favTestError,
   } = CaseSheetAPI();
-
+  const { setOpenTokKeys, setCallBacks, callData, callOptions } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
     console.log(appointmentData, 'appointmentData');
@@ -277,7 +249,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
       stopNoShow();
-      stopMissedCallTimer();
+      callOptions.stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
       AsyncStorage.removeItem('prevSavedData');
@@ -411,6 +383,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return famHist;
   };
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    callData.setCallerName(
+      `${g(caseSheet, 'patientDetails', 'firstName') || ''} ${g(
+        caseSheet,
+        'patientDetails',
+        'lastName'
+      ) || ''}`
+    );
+    callData.setPatientImage(g(caseSheet, 'patientDetails', 'photoUrl') || '');
+    callData.setDoctorImage(g(doctorDetails, 'photoUrl') || '');
     setLifeStyleData(g(caseSheet, 'caseSheetDetails', 'patientDetails', 'lifeStyle') || null);
     setMedicalHistory(
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'patientMedicalHistory') || null
@@ -726,12 +707,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const saveDetails = (
-    showLoading: boolean,
+    showLoader: boolean,
     autoSave: boolean,
     inputdata?: ModifyCaseSheetInput,
     callBack?: () => void
   ) => {
-    showLoading && setLoading && setLoading(true);
+    showLoader && setLoading && setLoading(true);
     if (caseSheetEdit) {
       client
         .mutate<modifyCaseSheet, modifyCaseSheetVariables>({
@@ -800,21 +781,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
-  const [audioCallStyles, setAudioCallStyles] = useState<object>({
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    elevation: 10000,
-  });
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
-  const [callTimer, setCallTimer] = useState<number>(0);
-  const [callAccepted, setCallAccepted] = useState<boolean>(false);
-  const [convertVideo, setConvertVideo] = useState<boolean>(false);
+
   let patientJoined = false;
   let abondmentStarted = false;
 
@@ -836,24 +805,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('storpvi', joinTimerNoShow);
     joinTimerNoShow && clearInterval(joinTimerNoShow);
   };
-
-  const startMissedCallTimer = (timer: number, callback?: () => void) => {
-    stopMissedCallTimer();
-    missedCallTimer = setInterval(() => {
-      timer = timer - 1;
-      console.log('timer missedCallllll', timer);
-      if (timer === 0) {
-        stopMissedCallTimer();
-        callback && callback();
-      }
-    }, 1000);
-  };
-
-  const stopMissedCallTimer = () => {
-    console.log('stop missed Call', missedCallTimer);
-    missedCallTimer && clearInterval(missedCallTimer);
-  };
-  const [missedCallCounter, setMissedCallCounter] = useState<number>(0);
 
   const startAutoSaveTimer = (timer: number, callback?: () => void) => {
     stopAutoSaveTimer();
@@ -891,15 +842,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, [caseSheetEdit]);
 
   const stopAllCalls = () => {
-    console.log('isA', isAudioCall, '\nisVe', isCall);
-    if (isAudioCall || isCall) {
+    if (callOptions.isAudio || callOptions.isVideo) {
       endCallNotificationAPI(true);
-      setIsAudioCall(false);
-      setHideStatusBar(false);
-      setChatReceived(false);
-      setConvertVideo(false);
-      setShowVideo(true);
-      setIsCall(false);
+      callOptions.stopCalls(false);
       const text = {
         id: doctorId,
         message: messageCodes.endCallMsg,
@@ -918,8 +863,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       );
       const stoptext = {
         id: doctorId,
-        message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
-        duration: callTimerStarted,
+        message: `${callOptions.isVideo ? 'Video' : 'Audio'} ${strings.consult_room.call_ended}`,
+        duration: callData.callDuration,
         isTyping: true,
         messageDate: new Date(),
         sentBy: REQUEST_ROLES.DOCTOR,
@@ -960,7 +905,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const endAppointmentApiCall = (status: STATUS) => {
     stopNoShow();
-    stopMissedCallTimer();
+    callOptions.stopMissedCallTimer();
     setShowLoading(true);
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -1068,22 +1013,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .catch((error) => {});
   };
 
-  // let dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
-
-  const consultTime =
-    (doctorDetails &&
-      (
-        doctorDetails.consultHours!.filter(
-          (item) =>
-            item!.weekDay ===
-            moment(Appintmentdatetime)
-              .format('dddd')
-              .toUpperCase()
-        )[0] || {}
-      ).consultDuration) ||
-    15;
-  const isAfter = moment(Appintmentdatetime).isAfter(moment().add(-consultTime, 'minutes'));
-
   const startInterval = (timer: number) => {
     setConsultStarted(true);
     intervalId = setInterval(() => {
@@ -1101,26 +1030,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('intervalId', intervalId);
   };
 
-  const startTimer = (timer: number) => {
-    timerId = setInterval(() => {
-      timer = timer + 1;
-      stoppedTimer = timer;
-      setCallTimer(timer);
-      // console.log('uptimer', timer);
-
-      if (timer == 0) {
-        // console.log('uptimer', timer);
-        setCallTimer(0);
-        clearInterval(timerId);
-      }
-    }, 1000);
-  };
-
-  const stopTimer = () => {
-    setCallTimer(0);
-    timerId && clearInterval(timerId);
-  };
-
   const stopInterval = () => {
     const stopTimer = 900 - stoppedTimer;
 
@@ -1128,65 +1037,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     intervalId && clearInterval(intervalId);
   };
 
-  const publisherEventHandlers = {
-    streamCreated: (event: string) => {
-      console.log('Publisher stream created!', event);
-    },
-    streamDestroyed: (event: string) => {
-      console.log('Publisher stream destroyed!', event);
-    },
-  };
-
-  const subscriberEventHandlers = {
-    error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
-    },
-    connected: (event: string) => {
-      console.log('Subscribe stream connected!', event);
-
-      console.log('after styles', event);
-    },
-    disconnected: (event: string) => {
-      console.log('Subscribe stream disconnected!', event);
-    },
-  };
-
-  const sessionEventHandlers = {
-    error: (error: string) => {
-      console.log(`There was an error with the session: ${error}`);
-    },
-    connectionCreated: (event: string) => {
-      connectionCount++;
-      console.log('otSessionRef', otSessionRef);
-      console.log('Another client connected. ' + connectionCount + ' total.');
-      console.log('session stream connectionCreated!', event);
-    },
-    connectionDestroyed: (event: string) => {
-      connectionCount--;
-      setIsCall(false);
-      setIsAudioCall(false);
-      setHideStatusBar(false);
-      stopTimer();
-      setCallAccepted(false);
-      setReturnToCall(false);
-      console.log('session stream connectionDestroyed!', event);
-    },
-    sessionConnected: (event: string) => {
-      console.log('session stream sessionConnected!', event);
-    },
-    sessionDisconnected: (event: string) => {
-      console.log('session stream sessionDisconnected!', event);
-    },
-    sessionReconnected: (event: string) => {
-      console.log('session stream sessionReconnected!', event);
-    },
-    sessionReconnecting: (event: string) => {
-      console.log('session stream sessionReconnecting!', event);
-    },
-    signal: (event: string) => {
-      console.log('session stream signal!', event);
-    },
-  };
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
@@ -1225,32 +1075,25 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const audioVideoMethod = () => {
             callhandelBack = true;
             addMessages(message);
-            setIsCall(false);
-            setIsAudioCall(false);
-            setHideStatusBar(false);
-            stopTimer();
-            setCallAccepted(false);
-            setReturnToCall(false);
+            callOptions.stopCalls(false);
+            callOptions.setCallAccepted(false);
           };
           switch (messageText) {
             case messageCodes.acceptedCallMsg:
-              startTimer(0);
-              setCallAccepted(true);
-              stopMissedCallTimer();
+              callOptions.setCallAccepted(true);
+              callOptions.stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
-              setIsCall(false);
-              setIsAudioCall(false);
-              setHideStatusBar(false);
-              stopTimer();
-              setCallAccepted(false);
-              setReturnToCall(false);
+              callOptions.stopCalls(false);
+              callOptions.setCallAccepted(false);
               break;
             case messageCodes.covertVideoMsg:
-              setConvertVideo(true);
+              callOptions.setIsVideo(true);
+              callOptions.setIsAudio(true);
               break;
             case messageCodes.covertAudioMsg:
-              setConvertVideo(false);
+              callOptions.setIsVideo(false);
+              callOptions.setIsAudio(true);
               break;
             case 'Audio call ended':
               audioVideoMethod();
@@ -1353,7 +1196,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const addMessages = (message: Pubnub.MessageEvent) => {
       insertText[insertText.length] = message;
       setMessages(() => [...(insertText as [])]);
-      if (!isCall || !isAudioCall) {
+      if (!callOptions.isVideo || !callOptions.isAudio) {
         setChatReceived(true);
       }
       setTimeout(() => {
@@ -1414,7 +1257,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             insertText = newmessage;
 
             setMessages(newmessage as []);
-            if (!isCall || !isAudioCall) {
+            if (!callOptions.isVideo || !callOptions.isAudio) {
               console.log('chat icon', chatReceived);
               setChatReceived(true);
             }
@@ -1446,11 +1289,69 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const callMinutes = Math.floor(callTimer / 60);
-  const callSeconds = callTimer - callMinutes * 60;
-  const callTimerStarted = `${
-    callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
-  } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
+  const connectCall = (callType: 'A' | 'V') => {
+    if (!startConsult) {
+      Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
+      return;
+    }
+
+    if (callOptions.isAudio || callOptions.isVideo) {
+      return;
+    }
+
+    callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
+    callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
+
+    setCallBacks({
+      onCallEnd: (consultType, callDuration) => {
+        callOptions.stopMissedCallTimer();
+        endCallNotificationAPI(true);
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message:
+                callType === 'V'
+                  ? strings.consult_room.video_call_ended
+                  : strings.consult_room.audio_call_ended,
+              duration: callDuration,
+              id: doctorId,
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+      },
+      onCallMinimize: () => {},
+    });
+    callhandelBack = false;
+    setShowPopUp(false);
+    sendCallNotificationAPI(callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
+    Keyboard.dismiss();
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {
+        if (response) {
+          callOptions.startMissedCallTimer(45, (count) => {
+            stopAllCalls();
+            // if (missedCallCounter < 2) {
+
+            // } else {
+            //   callAbandonmentCall();
+            // }
+          });
+        }
+      }
+    );
+  };
 
   const CallPopUp = () => {
     return (
@@ -1513,49 +1414,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           >
             {strings.consult_room.how_do_you_talk}
           </Text>
-          <TouchableOpacity
-            onPress={() => {
-              if (!startConsult) {
-                console.log('consult not started');
-                Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
-                return;
-              }
-
-              if (isAudioCall || isCall) {
-                return;
-              }
-              //need to work form here
-              callhandelBack = false;
-              setIsAudioCall(true);
-              setShowPopUp(false);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              sendCallNotificationAPI(APPT_CALL_TYPE.AUDIO, true);
-              Keyboard.dismiss();
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: messageCodes.audioCallMsg, //'^^#audiocall',
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {
-                  if (response) {
-                    startMissedCallTimer(45, () => {
-                      stopAllCalls();
-                      // if (missedCallCounter < 2) {
-                      setMissedCallCounter(missedCallCounter + 1);
-                      // } else {
-                      //   callAbandonmentCall();
-                      // }
-                    });
-                  }
-                }
-              );
-            }}
-          >
+          <TouchableOpacity onPress={() => connectCall('A')}>
             <View
               style={{
                 marginHorizontal: 20,
@@ -1586,55 +1445,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               </View>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              if (!startConsult) {
-                console.log('consult not started');
-                Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
-                return;
-              }
-              if (isAudioCall || isCall) {
-                return;
-              }
-              callhandelBack = false;
-              setIsCall(true);
-              setShowPopUp(false);
-              setHideStatusBar(true);
-              setChatReceived(false);
-              sendCallNotificationAPI(APPT_CALL_TYPE.VIDEO, true);
-              Keyboard.dismiss();
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: messageCodes.videoCallMsg, //'^^#videocall',
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {
-                  if (response) {
-                    startMissedCallTimer(45, () => {
-                      stopAllCalls();
-                      // if (missedCallCounter < 2) {
-                      setMissedCallCounter(missedCallCounter + 1);
-                      // } else {
-                      //   callAbandonmentCall();
-                      // }
-                    });
-                    // startNoShow(45, () => {
-                    //   stopAllCalls();
-                    //   if (missedCallCounter < 2) {
-                    //     setMissedCallCounter(missedCallCounter + 1);
-                    //   } else {
-                    //     callAbandonmentCall();
-                    //   }
-                    // });
-                  }
-                }
-              );
-            }}
-          >
+          <TouchableOpacity onPress={() => connectCall('V')}>
             <View
               style={{
                 marginHorizontal: 20,
@@ -1710,7 +1521,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     (status, response) => {}
                   );
                 }}
-                inCall={isCall || isAudioCall}
+                inCall={callOptions.isVideo || callOptions.isAudio}
                 chatFiles={chatFiles}
                 setUrl={setUrl}
                 setPatientImageshow={setPatientImageshow}
@@ -1786,7 +1597,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   navigation={props.navigation}
                   messages={messages}
                   send={send}
-                  setAudioCallStyles={setAudioCallStyles}
                   flatListRef={flatListRef}
                   setShowPDF={setShowPDF}
                   setPatientImageshow={setPatientImageshow}
@@ -1819,9 +1629,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('createsession', _data);
         console.log('sessionid', _data.data.createAppointmentSession.sessionId);
         console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
-
+        setOpenTokKeys({
+          sessionId: _data.data.createAppointmentSession.sessionId,
+          token: _data.data.createAppointmentSession.appointmentToken,
+        });
         //
         setTimeout(() => {
           flatListRef.current && flatListRef.current.scrollToEnd();
@@ -1880,8 +1691,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (status, response) => {
         setStartConsult(false);
         stopInterval();
-        stopTimer();
-        stopMissedCallTimer();
+        callOptions.stopMissedCallTimer();
         stopNoShow();
       }
     );
@@ -2041,9 +1851,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const minutes = Math.floor(remainingTime / 60);
-  const seconds = remainingTime - minutes * 60;
-
   const showHeaderView = () => {
     return (
       <NotificationHeader
@@ -2072,8 +1879,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
             (appointmentData || {}).status == 'COMPLETED' ||
             showEditPreviewButtons ||
-            isAudioCall ||
-            isCall
+            callOptions.isAudio ||
+            callOptions.isVideo
               ? (appointmentData || {}).status == 'COMPLETED' || showEditPreviewButtons
                 ? -10
                 : 40
@@ -2134,8 +1941,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 >
                   {(appointmentData || {}).status == 'COMPLETED' ||
                   showEditPreviewButtons ||
-                  isAudioCall ||
-                  isCall ? null : (
+                  callOptions.isAudio ||
+                  callOptions.isVideo ? null : (
                     <DotIcon />
                   )}
                 </View>
@@ -2239,7 +2046,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         instructionHeading={strings.consult_room.instruction_for_upload}
         instructions={[strings.consult_room.instruction_list]}
         disabledOption={strings.consult_room.none}
-        blockCamera={isCall}
+        blockCamera={callOptions.isVideo}
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: strings.consult_room.take_a_photo,
@@ -2360,7 +2167,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
-        <StatusBar hidden={hideStatusBar} />
         {showHeaderView()}
         {overlayDisplay}
         {displayReSchedulePopUp && (
@@ -2391,136 +2197,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {dropdownShow ? renderDropdown() : null}
         {renderTabPage()}
         {showPopUp && CallPopUp()}
-        {isAudioCall && (
-          <AudioCall
-            minutes={minutes}
-            seconds={seconds}
-            convertVideo={convertVideo}
-            callTimerStarted={callTimerStarted}
-            audioCallStyles={audioCallStyles}
-            setAudioCallStyles={setAudioCallStyles}
-            cameraPosition={cameraPosition}
-            setCameraPosition={setCameraPosition}
-            firstName={patientDetails ? patientDetails.firstName || '' : ''}
-            profileImage={patientDetails ? patientDetails.photoUrl || '' : ''}
-            chatReceived={chatReceived}
-            callAccepted={callAccepted}
-            setChatReceived={setChatReceived}
-            setReturnToCall={setReturnToCall}
-            showVideo={showVideo}
-            otSessionRef={otSessionRef}
-            sessionId={sessionId}
-            token={token}
-            subscriberEventHandlers={subscriberEventHandlers}
-            publisherEventHandlers={publisherEventHandlers}
-            sessionEventHandlers={sessionEventHandlers}
-            navigation={props.navigation}
-            onVideoToggle={() => {
-              showVideo === true ? setShowVideo(false) : setShowVideo(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message:
-                      showVideo === true
-                        ? messageCodes.covertVideoMsg
-                        : messageCodes.covertAudioMsg,
-                  },
-                  channel: channel,
-                  storeInHistory: false,
-                },
-                (status, response) => {}
-              );
-            }}
-            onPressEndCall={() => {
-              setIsAudioCall(false);
-              setHideStatusBar(false);
-              stopTimer();
-              stopMissedCallTimer();
-              setChatReceived(false);
-              setConvertVideo(false);
-              setShowVideo(true);
-              endCallNotificationAPI(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: strings.consult_room.audio_call_ended,
-                    duration: callTimerStarted,
-                    id: doctorId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          />
-        )}
-        {isCall && (
-          <VideoCall
-            navigation={props.navigation}
-            setChatReceived={setChatReceived}
-            chatReceived={chatReceived}
-            callAccepted={callAccepted}
-            callMinutes={callMinutes}
-            callSeconds={callSeconds}
-            minutes={minutes}
-            seconds={seconds}
-            firstName={patientDetails ? patientDetails.firstName || '' : ''}
-            subscriberEventHandlers={subscriberEventHandlers}
-            sessionEventHandlers={sessionEventHandlers}
-            sessionId={sessionId}
-            token={token}
-            otSessionRef={otSessionRef}
-            publisherEventHandlers={publisherEventHandlers}
-            cameraPosition={cameraPosition}
-            setCameraPosition={setCameraPosition}
-            onPressBottomEndCall={() => {
-              setIsCall(false);
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-              stopMissedCallTimer();
-              endCallNotificationAPI(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: strings.consult_room.video_call_ended,
-                    duration: callTimerStarted,
-                    id: doctorId,
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-            onPressEnd={() => {
-              // setIsCall(false);
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-              stopMissedCallTimer();
-              endCallNotificationAPI(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: strings.consult_room.video_call_ended,
-                    duration: callTimerStarted,
-                    id: doctorId,
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          />
-        )}
         {uploadPrescriptionPopup()}
         {patientImageshow && imageOpen()}
         {showPDF && (
@@ -2542,50 +2218,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           />
         )}
         {showCancelPopup && renderCancelPopup()}
-        {/* {showMorePopup && (
-        <TouchableOpacity
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            // width: 200,
-            // backgroundColor: 'red',
-            zIndex: 1000,
-            elevation: 100,
-            alignItems: 'flex-end',
-          }}
-          onPress={() => setshowMorePopup(false)}
-        >
-          <View
-            style={{
-              // width: 150,
-              // height: 50,
-              marginTop: 30,
-              marginRight: 20,
-              ...theme.viewStyles.shadowStyle,
-              borderRadius: 10,
-              backgroundColor: 'white',
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.LIGHT_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
-                padding: 15,
-              }}
-              onPress={() => {
-                setshowCancelPopup(true);
-                setshowMorePopup(false);
-              }}
-            >
-              {strings.consult.end_cancel_consult}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      )} */}
       </SafeAreaView>
     </View>
   );

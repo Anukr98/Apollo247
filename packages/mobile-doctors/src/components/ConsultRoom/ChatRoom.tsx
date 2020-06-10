@@ -75,7 +75,6 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setChatReceived: Dispatch<SetStateAction<boolean>>;
   messages: never[];
   send: (messageText: any) => void;
-  setAudioCallStyles: Dispatch<React.SetStateAction<object>>;
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
@@ -834,15 +833,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             props.setReturnToCall(false);
             props.setChatReceived(false);
             Keyboard.dismiss();
-            props.setAudioCallStyles({
-              flex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              elevation: 2000,
-            });
           }}
         >
           <View
