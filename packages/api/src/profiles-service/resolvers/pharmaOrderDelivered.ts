@@ -275,16 +275,16 @@ const createOneApolloTransaction = async (
     });
     transactionLineItems.forEach((val, i, arr) => {
       if (val.ProductCode) {
-        switch (itemTypemap[val.ProductCode]) {
-          case 'PHARMA':
+        switch (itemTypemap[val.ProductCode].toLowerCase()) {
+          case 'pharma':
             arr[i].ProductName = ProductTypes.PHARMA;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
             break;
-          case 'FMCG':
+          case 'fmcg':
             arr[i].ProductName = ProductTypes.FMCG;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
             break;
-          case 'PL':
+          case 'pl':
             arr[i].ProductName = ProductTypes.PL;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
             break;
@@ -299,14 +299,17 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction response- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(oneApolloResponse),
-      ''
-    );
+    if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
+      const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction response- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(oneApolloResponse),
+        ''
+      );
+    }
+    return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
   }
