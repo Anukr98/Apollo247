@@ -296,7 +296,7 @@ export const DiagnosticPrescription: React.FC = () => {
         filterVal.length > 0 && filterVal[0].id === '' && filterVal.splice(0, 1);
 
         filterVal.forEach((val: any, index: any) => {
-          val.id = val.itemName;
+          val.id = val.itemId;
           selectedValues!.forEach((selectedval: any) => {
             if (val.itemName === selectedval.itemname) {
               filterVal.splice(index, 1);
