@@ -21,7 +21,10 @@ import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -29,7 +32,6 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -114,6 +116,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             handleOpenURL(url);
             console.log('linking', url);
@@ -140,6 +143,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
 
       const data = route.split('?');
+      setBugFenderLog('DEEP_LINK_DATA', data);
       route = data[0];
 
       // console.log(data, 'data');
@@ -151,6 +155,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           linkId = data[1].split('&');
           if (linkId.length > 0) {
             linkId = linkId[0];
+            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
           }
         }
       } catch (error) {}
@@ -322,7 +327,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
-
+    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
@@ -356,6 +361,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'Speciality':
         console.log('Speciality id', id);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: id ? id : '',
         });
