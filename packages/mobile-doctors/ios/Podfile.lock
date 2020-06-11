@@ -132,8 +132,8 @@ PODS:
     - nanopb/encode (= 1.30905.0)
   - nanopb/decode (1.30905.0)
   - nanopb/encode (1.30905.0)
-  - OpenTok (2.16.6)
-  - opentok-react-native (0.12.2):
+  - OpenTok (2.17.0)
+  - opentok-react-native (0.13.0):
     - OpenTok
     - React
   - Permission-Camera (2.0.10):
@@ -411,7 +411,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - GoogleAppMeasurement
   - GoogleIDFASupport (~> 3.14.0)
-  - OpenTok (~> 2.16.3)
+  - OpenTok (~> 2.17.0)
   - opentok-react-native (from `../node_modules/opentok-react-native`)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera.podspec`)
   - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone.podspec`)
@@ -629,8 +629,8 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   nanopb: c43f40fadfe79e8b8db116583945847910cbabc9
-  OpenTok: 85ce78080020035425aa1a317f2ff5a0fcc1e265
-  opentok-react-native: 1a0be9bdb787cef9ca0338169e365fa63d8a39fb
+  OpenTok: 8335775f5556f2b96945b485c00f13eee03daf92
+  opentok-react-native: 06e72b789be06e6aad1db7ad04077cde6ada58ce
   Permission-Camera: 8f0e5decca5f28f70f28a8dc31f012c9bad40ad8
   Permission-Microphone: 97ba829d2f3bab3ceb299f112d82b967d48c1d5a
   Permission-Notifications: 6925b1c95603159fe683e6652b8aed40c222eb0d
@@ -679,6 +679,6 @@ SPEC CHECKSUMS:
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 73711d102ffcd4cee045575a459de09ba419b4ca
+PODFILE CHECKSUM: 9eeae69c9486701846f4b82c578db8d66b443bb9
 
 COCOAPODS: 1.8.4

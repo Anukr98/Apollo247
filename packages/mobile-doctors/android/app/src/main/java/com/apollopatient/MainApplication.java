@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.opentokreactnative.OTPackage;
 import com.pritesh.calldetection.CallDetectionManager;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage;
