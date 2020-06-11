@@ -24,6 +24,7 @@ import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  setBugfenderPhoneNumber,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -91,6 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
+    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -126,10 +128,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           CommonBugFender('SplashScreen_Linking_URL', e);
         });
 
-      // Linking.addEventListener('url', (event) => {
-      //   console.log('event', event);
-      //   handleOpenURL(event.url);
-      // });
+      Linking.addEventListener('url', (event) => {
+        console.log('event', event);
+        setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
+        handleOpenURL(event.url);
+      });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);

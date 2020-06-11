@@ -1,6 +1,9 @@
 import { Linking } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 export const handleDeepLink = (navigationProps: any) => {
@@ -8,6 +11,7 @@ export const handleDeepLink = (navigationProps: any) => {
     Linking.addEventListener('url', (event) => {
       console.log('linkingEvent==>', event);
       handleOpenURL(navigationProps, event.url);
+      setBugFenderLog('UTIL_handleDeepLink', JSON.stringify(event));
     });
     AsyncStorage.removeItem('location');
   } catch (error) {
@@ -19,12 +23,11 @@ export const handleOpenURL = (navigationProps: any, event: any) => {
   try {
     console.log('linkinghandleOpenURL', event);
     let route;
-
     route = event.replace('apollopatients://', '');
 
     const data = route.split('?');
     route = data[0];
-
+    setBugFenderLog('UTIL_handleOpenURL', data);
     // console.log(data, 'data');
 
     let linkId = '';
@@ -90,7 +93,7 @@ export const handleOpenURL = (navigationProps: any, event: any) => {
 
 export const pushTheView = (navigationProps: any, routeName: String, id?: String) => {
   console.log('pushTheView', routeName);
-
+  setBugFenderLog('UTIL_pushTheView', { routeName, id });
   switch (routeName) {
     case 'Consult':
       // if (id) {

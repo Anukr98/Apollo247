@@ -552,7 +552,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         console.log('data', data);
         setData(data);
         vaueChange(data);
-        setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(data));
+        //log data
+        const doctorInfo =
+          data.getDoctorsBySpecialtyAndFilters?.doctors === null
+            ? {}
+            : data.getDoctorsBySpecialtyAndFilters?.doctors[0];
+        setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
+        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);

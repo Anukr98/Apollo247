@@ -307,7 +307,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
-    handleDeepLink(props.navigation);
+    // handleDeepLink(props.navigation);
     isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
