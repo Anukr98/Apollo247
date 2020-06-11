@@ -184,6 +184,9 @@ const getOrderInvoice: Resolver<
       .text(' RA Puram, Chennai - 600028', { align: 'right' })
       .moveDown(1)
 
+      .text('GST Number - 33AAACA5443N1ZP', { align: 'right' })
+      .moveDown(0.3)
+
       .text(`${todayDate}`, { align: 'right' });
     doc.moveDown(2);
   };
@@ -198,6 +201,14 @@ const getOrderInvoice: Resolver<
       .fontSize(16)
       .fillColor('#01475b')
       .text('PAYMENT RECEIPT', margin, doc.y, { align: 'center' })
+      .moveDown(0.3);
+
+    doc
+      .fontSize(16)
+      .fillColor('#01475b')
+      .text(`Invoice Number: APOLLO-CON-A${appointmentData[0].displayId} `, margin, doc.y, {
+        align: 'center',
+      })
       .moveDown(1.5);
 
     doc
