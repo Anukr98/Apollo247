@@ -887,6 +887,7 @@ export const GET_CASESHEET = gql`
         consultType
         notes
         version
+        prescriptionGeneratedDate
       }
       pastAppointments {
         id
@@ -1327,6 +1328,7 @@ export const SEARCH_DIAGNOSTICS = gql`
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         itemName
+        itemId
       }
     }
   }
@@ -1336,6 +1338,7 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
       blobName
+      prescriptionGeneratedDate
     }
   }
 `;

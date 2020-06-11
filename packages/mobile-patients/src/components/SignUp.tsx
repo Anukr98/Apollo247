@@ -55,6 +55,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGReferralCodeEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -454,6 +455,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       if (referral) {
         // only send if referral has a value
         eventFirebaseAttributes['Referral_Code'] = referral;
+        postWEGReferralCodeEvent(referral);
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);

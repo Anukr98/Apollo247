@@ -56,6 +56,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGReferralCodeEvent,
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
@@ -472,6 +473,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       if (referral) {
         // only send if referral has a value
         eventAttributes['Referral Code'] = referral;
+        postWEGReferralCodeEvent(referral);
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);

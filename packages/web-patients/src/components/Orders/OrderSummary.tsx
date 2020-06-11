@@ -8,7 +8,11 @@ import {
 } from 'graphql/types/getMedicineOrderOMSDetails';
 import { CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
-import { MEDICINE_ORDER_PAYMENT_TYPE, MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+  MEDICINE_ORDER_TYPE,
+} from 'graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import {
@@ -18,7 +22,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
-import { getAppStoreLink } from 'helpers/dateHelpers';
+import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -235,6 +239,28 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    additionalDiscount: {
+      backgroundColor: '#fff',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      border: 'solid 1.5px #00b38e',
+      padding: '5px 16px 5px 10px',
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      marginTop: 16,
+      marginLeft: 10,
+    },
+    disContent: {
+      fontSize: 12,
+      color: '#00b38e',
+      fontWeight: 500,
+      paddingLeft: 10,
+      '& h3': {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: 0,
+      },
+    },
   };
 });
 
@@ -395,9 +421,28 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     return `${medicineName}${mou! > 1 ? ` (${mou}${isTablet ? ' tabs' : ''})` : ''}`;
   };
 
-  const shouldShow = (time: string) => {
-    return moment('2020-06-06T00:00:00.000Z').diff(time) < 0;
+  const getItemName = (itemObj: ItemObject, index: number) => {
+    const isRepeatedItem = billedItemDetails.find(
+      (item: ItemObject, idx: number) => index !== idx && item.itemId === itemObj.itemId
+    );
+    return isRepeatedItem ? `${itemObj.itemName}-batch:<${itemObj.batchId}>` : itemObj.itemName;
   };
+
+  const isPrescriptionUploadOrder =
+    orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
+
+  const noDiscountFound =
+    orderDetailsData &&
+    billedPaymentDetails &&
+    Math.round(billedPaymentDetails.invoiceValue) === Math.round(orderDetailsData.estimatedAmount);
+
+  const additionalDisount =
+    props.isShipmentListHasBilledState() &&
+    noDiscountFound &&
+    orderDetailsData &&
+    billedPaymentDetails &&
+    Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
+      Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
 
   return isLoading ? (
     <div className={classes.loader}>
@@ -412,9 +457,11 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               <span className={classes.caps}>Order</span> # <br />
               {orderDetailsData.orderAutoId}
             </div>
-            <div className={classes.rightGroup}>
-              Total <b>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</b>
-            </div>
+            {!isPrescriptionUploadOrder && (
+              <div className={classes.rightGroup}>
+                Total <b>Rs.{(orderDetailsData.estimatedAmount || 0).toFixed(2)}</b>
+              </div>
+            )}
           </div>
         </div>
         {(getFormattedDateTime() || orderPayment) && (
@@ -476,10 +523,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               billedPaymentDetails &&
               billedPaymentDetails.discountValue // check for supporting old orders
                 ? billedItemDetails.map(
-                    (item: ItemObject) =>
+                    (item: ItemObject, idx: number) =>
                       item && (
                         <div key={item.itemId} className={classes.tableRow}>
-                          <div className={classes.medicineName}>{item.itemName}</div>
+                          <div className={classes.medicineName}>{getItemName(item, idx)}</div>
                           <div>{item.issuedQty.toFixed(1)}</div>
                           <div>Rs.{item.mrp}</div>
                         </div>
@@ -577,34 +624,69 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               <span>{paymentMethodToDisplay}</span>
             </div>
           )}
-          {/* <div className={ classes.orderValue}>
-            <div className={`${classes.priceRow}`}>
-              <span>Total Ordered Value</span>
-              <span>Rs. 270</span>
-            </div>
-            <div className={`${classes.priceRow}`}>
-              <span>Total Billed Value</span>
-              <span>Rs. 250 </span>
-            </div>
+          {!isPrescriptionUploadOrder &&
+            props.isShipmentListHasBilledState() &&
+            billedPaymentDetails &&
+            billedPaymentDetails.discountValue &&
+            !noDiscountFound && (
+              <>
+                <div className={classes.orderValue}>
+                  <div className={`${classes.priceRow}`}>
+                    <span>{ORDER_BILLING_STATUS_STRINGS.TOTAL_ORDER_BILLED}</span>
+                    <span>Rs. {(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className={`${classes.priceRow}`}>
+                    <span>{ORDER_BILLING_STATUS_STRINGS.TOTAL_BILLED_VALUE}</span>
+                    <span>Rs. {(billedPaymentDetails.invoiceValue || 0).toFixed(2)} </span>
+                  </div>
+                </div>
+                <div className={classes.refundValue}>
+                  <div className={`${classes.priceRow}`}>
+                    <span>
+                      {billedPaymentDetails.invoiceValue > orderDetailsData.estimatedAmount
+                        ? ORDER_BILLING_STATUS_STRINGS.AMOUNT_TO_BE_PAID_ON_DELIVERY
+                        : paymentMethodToDisplay === 'COD'
+                        ? ORDER_BILLING_STATUS_STRINGS.COD_AMOUNT_TO_PAY
+                        : ORDER_BILLING_STATUS_STRINGS.REFUND_TO_BE_INITIATED}
+                    </span>
+                    <span>
+                      Rs.
+                      {paymentMethodToDisplay === 'COD'
+                        ? billedPaymentDetails.invoiceValue.toFixed(2)
+                        : billedPaymentDetails.invoiceValue > orderDetailsData.estimatedAmount
+                        ? (
+                            billedPaymentDetails.invoiceValue - orderDetailsData.estimatedAmount
+                          ).toFixed(2)
+                        : (
+                            orderDetailsData.estimatedAmount - billedPaymentDetails.invoiceValue
+                          ).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+        </div>
+      </div>
+      {!isPrescriptionUploadOrder && additionalDisount && (
+        <div className={classes.additionalDiscount}>
+          <span>
+            <img src={require('images/discount.svg')} alt="" />
+          </span>
+          <div className={classes.disContent}>
+            <h3>YAY!</h3>
+            <span>{`You got an additional discount of Rs. ${(
+        billedPaymentDetails.discountValue -
+        (orderDetailsData.productDiscount + orderDetailsData.couponDiscount)
+      ).toFixed(2)}`}</span>
           </div>
-          <div className={ classes.refundValue}>
-            <div className={`${classes.priceRow}`}>
-              <span>Refund to be initiated</span>
-              <span>Rs. 20</span>
-            </div>
-          </div> */}
         </div>
-      </div>
-      {/* <div className={classes.disclaimerText}>
-        <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
-      </div> */}
-      <div className={classes.bottomActions}>
-        <div className={`${classes.appDownloadBtn}`}>
-          <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
-            Download App
-          </a>
+      )}
+
+      {!props.isShipmentListHasBilledState() && (
+        <div className={classes.disclaimerText}>
+          <b>Disclaimer:</b> <span>Price may vary when the actual bill is generated.</span>
         </div>
-      </div>
+      )}
       {/* <div className={classes.bottomActions}>
         <AphButton>Download</AphButton>
         <AphButton>Share</AphButton>

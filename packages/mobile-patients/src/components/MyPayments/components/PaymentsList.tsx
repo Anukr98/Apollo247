@@ -15,10 +15,11 @@ interface IProps {
   type: string;
   navigationProps: any;
   patientId?: string;
+  fromNotification?: boolean;
 }
 
 const PaymentsList: FC<IProps> = (props) => {
-  const { payments, type, patientId } = props;
+  const { payments, type, patientId, fromNotification } = props;
   const _renderAllPayments = ({ item, index }: any) => {
     return (
       <PaymentHistoryCard
@@ -29,6 +30,7 @@ const PaymentsList: FC<IProps> = (props) => {
         paymentFor={type}
         navigationProps={props.navigationProps}
         patientId={patientId}
+        fromNotification={fromNotification}
       />
     );
   };

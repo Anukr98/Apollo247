@@ -167,6 +167,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   displayName: string | null;
   fullName: string | null;
   experience: string | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty | null;
   specialization: string | null;
   qualification: string | null;

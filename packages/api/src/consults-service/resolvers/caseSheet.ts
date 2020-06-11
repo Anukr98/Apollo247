@@ -120,9 +120,11 @@ export const caseSheetTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
+    INTERNATIONAL_UNIT
     LOTION
     ML
     MG
@@ -140,6 +142,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    TEASPOON
     UNIT
   }
 
@@ -244,6 +247,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     patientDetails: PatientFullDetails @provides(fields: "id")
+    prescriptionGeneratedDate: DateTime
     sentToPatient: Boolean
     status: String
     symptoms: [SymptomList]
@@ -304,6 +308,7 @@ export const caseSheetTypeDefs = gql`
     DAYS
     MONTHS
     WEEKS
+    TILL_NEXT_REVIEW
   }
 
   enum MEDICINE_FREQUENCY {
@@ -340,6 +345,10 @@ export const caseSheetTypeDefs = gql`
     EYE_DROPS
     EAR_DROPS
     INTRAVAGINAL
+    NASALLY
+    INTRANASAL_SPRAY
+    INTRA_ARTICULAR
+    TRIGGER_POINT_INJECTION
   }
 
   type MedicinePrescription {
@@ -483,6 +492,7 @@ export const caseSheetTypeDefs = gql`
     success: Boolean
     blobName: String
     prismFileId: String
+    prescriptionGeneratedDate: DateTime
   }
 
   extend type Mutation {
@@ -694,6 +704,7 @@ type PatientPrescriptionSentResponse = {
   success: boolean;
   blobName: string;
   prismFileId: string;
+  prescriptionGeneratedDate: Date | undefined;
 };
 
 type ModifyCaseSheetInput = {
@@ -1192,6 +1203,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1230,6 +1242,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1238,6 +1251,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 
@@ -1266,6 +1280,7 @@ const generatePrescriptionTemp: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1304,6 +1319,7 @@ const generatePrescriptionTemp: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1312,6 +1328,7 @@ const generatePrescriptionTemp: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 

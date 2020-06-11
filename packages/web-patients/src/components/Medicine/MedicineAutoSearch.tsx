@@ -235,7 +235,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineAutoSearch: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
+    url: process.env.PHARMACY_MED_SEARCH_SUGGEST_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };

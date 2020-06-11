@@ -169,7 +169,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
-  args.filterInput.sort = args.filterInput.sort || defaultSort();
+  args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
@@ -215,7 +215,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -228,6 +227,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
   const getDetails = await client.search(searchParams);
 
   for (const doc of getDetails.body.hits.hits) {
@@ -237,11 +237,24 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    if (doctor['physicalConsultationFees'] === 0) {
+      doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+    }
+    if (doctor['onlineConsultationFees'] === 0) {
+      doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+    }
+    doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
       bufferTime = consultHour['consultBuffer'];
+      if (!doctor['availableMode'].includes(consultHour.consultMode)) {
+        doctor['availableMode'].push(consultHour.consultMode);
+      }
+    }
+    if (doctor['availableMode'].length > 1) {
+      doctor['availableMode'] = ['BOTH'];
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
@@ -340,7 +353,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
       finalDoctorsConsultModeAvailability.push({
-        availableModes: [doctor.consultHours[0].consultMode],
+        availableModes: doctor['availableMode'],
         doctorId: doctor.doctorId,
       });
       finalSpecialityDetails.push(doctor.specialty);
@@ -412,7 +425,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
-      } else {
+      } else if (j < earlyAvailableNonStarApolloDoctors.length) {
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -441,7 +454,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         j++;
       }
     }
-
     doctors = earlyAvailableApolloDoctors
       .concat(
         earlyAvailableNonApolloDoctors.sort(
@@ -462,14 +474,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   };
 };
 
-function defaultSort() {
-  const ISTOffset: number = 330;
-  const currentTime: Date = new Date();
-  const ISTTime: Date = new Date(
-    currentTime.getTime() + (ISTOffset - currentTime.getTimezoneOffset()) * 60000
-  );
-  return ISTTime.getHours() > 7 && ISTTime.getHours() < 16 ? 'distance' : 'availability';
-}
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
