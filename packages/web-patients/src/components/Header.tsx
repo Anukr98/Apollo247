@@ -18,7 +18,6 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
-import { debug } from 'webpack';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -231,16 +230,14 @@ export const Header: React.FC = (props) => {
     sku: string;
   }>();
   const handleClick = (e: any) => {
-    debugger;
     if (node.current.contains(e.target) && !_isEmpty(e.target)) {
       // inside click
       return;
     }
-    if (profileVisible) {
-      setProfileVisible(false);
-    }
     // outside click
+    setProfileVisible(false);
   };
+
   useEffect(() => {
     // add when mounted
     document.addEventListener('mousedown', handleClick);
@@ -248,7 +245,8 @@ export const Header: React.FC = (props) => {
     return () => {
       document.removeEventListener('mousedown', handleClick);
     };
-  }, [profileVisible]);
+  }, []);
+
   const MedicineRoutes = [
     clientRoutes.medicines(),
     clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
@@ -285,14 +283,71 @@ export const Header: React.FC = (props) => {
               {isSignedIn ? (
                 <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={profileVisible ? clientRoutes.myAccount() : ''}
+                  to={profileVisible ? clientRoutes.myAccount() : '#'}
                   title={'Control profile'}
-                  onClick={() => setProfileVisible(true)}
+                  ref={node}
+                  onClick={(e) => {
+                    if (!profileVisible) {
+                      setProfileVisible(true);
+                    }
+                  }}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
-                    <img src={require('images/ic_account.svg')} />
+                    <>
+                      <img src={require('images/ic_account.svg')} />
+                      {profileVisible && (
+                        <Paper
+                          className={`${classes.userOptions} ${
+                            profileVisible ? classes.userListActive : ''
+                          }`}
+                        >
+                          <ul className={classes.userAccountList}>
+                            <li>
+                              <Link to={clientRoutes.myAccount()}>
+                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
+                                Profiles
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.myPayments()}>
+                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.healthRecords()}>
+                                <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
+                                Health Records
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.addressBook()}>
+                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
+                              </Link>
+                            </li>
+                            <li>
+                              <Link to={clientRoutes.needHelp()}>
+                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
+                                Help
+                              </Link>
+                            </li>
+                            <li>
+                              <a href="javascript:void(0)" onClick={() => signOut()}>
+                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                              </a>
+                            </li>
+                          </ul>
+                          <AphButton
+                            color="primary"
+                            onClick={() => window.open(getAppStoreLink())}
+                            className={classes.downloadAppBtn}
+                          >
+                            Download App
+                          </AphButton>
+                        </Paper>
+                      )}
+                    </>
                   )}
                 </Link>
               ) : (
@@ -327,53 +382,7 @@ export const Header: React.FC = (props) => {
                   )}
                 </ProtectedWithLoginPopup>
               )}
-              {isSignedIn ? (
-                <Paper
-                  ref={node}
-                  className={`${classes.userOptions} ${
-                    profileVisible ? classes.userListActive : ''
-                  }`}
-                >
-                  <ul className={classes.userAccountList}>
-                    <li>
-                      <Link to={clientRoutes.myAccount()}>
-                        <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage Profiles
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={clientRoutes.myPayments()}>
-                        <img src={require('images/ic_fees.svg')} alt="" /> My Payments
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={clientRoutes.healthRecords()}>
-                        <img src={require('images/ic_notificaiton_accounts.svg')} alt="" /> Health
-                        Records
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={clientRoutes.addressBook()}>
-                        <img src={require('images/ic_location.svg')} alt="" /> Address Book
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to={clientRoutes.needHelp()}>
-                        <img src={require('images/ic_round_live_help.svg')} alt="" /> Need Help
-                      </Link>
-                    </li>
-                    <li>
-                      <a href="javascript:void(0)" onClick={() => signOut()}>
-                        <img src={require('images/ic_logout.svg')} alt="" /> Logout
-                      </a>
-                    </li>
-                  </ul>
-                  <a href={getAppStoreLink()} target="_blank">
-                    <AphButton color="primary" className={classes.downloadAppBtn}>
-                      Download App
-                    </AphButton>
-                  </a>
-                </Paper>
-              ) : (
+              {!isSignedIn && (
                 <Popover
                   open={isLoginPopupVisible}
                   anchorEl={avatarRef.current}
