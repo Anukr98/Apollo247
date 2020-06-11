@@ -75,7 +75,6 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setChatReceived: Dispatch<SetStateAction<boolean>>;
   messages: never[];
   send: (messageText: any) => void;
-  setAudioCallStyles: Dispatch<React.SetStateAction<object>>;
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
@@ -199,20 +198,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
-      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
-        moment(timeStamp.messageDate).format('YYYY-MM-DD')
-      );
-      if (dateValidate == 0) {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('h:mm A');
-      } else {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('DD MMM, YYYY h:mm A');
-      }
+      utcString = moment(timeStamp.messageDate).calendar('', {
+        sameDay: 'hh:mm A',
+        nextDay: '[Tomorrow], hh:mm A',
+        nextWeek: 'DD MMM YYYY, hh:mm A',
+        lastDay: '[Yesterday], hh:mm A',
+        lastWeek: 'DD MMM YYYY, hh:mm A',
+        sameElse: 'DD MMM YYYY,  hh:mm A',
+      });
     }
     return utcString ? utcString : '--';
   };
@@ -834,15 +827,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             props.setReturnToCall(false);
             props.setChatReceived(false);
             Keyboard.dismiss();
-            props.setAudioCallStyles({
-              flex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              elevation: 2000,
-            });
           }}
         >
           <View

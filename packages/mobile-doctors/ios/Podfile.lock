@@ -147,6 +147,8 @@ PODS:
   - PromisesObjC (1.2.8)
   - Protobuf (3.12.0)
   - QBImagePickerController (3.4.0)
+  - RCTCallDetection (1.9.0):
+    - React
   - RCTRequired (0.61.3)
   - RCTTypeSafety (0.61.3):
     - FBLazyVector (= 0.61.3)
@@ -416,6 +418,7 @@ DEPENDENCIES:
   - Permission-Notifications (from `../node_modules/react-native-permissions/ios/Notifications.podspec`)
   - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary.podspec`)
   - QBImagePickerController (from `../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec`)
+  - RCTCallDetection (from `../node_modules/react-native-call-detection`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
   - React (from `../node_modules/react-native/`)
@@ -515,6 +518,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions/ios/PhotoLibrary.podspec"
   QBImagePickerController:
     :path: "../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec"
+  RCTCallDetection:
+    :path: "../node_modules/react-native-call-detection"
   RCTRequired:
     :path: "../node_modules/react-native/Libraries/RCTRequired"
   RCTTypeSafety:
@@ -633,6 +638,7 @@ SPEC CHECKSUMS:
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   Protobuf: 2793fcd0622a00b546c60e7cbbcc493e043e9bb9
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
+  RCTCallDetection: 07da027560ada435ff38087f1f5c4de67ad48318
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
   RCTTypeSafety: e3cc0537400222250f0be37bd69f4b339d3c0a0f
   React: 3dc877fc32548b0c7108ca7f301466f4956cbff8
@@ -673,6 +679,6 @@ SPEC CHECKSUMS:
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: ecb91fa9e6fa6e60e4ac9cf027a40eeddae621f9
+PODFILE CHECKSUM: 73711d102ffcd4cee045575a459de09ba419b4ca
 
 COCOAPODS: 1.8.4
