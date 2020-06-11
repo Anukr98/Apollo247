@@ -110,6 +110,12 @@ export const GET_DOCTOR_DETAILS = gql`
   }
 `;
 
+export const SUBMIT_JD_CASESHEET = gql`
+  mutation SubmitJdCasesheet($appointmentId: String) {
+    submitJDCaseSheet(appointmentId: $appointmentId)
+  }
+`;
+
 export const GET_DOCTOR_APPOINTMENTS = gql`
   query GetDoctorAppointments($startDate: Date, $endDate: Date) {
     getDoctorAppointments(startDate: $startDate, endDate: $endDate) {
@@ -125,6 +131,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         displayId
         isFollowUp
         followUpParentId
+        isJdQuestionsComplete
         caseSheet {
           appointment {
             appointmentDateTime
@@ -141,6 +148,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           sentToPatient
           blobName
           doctorId
+          isJdConsultStarted
         }
         patientInfo {
           id

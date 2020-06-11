@@ -6,7 +6,10 @@ import {
   PastAppointmentIcon,
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import {
+  useUIElements,
+  AphAlertCTAs,
+} from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
@@ -30,6 +33,7 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import { SUBMIT_JD_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 
 const styles = AppointmentsListStyles;
 
@@ -130,6 +134,62 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     }
   };
 
+  const alertCTAS = (
+    doctorId: string,
+    patientId: string,
+    appId: string,
+    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
+  ) => {
+    return [
+      {
+        text: 'NO, WAIT',
+        onPress: () => hideAphAlert!(),
+        type: 'white-button',
+      },
+      {
+        text: 'YES, START CONSULT',
+        onPress: () => {
+          setLoading && setLoading(true);
+          client
+            .mutate({ mutation: SUBMIT_JD_CASESHEET, variables: { appointmentId: appId } })
+            .then(() => {
+              hideAphAlert!();
+              setLoading && setLoading(false);
+              navigateToConsultRoom(doctorId, patientId, appId, apointmentData);
+            })
+            .catch(() => {
+              hideAphAlert!();
+              setLoading && setLoading(false);
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Alert!',
+                  description: 'Error occured in case-sheet creation tyr again',
+                });
+            });
+        },
+      },
+    ] as AphAlertCTAs[];
+  };
+
+  const navigateToConsultRoom = (
+    doctorId: string,
+    patientId: string,
+    appId: string,
+    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
+  ) => {
+    callPermissions(() => {
+      props.navigation.push(AppRoutes.ConsultRoomScreen, {
+        DoctorId: doctorId,
+        PatientId: patientId,
+        PatientConsultTime: null,
+        AppId: appId,
+        Appintmentdatetime: apointmentData.appointmentDateTime,
+        AppointmentStatus: apointmentData.status,
+        AppoinementData: apointmentData,
+      });
+    });
+  };
+
   return (
     <ScrollView bounces={false}>
       <View
@@ -158,6 +218,9 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           const showNext = showUpNext(i.appointmentDateTime, index, i.status);
           const caseSheet =
             i.caseSheet && i.caseSheet.find((i) => i && i.doctorType !== DoctorType.JUNIOR);
+          const jrCaseSheet =
+            i.caseSheet && i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR);
+
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -174,16 +237,47 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId, i);
                     // console.log( || null);
-
-                    if (
-                      i.caseSheet &&
-                      i.caseSheet.length > 0 &&
-                      i.caseSheet.findIndex(
-                        (i) => i && i.doctorType === DoctorType.JUNIOR && i.status === 'COMPLETED'
-                      ) > -1
+                    if (!i.isJdQuestionsComplete) {
+                      showAphAlert &&
+                        showAphAlert({
+                          title: `Hi ${
+                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                          } :)`,
+                          description:
+                            'Patient Details and Junior Doctor Case Sheet is not yet completed for this Appointment, Do you still want to proceed to Start consultation ?',
+                          CTAs: alertCTAS(doctorId, patientId, appId, i),
+                        });
+                    } else if (
+                      ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
+                      i.isJdQuestionsComplete
                     ) {
+                      showAphAlert &&
+                        showAphAlert({
+                          title: `Hi ${
+                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                          } :)`,
+                          description:
+                            'Junior Doctor consultation is not yet initiated for this Appointment, Do you still want to proceed to Start consultation ?',
+                          CTAs: alertCTAS(doctorId, patientId, appId, i),
+                        });
+                    } else if (
+                      (jrCaseSheet &&
+                        jrCaseSheet.isJdConsultStarted &&
+                        jrCaseSheet.status !== 'COMPLETED') ||
+                      !jrCaseSheet
+                    ) {
+                      showAphAlert &&
+                        showAphAlert({
+                          title: `Hi ${
+                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                          } :)`,
+                          description:
+                            'The Junior Doctor consultation is currently in progress for this appointment. You will be able to start this consult shortly..',
+                        });
+                    } else {
                       setLoading && setLoading(true);
                       if (
+                        i.caseSheet &&
                         i.status === STATUS.COMPLETED &&
                         i.caseSheet
                           .map((i) => ((i && i.sentToPatient) || '').toString())
@@ -264,28 +358,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                         });
                       } else {
                         setLoading && setLoading(false);
-                        callPermissions(() => {
-                          props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                            DoctorId: doctorId,
-                            PatientId: patientId,
-                            PatientConsultTime: null,
-                            AppId: appId,
-                            Appintmentdatetime: i.appointmentDateTime,
-                            AppointmentStatus: i.status,
-                            AppoinementData: i,
-                          });
-                        });
+                        navigateToConsultRoom(doctorId, patientId, appId, i);
                       }
-                    } else {
-                      showAphAlert &&
-                        showAphAlert({
-                          title: `Hi ${
-                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
-                          } :)`,
-                          // title: 'Hi, ' + doctorDetails!.displayName + ':)',
-                          description:
-                            'As the patient has not done the pre-assessment, you will not be able to start the consult.',
-                        });
                     }
                   }}
                   appointmentStatus={i.appointmentState || ''}
