@@ -25,6 +25,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -538,7 +539,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
     };
     console.log('FilterInput', FilterInput);
-
+    setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     client
       .query<getDoctorsBySpecialtyAndFilters>({
         query: DOCTOR_SPECIALITY_BY_FILTERS,
@@ -549,9 +550,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         console.log('data', data);
-
         setData(data);
         vaueChange(data);
+        //log data
+        const doctorInfo =
+          data.getDoctorsBySpecialtyAndFilters?.doctors === null
+            ? {}
+            : data.getDoctorsBySpecialtyAndFilters?.doctors[0];
+        setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
+        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
