@@ -19,6 +19,13 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
+export type PharmacyHomepageInfo = {
+  section_key: string;
+  section_name: string;
+  section_position: string;
+  visible: boolean;
+};
+
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
@@ -45,6 +52,38 @@ const appStaticVariables = {
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
+  PHARMACY_HOMEPAGE_INFO: [
+    {
+      section_key: 'healthareas',
+      section_name: 'SHOP BY HEALTH AREAS',
+      section_position: '1',
+      visible: true,
+    },
+    {
+      section_key: 'deals_of_the_day',
+      section_name: 'DEALS OF THE DAY',
+      section_position: '2',
+      visible: true,
+    },
+    {
+      section_key: 'hot_sellers',
+      section_name: 'HOT SELLERS',
+      section_position: '3',
+      visible: true,
+    },
+    {
+      section_key: 'shop_by_category',
+      section_name: 'SHOP BY CATEGORY',
+      section_position: '4',
+      visible: true,
+    },
+    {
+      section_key: 'shop_by_brand',
+      section_name: 'SHOP BY BRAND',
+      section_position: '5',
+      visible: true,
+    },
+  ] as PharmacyHomepageInfo[],
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
