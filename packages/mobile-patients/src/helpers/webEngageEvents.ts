@@ -2,9 +2,8 @@ import {
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { string } from '../strings/string';
 
-type YesOrNo = { value: 'Yes' | 'No' };
+type YesOrNo = 'Yes' | 'No';
 
 export enum WebEngageEventName {
   ONBOARDING_SCREEN_1 = 'Onboarding Screen 1',
@@ -174,8 +173,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.ONBOARDING_SKIP_CLICKED]: {};
   [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
-  [WebEngageEventName.OTP_ENTERED]: YesOrNo;
-  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [WebEngageEventName.OTP_ENTERED]: { value: YesOrNo };
+  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: { value: YesOrNo };
   [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
     'Mobile Number': string;
   };
@@ -255,7 +254,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_STORE_PICKUP_VIEWED]: {
     Pincode: string;
-    'Store display success': 'Yes' | 'No';
+    'Store display success': YesOrNo;
   };
   [WebEngageEventName.PHARMACY_STORE_SELECTED_SUCCESS]: {
     Pincode: string;
@@ -660,20 +659,20 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED]: {
     Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
-    Success?: 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
-    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
     'TAT Displayed'?: string;
-    'Delivery Successful': 'Yes' | 'No'; // Yes / No (If Error message shown because it is unservicable)
+    'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
   };

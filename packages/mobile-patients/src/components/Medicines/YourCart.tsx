@@ -58,6 +58,8 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
+  postPharmacyStorePickupViewed,
+  postPharmacyStoreSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   WebEngageEventName,
@@ -201,6 +203,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
+  const selectedStore =
+    (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
+  const selectedAddress =
+    (deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId)) || undefined;
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
@@ -277,32 +283,28 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (deliveryAddressId && addresses) {
-      const selectedAddressIndex = addresses.findIndex(
-        (address) => address.id == deliveryAddressId
-      );
-      addresses &&
-        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
-          .then(({ data: { Availability } }) => {
-            setCheckingServicability(false);
-            if (Availability) {
-              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
-            } else {
-              postPhamracyCartAddressSelectedFailure(
-                addresses[selectedAddressIndex].zipcode!,
-                formatAddress(addresses[selectedAddressIndex]),
-                'No'
-              );
-              setDeliveryAddressId && setDeliveryAddressId('');
-              renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
-            aphConsole.log({ e });
-            setCheckingServicability(false);
-            handleGraphQlError(e);
-          });
+    if (selectedAddress) {
+      pinCodeServiceabilityApi(selectedAddress.zipcode!)
+        .then(({ data: { Availability } }) => {
+          setCheckingServicability(false);
+          if (Availability) {
+            setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+          } else {
+            postPhamracyCartAddressSelectedFailure(
+              selectedAddress.zipcode!,
+              formatAddress(selectedAddress),
+              'No'
+            );
+            setDeliveryAddressId && setDeliveryAddressId('');
+            renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
+          aphConsole.log({ e });
+          setCheckingServicability(false);
+          handleGraphQlError(e);
+        });
     }
   }, []);
 
@@ -361,7 +363,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     if (deliveryAddressId && cartItems.length > 0) {
       setLastCartItemsReplica(cartItemsReplica);
-      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       setdeliveryTime('...');
       setshowDeliverySpinner(true);
       const lookUp = cartItems.map((item) => {
@@ -450,6 +451,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     // update cart item prices if any
     if (storeId && cartItems.length) {
       const onComplete = () => {
+        selectedStore && postPharmacyStoreSelectedSuccess(pinCode, selectedStore);
         setShowDriveWayPopup(true);
       };
       updateCartItemsWithStorePrice(
@@ -977,6 +979,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     stores: Store[],
     storesInventory: GetStoreInventoryResponse[]
   ) => {
+    postPharmacyStorePickupViewed({
+      Pincode: pinCode,
+      'Store display success': activeStores.length ? 'Yes' : 'No',
+    });
     setStorePickUpLoading(false);
     setLoading!(false);
     setStores!(stores);
@@ -1523,7 +1529,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const forwardToCheckout = () => {
-    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
       (addr) => addr == Number(zipcode)
@@ -1584,7 +1589,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
     };
-    const selectedStore = storeId && storesFromContext.find((item) => item.storeid == storeId);
     if (selectedStore) {
       eventAttributes['Store Id'] = selectedStore.storeid;
       eventAttributes['Store Name'] = selectedStore.storename;
@@ -1827,7 +1831,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     };
 
     const addressLatLongCheckAndProceed = () => {
-      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       if (
         g(selectedAddress, 'latitude') &&
         g(selectedAddress, 'longitude') &&
@@ -1928,7 +1931,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       </SafeAreaView>
       {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
-          store={activeStores.find((item) => item.storeid == storeId)!}
+          store={selectedStore}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}
         />
       )}
