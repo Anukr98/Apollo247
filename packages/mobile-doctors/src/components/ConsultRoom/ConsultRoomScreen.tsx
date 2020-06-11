@@ -1110,8 +1110,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             messageCodes.jdThankyou,
           ].includes(messageText)
         ) {
+          callData.setMessageReceived(true);
           addMessages(message);
         } else {
+          callData.setMessageReceived(true);
           addMessages(message);
           setTimeout(() => {
             flatListRef.current && flatListRef.current.scrollToEnd();

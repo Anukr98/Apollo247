@@ -14,7 +14,7 @@ import {
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
@@ -135,6 +135,22 @@ export const AudioVideoProvider: React.FC = (props) => {
       startTimer(0);
     }
   }, [callAccepted]);
+
+  useEffect(() => {
+    if (isAudio || isVideo) {
+      AppState.addEventListener('change', _handleAppStateChange);
+    } else {
+      AppState.removeEventListener('change', _handleAppStateChange);
+    }
+  }, [isAudio, isVideo]);
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'inactive' || nextAppState === 'background') {
+      setVideoEnabled(false);
+    } else if (nextAppState === 'active') {
+      setVideoEnabled(true);
+    }
+  };
 
   const startTimer = (timer: number) => {
     timerId = setInterval(() => {
