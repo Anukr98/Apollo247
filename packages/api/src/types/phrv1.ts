@@ -26,10 +26,9 @@ export interface LabResultsUploadRequest {
     id: string;
     fileName: string;
     mimeType: string;
-    dateCreated: string;
+    dateCreated: number;
     content: string;
   }[];
-  labTestFollowUpDate: number;
 }
 
 export interface LabResultsUploadResponse {
