@@ -43,7 +43,7 @@ const buildMedicinePrescription = (): CaseSheetMedicinePrescription => {
     medicineConsumptionDurationInDays: _random(3, 20),
     medicineDosage: `${timesPerDay} times/day`,
     medicineUnit: randomEnum(MEDICINE_UNIT),
-    medicineInstructions: faker.random.boolean() ? faker.lorem.sentences(_random(1, 5)) : undefined,
+    medicineInstructions: faker.random.boolean ? faker.lorem.sentences(_random(1, 5)) : undefined,
     medicineTimings: _times(timesPerDay, () => randomEnum(MEDICINE_TIMINGS)),
     medicineToBeTaken: _times(timesPerDay, () => randomEnum(MEDICINE_TO_BE_TAKEN)),
     medicineConsumptionDuration: '',
@@ -63,7 +63,7 @@ const buildDiagnosis = (): CaseSheetDiagnosis => {
 
 const buildDiagnosisPrescription = (): CaseSheetDiagnosisPrescription => ({
   itemname: faker.commerce.productName(),
-  freetext: faker.commerce.freeText(),
+  testInstruction: faker.commerce.testInstruction(),
 });
 
 const buildOtherInstruction = (): CaseSheetOtherInstruction => {

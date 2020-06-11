@@ -15908,7 +15908,7 @@
             "deprecationReason": null
           },
           {
-            "name": "freetext",
+            "name": "testInstruction",
             "description": null,
             "args": [],
             "type": {
@@ -35845,7 +35845,7 @@
             "defaultValue": null
           },
           {
-            "name": "freetext",
+            "name": "testInstruction",
             "description": null,
             "type": {
               "kind": "SCALAR",
