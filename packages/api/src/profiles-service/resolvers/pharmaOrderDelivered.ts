@@ -307,14 +307,16 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    // const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
-    // log(
-    //   'profileServiceLogger',
-    //   `oneApollo Transaction response- ${order.orderAutoId}`,
-    //   'createOneApolloTransaction()',
-    //   JSON.stringify(oneApolloResponse),
-    //   ''
-    // );
+    if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
+      const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction response- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(oneApolloResponse),
+        ''
+      );
+    }
     return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
