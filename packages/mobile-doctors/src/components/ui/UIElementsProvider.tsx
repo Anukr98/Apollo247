@@ -40,7 +40,7 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   setShowNeedHelp: (show) => {},
 });
 
-type AphAlertCTAs = {
+export type AphAlertCTAs = {
   text: string;
   onPress: () => void;
   type?: 'orange-button' | 'white-button' | 'orange-link';

@@ -551,10 +551,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading && setLoading(false);
         const message = e.message ? e.message.split(':')[1].trim() : '';
         if (message === 'NO_CASESHEET_EXIST') {
           createCaseSheetSRDAPI();
+        } else {
+          setLoading && setLoading(false);
         }
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });

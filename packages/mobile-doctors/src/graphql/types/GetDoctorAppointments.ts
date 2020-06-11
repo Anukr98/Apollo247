@@ -31,6 +31,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   sentToPatient: boolean | null;
   blobName: string | null;
   doctorId: string | null;
+  isJdConsultStarted: boolean | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {
@@ -66,6 +67,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   displayId: number | null;
   isFollowUp: boolean | null;
   followUpParentId: string | null;
+  isJdQuestionsComplete: boolean | null;
   caseSheet: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null)[] | null;
   patientInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo | null;
 }

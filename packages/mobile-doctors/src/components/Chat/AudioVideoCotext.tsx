@@ -21,12 +21,12 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import CallDetectorManager from 'react-native-call-detection';
 
-export interface OpenTokKeys {
+export type OpenTokKeys = {
   sessionId: string;
   token: string;
-}
+};
 
-interface OpentokStreamObject {
+type OpentokStreamObject = {
   connection: {
     connectionId: string;
     creationTime: string;
@@ -42,31 +42,30 @@ interface OpentokStreamObject {
   streamId: string;
   videoType: 'camera' | 'screen';
   width: number;
-}
-
-interface OpenTokAudioStream {
+};
+type OpenTokAudioStream = {
   audioStats: {
     audioBytesReceived: number;
     audioPacketsLost: number;
     audioPacketsReceived: number;
   };
   stream: OpentokStreamObject;
-}
-
-interface OpenTokVideoStream {
+};
+type OpenTokVideoStream = {
   videoStats: {
     videoBytesReceived: number;
     videoPacketsLost: number;
     videoPacketsReceived: number;
   };
   stream: OpentokStreamObject;
-}
-export interface CallBackOptions {
+};
+
+export type CallBackOptions = {
   onCallEnd: (callType: string, callDuration: string) => void;
   onCallMinimize: (callType: string) => void;
-}
+};
 
-export interface CallOptions {
+export type CallOptions = {
   isAudio: boolean;
   setIsAudio: (value: boolean) => void;
   isVideo: boolean;
@@ -78,9 +77,9 @@ export interface CallOptions {
   stopCalls: (withCallBack: boolean) => void;
   startMissedCallTimer: (timer: number, callback?: (counter: number) => void) => void;
   stopMissedCallTimer: () => void;
-}
+};
 
-export interface CallData {
+export type CallData = {
   messageReceived: boolean;
   setMessageReceived: (value: boolean) => void;
   callDuration: string;
@@ -91,7 +90,7 @@ export interface CallData {
   setPatientImage: (value: string) => void;
   doctorImage: string;
   setDoctorImage: (value: string) => void;
-}
+};
 
 export interface AudioVideoContextPorps {
   callOptions: CallOptions;
