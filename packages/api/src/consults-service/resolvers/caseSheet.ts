@@ -120,6 +120,7 @@ export const caseSheetTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION

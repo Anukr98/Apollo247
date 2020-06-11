@@ -49,6 +49,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
