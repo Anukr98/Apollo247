@@ -176,6 +176,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Order Ready at Store';
+      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
@@ -387,19 +390,34 @@ export const getNetStatus = async () => {
 };
 
 export const nextAvailability = (nextSlot: string) => {
-  const today: Date = new Date();
-  const date2: Date = new Date(nextSlot);
-  const secs = (date2 as any) - (today as any);
-  const mins = Math.ceil(secs / (60 * 1000));
-  let hours: number = 0;
-  if (mins > 0 && mins < 60) {
-    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
-  } else if (mins >= 60 && mins < 1380) {
-    hours = Math.ceil(mins / 60);
-    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
-  } else if (mins >= 1380) {
-    const days = Math.ceil(mins / (24 * 60));
-    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  return `available in ${mhdMY(nextSlot, 'min')}`;
+};
+
+export const mhdMY = (
+  time: string,
+  mText: string = 'minute',
+  hText: string = 'hour',
+  dText: string = 'day',
+  MText: string = 'month',
+  YText: string = 'year'
+) => {
+  const current = moment(new Date());
+  const difference = moment.duration(moment(time).diff(current));
+  const min = Math.ceil(difference.asMinutes());
+  const hours = Math.ceil(difference.asHours());
+  const days = Math.ceil(difference.asDays());
+  const months = Math.ceil(difference.asMonths());
+  const year = Math.ceil(difference.asYears());
+  if (min > 0 && min < 24) {
+    return `${min} ${mText}${min !== 1 ? 's' : ''}`;
+  } else if (hours > 0 && hours < 24) {
+    return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
+  } else if (days > 0 && days < 30) {
+    return `${days} ${dText}${days !== 1 ? 's' : ''}`;
+  } else if (months > 0 && months < 12) {
+    return `${months} ${MText}${months !== 1 ? 's' : ''}`;
+  } else if (year > 0 && year < 30) {
+    return `${year} ${YText}${year !== 1 ? 's' : ''}`;
   }
 };
 
@@ -810,10 +828,10 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
     console.log('\n********* WebEngageEvent End *********\n');
-    if (getBuildEnvironment() !== 'DEV') {
-      // Don't post events in DEV environment
-      webengage.track(eventName, attributes);
-    }
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    webengage.track(eventName, attributes);
+    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -836,6 +854,7 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
+    revenue: price,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -858,7 +877,13 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  webengage.user.setAttribute('we_whatsapp_opt_in', whatsAppAllow); //WhatsApp
+  console.log(whatsAppAllow, 'whatsAppAllow');
+  webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
+export const postWEGReferralCodeEvent = (ReferralCode: string) => {
+  console.log(ReferralCode, 'Referral Code');
+  webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
 export const permissionHandler = (
@@ -1018,6 +1043,20 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
   }
 };
 
+export const SetAppsFlyerCustID = (patientId: string) => {
+  try {
+    console.log('\n********* SetAppsFlyerCustID Start *********\n');
+    console.log(`SetAppsFlyerCustID ${patientId}`);
+    console.log('\n********* SetAppsFlyerCustID End *********\n');
+
+    appsFlyer.setCustomerUserId(patientId, (res) => {
+      console.log('AppsFlyerEventSuccess', res);
+    });
+  } catch (error) {
+    console.log('********* Unable to post AppsFlyerEvent *********', { error });
+  }
+};
+
 export const postAppsFlyerAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
   source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
@@ -1033,6 +1072,7 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    revenue: price,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1057,14 +1097,14 @@ export const postFirebaseAddToCartEvent = (
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
-      'product name': name,
-      'product id': sku,
+      productname: name,
+      productid: sku,
       Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id || '',
+      BrandID: '',
+      categoryname: '',
+      categoryID: category_id || '',
       Price: price,
-      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      DiscountedPrice: typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
     };
@@ -1132,19 +1172,6 @@ export const getFormattedLocation = (
   } as LocationData;
 };
 
-export const getFormattedLocationFromPincode = async (pincode: string) => {
-  const placesResponse = await autoCompletePlaceSearch(pincode, true);
-  const placeId = g(placesResponse, 'data', 'predictions', '0' as any, 'place_id');
-  if (placeId) {
-    const placeIdResponse = await getPlaceInfoByPlaceId(placeId);
-    const addrComponents = g(placeIdResponse, 'data', 'result', 'address_components')!;
-    const latLng = g(placeIdResponse, 'data', 'result', 'geometry', 'location')!;
-    return getFormattedLocation(addrComponents, latLng);
-  } else {
-    throw 'No results found.';
-  }
-};
-
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   return (
     moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
@@ -1189,15 +1216,18 @@ export const addPharmaItemToCart = (
   })
     .then((res) => {
       const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate && isDeliveryDateWithInXDays(deliveryDate)) {
-        addCartItem!(cartItem);
+      if (deliveryDate) {
+        if (isDeliveryDateWithInXDays(deliveryDate)) {
+          addCartItem!(cartItem);
+        } else {
+          navigate();
+        }
       } else {
-        navigate();
+        addCartItem!(cartItem);
       }
     })
-    .catch((err) => {
-      CommonBugFender('helperFunctions_fetchDeliveryTime', err);
-      navigate();
+    .catch(() => {
+      addCartItem!(cartItem);
     })
     .finally(() => {
       setLoading && setLoading(false);

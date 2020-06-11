@@ -581,9 +581,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               })
                               .finally(() => {
                                 setGlobalLoading!(false);
-                                props.navigation.navigate(AppRoutes.MedAndTestCart, {
-                                  isComingFromConsult: true,
-                                });
+                                props.navigation.navigate(AppRoutes.MedAndTestCart);
                               });
                           } else {
                             Alert.alert('No Medicines');

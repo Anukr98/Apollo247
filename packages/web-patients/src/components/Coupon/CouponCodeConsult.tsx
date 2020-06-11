@@ -178,7 +178,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getConsultCouponList_getConsultCouponList_coupons | null)[]
-  >([]);
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
@@ -200,7 +200,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (availableCoupons.length === 0) {
+    if (!availableCoupons) {
       setIsLoading(true);
       getCouponMutation()
         .then(({ data }) => {
@@ -311,9 +311,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}
+
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
-                  {availableCoupons.length > 0 ? (
+                  {availableCoupons && availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
                         couponDetails &&

@@ -214,6 +214,20 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       {isSignedIn ? (
         <>
           <Link
+            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.doctorsLanding()}
+            title={'Doctors'}
+          >
+            Doctors
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.covidLanding()}
+            title={'Covid 19'}
+          >
+            Covid 19
+          </Link>
+          <Link
             className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
             to={clientRoutes.appointments()}
             title={'Appointments'}
@@ -294,7 +308,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ||
+      {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
@@ -304,7 +318,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
         </div>
       ) : (
         ''
-      )}
+      )} */}
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}

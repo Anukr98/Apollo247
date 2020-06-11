@@ -20,6 +20,8 @@ export const GET_CURRENT_PATIENTS = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         familyHistory {
           description
           relation
@@ -134,6 +136,14 @@ export const ADD_NEW_PROFILE = gql`
 //     }
 //   }
 // `;
+
+export const PAST_APPOINTMENTS_COUNT = gql`
+  query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
+    getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
+      count
+    }
+  }
+`;
 
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
@@ -622,6 +632,8 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         displayName
         fullName
         experience
+        onlineConsultationFees
+        physicalConsultationFees
         specialty {
           id
           name
@@ -661,8 +673,8 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
     }
@@ -715,10 +727,15 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           salutation
           firstName
           lastName
+          fullName
+          displayName
           experience
           city
           photoUrl
           qualification
+          thumbnailUrl
+          physicalConsultationFees
+          onlineConsultationFees
           specialty {
             id
             name
@@ -812,6 +829,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         physicalSlot
         referenceSlot
       }
+      sort
     }
   }
 `;
@@ -1426,6 +1444,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         prescriptionImageUrl
         orderTat
         orderType
+        shopAddress
+        packagingCharges
+        deliveryType
         currentStatus
         patientAddressId
         medicineOrdersStatus {
@@ -2106,9 +2127,10 @@ export const ADD_TO_CONSULT_QUEUE = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;
@@ -2307,9 +2329,10 @@ export const AUTOMATED_QUESTIONS = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;
@@ -2366,6 +2389,8 @@ export const GET_PATIENTS_MOBILE = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         familyHistory {
           description
           relation
@@ -2527,5 +2552,45 @@ export const LINK_UHID = gql`
 export const UNLINK_UHID = gql`
   mutation unlinkUhids($primaryUhid: String!, $unlinkUhids: [String]) {
     unlinkUhids(primaryUhid: $primaryUhid, unlinkUhids: $unlinkUhids)
+  }
+`;
+
+export const GET_ONEAPOLLO_USER = gql`
+  query getOneApolloUser($patientId: String!) {
+    getOneApolloUser(patientId: $patientId) {
+      name
+      earnedHC
+      availableHC
+      tier
+    }
+  }
+`;
+
+export const GET_ONEAPOLLO_USERTXNS = gql`
+  query getOneApolloUserTransactions {
+    getOneApolloUserTransactions {
+      earnedHC
+      transactionDate
+      grossAmount
+      netAmount
+      transactionDate
+      businessUnit
+      redeemedHC
+    }
+  }
+`;
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation updateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
+    }
   }
 `;
