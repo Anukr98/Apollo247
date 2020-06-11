@@ -44,7 +44,7 @@ export interface AppointmentsListProps extends NavigationScreenProps {
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   const client = useApolloClient();
   const isNewPatient = (id: string) => {
-    return props.newPatientsList.indexOf(id) > -1;
+    return false; //props.newPatientsList.indexOf(id) > -1;
   };
   const { doctorDetails } = useAuth();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
