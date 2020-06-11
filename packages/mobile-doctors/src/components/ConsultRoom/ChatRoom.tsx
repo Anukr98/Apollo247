@@ -198,20 +198,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
-      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
-        moment(timeStamp.messageDate).format('YYYY-MM-DD')
-      );
-      if (dateValidate == 0) {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('h:mm A');
-      } else {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('DD MMM, YYYY h:mm A');
-      }
+      utcString = moment(timeStamp.messageDate).calendar('', {
+        sameDay: 'hh:mm A',
+        nextDay: '[Tomorrow], hh:mm A',
+        nextWeek: 'DD MMM YYYY, hh:mm A',
+        lastDay: '[Yesterday], hh:mm A',
+        lastWeek: 'DD MMM YYYY, hh:mm A',
+        sameElse: 'DD MMM YYYY,  hh:mm A',
+      });
     }
     return utcString ? utcString : '--';
   };

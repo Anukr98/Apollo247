@@ -72,7 +72,7 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
     setIsAudio: () => {},
     isVideo: false,
     setIsVideo: () => {},
-    isMinimized: false,
+    isMinimized: true,
     setIsMinimized: () => {},
     callAccepted: false,
     setCallAccepted: () => {},
@@ -111,7 +111,7 @@ let connectionCount = 0;
 export const AudioVideoProvider: React.FC = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
   const [isVideo, setIsVideo] = useState<boolean>(false);
-  const [isMinimized, setIsMinimized] = useState<boolean>(false);
+  const [isMinimized, setIsMinimized] = useState<boolean>(true);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
   const [messageReceived, setMessageReceived] = useState<boolean>(false);
   const [openTokConfig, setOpenTokKeys] = useState<OpenTokKeys>({ sessionId: '', token: '' });
@@ -230,13 +230,13 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const callEnd = (withCallBack: boolean) => {
-    withCallBack && callBacks.onCallEnd(callType, callDuration);
     stopTimer();
     setIsVideo(false);
     setIsAudio(false);
     setMessageReceived(false);
-    setIsMinimized(false);
+    setIsMinimized(true);
     setCallAccepted(false);
+    withCallBack && callBacks.onCallEnd(callType, callDuration);
   };
 
   const renderButtons = () => {
@@ -366,7 +366,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       connectionCount--;
       setIsVideo(false);
       setIsAudio(false);
-      setIsMinimized(false);
+      setIsMinimized(true);
       stopTimer();
       setCallAccepted(false);
       setMessageReceived(false);
@@ -410,12 +410,15 @@ export const AudioVideoProvider: React.FC = (props) => {
             }}
           >
             <OTPublisher
-              style={isMinimized ? styles.publisherMinimizedStyle : styles.publisherStyle}
+              style={
+                isMinimized || !isVideo ? styles.publisherMinimizedStyle : styles.publisherStyle
+              }
               properties={{
                 cameraPosition: cameraPosition,
                 publishVideo: isVideo && videoEnabled,
                 publishAudio: audioEnabled,
                 videoTrack: isVideo && videoEnabled,
+                audioTrack: audioEnabled,
                 audioVolume: 100,
               }}
               eventHandlers={publisherEventHandlers}

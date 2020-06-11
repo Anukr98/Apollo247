@@ -1,11 +1,9 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
-import { AudioCall } from '@aph/mobile-doctors/src/components/ConsultRoom/AudioCall';
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
 import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
-import { VideoCall } from '@aph/mobile-doctors/src/components/ConsultRoom/VideoCall';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
@@ -793,7 +791,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     stopNoShow();
     joinTimerNoShow = setInterval(() => {
       timer = timer - 1;
-      console.log('uptimer startNoShow', timer);
       if (timer === 0) {
         stopNoShow();
         callback && callback();
@@ -810,7 +807,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     stopAutoSaveTimer();
     autoSaveTimerId = setInterval(() => {
       timer = timer - 1;
-      console.log('auto timer started', timer);
       if (timer === 0) {
         stopAutoSaveTimer();
         callback && callback();
@@ -1301,7 +1297,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
     callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
     callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
-
+    callOptions.setIsMinimized(false);
     setCallBacks({
       onCallEnd: (consultType, callDuration) => {
         callOptions.stopMissedCallTimer();
@@ -1315,6 +1311,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   ? strings.consult_room.video_call_ended
                   : strings.consult_room.audio_call_ended,
               duration: callDuration,
+              messageDate: new Date(),
               id: doctorId,
             },
             channel: channel,
@@ -1334,6 +1331,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         message: {
           isTyping: true,
           message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: true,
@@ -1644,6 +1642,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             message: {
               isTyping: true,
               message: messageCodes.startConsultMsg,
+              messageDate: new Date(),
             },
             channel: channel,
             storeInHistory: true,
@@ -1684,6 +1683,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         message: {
           isTyping: true,
           message: messageCodes.stopConsultMsg,
+          messageDate: new Date(),
         },
         channel: channel,
         storeInHistory: true,
@@ -2184,6 +2184,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     id: doctorId,
                     message: messageCodes.rescheduleconsult,
                     transferInfo: reschduleObject,
+                    messageDate: new Date(),
                   },
                   channel: AppId,
                   storeInHistory: true,
