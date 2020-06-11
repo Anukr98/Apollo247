@@ -71,4 +71,6 @@ target 'ApolloDoctor' do
 
   pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
 
+  pod 'RCTCallDetection', :path => '../node_modules/react-native-call-detection'
+
 end

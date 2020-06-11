@@ -19,12 +19,48 @@ import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import CallDetectorManager from 'react-native-call-detection';
 
 export interface OpenTokKeys {
   sessionId: string;
   token: string;
 }
 
+interface OpentokStreamObject {
+  connection: {
+    connectionId: string;
+    creationTime: string;
+    data: string;
+  };
+  connectionId: string;
+  creationTime: string;
+  hasAudio: boolean;
+  hasVideo: boolean;
+  height: number;
+  name: string;
+  sessionId: string;
+  streamId: string;
+  videoType: 'camera' | 'screen';
+  width: number;
+}
+
+interface OpenTokAudioStream {
+  audioStats: {
+    audioBytesReceived: number;
+    audioPacketsLost: number;
+    audioPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+}
+
+interface OpenTokVideoStream {
+  videoStats: {
+    videoBytesReceived: number;
+    videoPacketsLost: number;
+    videoPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+}
 export interface CallBackOptions {
   onCallEnd: (callType: string, callDuration: string) => void;
   onCallMinimize: (callType: string) => void;
@@ -107,6 +143,7 @@ let timerId: NodeJS.Timeout;
 let missedCallTimer: NodeJS.Timeout;
 const styles = AudioVideoStyles;
 let connectionCount = 0;
+let callDetector: any = null;
 
 export const AudioVideoProvider: React.FC = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
@@ -124,12 +161,15 @@ export const AudioVideoProvider: React.FC = (props) => {
     onCallMinimize: () => {},
   });
   const [missedCallCount, setmMissedCallCount] = useState<number>(0);
+
+  const [callerAudio, setCallerAudio] = useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [videoEnabled, setVideoEnabled] = useState<boolean>(true);
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
-
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
+
   useEffect(() => {
     if (callAccepted) {
       startTimer(0);
@@ -139,8 +179,32 @@ export const AudioVideoProvider: React.FC = (props) => {
   useEffect(() => {
     if (isAudio || isVideo) {
       AppState.addEventListener('change', _handleAppStateChange);
+      callDetector = new CallDetectorManager(
+        (
+          event: 'Connected' | 'Disconnected' | 'Dialing' | 'Incoming' | 'Offhook' | 'Missed',
+          phoneNumber: string
+        ) => {
+          console.log('hi', event);
+
+          if (['Connected', 'Incoming', 'Dialing', 'Offhook'].includes(event)) {
+            setAudioEnabled(false);
+            setVideoEnabled(false);
+          } else if (['Disconnected', 'Missed'].includes(event)) {
+            setAudioEnabled(true);
+            setVideoEnabled(true);
+          }
+        },
+        false,
+        () => {},
+        {
+          title: 'Phone State Permission',
+          message:
+            'This app needs access to your phone state in order to react and/or to adapt to incoming calls.',
+        }
+      );
     } else {
       AppState.removeEventListener('change', _handleAppStateChange);
+      callDetector && callDetector.dispose();
     }
   }, [isAudio, isVideo]);
 
@@ -342,6 +406,10 @@ export const AudioVideoProvider: React.FC = (props) => {
         >
           {callAccepted ? callDuration : strings.consult_room.calling}
         </Text>
+        {!callerVideo && isVideo ? (
+          <Text style={styles.alertText}>Patients Video is Paused</Text>
+        ) : null}
+        {!callerAudio ? <Text style={styles.alertText}>Patients Audio is Paused</Text> : null}
       </View>
     );
   };
@@ -365,6 +433,12 @@ export const AudioVideoProvider: React.FC = (props) => {
     },
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
+    },
+    audioNetworkStats: (event: OpenTokAudioStream) => {
+      setCallerAudio(event.stream.hasAudio);
+    },
+    videoNetworkStats: (event: OpenTokVideoStream) => {
+      setCallerVideo(event.stream.hasVideo);
     },
   };
 

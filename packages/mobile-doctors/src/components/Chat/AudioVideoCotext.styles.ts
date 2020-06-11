@@ -202,4 +202,11 @@ export const AudioVideoStyles = StyleSheet.create({
     height: 1,
     zIndex: 1000,
   },
+  alertText: {
+    color: theme.colors.NOTIFICATION_DOT,
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    zIndex: 102,
+    elevation: 5,
+    textAlign: 'center',
+  },
 });
