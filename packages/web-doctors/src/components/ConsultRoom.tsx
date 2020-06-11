@@ -169,6 +169,10 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 0,
           paddingTop: 8,
           minWidth: 'auto',
+          '&:hover': {
+            boxShadow: 'none',
+            backgroundColor: 'transparent',
+          },
         },
       },
     },
@@ -225,11 +229,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addImgBtn: {
       background: 'transparent',
-      minWidth: 35,
-      maxWidth: 35,
       boxShadow: 'none',
+      padding: 0,
+      paddingRight: 10,
+      fontSize: 16,
+      fontWeight: 500,
+      textTransform: 'none',
       '&:hover': {
         background: 'transparent',
+        boxShadow: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     sendBtn: {
@@ -933,8 +944,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   component="label"
                   disabled={fileUploading}
                 >
-                  <span>Attach</span>
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
                   <input
                     type="file"
                     style={{ display: 'none' }}
@@ -995,6 +1004,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       }
                     }}
                   />
+                  <span>Attach</span>
+                  <span><img src={require('images/round-attach.svg')} alt="" /></span>
                 </Button>
                 <AphTextField
                   autoFocus
