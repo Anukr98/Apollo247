@@ -283,6 +283,7 @@
     "total_billed_value": "Total Billed Value",
     "cod_amount_to_pay": "COD amount to Pay",
     "refund_amount": "Refund amount",
+    "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
   },
   "health_records_home": {

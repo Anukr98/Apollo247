@@ -206,7 +206,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
-          isMedicine: medicineDetails.type_id == 'Pharma',
+          isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
           isInStock: true,
         } as ShoppingCartItem);
         if (medicineDetails.is_prescription_required == '1') {

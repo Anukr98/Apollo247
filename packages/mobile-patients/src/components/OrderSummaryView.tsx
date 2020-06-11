@@ -230,8 +230,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const prescriptionUpload =
     g(orderDetails, 'orderType') == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
 
+  const newOrders =
+    orderDetails.medicineOrderShipments && billingDetails && billingDetails.discountValue;
   // console.log('prescriptionUpload', prescriptionUpload, billingDiscount);
-
+  // console.log('newOrders', newOrders);
   const getOrderDifferenceAmounts = (
     paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
     orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -403,7 +405,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <Text style={styles.totalPriceStyle}>
               {' '}
               Rs.{' '}
-              {orderBilledAndPacked && billingDetails
+              {orderBilledAndPacked && newOrders && billingDetails
                 ? (billingDetails.invoiceValue || 0).toFixed(2)
                 : (orderDetails.estimatedAmount || 0).toFixed(2)}
             </Text>
@@ -534,7 +536,11 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <Text style={styles.medicineText}>{'MRP VALUE'}</Text>
             </View>
           </View>
-          {orderBilledAndPacked && billingDetails && billingDetails.discountValue && itemDetails
+          {orderBilledAndPacked &&
+          newOrders &&
+          billingDetails &&
+          billingDetails.discountValue &&
+          itemDetails
             ? itemDetails.map((item) => renderOrderBilledMedicineRow(item!))
             : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
         </View>
@@ -554,12 +560,12 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.paymentLeftText}>{string.OrderSummery.mrp_total}</Text>
               <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                {orderBilledAndPacked && itemDetails
+                {orderBilledAndPacked && newOrders && itemDetails
                   ? billedMrpTotal.toFixed(2)
                   : mrpTotal.toFixed(2)}
               </Text>
             </View>
-            {!orderBilledAndPacked && product_discount > 0 && (
+            {!newOrders && product_discount > 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
@@ -567,14 +573,19 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             )}
-            {orderBilledAndPacked && billingDetails && billingDetails.discountValue > 0 && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {billingDetails.discountValue.toFixed(2)}
-                </Text>
-              </View>
-            )}
+            {orderBilledAndPacked &&
+              newOrders &&
+              billingDetails &&
+              billingDetails.discountValue > 0 && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.paymentLeftText}>
+                    {string.OrderSummaryText.discount_total}
+                  </Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    - Rs. {billingDetails.discountValue.toFixed(2)}
+                  </Text>
+                </View>
+              )}
             {coupon_discount > 0 && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
@@ -583,7 +594,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             )}
-            {!orderBilledAndPacked && (
+            {!newOrders && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
@@ -591,7 +602,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 </Text>
               </View>
             )}
-            {orderBilledAndPacked && billingDetails && (
+            {orderBilledAndPacked && newOrders && billingDetails && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
@@ -610,7 +621,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
               <Text style={[styles.boldTotal, { textAlign: 'right' }]}>
                 Rs.{' '}
-                {orderBilledAndPacked && billingDetails
+                {orderBilledAndPacked && newOrders && billingDetails
                   ? (billingDetails.invoiceValue || 0).toFixed(2)
                   : (orderDetails.estimatedAmount || 0).toFixed(2)}
               </Text>
@@ -622,6 +633,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               </Text>
             </View>
             {orderBilledAndPacked &&
+              newOrders &&
               !prescriptionUpload &&
               !noAdditionalDiscount &&
               billingDetails && (
@@ -701,7 +713,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               )}
           </View>
         </View>
-        {additionalDisount && !prescriptionUpload && (
+        {additionalDisount && newOrders && !prescriptionUpload && (
           <View
             style={[
               styles.paymentCard,
