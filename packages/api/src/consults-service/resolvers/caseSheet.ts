@@ -120,9 +120,11 @@ export const caseSheetTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
+    INTERNATIONAL_UNIT
     LOTION
     ML
     MG
@@ -140,6 +142,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    TEASPOON
     UNIT
   }
 
@@ -305,6 +308,7 @@ export const caseSheetTypeDefs = gql`
     DAYS
     MONTHS
     WEEKS
+    TILL_NEXT_REVIEW
   }
 
   enum MEDICINE_FREQUENCY {
@@ -341,6 +345,10 @@ export const caseSheetTypeDefs = gql`
     EYE_DROPS
     EAR_DROPS
     INTRAVAGINAL
+    NASALLY
+    INTRANASAL_SPRAY
+    INTRA_ARTICULAR
+    TRIGGER_POINT_INJECTION
   }
 
   type MedicinePrescription {

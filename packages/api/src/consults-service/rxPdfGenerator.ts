@@ -922,14 +922,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      /*if (doctorInfo.qualifications) {
+      if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      } */
+      }
 
       doc
         .fontSize(9)
