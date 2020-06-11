@@ -1194,7 +1194,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
   //validate is active Doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  // if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -1251,30 +1251,34 @@ const updatePatientPrescriptionSentStatus: Resolver<
       prescriptionGeneratedDate: new Date(),
     };
   }
-  //medicalHistory upsert starts
-  const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
-    patient: patientData,
-  };
+  if (args.vitals) {
+    //medicalHistory upsert starts
+    const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
+      patient: patientData,
+    };
 
-  if (!(args.vitals.bp === undefined))
-    medicalHistoryInputs.bp = args.vitals.bp.length > 0 ? args.vitals.bp : undefined;
+    if (!(args.vitals.bp === undefined))
+      medicalHistoryInputs.bp = args.vitals.bp.length > 0 ? args.vitals.bp : undefined;
 
-  if (!(args.vitals.weight === undefined))
-    medicalHistoryInputs.weight = args.vitals.weight.length > 0 ? args.vitals.weight : undefined;
+    if (!(args.vitals.weight === undefined))
+      medicalHistoryInputs.weight = args.vitals.weight.length > 0 ? args.vitals.weight : undefined;
 
-  if (!(args.vitals.temperature === undefined))
-    medicalHistoryInputs.temperature =
-      args.vitals.temperature.length > 0 ? args.vitals.temperature : undefined;
+    if (!(args.vitals.temperature === undefined))
+      medicalHistoryInputs.temperature =
+        args.vitals.temperature.length > 0 ? args.vitals.temperature : undefined;
 
-  if (!(args.vitals.height === undefined)) medicalHistoryInputs.height = args.vitals.height;
-  const medicalHistoryRepo = await patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(patientData.id);
-  if (medicalHistoryRecord == null) {
-    //create
-    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
-  } else {
-    //update
-    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+    if (!(args.vitals.height === undefined)) medicalHistoryInputs.height = args.vitals.height;
+    const medicalHistoryRepo = await patientsDb.getCustomRepository(
+      PatientMedicalHistoryRepository
+    );
+    const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(patientData.id);
+    if (medicalHistoryRecord == null) {
+      //create
+      medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    } else {
+      //update
+      medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+    }
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
