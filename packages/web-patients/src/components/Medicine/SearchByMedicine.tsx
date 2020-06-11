@@ -179,6 +179,18 @@ const useStyles = makeStyles((theme: Theme) => {
     ePrescriptionTitle: {
       zIndex: 9999,
     },
+    noData: {
+      marginTop: 10,
+      fontSize: 14,
+      color: '#01475b',
+      lineHeight: '18px',
+      paddingBottom: 16,
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 25,
+        paddingLeft: 10,
+      },
+    },
     specialOffer: {
       cursor: 'pointer',
       paddingLeft: 20,
@@ -223,6 +235,7 @@ export const SearchByMedicine: React.FC = (props) => {
 
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [heading, setHeading] = React.useState<string>('');
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -256,11 +269,13 @@ export const SearchByMedicine: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineList(data.products);
         setMedicineListFiltered(data.products);
+        setHeading(data.search_heading || '');
         setIsLoading(false);
       })
       .catch((e) => {
         console.log(e);
         setIsLoading(false);
+        setHeading('');
       });
   };
 
@@ -284,11 +299,13 @@ export const SearchByMedicine: React.FC = (props) => {
         .then(({ data }) => {
           if (data && data.products) {
             setMedicineList(data.products);
+            setHeading('');
             setIsLoading(false);
           }
         })
         .catch((e) => {
           setIsLoading(false);
+          setHeading('');
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
@@ -494,7 +511,10 @@ export const SearchByMedicine: React.FC = (props) => {
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
                     {() => (
-                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      <>
+                        <div className={classes.noData}>{heading}</div>
+                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      </>
                     )}
                   </MedicinesCartContext.Consumer>
                 </div>

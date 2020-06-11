@@ -5,6 +5,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -208,7 +209,9 @@ const saveOrderShipments: Resolver<
   );
 
   sendMedicineOrderStatusNotification(
-    NotificationType.MEDICINE_ORDER_CONFIRMED,
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? NotificationType.MEDICINE_ORDER_READY_AT_STORE
+      : NotificationType.MEDICINE_ORDER_CONFIRMED,
     orderDetails,
     profilesDb
   );
