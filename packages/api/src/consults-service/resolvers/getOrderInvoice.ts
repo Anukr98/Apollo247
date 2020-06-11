@@ -206,7 +206,9 @@ const getOrderInvoice: Resolver<
     doc
       .fontSize(16)
       .fillColor('#01475b')
-      .text(`Invoice Number: APOLLO-CON-A${appointmentData[0].displayId} `, margin, doc.y, { align: 'center' })
+      .text(`Invoice Number: APOLLO-CON-A${appointmentData[0].displayId} `, margin, doc.y, {
+        align: 'center',
+      })
       .moveDown(1.5);
 
     doc
