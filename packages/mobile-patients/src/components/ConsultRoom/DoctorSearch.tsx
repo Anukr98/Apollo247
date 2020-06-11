@@ -84,6 +84,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Modal,
 } from 'react-native';
 import {
   NavigationActions,
@@ -170,12 +171,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     flex: 1,
   },
+  mainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   subViewPopup: {
-    marginTop: 150,
     backgroundColor: 'white',
-    width: '100%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    width: '88%',
+    alignSelf: 'center',
+    borderRadius: 10,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.5,
@@ -189,12 +195,22 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  popDescriptionStyle: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginVertical: 18,
+    // justifyContent: 'space-between',
+    // alignItems: 'flex-end',
+    // marginVertical: 18,
+    // flex: 1,
+    flexWrap: 'wrap',
+    paddingTop: 10,
   },
   ctaWhiteButtonViewStyle: {
     flex: 1,
@@ -276,7 +292,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
+  const {
+    currentPatient,
+    allCurrentPatients,
+    setCurrentPatientId,
+    profileAllPatients,
+  } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const {
     setGeneralPhysicians,
@@ -391,16 +412,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_SEARCH] = {
-      'SearchText': searchInput,
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      SearchText: searchInput,
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
     };
     postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributesFirebase);
   };
@@ -853,17 +872,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
-      'SpecialityName': speciality,
-      'SpecialityID': specialityId,
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
+      SpecialityName: speciality,
+      SpecialityID: specialityId,
     };
     postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributesFirebase);
   };
@@ -888,14 +905,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
-      'DoctorName': doctorDetails.fullName!,
+      DoctorName: doctorDetails.fullName!,
       Source: source,
-      'DoctorID': doctorDetails.id,
-      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
-      'DoctorCategory': doctorDetails.doctorType,
-      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
-      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
-      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+      DoctorID: doctorDetails.id,
+      SpecialityID: g(doctorDetails, 'specialty', 'id')!,
+      DoctorCategory: doctorDetails.doctorType,
+      OnlinePrice: Number(doctorDetails.onlineConsultationFees),
+      PhysicalPrice: Number(doctorDetails.physicalConsultationFees),
+      DoctorSpeciality: g(doctorDetails, 'specialty', 'name')!,
     };
 
     if (type == 'consult-now') {
@@ -1248,6 +1265,41 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       type: 'white-button',
     },
     {
+      text: 'N',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'O',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'P',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'Q',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'R',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'S',
+      index: 0,
+      type: 'white-button',
+    },
+    {
+      text: 'P',
+      index: 0,
+      type: 'white-button',
+    },
+    {
       text: 'SOMEONE ELSE',
       index: 1,
       type: 'orange-button',
@@ -1306,7 +1358,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
-        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : -10 }}
+        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
         childView={
           <View
             style={{
@@ -1323,7 +1375,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName) || ''}
+                  {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
+                    ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <LinkedUhidIcon
@@ -1352,18 +1405,34 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderProfileListView = () => {
     return (
-      <View style={styles.showPopUp}>
-        <TouchableOpacity activeOpacity={1} style={styles.container} onPress={() => {}}>
-          <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showProfilePopUp}
+        onRequestClose={() => {
+          setShowProfilePopUp(false);
+        }}
+        onDismiss={() => {
+          setShowProfilePopUp(false);
+        }}
+      >
+        <TouchableOpacity
+          style={styles.mainView}
+          onPress={() => {
+            //TODO:comment this if any issues with modal closing
+            setShowProfilePopUp(false);
+          }}
+        >
+          <View style={styles.subViewPopup}>
             {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>
-              Who is the patient today? If not you, select from the list above.
+            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
+            <Text style={styles.popDescriptionStyle}>
+              Prescription to be generated in the name of?
             </Text>
             {renderCTAs()}
-            <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
-          </TouchableOpacity>
+          </View>
         </TouchableOpacity>
-      </View>
+      </Modal>
     );
   };
 
