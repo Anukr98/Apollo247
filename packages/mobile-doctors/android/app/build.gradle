@@ -191,6 +191,7 @@ android {
 }
 
 dependencies {
+    implementation project(':opentok-react-native')
     implementation project(':react-native-call-detection')
     implementation project(':react-native-keep-awake')
     implementation project(':react-native-sms-retriever')
@@ -209,7 +210,6 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
     implementation project(':react-native-document-picker')
-    implementation project(':opentok-react-native')
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-vector-icons')
     implementation project(':react-native-gesture-handler')
