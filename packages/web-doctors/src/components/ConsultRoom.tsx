@@ -933,6 +933,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   component="label"
                   disabled={fileUploading}
                 >
+                  <span>Attach</span>
                   <img src={require('images/ic_add_circle.svg')} alt="" />
                   <input
                     type="file"
