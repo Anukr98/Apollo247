@@ -126,10 +126,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           CommonBugFender('SplashScreen_Linking_URL', e);
         });
 
-      Linking.addEventListener('url', (event) => {
-        console.log('event', event);
-        handleOpenURL(event.url);
-      });
+      // Linking.addEventListener('url', (event) => {
+      //   console.log('event', event);
+      //   handleOpenURL(event.url);
+      // });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
