@@ -294,10 +294,12 @@ export const caseSheetTypeDefs = gql`
 
   type DiagnosticPrescription {
     itemname: String
+    freetext: String
   }
 
   input DiagnosticPrescriptionInput {
     itemname: String
+    freetext: String
   }
 
   enum MEDICINE_FORM_TYPES {
