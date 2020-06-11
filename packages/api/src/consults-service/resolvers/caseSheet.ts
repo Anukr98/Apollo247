@@ -1194,7 +1194,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
   //validate is active Doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  // if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
