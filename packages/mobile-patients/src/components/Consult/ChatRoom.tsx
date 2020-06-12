@@ -141,6 +141,42 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
 
+interface OpentokStreamObject {
+  connection: {
+    connectionId: string;
+    creationTime: string;
+    data: string;
+  };
+  connectionId: string;
+  creationTime: string;
+  hasAudio: boolean;
+  hasVideo: boolean;
+  height: number;
+  name: string;
+  sessionId: string;
+  streamId: string;
+  videoType: 'camera' | 'screen';
+  width: number;
+}
+
+interface OpenTokAudioStream {
+  audioStats: {
+    audioBytesReceived: number;
+    audioPacketsLost: number;
+    audioPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+}
+
+interface OpenTokVideoStream {
+  videoStats: {
+    videoBytesReceived: number;
+    videoPacketsLost: number;
+    videoPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+}
+
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
 
@@ -401,6 +437,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [textChange, setTextChange] = useState(false);
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
+  const [callerAudio, setCallerAudio] = useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = useState<boolean>(true);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -1275,8 +1313,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     videoDisableWarningLifted: (error: string) => {
       // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
-    audioNetworkStats: (error: object) => {
-      // console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
+    audioNetworkStats: (event: OpenTokAudioStream) => {
+      setCallerAudio(event.stream.hasAudio);
+    },
+    videoNetworkStats: (event: OpenTokVideoStream) => {
+      setCallerVideo(event.stream.hasVideo);
     },
   };
 
@@ -4494,6 +4535,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
                   publishAudio: mute,
+                  videoTrack: showVideo,
+                  audioTrack: mute,
                   audioVolume: 100,
                 }}
                 resolution={'352x288'}
@@ -4569,7 +4612,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </>
             )}
 
-            <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            <Text style={timerStyles}>
+              {callAccepted ? callTimerStarted : 'INCOMING'}
+              {isPaused !== '' ? (
+                <Text style={{ color: theme.colors.CAPSULE_ACTIVE_BG }}>{`\n${isPaused} ${
+                  isPaused.indexOf('&') > -1 ? 'are' : 'is'
+                } Paused`}</Text>
+              ) : (
+                ''
+              )}
+            </Text>
             {PipView && renderOnCallPipButtons('video')}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
@@ -4585,6 +4637,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callTimerStarted = `${
     callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
   } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
+
+  const isPaused = callerAudio
+    ? callerVideo && isCall
+      ? 'Audio & Video'
+      : 'Audio'
+    : callerVideo && isCall
+    ? 'Video'
+    : '';
+
+  //  {isCall && VideoCall()}
+  //   {isAudioCall && AudioCall()}
 
   const AudioCall = () => {
     return (
@@ -4648,6 +4711,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               publishVideo: convertVideo ? true : false,
               publishAudio: mute,
               audioVolume: 100,
+              videoTrack: convertVideo ? true : false,
+              audioTrack: mute,
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
@@ -4709,7 +4774,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </Text>
           </View>
         )}
-        <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+        <Text style={timerStyles}>
+          {callAccepted ? callTimerStarted : 'INCOMING'}
+          {isPaused !== '' ? (
+            <Text style={{ color: theme.colors.CAPSULE_ACTIVE_BG }}>{`\n${isPaused} ${
+              isPaused.indexOf('&') > -1 ? 'are' : 'is'
+            } Paused`}</Text>
+          ) : (
+            ''
+          )}
+        </Text>
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
