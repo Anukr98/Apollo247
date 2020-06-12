@@ -15,6 +15,8 @@ const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
+const gtmAuth = isProduction ? 'ZYg6LjWjUuzof34ZcHS7HA' : 'W92SKp1i2YZ7knnE2uBPtw';
+const gtmPreview = isProduction ? 'env-1' : 'env-76';
 
 const distDir = path.resolve(__dirname, 'dist');
 
@@ -33,6 +35,8 @@ const plugins = [
     templateParameters: {
       env: process.env.NODE_ENV,
       licenseCode: process.env.WEBENGAGE_ID,
+      gtmAuth: gtmAuth,
+      gtmPreview: gtmPreview,
     },
     inject: true,
     favicon: './favicon.svg',
