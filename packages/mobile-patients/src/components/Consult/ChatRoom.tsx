@@ -159,23 +159,12 @@ interface OpentokStreamObject {
   width: number;
 }
 
-interface OpenTokAudioStream {
-  audioStats: {
-    audioBytesReceived: number;
-    audioPacketsLost: number;
-    audioPacketsReceived: number;
-  };
+type OptntokChangeProp = {
+  changedProperty: string;
+  newValue: string;
+  oldValue: boolean;
   stream: OpentokStreamObject;
-}
-
-interface OpenTokVideoStream {
-  videoStats: {
-    videoBytesReceived: number;
-    videoPacketsLost: number;
-    videoPacketsReceived: number;
-  };
-  stream: OpentokStreamObject;
-}
+};
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -391,6 +380,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ...theme.fonts.IBMPlexSansSemiBold(12),
     textAlign: 'center',
     letterSpacing: 0.46,
+    zIndex: 1005,
   });
 
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -1313,12 +1303,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     videoDisableWarningLifted: (error: string) => {
       // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
-    audioNetworkStats: (event: OpenTokAudioStream) => {
-      setCallerAudio(event.stream.hasAudio);
-    },
-    videoNetworkStats: (event: OpenTokVideoStream) => {
-      setCallerVideo(event.stream.hasVideo);
-    },
   };
 
   const sessionEventHandlers = {
@@ -1360,8 +1344,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
-    streamPropertyChanged: (event: string) => {
-      console.log('session streamPropertyChanged destroyed!', event);
+    streamPropertyChanged: (event: OptntokChangeProp) => {
+      console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
+      if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
     otrnError: (error: string) => {
       console.log(
@@ -1382,7 +1370,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
-
+    setCallerAudio(true);
+    setCallerVideo(true);
     setTimerStyles({
       position: 'absolute',
       marginHorizontal: 20,
@@ -1392,6 +1381,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
   };
 
@@ -4538,6 +4528,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   videoTrack: showVideo,
                   audioTrack: mute,
                   audioVolume: 100,
+                  name: g(currentPatient, 'firstName') || 'patient',
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
@@ -4603,6 +4594,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
                     left: 15,
+                    zIndex: 1001,
                   }}
                 >
                   {name == 'JUNIOR'
@@ -4612,16 +4604,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </>
             )}
 
-            <Text style={timerStyles}>
-              {callAccepted ? callTimerStarted : 'INCOMING'}
-              {isPaused !== '' ? (
-                <Text style={{ color: theme.colors.CAPSULE_ACTIVE_BG }}>{`\n${isPaused} ${
-                  isPaused.indexOf('&') > -1 ? 'are' : 'is'
-                } Paused`}</Text>
-              ) : (
-                ''
-              )}
-            </Text>
+            <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {isPaused !== '' ? (
+              <Text
+                style={[
+                  timerStyles,
+                  {
+                    color: theme.colors.CAPSULE_ACTIVE_BG,
+                    flexWrap: 'wrap',
+                  },
+                ]}
+              >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
+            ) : null}
             {PipView && renderOnCallPipButtons('video')}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
@@ -4638,11 +4632,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
   } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
 
-  const isPaused = callerAudio
-    ? callerVideo && isCall
+  const isPaused = !callerAudio
+    ? !callerVideo && isCall
       ? 'Audio & Video'
       : 'Audio'
-    : callerVideo && isCall
+    : !callerVideo && isCall
     ? 'Video'
     : '';
 
@@ -4713,6 +4707,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
               audioTrack: mute,
+              name: g(currentPatient, 'firstName') || 'patient',
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
@@ -4765,7 +4760,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               // opacity: 0.6,
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1000,
+              zIndex: 1001,
             }}
           >
             <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
@@ -4774,16 +4769,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </Text>
           </View>
         )}
-        <Text style={timerStyles}>
-          {callAccepted ? callTimerStarted : 'INCOMING'}
-          {isPaused !== '' ? (
-            <Text style={{ color: theme.colors.CAPSULE_ACTIVE_BG }}>{`\n${isPaused} ${
-              isPaused.indexOf('&') > -1 ? 'are' : 'is'
-            } Paused`}</Text>
-          ) : (
-            ''
-          )}
-        </Text>
+        <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+        {isPaused !== '' ? (
+          <Text
+            style={[
+              timerStyles,
+              {
+                color: theme.colors.CAPSULE_ACTIVE_BG,
+                flexWrap: 'wrap',
+              },
+            ]}
+          >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
+        ) : null}
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
@@ -4846,6 +4843,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
     setChatReceived(false);
     setSubscriberStyles({
@@ -4878,6 +4876,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
             left: 15,
+            zIndex: 1001,
           }}
           numberOfLines={2}
         >
@@ -4890,6 +4889,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             position: 'absolute',
             top: isIphoneX() ? 64 : 44,
             left: 20,
+            zIndex: 1006,
           }}
         >
           <TouchableOpacity
@@ -4933,6 +4933,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansSemiBold(12),
                 textAlign: 'center',
                 letterSpacing: 0.46,
+                zIndex: 1005,
               });
             }}
           >
@@ -5024,7 +5025,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           position: 'absolute',
           bottom: 16,
           left: 16,
-          zIndex: 1000,
+          zIndex: 1002,
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}
@@ -5120,6 +5121,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
     setChatReceived(false);
     Keyboard.dismiss();
@@ -5134,7 +5136,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           top: isIphoneX() ? 64 : 44,
           left: 20,
           right: 0,
-          zIndex: 1000,
+          zIndex: 1006,
         }}
       >
         <TouchableOpacity
@@ -5172,6 +5174,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ...theme.fonts.IBMPlexSansSemiBold(12),
               textAlign: 'center',
               letterSpacing: 0.46,
+              zIndex: 1005,
             });
 
             setPipView(true);
@@ -5375,6 +5378,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setConvertVideo(false);
               changeVideoStyles();
               setDropdownVisible(false);
+              setCallerAudio(true);
+              setCallerVideo(true);
               if (token) {
                 PublishAudioVideo();
               } else {
