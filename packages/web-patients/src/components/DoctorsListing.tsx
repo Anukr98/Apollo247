@@ -21,6 +21,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useParams } from 'hooks/routerHooks';
 import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -305,6 +306,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
+  const params = useParams<{
+    specialty: string;
+  }>();
+
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -324,15 +329,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
           doctors.map((doc: docDetails) => {
-            doc && doc.fullName && potentialActionSchema.push({
-              '@type': 'EntryPoint',
-              name: doc.fullName,
-              url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                specialityName,
-                readableParam(doc.fullName),
-                doc.id
-              )}`,
-            });
+            doc &&
+              doc.fullName &&
+              potentialActionSchema.push({
+                '@type': 'EntryPoint',
+                name: doc.fullName,
+                url: params.specialty
+                  ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                      params.specialty,
+                      readableParam(doc.fullName),
+                      doc.id
+                    )}`
+                  : `${window.location.origin}${clientRoutes.doctorDetails(
+                      readableParam(doc.fullName),
+                      doc.id
+                    )}`,
+              });
           });
         }
         setStructuredJSON({
