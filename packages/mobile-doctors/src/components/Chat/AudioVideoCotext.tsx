@@ -20,6 +20,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import CallDetectorManager from 'react-native-call-detection';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -57,6 +58,13 @@ type OpenTokVideoStream = {
     videoPacketsLost: number;
     videoPacketsReceived: number;
   };
+  stream: OpentokStreamObject;
+};
+
+type OptntokChangeProp = {
+  changedProperty: string;
+  newValue: string;
+  oldValue: boolean;
   stream: OpentokStreamObject;
 };
 
@@ -161,6 +169,8 @@ export const AudioVideoProvider: React.FC = (props) => {
   });
   const [missedCallCount, setmMissedCallCount] = useState<number>(0);
 
+  const { doctorDetails } = useAuth();
+  const name = doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor';
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
@@ -183,8 +193,6 @@ export const AudioVideoProvider: React.FC = (props) => {
           event: 'Connected' | 'Disconnected' | 'Dialing' | 'Incoming' | 'Offhook' | 'Missed',
           phoneNumber: string
         ) => {
-          console.log('hi', event);
-
           if (['Connected', 'Incoming', 'Dialing', 'Offhook'].includes(event)) {
             setAudioEnabled(false);
             setVideoEnabled(false);
@@ -255,7 +263,12 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   const renderPatientImage = () => {
     return (
-      <View style={isMinimized ? styles.imageContainerMinimized : styles.imageContainer}>
+      <View
+        style={[
+          isMinimized ? styles.imageContainerMinimized : styles.imageContainer,
+          !callerVideo ? { zIndex: 103 } : {},
+        ]}
+      >
         {patientImage ? (
           <Image
             source={{
@@ -315,6 +328,10 @@ export const AudioVideoProvider: React.FC = (props) => {
     setMessageReceived(false);
     setIsMinimized(true);
     setCallAccepted(false);
+    setCallerAudio(true);
+    setCallerVideo(true);
+    setAudioEnabled(true);
+    setVideoEnabled(true);
     withCallBack && callBacks.onCallEnd(callType, callDuration);
   };
 
@@ -381,11 +398,11 @@ export const AudioVideoProvider: React.FC = (props) => {
     );
   };
   const renderNameTimer = () => {
-    const isPaused = callerAudio
-      ? callerVideo && isVideo
+    const isPaused = !callerAudio
+      ? !callerVideo && isVideo
         ? 'Audio & Video'
         : 'Audio'
-      : callerVideo && isVideo
+      : !callerVideo && isVideo
       ? 'Video'
       : '';
     return (
@@ -393,7 +410,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         <Text
           style={[
             styles.nameText,
-            patientImage === '' && isMinimized && (isAudio || (isVideo && !videoEnabled))
+            patientImage === '' && isMinimized && (isAudio || (isVideo && !callerVideo))
               ? { color: theme.colors.SHARP_BLUE }
               : null,
           ]}
@@ -405,7 +422,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         <Text
           style={[
             styles.timerText,
-            patientImage === '' && isMinimized && (isAudio || (isVideo && !videoEnabled))
+            patientImage === '' && isMinimized && (isAudio || (isVideo && !callerVideo))
               ? { color: theme.colors.SHARP_BLUE }
               : null,
           ]}
@@ -413,51 +430,49 @@ export const AudioVideoProvider: React.FC = (props) => {
           {callAccepted ? callDuration : strings.consult_room.calling}
         </Text>
         {isPaused !== '' ? (
-          <Text style={styles.alertText}>{`${isPaused} ${
-            isPaused.indexOf('&') > -1 ? 'are' : 'is'
-          } Paused`}</Text>
+          <Text style={styles.alertText}>
+            {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}
+          </Text>
         ) : null}
       </View>
     );
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
-      console.log('Publisher stream created!', event);
+      // console.log('Publisher stream created!', event);
     },
     streamDestroyed: (event: string) => {
-      console.log('Publisher stream destroyed!', event);
+      // console.log('Publisher stream destroyed!', event);
     },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
+      // console.log(`There was an error with the subscriber: ${error}`);
     },
     connected: (event: string) => {
-      console.log('Subscribe stream connected!', event);
-
-      console.log('after styles', event);
+      // console.log('Subscribe stream connected!', event);
     },
     disconnected: (event: string) => {
-      console.log('Subscribe stream disconnected!', event);
+      // console.log('Subscribe stream disconnected!', event);
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
-      setCallerAudio(event.stream.hasAudio);
+      // setCallerAudio(event.stream.hasAudio);
     },
     videoNetworkStats: (event: OpenTokVideoStream) => {
-      setCallerVideo(event.stream.hasVideo);
+      // setCallerVideo(event.stream.hasVideo);
     },
   };
 
   const sessionEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the session: ${error}`);
+      // console.log(`There was an error with the session: ${error}`);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
-      console.log('otSessionRef', otSessionRef);
-      console.log('Another client connected. ' + connectionCount + ' total.');
-      console.log('session stream connectionCreated!', event);
+      // console.log('otSessionRef', otSessionRef);
+      // console.log('Another client connected. ' + connectionCount + ' total.');
+      // console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
       connectionCount--;
@@ -467,22 +482,28 @@ export const AudioVideoProvider: React.FC = (props) => {
       stopTimer();
       setCallAccepted(false);
       setMessageReceived(false);
-      console.log('session stream connectionDestroyed!', event);
+      // console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: string) => {
-      console.log('session stream sessionConnected!', event);
+      // console.log('session stream sessionConnected!', event);
     },
     sessionDisconnected: (event: string) => {
-      console.log('session stream sessionDisconnected!', event);
+      // console.log('session stream sessionDisconnected!', event);
     },
     sessionReconnected: (event: string) => {
-      console.log('session stream sessionReconnected!', event);
+      // console.log('session stream sessionReconnected!', event);
     },
     sessionReconnecting: (event: string) => {
-      console.log('session stream sessionReconnecting!', event);
+      // console.log('session stream sessionReconnecting!', event);
     },
     signal: (event: string) => {
-      console.log('session stream signal!', event);
+      // console.log('session stream signal!', event);
+    },
+    streamPropertyChanged: (event: OptntokChangeProp) => {
+      if (event.stream.name !== name) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
   };
   const renderCallView = () => {
@@ -517,6 +538,7 @@ export const AudioVideoProvider: React.FC = (props) => {
                 videoTrack: isVideo && videoEnabled,
                 audioTrack: audioEnabled,
                 audioVolume: 100,
+                name: name,
               }}
               eventHandlers={publisherEventHandlers}
               onPublishStart={(event: any) => {
