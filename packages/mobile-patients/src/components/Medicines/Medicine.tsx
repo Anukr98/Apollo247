@@ -1515,36 +1515,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       hot_sellers: renderHotSellers,
       monsoon_essentials: renderHotSellers,
     };
+    const sectionDataMapping = {
+      healthareas: [healthAreas, 0],
+      deals_of_the_day: [[], 0],
+      shop_by_category: [shopByCategory, 0],
+      shop_by_brand: [[], 0],
+      hot_sellers: [hotSellers, 0],
+      monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
+    };
     const sectionsView = info
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map((item) => {
-        const isHotSellers = item.section_key == 'hot_sellers';
-        const isMonsoonEssentials = item.section_key == 'monsoon_essentials';
-        const isShopByCategory = item.section_key == 'shop_by_category';
-        const isHealthAreas = item.section_key == 'healthareas';
         const sectionsView =
           item.section_key &&
           item.section_name &&
           sectionMapping[item.section_key as keyof typeof sectionMapping];
+        const sectionData =
+          sectionsView && sectionDataMapping[item.section_key as keyof typeof sectionDataMapping];
+
         return sectionsView
-          ? sectionsView(
-              item.section_name,
-              (isHotSellers
-                ? hotSellers
-                : isMonsoonEssentials
-                ? monsoonEssentials
-                : isShopByCategory
-                ? shopByCategory
-                : isHealthAreas
-                ? healthAreas
-                : []) as [],
-              isHotSellers
-                ? hotSellersCategoryId
-                : isMonsoonEssentials
-                ? monsoonEssentialsCategoryId
-                : 0
-            )
+          ? sectionsView(item.section_name, sectionData[0] as [], sectionData[1] as number)
           : null;
       });
 
