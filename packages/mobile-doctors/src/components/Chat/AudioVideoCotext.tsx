@@ -412,7 +412,11 @@ export const AudioVideoProvider: React.FC = (props) => {
         >
           {callAccepted ? callDuration : strings.consult_room.calling}
         </Text>
-        {isPaused !== '' ? <Text style={styles.alertText}>{`${isPaused} is Paused`}</Text> : null}
+        {isPaused !== '' ? (
+          <Text style={styles.alertText}>{`${isPaused} ${
+            isPaused.indexOf('&') > -1 ? 'are' : 'is'
+          } Paused`}</Text>
+        ) : null}
       </View>
     );
   };
