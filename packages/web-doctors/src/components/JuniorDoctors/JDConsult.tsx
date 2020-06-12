@@ -217,6 +217,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 className={
                   props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                 }
+                resolution={'352x288'}
                 properties={{
                   publishAudio: mute,
                   publishVideo: subscribeToVideo,
