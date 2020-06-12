@@ -26,6 +26,7 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   UploadHealthRecords,
+  FreeArrowIcon,
   VideoOnIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -384,6 +385,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
+  const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
     false,
@@ -5831,6 +5833,80 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ...theme.viewStyles.container,
         }}
       >
+        {displayUploadHealthRecords ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              right: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 1001,
+              backgroundColor: '#000',
+              opacity: 0.85,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <View
+              style={{
+                left: 35,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
+                }}
+              >
+                {'You can upload your Health Records here'}
+              </Text>
+              <FreeArrowIcon style={{ width: 33, height: 33 }} />
+            </View>
+            <View
+              style={{
+                width: width,
+                height: 66,
+                backgroundColor: 'transparent',
+                bottom: 0,
+                top: isIphoneX() ? 2 : 0,
+              }}
+            >
+              <View style={{ flexDirection: 'row', width: width }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginTop: 10,
+                    marginLeft: 5,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'transparent',
+                  }}
+                  onPress={async () => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                    setDisplayUploadHealthRecords(false);
+                  }}
+                >
+                  <UploadHealthRecords
+                    style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+                  />
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
+                      marginTop: 5,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {'Upload Records'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        ) : null}
         <Header
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
@@ -5990,6 +6066,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onDonePress={(values: { k: string; v: string[] }[]) => {
                   setAnswerData(values);
                   setDisplayChatQuestions(false);
+                  setDisplayUploadHealthRecords(true);
                 }}
               />
             )}
@@ -6107,6 +6184,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             onDonePress={(values: { k: string; v: string[] }[]) => {
               setAnswerData(values);
               setDisplayChatQuestions(false);
+              setDisplayUploadHealthRecords(true);
             }}
           />
         )}
