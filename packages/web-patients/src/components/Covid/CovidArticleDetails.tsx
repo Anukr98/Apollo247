@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -123,11 +123,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     sectionHead: {
-      fontSize: 16,
+      fontSize: 12,
       padding: 16,
-      textTransform: 'uppercase',
       fontWeight: 600,
       color: '#0087ba',
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.up('sm')]: {
         paddingTop: 40,
       },
@@ -193,6 +194,29 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '18px',
       borderRadius: 5,
       margin: '0 16px',
+    },
+    emptyCommentSection: {
+      height: 'calc(100% - 124px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
+        height: 'calc(100% - 112px)',
+        padding: 20,
+      },
+    },
+    noComments: {
+      width: '70%',
+      textAlign: 'center',
+      '& p': {
+        margin: '20px 0',
+        fontSize: 12,
+        color: '#02475b',
+        lineHeight: '18px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: '80%',
+      },
     },
   };
 });
@@ -264,10 +288,10 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     '@type': 'Organization',
                     name: 'Apollo24|7',
                   },
-                  datePublished: moment(Number(createdAt))
+                  datePublished: moment(Number(createdAt) * 1000)
                     .utc()
                     .format(),
-                  dateModified: moment(Number(updatedAt))
+                  dateModified: moment(Number(updatedAt) * 1000)
                     .utc()
                     .format(),
                   publisher: {
@@ -336,17 +360,19 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                       </a>
                     </>
                   )}
-                  <FeedbackWidget
-                    totalComments={totalComments}
-                    totalLike={totalLike}
-                    totalDislike={totalDislike}
-                    articleId={titleId}
-                  />
                 </div>
                 <div className={classes.rightSidebar}>
                   <div className={classes.formCard}>
                     <div className={classes.sectionHead}>
-                      <img src={require('images/ic-feed.svg')} alt="" /> Comments ({totalComments})
+                      <div>
+                        <img src={require('images/ic-feed.svg')} alt="" /> {totalComments} Comments
+                      </div>
+                      <FeedbackWidget
+                        totalComments={totalComments}
+                        totalLike={totalLike}
+                        totalDislike={totalDislike}
+                        articleId={titleId}
+                      />
                     </div>
 
                     {showCommentForm ? (
@@ -361,11 +387,22 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                         Enter your comments here..
                       </div>
                     )}
-                    <CommentsList
-                      titleId={titleId}
-                      commentData={comments}
-                      totalComments={totalComments}
-                    />
+                    {comments && comments.length ? (
+                      <CommentsList
+                        titleId={titleId}
+                        commentData={comments}
+                        totalComments={totalComments}
+                      />
+                    ) : (
+                      <div className={classes.emptyCommentSection}>
+                        <div className={classes.noComments}>
+                          <img src={require('images/ic-nocomments.svg')} />
+                          <Typography>
+                            There are currently no comments for this. Be the first to comment.
+                          </Typography>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

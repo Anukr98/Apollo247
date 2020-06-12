@@ -72,6 +72,14 @@ export enum ApiConstants {
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
+  //medicine order ready at store
+  ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly contact the store 20 minutes before reaching the store.',
+
+  //medicine order picked up
+  ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
+  ORDER_PICKEDUP_BODY = 'Order Picked Up: Greetings from Apollo 24|7 Your order {0} is picked up successfully. Please take a moment & review your experience here - https://onelink.to/nfbwva',
+
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
   ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} is out for delivery. Our executive will be there soon :)',
@@ -223,6 +231,7 @@ export enum ApiConstants {
 
   OTP_EXPIRATION_MINUTES = 2,
   OTP_MESSAGE_TEXT = 'Dear Apollo Customer, Your one time password is {0} and is valid for {1} mins.',
+  DOCTOR_WHATSAPP_OTP = 'Dear Doctor, your one time password is {0}. Please note that this OTP is valid for 2 minutes',
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
@@ -296,9 +305,10 @@ export enum ApiConstants {
   AUTO_SUBMIT_BY_SD = 'JD case-sheet auto submitted, as per the request',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
-  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
+  NOT_APPLICABLE = 'Not Applicable',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
   AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, if you wish to start the consultation now, please join the consultation room by clicking here  {2}.',
@@ -322,4 +332,13 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
+
+  // whatsapp constants
+  WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
+
+  // pharmacologist email config
+  PHARMACOLOGIST_CONSULT_TITLE = 'Prescription Review for {0} | {1}',
+  PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
+  PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
+  // end of pharmacologist email config
 }

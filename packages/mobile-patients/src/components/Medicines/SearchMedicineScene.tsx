@@ -237,12 +237,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setMedicineList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-        keyword: _searchText,
-        Source: 'Pharmacy Home',
-      };
-      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
@@ -250,6 +244,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           const products = data.products || [];
           setMedicineList(products);
           setsearchSate('success');
+          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+            keyword: _searchText,
+            Source: 'Pharmacy Home',
+            resultsdisplayed: products.length,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
         })
         .catch((e) => {
           CommonBugFender('SearchByBrand_onSearchMedicine', e);
@@ -268,11 +268,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setProductsList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-        keyword: _searchText,
-        Source: 'Pharmacy List',
-      };
-      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
       searchMedicineApi(_searchText)
@@ -281,6 +276,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           setSearchHeading(data.search_heading!);
           setProductsList(products);
           setProductsIsLoading(false);
+          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+            keyword: _searchText,
+            Source: 'Pharmacy List',
+            resultsdisplayed: products.length,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
         })
         .catch((e) => {
           CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
@@ -420,7 +421,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
+                props.navigation.navigate(
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                );
               }}
             >
               <CartIcon />
@@ -660,7 +663,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
         isMedicineAddedToCart={isMedicineAddedToCart}
         isCardExpanded={!!foundMedicineInCart}
-        isInStock={medicine.is_in_stock}
+        isInStock={!!medicine.is_in_stock}
         packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={'unsubscribed'}

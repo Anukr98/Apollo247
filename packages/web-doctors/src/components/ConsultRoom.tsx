@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Theme, Button, Avatar, Modal, Fab } from '@material-ui/core';
+import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import moment from 'moment';
@@ -20,7 +20,6 @@ import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocum
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { useParams } from 'hooks/routerHooks';
-import ReplayIcon from '@material-ui/icons/Replay';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -43,7 +42,6 @@ const useStyles = makeStyles((theme: Theme) => {
     chatContainer: {
       paddingTop: 20,
       minHeight: 'calc(100vh - 330px)',
-      position: 'relative',
     },
     petient: {
       color: '#0087ba',
@@ -171,6 +169,10 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 0,
           paddingTop: 8,
           minWidth: 'auto',
+          '&:hover': {
+            boxShadow: 'none',
+            backgroundColor: 'transparent',
+          },
         },
       },
     },
@@ -227,11 +229,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addImgBtn: {
       background: 'transparent',
-      minWidth: 35,
-      maxWidth: 35,
       boxShadow: 'none',
+      padding: 0,
+      paddingRight: 10,
+      fontSize: 16,
+      fontWeight: 500,
+      textTransform: 'none',
       '&:hover': {
         background: 'transparent',
+        boxShadow: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     sendBtn: {
@@ -334,17 +343,6 @@ const useStyles = makeStyles((theme: Theme) => {
     phrMsg: {
       fontFamily: 'IBM Plex Sans,sans-serif',
     },
-    refresh: {
-      position: 'absolute',
-      bottom: 5,
-      right: 5,
-      backgroundColor: '#fc9916',
-      color: '#fff',
-      '&:hover, &:focus': {
-        backgroundColor: '#fc9916',
-        color: '#fff',
-      },
-    },
   };
 });
 
@@ -372,8 +370,6 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
-  loadingChat: boolean;
-  refreshChatWindow: (timetoken: number) => void;
 }
 
 let timerIntervalId: any;
@@ -522,6 +518,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  async function imageExists(image_url: string) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', image_url, false);
+    http.send();
+    return http.status !== 404;
+  }
+
+  const handleImageError = async (e: any, imageUrl: string) => {
+    e.persist();
+    const isImageExist = await imageExists(imageUrl);
+    if (isImageExist) {
+      e.target.src = imageUrl;
+      return;
+    } else {
+      e.target.src = 'https://flevix.com/wp-content/uploads/2019/07/Spin-Preloader.gif';
+      setTimeout(() => {
+        handleImageError(e, imageUrl);
+      }, 1000 * 10);
+    }
+  };
+
   const uploadfile = (url: string) => {
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
@@ -607,29 +624,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
 
-  async function imageExists(image_url: string) {
-    var http = new XMLHttpRequest();
-
-    http.open('HEAD', image_url, false);
-    http.send();
-
-    return http.status !== 404;
-  }
-
-  const handleImageError = async (e: any, imageUrl: string) => {
-    e.persist();
-    const isImageExist = await imageExists(imageUrl);
-    if (isImageExist) {
-      e.target.src = imageUrl;
-      return;
-    } else {
-      e.target.src = 'https://flevix.com/wp-content/uploads/2019/07/Spin-Preloader.gif';
-      setTimeout(() => {
-        handleImageError(e, imageUrl);
-      }, 1000 * 10);
-    }
-  };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     const { patientDetails } = useContext(CaseSheetContext);
     if (
@@ -661,11 +655,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
               <>
-                <span className={classes.none}>
+                <span className={classes.missCall}>
                   <img src={require('images/ic_missedcall.svg')} />
                   {rowData.message.toLocaleLowerCase() === 'video call ended'
-                    ? 'You missed a video call'
-                    : 'You missed a voice call'}
+                    ? 'Patient missed a video call'
+                    : 'Patient missed a voice call'}
                 </span>
               </>
             ) : rowData.duration ? (
@@ -967,6 +961,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
+
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -977,19 +972,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {messagessHtml}
                 <span id="scrollDiv"></span>
               </Scrollbars>
-              {messages && messages.length > 0 && (
-                <Fab
-                  className={classes.refresh}
-                  aria-label="Refresh Chat"
-                  size="small"
-                  onClick={() => {
-                    props.refreshChatWindow(0);
-                  }}
-                  disabled={props.loadingChat}
-                >
-                  <ReplayIcon />
-                </Fab>
-              )}
             </div>
           )}
           {(!showVideo || showVideoChat) && (
@@ -1001,7 +983,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   component="label"
                   disabled={fileUploading}
                 >
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
                   <input
                     type="file"
                     style={{ display: 'none' }}
@@ -1062,6 +1043,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       }
                     }}
                   />
+                  <span>Attach</span>
+                  <span>
+                    <img src={require('images/round-attach.svg')} alt="" />
+                  </span>
                 </Button>
                 <AphTextField
                   autoFocus

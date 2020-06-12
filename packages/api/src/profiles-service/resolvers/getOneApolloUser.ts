@@ -10,8 +10,8 @@ import { ONE_APOLLO_STORE_CODE } from 'profiles-service/entities';
 export const getOneApolloUserTypeDefs = gql`
   type UserDetailResponse {
     name: String!
-    earnedHC: Int!
-    availableHC: Int!
+    earnedHC: Float!
+    availableHC: Float!
     tier: String!
   }
   extend type Query {

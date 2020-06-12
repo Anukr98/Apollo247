@@ -25,6 +25,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -81,16 +82,28 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
       setSearchText(searchVal);
       if (searchVal.length > 2) {
         setLoading(true);
+        setSearchData([]);
         client
           .query<searchDiagnosis, searchDiagnosisVariables>({
             query: SEARCH_DIAGNOSIS,
             variables: { searchString: searchVal },
           })
           .then((data) => {
-            data.data.searchDiagnosis &&
-              setSearchData(data.data.searchDiagnosis.filter((i) => i !== null));
+            const diagnosisData: (searchDiagnosis_searchDiagnosis | null)[] = [];
+            const apiData = data.data.searchDiagnosis || [];
+            if (
+              apiData.findIndex(
+                (i) => i && i.name && i.name.toLowerCase() === searchVal.toLowerCase()
+              ) === -1
+            ) {
+              diagnosisData.push({ name: searchVal, id: '' } as searchDiagnosis_searchDiagnosis);
+            }
+            diagnosisData.push(...apiData);
+            setSearchData(diagnosisData.filter((i) => i !== null));
           })
-          .catch(() => {})
+          .catch(() => {
+            setSearchData([{ name: searchVal, id: '' } as searchDiagnosis_searchDiagnosis]);
+          })
           .finally(() => setLoading(false));
       } else {
         setSearchData([]);
@@ -165,13 +178,12 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
           onChangeText={(value) => searchDiagnosis(value)}
         />
         {loading && (
-          // <ActivityIndicator
-          //   animating={true}
-          //   size="large"
-          //   color="green"
-          //   style={{ paddingTop: 20 }}
-          // />
-          <Spinner />
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color="green"
+            style={{ paddingTop: 20 }}
+          />
         )}
         {searchData.length > 0 ? renderSearchList() : renderSelectedList()}
       </View>

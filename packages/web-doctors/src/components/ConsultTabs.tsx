@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Theme, Button, Modal, CircularProgress } from '@material-ui/core';
+import { Theme, Button, Modal } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -63,6 +63,7 @@ import {
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+import { CircularProgress } from '@material-ui/core';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -310,6 +311,8 @@ export const ConsultTabs: React.FC = () => {
       appointmentId: paramId,
     },
   });
+  const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
+  const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [tabValue, setTabValue] = useState<number>(
@@ -358,6 +361,9 @@ export const ConsultTabs: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [removedMedicinePrescription, setRemovedMedicinePrescription] = useState<
+    GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+  >(null);
   const [favouriteMedicines, setFavouriteMedicines] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
@@ -400,11 +406,12 @@ export const ConsultTabs: React.FC = () => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
-  const [loadingChat, setLoadingChat] = useState<boolean>(false);
+  const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
+  const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
-  
+
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
@@ -413,7 +420,7 @@ export const ConsultTabs: React.FC = () => {
     keepAlive: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
-    uuid: `DOCTOR_${doctorId}`,
+    uuid: REQUEST_ROLES.DOCTOR,
   };
   const pubnub = new Pubnub(config);
   useEffect(() => {
@@ -524,43 +531,35 @@ export const ConsultTabs: React.FC = () => {
       }
     );
   };
+  const createSDCasesheetCall = (flag: boolean) => {
+    setError('Creating Casesheet. Please wait....');
+    mutationCreateSrdCaseSheet()
+      .then((response) => {
+        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, String(tabValue));
+      })
+      .catch((e: ApolloError) => {
+        const patientName =
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'CreateSeniorDoctorCaseSheet',
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentDateTime
+            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
+            : '',
+          error: JSON.stringify(e),
+        };
 
-  const refreshChatWindow = (timetoken: number) => {
-    setLoadingChat(true);
-    try {
-      pubnub.history(
-        {
-          channel: appointmentId,
-          reverse: true,
-          count: 1000,
-          stringifiedTimeToken: true,
-          start: timetoken,
-        },
-        (status: any, res: any) => {
-          const newmessage: MessagesObjectProps[] = [];
-          res.messages.forEach((element: any, index: number) => {
-            const item = element.entry;
-            if (item.prismId) {
-              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
-                item.url = (data && data.urls[0]) || item.url;
-              });
-            }
-            newmessage.push(item);
-          });
-          setMessages(newmessage);
-          const end: number = res.endTimeToken ? res.endTimeToken : 1;
-          if (res.messages.length == 100) {
-            getHistory(end);
-          }
-          setLoadingChat(false);
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      setLoadingChat(false);
-    }
+        sessionClient.notify(JSON.stringify(logObject));
+        setError('Unable to load Consult.');
+      });
   };
-
   /* case sheet data*/
   useEffect(() => {
     if (isSignedIn) {
@@ -597,6 +596,10 @@ export const ConsultTabs: React.FC = () => {
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
+            ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+            : setRemovedMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setSRDNotes('');
@@ -632,12 +635,16 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
-          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          // _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          //   ? setSdConsultationDate(
+          //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+          //     )
+          //   : setSdConsultationDate('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+                _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
               )
             : setSdConsultationDate('');
-
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
@@ -647,9 +654,31 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.caseSheetDetails &&
             _data.data.getCaseSheet.caseSheetDetails.appointment &&
             _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+            _data.data.getCaseSheet.caseSheetDetails.version === 1
           ) {
             setIsPdfPageOpen(true);
+            setIsNewprescriptionEditable(false);
+            setIsNewPrescription(false);
+          }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+            _data.data.getCaseSheet.caseSheetDetails.version > 1
+          ) {
+            if (_data.data.getCaseSheet.caseSheetDetails.sentToPatient) {
+              setIsPdfPageOpen(true);
+              setIsNewprescriptionEditable(false);
+              setIsNewPrescription(false);
+            } else {
+              setIsPdfPageOpen(false);
+              setIsNewprescriptionEditable(true);
+              setIsNewPrescription(true);
+            }
           }
           if (
             _data.data &&
@@ -825,37 +854,8 @@ export const ConsultTabs: React.FC = () => {
             .concat(networkErrorMessage ? networkErrorMessage : []);
           const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
           if (isCasesheetNotExists) {
-            setError('Creating Casesheet. Please wait....');
-            mutationCreateSrdCaseSheet()
-              .then((response) => {
-                window.location.href = clientRoutes.ConsultTabs(
-                  appointmentId,
-                  patientId,
-                  String(tabValue)
-                );
-              })
-              .catch((e: ApolloError) => {
-                const patientName =
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-                  ' ' +
-                  casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-                const logObject = {
-                  api: 'CreateSeniorDoctorCaseSheet',
-                  appointmentId: appointmentId,
-                  doctorId: currentPatient!.id,
-                  doctorDisplayName: currentPatient!.displayName,
-                  patientId: params.patientId,
-                  patientName: patientName,
-                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                  appointmentDateTime: appointmentDateTime
-                    ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
-                    : '',
-                  error: JSON.stringify(e),
-                };
-
-                sessionClient.notify(JSON.stringify(logObject));
-                setError('Unable to load Consult.');
-              });
+            //setError('Creating Casesheet. Please wait....');
+            createSDCasesheetCall(true);
           }
         })
         .finally(() => {
@@ -1243,6 +1243,15 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
         }
+        if (
+          _data &&
+          _data!.data!.updatePatientPrescriptionSentStatus &&
+          _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+        ) {
+          setSdConsultationDate(
+            _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+          );
+        }
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
         setIsPdfPageOpen(true);
@@ -1285,7 +1294,8 @@ export const ConsultTabs: React.FC = () => {
         diagnosisFinal = null,
         diagnosticPrescriptionFinal = null,
         medicinePrescriptionFinal = null,
-        otherInstructionsFinal = null;
+        otherInstructionsFinal = null,
+        removedMedicinePrescriptionFinal = null;
       if (symptoms && symptoms.length > 0) {
         symptomsFinal = symptoms.map((symptom) => {
           return _omit(symptom, '__typename');
@@ -1309,6 +1319,11 @@ export const ConsultTabs: React.FC = () => {
       }
       if (medicinePrescription && medicinePrescription.length > 0) {
         medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
+          return _omit(prescription, ['__typename']);
+        });
+      }
+      if (removedMedicinePrescription && removedMedicinePrescription.length > 0) {
+        removedMedicinePrescriptionFinal = removedMedicinePrescription.map((prescription) => {
           return _omit(prescription, ['__typename']);
         });
       }
@@ -1348,6 +1363,7 @@ export const ConsultTabs: React.FC = () => {
             : APPOINTMENT_TYPE.ONLINE,
         otherInstructions: otherInstructionsFinal,
         medicinePrescription: medicinePrescriptionFinal,
+        removedMedicinePrescription: removedMedicinePrescriptionFinal,
         id: caseSheetId,
         lifeStyle: lifeStyle,
         familyHistory: familyHistory,
@@ -1375,17 +1391,18 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setSaving(false);
-          setSdConsultationDate(
-            _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-              ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
-              : ''
-          );
+          // setSdConsultationDate(
+          //   _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+          //     ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+          //     : ''
+          // );
           //setSdConsultationDate('');
           if (!flag) {
             setIsConfirmDialogOpen(true);
           }
           if (sendToPatientFlag) {
             sendToPatientAction();
+            setIsNewprescriptionEditable(false);
           }
         })
         .catch((e) => {
@@ -1458,6 +1475,8 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
+        setIsClickedOnPriview(true);
+        setIsClickedOnEdit(false);
         const text = {
           id: doctorId,
           message: '^^#appointmentComplete',
@@ -1603,6 +1622,14 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
   };
+
+  const inEditMode =
+    !isPdfPageOpen ||
+    isSecretary ||
+    (params && params.tabValue && parseInt(params.tabValue, 10) >= 0);
+
+  //console.log({ inEditMode, isClickedOnPriview, isClickedOnEdit });
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -1657,6 +1684,8 @@ export const ConsultTabs: React.FC = () => {
             setFavouriteTests,
             medicinePrescription,
             setMedicinePrescription,
+            removedMedicinePrescription,
+            setRemovedMedicinePrescription,
             favouriteMedicines,
             setFavouriteMedicines,
             consultType,
@@ -1747,13 +1776,19 @@ export const ConsultTabs: React.FC = () => {
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
                 hasCameraMicPermission={hasCameraMicPermission}
+                createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
+                isNewprescriptionEditable={isNewprescriptionEditable}
+                isNewPrescription={isNewPrescription}
+                isClickedOnEdit={isClickedOnEdit}
+                setIsClickedOnEdit={setIsClickedOnEdit}
+                isClickedOnPriview={isClickedOnPriview}
+                setIsClickedOnPriview={setIsClickedOnPriview}
+                tabValue={tabValue}
               />
               <div>
                 <div
                   className={
-                    !isPdfPageOpen ||
-                    isSecretary ||
-                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
+                    (inEditMode || isClickedOnEdit) && !isClickedOnPriview
                       ? classes.block
                       : classes.none
                   }
@@ -1806,20 +1841,17 @@ export const ConsultTabs: React.FC = () => {
                           sessionClient={sessionClient}
                           lastMsg={lastMsg}
                           messages={messages}
-                          refreshChatWindow={refreshChatWindow}
-                          loadingChat={loadingChat}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
+
                 <div
                   className={
-                    !isPdfPageOpen ||
-                    isSecretary ||
-                    (params && params.tabValue && parseInt(params.tabValue, 10) === 1)
-                      ? classes.none
-                      : classes.block
+                    inEditMode && isClickedOnPriview && !isClickedOnEdit
+                      ? classes.block
+                      : classes.none
                   }
                 >
                   <CasesheetView saving={saving} />
@@ -1829,12 +1861,6 @@ export const ConsultTabs: React.FC = () => {
           </Scrollbars>
         </CaseSheetContext.Provider>
       )}
-      {loadingChat && (
-        <div>
-          <CircularProgress className={classes.loading} /> <div className={classes.fadedBg}></div>
-        </div>
-      )}
-
       <Modal
         open={isConfirmDialogOpen}
         onClose={() => setIsConfirmDialogOpen(false)}

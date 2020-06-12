@@ -7,6 +7,7 @@ const sky_blue = '#0087ba';
 const APP_Sherpa_Blue = '#01475b';
 const shadowGray = '#808080';
 const text_light_blue = 'rgba(2,71,91,0.6)';
+const pink = '#ff748e';
 
 const whiteColor = (opacity: number = 1) => `rgba(255,255,255,${opacity})`; //'#ffffff'
 const blackColor = (opacity: number = 1) => `rgba(0,0,0,${opacity})`; //'#000000'
@@ -56,6 +57,7 @@ const Common = {
   TEXT_LIGHT_BLUE: text_light_blue,
   SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
   APP_RED: red,
+  NOTIFICATION_DOT: pink,
 };
 
 const Header = {

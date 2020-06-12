@@ -3,12 +3,12 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
-
-import { useLocationDetails, GooglePlacesType } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import { findAddrComponents } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -178,62 +178,49 @@ const apiDetails = {
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
 };
 
-interface Address {
-  long_name: string;
-  short_name: string;
-  types: Array<string>;
-}
-
 export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
   const mascotRef = useRef(null);
-  const { currentLocation, currentPincode } = useLocationDetails();
   const {
     medicineAddress,
     setMedicineAddress,
     setPharmaAddressDetails,
     pharmaAddressDetails,
+    headerPincodeError,
+    setHeaderPincodeError,
   } = useShoppingCart();
 
   const [isLocationPopover, setIsLocationPopover] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isForceFullyClosePopover, setIsForceFullyClosePopover] = React.useState<boolean>(false);
-
-  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
   const [isPincodeDialogOpen, setIsPincodeDialogOpen] = React.useState<boolean>(false);
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
-  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = React.useState<
+    boolean | null
+  >(null);
 
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
     setIsPopoverOpen(false);
   };
 
-  const findAddrComponents = (
-    proptoFind: GooglePlacesType,
-    addrComponents: {
-      long_name: string;
-      short_name: string;
-      types: GooglePlacesType[];
-    }[]
-  ) => {
-    const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
-    return findItem ? findItem.short_name || findItem.long_name : '';
-  };
-
   const locateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
+        setIsPopoverOpen(false);
+        setIsUserDeniedLocationAccess(false);
         getCurrentLocationDetails(latitude.toString(), longitude.toString());
       },
       (err) => {
+        setIsPopoverOpen(false);
+        setIsUserDeniedLocationAccess(true);
         console.log(err.message);
       },
       {
@@ -245,16 +232,12 @@ export const MedicineLocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (
-      !localStorage.getItem('pharmaAddress') &&
-      !localStorage.getItem('currentAddress') &&
-      !isLocationDenied
-    ) {
+    if (!localStorage.getItem('pharmaAddress') && !isUserDeniedLocationAccess) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
           if (PermissionStatus.state === 'denied') {
             setIsPopoverOpen(false);
-            setIsLocationDenied(true);
+            setIsUserDeniedLocationAccess(true);
           } else if (PermissionStatus.state !== 'granted' && !isForceFullyClosePopover) {
             setIsPopoverOpen(true);
           } else if (PermissionStatus.state === 'granted') {
@@ -266,16 +249,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
       setIsPopoverOpen(false);
     }
   });
-
-  useEffect(() => {
-    const medicineAddr = localStorage.getItem('pharmaAddress') || medicineAddress;
-    if (!medicineAddr && currentLocation) {
-      setMedicineAddress(currentLocation);
-    }
-    if (!pharmaAddressDetails.pincode && currentPincode) {
-      setPharmaAddressDetails({ ...pharmaAddressDetails, pincode: currentPincode });
-    }
-  }, [currentLocation, currentPincode]);
 
   useEffect(() => {
     if (!headerPincodeError && pharmaAddressDetails.pincode) {
@@ -293,25 +266,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
     return 'No location';
   };
 
-  const checkServiceAvailability = (zipCode: string) => {
-    return axios.post(
-      apiDetails.service_url || '',
-      {
-        postalcode: zipCode || '',
-        skucategory: [
-          {
-            SKU: 'PHARMA',
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-        },
-      }
-    );
-  };
-
   const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
     await axios
       .get(
@@ -327,11 +281,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
               findAddrComponents('locality', addrComponents);
             const state = findAddrComponents('administrative_area_level_1', addrComponents);
             const country = findAddrComponents('country', addrComponents);
-            const area =
-              findAddrComponents('sublocality_level_1', addrComponents) ||
-              findAddrComponents('sublocality_level_2', addrComponents) ||
-              findAddrComponents('locality', addrComponents);
-            setMedicineAddress(area);
+            setMedicineAddress(city);
             setPharmaAddressDetails({
               city,
               state,
@@ -364,7 +314,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const getPlaceDetails = (pincode: string) => {
     axios
       .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
       .then(({ data }) => {
         try {
@@ -429,10 +379,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
         <div className={classes.selectedLocation}>
           <span>
             {`${
-              !isPopoverOpen && medicineAddress
-                ? medicineAddress || currentLocation
-                : getAddressFromLocalStorage()
-            } ${pharmaAddressDetails ? pharmaAddressDetails.pincode || currentPincode : ''}`}
+              !isPopoverOpen && medicineAddress ? medicineAddress : getAddressFromLocalStorage()
+            } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
@@ -493,6 +441,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             inputProps={{
               maxLength: 6,
             }}
+            onKeyPress={(e) => {
+              if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+            }}
             value={pincode}
           />
           {pincodeError && (
@@ -544,6 +495,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
               setIsPincodeDialogOpen={setIsPincodeDialogOpen}
               setIsPopoverOpen={setIsPopoverOpen}
               isPopoverOpen={isPopoverOpen}
+              locateCurrentLocation={locateCurrentLocation}
             />
           </div>
         </div>

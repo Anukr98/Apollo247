@@ -5,6 +5,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -38,6 +39,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    packSize: Int
   }
 
   type SaveOrderShipmentsResult {
@@ -81,6 +83,7 @@ type ItemArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentsInputArgs = {
@@ -105,17 +108,61 @@ const saveOrderShipments: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
-  const shipmentsInput = saveOrderShipmentsInput.shipments;
+  let shipmentsInput = saveOrderShipmentsInput.shipments;
+  const existingShipments: Shipment[] = [];
+  if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
+    shipmentsInput = shipmentsInput.filter((shipment) => {
+      const savedShipment = orderDetails.medicineOrderShipments.find((savdShipment) => {
+        return savdShipment.apOrderNo == shipment.apOrderNo;
+      });
+      if (savedShipment) {
+        existingShipments.push({ ...savedShipment, ...shipment });
+      }
+      return !savedShipment;
+    });
+  }
+  if (existingShipments.length > 0) {
+    try {
+      const shipmentsPromise = existingShipments.map(async (shipment, index) => {
+        const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
+          siteId: shipment.siteId,
+          siteName: shipment.siteName,
+        };
+        return await medicineOrdersRepo.updateMedicineOrderShipment(
+          orderShipmentsAttrs,
+          shipment.apOrderNo
+        );
+      });
+      await Promise.all(shipmentsPromise);
+    } catch (e) {
+      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
+    }
+  }
+  if (shipmentsInput.length == 0) {
+    return {
+      status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      errorCode: 0,
+      errorMessage: '',
+      orderId: orderDetails.orderAutoId,
+    };
+  }
   let shipmentsResults;
   try {
     const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
+      const itemDetails = shipment.itemDetails.map((item) => {
+        return {
+          ...item,
+          quantity: Number((item.quantity / item.packSize).toFixed(2)),
+          mrp: Number((item.unitPrice * item.packSize).toFixed(2)),
+        };
+      });
       const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
         currentStatus: MEDICINE_ORDER_STATUS[shipment.status],
         medicineOrders: orderDetails,
         apOrderNo: shipment.apOrderNo,
         siteId: shipment.siteId,
         siteName: shipment.siteName,
-        itemDetails: JSON.stringify(shipment.itemDetails),
+        itemDetails: JSON.stringify(itemDetails),
       };
       return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
     });
@@ -162,7 +209,9 @@ const saveOrderShipments: Resolver<
   );
 
   sendMedicineOrderStatusNotification(
-    NotificationType.MEDICINE_ORDER_CONFIRMED,
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? NotificationType.MEDICINE_ORDER_READY_AT_STORE
+      : NotificationType.MEDICINE_ORDER_CONFIRMED,
     orderDetails,
     profilesDb
   );

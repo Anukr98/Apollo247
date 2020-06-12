@@ -10,6 +10,7 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   ONE_APOLLO_USER_REG,
+  OneApollTransaction,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -61,6 +62,50 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       return response.json();
     } catch (e) {
       throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
+        method: 'POST',
+        body: JSON.stringify(transaction),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
+        e,
+      });
+    }
+  }
+
+  getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails'],
+      where: { orderNo: orderId },
+    });
+  }
+
+  async getOneApolloUserTransactions(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
     }
   }
 
@@ -412,7 +457,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const ordersList = await this.find({
       where: {
         createdDate: Between(newStartDate, newEndDate),
-        orderTat: Not(null),
+        orderTat: Not(''),
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         currentStatus: In([
           MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
@@ -421,7 +466,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    //console.log('ordersList====>', ordersList);
+    console.log('ordersList====>', ordersList.length);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -431,7 +476,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         console.log('orderAutoId=>', orderDetails.orderAutoId);
         if (
-          orderDetails.orderTat.toString() != '' &&
+          orderDetails.orderTat.toString() != null &&
           Date.parse(orderDetails.orderTat.toString())
         ) {
           const tatDate = new Date(orderDetails.orderTat.toString());

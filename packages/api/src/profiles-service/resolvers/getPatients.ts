@@ -5,7 +5,11 @@ import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import {
+  sendPatientRegistrationNotification,
+  sendNotificationWhatsapp,
+} from 'notifications-service/resolvers/notifications';
+import { ApiConstants } from 'ApiConstants';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -206,13 +210,37 @@ const updateWhatsAppStatus: Resolver<
   { whatsAppMedicine: boolean; whatsAppConsult: boolean; patientId: string },
   ProfilesServiceContext,
   UpdateWhatsAppStatusResult
-> = async (parent, args, { profilesDb, mobileNumber }) => {
+> = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   await patientRepo.updateWhatsAppStatus(
     args.patientId,
     args.whatsAppConsult,
     args.whatsAppMedicine
   );
+  const patientDetails = await patientRepo.findById(args.patientId);
+  const mobileNumber = patientDetails ? patientDetails.mobileNumber : '';
+  if (args.whatsAppConsult === true || args.whatsAppMedicine === true) {
+    sendNotificationWhatsapp(mobileNumber, '', 0);
+    const details = {
+      userId: mobileNumber,
+      whatsappOptIn: true,
+    };
+    console.log('APIInput=============>', JSON.stringify(details));
+    const saveResponse = await fetch(process.env.WEB_ENGAGE_URL ? process.env.WEB_ENGAGE_URL : '', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + ApiConstants.WEB_ENGAGE_AUTHORIZATION,
+      },
+      body: JSON.stringify(details),
+    });
+    await saveResponse.text();
+
+    if (saveResponse.status !== 200 && saveResponse.status !== 201 && saveResponse.status !== 204) {
+      console.error(`Invalid response status ${saveResponse.status}.`);
+    }
+  }
   return { status: true };
 };
 

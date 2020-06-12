@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 
 const styles = SampleStyles;
 
@@ -37,27 +38,6 @@ export const Sample: React.FC<PatientsProps> = (props) => {
     { id: 9, name: 'Dr. Muqeet ', speciality: '2 Consults', type: true },
     { id: 10, name: 'Dr. Kumar ', speciality: '1 Consults', type: true },
   ];
-  const renderMainHeader = () => {
-    return (
-      <Header
-        leftIcons={[
-          {
-            icon: <ApploLogo />,
-          },
-        ]}
-        rightIcons={[
-          {
-            icon: <RoundIcon />,
-            onPress: () => setshowNeedHelp(true),
-          },
-          // {
-          //   icon: <Notification />,
-          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          // },
-        ]}
-      />
-    );
-  };
 
   const renderDoctorGreeting = () => {
     return (
@@ -101,7 +81,7 @@ export const Sample: React.FC<PatientsProps> = (props) => {
 
   return (
     <SafeAreaView style={[theme.viewStyles.container]}>
-      {renderMainHeader()}
+      <CommonNotificationHeader navigation={props.navigation} />
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
 
       <View style={styles.shadowview}>

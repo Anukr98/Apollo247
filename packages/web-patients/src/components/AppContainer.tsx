@@ -142,6 +142,11 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
           <Route
             exact
+            path={clientRoutes.medicineCategoryDetails(':searchMedicineType', ':sku')}
+            component={MedicineDetails}
+          />
+          <Route
+            exact
             path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
             component={MedicineCartLanding}
           />
@@ -196,11 +201,7 @@ const App: React.FC = () => {
             path={clientRoutes.payOnlineClinicConsult()}
             component={ClinicCheckout}
           />
-          <AuthRouted
-            exact
-            path={clientRoutes.prescriptionReview()}
-            component={PrescriptionReview}
-          />
+          <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
         </Switch>
       </div>
     </Scrollbars>

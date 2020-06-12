@@ -9,13 +9,22 @@ import { notifyMeTracking } from '../../webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, Canceler } from 'axios';
+import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { gtmTracking } from '../../gtmTracking';
+import {
+  NO_SERVICEABLE_MESSAGE,
+  getDiffInDays,
+  TAT_API_TIMEOUT_IN_SEC,
+} from 'helpers/commonHelpers';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import moment from 'moment';
+import { Alerts } from 'components/Alerts/Alerts';
+import { findAddrComponents } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -278,6 +287,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 11,
       fontWeight: 500,
     },
+    outOfStock: {
+      textAlign: 'center',
+      padding: 16,
+    },
   });
 });
 
@@ -287,7 +300,15 @@ type MedicineInformationProps = {
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
-  const { addCartItem, cartItems, updateCartItem, pharmaAddressDetails } = useShoppingCart();
+  const {
+    addCartItem,
+    cartItems,
+    updateCartItem,
+    pharmaAddressDetails,
+    setMedicineAddress,
+    setPharmaAddressDetails,
+    setHeaderPincodeError,
+  } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
@@ -304,6 +325,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
   const [tatLoading, setTatLoading] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -316,40 +339,102 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.url || '',
+        { params: data.sku || params.sku },
         {
           headers: {
             Authorization: apiDetails.authToken,
           },
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.url || '',
-            { params: data.sku || params.sku },
-            {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
+      .then(({ data }) => {
+        try {
+          if (data) {
+            if (data.products && data.products.length > 0) {
+              setSubstitutes(data.products);
             }
-          )
-          .then(({ data }) => {
-            try {
-              if (data) {
-                if (data.products && data.products.length > 0) {
-                  setSubstitutes(data.products);
-                }
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((err) => alert({ err }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
       })
-      .catch((e) => {
-        alert(e);
+      .catch((err) => console.log(err));
+  };
+
+  const setDefaultDeliveryTime = () => {
+    const nextDeliveryDate = moment()
+      .set({
+        hour: 20,
+        minute: 0,
+      })
+      .add(2, 'days')
+      .format('DD-MMM-YYYY HH:mm');
+    setDeliveryTime(nextDeliveryDate);
+    setErrorMessage('');
+    setTatLoading(false);
+    getPlaceDetails(pinCode);
+  };
+
+  const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
+    await axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addrComponents = data.results[0].address_components || [];
+            const pincode = findAddrComponents('postal_code', addrComponents);
+            const city =
+              findAddrComponents('administrative_area_level_2', addrComponents) ||
+              findAddrComponents('locality', addrComponents);
+            const state = findAddrComponents('administrative_area_level_1', addrComponents);
+            const country = findAddrComponents('country', addrComponents);
+            setMedicineAddress(city);
+            setPharmaAddressDetails({
+              city,
+              state,
+              pincode,
+              country,
+            });
+            setHeaderPincodeError('0');
+          }
+        } catch {
+          (e: AxiosError) => {
+            console.log(e);
+            setIsAlertOpen(true);
+            setAlertMessage('Something went wrong :(');
+          };
+        }
+      })
+      .catch((e: AxiosError) => {
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        console.log(e);
+      });
+  };
+
+  const getPlaceDetails = (pincode: string) => {
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const { lat, lng } = data.results[0].geometry.location;
+            getCurrentLocationDetails(lat, lng);
+          }
+        } catch {
+          (e: AxiosError) => {
+            console.log(e);
+          };
+        }
+      })
+      .catch((e: AxiosError) => {
+        setIsAlertOpen(true);
+        setAlertMessage('Something went wrong :(');
+        console.log(e);
       });
   };
 
@@ -359,67 +444,64 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setTatLoading(true);
     await axios
       .post(
-        apiDetails.skuUrl || '',
-        { params: params.sku },
+        apiDetails.deliveryUrl || '',
+        {
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: data.sku || params.sku,
+              qty: 1,
+            },
+          ],
+        },
         {
           headers: {
-            Authorization: apiDetails.authToken,
+            Authentication: apiDetails.deliveryAuthToken,
           },
+          timeout: TAT_API_TIMEOUT_IN_SEC * 1000,
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then(async ({ data }) => {
-        await axios
-          .post(
-            apiDetails.deliveryUrl || '',
-            {
-              postalcode: pinCode,
-              ordertype: 'pharma',
-              lookup: [
-                {
-                  sku: data.sku || params.sku,
-                  qty: 1,
-                },
-              ],
-            },
-            {
-              headers: {
-                Authentication: apiDetails.deliveryAuthToken,
-              },
-              cancelToken: new CancelToken((c) => {
-                // An executor function receives a cancel function as a parameter
-                cancelGetDeliveryTimeApi = c;
-              }),
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (res.data.errorMsg) {
+              setDeliveryTime('');
+              setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
-          )
-          .then((res: AxiosResponse) => {
-            try {
-              if (res && res.data) {
-                if (res.data.errorMsg) {
-                  setErrorMessage(res.data.errorMsg);
-                }
-                setTatLoading(false);
-                if (
-                  typeof res.data === 'object' &&
-                  Array.isArray(res.data.tat) &&
-                  res.data.tat.length
-                ) {
-                  setDeliveryTime(res.data.tat[0].deliverydate);
-                  setErrorMessage('');
-                } else if (typeof res.data.errorMSG === 'string') {
-                  setErrorMessage(res.data.errorMSG);
-                }
-              }
-            } catch (error) {
-              setTatLoading(false);
-            }
-          })
-          .catch((error: any) => {
             setTatLoading(false);
-          });
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
+                setDeliveryTime(res.data.tat[0].deliverydate);
+                setErrorMessage('');
+                if (pharmaAddressDetails.pincode !== pinCode) {
+                  getPlaceDetails(pinCode);
+                }
+              } else {
+                setDeliveryTime('');
+                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              }
+            } else if (
+              typeof res.data.errorMSG === 'string' ||
+              typeof res.data.errorMsg === 'string'
+            ) {
+              setDefaultDeliveryTime();
+            }
+          }
+        } catch (error) {
+          setDefaultDeliveryTime();
+        }
       })
-      .catch((e) => {
-        alert(e);
-        setTatLoading(false);
+      .catch((error: any) => {
+        setDefaultDeliveryTime();
       });
   };
 
@@ -430,11 +512,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [substitutes]);
 
   useEffect(() => {
-    if (pharmaAddressDetails.pincode) {
+    if (pharmaAddressDetails.pincode && pharmaAddressDetails.pincode.length > 0) {
       setPinCode(pharmaAddressDetails.pincode);
-      fetchDeliveryTime(pharmaAddressDetails.pincode);
+      checkDeliveryTime(pharmaAddressDetails.pincode);
     }
   }, [pharmaAddressDetails]);
+
+  const checkDeliveryTime = (pinCode: string) => {
+    checkServiceAvailability(pinCode)
+      .then(({ data }: any) => {
+        if (data && data.Availability) {
+          fetchDeliveryTime(pinCode);
+        } else {
+          setDeliveryTime('');
+          setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        }
+      })
+      .catch((e) => {
+        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setDeliveryTime('');
+      });
+  };
 
   const itemIndexInCart = (item: MedicineProduct) => {
     return cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -495,7 +593,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onChange={(e) => {
                         setPinCode(e.target.value);
-                        setErrorMessage('');
                         if (e.target.value.length < 6) {
                           setDeliveryTime('');
                         }
@@ -511,7 +608,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         root: classes.checkBtn,
                         disabled: classes.checkBtnDisabled,
                       }}
-                      onClick={() => fetchDeliveryTime(pinCode)}
+                      onClick={() => {
+                        checkDeliveryTime(pinCode);
+                      }}
                     >
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
@@ -533,51 +632,66 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={classes.bottomGroupResponsive}>
         {!errorMessage ? (
           <>
-            <div className={classes.priceGroup}>
-              <div className={classes.priceWrap}>
-                {data.is_in_stock ? (
-                  <>
-                    <div className={classes.leftGroup}>
-                      <div className={classes.medicinePack}>
-                        <div>QTY :</div>
-                        <div className={classes.dropDown}>
-                          <AphCustomDropdown
-                            classes={{ selectMenu: classes.selectMenuItem }}
-                            value={medicineQty}
-                            onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                              setMedicineQty(parseInt(e.target.value))
-                            }
-                          >
-                            {options.map((option, index) => (
-                              <MenuItem
-                                key={index}
-                                classes={{
-                                  root: classes.menuRoot,
-                                  selected: classes.menuSelected,
-                                }}
-                                value={option}
-                              >
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </AphCustomDropdown>
-                        </div>
+            {data.is_in_stock ? (
+              <div className={classes.priceGroup}>
+                <div className={classes.priceWrap}>
+                  <div className={classes.leftGroup}>
+                    <div className={classes.medicinePack}>
+                      <div>QTY :</div>
+                      <div className={classes.dropDown}>
+                        <AphCustomDropdown
+                          classes={{ selectMenu: classes.selectMenuItem }}
+                          value={medicineQty}
+                          onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                            setMedicineQty(parseInt(e.target.value))
+                          }
+                        >
+                          {options.map((option, index) => (
+                            <MenuItem
+                              key={index}
+                              classes={{
+                                root: classes.menuRoot,
+                                selected: classes.menuSelected,
+                              }}
+                              value={option}
+                            >
+                              {option}
+                            </MenuItem>
+                          ))}
+                        </AphCustomDropdown>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className={classes.leftGroup}>
-                    <div className={classes.medicineNoStock}>Out Of Stock</div>
                   </div>
-                )}
-                <div className={classes.medicinePrice}>
-                  {data.special_price && (
-                    <span className={classes.regularPrice}>(Rs. {data.price})</span>
-                  )}
-                  Rs. {data.special_price || data.price}
+                  <div className={classes.medicinePrice}>
+                    {data.special_price && (
+                      <span className={classes.regularPrice}>(Rs. {data.price})</span>
+                    )}
+                    Rs. {data.special_price || data.price}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className={classes.outOfStock}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+                <AphButton
+                  fullWidth
+                  className={classes.notifyBtn}
+                  onClick={() => {
+                    const { sku, name, category_id } = data;
+                    /* WebEngage event start */
+                    notifyMeTracking({
+                      sku,
+                      category_id,
+                      name,
+                    });
+                    /* WebEngage event end */
+                    setIsPopoverOpen(true);
+                  }}
+                >
+                  Notify when in stock
+                </AphButton>
+              </div>
+            )}
 
             <div className={classes.bottomActions}>
               {data.is_in_stock ? (
@@ -670,7 +784,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             </div>
           </>
         ) : (
-          <>
+          <div className={classes.outOfStock}>
             <div className={classes.medicineNoStock}>Out Of Stock</div>
             <AphButton
               fullWidth
@@ -689,7 +803,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             >
               Notify when in stock
             </AphButton>
-          </>
+          </div>
         )}
       </div>
 
@@ -759,6 +873,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

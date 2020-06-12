@@ -18,6 +18,7 @@ import { paymentInstrumentClickTracking } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
+import _lowerCase from 'lodash/lowerCase';
 
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 
@@ -534,12 +535,7 @@ export const PayMedicine: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine:
-              cartItemDetails.type_id === 'Pharma'
-                ? '1'
-                : cartItemDetails.type_id === 'Fmcg'
-                ? '0'
-                : null,
+            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -665,7 +661,6 @@ export const PayMedicine: React.FC = (props) => {
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
-            sessionStorage.removeItem('cartValues');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
@@ -872,7 +867,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}

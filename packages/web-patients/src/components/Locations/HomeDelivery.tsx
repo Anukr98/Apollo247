@@ -27,7 +27,12 @@ import {
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
+import {
+  pharmaStateCodeMapping,
+  getDiffInDays,
+  TAT_API_TIMEOUT_IN_SEC,
+} from 'helpers/commonHelpers';
+import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 export const formatAddress = (address: Address) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -329,26 +334,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     }
   }, [currentPatient, deliveryAddressId]);
 
-  const checkServiceAvailability = (zipCode: string | null) => {
-    // setIsLoading(true);
+  const checkServiceAvailabilityCheck = (zipCode: string | null) => {
     changeCartTatStatus && changeCartTatStatus(false);
-
-    return axios.post(
-      apiDetails.service_url || '',
-      {
-        postalcode: zipCode || '',
-        skucategory: [
-          {
-            SKU: 'PHARMA',
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: apiDetails.authToken,
-        },
-      }
-    );
+    return checkServiceAvailability(zipCode);
   };
 
   const removeNonDeliverableItemsFromCart = () => {
@@ -384,6 +372,20 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddressId && setDeliveryAddressId('');
   };
 
+  const setDefaultDeliveryTime = () => {
+    const nextDeliveryDate = moment()
+      .set({
+        hour: 20,
+        minute: 0,
+      })
+      .add(2, 'days')
+      .format('DD-MMM-YYYY HH:mm');
+    setErrorDeliveryTimeMsg('');
+    setDeliveryTime(nextDeliveryDate);
+    setDeliveryLoading(false);
+    setIsLoading(false);
+  };
+
   const fetchDeliveryTime = async (zipCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
@@ -403,6 +405,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          timeout: TAT_API_TIMEOUT_IN_SEC * 1000,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
@@ -459,31 +462,23 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
               setErrorDeliveryTimeMsg('');
               setDeliveryTime(deliveryTime);
-            } else if (typeof res.data.errorMSG === 'string') {
-              setErrorDeliveryTimeMsg(res.data.errorMSG);
-              setDeliveryTime('');
+            } else if (
+              typeof res.data.errorMSG === 'string' ||
+              typeof res.data.errorMsg === 'string'
+            ) {
+              setDefaultDeliveryTime();
             }
           }
           setSelectingAddress(false);
-
-          // setIsLoading(false);
         } catch (error) {
-          setDeliveryLoading(false);
-          setIsLoading(false);
           console.log(error);
+          setDefaultDeliveryTime();
         }
       })
-      .catch((error: any) => console.log(error));
-  };
-  const getDiffInDays = (nextAvailability: string) => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
-      return Math.round(differenceInDays) + 1;
-    } else {
-      return 0;
-    }
+      .catch((error: any) => {
+        console.log(error);
+        setDefaultDeliveryTime();
+      });
   };
 
   if (isError) {
@@ -493,7 +488,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&key=${process.env.GOOGLE_API_KEY}`;
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {
@@ -603,7 +598,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         control={<AphRadio color="primary" />}
                         label={formatAddress(address)}
                         onChange={() => {
-                          checkServiceAvailability(address.zipcode)
+                          checkServiceAvailabilityCheck(address.zipcode)
                             .then((res: AxiosResponse) => {
                               if (res && res.data && res.data.Availability) {
                                 /**Gtm code start  */
@@ -671,7 +666,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
-          checkServiceAvailability={checkServiceAvailability}
+          checkServiceAvailability={checkServiceAvailabilityCheck}
           setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>
@@ -682,7 +677,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <ViewAllAddress
           setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
           formatAddress={formatAddress}
-          checkServiceAvailability={checkServiceAvailability}
+          checkServiceAvailability={checkServiceAvailabilityCheck}
           setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>

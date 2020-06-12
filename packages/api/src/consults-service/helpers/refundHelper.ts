@@ -27,7 +27,7 @@ type ResultInfo = {
   resultStatus: PAYTM_STATUS;
 };
 
-type PaytmResponse = {
+export type PaytmResponse = {
   resultInfo: ResultInfo;
   orderId: string;
   refId: string;
@@ -64,7 +64,6 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
   consultsDb: Connection
 ) => {
   try {
-    console.log('refundInput:', refundInput);
     const appointmentRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
     const saveRefundAttr: Partial<AppointmentRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
@@ -100,7 +99,6 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       paytmParams,
       process.env.PAYTM_REFUND_URL ? process.env.PAYTM_REFUND_URL : ''
     );
-    console.log(paytmResponse);
     log(
       'consultServiceLogger',
       'Paytm Request Body',

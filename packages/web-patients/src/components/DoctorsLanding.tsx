@@ -97,6 +97,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 3,
@@ -452,6 +453,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
                         setSpecialitySelected('');
                         setFilterOptions(searchObject);
                         setDisableFilters(true);
+                        setShowSearchAndPastSearch(true);
                       } else {
                         props.history.push(clientRoutes.welcome());
                       }

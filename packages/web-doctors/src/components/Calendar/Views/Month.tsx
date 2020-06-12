@@ -280,6 +280,7 @@ export const Month: React.FC<MonthProps> = ({
       event.isJdQuestionsComplete &&
       jrdCaseSheet[0].status === 'COMPLETED'
     ) {
+      localStorage.setItem('callBackUrl', '/calendar');
       window.location.href = `/consulttabs/${event.id}/${event.patientId}/0`;
     } else {
       setIsDialogOpen(true);

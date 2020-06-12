@@ -315,9 +315,12 @@ export const convertCaseSheetToRxPdfData = async (
   };
 
   if (caseSheet.appointment) {
-    const consultDate = caseSheet.appointment.sdConsultationDate
+    /*const consultDate = caseSheet.appointment.sdConsultationDate
       ? caseSheet.appointment.sdConsultationDate
-      : caseSheet.appointment.appointmentDateTime;
+      : caseSheet.appointment.appointmentDateTime; */
+    const consultDate = caseSheet.prescriptionGeneratedDate
+      ? caseSheet.prescriptionGeneratedDate
+      : new Date();
     const istDateTime = addMilliseconds(consultDate, 19800000);
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
@@ -506,14 +509,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#02475b')
       .text(nameLine, 370, margin);
 
-    /*if (doctorInfo.qualifications) {
+    if (doctorInfo.qualifications) {
       doc
         .moveDown(0.3)
         .fontSize(9)
         .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
         .fillColor('#02475b')
         .text(`${doctorInfo.qualifications}`);
-    }*/
+    }
 
     doc
       .fontSize(9)
@@ -689,6 +692,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
+
       const docY = doc.y;
       doc
         .fontSize(12)
@@ -700,7 +704,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#890000')
         .text(
           '( This medication has been discontinued )',
-          margin + 15 + prescription.length * 10,
+          margin + 15 + doc.widthOfString(`${newIndex + 1}.  ${prescription}`) + 5,
           docY
         )
         .moveDown(0.5);
@@ -721,8 +725,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         }
 
         const instructionsArray = advice.instruction.split('\n');
+
         instructionsArray.forEach((instruction, newIndex) => {
-          const labelText = newIndex == 0 ? "Doctor's Advice" : ' ';
+          const labelText = newIndex == 0 && index == 0 ? "Doctor's Advice" : ' ';
           if (doc.y > doc.page.height - 150) {
             pageBreak();
           }
@@ -917,14 +922,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#02475b')
         .text(nameLine, margin + 15);
 
-      /*if (doctorInfo.qualifications) {
+      if (doctorInfo.qualifications) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#02475b')
           .text(`${doctorInfo.qualifications}`, margin + 15)
           .moveDown(0.5);
-      } */
+      }
 
       doc
         .fontSize(9)

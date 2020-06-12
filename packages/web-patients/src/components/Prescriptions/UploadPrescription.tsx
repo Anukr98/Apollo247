@@ -11,6 +11,13 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { uploadPhotoTracking } from '../../webEngageTracking';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import {
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  acceptedFilesNamesForFileUpload,
+  INVALID_FILE_SIZE_ERROR,
+  INVALID_FILE_TYPE_ERROR,
+  toBase64,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -140,6 +147,8 @@ interface UploadPrescriptionProps {
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
   isNonCartFlow: boolean;
+  isPresReview?: boolean;
+  setPrescriptionForReview?: any;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -150,16 +159,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUploading, setIsUploading] = useState(false);
-
-  const toBase64 = (file: any) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-    });
 
   return (
     <div className={classes.root}>
@@ -191,15 +190,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       const file = fileNames[0] || null;
                       const fileExtension = file.name.split('.').pop();
                       const fileSize = file.size;
-                      if (fileSize > 2000000) {
+                      if (fileSize > MAX_FILE_SIZE_FOR_UPLOAD) {
                         setIsAlertOpen(true);
-                        setAlertMessage('Invalid File Size. File size must be less than 2MB');
+                        setAlertMessage(INVALID_FILE_SIZE_ERROR);
                       } else if (
                         fileExtension &&
-                        (fileExtension.toLowerCase() === 'png' ||
-                          fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'jpeg' ||
-                          fileExtension.toLowerCase() === 'pdf')
+                        fileExtension &&
+                        acceptedFilesNamesForFileUpload.includes(fileExtension.toLowerCase())
                       ) {
                         setIsUploading(true);
                         if (file) {
@@ -209,6 +206,20 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                               if (res && res.name) {
                                 const fileName = res.name as string;
                                 const url = client.getBlobUrl(fileName);
+
+                                if (props.isPresReview) {
+                                  props.setPrescriptionForReview &&
+                                    props.setPrescriptionForReview({
+                                      imageUrl: url,
+                                      name: fileName,
+                                      fileType: fileExtension.toLowerCase(),
+                                      baseFormat: res,
+                                    });
+                                  props.closeDialog();
+                                  setIsUploading(false);
+                                  return;
+                                }
+
                                 toBase64(file).then((res: any) => {
                                   setPrescriptionUploaded &&
                                     setPrescriptionUploaded({
@@ -234,10 +245,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                         }
                       } else {
                         setIsAlertOpen(true);
-                        setAlertMessage(
-                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                        );
+                        setAlertMessage(INVALID_FILE_TYPE_ERROR);
                       }
+
                       setIsUploading(false);
                     }
                   }}
