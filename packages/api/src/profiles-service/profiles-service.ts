@@ -211,6 +211,10 @@ import {
   labResultsUploadTypeDefs,
   labResultsUploadResolvers,
 } from 'profiles-service/resolvers/labResultsUpload';
+import {
+  prescriptionUploadTypeDefs,
+  prescriptionUploadResolvers,
+} from 'profiles-service/resolvers/prescriptionUpload';
 
 (async () => {
   await connect();
@@ -468,6 +472,10 @@ import {
       {
         typeDefs: labResultsUploadTypeDefs,
         resolvers: labResultsUploadResolvers,
+      },
+      {
+        typeDefs: prescriptionUploadTypeDefs,
+        resolvers: prescriptionUploadResolvers,
       },
     ]),
     plugins: [

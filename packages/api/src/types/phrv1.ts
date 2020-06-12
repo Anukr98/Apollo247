@@ -37,3 +37,28 @@ export interface LabResultsUploadResponse {
   errorType: string;
   response: string;
 }
+
+export interface PrescriptionUploadRequest {
+  prescriptionName: string;
+  prescribedBy: string;
+  dateOfPrescription: number;
+  endDate: number;
+  startDate: number;
+  notes: string;
+  prescriptionSource: string;
+  prescriptionDetail: [];
+  prescriptionFiles: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    dateCreated: number;
+    content: string;
+  }[];
+}
+
+export interface PrescriptionUploadResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string;
+}

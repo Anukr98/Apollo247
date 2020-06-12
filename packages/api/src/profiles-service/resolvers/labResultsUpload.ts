@@ -10,21 +10,21 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const labResultsUploadTypeDefs = gql`
   input LabResultFileProperties {
-    fileName: String
-    mimeType: String
-    content: String
+    fileName: String!
+    mimeType: String!
+    content: String!
   }
 
   input TestResultsParameter {
-    parameterName: String
-    result: String
-    unit: String
+    parameterName: String!
+    result: String!
+    unit: String!
     range: String
   }
 
   input LabResultsUploadRequest {
-    labTestName: String
-    labTestDate: Date
+    labTestName: String!
+    labTestDate: Date!
     labTestRefferedBy: String
     observation: String
     identifier: String
@@ -33,8 +33,12 @@ export const labResultsUploadTypeDefs = gql`
     testResultFiles: [LabResultFileProperties]
   }
 
+  type LabResultsResponse {
+    recordId: String
+  }
+
   extend type Mutation {
-    uploadLabResults(labResultsInput: LabResultsUploadRequest, uhid: String): String
+    uploadLabResults(labResultsInput: LabResultsUploadRequest, uhid: String): LabResultsResponse
   }
 `;
 
@@ -44,7 +48,7 @@ const uploadLabResults: Resolver<
   null,
   LabResultsInputArgs,
   ProfilesServiceContext,
-  string
+  { recordId: string }
 > = async (parent, { labResultsInput, uhid }, {}) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
   labResultsInput.labTestSource = ApiConstants.LABTEST_SOURCE_SELF_UPLOADED;
@@ -59,11 +63,9 @@ const uploadLabResults: Resolver<
     item.id = '';
     item.dateCreated = getUnixTime(new Date()) * 1000;
   });
-  console.log(labResultsInput);
 
   const uploadedFileDetails: LabResultsUploadResponse = await saveLabResults(uhid, labResultsInput);
-  console.log('-------', uploadedFileDetails);
-  return '';
+  return { recordId: uploadedFileDetails.response };
 };
 export const labResultsUploadResolvers = {
   Mutation: {

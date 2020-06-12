@@ -344,5 +344,6 @@ export enum ApiConstants {
 
   //PHRV1 constants start
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
+  PRESCRIPTION_SOURCE_PREFIX = '247',
   //PHRV1 constants end
 }
