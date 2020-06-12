@@ -338,7 +338,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
         quantity: 1,
         thumbnail,
         isInStock: true,

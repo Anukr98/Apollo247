@@ -1065,22 +1065,36 @@ export const MedicinePrescription: React.FC = () => {
     return (
       medicine.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.label}>
-          <div>
-            {parts.map((part) => (
+          {suggestion.sku !== '' ? (
+            <div>
+              {parts.map((part) => (
+                <span
+                  key={part.text}
+                  style={{
+                    fontWeight: part.highlight ? 500 : 400,
+                    whiteSpace: 'pre',
+                  }}
+                >
+                  {part.text.length > 46
+                    ? part.text.substring(0, 45).toLowerCase() + '...'
+                    : part.text.toLowerCase()}
+                </span>
+              ))}
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          ) : (
+            <div>
+              <span>Add</span>
               <span
-                key={part.text}
                 style={{
-                  fontWeight: part.highlight ? 500 : 400,
+                  fontWeight: 400,
                   whiteSpace: 'pre',
                 }}
               >
-                {part.text.length > 46
-                  ? part.text.substring(0, 45).toLowerCase() + '...'
-                  : part.text.toLowerCase()}
+                {` "${suggestion.label}"`}
               </span>
-            ))}
-            <img src={require('images/ic_dark_plus.svg')} alt="" />
-          </div>
+            </div>
+          )}
         </AphTooltip>
       )
     );
@@ -1198,6 +1212,7 @@ export const MedicinePrescription: React.FC = () => {
 
   const fetchMedicines = async (value: any) => {
     const CancelToken = axios.CancelToken;
+    let found = false;
     cancel && cancel();
     setLoading(true);
     const FinalSearchdata: any = [];
@@ -1218,12 +1233,19 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
+        suggestions.length > 0 && suggestions[0].sku === '' && suggestions.splice(0, 1);
+
         medicines.forEach((res: any) => {
           const data = { label: '', sku: '' };
           data.label = res.name;
           data.sku = res.sku;
           FinalSearchdata.push(data);
+          if (value.toLowerCase() === res.name.toLowerCase()) {
+            found = true;
+          }
         });
+        (!found || medicines.length === 0) && FinalSearchdata.unshift({ label: value, sku: '' });
+
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
@@ -1454,12 +1476,6 @@ export const MedicinePrescription: React.FC = () => {
     setShowDosage(true);
   };
 
-  // useEffect(() => {
-  //   if (idx >= 0) {
-  //     setSelectedMedicines(selectedMedicines);
-  //     setSelectedMedicinesArr(selectedMedicinesArr);
-  //   }
-  // }, [selectedMedicines, idx, selectedMedicinesArr]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }

@@ -76,6 +76,13 @@ export type DiagnosticJson = {
   Discounted: string;
 };
 
+export type Vitals = {
+  bp: string;
+  temperature: string;
+  height: string;
+  weight: string;
+};
+
 export const caseSheetTypeDefs = gql`
   enum CASESHEET_STATUS {
     COMPLETED
@@ -120,9 +127,11 @@ export const caseSheetTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
+    INTERNATIONAL_UNIT
     LOTION
     ML
     MG
@@ -140,6 +149,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    TEASPOON
     UNIT
   }
 
@@ -220,6 +230,12 @@ export const caseSheetTypeDefs = gql`
   extend type PatientFullDetails @key(fields: "id") {
     id: ID! @external
   }
+  input Vitals {
+    height: String
+    weight: String
+    temperature: String
+    bp: String
+  }
 
   type CaseSheet {
     appointment: Appointment
@@ -244,6 +260,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     patientDetails: PatientFullDetails @provides(fields: "id")
+    prescriptionGeneratedDate: DateTime
     sentToPatient: Boolean
     status: String
     symptoms: [SymptomList]
@@ -290,10 +307,12 @@ export const caseSheetTypeDefs = gql`
 
   type DiagnosticPrescription {
     itemname: String
+    testInstruction: String
   }
 
   input DiagnosticPrescriptionInput {
     itemname: String
+    testInstruction: String
   }
 
   enum MEDICINE_FORM_TYPES {
@@ -304,6 +323,7 @@ export const caseSheetTypeDefs = gql`
     DAYS
     MONTHS
     WEEKS
+    TILL_NEXT_REVIEW
   }
 
   enum MEDICINE_FREQUENCY {
@@ -340,6 +360,10 @@ export const caseSheetTypeDefs = gql`
     EYE_DROPS
     EAR_DROPS
     INTRAVAGINAL
+    NASALLY
+    INTRANASAL_SPRAY
+    INTRA_ARTICULAR
+    TRIGGER_POINT_INJECTION
   }
 
   type MedicinePrescription {
@@ -483,6 +507,7 @@ export const caseSheetTypeDefs = gql`
     success: Boolean
     blobName: String
     prismFileId: String
+    prescriptionGeneratedDate: DateTime
   }
 
   extend type Mutation {
@@ -490,6 +515,7 @@ export const caseSheetTypeDefs = gql`
     updatePatientPrescriptionSentStatus(
       caseSheetId: ID!
       sentToPatient: Boolean!
+      vitals: Vitals
     ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
@@ -694,6 +720,7 @@ type PatientPrescriptionSentResponse = {
   success: boolean;
   blobName: string;
   prismFileId: string;
+  prescriptionGeneratedDate: Date | undefined;
 };
 
 type ModifyCaseSheetInput = {
@@ -1170,7 +1197,7 @@ const submitJDCaseSheet: Resolver<
 
 const updatePatientPrescriptionSentStatus: Resolver<
   null,
-  { caseSheetId: string; sentToPatient: boolean },
+  { caseSheetId: string; sentToPatient: boolean; vitals: Vitals },
   ConsultServiceContext,
   PatientPrescriptionSentResponse
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
@@ -1192,6 +1219,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1230,7 +1258,37 @@ const updatePatientPrescriptionSentStatus: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
+  }
+  if (args.vitals) {
+    //medicalHistory upsert starts
+    const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
+      patient: patientData,
+    };
+
+    if (!(args.vitals.bp === undefined))
+      medicalHistoryInputs.bp = args.vitals.bp.length > 0 ? args.vitals.bp : undefined;
+
+    if (!(args.vitals.weight === undefined))
+      medicalHistoryInputs.weight = args.vitals.weight.length > 0 ? args.vitals.weight : undefined;
+
+    if (!(args.vitals.temperature === undefined))
+      medicalHistoryInputs.temperature =
+        args.vitals.temperature.length > 0 ? args.vitals.temperature : undefined;
+
+    if (!(args.vitals.height === undefined)) medicalHistoryInputs.height = args.vitals.height;
+    const medicalHistoryRepo = await patientsDb.getCustomRepository(
+      PatientMedicalHistoryRepository
+    );
+    const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(patientData.id);
+    if (medicalHistoryRecord == null) {
+      //create
+      medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+    } else {
+      //update
+      medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+    }
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
@@ -1238,6 +1296,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 
@@ -1266,6 +1325,7 @@ const generatePrescriptionTemp: Resolver<
     sentToPatient: args.sentToPatient,
     blobName: '',
     prismFileId: '',
+    prescriptionGeneratedDate: new Date(),
   };
 
   if (args.sentToPatient) {
@@ -1304,6 +1364,7 @@ const generatePrescriptionTemp: Resolver<
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
       status: CASESHEET_STATUS.COMPLETED,
+      prescriptionGeneratedDate: new Date(),
     };
   }
 
@@ -1312,6 +1373,7 @@ const generatePrescriptionTemp: Resolver<
     success: true,
     blobName: caseSheetAttrs.blobName || '',
     prismFileId: caseSheetAttrs.prismFileId || '',
+    prescriptionGeneratedDate: caseSheetAttrs.prescriptionGeneratedDate,
   };
 };
 

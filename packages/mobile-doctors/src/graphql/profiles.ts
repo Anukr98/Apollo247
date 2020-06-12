@@ -755,14 +755,21 @@ export const GET_CASESHEET = gql`
           followUpAfterInDays
           followUp
           medicinePrescription {
+            id
+            externalId
             medicineName
-            medicineTimings
+            medicineDosage
+            medicineToBeTaken
             medicineInstructions
+            medicineTimings
+            medicineUnit
             medicineConsumptionDurationInDays
             medicineConsumptionDuration
             medicineFormTypes
             medicineFrequency
             medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
           }
           otherInstructions {
             instruction

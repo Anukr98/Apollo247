@@ -340,10 +340,10 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
             <ConsultationHours values={data} />
           )}
         </Grid>
-        <div className={classes.helpTxt}>
+        {/* <div className={classes.helpTxt}>
           <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
           Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
-        </div>
+        </div> */}
       </Grid>
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>

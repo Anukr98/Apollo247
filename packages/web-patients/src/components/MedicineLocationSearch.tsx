@@ -3,13 +3,12 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
-
-import { useLocationDetails, GooglePlacesType } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import { findAddrComponents } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -174,17 +173,6 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-const apiDetails = {
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-};
-
-interface Address {
-  long_name: string;
-  short_name: string;
-  types: Array<string>;
-}
-
 export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
@@ -194,20 +182,19 @@ export const MedicineLocationSearch: React.FC = (props) => {
     setMedicineAddress,
     setPharmaAddressDetails,
     pharmaAddressDetails,
+    headerPincodeError,
+    setHeaderPincodeError,
   } = useShoppingCart();
 
   const [isLocationPopover, setIsLocationPopover] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isForceFullyClosePopover, setIsForceFullyClosePopover] = React.useState<boolean>(false);
-
-  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
   const [isPincodeDialogOpen, setIsPincodeDialogOpen] = React.useState<boolean>(false);
   const [pincode, setPincode] = React.useState<string>('');
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
-  const [headerPincodeError, setHeaderPincodeError] = React.useState<string | null>(null);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = React.useState<
@@ -217,18 +204,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const closePopOver = () => {
     setIsForceFullyClosePopover(true);
     setIsPopoverOpen(false);
-  };
-
-  const findAddrComponents = (
-    proptoFind: GooglePlacesType,
-    addrComponents: {
-      long_name: string;
-      short_name: string;
-      types: GooglePlacesType[];
-    }[]
-  ) => {
-    const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
-    return findItem ? findItem.short_name || findItem.long_name : '';
   };
 
   const locateCurrentLocation = () => {
@@ -301,10 +276,6 @@ export const MedicineLocationSearch: React.FC = (props) => {
               findAddrComponents('locality', addrComponents);
             const state = findAddrComponents('administrative_area_level_1', addrComponents);
             const country = findAddrComponents('country', addrComponents);
-            const area =
-              findAddrComponents('sublocality_level_1', addrComponents) ||
-              findAddrComponents('sublocality_level_2', addrComponents) ||
-              findAddrComponents('locality', addrComponents);
             setMedicineAddress(city);
             setPharmaAddressDetails({
               city,
@@ -464,6 +435,9 @@ export const MedicineLocationSearch: React.FC = (props) => {
             }}
             inputProps={{
               maxLength: 6,
+            }}
+            onKeyPress={(e) => {
+              if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
             }}
             value={pincode}
           />

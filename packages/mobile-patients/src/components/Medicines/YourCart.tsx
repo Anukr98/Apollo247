@@ -369,6 +369,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         return { sku: item.id, qty: item.quantity };
       });
       if (selectedAddress) {
+        const showGenericDate = (err?: Error) => {
+          const genericServiceableDate = moment()
+            .add(2, 'days')
+            .set('hours', 20)
+            .set('minutes', 0)
+            .toString();
+          setdeliveryTime(genericServiceableDate);
+          setshowDeliverySpinner(false);
+          postTatResponseFailureEvent(err || {}, g(selectedAddress, 'zipcode')!, lookUp);
+        };
+
         getDeliveryTime({
           postalcode: selectedAddress.zipcode || '',
           ordertype: getTatOrderType(cartItems),
@@ -376,80 +387,60 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })
           .then((res) => {
             setdeliveryTime('');
-            try {
-              console.log('resresres', res);
-              if (res && res.data) {
-                if (
-                  typeof res.data === 'object' &&
-                  Array.isArray(res.data.tat) &&
-                  res.data.tat.length
-                ) {
-                  const tatItems = res.data.tat;
-                  // filter out the sku's which has deliverydate > X days from the current date
-                  const unserviceableSkus = tatItems
-                    .filter(
-                      ({ deliverydate }) =>
-                        moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
-                        AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-                    )
-                    .map(({ artCode }) => artCode);
+            const tatItemsCount = g(res, 'data', 'tat', 'length');
+            if (tatItemsCount) {
+              const tatItems = g(res, 'data', 'tat') || [];
+              // filter out the sku's which has deliverydate > X days from the current date
+              const unserviceableSkus = tatItems
+                .filter(
+                  ({ deliverydate }) =>
+                    moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
+                    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+                )
+                .map(({ artCode }) => artCode);
 
-                  // update cart items to unserviceable/serviceable
-                  const updatedCartItems = cartItems.map((item) => ({
-                    ...item,
-                    unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
-                  }));
-                  setCartItems!(updatedCartItems);
+              // update cart items to unserviceable/serviceable
+              const updatedCartItems = cartItems.map((item) => ({
+                ...item,
+                unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
+              }));
+              setCartItems!(updatedCartItems);
 
-                  if (unserviceableSkus.length) {
-                    showUnServiceableItemsAlert(updatedCartItems);
-                  }
-
-                  const serviceableItems = tatItems
-                    .filter(({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku))
-                    .map(({ deliverydate }) => deliverydate);
-
-                  if (serviceableItems.length) {
-                    const tatDate = serviceableItems.reduce(
-                      (acc, curr) =>
-                        moment(curr, 'D-MMM-YYYY HH:mm a') > moment(acc, 'D-MMM-YYYY HH:mm a')
-                          ? curr
-                          : acc,
-                      serviceableItems[0]
-                    );
-                    setdeliveryTime(tatDate);
-                    postPhamracyCartAddressSelectedSuccess(
-                      selectedAddress.zipcode!,
-                      formatAddress(selectedAddress),
-                      'Yes',
-                      moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
-                    );
-                  } else {
-                    setdeliveryTime('No items are serviceable.');
-                  }
-                } else if (typeof res.data === 'string') {
-                  setdeliveryError(res.data);
-                } else if (typeof res.data.errorMSG === 'string') {
-                  setdeliveryError(res.data.errorMSG);
-                }
+              if (unserviceableSkus.length) {
+                showUnServiceableItemsAlert(updatedCartItems);
               }
-            } catch (error) {
-              CommonBugFender('YourCart_getDeliveryTime_try', error);
-              console.log(error);
+
+              const serviceableItems = tatItems
+                .filter(({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku))
+                .map(({ deliverydate }) => deliverydate);
+
+              if (serviceableItems.length) {
+                const tatDate = serviceableItems.reduce(
+                  (acc, curr) =>
+                    moment(curr, 'D-MMM-YYYY HH:mm a') > moment(acc, 'D-MMM-YYYY HH:mm a')
+                      ? curr
+                      : acc,
+                  serviceableItems[0]
+                );
+                setdeliveryTime(tatDate);
+                postPhamracyCartAddressSelectedSuccess(
+                  selectedAddress.zipcode!,
+                  formatAddress(selectedAddress),
+                  'Yes',
+                  moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+                );
+              } else {
+                setdeliveryTime('No items are serviceable.');
+              }
+              setshowDeliverySpinner(false);
+            } else {
+              showGenericDate();
             }
-            setshowDeliverySpinner(false);
           })
           .catch((err) => {
             CommonBugFender('YourCart_getDeliveryTime', err);
             if (!Axios.isCancel(err)) {
-              setdeliveryTime('');
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Uh oh.. :(',
-                  description: 'Something went wrong, Unable to fetch delivery time',
-                });
-              setshowDeliverySpinner(false);
-              postTatResponseFailureEvent(err, g(selectedAddress, 'zipcode')!, lookUp);
+              showGenericDate(err);
             }
           });
       }
@@ -485,15 +476,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setselectedTab(tabs[0].title);
       renderAlert(string.medicine_cart.addItemsForStoresAlert);
     } else if (cartItems.length > 0 && pinCode.length == 6) {
-      if (
-        pincodeReplica == pinCode &&
-        cartItems.filter(
-          (cartItem) =>
-            !storesInventory.find((item) =>
-              item.itemDetails.map((i) => i.itemId).includes(cartItem.id)
-            )
-        )
-      ) {
+      const inventory =
+        (g(storesInventory, 'length') &&
+          (g(storesInventory, '0' as any, 'itemDetails') || []).map((v) => v.itemId)) ||
+        [];
+      const isInventoryFetched =
+        inventory.length && !cartItems.find((item) => !inventory.includes(item.id));
+      if (pincodeReplica == pinCode && isInventoryFetched) {
         checkStoreInventoryAndUpdateStores(storesFromContext, cartItems, storesInventory);
       } else {
         fetchStorePickup(pinCode, true);
@@ -679,11 +668,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     lookUp: { sku: string; qty: number }[]
   ) => {
     try {
-      postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.TAT_API_FAILURE] = {
         pincode,
         lookUp,
         error,
-      });
+      };
+      postWebEngageEvent(WebEngageEventName.TAT_API_FAILURE, eventAttributes);
     } catch (error) {}
   };
 
@@ -1882,7 +1872,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               color: theme.colors.SHADE_GREY,
             }}
           >
-            You will earn OneApollo Health Credits for this transaction.
+            {`You will earn OneApollo Health Credits for this transaction, if applicable. T&C apply.`}
           </Text>
         </View>
       </View>
