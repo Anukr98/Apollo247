@@ -381,6 +381,13 @@ export const AudioVideoProvider: React.FC = (props) => {
     );
   };
   const renderNameTimer = () => {
+    const isPaused = callerAudio
+      ? callerVideo && isVideo
+        ? 'Audio & Video'
+        : 'Audio'
+      : callerVideo && isVideo
+      ? 'Video'
+      : '';
     return (
       <View style={isMinimized ? styles.nameContainerMinimized : styles.nameContainer}>
         <Text
@@ -405,10 +412,11 @@ export const AudioVideoProvider: React.FC = (props) => {
         >
           {callAccepted ? callDuration : strings.consult_room.calling}
         </Text>
-        {!callerVideo && isVideo ? (
-          <Text style={styles.alertText}>Patients Video is Paused</Text>
+        {isPaused !== '' ? (
+          <Text style={styles.alertText}>{`${isPaused} ${
+            isPaused.indexOf('&') > -1 ? 'are' : 'is'
+          } Paused`}</Text>
         ) : null}
-        {!callerAudio ? <Text style={styles.alertText}>Patients Audio is Paused</Text> : null}
       </View>
     );
   };
