@@ -173,11 +173,6 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-const apiDetails = {
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-};
-
 export const MedicineLocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
