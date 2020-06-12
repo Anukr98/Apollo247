@@ -136,6 +136,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
   };
 });
 interface ConsultProps {
@@ -276,7 +283,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   className={
                     props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                   }
-                  resolution={'352x288'}
                   properties={{
                     publishAudio: mute,
                     publishVideo: subscribeToVideo,
@@ -314,7 +320,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       />
                     )}
                   <OTStreams>
-                    <OTSubscriber eventHandlers={subscriberHandler} />
+                    <OTSubscriber
+                      eventHandlers={subscriberHandler}
+                      className={classes.subscriber}
+                    />
                   </OTStreams>
                   {props.showVideoChat && (
                     <div>
