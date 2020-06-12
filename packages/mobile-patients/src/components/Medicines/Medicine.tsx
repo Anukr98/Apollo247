@@ -45,6 +45,7 @@ import {
   MedicineProduct,
   pinCodeServiceabilityApi,
   MedicinePageSection,
+  OfferBannerSection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
@@ -92,6 +93,7 @@ import {
   getMedicineOrdersOMSListVariables,
 } from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
+import AppIntroSlider from 'react-native-app-intro-slider';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -118,6 +120,12 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+  },
+  sliderDotStyle: { height: 8, width: 8, borderRadius: 4, marginHorizontal: 4, marginBottom: -105 },
+  sliderPlaceHolderStyle: {
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -329,14 +337,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const offerBanner = (g(data, 'mainbanners') || [])[0];
-  const offerBannerImage = g(offerBanner, 'image');
+  const banners = g(data, 'mainbanners') || [];
   const healthAreas = g(data, 'healthareas') || [];
   const dealsOfTheDay = g(data, 'deals_of_the_day') || [];
   const shopByCategory = g(data, 'shop_by_category') || [];
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
-  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || 0;
   const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
   const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
 
@@ -612,51 +618,69 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
-  const renderOfferBanner = () => {
-    if (loading) return null;
-    else if (offerBannerImage) {
-      return (
+  const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({});
+
+  const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
+    const handleOnPress = () => {
+      if (item.category_id) {
+        props.navigation.navigate(AppRoutes.SearchByBrand, {
+          category_id: item.category_id,
+          title: 'PRODUCTS',
+        });
+      } else if (item.product_id) {
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: item.product_id,
+        });
+      }
+    };
+
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
           onLoadStart={() => {
-            setImageLoading(true);
+            setImageLoading({ ...imageLoading, [item.image]: true });
           }}
           onLoadEnd={() => {
-            setImageLoading(false);
+            setImageLoading({ ...imageLoading, [item.image]: false });
           }}
           onLoad={(value) => {
-            const { height, width } = value.nativeEvent.source;
-            console.log(height, width, 'dsniu');
-            setImgHeight(height * (winWidth / width));
+            if (index == 0) {
+              const { height, width } = value.nativeEvent.source;
+              console.log(height, width, 'dsniu');
+              setImgHeight(height * (winWidth / width));
+            }
           }}
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
+          source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image}` }}
         />
-      );
-    }
+      </TouchableOpacity>
+    );
   };
 
-  const renderOfferBannerCover = () => {
-    if (imageLoading && offerBannerImage) {
+  const renderBanners = () => {
+    if (loading) {
       return (
-        <View
-          style={{
-            width: '100%',
-            height: imgHeight,
-            position: 'absolute',
-            top: 0,
-            alignContent: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
           <Spinner
             spinnerProps={{ size: 'small' }}
             style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
           />
         </View>
       );
-    } else {
-      return null;
+    } else if (banners.length) {
+      return (
+        <View style={{ marginBottom: 17 }}>
+          <AppIntroSlider
+            extraData={imageLoading}
+            slides={banners}
+            showNextButton={false}
+            showDoneButton={false}
+            dotStyle={[styles.sliderDotStyle, { backgroundColor: '#d8d8d8' }]}
+            activeDotStyle={[styles.sliderDotStyle, { backgroundColor: '#aaa' }]}
+            renderItem={renderSliderItem}
+          />
+        </View>
+      );
     }
   };
 
@@ -1553,8 +1577,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderOfferBanner()}
-        {renderOfferBannerCover()}
+        {renderBanners()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}

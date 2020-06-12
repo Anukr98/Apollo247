@@ -213,6 +213,8 @@ export interface OfferBannerSection {
   image: string; // full url
   start_time: string; // '2019-02-10 01:21:00';
   end_time: string;
+  category_id?: number;
+  product_id?: number;
 }
 
 export interface MedicinePageAPiResponse {
