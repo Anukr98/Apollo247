@@ -305,7 +305,7 @@ export enum ApiConstants {
   AUTO_SUBMIT_BY_SD = 'JD case-sheet auto submitted, as per the request',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
-  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
   NOT_APPLICABLE = 'Not Applicable',
@@ -341,4 +341,9 @@ export enum ApiConstants {
   PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
   PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
   // end of pharmacologist email config
+
+  //PHRV1 constants start
+  LABTEST_SOURCE_SELF_UPLOADED = '247self',
+  PRESCRIPTION_SOURCE_PREFIX = '247',
+  //PHRV1 constants end
 }
