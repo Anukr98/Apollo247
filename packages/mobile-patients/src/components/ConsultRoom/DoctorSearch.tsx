@@ -401,7 +401,16 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         console.log('Error 11111111', e);
       });
   };
-
+  const moveSelectedToTop = () => {
+    if (currentPatient !== undefined) {
+      const patientLinkedProfiles = [
+        allCurrentPatients.find((item: any) => item.uhid === currentPatient.uhid),
+        ...allCurrentPatients.filter((item: any) => item.uhid !== currentPatient.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return [];
+  };
   const postSearchEvent = (searchInput: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SEARCH] = {
       'Search Text': searchInput,
@@ -1269,17 +1278,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {allCurrentPatients.slice(0, 5).map((item: any, index: any, array: any) => (
-        <TouchableOpacity
-          onPress={() => {
-            setShowProfilePopUp(false);
-            selectUser(item);
-          }}
-          style={[styles.ctaWhiteButtonViewStyle]}
-        >
-          <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
-        </TouchableOpacity>
-      ))}
+      {moveSelectedToTop()
+        .slice(0, 5)
+        .map((item: any, index: any, array: any) => (
+          <TouchableOpacity
+            onPress={() => {
+              setShowProfilePopUp(false);
+              selectUser(item);
+            }}
+            style={[styles.ctaWhiteButtonViewStyle]}
+          >
+            <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+          </TouchableOpacity>
+        ))}
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
