@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
@@ -76,8 +76,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeBtns: {
       position: 'absolute',
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       zIndex: 9,
     },
     stopCallIcon: {
@@ -94,8 +94,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeVideoImg: {
       zIndex: 9,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       backgroundColor: '#000',
     },
@@ -136,6 +136,18 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
+    minSubscriber: {
+      '& > div:first-child': {
+        minHeight: 'auto !important',
+      },
+    },
   };
 });
 interface ConsultProps {
@@ -166,10 +178,45 @@ function getCookieValue() {
   }
   return '';
 }
+type OpentokStreamObject = {
+  connection: {
+    connectionId: string;
+    creationTime: string;
+    data: string;
+  };
+  connectionId: string;
+  creationTime: string;
+  hasAudio: boolean;
+  hasVideo: boolean;
+  height: number;
+  name: string;
+  sessionId: string;
+  streamId: string;
+  videoType: 'camera' | 'screen';
+  width: number;
+};
+type OpenTokAudioStream = {
+  audioStats: {
+    audioBytesReceived: number;
+    audioPacketsLost: number;
+    audioPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+};
+type OpenTokVideoStream = {
+  videoStats: {
+    videoBytesReceived: number;
+    videoPacketsLost: number;
+    videoPacketsReceived: number;
+  };
+  stream: OpentokStreamObject;
+};
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
@@ -235,6 +282,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     },
     otrnError: (error: string) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    audioNetworkStats: (event: OpenTokAudioStream) => {
+      setCallerAudio(event.stream.hasAudio);
+    },
+    videoNetworkStats: (event: OpenTokVideoStream) => {
+      setCallerVideo(event.stream.hasVideo);
     },
   };
   return (
@@ -314,7 +367,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       />
                     )}
                   <OTStreams>
-                    <OTSubscriber eventHandlers={subscriberHandler} />
+                    <OTSubscriber
+                      eventHandlers={subscriberHandler}
+                      className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    />
                   </OTStreams>
                   {props.showVideoChat && (
                     <div>
