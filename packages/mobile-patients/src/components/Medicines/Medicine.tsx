@@ -25,7 +25,6 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -45,6 +44,7 @@ import {
   MedicinePageAPiResponse,
   MedicineProduct,
   pinCodeServiceabilityApi,
+  MedicinePageSection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
@@ -53,7 +53,6 @@ import {
   postAppsFlyerAddToCartEvent,
   postwebEngageAddToCartEvent,
   postWebEngageEvent,
-  postWEGNeedHelpEvent,
   addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -337,6 +336,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const shopByCategory = g(data, 'shop_by_category') || [];
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || 0;
+  const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
+  const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
 
   const {
     data: orders,
@@ -351,18 +353,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   );
 
-  // Note: if hideStatus = true means display it, false measn hide it
-  // let _orders = (
-  //   (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-  //   []
-  // ).filter(
-  //   (item) =>
-  //     !(
-  //       (item!.medicineOrdersStatus || []).length == 1 &&
-  //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-  //     )
-  // );
-
   useEffect(() => {
     if (!ordersLoading) {
       const data = (g(orders, 'getMedicineOrdersOMSList', 'medicineOrdersList') || []).filter(
@@ -376,8 +366,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       data.length > 0 && setOrdersFetched(data);
     }
   }, [ordersLoading]);
-
-  // console.log('ORDERS\n', { _orders });
 
   // Common Views
 
@@ -822,8 +810,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByHealthAreas = (title: string) => {
-    if (healthAreas.length == 0) return null;
+  const renderCategories = (title: string, categories: MedicinePageSection[]) => {
+    if (categories.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={title} />
@@ -832,7 +820,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={healthAreas}
+          data={categories}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
@@ -1092,59 +1080,41 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  const renderHotSellers = (title: string) => {
-    if (hotSellers.length == 0) return null;
+  const renderHotSellers = (title: string, products: MedicineProduct[], categoryId?: number) => {
+    if (products.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={title} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={hotSellers}
-          renderItem={(itemData) => renderHotSellerItem(itemData, title)}
+        <SectionHeader
+          leftText={title}
+          rightText={categoryId ? 'VIEW ALL' : ''}
+          rightTextStyle={
+            categoryId
+              ? {
+                  textAlign: 'right',
+                  ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                  width: '25%',
+                }
+              : {}
+          }
+          leftTextStyle={categoryId ? { width: '75%' } : {}}
+          onPressRightText={
+            categoryId
+              ? () =>
+                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                    category_id: categoryId,
+                    title: `${title || 'Products'}`.toUpperCase(),
+                  })
+              : undefined
+          }
+          style={categoryId ? { paddingBottom: 1 } : {}}
         />
-      </View>
-    );
-  };
-
-  const renderShopByCategory = (title: string) => {
-    if (shopByCategory.length == 0) return null;
-    return (
-      <View>
-        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={shopByCategory}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
-                );
-
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
-                });
-              },
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
+          data={products}
+          renderItem={(itemData) => renderHotSellerItem(itemData, title)}
         />
       </View>
     );
@@ -1538,21 +1508,44 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderSectionsWithOrdering = () => {
     const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
     const sectionMapping = {
-      healthareas: renderShopByHealthAreas,
+      healthareas: renderCategories,
       deals_of_the_day: renderDealsOfTheDay,
-      shop_by_category: renderShopByCategory,
+      shop_by_category: renderCategories,
       shop_by_brand: renderShopByBrand,
       hot_sellers: renderHotSellers,
+      monsoon_essentials: renderHotSellers,
     };
     const sectionsView = info
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
       .map((item) => {
+        const isHotSellers = item.section_key == 'hot_sellers';
+        const isMonsoonEssentials = item.section_key == 'monsoon_essentials';
+        const isShopByCategory = item.section_key == 'shop_by_category';
+        const isHealthAreas = item.section_key == 'healthareas';
         const sectionsView =
           item.section_key &&
           item.section_name &&
           sectionMapping[item.section_key as keyof typeof sectionMapping];
-        return sectionsView ? sectionsView(item.section_name) : null;
+        return sectionsView
+          ? sectionsView(
+              item.section_name,
+              (isHotSellers
+                ? hotSellers
+                : isMonsoonEssentials
+                ? monsoonEssentials
+                : isShopByCategory
+                ? shopByCategory
+                : isHealthAreas
+                ? healthAreas
+                : []) as [],
+              isHotSellers
+                ? hotSellersCategoryId
+                : isMonsoonEssentials
+                ? monsoonEssentialsCategoryId
+                : 0
+            )
+          : null;
       });
 
     return sectionsView;

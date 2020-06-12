@@ -197,17 +197,17 @@ export interface PlacesApiResponse {
 }
 
 // MedicineLandingPageAPi
-interface MedicinePageSection {
+export interface MedicinePageSection {
   category_id: string;
   title: string;
   image_url: string;
 }
-interface DealsOfTheDaySection {
+export interface DealsOfTheDaySection {
   category_id: string;
   image_url: string;
   position: number;
 }
-interface OfferBannerSection {
+export interface OfferBannerSection {
   name: string;
   status: '0' | '1';
   image: string; // full url
@@ -221,7 +221,8 @@ export interface MedicinePageAPiResponse {
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
-  hot_sellers?: { products: MedicineProduct[] };
+  hot_sellers?: { products: MedicineProduct[]; category_id?: number };
+  monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
 }
 
 export interface PackageInclusion {
