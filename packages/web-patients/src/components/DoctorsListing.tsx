@@ -21,6 +21,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useParams } from 'hooks/routerHooks';
 import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -196,16 +197,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -335,6 +332,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
+  const params = useParams<{
+    specialty: string;
+  }>();
+
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -359,14 +360,20 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               potentialActionSchema.push({
                 '@type': 'EntryPoint',
                 name: doctorDetails.fullName,
-                url: `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                  specialityName,
-                  readableParam(doctorDetails.fullName),
-                  doctorDetails.id
-                )}`,
+                url: params.specialty
+                  ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
+                  : `${window.location.origin}${clientRoutes.doctorDetails(
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
               });
           });
         }
+        console.log(potentialActionSchema);
         setStructuredJSON({
           '@context': 'https://schema.org/',
           '@type': 'MedicalSpecialty',
