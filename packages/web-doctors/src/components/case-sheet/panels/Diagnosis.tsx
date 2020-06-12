@@ -231,6 +231,7 @@ export const Diagnosis: React.FC = () => {
     setSuggestions([]);
   };
   const fetchDignosis = async (value: string) => {
+    let found = false;
     client
       .query<SearchDiagnosis, any>({
         query: SEARCH_DIAGNOSIS,
@@ -238,13 +239,22 @@ export const Diagnosis: React.FC = () => {
       })
       .then((_data: any) => {
         const filterVal: any = _data!.data!.searchDiagnosis!;
+        filterVal.length > 0 && filterVal[0].id == '' && filterVal.splice(0, 1);
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
             if (val.name === selectedval.name) {
               filterVal.splice(index, 1);
             }
           });
+
+          if (val.name.toLowerCase() === value.toLowerCase() && val.name.length === value.length) {
+            found = true;
+          }
         });
+
+        (!found || filterVal.length === 0) &&
+          filterVal.unshift({ name: value, id: '', __typename: 'Diagnosis' });
+
         suggestions = filterVal;
         setSearchInput(value);
       })
@@ -278,6 +288,7 @@ export const Diagnosis: React.FC = () => {
       [name]: newValue,
     });
   };
+
   function renderSuggestion(
     suggestion: OptionType,
     { query, isHighlighted }: Autosuggest.RenderSuggestionParams
@@ -288,20 +299,35 @@ export const Diagnosis: React.FC = () => {
     return (
       diagnosisValue.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.name}>
-          <div>
-            {parts.map((part) => (
+          {suggestion.id !== '' ? (
+            <div>
+              {parts.map((part) => (
+                <span
+                  key={part.text}
+                  style={{
+                    fontWeight: part.highlight ? 500 : 400,
+                    whiteSpace: 'pre',
+                  }}
+                >
+                  {part.text}
+                </span>
+              ))}
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          ) : (
+            <div>
+              <span>Add</span>
               <span
-                key={part.text}
                 style={{
-                  fontWeight: part.highlight ? 500 : 400,
+                  fontWeight: 400,
                   whiteSpace: 'pre',
                 }}
               >
-                {part.text}
+                {` "${suggestion.name}"`}
               </span>
-            ))}
-            <img src={require('images/ic_dark_plus.svg')} alt="" />
-          </div>
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          )}
         </AphTooltip>
       )
     );
@@ -414,6 +440,7 @@ export const Diagnosis: React.FC = () => {
               value: state.single,
               onChange: handleChange('single'),
               onKeyPress: (e) => {
+                suggestions.length > 0 && suggestions[0].id == '' && suggestions.splice(0, 1);
                 if (e.which == 13 || e.keyCode == 13) {
                   if (selectedValues && suggestions.length === 1) {
                     selectedValues.push(suggestions[0]);

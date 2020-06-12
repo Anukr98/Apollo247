@@ -640,7 +640,7 @@ export const ConsultTabs: React.FC = () => {
           //       _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
           //     )
           //   : setSdConsultationDate('');
-            _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+          _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
             ? setSdConsultationDate(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
               )
@@ -1248,7 +1248,9 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.updatePatientPrescriptionSentStatus &&
           _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
         ) {
-          setSdConsultationDate(_data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate);
+          setSdConsultationDate(
+            _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+          );
         }
         setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
