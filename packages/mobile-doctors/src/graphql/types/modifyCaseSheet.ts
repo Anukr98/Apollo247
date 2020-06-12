@@ -230,6 +230,7 @@ export interface modifyCaseSheet_modifyCaseSheet {
   updatedDate: any | null;
   referralSpecialtyName: string | null;
   referralDescription: string | null;
+  version: number | null;
 }
 
 export interface modifyCaseSheet {

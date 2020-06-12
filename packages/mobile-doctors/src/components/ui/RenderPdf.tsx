@@ -2,7 +2,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   Platform,
@@ -12,16 +12,18 @@ import {
   StyleProp,
   TextStyle,
   ViewStyle,
+  Text,
 } from 'react-native';
 import Pdf from 'react-native-pdf';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { CrossPopup, Download } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { CrossPopup, Download, DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
-import RenderPdfStyles from '@aph/mobile-doctors/src/components/ui/RenderPdf.styles';
+import { RenderPdfStyles } from '@aph/mobile-doctors/src/components/ui/RenderPdf.styles';
+import { nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +35,10 @@ export interface RenderPdfProps
     title: string;
     isPopup: boolean;
     setDisplayPdf?: () => void;
+    menuCTAs?: {
+      title: string;
+      onPress: () => void;
+    }[];
     CTAs?: {
       title: string;
       variant?: 'white' | 'orange' | 'green';
@@ -47,15 +53,30 @@ export interface RenderPdfProps
   title: string;
   isPopup: boolean;
   setDisplayPdf?: () => void;
+  menuCTAs?: {
+    title: string;
+    onPress: () => void;
+  }[];
+  CTAs?: {
+    title: string;
+    variant?: 'white' | 'orange' | 'green';
+    onPress: () => void;
+    titleStyle?: StyleProp<TextStyle>;
+    buttonStyle?: StyleProp<ViewStyle>;
+    icon?: React.ReactNode;
+    disabled?: boolean;
+  }[];
 }
 
 export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
-  const ctas = props.navigation.getParam('CTAs');
+  const ctas = props.CTAs || props.navigation.getParam('CTAs');
   const uri = props.uri || props.navigation.getParam('uri');
   const title = props.title || props.navigation.getParam('title');
   const isPopup = props.isPopup || props.navigation.getParam('isPopup');
   const setDisplayPdf = props.setDisplayPdf || props.navigation.getParam('setDisplayPdf');
+  const menuCTAs = props.menuCTAs || props.navigation.getParam('menuCTAs');
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const [showMenu, setShowMenu] = useState<boolean>(false);
 
   const downloadPDF = () => {
     const dirs = RNFetchBlob.fs.dirs;
@@ -111,6 +132,18 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
         leftIcon={'backArrow'}
         headerText={title || 'Document'}
         onPressLeftIcon={() => props.navigation.goBack()}
+        rightIcons={
+          menuCTAs
+            ? [
+                {
+                  icon: <DotIcon />,
+                  onPress: () => {
+                    setShowMenu(!showMenu);
+                  },
+                },
+              ]
+            : undefined
+        }
       />
     );
   };
@@ -143,6 +176,39 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
           backgroundColor: 'transparent',
         }}
       />
+    );
+  };
+  const renderMenu = () => {
+    return (
+      <View style={styles.fullScreen}>
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          onPress={() => {
+            setShowMenu(false);
+          }}
+          activeOpacity={1}
+        >
+          <View style={styles.menucontainer}>
+            {menuCTAs &&
+              menuCTAs.map((i, index) => {
+                return (
+                  <View style={styles.menuTextContainer}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        i.onPress();
+                        setShowMenu(false);
+                      }}
+                      activeOpacity={1}
+                    >
+                      <Text style={styles.menuItemText}>{nameFormater(i.title, 'title')}</Text>
+                    </TouchableOpacity>
+                    {index !== menuCTAs.length - 1 ? <View style={styles.seperatorStyle} /> : null}
+                  </View>
+                );
+              })}
+          </View>
+        </TouchableOpacity>
+      </View>
     );
   };
   const renderCTAs = () => {
@@ -203,18 +269,21 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
     );
   } else {
     return (
-      <SafeAreaView>
-        {renderHeader()}
-        <View
-          style={{
-            backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
-          }}
-        >
-          {PDFView()}
-          {ctas && <View style={{ height: 85 }} />}
-          {ctas && renderCTAs()}
-        </View>
-      </SafeAreaView>
+      <View>
+        {showMenu ? renderMenu() : null}
+        <SafeAreaView>
+          {renderHeader()}
+          <View
+            style={{
+              backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
+            }}
+          >
+            {PDFView()}
+            {ctas && <View style={{ height: 85 }} />}
+            {ctas && renderCTAs()}
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 };

@@ -149,6 +149,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           blobName
           doctorId
           isJdConsultStarted
+          version
         }
         patientInfo {
           id
@@ -389,6 +390,7 @@ export const MODIFY_CASESHEET = gql`
       updatedDate
       referralSpecialtyName
       referralDescription
+      version
     }
   }
 `;
@@ -730,6 +732,7 @@ export const GET_CASESHEET = gql`
         consultType
         notes
         updatedDate
+        version
       }
       pastAppointments {
         id
@@ -783,6 +786,7 @@ export const GET_CASESHEET = gql`
             instruction
           }
           notes
+          version
         }
         appointmentType
         sdConsultationDate

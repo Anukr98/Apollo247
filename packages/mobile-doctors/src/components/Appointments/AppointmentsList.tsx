@@ -10,7 +10,10 @@ import {
   useUIElements,
   AphAlertCTAs,
 } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import {
+  GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
+  GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
   DoctorType,
@@ -217,9 +220,21 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index, i.status);
           const caseSheet =
-            i.caseSheet && i.caseSheet.find((i) => i && i.doctorType !== DoctorType.JUNIOR);
+            i.caseSheet &&
+            i.caseSheet
+              .filter(
+                (
+                  j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+                ) => j && j.doctorType !== DoctorType.JUNIOR
+              )
+              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
           const jrCaseSheet =
-            i.caseSheet && i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR);
+            i.caseSheet &&
+            i.caseSheet.find(
+              (
+                j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+              ) => j && j.doctorType === DoctorType.JUNIOR
+            );
 
           return (
             <>
@@ -277,27 +292,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     } else {
                       setLoading && setLoading(true);
                       if (
-                        i.caseSheet &&
                         i.status === STATUS.COMPLETED &&
-                        i.caseSheet
-                          .map((i) => ((i && i.sentToPatient) || '').toString())
-                          .includes('true')
+                        g(caseSheet && caseSheet[0], 'sentToPatient')
                       ) {
-                        const blobName = i.caseSheet
-                          .map((i) => i && i.blobName)
-                          .filter((i) => i !== null)[0];
+                        const blobName = g(caseSheet && caseSheet[0], 'blobName');
                         setLoading && setLoading(false);
-                        console.log(i, 'i.caseSheet');
-
-                        const caseSheetId = caseSheet && caseSheet.id;
+                        const caseSheetId = g(caseSheet && caseSheet[0], 'id');
 
                         props.navigation.push(AppRoutes.RenderPdf, {
                           uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
                           title: 'PRESCRIPTION',
-                          CTAs: [
+                          menuCTAs: [
                             {
-                              title: 'RESEND PRESCRIPTION', //'PRESCRIPTION SENT',
-                              variant: 'white',
+                              title: 'RESEND PRESCRIPTION',
                               onPress: () => {
                                 if (caseSheetId) {
                                   setLoading && setLoading(true);
@@ -311,12 +318,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
                                   const followupObj = {
                                     appointmentId: appId,
-                                    folloupDateTime: caseSheet!.followUp
+                                    folloupDateTime: g(caseSheet && caseSheet[0], 'followUp')
                                       ? moment()
-                                          .add(Number(caseSheet!.followUpAfterInDays), 'd')
+                                          .add(
+                                            Number(
+                                              g(caseSheet && caseSheet[0], 'followUpAfterInDays')
+                                            ),
+                                            'd'
+                                          )
                                           .format('YYYY-MM-DD')
                                       : '',
-                                    doctorId: caseSheet!.doctorId,
+                                    doctorId: g(caseSheet && caseSheet[0], 'doctorId'),
                                     caseSheetId: caseSheetId,
                                     doctorInfo: doctorDetails,
                                     pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
@@ -352,6 +364,21 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                     }
                                   );
                                 }
+                              },
+                            },
+                            {
+                              title: 'Issue New Prescription',
+                              onPress: () => {
+                                //createSeniorDoctorCaseSheet
+                              },
+                            },
+                          ],
+                          CTAs: [
+                            {
+                              title: 'VIEW CASESHEET',
+                              variant: 'white',
+                              onPress: () => {
+                                navigateToConsultRoom(doctorId, patientId, appId, i);
                               },
                             },
                           ],

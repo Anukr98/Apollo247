@@ -32,6 +32,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   blobName: string | null;
   doctorId: string | null;
   isJdConsultStarted: boolean | null;
+  version: number | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {
