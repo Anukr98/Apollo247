@@ -275,6 +275,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnContainer: {
@@ -309,6 +310,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 20,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     none: {
@@ -1125,10 +1127,10 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
           )}
         </div>
       )}
-      <div className={classes.helpTxt}>
+      {/* <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
-      </div>
+      </div> */}
     </div>
   );
 };

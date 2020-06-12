@@ -9,6 +9,8 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { ApiConstants } from 'ApiConstants';
 import { Patient, MedicineOrders, DiagnosticOrders } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
+
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -70,6 +72,11 @@ export const getNotificationsTypeDefs = gql`
     status: Boolean
   }
 
+  type SendSMS {
+    status: String
+    message: String
+  }
+
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
@@ -79,6 +86,7 @@ export const getNotificationsTypeDefs = gql`
     sendDailyAppointmentSummary: String
     sendFollowUpNotification: String
     sendChatMessageToDoctor(appointmentId: String): SendChatMessageToDoctorResult
+    sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
   }
 `;
 
@@ -111,6 +119,8 @@ export enum NotificationType {
   MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
+  MEDICINE_ORDER_PICKEDUP = 'MEDICINE_ORDER_PICKEDUP',
+  MEDICINE_ORDER_READY_AT_STORE = 'MEDICINE_ORDER_READY_AT_STORE',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
   PATIENT_REGISTRATION = 'PATIENT_REGISTRATION',
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
@@ -164,12 +174,10 @@ type CartPushNotificationInput = {
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
-export async function sendSMS(message: string) {
+/*export async function sendSMS(message: string) {
   const smsUrl = process.env.SMS_GATEWAY_URL ? process.env.SMS_GATEWAY_URL : '';
   if (smsUrl == '') {
     throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
-  }
-
   log(
     'notificationServiceLogger',
     `EXTERNAL_API_CALL_SMS: ${smsUrl}`,
@@ -179,7 +187,50 @@ export async function sendSMS(message: string) {
   );
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
-}
+}*/
+
+export const sendNotificationWhatsapp = async (
+  mobileNumber: string,
+  message: string,
+  loginType: number
+) => {
+  const apiUrl =
+    process.env.WHATSAPP_URL +
+    '?method=OPT_IN&phone_number=' +
+    mobileNumber +
+    '&userid=' +
+    process.env.WHATSAPP_USERNAME +
+    '&password=' +
+    process.env.WHATSAPP_PASSWORD +
+    '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
+  const optInResponse = await fetch(apiUrl)
+    .then(async (res) => {
+      console.log(res, 'res of opt id');
+      if (loginType == 1) {
+        const sendApiUrl =
+          process.env.WHATSAPP_URL +
+          '?method=SendMessage&send_to=' +
+          mobileNumber +
+          '&userid=' +
+          process.env.WHATSAPP_USERNAME +
+          '&password=' +
+          process.env.WHATSAPP_PASSWORD +
+          '&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=' +
+          message;
+        await fetch(sendApiUrl)
+          .then((res) => {
+            console.log(res, 'res of actual msg send');
+          })
+          .catch((error) => {
+            console.log(error, 'send message api error');
+          });
+      }
+    })
+    .catch((error) => {
+      console.log(error, 'optInResponse error');
+    });
+  console.log(optInResponse);
+};
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
@@ -253,12 +304,32 @@ export async function sendCallsNotification(
   if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
     if (callType == APPT_CALL_TYPE.CHAT) {
       notificationBody = ApiConstants.JUNIOR_CALL_APPOINTMENT_BODY;
+      //send whatsapp message for junior doctor call
+      /*let whatsappMsg = ApiConstants.WHATSAPP_JD_CONSULT_START_REMINDER.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      whatsappMsg = whatsappMsg.replace(
+        '{1}',
+        doctorDetails.firstName + ' ' + doctorDetails.lastName
+      ); */
+      //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
     } else {
       notificationBody = ApiConstants.JUNIOR_AVCALL_APPOINTMENT_BODY;
     }
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY;
+    //send whatsapp message for junior doctor call
+    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    whatsappMsg = whatsappMsg.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );*/
+    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace(
@@ -280,14 +351,13 @@ export async function sendCallsNotification(
       title: notificationTitle,
       body: notificationBody,
       sound: 'incallmanager_ringtone.mp3',
+      android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
     },
     data: {
       type: 'call_started',
       appointmentId: appointment.id.toString(),
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      sound: 'incallmanager_ringtone.mp3',
-      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       callType,
       appointmentCallId,
       doctorType,
@@ -299,7 +369,8 @@ export async function sendCallsNotification(
   //options
   const options = {
     priority: NotificationPriority.high,
-    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline,
+    contentAvailable: true,
   };
   let notificationResponse;
   const registrationToken: string[] = [];
@@ -585,17 +656,29 @@ export async function sendNotification(
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
-    console.log('mobileNumber===============', patientDetails.mobileNumber);
-    console.log('message==========================', notificationBody);
     //send sms
-    console.log(smsLink, 'physical appt sms link');
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-    //send sms to doctor
-    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
-    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    //send whatsapp message
+    //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
+
+    //send sms to doctor if Appointment DateTime is less than 24 hours
+    const presentDate = new Date();
+    const laterDate =
+      appointment.appointmentDateTime > presentDate ? appointment.appointmentDateTime : presentDate;
+    const earlierDate =
+      appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
+    const hoursDifference = differenceInHours(laterDate, earlierDate);
+
+    if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
+      let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
+        '{0}',
+        doctorDetails.fullName
+      );
+      doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+      doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+      doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    }
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
@@ -706,6 +789,25 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;
     //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+    //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND
+  ) {
+    const appRefRepo = consultsDb.getCustomRepository(AppointmentRefundsRepository);
+    const refundsInfo = await appRefRepo.getRefundsByAppointmentId(appointment);
+    if (refundsInfo) {
+      notificationTitle = ApiConstants.PAYMENT_REFUND_TITLE;
+      notificationBody = ApiConstants.PAYMENT_REFUND_BODY.replace(
+        '{0}',
+        Number(refundsInfo.refundAmount).toFixed(2)
+      );
+      notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
+      notificationBody = notificationBody.replace('{2}', refundsInfo.refundId);
+
+      sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    } else {
+      return;
+    }
   }
 
   //initialize firebaseadmin
@@ -722,6 +824,7 @@ export async function sendNotification(
       title: notificationTitle,
       body: notificationBody,
       sound: notificationSound,
+      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
     },
     data: {},
   };
@@ -732,13 +835,33 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'Book_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        content: notificationBody,
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_FAILURE) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+      },
+      data: {
+        type: 'Appointment_Payment_Pending_Failure',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        doctorType: doctorDetails.doctorType,
+        doctorId: doctorDetails.id,
         content: notificationBody,
       },
     };
@@ -750,13 +873,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
     };
@@ -770,13 +893,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'doctor_Noshow_Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
     };
@@ -788,13 +911,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'Patient_Noshow_Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
     };
@@ -806,13 +929,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'Patient_Cancel_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
       },
     };
@@ -824,13 +947,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: NotificationType.PRESCRIPTION_READY,
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         file_id: pushNotificationInput.blobName,
       },
@@ -843,13 +966,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'Appointment_Canceled',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         doctorType: 'SENIOR',
       },
@@ -865,13 +988,13 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'chat_room',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         doctorType: 'SENIOR',
       },
@@ -884,15 +1007,32 @@ export async function sendNotification(
         title: notificationTitle,
         body: notificationBody,
         sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
       data: {
         type: 'chat_room',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
         doctorType: 'JUNIOR',
+      },
+    };
+  }
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+      },
+      data: {
+        type: 'Appointment_Canceled_Refund',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        content: notificationBody,
       },
     };
   }
@@ -1139,21 +1279,33 @@ export async function sendReminderNotification(
       }
     }
 
-    payload = {
-      notification: {
-        title: notificationTitle,
-        body: notificationBody,
-        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
-      },
-      data: {
-        type: 'Reminder_Appointment_15',
-        appointmentId: appointment.id.toString(),
-        patientName: patientDetails.firstName,
-        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
-        content: notificationBody,
-      },
-    };
+    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    whatsappMsg = whatsappMsg.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
+    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
+      payload = {
+        notification: {
+          title: notificationTitle,
+          body: notificationBody,
+          sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+        },
+        data: {
+          type: 'Reminder_Appointment_15',
+          appointmentId: appointment.id.toString(),
+          patientName: patientDetails.firstName,
+          doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+          android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+          content: notificationBody,
+        },
+      };
+    }
     //send doctor SMS starts
     if (diffMins <= 1) {
       doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_1_SMS.replace(
@@ -1248,6 +1400,7 @@ export async function sendReminderNotification(
       sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
       sendBrowserNotitication(doctorDetails.id, doctorSMS);
     }
+    //sendNotificationWhatsapp(patientDetails.mobileNumber, notificationBody);
   } else if (
     pushNotificationInput.notificationType == NotificationType.PATIENT_APPOINTMENT_RESCHEDULE
   ) {
@@ -1425,6 +1578,13 @@ export async function sendCartNotification(
       pushNotificationInput.orderAutoId.toString()
     );
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP) {
+    notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
+    notificationBody = ApiConstants.ORDER_PICKEDUP_BODY.replace(
+      '{0}',
+      pushNotificationInput.orderAutoId.toString()
+    );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1452,9 +1612,15 @@ export async function sendCartNotification(
     },
   };
 
-  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED ||
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP
+  ) {
     payload.data = {
-      type: 'Order_Delivered',
+      type:
+        pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED
+          ? 'Order_Delivered'
+          : 'Order_pickedup',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
@@ -1699,6 +1865,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_READY_AT_STORE:
+      payloadDataType = 'Order_ready_at_store';
+      notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
+      notificationBody = ApiConstants.ORDER_READY_AT_STORE_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
       payloadDataType = 'Order_Payment_Failed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
@@ -1713,9 +1884,10 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
+  let tatDate;
   if (orderDetails.orderTat) {
     if (Date.parse(orderDetails.orderTat.toString())) {
-      const tatDate = new Date(orderDetails.orderTat.toString());
+      tatDate = new Date(orderDetails.orderTat.toString());
       orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
     }
   }
@@ -1723,11 +1895,19 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
-  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
-    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
-  notificationBody = notificationBody.replace('{2}', inTatHours);
+  if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
+    const shopAddress = JSON.parse(orderDetails.shopAddress);
+    notificationBody = notificationBody.replace('{2}', shopAddress.storename);
+    notificationBody = notificationBody.replace('{3}', shopAddress.phone);
+  } else {
+    if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED) {
+      notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+    }
+    notificationBody = notificationBody.replace('{2}', inTatHours);
+  }
+
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
@@ -2049,8 +2229,19 @@ const sendChatMessageToDoctor: Resolver<
     doctorDetails.firstName
   ).replace('{1}', patientDetails.firstName);
   await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+  //sendNotificationWhatsapp(doctorDetails.mobileNumber, messageBody);
 
   return { status: true };
+};
+
+const sendMessageToMobileNumber: Resolver<
+  null,
+  { mobileNumber: string; textToSend: string },
+  NotificationsServiceContext,
+  { status: string; message: string }
+> = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  const messageResponse = await sendNotificationSMS(args.mobileNumber, args.textToSend);
+  return { status: messageResponse.status, message: messageResponse.message };
 };
 
 export const getNotificationsResolvers = {
@@ -2060,5 +2251,6 @@ export const getNotificationsResolvers = {
     sendDailyAppointmentSummary,
     sendFollowUpNotification,
     sendChatMessageToDoctor,
+    sendMessageToMobileNumber,
   },
 };

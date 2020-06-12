@@ -4,6 +4,7 @@ import {
   AppointmentCallDetails,
   AppointmentDocuments,
   AppointmentNoShow,
+  AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
@@ -20,6 +21,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -43,6 +45,8 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
+  DoctorPatientExternalConnect,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -82,6 +86,8 @@ import {
   ReferralCodesMaster,
   ReferalCouponMapping,
   CouponPharmaRules,
+  MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -91,6 +97,7 @@ export const connect = async () => {
         Appointment,
         AppointmentCallDetails,
         AppointmentDocuments,
+        AppointmentRefunds,
         AppointmentNoShow,
         AppointmentPayments,
         AppointmentSessions,
@@ -108,6 +115,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         UtilizationCapacity,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -127,6 +135,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,
@@ -144,6 +153,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -194,6 +204,8 @@ export const connect = async () => {
         RegistrationCodes,
         ReferralCodesMaster,
         ReferalCouponMapping,
+        MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

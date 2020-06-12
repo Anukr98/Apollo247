@@ -31,6 +31,10 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 import { gtmTracking } from '../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { useParams } from 'hooks/routerHooks';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { History } from 'history';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -93,6 +97,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 3,
@@ -202,8 +207,11 @@ const searchObject: SearchObject = {
   specialtyName: '',
   prakticeSpecialties: '',
 };
+interface DoctorsLandingProps {
+  history: History;
+}
 
-export const DoctorsLanding: React.FC = (props) => {
+export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
   const classes = useStyles({});
   const {
     currentPincode,
@@ -211,6 +219,32 @@ export const DoctorsLanding: React.FC = (props) => {
     currentLat,
     getCurrentLocationPincode,
   } = useLocationDetails();
+  const params = useParams<{
+    specialty: string;
+  }>();
+
+  useEffect(() => {
+    if (params && params.specialty) {
+      const decoded = decodeURIComponent(params.specialty);
+      const specialityName = readableParam(decoded);
+      apolloClient
+        .query({
+          query: GET_ALL_SPECIALITIES,
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          response.data &&
+            response.data.getAllSpecialties &&
+            response.data.getAllSpecialties.map((specialty: any) => {
+              if (specialty && specialty.name && specialty.name.toLowerCase() === specialityName) {
+                setSpecialtyId(specialty.id);
+                setSpecialitySelected(specialty.name);
+              }
+            });
+        });
+    }
+  }, []);
 
   if (!currentPincode && currentLat && currentLong) {
     getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);
@@ -414,8 +448,15 @@ export const DoctorsLanding: React.FC = (props) => {
                 <div className={classes.breadcrumbs}>
                   <a
                     onClick={() => {
-                      // window.history.back();
-                      window.location.href = clientRoutes.welcome();
+                      if (params.specialty) {
+                        props.history.push(clientRoutes.doctorsLanding());
+                        setSpecialitySelected('');
+                        setFilterOptions(searchObject);
+                        setDisableFilters(true);
+                        setShowSearchAndPastSearch(true);
+                      } else {
+                        props.history.push(clientRoutes.welcome());
+                      }
                       if (localStorage.getItem('symptomTracker')) {
                         localStorage.removeItem('symptomTracker');
                       }
@@ -469,6 +510,7 @@ export const DoctorsLanding: React.FC = (props) => {
                       specialitySelected.length > 0 ||
                       (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) ? (
                         <DoctorsListing
+                          history={props.history}
                           filter={filterOptions}
                           specialityName={specialityNames[0]}
                           // specialityId={derivedSpecialityId}
@@ -559,6 +601,7 @@ export const DoctorsLanding: React.FC = (props) => {
                                               key={_uniqueId('doctor_')}
                                             >
                                               <DoctorCard
+                                                history={props.history}
                                                 doctorDetails={doctorDetails}
                                                 nextAvailability={nextAvailabilityTime}
                                               />
@@ -613,6 +656,7 @@ export const DoctorsLanding: React.FC = (props) => {
                                               key={_uniqueId('doctor_')}
                                             >
                                               <DoctorCard
+                                                history={props.history}
                                                 doctorDetails={doctorDetails}
                                                 nextAvailability={nextAvailabilityTime}
                                               />
@@ -689,6 +733,7 @@ export const DoctorsLanding: React.FC = (props) => {
                                               key={_uniqueId('doctor_')}
                                             >
                                               <DoctorCard
+                                                history={props.history}
                                                 doctorDetails={doctorDetails}
                                                 nextAvailability={nextAvailabilityTime}
                                               />

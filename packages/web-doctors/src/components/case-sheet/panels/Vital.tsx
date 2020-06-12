@@ -55,6 +55,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     display: 'inline-block',
     width: '100%',
+    '& textarea:focus': {
+      borderRadius: '5px',
+      boxShadow: '0 0 5px #00b38e',
+      backgroundColor: '#ffffff',
+    },
   },
   vitalLeft: {
     width: '45%',
@@ -103,6 +108,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       marginLeft: 12,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         maxWidth: 20,

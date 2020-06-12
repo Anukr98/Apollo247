@@ -4,13 +4,13 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import { LoginOtpArchiveRepository } from 'profiles-service/repositories/loginOtpArchiveRepository';
-
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { debugLog } from 'customWinstonLogger';
+import { sendNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -54,7 +54,6 @@ const login: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const callStartTime = new Date();
   const apiCallId = Math.floor(Math.random() * 1000000);
-
   //create first order curried method with first 4 static parameters being passed.
   const loginLogger = debugLog(
     'otpVerificationAPILogger',
@@ -128,6 +127,10 @@ const login: Resolver<
   //call sms gateway service to send the OTP here
   loginLogger('SEND_SMS___START');
   const smsResult = await sendSMS(mobileNumber, otp, hashCode);
+  if (loginType == LOGIN_TYPE.DOCTOR) {
+    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    sendNotificationWhatsapp(mobileNumber, message, 1);
+  }
   loginLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
@@ -222,6 +225,10 @@ const resendOtp: Resolver<
   //call sms gateway service to send the OTP here
   resendLogger('SEND_SMS___START');
   const smsResult = await sendSMS(mobileNumber, otp, hashCode);
+  if (loginType == LOGIN_TYPE.DOCTOR) {
+    const message = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    sendNotificationWhatsapp(mobileNumber, message, 1);
+  }
   resendLogger('SEND_SMS___END');
 
   console.log(smsResult.status, smsResult);
@@ -304,9 +311,8 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
 
   let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
   message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
-
   if (hashCode) {
-    message = message + ' ' + hashCode;
+    message = message + ' ' + encodeURIComponent(hashCode);
   }
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
 
@@ -322,7 +328,7 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string) => {
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-
+  //sendNotificationWhatsapp(mobileNumber, message);
   //logging success response here
   log(
     'smsOtpAPILogger',

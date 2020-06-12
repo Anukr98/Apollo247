@@ -46,11 +46,7 @@ import {
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
-import {
-  CaseSheetContextJrd,
-  VitalErrorProps,
-  LifeStyleErrorProps,
-} from 'context/CaseSheetContextJrd';
+import { CaseSheetContextJrd, VitalErrorProps } from 'context/CaseSheetContextJrd';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -391,6 +387,16 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+interface assignedDoctorType {
+  assignedDoctorSalutation: string;
+  assignedDoctorFirstName: string;
+  assignedDoctorLastName: string;
+  assignedDoctorDisplayName: string;
+  assignedDoctorMobile: string;
+  assignedDoctorSpecialty: string;
+  assignedDoctorPhoto: string;
+}
+
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
@@ -398,6 +404,15 @@ export const JDConsultRoom: React.FC = () => {
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
   const [notesJrd, setNotesJrd] = React.useState('');
+  const [assignedDoctor, setAssignedDoctor] = useState<assignedDoctorType>({
+    assignedDoctorSalutation: '',
+    assignedDoctorFirstName: '',
+    assignedDoctorLastName: '',
+    assignedDoctorDisplayName: '',
+    assignedDoctorMobile: '',
+    assignedDoctorSpecialty: '',
+    assignedDoctorPhoto: '',
+  });
 
   const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -485,69 +500,59 @@ export const JDConsultRoom: React.FC = () => {
   const [referralDescription, setReferralDescription] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
-  const [lifeStyleError, setLifeStyleError] = useState<LifeStyleErrorProps>({
-    medicationHistory: '',
-  });
 
   /* case sheet data*/
-  let assignedDoctorFirstName = '',
-    assignedDoctorLastName = '',
-    assignedDoctorDisplayName = '',
-    assignedDoctorMobile = '',
-    assignedDoctorSpecialty = '',
-    assignedDoctorPhoto = '',
-    assignedDoctorSalutation = '',
-    customNotes = '',
+  let customNotes = '',
     appointmentDateIST = '';
 
-  const {
-    data: assignedDoctorDetailsData,
-    loading: assignedDoctorDetailsLoading,
-  } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
-    GET_DOCTOR_DETAILS_BY_ID_DOCTOR,
-    {
-      variables: { id: assignedDoctorId || '' },
-    }
-  );
+  // const {
+  //   data: assignedDoctorDetailsData,
+  //   loading: assignedDoctorDetailsLoading,
+  // } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
+  //   GET_DOCTOR_DETAILS_BY_ID_DOCTOR,
+  //   {
+  //     variables: { id: assignedDoctorId || '' },
+  //   }
+  // );
 
-  if (!assignedDoctorDetailsLoading) {
-    assignedDoctorFirstName =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
-      '';
-    assignedDoctorLastName =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
-      '';
-    assignedDoctorDisplayName =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
-      '';
-    assignedDoctorMobile =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.mobileNumber) ||
-      '';
-    assignedDoctorSpecialty =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.specialty &&
-        assignedDoctorDetailsData.getDoctorDetailsById.specialty.name) ||
-      '';
-    assignedDoctorPhoto =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.photoUrl) ||
-      '';
-    assignedDoctorSalutation =
-      (assignedDoctorDetailsData &&
-        assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.salutation) ||
-      '';
-  }
+  // if (!assignedDoctorDetailsLoading) {
+  //   assignedDoctorFirstName =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
+  //     '';
+  //   assignedDoctorLastName =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
+  //     '';
+  //   assignedDoctorDisplayName =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
+  //     '';
+  //   assignedDoctorMobile =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.mobileNumber) ||
+  //     '';
+  //   assignedDoctorSpecialty =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.specialty &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.specialty.name) ||
+  //     '';
+  //   assignedDoctorPhoto =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.photoUrl) ||
+  //     '';
+  //   assignedDoctorSalutation =
+  //     (assignedDoctorDetailsData &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById &&
+  //       assignedDoctorDetailsData.getDoctorDetailsById.salutation) ||
+  //     '';
+  // }
 
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
@@ -573,11 +578,11 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.uhid
       : '';
-  const patientRelation =
+  const patientMobileNumber =
     casesheetInfo &&
     casesheetInfo.getJuniorDoctorCaseSheet &&
     casesheetInfo.getJuniorDoctorCaseSheet.patientDetails
-      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.relation
+      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.mobileNumber
       : '';
   const patientAppointmentId =
     (casesheetInfo &&
@@ -607,9 +612,6 @@ export const JDConsultRoom: React.FC = () => {
       'dd/MM/yyyy, hh:mm a'
     );
   }
-
-  const patientRelationHeader =
-    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -667,45 +669,32 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .notes as unknown) as string
-              )
+            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .notes as unknown) as string)
             : setNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
@@ -730,6 +719,60 @@ export const JDConsultRoom: React.FC = () => {
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId
             ? setAssignedDoctorId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.doctorId)
             : setAssignedDoctorId(null);
+          // set seniorDoctorDetails start
+          const assignDoctorData = {
+            assignedDoctorSalutation: '',
+            assignedDoctorFirstName: '',
+            assignedDoctorLastName: '',
+            assignedDoctorDisplayName: '',
+            assignedDoctorMobile: '',
+            assignedDoctorSpecialty: '',
+            assignedDoctorPhoto: '',
+          };
+          if (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo) {
+            assignDoctorData.assignedDoctorFirstName =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .firstName) ||
+              '';
+            assignDoctorData.assignedDoctorLastName =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .lastName) ||
+              '';
+            assignDoctorData.assignedDoctorDisplayName =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .displayName) ||
+              '';
+            assignDoctorData.assignedDoctorMobile =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .mobileNumber) ||
+              '';
+            assignDoctorData.assignedDoctorSpecialty =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                .specialty &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .specialty!.name) ||
+              '';
+            assignDoctorData.assignedDoctorPhoto =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .photoUrl) ||
+              '';
+            assignDoctorData.assignedDoctorSalutation =
+              (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo &&
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.doctorInfo!
+                  .salutation) ||
+              '';
+            setAssignedDoctor(assignDoctorData);
+          } else {
+            console.log(
+              'Senior doctor detail not available,',
+              _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment
+            );
+          }
           /* patient personal data state vars */
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
@@ -863,12 +906,10 @@ export const JDConsultRoom: React.FC = () => {
           navigator.mediaDevices
             .getUserMedia({ audio: true, video: false })
             .then(function(stream) {
-              console.log('Got stream', stream);
               setCameraMicPermission(true);
             })
             .catch(function(err) {
               setCameraMicPermission(false);
-              console.log('GUM failed with error', err);
             });
           // -------------------------------------------------------------- //
         })
@@ -1161,6 +1202,7 @@ export const JDConsultRoom: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
+
   const createSessionAction = () => {
     setSaving(true);
     client
@@ -1174,11 +1216,20 @@ export const JDConsultRoom: React.FC = () => {
         },
       })
       .then((_data: any) => {
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
-        sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
-        setError('');
-        setSaving(false);
+        let sessId = _data.data.createAppointmentSession.sessionId;
+        let tok = _data.data.createAppointmentSession.appointmentToken;
+        if (sessId !== '' && tok !== '') {
+          setsessionId(sessId);
+          settoken(tok);
+          sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
+          setError('');
+          setSaving(false);
+        } else {
+          if (document.getElementById('homeId')) {
+            alert('Appointment already fast-tracked by Senior Doctor');
+            document.getElementById('homeId')!.click();
+          }
+        }
       })
       .catch((e: any) => {
         const logObject = {
@@ -1272,12 +1323,12 @@ export const JDConsultRoom: React.FC = () => {
   };
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
-  const assignedDoctor = {
-    assignedDoctorSalutation: assignedDoctorSalutation,
-    assignedDoctorFirstName: assignedDoctorFirstName,
-    assignedDoctorLastName: assignedDoctorLastName,
-    assignedDoctorDisplayName: assignedDoctorDisplayName,
-  };
+  // const assignedDoctor = {
+  //   assignedDoctorSalutation: assignedDoctorSalutation,
+  //   assignedDoctorFirstName: assignedDoctorFirstName,
+  //   assignedDoctorLastName: assignedDoctorLastName,
+  //   assignedDoctorDisplayName: assignedDoctorDisplayName,
+  // };
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -1375,8 +1426,6 @@ export const JDConsultRoom: React.FC = () => {
             setReferralError,
             setReferralSpecialtyName,
             setReferralDescription,
-            lifeStyleError,
-            setLifeStyleError,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
@@ -1415,8 +1464,8 @@ export const JDConsultRoom: React.FC = () => {
                         <span>({userCardStrip})</span>
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
-                        {patientRelationHeader}
+                        <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
+                        {patientMobileNumber}
                       </div>
                       <div className={classes.patientTextInfo}>
                         <label>Appt ID:</label> {patientAppointmentId}
@@ -1427,15 +1476,13 @@ export const JDConsultRoom: React.FC = () => {
                     </div>
                   </div>
                   <div className={classes.doctorSection}>
-                    {assignedDoctorDetailsLoading ? (
-                      <CircularProgress />
-                    ) : (
+                    {casesheetInfo ? (
                       <>
                         <div className={classes.doctorImg}>
                           <Avatar
                             src={
-                              assignedDoctorPhoto !== ''
-                                ? assignedDoctorPhoto
+                              assignedDoctor.assignedDoctorPhoto !== ''
+                                ? assignedDoctor.assignedDoctorPhoto
                                 : require('images/no_photo.png')
                             }
                             alt="Doctor Profile Photo"
@@ -1444,16 +1491,22 @@ export const JDConsultRoom: React.FC = () => {
                         </div>
                         <div className={classes.doctorInfo}>
                           <div className={classes.assign}>Assigned to:</div>
-                          <div
-                            className={classes.doctorName}
-                          >{`${assignedDoctorSalutation}${'.'} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
-                          <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
+                          <div className={classes.doctorName}>{`${
+                            assignedDoctor.assignedDoctorSalutation
+                          }${'.'} ${assignedDoctor.assignedDoctorFirstName} ${
+                            assignedDoctor.assignedDoctorLastName
+                          }`}</div>
+                          <div className={classes.doctorType}>
+                            {assignedDoctor.assignedDoctorSpecialty}
+                          </div>
                           <div className={classes.doctorContact}>
-                            {assignedDoctorMobile.slice(0, 3)}{' '}
-                            {assignedDoctorMobile.split('+91').join(' ')}
+                            {assignedDoctor.assignedDoctorMobile.slice(0, 3)}{' '}
+                            {assignedDoctor.assignedDoctorMobile.split('+91').join(' ')}
                           </div>
                         </div>
                       </>
+                    ) : (
+                      <CircularProgress />
                     )}
                   </div>
                 </div>

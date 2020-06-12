@@ -32,6 +32,7 @@ const plugins = [
     template: './index.html',
     templateParameters: {
       env: process.env.NODE_ENV,
+      licenseCode: process.env.WEBENGAGE_ID,
     },
     inject: true,
     favicon: './favicon.svg',
@@ -96,7 +97,7 @@ module.exports = {
         use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
-        test: /\.(png|jpg|jpeg|svg|gif)$/,
+        test: /\.(png|jpg|jpeg|svg|gif|webp)$/,
         use: [urlLoader],
       },
     ],

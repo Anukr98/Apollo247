@@ -201,7 +201,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
               }`}
             >
               <div className={classes.medicineStripWrap}>
-                <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                <Link to={clientRoutes.medicineDetails(medicine.url_key)}>
                   <div className={classes.medicineInformation}>
                     <div className={classes.medicineIcon}>
                       <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
@@ -228,6 +228,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             onChange={(e: React.ChangeEvent<{ value: any }>) => {
                               updateCartItemQty &&
                                 updateCartItemQty({
+                                  url_key: medicine.url_key,
                                   description: medicine.description,
                                   id: medicine.id,
                                   image: medicine.image,
@@ -292,6 +293,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             src={require('images/ic_plus.svg')}
                             onClick={() => {
                               const cartItem: MedicineCartItem = {
+                                url_key: medicine.url_key,
                                 description: medicine.description,
                                 id: medicine.id,
                                 image: medicine.image,

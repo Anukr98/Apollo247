@@ -309,6 +309,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:disabled': {
         opacity: 0.7,
@@ -335,29 +336,28 @@ const useStyles = makeStyles((theme: Theme) => {
     popOverUL: {
       listStyleType: 'none',
       textAlign: 'center',
-      display: 'inline',
-      paddingBottom: 0,
-      paddingLeft: 0,
+      display: 'block',
+      padding: '5px 16px',
+      margin: 0,
+      minWidth: 225,
       '& li': {
         fontSize: '15px',
         fontWeight: 500,
-        paddingLeft: '20px',
         fontStyle: 'normal',
         fontStretch: 'normal',
         lineHeight: 'normal',
         letterSpacing: 'normal',
         color: '#02475b',
-        paddingBottom: 15,
-        paddingRight: 20,
-        paddingTop: 15,
+        paddingBottom: 13,
+        paddingTop: 13,
         textAlign: 'left',
         cursor: 'pointer',
         borderBottom: '1px solid rgba(2,71,91,0.2)',
-        '&:hover': {
-          background: '#f0f4f5',
-        },
         '&:last-child': {
           borderBottom: 'none',
+        },
+        '&:hover': {
+          fontWeight: 600,
         },
       },
     },
@@ -369,6 +369,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& .MuiPaper-rounded': {
         borderRadius: 10,
       },
+    },
+    popPaper: {
+      borderRadius: 10,
     },
     noSlotsAvailable: {
       fontSize: 14,
@@ -529,6 +532,7 @@ const useStyles = makeStyles((theme: Theme) => {
       border: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     searchInput: {
@@ -763,6 +767,22 @@ const useStyles = makeStyles((theme: Theme) => {
     modalBoxVital: {
       minHeight: 'auto',
     },
+    previewButton: {
+      minWidth: 170,
+      fontSize: 13,
+      padding: '8px 40px',
+      fontWeight: theme.typography.fontWeightBold,
+      color: '#fff',
+      backgroundColor: '#fc9916',
+      margin: theme.spacing(0, 1, 0, 1),
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: '#e68c15',
+      },
+      '&:disabled': {
+        opacity: 0.7,
+      },
+    },
   };
 });
 
@@ -795,11 +815,19 @@ interface CallPopoverProps {
   isAppointmentEnded: boolean;
   setIsPdfPageOpen: (flag: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
+  createSDCasesheetCall: (flag: boolean) => void;
   pubnub: any;
   sessionClient: any;
   lastMsg: any;
   presenceEventObject: any;
   hasCameraMicPermission: boolean;
+  isNewprescriptionEditable: boolean;
+  isNewPrescription: boolean;
+  isClickedOnEdit: boolean;
+  tabValue: number;
+  setIsClickedOnEdit: (flag: boolean) => void;
+  isClickedOnPriview: boolean;
+  setIsClickedOnPriview: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -849,7 +877,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     referralDescription,
     setReferralError,
     medicationHistory,
-    setLifeStyleError,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -869,6 +896,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -881,7 +909,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showAbandonment, setShowAbandonment] = React.useState(false);
   const [showVital, setShowVital] = React.useState<boolean>(false);
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
-  const [showLifeStyle, setShowLifeStyle] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
 
@@ -1090,8 +1117,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [otherTextValue, setOtherTextValue] = useState('');
   const [textOtherCancel, setTextOtherCancel] = useState(false);
   const [otherTextCancelValue, setOtherTextCancelValue] = useState('');
-  const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
-  const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [isResendLoading, setIsResendLoading] = useState(false);
   const {
     currentPatient,
@@ -1125,6 +1150,34 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    if (props.appointmentStatus === STATUS.COMPLETED) {
+      setRemainingCallTime(0);
+      clearInterval(intervalcallId);
+      clearInterval(intervalCallAbundant);
+      setConsultStart(false);
+      props.setIsClickedOnPriview(true);
+      props.setIsClickedOnEdit(false);
+    }
+  }, [props.appointmentStatus]);
+
+  useEffect(() => {
+    if (props.isNewprescriptionEditable) {
+      props.setIsClickedOnEdit(true);
+      props.setIsClickedOnPriview(false);
+      setCaseSheetEdit(true);
+      props.setIsPdfPageOpen(false);
+    }
+  }, [props.isNewprescriptionEditable]);
+
+  useEffect(() => {
+    if (props.tabValue === 1) {
+      props.setIsClickedOnEdit(true);
+      props.setIsClickedOnPriview(false);
+    }
+  }, [props.tabValue]);
+
   useEffect(() => {
     if (remainingCallTime === 0) {
       clearInterval(intervalcallId);
@@ -1422,14 +1475,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
     clearError();
   }, [cancelReason]);
-  useEffect(() => {
-    if (props.appointmentStatus === STATUS.COMPLETED) {
-      setRemainingCallTime(0);
-      clearInterval(intervalcallId);
-      clearInterval(intervalCallAbundant);
-      setConsultStart(false);
-    }
-  }, [props.appointmentStatus]);
+
   const pubnub = props.pubnub;
 
   useEffect(() => {
@@ -1461,7 +1507,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
-        lastMsg.message.message !== appointmentComplete
+        lastMsg.message.message !== appointmentComplete &&
+        lastMsg.message.message !== doctorAutoResponse
       ) {
         setIsNewMsg(true);
       } else {
@@ -1489,7 +1536,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     ) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
-        return obj.uuid === REQUEST_ROLES.PATIENT;
+        return obj.uuid === 'PATIENT' || obj.uuid.indexOf('PATIENT_') > -1;
       });
       if (presenceEventObject.totalOccupancy >= 2) {
         didPatientJoined = true;
@@ -1533,7 +1580,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       sentBy: REQUEST_ROLES.DOCTOR,
     };
     unSubscribeBrowserButtonsListener();
-    if (!isResend) {
+    if (!isResend && !props.isNewPrescription) {
       pubnub.publish(
         {
           message: text,
@@ -1574,6 +1621,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         doctorInfo: currentPatient,
         pdfUrl: props.prescriptionPdf,
         isResend: isResend,
+        isNewPrescription: props.isNewPrescription,
       };
       const timeToLoad = isResend ? 1000 : 100;
 
@@ -1805,8 +1853,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const showCallMoreBtns =
     props.appointmentStatus === STATUS.COMPLETED &&
     props.sentToPatient === false &&
-    (isClickedOnPriview || props.sentToPatient === false) &&
-    !isClickedOnEdit
+    (props.isClickedOnPriview || props.sentToPatient === false) &&
+    !props.isClickedOnEdit
       ? true
       : false;
 
@@ -1834,38 +1882,37 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const weightValue = getDefaultValue('weight') || '';
     const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
     const referralDescription = getDefaultValue('referralDescription') || '';
-    const medicationHistory = getDefaultValue('medicationHistory') || '';
-    if (medicationHistory.trim() === '') {
-      setShowLifeStyle(true);
-      setLifeStyleError({
-        medicationHistory: 'This field is required',
-      });
-      return true;
-    } else if (heightValue.trim() === '' && weightValue.trim() === '') {
-      setShowLifeStyle(false);
-      setLifeStyleError({
-        medicationHistory: '',
-      });
-      setShowVital(true);
-      setVitalError({
-        height: 'This field is required',
-        weight: 'This field is required',
-      });
-      return true;
-    } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
-      setShowVital(true);
-      setVitalError({
-        height: 'This field is required',
-        weight: '',
-      });
-      return true;
-    } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
-      setShowVital(true);
-      setVitalError({
-        height: '',
-        weight: 'This field is required',
-      });
-      return true;
+    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
+      if (vitalIgnored) {
+        setVitalError({
+          height: '',
+          weight: '',
+        });
+        return false;
+      } else {
+        if (heightValue.trim() === '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: 'This field is required',
+          });
+          return true;
+        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
+          setShowVital(true);
+          setVitalError({
+            height: 'This field is required',
+            weight: '',
+          });
+          return true;
+        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
+          setShowVital(true);
+          setVitalError({
+            height: '',
+            weight: 'This field is required',
+          });
+          return true;
+        }
+      }
     } else if (referralSpecialtyName && referralDescription.trim() === '') {
       setShowVital(false);
       setVitalError({
@@ -1882,14 +1929,56 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
+  const onEndConuslt = () => {
+    setVitalIgnored(true);
+    setShowVital(false);
+
+    const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
+    const referralDescription = getDefaultValue('referralDescription');
+
+    const isEmptyFields = referralSpecialtyName && referralDescription.trim() === '';
+
+    if (!isEmptyFields) {
+      stopInterval();
+      if (showVideo) {
+        stopAudioVideoCall();
+      }
+      props.endConsultAction();
+      isConsultStarted = false;
+    }
+  };
+
+  const onPrint = () => {
+    var divToPrint = document.getElementById('prescriptionWrapper');
+    var head = document.getElementsByTagName('head')[0].innerHTML;
+
+    var popupWin = window.open('', '_blank');
+    popupWin.document.open();
+
+    const winHtml = `<!DOCTYPE html>
+    <html>
+        <head>
+          ${head}
+        </head>
+        <body onload="window.print()">
+          ${divToPrint.innerHTML}
+        </body>
+    </html>`;
+
+    popupWin.document.write(winHtml);
+    popupWin.document.close();
+  };
+
+  const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
+
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
-          {(props.appointmentStatus !== STATUS.COMPLETED || isClickedOnEdit) && (
+          {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link to="/calendar">
+          <Link to={localStorage.getItem('callBackUrl')}>
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -1906,65 +1995,71 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               : ''}
           </div>
         </div>
-        {/* <span className={classes.timeLeft}>
-          {props.startAppointment
-            ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-                seconds.toString().length < 2 ? '0' + seconds : seconds
-              }`
-            : getTimerText()}
-        </span> */}
         <div className={classes.consultButtonContainer}>
           <span>
             {props.appointmentStatus === STATUS.COMPLETED &&
-            currentUserType !== LoggedInUserType.SECRETARY &&
-            props.sentToPatient === true ? (
-              <Button
-                className={classes.backButton}
-                onClick={() => {
-                  onStopConsult(true);
-                }}
-              >
-                {isResendLoading ? 'please wait...' : 'Resend Prescription'}
-                {/* <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span> */}
-              </Button>
-            ) : (
-              props.appointmentStatus === STATUS.COMPLETED &&
+              currentUserType !== LoggedInUserType.SECRETARY &&
+              props.sentToPatient === true && (
+                <>
+                  <Button
+                    className={classes.previewButton}
+                    onClick={() => {
+                      if (props.isClickedOnEdit) {
+                        props.setIsClickedOnEdit(false);
+                        props.setIsClickedOnPriview(true);
+                        setCaseSheetEdit(false);
+                      } else {
+                        props.setIsClickedOnEdit(true);
+                        props.setIsClickedOnPriview(false);
+                        setCaseSheetEdit(false);
+                      }
+                    }}
+                  >
+                    {props.isClickedOnEdit ? 'Preview Prescription' : 'View Casesheet'}
+                  </Button>
+                </>
+              )}
+            {props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
-                  {(isClickedOnPriview || props.sentToPatient === false) && !isClickedOnEdit && (
-                    <Fragment>
-                      <Button
-                        className={classes.backButton}
-                        disabled={sendToPatientButtonDisable}
-                        onClick={() => {
-                          setIsClickedOnEdit(true);
-                          setIsClickedOnPriview(false);
-                          setCaseSheetEdit(true);
-                          props.setIsPdfPageOpen(false);
-                        }}
-                      >
-                        Edit Case Sheet
-                      </Button>
-                      <Button
-                        className={classes.endconsultButton}
-                        disabled={sendToPatientButtonDisable}
-                        onClick={() => {
-                          localStorage.removeItem(`${params.id}`);
-                          setSendToPatientButtonDisable(true);
-                          props.saveCasesheetAction(true, true);
-                        }}
-                      >
-                        {sendToPatientButtonDisable && 'Please wait...'}
-                        {sendToPatientButtonDisable ? (
-                          <CircularProgress size={22} />
-                        ) : (
-                          'Send To Patient'
-                        )}
-                      </Button>
-                    </Fragment>
-                  )}
-                  {isClickedOnEdit && (
+                  {(props.isClickedOnPriview || props.sentToPatient === false) &&
+                    !props.isClickedOnEdit && (
+                      <Fragment>
+                        <Button
+                          className={classes.backButton}
+                          disabled={sendToPatientButtonDisable}
+                          onClick={() => {
+                            props.setIsClickedOnEdit(true);
+                            props.setIsClickedOnPriview(false);
+                            setCaseSheetEdit(true);
+                            props.setIsPdfPageOpen(false);
+                            if(props.isNewPrescription){
+                              handleCloseThreeDots();
+                            }
+                          }}
+                        >
+                          Edit Case Sheet
+                        </Button>
+                        <Button
+                          className={classes.endconsultButton}
+                          disabled={sendToPatientButtonDisable}
+                          onClick={() => {
+                            localStorage.removeItem(`${params.id}`);
+                            setSendToPatientButtonDisable(true);
+                            props.saveCasesheetAction(true, true);
+                          }}
+                        >
+                          {sendToPatientButtonDisable && 'Please wait...'}
+                          {sendToPatientButtonDisable ? (
+                            <CircularProgress size={22} />
+                          ) : (
+                            'Send To Patient'
+                          )}
+                        </Button>
+                      </Fragment>
+                    )}
+                  {props.isClickedOnEdit && (
                     <Fragment>
                       <Button
                         className={classes.backButton}
@@ -1977,8 +2072,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         disabled={props.saving}
                         onClick={() => {
                           props.saveCasesheetAction(true, false);
-                          setIsClickedOnEdit(false);
-                          setIsClickedOnPriview(true);
+                          props.setIsClickedOnEdit(false);
+                          props.setIsClickedOnPriview(true);
                           props.setIsPdfPageOpen(true);
                         }}
                       >
@@ -1988,7 +2083,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   )}
                 </span>
               )
-            )}
+            // )
+            }
             {(props.appointmentStatus !== STATUS.COMPLETED ||
               currentUserType === LoggedInUserType.SECRETARY) &&
               (props.startAppointment ? (
@@ -2061,6 +2157,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.createSessionAction();
                     setCaseSheetEdit(true);
                     setConsultStart(true);
+                    props.setIsClickedOnEdit(true);
+                    props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
                     if (
                       appointmentInfo &&
@@ -2178,6 +2276,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 Reschedule
               </Button>
             )}
+
             {!showCallMoreBtns && (
               <Button
                 className={classes.consultIcon}
@@ -2257,18 +2356,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-                disabled={
-                  props.appointmentStatus === STATUS.COMPLETED ||
-                  props.appointmentStatus === STATUS.CANCELLED ||
-                  props.isAppointmentEnded ||
-                  disableOnCancel ||
-                  (isPastAppointment() && !consultStart) ||
-                  (appointmentInfo!.appointmentState !== 'NEW' &&
-                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
+                // disabled={
+                //   props.appointmentStatus === STATUS.COMPLETED ||
+                //   props.appointmentStatus === STATUS.CANCELLED ||
+                //   props.isAppointmentEnded ||
+                //   disableOnCancel ||
+                //   (isPastAppointment() && !consultStart) ||
+                //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                //     appointmentInfo!.status !== STATUS.PENDING)
+                // }
+                disabled={(props.isNewPrescription && props.isNewprescriptionEditable) || 
+                  (!props.isNewPrescription && props.appointmentStatus === STATUS.COMPLETED && !props.sentToPatient)}
                 onClick={(e) => handleClickThreeDots(e)}
               >
                 <img src={require('images/ic_more.svg')} />
@@ -2279,7 +2380,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.dotPaper}
               open={openThreeDots}
               anchorEl={anchorElThreeDots}
+              
               onClose={handleCloseThreeDots}
+              classes={{ paper: classes.popPaper }}
               anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'right',
@@ -2292,21 +2395,54 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {currentUserType !== LoggedInUserType.SECRETARY && (
-                    <li
-                      onClick={() => {
-                        if (
-                          appointmentInfo!.status === STATUS.PENDING ||
-                          appointmentInfo!.status === STATUS.IN_PROGRESS
-                        ) {
-                          handleCloseThreeDots();
-                          setIsCancelPopoverOpen(true);
-                        } else {
-                          alert('You are not allowed to cancel the appointment.');
-                        }
-                      }}
-                    >
-                      End or Cancel Consult
-                    </li>
+                    <>
+                      {props.appointmentStatus === STATUS.COMPLETED &&
+                        props.sentToPatient === true && (
+                          <>
+                            <li
+                              onClick={() => {
+                                onStopConsult(true);
+                              }}
+                            >
+                              {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                            </li>
+                            <li
+                              onClick={() => {
+                                onPrint();
+                              }}
+                            >
+                              Print Prescription
+                            </li>
+                            <li
+                              onClick={() => {
+                                props.createSDCasesheetCall(true);
+                              }}
+                            >
+                              Issue New Prescription
+                            </li>
+                          </>
+                        )}
+
+                      {props.appointmentStatus !== STATUS.COMPLETED &&
+                        (appointmentInfo!.status === STATUS.PENDING ||
+                          appointmentInfo!.status === STATUS.IN_PROGRESS) && (
+                          <li
+                            onClick={() => {
+                              if (
+                                appointmentInfo!.status === STATUS.PENDING ||
+                                appointmentInfo!.status === STATUS.IN_PROGRESS
+                              ) {
+                                handleCloseThreeDots();
+                                setIsCancelPopoverOpen(true);
+                              } else {
+                                alert('You are not allowed to cancel the appointment.');
+                              }
+                            }}
+                          >
+                            End or Cancel Consult
+                          </li>
+                        )}
+                    </>
                   )}
                 </ul>
               </div>
@@ -2865,12 +3001,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              It seems some of the vital info is empty. Please fill the vital section's field under
-              the Case Sheet tab.
+              {
+                "It seems some of the Vital info is empty. Please fill the vital section's field under the Case Sheet tab. Please click on “Edit” to edit details or “Continue” to submit the case sheet"
+              }
             </h3>
             <div className={classes.okButtonWrapper}>
+              <Button
+                className={classes.okButton}
+                onClick={() => {
+                  onEndConuslt();
+                }}
+              >
+                Continue
+              </Button>
               <Button className={classes.okButton} onClick={() => setShowVital(false)}>
-                Ok
+                Edit
               </Button>
             </div>
           </div>
@@ -2908,37 +3053,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
-      {/* life style field required popup start */}
-      <Modal
-        open={showLifeStyle}
-        onClose={() => setShowLifeStyle(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setShowLifeStyle(false)}
-              />
-            </Button>
-          </div>
-          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
-            <h3>
-              It seems some of the life style info is empty. Please fill the "patient medical and
-              family history" section's field under the Case Sheet tab.
-            </h3>
-            <div className={classes.okButtonWrapper}>
-              <Button className={classes.okButton} onClick={() => setShowLifeStyle(false)}>
-                Ok
-              </Button>
-            </div>
-          </div>
-        </Paper>
-      </Modal>
-      {/* life style field required popup end */}
     </div>
   );
 };

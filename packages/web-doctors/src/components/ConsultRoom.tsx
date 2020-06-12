@@ -169,6 +169,10 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 0,
           paddingTop: 8,
           minWidth: 'auto',
+          '&:hover': {
+            boxShadow: 'none',
+            backgroundColor: 'transparent',
+          },
         },
       },
     },
@@ -194,9 +198,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     callMsg: {
@@ -223,11 +229,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addImgBtn: {
       background: 'transparent',
-      minWidth: 35,
-      maxWidth: 35,
       boxShadow: 'none',
+      padding: 0,
+      paddingRight: 10,
+      fontSize: 16,
+      fontWeight: 500,
+      textTransform: 'none',
       '&:hover': {
         background: 'transparent',
+        boxShadow: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     sendBtn: {
@@ -407,6 +420,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -474,7 +488,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
-        lastMsg.message.message !== appointmentComplete
+        lastMsg.message.message !== appointmentComplete &&
+        lastMsg.message.message !== doctorAutoResponse
       ) {
         setIsNewMsg(true);
       } else {
@@ -501,6 +516,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         srollToBottomAction();
       }
     );
+  };
+
+  async function imageExists(image_url: string) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', image_url, false);
+    http.send();
+    return http.status !== 404;
+  }
+
+  const handleImageError = async (e: any, imageUrl: string) => {
+    e.persist();
+    const isImageExist = await imageExists(imageUrl);
+    if (isImageExist) {
+      e.target.src = imageUrl;
+      return;
+    } else {
+      e.target.src = 'https://flevix.com/wp-content/uploads/2019/07/Spin-Preloader.gif';
+      setTimeout(() => {
+        handleImageError(e, imageUrl);
+      }, 1000 * 10);
+    }
   };
 
   const uploadfile = (url: string) => {
@@ -587,6 +623,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       return rowData.message;
     }
   };
+
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     const { patientDetails } = useContext(CaseSheetContext);
     if (
@@ -606,7 +643,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -617,11 +655,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {leftComponent == 1 && <span className={classes.boldTxt}></span>}
             {rowData.duration === '00 : 00' ? (
               <>
-                <span className={classes.none}>
+                <span className={classes.missCall}>
                   <img src={require('images/ic_missedcall.svg')} />
                   {rowData.message.toLocaleLowerCase() === 'video call ended'
-                    ? 'You missed a video call'
-                    : 'You missed a voice call'}
+                    ? 'Patient missed a video call'
+                    : 'Patient missed a voice call'}
                 </span>
               </>
             ) : rowData.duration ? (
@@ -665,7 +703,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         <img src={require('images/pdf_thumbnail.png')} />
                       </a>
                     ) : (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
@@ -705,7 +749,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -766,7 +811,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     className={classes.imageUpload}
                   >
                     {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     ) : (
                       <a href={rowData.url} target="_blank">
                         <img src={require('images/pdf_thumbnail.png')} />
@@ -813,7 +864,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       jrDrComponent++;
       leftComponent = 0;
@@ -872,7 +924,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         <img src={require('images/pdf_thumbnail.png')} />
                       </a>
                     ) : (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
@@ -925,7 +983,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   component="label"
                   disabled={fileUploading}
                 >
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
                   <input
                     type="file"
                     style={{ display: 'none' }}
@@ -986,6 +1043,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       }
                     }}
                   />
+                  <span>Attach</span>
+                  <span>
+                    <img src={require('images/round-attach.svg')} alt="" />
+                  </span>
                 </Button>
                 <AphTextField
                   autoFocus

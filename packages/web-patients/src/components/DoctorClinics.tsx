@@ -165,7 +165,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                     <div className={classes.clinicImg}>
                       <img
                         src={
-                          clinicDetails.facility.imageUrl || 'https://via.placeholder.com/328x138'
+                          clinicDetails.facility.imageUrl || require('images/hospital-image.png')
                         }
                       />
                     </div>

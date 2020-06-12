@@ -44,16 +44,18 @@ export const buildRxPdfData = (): RxPdfData => {
   };
 
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
-  const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
+  const appointmentDetails = { displayId: '', consultDate: '', consultTime: '', consultType: '' };
   const diagnosesTests = [
     {
       itemname: '',
+      testInstruction: '',
     },
   ];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '', details: '' }];
   const followUpDetails = '';
   const referralSpecialtyName = '';
   const referralSpecialtyDescription = '';
+  const removedMedicinesList: string[] = [];
 
   return {
     prescriptions,
@@ -69,5 +71,6 @@ export const buildRxPdfData = (): RxPdfData => {
     followUpDetails,
     referralSpecialtyName,
     referralSpecialtyDescription,
+    removedMedicinesList,
   };
 };

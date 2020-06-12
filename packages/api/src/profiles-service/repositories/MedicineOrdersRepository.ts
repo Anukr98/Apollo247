@@ -8,6 +8,9 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
+  MedicineOrderCancelReason,
+  ONE_APOLLO_USER_REG,
+  OneApollTransaction,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -25,6 +28,109 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
+  async getOneApolloUser(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetByMobile?mobilenumber=${mobileNumber}&BusinessUnit=${process.env.ONEAPOLLO_BUSINESS_UNIT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      console.log('error occured in getOneApolloUser()', e);
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+
+  async createOneApolloUser(oneApollUser: ONE_APOLLO_USER_REG) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/Customer/Register', {
+        method: 'POST',
+        body: JSON.stringify(oneApollUser),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_ERROR, undefined, { e });
+    }
+  }
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+    try {
+      const response = await fetch(process.env.ONEAPOLLO_BASE_URL + '/transaction/create', {
+        method: 'POST',
+        body: JSON.stringify(transaction),
+        headers: {
+          'Content-Type': 'application/json',
+          AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+          APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+        },
+      });
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.CREATE_ONEAPOLLO_USER_TRANSACTION_ERROR, undefined, {
+        e,
+      });
+    }
+  }
+
+  getInvoiceDetailsByOrderId(orderId: MedicineOrders['orderAutoId']) {
+    return MedicineOrderInvoice.find({
+      select: ['billDetails', 'itemDetails'],
+      where: { orderNo: orderId },
+    });
+  }
+
+  async getOneApolloUserTransactions(mobileNumber: string) {
+    try {
+      const response = await fetch(
+        `${process.env.ONEAPOLLO_BASE_URL}/Customer/GetAllTransactions?mobilenumber=${mobileNumber}&Count=${process.env.ONEAPOLLO_DEFAULT_TRANSACTIONS_COUNT}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            AccessToken: <string>process.env.ONEAPOLLO_ACCESS_TOKEN,
+            APIKey: <string>process.env.ONEAPOLLO_API_KEY,
+          },
+        }
+      );
+      return response.json();
+    } catch (e) {
+      throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
+    }
+  }
+
+  findPharamaOrdersByOrderId(orderAutoId: MedicineOrders['orderAutoId']) {
+    return this.createQueryBuilder()
+      .from(MedicineOrders, 'mo')
+      .leftJoinAndSelect(
+        MedicineOrderPayments,
+        'mp',
+        'mo."orderAutoId"=mp."medicineOrdersOrderAutoId"'
+      )
+      .select([
+        'mp."paymentDateTime"',
+        'mp."paymentRefId"',
+        'mp."amountPaid"',
+        'mp."paymentStatus"',
+        'mp."bankTxnId"',
+        'mo."orderAutoId"',
+        'mo."orderDateTime"',
+        'mp."paymentMode"',
+      ])
+      .where('mo.orderAutoId = :orderAutoId', { orderAutoId })
+      .getRawOne();
+  }
+
   saveMedicineOrderLineItem(lineItemAttrs: Partial<MedicineOrderLineItems>) {
     return MedicineOrderLineItems.create(lineItemAttrs)
       .save()
@@ -33,6 +139,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
           medicineOrderError,
         });
       });
+  }
+
+  findMedicineOrderPayment(id: string) {
+    return MedicineOrderPayments.findOne({
+      where: { medicineOrders: id },
+    }).catch((medicinePaymentError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
+        medicinePaymentError,
+      });
+    });
   }
 
   saveMedicineOrderPayment(paymentAttrs: Partial<MedicineOrderPayments>) {
@@ -72,7 +188,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
         'medicineOrderLineItems',
         'patient.patientAddress',
+        'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
       ],
     });
   }
@@ -136,15 +254,33 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patient: String) {
+  findByPatientIds(ids: string[], offset?: number, limit?: number) {
     return this.find({
-      where: { patient },
+      where: { patient: In(ids), currentStatus: Not(MEDICINE_ORDER_STATUS.QUOTE) },
+      relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
+      skip: offset,
+      take: limit,
+      order: {
+        orderDateTime: 'DESC',
+      },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDERS_ERROR, undefined, {
+        error,
+      });
+    });
+  }
+
+  getMedicineOrdersList(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -159,6 +295,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -173,6 +311,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -187,6 +327,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -201,6 +343,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderPayments',
         'medicineOrdersStatus',
         'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderShipments.medicineOrderInvoice',
         'medicineOrderInvoice',
         'patient',
       ],
@@ -218,6 +362,10 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  updateMedicineOrder(id: string, orderAutoId: number, orderObj: Partial<MedicineOrders>) {
+    return this.update({ id, orderAutoId }, orderObj);
   }
 
   getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
@@ -309,7 +457,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const ordersList = await this.find({
       where: {
         createdDate: Between(newStartDate, newEndDate),
-        orderTat: Not(['', null]),
+        orderTat: Not(''),
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
         currentStatus: In([
           MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
@@ -318,7 +466,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    console.log('ordersList====>', ordersList);
+    console.log('ordersList====>', ordersList.length);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -326,31 +474,50 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
     if (ordersList.length > 0) {
       ordersList.map(async (orderDetails) => {
-        if (Date.parse(orderDetails.orderTat.toString())) {
+        console.log('orderAutoId=>', orderDetails.orderAutoId);
+        if (
+          orderDetails.orderTat.toString() != null &&
+          Date.parse(orderDetails.orderTat.toString())
+        ) {
           const tatDate = new Date(orderDetails.orderTat.toString());
+          console.log('tatDate==>', tatDate);
           const istCreatedDate = orderDetails.createdDate;
+          console.log('istCreatedDate==>', istCreatedDate);
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
+          console.log('orderTat==>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {
             vdcCount++;
           }
+          console.log('counts==>', totalCount, vdcCount);
           if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+            console.log('inside condition');
             const orderStatusDetails = await MedicineOrdersStatus.findOne({
               where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
             });
+            console.log('orderStatusDetails=>', orderStatusDetails);
             if (orderStatusDetails) {
+              console.log('inside orderStatusDetails');
+              console.log(orderStatusDetails.statusDate, orderDetails.createdDate);
+              console.log(
+                'difference==>',
+                Math.abs(
+                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
+                )
+              );
               const deliveryTat = Math.floor(
                 Math.abs(
                   differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
                 )
               );
-
+              console.log('deliveryTat=>', deliveryTat);
               if (deliveryTat <= 120) {
                 deliveryCount++;
               } else {
                 vdcDeliveryCount++;
               }
+              console.log('delivery,VdcCounts=>', deliveryCount, vdcCount);
             }
           }
         }
@@ -374,6 +541,23 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersCountByCouponAndPatient(patient: string, coupon: string) {
     return this.count({
       where: { patient, coupon, currentStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+    });
+  }
+
+  getMedicineOrderCancelReasons() {
+    return MedicineOrderCancelReason.find({}).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
+    });
+  }
+  getMedicineOrderCancelReasonByCode(reasonCode: String) {
+    return MedicineOrderCancelReason.findOne({
+      where: { reasonCode },
+    }).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
     });
   }
 }

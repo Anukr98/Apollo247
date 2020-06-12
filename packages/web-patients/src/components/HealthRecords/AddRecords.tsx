@@ -18,7 +18,11 @@ import { Link } from 'react-router-dom';
 import { MedicalTest } from './DetailedFindings';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { MedicalTestUnit, AddMedicalRecordParametersInput } from '../../graphql/types/globalTypes';
+import {
+  MedicalTestUnit,
+  AddMedicalRecordParametersInput,
+  PRISM_DOCUMENT_CATEGORY,
+} from '../../graphql/types/globalTypes';
 import { ADD_MEDICAL_RECORD, UPLOAD_DOCUMENT } from '../../graphql/profiles';
 import moment from 'moment';
 import { AphCalendarPastDate } from '../AphCalendarPastDate';
@@ -29,6 +33,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -501,7 +506,10 @@ export const AddRecords: React.FC = (props) => {
           variables: {
             UploadDocumentInput: {
               base64FileInput: baseFormatSplitArry[1],
-              category: 'HealthChecks',
+              category:
+                typeOfRecord === 'PRESCRIPTION'
+                  ? PRISM_DOCUMENT_CATEGORY.OpSummary
+                  : PRISM_DOCUMENT_CATEGORY.TestReports,
               fileType: item.fileType === 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
               patientId: currentPatient && currentPatient.id,
             },
@@ -672,15 +680,6 @@ export const AddRecords: React.FC = (props) => {
     }
   };
 
-  const toBase64 = (file: any) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-    });
   return (
     <div className={classes.root}>
       <Header />
@@ -754,9 +753,7 @@ export const AddRecords: React.FC = (props) => {
                                 const fileSize = file.size;
                                 if (fileSize > 2000000) {
                                   setIsAlertOpen(true);
-                                  setAlertMessage(
-                                    'Invalid File Size. File size must be less than 2MB'
-                                  );
+                                  setAlertMessage(INVALID_FILE_SIZE_ERROR);
                                 } else if (
                                   fileExtension &&
                                   (fileExtension.toLowerCase() === 'png' ||

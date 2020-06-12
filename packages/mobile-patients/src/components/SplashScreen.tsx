@@ -21,7 +21,11 @@ import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+  setBugfenderPhoneNumber,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -29,7 +33,6 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -89,6 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
+    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -100,15 +104,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
+      AsyncStorage.removeItem('endAPICalled');
     } catch (error) {
       CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
     }
   }, []);
 
   useEffect(() => {
+    handleDeepLink();
+  }, []);
+
+  const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             handleOpenURL(url);
             console.log('linking', url);
@@ -120,14 +130,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         console.log('event', event);
+        setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
         handleOpenURL(event.url);
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
-  }, []);
-
+  };
   const handleOpenURL = (event: any) => {
     try {
       console.log('event', event);
@@ -136,6 +146,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
 
       const data = route.split('?');
+      setBugFenderLog('DEEP_LINK_DATA', data);
       route = data[0];
 
       // console.log(data, 'data');
@@ -147,6 +158,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           linkId = data[1].split('&');
           if (linkId.length > 0) {
             linkId = linkId[0];
+            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
           }
         }
       } catch (error) {}
@@ -182,12 +194,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineSearch handleopen');
           getData('MedicineSearch', data.length === 2 ? linkId : undefined);
           break;
+
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
           getData('MedicineDetail', data.length === 2 ? linkId : undefined);
           break;
 
+        case 'MedicineCart':
+          console.log('MedicineCart handleopen');
+          getData('MedicineCart', data.length === 2 ? linkId : undefined);
+          break;
+
         default:
+          getData('ConsultRoom');
           break;
       }
       console.log('route', route);
@@ -311,7 +330,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
-
+    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
@@ -342,8 +361,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
         break;
+
       case 'Speciality':
         console.log('Speciality id', id);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: id ? id : '',
         });
@@ -372,6 +393,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });
         }
+        break;
+
+      case 'MedicineCart':
+        console.log('MedicineCart handleopen');
+        props.navigation.navigate(AppRoutes.YourCart, {
+          movedFrom: 'splashscreen',
+        });
         break;
 
       default:
@@ -444,6 +472,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
+      checkForVersionUpdate();
     }
     setAppState(nextAppState);
   };

@@ -1,12 +1,13 @@
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
+import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
-const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const apolloProdBaseUrl = 'https://magento.apollo247.com';
+const apolloUatBaseUrl = 'https://magento.apollo247.com';
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -18,7 +19,7 @@ const testApiCredentialsProd = {
   InterfaceClient: 'MCKINSEY',
 };
 
-enum AppEnv {
+export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   PROD = 'PROD',
@@ -34,13 +35,16 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
-  TAT_API_TIMEOUT_IN_SEC: 30,
+  TAT_API_TIMEOUT_IN_SEC: 20,
+  PACKAGING_CHARGES: 0,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
   HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
+  CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
+  PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -49,22 +53,26 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const PharmaApiConfig = {
   dev: {
-    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
-    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201], // change to PROD
-    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH: [apolloUatBaseUrl, pharmaToken201], //later cahnge to UAT
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
-    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
       testApiCredentialsDev,
@@ -83,8 +91,12 @@ const PharmaApiConfig = {
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    GET_STORE_INVENTORY: [
+      `https://online.apollopharmacy.org/TAT/Apollo/GetStoreInventory`,
+      pharmaTokenYXV,
+    ],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
-    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    MED_CART_ITEMS_DETAILS: [`${apolloProdBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
     GET_DELIVERY_TIME: [
@@ -137,14 +149,14 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.5131',
+  Android_Version: '2.5151',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 // QA
@@ -173,16 +185,16 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.315',
-  Android_Version: '2.315',
+  iOS_Version: '2.532',
+  Android_Version: '2.532',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //Production
@@ -213,12 +225,13 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.31',
-  Android_Version: '2.31',
+  iOS_Version: '2.53',
+  Android_Version: '2.53',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://www.apollo247.com/covid19?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL:
+    'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //PERFORMANCE
@@ -256,7 +269,7 @@ const ConfigurationPERFORM = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //VAPT
@@ -294,7 +307,7 @@ const ConfigurationVAPT = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 //DevelopmentReplica
@@ -332,7 +345,7 @@ const ConfigurationDevReplica = {
   COVID_RISK_LEVEL_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app',
+    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
 };
 
 const Configuration =
@@ -513,21 +526,16 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Area pharmacy store not found on app',
-      'Cancel the medicine order',
-      'Delay in pharmacy order',
-      'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery',
-      'Inappropriate attitude and behavior of pharmacy staff',
-      'Incorrect medicines',
-      'Issues in order confirmations',
-      'Medicines not delivered',
-      'Order cancelled, no refund',
-      'Orders cancelled without any information',
-      'Payment issues in online pharmacy',
-      'Software not user-friendly',
-      'Updates in order delivery or status of the order',
-      'Refund required',
+      'I want to cancel my medicine order with a refund',
+      'The order was successfully placed but medicines not yet delivered',
+      'I was not able to make the payment due to technical errors',
+      'My money got deducted but no order confirmation received',
+      'My order got canceled with no prior notice hence, need the refund',
+      'There is a mismatch in the quantity of medicines ordered and delivered',
+      'The medicines delivered are not the ones which were ordered by me',
+      'The app is crashing/ website is working too slow',
+      'The excess amount charged for medicine delivery',
+      'Inappropriate attitude or behaviour of delivery staff',
     ],
   },
   {
@@ -633,6 +641,7 @@ const Specialities: SpecialitiesType = {
 };
 
 export const AppConfig = {
+  APP_ENV,
   Configuration,
   Specialities,
 };

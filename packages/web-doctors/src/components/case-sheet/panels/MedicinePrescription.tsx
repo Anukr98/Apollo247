@@ -31,7 +31,7 @@ import {
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { isEmpty, trim } from 'lodash';
+import { findIndex } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
@@ -45,7 +45,7 @@ import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const apiDetails = {
-  url: process.env.PHARMACY_MED_SEARCH_URL,
+  url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
@@ -129,11 +129,6 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: 5,
       padding: '0px 5px',
       position: 'relative',
-      '& img': {
-        border: '1px solid #00b38e',
-        borderRadius: '50%',
-        maxWidth: 24,
-      },
     },
     paper: {
       textAlign: 'left',
@@ -176,6 +171,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -194,6 +190,7 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     medicineHeading: {
@@ -391,6 +388,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '5px 0',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     deleteSymptom: {
@@ -406,6 +404,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: '5px 10px',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     inputRoot: {
@@ -559,6 +558,16 @@ const useStyles = makeStyles((theme: Theme) =>
       top: -5,
       left: 7,
     },
+    removed: {
+      fontSize: 12,
+      color: '#890000 !important',
+      margin: '5px 0',
+    },
+    addMedicineIcon: {
+      border: '1px solid #00b38e',
+      borderRadius: '50%',
+      maxWidth: 24,
+    },
   })
 );
 
@@ -662,7 +671,11 @@ export const MedicinePrescription: React.FC = () => {
   const {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
+    removedMedicinePrescription,
+    setRemovedMedicinePrescription,
   } = useContext(CaseSheetContext);
+  const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
+  const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
   const [dosageList, setDosageList] = useState<any>([]);
   const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('');
   const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('');
@@ -679,6 +692,7 @@ export const MedicinePrescription: React.FC = () => {
   >([]);
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
+  const { caseSheetEdit } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
   useEffect(() => {
@@ -708,13 +722,20 @@ export const MedicinePrescription: React.FC = () => {
       });
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setRemovedMedicinePrescriptionState([...removedMedicinePrescription]);
+      setMedicinePrescriptionState([...selectedMedicinesArr]);
+    }, 2000);
+  }, []);
+
   const [errorState, setErrorState] = React.useState<errorObject>({
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
     dosageErr: false,
   });
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<string>('1');
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
@@ -1044,22 +1065,36 @@ export const MedicinePrescription: React.FC = () => {
     return (
       medicine.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.label}>
-          <div>
-            {parts.map((part) => (
+          {suggestion.sku !== '' ? (
+            <div>
+              {parts.map((part) => (
+                <span
+                  key={part.text}
+                  style={{
+                    fontWeight: part.highlight ? 500 : 400,
+                    whiteSpace: 'pre',
+                  }}
+                >
+                  {part.text.length > 46
+                    ? part.text.substring(0, 45).toLowerCase() + '...'
+                    : part.text.toLowerCase()}
+                </span>
+              ))}
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          ) : (
+            <div>
+              <span>Add</span>
               <span
-                key={part.text}
                 style={{
-                  fontWeight: part.highlight ? 500 : 400,
+                  fontWeight: 400,
                   whiteSpace: 'pre',
                 }}
               >
-                {part.text.length > 46
-                  ? part.text.substring(0, 45).toLowerCase() + '...'
-                  : part.text.toLowerCase()}
+                {` "${suggestion.label}"`}
               </span>
-            ))}
-            <img src={require('images/ic_dark_plus.svg')} alt="" />
-          </div>
+            </div>
+          )}
         </AphTooltip>
       )
     );
@@ -1122,9 +1157,6 @@ export const MedicinePrescription: React.FC = () => {
           result.data.productdp[0].PharmaOverview[0].Doseform &&
           medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
         ) {
-          console.log(
-            medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
-          );
           setMedicineUnit(
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultUnitDp
@@ -1180,6 +1212,7 @@ export const MedicinePrescription: React.FC = () => {
 
   const fetchMedicines = async (value: any) => {
     const CancelToken = axios.CancelToken;
+    let found = false;
     cancel && cancel();
     setLoading(true);
     const FinalSearchdata: any = [];
@@ -1200,12 +1233,19 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
+        suggestions.length > 0 && suggestions[0].sku === '' && suggestions.splice(0, 1);
+
         medicines.forEach((res: any) => {
           const data = { label: '', sku: '' };
           data.label = res.name;
           data.sku = res.sku;
           FinalSearchdata.push(data);
+          if (value.toLowerCase() === res.name.toLowerCase()) {
+            found = true;
+          }
         });
+        (!found || medicines.length === 0) && FinalSearchdata.unshift({ label: value, sku: '' });
+
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
@@ -1222,7 +1262,68 @@ export const MedicinePrescription: React.FC = () => {
       });
     setLoading(false);
   };
+
+  const removedMedicinePrescriptionFn = (type: string, idx: any) => {
+    let existingRemovedMedicineIndex = findIndex(
+      removedMedicinePrescription,
+      (medicine) => medicine.medicineName === selectedValue
+    );
+
+    let presetMedicineIndex = findIndex(
+      medicinePrescriptionState,
+      (medicine: any) => medicine.medicineName === selectedValue
+    );
+
+    if (type === 'add') {
+      const removedMedicineArr = [...removedMedicinePrescription];
+
+      const initialRemovedMedicinePrescriptionIndex = findIndex(
+        removedMedicinePrescriptionState,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      existingRemovedMedicineIndex = findIndex(
+        removedMedicineArr,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      presetMedicineIndex = findIndex(
+        medicinePrescriptionState,
+        (medicine: any) => medicine.medicineName === selectedMedicinesArr[idx].medicineName
+      );
+
+      if (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+        removedMedicineArr.push(selectedMedicinesArr[idx]);
+
+      const storageItem = getLocalStorageItem(params.id);
+
+      if (
+        storageItem &&
+        (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+      ) {
+        storageItem.removedMedicinePrescription = removedMedicineArr;
+        updateLocalStorageItem(params.id, storageItem);
+      }
+
+      if (presetMedicineIndex !== -1 || initialRemovedMedicinePrescriptionIndex !== -1)
+        setRemovedMedicinePrescription(removedMedicineArr);
+    } else if (type === 'delete') {
+      if (existingRemovedMedicineIndex !== -1)
+        removedMedicinePrescription.splice(existingRemovedMedicineIndex, 1);
+
+      const storageItem = getLocalStorageItem(params.id);
+      if (storageItem && existingRemovedMedicineIndex !== -1) {
+        storageItem.removedMedicinePrescription = removedMedicinePrescription;
+        updateLocalStorageItem(params.id, storageItem);
+      }
+
+      if (existingRemovedMedicineIndex === -1)
+        setRemovedMedicinePrescription(removedMedicinePrescription);
+    }
+  };
+
   const deletemedicine = (idx: any) => {
+    removedMedicinePrescriptionFn('add', idx);
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);
@@ -1232,6 +1333,7 @@ export const MedicinePrescription: React.FC = () => {
       updateLocalStorageItem(params.id, storageItem);
     }
     setSelectedMedicinesArr(selectedMedicinesArr);
+
     const sum = idx + Math.random();
     setIdx(sum);
   };
@@ -1256,9 +1358,7 @@ export const MedicinePrescription: React.FC = () => {
       return slot;
     });
     setDaySlots(dayslots);
-    console.log(selectedMedicinesArr);
     if (selectedMedicinesArr && selectedMedicinesArr[idx]) {
-      console.log(selectedMedicinesArr[idx]);
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
       setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!);
       if (
@@ -1323,7 +1423,6 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(idx);
   };
   const updateFavMedicine = (idx: any) => {
-    console.log(idx, 333333333);
     setSelectedValue(idx.medicineName);
     setFavMedicineName(idx.medicineName);
     if (idx.medicineUnit && dosageList.indexOf(idx.medicineUnit) < 0) {
@@ -1377,12 +1476,6 @@ export const MedicinePrescription: React.FC = () => {
     setShowDosage(true);
   };
 
-  // useEffect(() => {
-  //   if (idx >= 0) {
-  //     setSelectedMedicines(selectedMedicines);
-  //     setSelectedMedicinesArr(selectedMedicinesArr);
-  //   }
-  // }, [selectedMedicines, idx, selectedMedicinesArr]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
@@ -1642,7 +1735,6 @@ export const MedicinePrescription: React.FC = () => {
         routeOfAdministration: roaOption,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
       };
-
       const inputParams: any = {
         id: selectedId,
         value: selectedValue,
@@ -1672,13 +1764,18 @@ export const MedicinePrescription: React.FC = () => {
         medicineObj.splice(idx, 1, inputParams);
         setSelectedMedicines(medicineObj);
       } else {
+        removedMedicinePrescriptionFn('delete', null);
+        const storageItem = getLocalStorageItem(params.id);
+
         const medicineArray = selectedMedicinesArr;
         medicineArray!.push(inputParamsArr);
-        const storageItem = getLocalStorageItem(params.id);
+
         if (storageItem) {
           storageItem.medicinePrescription = medicineArray;
+
           updateLocalStorageItem(params.id, storageItem);
         }
+
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.push(inputParams);
@@ -1875,134 +1972,172 @@ export const MedicinePrescription: React.FC = () => {
   };
   const horizontal = medicineForm ? 'right' : 'left';
 
+  const medicineHtml = (type: string) => {
+    const isPresent = type === 'present';
+    const medicines = isPresent ? selectedMedicinesArr : removedMedicinePrescription;
+
+    return (
+      medicines &&
+      medicines.length > 0 &&
+      medicines!.map((_medicine: any, index: number) => {
+        const medicine = _medicine!;
+        const duration =
+          medicine.medicineConsumptionDurationInDays &&
+          ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
+            medicine.medicineConsumptionDurationUnit
+              ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+              : 'day(s)'
+          } `;
+
+        const whenString =
+          medicine.medicineToBeTaken.length > 0
+            ? toBeTaken(medicine.medicineToBeTaken)
+                .join(', ')
+                .toLowerCase()
+            : '';
+
+        const unitHtmls =
+          medUnitObject && medUnitObject[medicine.medicineUnit]
+            ? medUnitObject[medicine.medicineUnit].value
+            : medicine.medicineUnit.toLowerCase();
+
+        const isInDuration =
+          (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
+          (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
+            ? ''
+            : 'in the ';
+        let timesString =
+          medicine.medicineTimings.length > 0
+            ? isInDuration +
+              medicine.medicineTimings
+                .join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
+            : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
+        let dosageHtml = '';
+        if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+          const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+          const customTimingArray = [];
+          if (dosageTimingArray && dosageTimingArray[0])
+            customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[1])
+            customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[2])
+            customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[3])
+            customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          dosageHtml = customTimingArray.join(' - ');
+        } else {
+          dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+        }
+
+        const actionButtons = isPresent
+          ? [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={() => updateMedicine(index)}
+              >
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>,
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.deleteSymptom }}
+                onClick={() => deletemedicine(index)}
+              >
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>,
+            ]
+          : [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={(id) => {
+                  setIsEditFavMedicine(true);
+                  updateFavMedicine(medicine);
+                }}
+                style={{ right: 10 }}
+              >
+                <img
+                  src={favouriteMedicine && require('images/add_doctor_white.svg')}
+                  alt=""
+                  className={classes.addMedicineIcon}
+                />
+              </AphButton>,
+            ];
+
+        return (
+          <div style={{ position: 'relative' }} key={index}>
+            <Paper className={classes.medicineCard}>
+              {isPresent ? (
+                <h5>{medicine.medicineName}</h5>
+              ) : (
+                <h5>
+                  <s>{medicine.medicineName}</s>
+                </h5>
+              )}
+              {!isPresent && <p className={classes.removed}>This medicine has been discontinued</p>}
+              <h6>
+                {`${
+                  medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                } ${dosageHtml.toLowerCase()}${
+                  timesString.length > 0 &&
+                  medicine.medicineCustomDosage &&
+                  medicine.medicineCustomDosage !== ''
+                    ? ' (' + timesString + ') '
+                    : ' '
+                }${
+                  medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                    ? ''
+                    : medicine.medicineFrequency
+                    ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                      ? 'STAT (Immediately)'
+                      : medicine.medicineFrequency
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                    : dosageFrequency[0].id
+                        .split('_')
+                        .join(' ')
+                        .toLowerCase()
+                }
+              ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                  timesString.length > 0 &&
+                  medicine.medicineCustomDosage &&
+                  medicine.medicineCustomDosage !== ''
+                    ? ''
+                    : timesString
+                }
+              `}
+              </h6>
+              {medicine.routeOfAdministration && (
+                <h6>{`To be taken: ${medicine.routeOfAdministration
+                  .split('_')
+                  .join(' ')
+                  .toLowerCase()}`}</h6>
+              )}
+              {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+            </Paper>
+            {caseSheetEdit && actionButtons}
+          </div>
+        );
+      })
+    );
+  };
+
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
         <Grid item lg={6} xs={12}>
           <div className={classes.medicineHeading}>Medicines</div>
-          {selectedMedicinesArr!.map((_medicine: any, index: number) => {
-            const medicine = _medicine!;
-            const duration =
-              medicine.medicineConsumptionDurationInDays &&
-              ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
-                medicine.medicineConsumptionDurationUnit
-                  ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-                  : 'day(s)'
-              } `;
-
-            const whenString =
-              medicine.medicineToBeTaken.length > 0
-                ? toBeTaken(medicine.medicineToBeTaken)
-                    .join(', ')
-                    .toLowerCase()
-                : '';
-
-            const unitHtmls =
-              medUnitObject && medUnitObject[medicine.medicineUnit]
-                ? medUnitObject[medicine.medicineUnit].value
-                : medicine.medicineUnit.toLowerCase();
-
-            const isInDuration =
-              (medicine.medicineTimings.length === 1 &&
-                medicine.medicineTimings[0] === 'AS_NEEDED') ||
-              (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
-                ? ''
-                : 'in the ';
-            let timesString =
-              medicine.medicineTimings.length > 0
-                ? isInDuration +
-                  medicine.medicineTimings
-                    .join(' , ')
-                    .toLowerCase()
-                    .replace('_', ' ')
-                : '';
-            if (timesString && timesString !== '') {
-              timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
-            }
-            let dosageHtml = '';
-            if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
-              const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
-              const customTimingArray = [];
-              if (dosageTimingArray && dosageTimingArray[0])
-                customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[1])
-                customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[2])
-                customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-              if (dosageTimingArray && dosageTimingArray[3])
-                customTimingArray.push(dosageTimingArray[3] + unitHtmls);
-              dosageHtml = customTimingArray.join(' - ');
-            } else {
-              dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
-            }
-            return (
-              <div style={{ position: 'relative' }} key={index}>
-                <Paper className={classes.medicineCard}>
-                  <h5>{medicine.medicineName}</h5>
-                  <h6>
-                    {`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                    } ${dosageHtml.toLowerCase()}${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ' (' + timesString + ') '
-                        : ' '
-                    }${
-                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : medicine.medicineFrequency
-                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                          ? 'STAT (Immediately)'
-                          : medicine.medicineFrequency
-                              .split('_')
-                              .join(' ')
-                              .toLowerCase()
-                        : dosageFrequency[0].id
-                            .split('_')
-                            .join(' ')
-                            .toLowerCase()
-                    }
-                    ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : timesString
-                    }
-                    `}
-                  </h6>
-                  {medicine.routeOfAdministration && (
-                    <h6>{`To be taken: ${medicine.routeOfAdministration
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()}`}</h6>
-                  )}
-                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-                </Paper>
-                {caseSheetEdit && (
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.updateSymptom }}
-                    onClick={() => updateMedicine(index)}
-                  >
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
-                )}
-                {caseSheetEdit && (
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.deleteSymptom }}
-                    onClick={() => deletemedicine(index)}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                )}
-              </div>
-            );
-          })}
+          {medicineHtml('present')}
+          {medicineHtml('removed')}
           {caseSheetEdit && (
             <AphButton
               variant="contained"
@@ -2128,6 +2263,7 @@ export const MedicinePrescription: React.FC = () => {
                       <img
                         src={favouriteMedicine && require('images/add_doctor_white.svg')}
                         alt=""
+                        className={classes.addMedicineIcon}
                       />
                     </AphButton>
                   </div>
@@ -2171,9 +2307,8 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm(
-                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
-                            );
+                            setMedicineForm((e.target as HTMLInputElement)
+                              .value as MEDICINE_FORM_TYPES);
                           }}
                           row
                         >
@@ -2706,9 +2841,8 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm(
-                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
-                              );
+                              setMedicineForm((e.target as HTMLInputElement)
+                                .value as MEDICINE_FORM_TYPES);
                             }}
                             row
                           >

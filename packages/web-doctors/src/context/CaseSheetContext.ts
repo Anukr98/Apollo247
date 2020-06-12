@@ -18,10 +18,6 @@ export interface VitalErrorProps {
   weight: String;
 }
 
-export interface LifeStyleErrorProps {
-  medicationHistory: String;
-}
-
 export interface CaseSheetContextProps {
   loading: boolean;
   caseSheetEdit: boolean;
@@ -65,6 +61,17 @@ export interface CaseSheetContextProps {
       >
     | (() => void);
 
+  removedMedicinePrescription:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+    | null;
+  setRemovedMedicinePrescription:
+    | React.Dispatch<
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+        >
+      >
+    | (() => void);
+
   favouriteMedicines: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null;
   setFavouriteMedicines:
     | React.Dispatch<
@@ -98,7 +105,6 @@ export interface CaseSheetContextProps {
   familyHistory: string;
   menstrualHistory: string;
   vitalError: VitalErrorProps;
-  lifeStyleError: LifeStyleErrorProps;
   referralDescription: string;
   referralSpecialtyName: string;
   referralError: boolean;
@@ -117,7 +123,6 @@ export interface CaseSheetContextProps {
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
   setVitalError: (vitalError: VitalErrorProps) => void;
-  setLifeStyleError: (lifeStyleError: LifeStyleErrorProps) => void;
   setReferralSpecialtyName: (referralSpecialtyName: string) => void;
   setReferralDescription: (referralDescription: string) => void;
   setReferralError: (referralError: boolean) => void;
@@ -158,6 +163,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFavouriteTests: () => {},
   medicinePrescription: null,
   setMedicinePrescription: () => {},
+  removedMedicinePrescription: null,
+  setRemovedMedicinePrescription: () => {},
   favouriteMedicines: [],
   setFavouriteMedicines: () => {},
   consultType: [],
@@ -189,9 +196,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
     height: '',
     weight: '',
   },
-  lifeStyleError: {
-    medicationHistory: '',
-  },
   referralSpecialtyName: '',
   referralDescription: '',
   referralError: false,
@@ -215,7 +219,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setReferralError: () => {},
   setMedicationHistory: () => {},
   setOccupationHistory: () => {},
-  setLifeStyleError: () => {},
 
   gender: '',
   setGender: () => {},

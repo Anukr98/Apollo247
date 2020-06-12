@@ -499,6 +499,17 @@ export const GET_CASESHEET_JRD = gql`
           status
           appointmentState
           displayId
+          doctorInfo {
+            firstName
+            lastName
+            displayName
+            mobileNumber
+            specialty {
+              name
+            }
+            photoUrl
+            salutation
+          }
         }
         medicinePrescription {
           id
@@ -837,6 +848,22 @@ export const GET_CASESHEET = gql`
           routeOfAdministration
           medicineCustomDosage
         }
+        removedMedicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
         otherInstructions {
           instruction
         }
@@ -859,6 +886,8 @@ export const GET_CASESHEET = gql`
         followUpConsultType
         consultType
         notes
+        version
+        prescriptionGeneratedDate
       }
       pastAppointments {
         id
@@ -1150,6 +1179,20 @@ export const MODIFY_CASESHEET = gql`
         routeOfAdministration
         medicineCustomDosage
       }
+      removedMedicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineUnit
+        medicineInstructions
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
+      }
       notes
       otherInstructions {
         instruction
@@ -1285,6 +1328,7 @@ export const SEARCH_DIAGNOSTICS = gql`
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         itemName
+        itemId
       }
     }
   }
@@ -1294,6 +1338,7 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
       blobName
+      prescriptionGeneratedDate
     }
   }
 `;

@@ -4,14 +4,19 @@
   "scripts": {
     "bootstrap": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install && lerna run build --scope @aph/web-ui-components --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
     "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
-    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal && bash replace-script.sh",
     "clean": "lerna exec -- rm -rf dist/* && lerna clean",
     "format": "lerna run format",
     "lint": "lerna run lint",
-    "typecheck": "lerna run typecheck"
+    "typecheck": "lerna run typecheck",
+    "doctor": "cd packages/web-doctors && npm run start"
   },
   "devDependencies": {
     "typescript": "3.5.2",
     "lerna": "^3.15.0"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^7.1.1",
+    "sendgrid": "^5.2.3"
   }
 }

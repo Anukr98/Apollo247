@@ -187,7 +187,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Navigation: React.FC = (props) => {
+interface NavigationProps {
+  activeMedicineRoutes: Array<string>;
+}
+
+export const Navigation: React.FC<NavigationProps> = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
@@ -210,6 +214,20 @@ export const Navigation: React.FC = (props) => {
       {isSignedIn ? (
         <>
           <Link
+            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.doctorsLanding()}
+            title={'Doctors'}
+          >
+            Doctors
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.covidLanding()}
+            title={'Covid 19'}
+          >
+            Covid 19
+          </Link>
+          <Link
             className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
             to={clientRoutes.appointments()}
             title={'Appointments'}
@@ -219,8 +237,7 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
+              props.activeMedicineRoutes.find((route) => route === currentPath)
                 ? classes.menuItemActive
                 : ''
             }
@@ -259,8 +276,7 @@ export const Navigation: React.FC = (props) => {
           <Link
             to={clientRoutes.medicines()}
             className={
-              currentPath === clientRoutes.medicines() ||
-              currentPath === clientRoutes.prescriptionsLanding()
+              props.activeMedicineRoutes.find((route) => route === currentPath)
                 ? classes.menuItemActive
                 : ''
             }
@@ -292,7 +308,7 @@ export const Navigation: React.FC = (props) => {
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ||
+      {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
@@ -302,7 +318,7 @@ export const Navigation: React.FC = (props) => {
         </div>
       ) : (
         ''
-      )}
+      )} */}
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}

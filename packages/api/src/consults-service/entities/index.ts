@@ -14,6 +14,12 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+export enum APPOINTMENT_UPDATED_BY {
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
+  ADMIN = 'ADMIN',
+}
+
 export enum ES_DOCTOR_SLOT_STATUS {
   BOOKED = 'BOOKED',
   OPEN = 'OPEN',
@@ -55,6 +61,19 @@ export enum STATUS {
   UNAVAILABLE_MEDMANTRA = 'UNAVAILABLE_MEDMANTRA',
 }
 
+export enum REFUND_STATUS {
+  REFUND_REQUEST_RAISED = 'REFUND_REQUEST_RAISED',
+  REFUND_FAILED = 'REFUND_FAILED',
+  REFUND_SUCCESSFUL = 'REFUND_SUCCESSFUL',
+  REFUND_REQUEST_NOT_RAISED = 'REFUND_REQUEST_NOT_RAISED',
+}
+
+export enum PAYTM_STATUS {
+  TXN_FAILURE = 'TXN_FAILURE',
+  PENDING = 'PENDING',
+  TXN_SUCCESS = 'TXN_SUCCESS',
+}
+
 export enum APPOINTMENT_STATE {
   NEW = 'NEW',
   TRANSFER = 'TRANSFER',
@@ -64,10 +83,39 @@ export enum APPOINTMENT_STATE {
   AWAITING_RESCHEDULE = 'AWAITING_RESCHEDULE',
 }
 
+export enum PAYMENT_METHODS {
+  DC = 'DEBIT_CARD',
+  CC = 'CREDIT_CARD',
+  NB = 'NET_BANKING',
+  PPI = 'PAYTM_WALLET',
+  EMI = 'CREDIT_CARD_EMI',
+  UPI = 'UPI',
+  PAYTMCC = 'PAYTM_POSTPAID',
+  COD = 'COD',
+}
+
+export enum PAYMENT_METHODS_REVERSE {
+  DEBIT_CARD = 'DC',
+  CREDIT_CARD = 'CC',
+  NET_BANKING = 'NB',
+  PAYTM_WALLET = 'PPI',
+  CREDIT_CARD_EMI = 'EMI',
+  UPI = 'UPI',
+  PAYTM_POSTPAID = 'PAYTMCC',
+  COD = 'COD',
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   JUNIOR = 'JUNIOR',
+  SYSTEM = 'SYSTEM',
+  ADMIN = 'ADMIN',
+}
+
+export enum VALUE_TYPE {
+  STATUS = 'STATUS',
+  OTHER = 'OTHER',
 }
 
 export enum TRANSFER_STATUS {
@@ -143,6 +191,12 @@ export class Appointment extends BaseEntity {
 
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
+
+  @OneToMany(
+    (type) => AppointmentUpdateHistory,
+    (appointmentUpdateHistory) => appointmentUpdateHistory.appointment
+  )
+  appointmentUpdateHistory: AppointmentUpdateHistory[];
 
   @Column({ nullable: true })
   couponCode: string;
@@ -234,6 +288,15 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   deviceType: DEVICETYPE;
 
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'paymentInfo',
+    default: () => "'{}'",
+  })
+  paymentInfo: Partial<AppointmentPayments>;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -256,6 +319,9 @@ export class Appointment extends BaseEntity {
     (appointmentPayments) => appointmentPayments.appointment
   )
   appointmentPayments: AppointmentPayments[];
+
+  @OneToMany((type) => AppointmentRefunds, (appointmentRefunds) => appointmentRefunds.appointment)
+  appointmentRefunds: AppointmentRefunds[];
 
   @OneToMany((type) => AppointmentNoShow, (appointmentNoShow) => appointmentNoShow.appointment)
   appointmentNoShow: AppointmentNoShow[];
@@ -312,6 +378,9 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ nullable: true })
   orderId: string;
 
+  @Column('decimal', { precision: 10, scale: 5, nullable: true })
+  refundAmount: number;
+
   @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
 
@@ -324,13 +393,19 @@ export class AppointmentPayments extends BaseEntity {
   @Column()
   paymentType: APPOINTMENT_PAYMENT_TYPE;
 
+  @Column({ nullable: true })
+  paymentMode: PAYMENT_METHODS_REVERSE;
+
+  @Column({ nullable: true })
+  bankName: string;
+
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
 
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeUpdate()
@@ -340,6 +415,91 @@ export class AppointmentPayments extends BaseEntity {
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
+
+  @OneToMany(
+    (type) => AppointmentRefunds,
+    (appointmentRefunds) => appointmentRefunds.appointmentPayments
+  )
+  appointmentRefunds: AppointmentRefunds[];
+}
+
+@Entity()
+export class AppointmentRefunds extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  refId: string;
+
+  @Column({ nullable: false })
+  txnId: string;
+
+  @Column('decimal', { precision: 10, scale: 5, nullable: false })
+  refundAmount: number;
+
+  @Column({ nullable: true })
+  totalRefundAmount: number;
+
+  @Column({ nullable: true, type: 'text' })
+  comments: string;
+
+  @Column({ nullable: false, default: 'REFUND_REQUEST_NOT_RAISED' })
+  refundStatus: REFUND_STATUS;
+
+  @Column({ nullable: true })
+  paytmRequestStatus: PAYTM_STATUS;
+
+  @Column({ nullable: true })
+  refundId: string;
+
+  @Column({ nullable: true })
+  txnAmount: number;
+
+  @Column({ nullable: true })
+  txnTimestamp: Date;
+
+  @Column({ nullable: false })
+  orderId: string;
+
+  @Column({ nullable: true })
+  payMethod: string;
+
+  @Column({ nullable: true })
+  acceptRefundTimestamp: Date;
+
+  @Column({ nullable: true })
+  userCreditInitiateTimestamp: Date;
+
+  @Column({ nullable: true })
+  resultCode: string;
+
+  @Column({ type: 'text', nullable: true })
+  resultMsg: string;
+
+  @Column({ nullable: false, default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    default: () => "'{}'",
+  })
+  refundDetailInfo: JSON;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne(() => Appointment, (appointment) => appointment.appointmentRefunds)
+  appointment: Appointment;
+
+  @ManyToOne(
+    () => AppointmentPayments,
+    (appointmentPayments) => appointmentPayments.appointmentRefunds
+  )
+  appointmentPayments: AppointmentPayments;
 }
 //AppointmentPayments ends
 
@@ -489,6 +649,7 @@ export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = 'DAYS',
   MONTHS = 'MONTHS',
   WEEKS = 'WEEKS',
+  TILL_NEXT_REVIEW = 'TILL_NEXT_REVIEW',
 }
 export enum MEDICINE_FREQUENCY {
   AS_NEEDED = 'AS_NEEDED',
@@ -530,10 +691,12 @@ export enum MEDICINE_UNIT {
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
-  DROPS = 'DROP',
+  DROPS = 'DROPS',
+  DROP = 'DROP',
   GEL = 'GEL',
   GM = 'GM',
   INJECTION = 'INJECTION',
+  INTERNATIONAL_UNIT = 'INTERNATIONAL_UNIT',
   LOTION = 'LOTION',
   ML = 'ML',
   MG = 'MG',
@@ -551,6 +714,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = 'SUSPENSION',
   SYRUP = 'SYRUP',
   TABLET = 'TABLET',
+  TEASPOON = 'TEASPOON',
   UNIT = 'UNIT',
 }
 
@@ -558,6 +722,7 @@ export enum AUDIT_STATUS {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
 }
+
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -578,6 +743,7 @@ export type CaseSheetMedicinePrescription = {
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
   itemname: string;
+  testInstruction: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
@@ -638,6 +804,9 @@ export class CaseSheet extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, default: false })
+  isJdConsultStarted: Boolean;
+
   @Column({ nullable: true, type: 'json' })
   medicinePrescription: string;
 
@@ -654,10 +823,16 @@ export class CaseSheet extends BaseEntity {
   preperationTimeInSeconds: number;
 
   @Column({ nullable: true })
+  prescriptionGeneratedDate: Date;
+
+  @Column({ nullable: true })
   referralSpecialtyName: string;
 
   @Column({ nullable: true })
   referralDescription: string;
+
+  @Column({ nullable: true, type: 'json' })
+  removedMedicinePrescription: string;
 
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
@@ -681,6 +856,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: 1 })
+  version: number;
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;
@@ -764,6 +942,38 @@ export class TransferAppointmentDetails extends BaseEntity {
   }
 }
 //transfer apppointment ends
+
+//AppointmentUpdateHistory starts
+@Entity()
+export class AppointmentUpdateHistory extends BaseEntity {
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentUpdateHistory)
+  appointment: Appointment;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  userType: APPOINTMENT_UPDATED_BY;
+
+  @Column({ nullable: true })
+  userName: string;
+
+  @Column({ nullable: true })
+  valueType: VALUE_TYPE;
+
+  @Column({ nullable: true })
+  fromValue: string;
+
+  @Column({ nullable: true })
+  toValue: string;
+
+  @Column({ nullable: true })
+  reason: string;
+}
+//AppointmentUpdateHistory ends
 
 //Reschedule-appointment starts
 @Entity()
@@ -1540,11 +1750,16 @@ export interface RxPdfData {
     phoneNumber: string;
   };
   vitals: { height: string; weight: string; temperature: string; bp: string };
-  appointmentDetails: { displayId: string; consultDate: string; consultType: string };
+  appointmentDetails: {
+    displayId: string;
+    consultDate: string;
+    consultTime: string;
+    consultType: string;
+  };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
   followUpDetails: string;
   referralSpecialtyName: string;
   referralSpecialtyDescription: string;
+  removedMedicinesList: string[];
 }
-///////////////////////////////////////////////////////////

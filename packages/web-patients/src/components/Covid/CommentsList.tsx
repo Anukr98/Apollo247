@@ -8,7 +8,7 @@ import fetchUtil from 'helpers/fetch';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 16,
+      padding: 16,
     },
     listRow: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -18,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       fontSize: 12,
       lineHeight: '18px',
+      '&:first-child': {
+        borderTop: 'none',
+      },
     },
     circlularProgress: {
       display: 'flex',
@@ -32,12 +35,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     postDate: {
       marginLeft: 'auto',
-      color: '#0087ba',
-      opacity: 0.6,
+      opacity: 0.8,
     },
     postContent: {
       paddingTop: 8,
       opacity: 0.6,
+      wordWrap: 'break-word',
+      whiteSpace: 'pre-wrap',
     },
     bottomActions: {
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -54,15 +58,46 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    feedback: {
+      backgroundColor: '#f7f7f7',
+      fontSize: 12,
+      borderRadius: 10,
+      marginLeft: 20,
+      marginTop: 10,
+      padding: 12,
+      color: '#01475b',
+    },
+    feedbackHead: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    feedbackDate: {
+      marginLeft: 'auto',
+      opacity: 0.8,
+    },
+    feedbackContent: {
+      opacity: 0.6,
+      paddingTop: 8,
+      '& a': {
+        color: '#0087ba',
+      },
+    },
   };
 });
 
-type CommentItem = {
+interface CommentReplyInterface {
+  content: string;
+  name: string;
+  createdAt: string;
+}
+
+interface CommentItem {
   email: string;
   createdAt: string;
   content: string;
   name: string;
-};
+  commentReply: CommentReplyInterface;
+}
 
 interface CommentListProps {
   commentData: Array<CommentItem>;
@@ -101,18 +136,36 @@ export const CommentsList: React.FC<CommentListProps> = (props) => {
     <div className={classes.root}>
       {commentsArr.length > 0 &&
         commentsArr.map((item) => {
+          let newCommentDateTime = moment.unix(parseInt(item.createdAt)).format('DD MMMM YYYY');
+          const today = moment();
+          const engagementDate = parseInt(item.createdAt);
+          const daysDiff = today.diff(moment.unix(engagementDate), 'days');
+          if (daysDiff === 0) {
+            newCommentDateTime = 'Today';
+          } else if (daysDiff === 1) newCommentDateTime = 'Yesterday';
           return (
             <div className={classes.listRow}>
               <div className={classes.listHeader}>
                 <div className={classes.postTitle}>
                   {item.name && item.name.length ? item.name : item.email} wrote
                 </div>
-                <div className={classes.postDate}>
-                  {item.createdAt &&
-                    moment.unix(parseInt(item.createdAt)).format('ddd[,] DD MMMM YYYY')}
-                </div>
+                <div className={classes.postDate}>{item.createdAt && newCommentDateTime}</div>
               </div>
               <div className={classes.postContent}>{item.content}</div>
+              {item && item.commentReply && (
+                <div className={classes.feedback}>
+                  <div className={classes.feedbackHead}>
+                    <div>{item.commentReply.name} </div>
+                    <div className={classes.feedbackDate}>
+                      {moment.unix(parseInt(item.commentReply.createdAt)).format('DD MMMM YYYY')}
+                    </div>
+                  </div>
+                  <div
+                    className={classes.feedbackContent}
+                    dangerouslySetInnerHTML={{ __html: item.commentReply.content }}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

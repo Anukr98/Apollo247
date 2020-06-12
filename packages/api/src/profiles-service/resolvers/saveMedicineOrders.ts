@@ -21,6 +21,7 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
+    ORDER_BILLED
     PAYMENT_SUCCESS
     PAYMENT_PENDING
     PAYMENT_FAILED
@@ -191,7 +192,6 @@ const SaveMedicineOrder: Resolver<
       console.log(lineItemOrder);
     });
 
-    //save in order status table
     const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
       medicineOrders: saveOrder,
       orderStatus: MEDICINE_ORDER_STATUS.QUOTE,

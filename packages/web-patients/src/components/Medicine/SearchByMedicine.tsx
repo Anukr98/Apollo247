@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicineListscard } from 'components/Medicine/MedicineListscard';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -13,11 +13,16 @@ import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
-import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { useCurrentPatient } from 'hooks/authHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     searchByBrandPage: {
+      position: 'relative',
       [theme.breakpoints.up('sm')]: {
         backgroundColor: '#f7f8f5',
       },
@@ -120,7 +126,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     scrollBar: {
-      height: 'calc(100vh - 195px) !important',
+      height: 'calc(100vh - 220px) !important',
       zIndex: 1,
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 245px) !important',
@@ -132,6 +138,70 @@ const useStyles = makeStyles((theme: Theme) => {
     footerLinks: {
       [theme.breakpoints.down(900)]: {
         display: 'none',
+      },
+    },
+    autoSearch: {
+      backgroundColor: '#fff',
+      padding: '20px 40px',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      marginTop: -48,
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        boxShadow: 'none',
+        padding: 0,
+        marginTop: -10,
+      },
+      '& >div:first-child': {
+        flex: 1,
+        [theme.breakpoints.down('xs')]: {
+          top: 50,
+        },
+      },
+    },
+    searchRight: {
+      marginLeft: 'auto',
+      paddingLeft: 40,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    uploadPreBtn: {
+      backgroundColor: '#fff',
+      color: '#fcb716',
+      border: '1px solid #fcb716',
+      minWidth: 105,
+      '&:hover': {
+        backgroundColor: '#fff',
+        color: '#fcb716',
+      },
+    },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
+    noData: {
+      marginTop: 10,
+      fontSize: 14,
+      color: '#01475b',
+      lineHeight: '18px',
+      paddingBottom: 16,
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 25,
+        paddingLeft: 10,
+      },
+    },
+    specialOffer: {
+      cursor: 'pointer',
+      paddingLeft: 20,
+      fontSize: 16,
+      color: '#01475b',
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 10,
       },
     },
   };
@@ -163,6 +233,10 @@ export const SearchByMedicine: React.FC = (props) => {
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [isReloaded, setIsReloaded] = useState(false);
 
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [heading, setHeading] = React.useState<string>('');
+
   const getTitle = () => {
     let title = params.searchMedicineType;
     if (params.searchMedicineType.includes('-')) {
@@ -176,6 +250,7 @@ export const SearchByMedicine: React.FC = (props) => {
 
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
+  const paramSearchType = params.searchMedicineType;
 
   const onSearchMedicine = async () => {
     setIsLoading(true);
@@ -183,7 +258,7 @@ export const SearchByMedicine: React.FC = (props) => {
       .post(
         apiDetailsText.url,
         {
-          params: localStorage.getItem('searchText') || paramSearchText,
+          params: paramSearchText,
         },
         {
           headers: {
@@ -194,16 +269,18 @@ export const SearchByMedicine: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineList(data.products);
         setMedicineListFiltered(data.products);
+        setHeading(data.search_heading || '');
         setIsLoading(false);
       })
       .catch((e) => {
         console.log(e);
         setIsLoading(false);
+        setHeading('');
       });
   };
 
   useEffect(() => {
-    if (!medicineList && Number(paramSearchText) > 0 && !localStorage.getItem('searchText')) {
+    if (!medicineList && paramSearchType !== 'search-medicines' && Number(paramSearchText) > 0) {
       setIsLoading(true);
       axios
         .post(
@@ -222,11 +299,13 @@ export const SearchByMedicine: React.FC = (props) => {
         .then(({ data }) => {
           if (data && data.products) {
             setMedicineList(data.products);
+            setHeading('');
             setIsLoading(false);
           }
         })
         .catch((e) => {
           setIsLoading(false);
+          setHeading('');
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
@@ -356,6 +435,14 @@ export const SearchByMedicine: React.FC = (props) => {
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
 
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
+
   return (
     <div className={classes.root}>
       <Header />
@@ -380,6 +467,29 @@ export const SearchByMedicine: React.FC = (props) => {
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
           </div>
+          <div className={classes.autoSearch}>
+            <MedicineAutoSearch />
+            <div className={classes.searchRight}>
+              <AphButton
+                className={classes.uploadPreBtn}
+                onClick={() => handleUploadPrescription()}
+                title={'Upload Prescription'}
+              >
+                Upload
+              </AphButton>
+              <div
+                className={classes.specialOffer}
+                onClick={() =>
+                  (window.location.href = clientRoutes.searchByMedicine('deals-of-the-day', '1195'))
+                }
+              >
+                <span>
+                  <img src={require('images/offer-icon.svg')} alt="" />
+                </span>
+                <span>Special offers</span>
+              </div>
+            </div>
+          </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
               disableFilters={disableFilters}
@@ -400,16 +510,12 @@ export const SearchByMedicine: React.FC = (props) => {
               <Scrollbars className={classes.scrollBar} autoHide={true}>
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
-                    {() =>
-                      params.searchMedicineType === 'search-by-brand' ? (
+                    {() => (
+                      <>
+                        <div className={classes.noData}>{heading}</div>
                         <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      ) : (
-                        <MedicineListscard
-                          medicineList={medicineListFiltered}
-                          isLoading={isLoading}
-                        />
-                      )
-                    }
+                      </>
+                    )}
                   </MedicinesCartContext.Consumer>
                 </div>
               </Scrollbars>
@@ -417,6 +523,25 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription
+          closeDialog={() => {
+            setIsUploadPreDialogOpen(false);
+          }}
+          isNonCartFlow={true}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+        />
+      </AphDialog>
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
+      </AphDialog>
       {!onePrimaryUser && <ManageProfile />}
       <div className={classes.footerLinks}>
         <BottomLinks />

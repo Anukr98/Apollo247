@@ -3,6 +3,7 @@ type YesOrNo = { value: 'Yes' | 'No' };
 export enum AppsFlyerEventName {
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
+  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
@@ -98,7 +99,9 @@ export interface AppsFlyerEvents {
     'Referral Code'?: string;
   };
   [AppsFlyerEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-
+  [AppsFlyerEventName.OTP_VERIFICATION_SUCCESS]: {
+    'Mobile Number': string;
+  };
   // ********** Home Screen Events ********** \\
 
   [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
@@ -145,6 +148,7 @@ export interface AppsFlyerEvents {
     'Brand ID'?: string;
     'category name'?: string;
     'category ID'?: string;
+    revenue: number;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -271,6 +275,7 @@ export interface AppsFlyerEvents {
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
+    revenue: number;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -405,6 +410,7 @@ export interface AppsFlyerEvents {
     'Patient Gender': string;
     'Mobile Number': number;
     'Customer ID': string;
+    revenue: number;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {

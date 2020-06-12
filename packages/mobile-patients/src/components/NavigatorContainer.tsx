@@ -66,19 +66,27 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
+import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
+import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
-import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan'
+import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan';
 import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
 import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
+import { CheckoutSceneNew } from '@aph/mobile-patients/src/components/CheckoutScenenew';
+import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus';
+import { OneApolloMembership } from '@aph/mobile-patients/src/components/OneApollo/OneApolloMembership';
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
+import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
+import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
+import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -139,6 +147,8 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
+  LinkUHID = 'LinkUHID',
+  ReadMoreLinkUHID = 'ReadMoreLinkUHID',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -148,8 +158,14 @@ export enum AppRoutes {
   ConsultCheckout = 'ConsultCheckout',
   ConsultPaymentnew = 'ConsultPaymentnew',
   ConsultPaymentStatus = 'ConsultPaymentStatus',
+  CheckoutSceneNew = 'CheckoutSceneNew',
+  PaymentStatus = 'PaymentStatus',
   // ConsultDetailsById = 'ConsultDetailsById',
   NotificationScreen = 'NotificationScreen',
+  MyPaymentsScreen = 'MyPaymentsScreen',
+  PaymentStatusScreen = 'PaymentStatusScreen',
+  OneApolloMembership = 'OneApolloMembership',
+  ConsultTypeScreen = 'ConsultTypeScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -359,6 +375,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
   },
+  [AppRoutes.LinkUHID]: {
+    screen: LinkUHID,
+  },
+  [AppRoutes.ReadMoreLinkUHID]: {
+    screen: ReadMoreLinkUHID,
+  },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
@@ -383,13 +405,30 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultPaymentStatus]: {
     screen: ConsultPaymentStatus,
   },
+  [AppRoutes.CheckoutSceneNew]: {
+    screen: CheckoutSceneNew,
+  },
+  [AppRoutes.PaymentStatus]: {
+    screen: PaymentStatus,
+  },
   // [AppRoutes.ConsultDetailsById]: {
   //   screen: ConsultDetailsById,
   // },
   [AppRoutes.NotificationScreen]: {
     screen: NotificationScreen,
   },
-  
+  [AppRoutes.MyPaymentsScreen]: {
+    screen: MyPaymentsScreen,
+  },
+  [AppRoutes.PaymentStatusScreen]: {
+    screen: PaymentStatusScreen,
+  },
+  [AppRoutes.OneApolloMembership]: {
+    screen: OneApolloMembership,
+  },
+  [AppRoutes.ConsultTypeScreen]: {
+    screen: ConsultTypeScreen,
+  },
 };
 
 const logTabEvents = (routing: any) => {

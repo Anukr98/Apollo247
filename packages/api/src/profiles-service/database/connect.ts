@@ -21,6 +21,8 @@ import {
   Auditor,
   AdminAuditorMapper,
   CityPincodeMapper,
+  Deeplink,
+  DoctorPatientExternalConnect,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -59,6 +61,8 @@ import {
   RegistrationCodes,
   CouponPharmaRules,
   MedicineOrderShipments,
+  MedicineOrderCancelReason,
+  PharmacologistConsult,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -68,6 +72,7 @@ import {
   AppointmentDocuments,
   AppointmentNoShow,
   AppointmentPayments,
+  AppointmentRefunds,
   AppointmentSessions,
   CaseSheet,
   DoctorNextAvaialbleSlots,
@@ -83,6 +88,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
+  AppointmentUpdateHistory,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -125,6 +131,8 @@ export const connect = async () => {
         ReferralCodesMaster,
         RegistrationCodes,
         SearchHistory,
+        MedicineOrderCancelReason,
+        PharmacologistConsult,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -145,6 +153,7 @@ export const connect = async () => {
         AdminUsers,
         BlockedCalendarItem,
         ConsultHours,
+        Deeplink,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,
@@ -162,6 +171,7 @@ export const connect = async () => {
         Auditor,
         AdminAuditorMapper,
         CityPincodeMapper,
+        DoctorPatientExternalConnect,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -179,6 +189,7 @@ export const connect = async () => {
       entities: [
         Appointment,
         AppointmentCallDetails,
+        AppointmentRefunds,
         AppointmentDocuments,
         AppointmentNoShow,
         AppointmentPayments,
@@ -197,6 +208,7 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         UtilizationCapacity,
+        AppointmentUpdateHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

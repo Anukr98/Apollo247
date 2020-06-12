@@ -26,6 +26,7 @@ import {
 import {
   PatientAddressInput,
   PATIENT_ADDRESS_TYPE,
+  UpdatePatientAddressInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   savePatientAddress,
@@ -40,11 +41,11 @@ import {
   pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  aphConsole,
   g,
   handleGraphQlError,
   doRequestAndAccessLocationModified,
   formatAddress,
+  getFormattedLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -64,6 +65,8 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -89,8 +92,8 @@ export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Dia
 
 export interface AddAddressProps
   extends NavigationScreenProps<{
-    KeyName?: any;
-    DataAddress?: any;
+    KeyName?: string;
+    DataAddress?: getPatientAddressList_getPatientAddressList_addressList;
     addOnly?: boolean;
     source: AddressSource;
   }> {}
@@ -123,6 +126,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [city, setcity] = useState<string>('');
   const [landMark, setlandMark] = useState<string>('');
   const [state, setstate] = useState<string>('');
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
+  const [stateCode, setStateCode] = useState<string>('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
@@ -136,7 +142,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setDeliveryAddressId: setDiagnosticAddressId,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
 
   const isChanged =
     addressData &&
@@ -147,11 +153,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
 
+  const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
+
   useEffect(() => {
-    if (props.navigation.getParam('KeyName') == 'Update') {
+    if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       console.log('DataAddress', addressData);
       // to avoid duplicate state name & backward compatability of address issue
       const cityState = [addressData.city, addressData.state]
+        .filter((item) => item)
         .toString()
         .split(',')
         .map((item) => (item || '').trim())
@@ -159,11 +168,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         .toString()
         .replace(',', ', ');
       setcity(cityState);
-      setstate(addressData.state);
-      setpincode(addressData.zipcode);
-      setaddressLine1(addressData.addressLine1);
-      setAddressType(addressData.addressType);
-      setOptionalAddress(addressData.otherAddressType);
+      setstate(addressData.state!);
+      setpincode(addressData.zipcode!);
+      setaddressLine1(addressData.addressLine1!);
+      setAddressType(addressData.addressType!);
+      setOptionalAddress(addressData.otherAddressType!);
+      setLatitude(addressData.latitude!);
+      setLongitude(addressData.longitude!);
+      setStateCode(addressData.stateCode || '');
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
         doRequestAndAccessLocationModified()
@@ -172,15 +184,23 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setstate(response.state || '');
               setcity(`${response.city}, ${response.state}` || '');
               setpincode(response.pincode || '');
+              setLatitude(response.latitude || 0);
+              setLongitude(response.longitude || 0);
+              setStateCode(response.stateCode || '');
             }
           })
           .catch((e) => {
             CommonBugFender('AddAddress_doRequestAndAccessLocationModified', e);
           });
       } else {
-        setstate(locationDetails.state || '');
-        setcity(`${locationDetails.city}, ${locationDetails.state}` || '');
-        setpincode(locationDetails.pincode || '');
+        const _locationDetails =
+          pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
+        setstate(_locationDetails.state || '');
+        setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state));
+        setpincode(_locationDetails.pincode || '');
+        setLatitude(_locationDetails.latitude || 0);
+        setLongitude(_locationDetails.longitude || 0);
+        setStateCode(_locationDetails.stateCode || '');
       }
     }
   }, []);
@@ -196,8 +216,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     pincode.length === 6 &&
     city &&
     city.length > 1 &&
-    state &&
-    state.length > 1 &&
     addressType !== undefined &&
     (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
       (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
@@ -211,20 +229,27 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const onSavePress = async () => {
     setshowSpinner(true);
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
-    if (props.navigation.getParam('KeyName') == 'Update') {
+    if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       if (!isChanged) {
+        const finalStateCode =
+          AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+            state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+          ] || stateCode;
         const cityState = city.split(',').map((item) => (item || '').trim());
-        const updateaddressInput = {
+        const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
           addressLine1: addressLine1,
           addressLine2: '',
           city: cityState[0] || '',
-          state: cityState[1] || state,
+          state: cityState[1] || '',
           zipcode: pincode,
           landmark: landMark,
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
+          latitude: latitude,
+          longitude: longitude,
+          stateCode: finalStateCode,
         };
         console.log(updateaddressInput, 'updateaddressInput');
         setshowSpinner(true);
@@ -243,31 +268,36 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               CommonBugFender('AddAddress_onSavePress_try', error);
             }
           })
-          .catch((e: any) => {
+          .catch((e) => {
             CommonBugFender('AddAddress_onSavePress', e);
             setshowSpinner(false);
-            const error = JSON.parse(JSON.stringify(e));
-            console.log('Error occured while updateapicalled', error);
+            handleGraphQlError(e);
           });
         //props.navigation.goBack();
       } else {
         props.navigation.goBack();
       }
     } else {
+      const finalStateCode =
+        AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+          state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+        ] || stateCode;
       const cityState = city.split(',').map((item) => (item || '').trim());
-      const addressInput = {
+      const addressInput: PatientAddressInput = {
         patientId: userId,
         addressLine1: addressLine1,
         addressLine2: '',
         city: cityState[0] || '',
-        state: cityState[1] || state,
+        state: cityState[1] || '',
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,
         addressType: addressType,
         otherAddressType: optionalAddress,
+        latitude: latitude,
+        longitude: longitude,
+        stateCode: finalStateCode,
       };
-      console.log(addressInput, 'addressInput');
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
@@ -305,8 +335,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           );
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
             onPressOk: () => {
               props.navigation.goBack();
               hideAphAlert!();
@@ -366,35 +395,37 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   };
 
   const updateCityStateByPincode = (pincode: string) => {
-    aphConsole.log('updateCityStateByPincode entry');
+    const resetValues = (e: Error) => {
+      setcity('');
+      setstate('');
+      setStateCode('');
+      setLatitude(0);
+      setLongitude(0);
+      CommonBugFender('AddAddress_updateCityStateByPincode', e);
+    };
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
           const addrComponents = data.results[0].address_components || [];
-          const city = (
-            addrComponents.find(
-              (item) =>
-                item.types.indexOf('locality') > -1 ||
-                item.types.indexOf('administrative_area_level_2') > -1
-            ) || {}
-          ).long_name;
-          const state = (
-            addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
-            {}
-          ).long_name;
-          setcity(`${city}, ${state}` || '');
+          const latLang = data.results[0].geometry.location || {};
+          const response = getFormattedLocation(addrComponents, latLang);
+          const city = response.city;
+          const state = response.state;
+          const finalStateCode =
+            AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+              state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+            ] || stateCode;
+
+          setcity(formatCityStateDisplay(city, state));
           setstate(state || '');
+          setStateCode(finalStateCode);
+          setLatitude(response.latitude!);
+          setLongitude(response.longitude!);
         } catch (e) {
-          setcity('');
-          setstate('');
-          CommonBugFender('AddAddress_updateCityStateByPincode', e);
+          resetValues(e);
         }
       })
-      .catch((e) => {
-        setcity('');
-        setstate('');
-        CommonBugFender('AddAddress_getPlaceInfoByPincode', e);
-      });
+      .catch(resetValues);
   };
   const renderAddressOption = () => {
     return (
@@ -568,11 +599,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         /> */}
         <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
         <TextInputComponent
-          value={city}
+          value={(city || '').startsWith(',') ? city.replace(', ', '') : city}
+          textInputprops={{ editable: false }}
           onChangeText={(city) =>
-            city.startsWith(' ') || city.startsWith('.')
+            city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
               ? null
-              : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
+              : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
           }
           maxLength={100}
           placeholder={'Enter area / locality name'}

@@ -172,6 +172,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         marginRight: 8,
@@ -190,6 +191,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingRight: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '& img': {
         border: '1px solid #00b38e',
@@ -210,6 +212,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: 0,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     inputRoot: {
@@ -374,6 +377,7 @@ export const DiagnosticPrescription: React.FC = () => {
       });
   }, []);
   const fetchDignostic = async (value: string) => {
+    let found = false;
     client
       .query<SearchDiagnostics, any>({
         query: SEARCH_DIAGNOSTICS,
@@ -385,14 +389,26 @@ export const DiagnosticPrescription: React.FC = () => {
       })
       .then((_data: any) => {
         const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
+        filterVal.length > 0 && filterVal[0].id === '' && filterVal.splice(0, 1);
 
         filterVal.forEach((val: any, index: any) => {
+          val.id = val.itemId;
           selectedValues!.forEach((selectedval: any) => {
             if (val.itemName === selectedval.itemname) {
               filterVal.splice(index, 1);
             }
           });
+          if (
+            val.itemName.toLowerCase() === value.toLowerCase() &&
+            val.itemName.length === value.length
+          ) {
+            found = true;
+          }
         });
+
+        (!found || filterVal.length === 0) &&
+          filterVal.unshift({ itemName: value, id: '', __typename: 'Diagnostics' });
+
         suggestions = filterVal;
 
         setLengthOfSuggestions(suggestions.length);
@@ -472,24 +488,38 @@ export const DiagnosticPrescription: React.FC = () => {
   ) {
     const matches = match(suggestion!.itemName, query);
     const parts = parse(suggestion!.itemName, matches);
-
     return (
       otherDiagnostic.length > 2 && (
         <AphTooltip open={isHighlighted} title={suggestion.itemName}>
-          <div>
-            {parts.map((part) => (
+          {suggestion.id !== '' ? (
+            <div>
+              {parts.map((part) => (
+                <span
+                  key={part.text}
+                  style={{
+                    fontWeight: part.highlight ? 500 : 400,
+                    whiteSpace: 'pre',
+                  }}
+                >
+                  {part.text}
+                </span>
+              ))}
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          ) : (
+            <div>
+              <span>Add</span>
               <span
-                key={part.text}
                 style={{
-                  fontWeight: part.highlight ? 500 : 400,
+                  fontWeight: 400,
                   whiteSpace: 'pre',
                 }}
               >
-                {part.text}
+                {` "${suggestion.itemName}"`}
               </span>
-            ))}
-            <img src={require('images/ic_dark_plus.svg')} alt="" />
-          </div>
+              <img src={require('images/ic_dark_plus.svg')} alt="" />
+            </div>
+          )}
         </AphTooltip>
       )
     );

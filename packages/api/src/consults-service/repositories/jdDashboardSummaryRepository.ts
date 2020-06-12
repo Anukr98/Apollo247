@@ -106,7 +106,11 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       return new Promise<number>(async (resolve) => {
         console.log(appt, 'came here inside the appt');
         const caseSheetDets = await CaseSheet.findOne({
-          where: { appointment: appt.appointmentId, doctorType: DoctorType.JUNIOR },
+          where: {
+            appointment: appt.appointmentId,
+            doctorType: DoctorType.JUNIOR,
+            status: CASESHEET_STATUS.COMPLETED,
+          },
         });
         if (caseSheetDets) {
           const diffMins =
@@ -203,6 +207,9 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         ])
         .where('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
         .andWhere('appointment_call_details."callType" = :callType', { callType })
+        .andWhere('appointment_call_details."doctorType" = :docType', {
+          docType: DoctorType.JUNIOR,
+        })
         .groupBy('appointment_call_details."appointmentId"')
         .getRawMany();
       if (callDetails && callDetails.length > 0) {
@@ -233,6 +240,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         toDate: newEndDate,
       })
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet."status" = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     let apptCount = 0;
     if (caseSheetDetails.length > 0) {

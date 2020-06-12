@@ -56,6 +56,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postWEGReferralCodeEvent,
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
@@ -224,7 +225,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     // console.log('deeplinkReferalCode', deeplinkReferalCode);
 
     if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
-      setBugFenderLog('MultiSignup_Referral_Code', deeplinkReferalCode);
+      // setBugFenderLog('MultiSignup_Referral_Code', deeplinkReferalCode);
       setReferral(deeplinkReferalCode);
     }
   };
@@ -472,6 +473,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       if (referral) {
         // only send if referral has a value
         eventAttributes['Referral Code'] = referral;
+        postWEGReferralCodeEvent(referral);
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
@@ -501,7 +503,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     try {
       const event: any = await AsyncStorage.getItem('deeplink');
       console.log(event, 'eventhandleOpenURL');
-      setBugFenderLog('multi_handleOpenURL', event);
+      // setBugFenderLog('multi_handleOpenURL', event);
 
       // const id = data[1];
 
@@ -518,7 +520,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         route = data[0];
 
         console.log(data, 'handleOpenURL');
-        setBugFenderLog('nulti_handleOpenURL_route', route);
+        // setBugFenderLog('nulti_handleOpenURL_route', route);
 
         switch (route) {
           case 'Consult':
@@ -558,19 +560,25 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             console.log('MedicineSearch handleopen');
             pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
             break;
+
           case 'MedicineDetail':
             console.log('MedicineDetail handleopen');
             pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
             break;
 
+          case 'MedicineCart':
+            console.log('MedicineCart handleopen');
+            pushTheView('MedicineCart');
+            break;
+
           default:
-            setBugFenderLog('multi_handleOpenURL', 'not_worked');
+            // setBugFenderLog('multi_handleOpenURL', 'not_worked');
             pushTheView('ConsultRoom');
             break;
         }
         console.log('route', route);
       } else {
-        setBugFenderLog('multi_handleOpenURL_ConsultRoom');
+        // setBugFenderLog('multi_handleOpenURL_ConsultRoom');
         pushTheView('ConsultRoom');
       }
     } catch (error) {}
@@ -579,7 +587,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const pushTheView = (routeName: String, id?: String) => {
     try {
       console.log('pushTheView', routeName, id);
-      setBugFenderLog('multi_pushTheView', routeName);
+      // setBugFenderLog('multi_pushTheView', routeName);
 
       setTimeout(() => {
         setVerifyingPhoneNumber(false);
@@ -726,6 +734,23 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             }
             break;
 
+          case 'MedicineCart':
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.YourCart,
+                    params: {
+                      movedFrom: 'registration',
+                    },
+                  }),
+                ],
+              })
+            );
+            break;
+
           default:
             break;
         }
@@ -809,7 +834,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating back to Login'),
-                  setBugFenderLog('multi_error', error),
+                  // setBugFenderLog('multi_error', error),
                   setTimeout(() => {
                     setVerifyingPhoneNumber(false),
                       props.navigation.dispatch(

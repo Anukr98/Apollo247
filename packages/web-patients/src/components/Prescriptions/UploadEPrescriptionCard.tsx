@@ -128,9 +128,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type EPrescriptionCardProps = {
+interface EPrescriptionCardProps {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
-};
+  isNonCartFlow: boolean;
+  isPresReview?: boolean;
+  setEPrescriptionForReview?: any;
+}
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
@@ -146,7 +149,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [loading, setLoading] = useState<boolean>(false);
   const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
   const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
-    ePrescriptionData || []
+    props.isPresReview ? [] : ePrescriptionData || []
   );
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
 
@@ -216,12 +219,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     pastMedicalOrders
       .map(
         (item: any) =>
+          item &&
           ({
-            id: item!.id,
-            date: moment(item!.quoteDateTime).format(DATE_FORMAT),
-            uploadedUrl: item!.prescriptionImageUrl,
-            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
-              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            id: item.id,
+            date: moment(item.quoteDateTime).format(DATE_FORMAT),
+            uploadedUrl: item.prescriptionImageUrl,
+            doctorName: `Meds Rx ${(item.id && item.id.substring(0, item.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
@@ -229,25 +232,28 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       )
       .concat(
         pastPrescriptions &&
-          pastPrescriptions.map((item: any) => ({
-            id: item!.id,
-            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
-            uploadedUrl: item.caseSheet
-              ? client.getBlobUrl(
-                  (getCaseSheet(item!.caseSheet) || { blobName: '' }).blobName || ''
+          pastPrescriptions.map(
+            (item: any) =>
+              item && {
+                id: item.id,
+                date: moment(item.appointmentDateTime).format(DATE_FORMAT),
+                uploadedUrl: item.caseSheet
+                  ? client.getBlobUrl(
+                      (getCaseSheet(item.caseSheet) || { blobName: '' }).blobName || ''
+                    )
+                  : '',
+                doctorName: item.doctorInfo ? `${item.doctorInfo.fullName}` : '',
+                forPatient: (currentPatient && currentPatient.firstName) || '',
+                medicines: (
+                  (getCaseSheet(item.caseSheet) || { medicinePrescription: [] })
+                    .medicinePrescription || []
                 )
-              : '',
-            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
-            forPatient: (currentPatient && currentPatient.firstName) || '',
-            medicines: (
-              (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
-                .medicinePrescription || []
-            )
-              .map((item) => item!.medicineName)
-              .join(', '),
-          }))
+                  .map((item) => item && item.medicineName)
+                  .join(', '),
+              }
+          )
       )
-      .filter((item: any) => !!item.uploadedUrl)
+      .filter((item: any) => item && !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
           moment(b.date, DATE_FORMAT)
@@ -387,11 +393,18 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             }
             onClick={() => {
               setMutationLoading(true);
+
+              if (props.isPresReview) {
+                props.setEPrescriptionForReview &&
+                  props.setEPrescriptionForReview(selectedEPrescriptions);
+                setMutationLoading(false);
+                props.setIsEPrescriptionOpen(false);
+                return;
+              }
               setEPrescriptionData && setEPrescriptionData(selectedEPrescriptions);
               setUploadedEPrescription && setUploadedEPrescription(true);
 
-              const currentUrl = window.location.href;
-              if (currentUrl.endsWith('/medicines') || currentUrl.includes('/medicines/')) {
+              if (props.isNonCartFlow) {
                 setTimeout(() => {
                   window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
                 }, 3000);

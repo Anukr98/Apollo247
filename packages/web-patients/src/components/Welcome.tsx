@@ -10,6 +10,7 @@ import { PatientsOverview } from 'components/PatientsOverview';
 import { Relation } from 'graphql/types/globalTypes';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
+import { SchemaMarkup } from 'SchemaMarkup';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,10 +43,17 @@ export const Welcome: React.FC = (props) => {
   const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const structuredJSON = {
+    '@context': 'https://schema.org/',
+    '@type': 'WebSite',
+    name: 'Apollo 24*7',
+    url: 'https://www.apollo247.com/',
+  };
 
   return (
     <div className={classes.welcome}>
       <Header />
+      {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <HeroBanner />

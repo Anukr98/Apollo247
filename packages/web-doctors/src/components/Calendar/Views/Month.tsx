@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import { Calendar, momentLocalizer, ToolbarProps } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -11,12 +11,7 @@ import {
 import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
+import StatusModal, { defaultText, modalData, ModalContent } from '../../StatusModal';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,8 +48,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     popoverTile: {
-      color: '#fcb716',
+      fontSize: '18px',
       fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: '1.33',
+      letterSpacing: 'normal',
+      color: '#02475b',
     },
     moreIcon: {
       width: '7%',
@@ -190,6 +190,7 @@ interface MonthEvent {
   end: Date;
   patientId: string;
   caseSheet: (caseSheetInfo | null)[];
+  isJdQuestionsComplete: boolean | null;
 }
 
 const localizer = momentLocalizer(moment);
@@ -198,7 +199,14 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
   if (data && data.getDoctorAppointments) {
     eventList = (data.getDoctorAppointments.appointmentsHistory || []).map(
       (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
-        const { id, appointmentDateTime, patientInfo, patientId, caseSheet } = appointment!;
+        const {
+          id,
+          appointmentDateTime,
+          patientInfo,
+          patientId,
+          caseSheet,
+          isJdQuestionsComplete,
+        } = appointment!;
         const start = new Date(appointmentDateTime);
         return {
           id,
@@ -207,6 +215,7 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
           end: addMinutes(start, 15),
           patientId,
           caseSheet: caseSheet || [],
+          isJdQuestionsComplete: isJdQuestionsComplete,
         };
       }
     );
@@ -220,6 +229,8 @@ export interface MonthProps {
   date: Date;
   onMonthSelected(month: string): void;
   onMonthChange: (range: Date[] | { start: string | Date; end: string | Date }) => void;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
 }
 
 const Toolbar = (toolbar: ToolbarProps) => {
@@ -239,11 +250,18 @@ const Toolbar = (toolbar: ToolbarProps) => {
   );
 };
 
-export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonthSelected }) => {
+export const Month: React.FC<MonthProps> = ({
+  date,
+  data,
+  onMonthChange,
+  onMonthSelected,
+  setIsDialogOpen,
+  isDialogOpen,
+}) => {
   const classes = useStyles({});
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState(date);
+  const [text, setText] = useState<ModalContent>(defaultText);
 
   useEffect(() => {
     setEvents(eventsAdapter(data));
@@ -253,14 +271,46 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
     const jrdCaseSheet =
       event.caseSheet.length > 0
         ? event.caseSheet.filter(
-            (cdetails: caseSheetInfo | null) =>
-              cdetails && cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+            (cdetails: caseSheetInfo | null) => cdetails && cdetails.doctorType === 'JUNIOR'
           )
         : [];
-    if (jrdCaseSheet.length > 0) {
+
+    if (
+      jrdCaseSheet.length > 0 &&
+      event.isJdQuestionsComplete &&
+      jrdCaseSheet[0].status === 'COMPLETED'
+    ) {
+      localStorage.setItem('callBackUrl', '/calendar');
       window.location.href = `/consulttabs/${event.id}/${event.patientId}/0`;
     } else {
       setIsDialogOpen(true);
+      let text: ModalContent = {
+        ...defaultText,
+        appointmentId: event.id,
+        patientId: event.patientId,
+      };
+
+      if (!event.isJdQuestionsComplete) {
+        text.headerText = modalData.questionNotField.headerText;
+        text.confirmationText = modalData.questionNotField.confirmationText;
+        text.messageText = modalData.questionNotField.messageText;
+      } else if (
+        (jrdCaseSheet.length === 0 && event.isJdQuestionsComplete) ||
+        (jrdCaseSheet.length > 0 && !jrdCaseSheet[0].isJdConsultStarted)
+      ) {
+        text.headerText = modalData.jdPending.headerText;
+        text.confirmationText = modalData.jdPending.confirmationText;
+        text.messageText = modalData.jdPending.messageText;
+      } else if (
+        jrdCaseSheet.length > 0 &&
+        jrdCaseSheet[0].isJdConsultStarted &&
+        jrdCaseSheet[0].status !== 'COMPLETED'
+      ) {
+        text.headerText = modalData.jdInProgress.headerText;
+        text.confirmationText = modalData.jdInProgress.confirmationText;
+        text.messageText = modalData.jdInProgress.messageText;
+      }
+      setText(text);
     }
   };
 
@@ -294,30 +344,15 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
       <div className={classes.moreIcon}>
         <img src={require('images/ic_more.svg')} alt="" />
       </div>
-      <Dialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            You can start this consultation only after Junior Doctor has filled the case sheet.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={() => {
-              setIsDialogOpen(false);
-            }}
-            autoFocus
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+      <StatusModal
+        onClose={() => {
+          setIsDialogOpen(false);
+          setText(defaultText);
+        }}
+        isDialogOpen={isDialogOpen}
+        text={text}
+      />
     </div>
   );
 };

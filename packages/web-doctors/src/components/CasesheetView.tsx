@@ -228,9 +228,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 11,
         color: 'rgba(0, 0, 0, 0.6)',
         lineHeight: 1.5,
-        margin: 0,
+        margin: '20px 0 10px',
         fontWeight: 400,
-        marginTop: 20,
       },
     },
     gerenalInfo: {
@@ -268,6 +267,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(0, 0, 0, 0.8)',
       lineHeight: 1.5,
     },
+    removed: {
+      fontSize: 12,
+      color: '#890000 !important',
+      marginLeft: 10,
+    },
   };
 });
 interface savingProps {
@@ -295,6 +299,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptoms,
     diagnosticPrescription,
     medicinePrescription,
+    removedMedicinePrescription,
     referralDescription,
     referralSpecialtyName,
   } = useContext(CaseSheetContext);
@@ -412,6 +417,21 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     }
     `;
   };
+
+  const removedMedicineHtml =
+    removedMedicinePrescription &&
+    removedMedicinePrescription.length > 0 &&
+    removedMedicinePrescription.map(
+      (
+        prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+        index: number
+      ) => (
+        <li key={`removed-${index}`}>
+          <s>{prescription.medicineName}</s>{' '}
+          <span className={classes.removed}>( This medication has been disontinued )</span>
+        </li>
+      )
+    );
 
   const medicineHtml =
     medicinePrescription &&
@@ -542,7 +562,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   };
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} id={'prescriptionWrapper'}>
       <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionPreview}>
         <div className={classes.pageHeader}>
@@ -564,7 +584,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 createdDoctorProfile.specialty.specialistSingularTerm
                   ? createdDoctorProfile.specialty.specialistSingularTerm
                   : ''
-              } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
+              } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
               {doctorFacilityDetails ? (
                 <>
                   <p className={classes.address}>
@@ -715,7 +735,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
               </div>
               <div className={classes.medicationList}>
-                <ol>{medicineHtml}</ol>
+                <ol>
+                  {medicineHtml}
+                  {removedMedicineHtml}
+                </ol>
               </div>
             </div>
           ) : null}
@@ -745,12 +768,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 !isEmpty(referralDescription)) ? (
                 <div className={classes.prescriptionSection}>
                   <div className={classes.sectionHeader}>
-                    <img src={require('images/ic-doctors-2.svg')} /> Advise/ Instructions
+                    <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
                   </div>
                   <div className={classes.adviceInstruction}>
                     {otherInstructions && otherInstructions.length > 0 && (
                       <div className={classes.advice}>
-                        <span>Doctor’s Advise</span>
+                        <span>Doctor’s Advice</span>
                         <div>
                           {otherInstructions.map((instruction) => (
                             <div className={classes.instruction}>{instruction.instruction}</div>
@@ -786,31 +809,57 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           )}
           {isPageContentFull() ? null : (
             <>
-              {createdDoctorProfile && createdDoctorProfile.signature && (
+              {createdDoctorProfile && (
                 <div className={classes.prescriptionHeader}>
-                  <h6>
-                    Prescribed on{' '}
-                    {sdConsultationDate && sdConsultationDate !== ''
-                      ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                      : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
-                    by
-                  </h6>
-                  <div className={classes.followUpContent}>
-                    <img src={createdDoctorProfile.signature} />
-                  </div>
-                  <div className={classes.signInformation}>
-                    <h3 className={classes.followUpContent}>
-                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                    </h3>
-                    {/* {currentDoctor.qualification && (
+                  {((sdConsultationDate && sdConsultationDate !== '') ||
+                    (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+                    <h6>
+                      Prescribed on{' '}
+                      {sdConsultationDate && sdConsultationDate !== ''
+                        ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                        : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                      by
+                    </h6>
+                  )}
+                  {createdDoctorProfile!.signature && (
+                    <div className={classes.followUpContent}>
+                      <img src={createdDoctorProfile.signature} />
+                    </div>
+                  )}
+                  {(createdDoctorProfile!.salutation ||
+                    createdDoctorProfile!.firstName ||
+                    createdDoctorProfile!.lastName ||
+                    createdDoctorProfile!.registrationNumber ||
+                    (createdDoctorProfile!.specialty &&
+                      createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+                    <div className={classes.signInformation}>
+                      {(createdDoctorProfile.salutation ||
+                        createdDoctorProfile.firstName ||
+                        createdDoctorProfile.lastName) && (
+                        <h3 className={classes.followUpContent}>
+                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                        </h3>
+                      )}
+
+                      {/* {currentDoctor.qualification && (
                       <p className={`${classes.specialty} ${classes.qualification}`}>
                         {currentDoctor.qualification}
                       </p>
                     )} */}
-                    <p className={classes.specialty}>{`${
-                      createdDoctorProfile.specialty.specialistSingularTerm
-                    } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
-                  </div>
+                      {((createdDoctorProfile.specialty &&
+                        createdDoctorProfile.specialty.specialistSingularTerm) ||
+                        createdDoctorProfile.registrationNumber) && (
+                        <p className={classes.specialty}>
+                          {createdDoctorProfile.specialty.specialistSingularTerm
+                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                            : ''}
+                          {createdDoctorProfile.registrationNumber
+                            ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
+                            : ''}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -825,9 +874,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           <div className={classes.disclaimer}>
             <span>Disclaimer:</span>
             <span>
-              This prescription is issued by the Apollo Hospitals Group on the basis of your
-              teleconsultation. It is valid from the date of issue for upto 90 days (for the
-              specific period/dosage of each medicine as advised).
+              This prescription is issued on the basis of your inputs during teleconsultation. It is
+              valid from the date of issue until the specific period/dosage of each medicine as
+              advised.
             </span>
           </div>
         </div>

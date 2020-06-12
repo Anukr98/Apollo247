@@ -12,9 +12,10 @@ import {
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -35,20 +36,26 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import {
   APPOINTMENT_STATE,
-  REQUEST_ROLES,
-  TRANSFER_INITIATED_TYPE,
-  STATUS,
   APPOINTMENT_TYPE,
+  REQUEST_ROLES,
+  STATUS,
+  TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
-  getNetStatus,
-  statusBarHeight,
+  dataSavedUserID,
   g,
+  getNetStatus,
   postWebEngageEvent,
+  statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -62,13 +69,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '../../graphql/types/getPatientAllAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -140,7 +141,7 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+  const data: getPatientAllAppointments_getPatientAllAppointments_appointments = props.navigation
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
 
@@ -172,6 +173,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -181,6 +183,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
     if (movedFrom === 'notification') {
       NextAvailableSlotAPI();
+    }
+
+    if (movedFrom === 'cancel') {
+      setShowCancelPopup(true);
     }
   }, [currentPatient]);
 
@@ -311,11 +317,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       doctorId: doctorDetails.id,
       newDateTimeslot: availability,
       initiatedBy:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? TRANSFER_INITIATED_TYPE.DOCTOR
           : TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId:
-        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+        (data.status == STATUS.PENDING && minutes <= -30)
           ? doctorDetails.id
           : data.patientId,
       patientId: data.patientId,
@@ -419,18 +427,19 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     postWebEngageEvent(type, eventAttributes);
   };
 
-  const cancelAppointmentApi = () => {
+  const cancelAppointmentApi = async () => {
     setshowSpinner(true);
+    const userId = await dataSavedUserID('selectedProfileId');
+
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
       cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
-      cancelledById: data.patientId,
+      cancelledById: userId ? userId : data.patientId,
     };
 
     console.log(appointmentTransferInput, 'appointmentTransferInput');
-    //if (!deviceTokenApICalled) {
-    //setDeviceTokenApICalled(true);
+
     client
       .mutate<cancelAppointment, cancelAppointmentVariables>({
         mutation: CANCEL_APPOINTMENT,
@@ -445,14 +454,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         console.log(data, 'data');
         // setSucessPopup(true);
         showAppointmentCancellSuccessAlert();
-
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-        //   })
-        // );
       })
       .catch((e: any) => {
         CommonBugFender('AppointmentDetails_cancelAppointmentApi', e);
@@ -466,7 +467,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           });
         }
       });
-    // }
   };
 
   const showAppointmentCancellSuccessAlert = () => {
@@ -492,7 +492,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-    const showCancel = dateIsAfter && isAwaitingReschedule ? true : dateIsAfter;
+    const showCancel =
+      dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
       <View
         style={{
@@ -617,7 +618,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{
                 color: '#fc9916',
-                opacity: isAwaitingReschedule ? 1 : 0.5,
+                opacity:
+                  isAwaitingReschedule ||
+                  dateIsAfter ||
+                  (data.status == STATUS.PENDING && minutes <= -30)
+                    ? 1
+                    : 0.5,
               }}
               onPress={() => {
                 postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
@@ -632,7 +638,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                   );
                   try {
-                    isAwaitingReschedule ? NextAvailableSlotAPI() : null;
+                    isAwaitingReschedule ||
+                    dateIsAfter ||
+                    (data.status == STATUS.PENDING && minutes <= -30)
+                      ? NextAvailableSlotAPI()
+                      : null;
                   } catch (error) {
                     CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
                   }
@@ -757,7 +767,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
+              'Since you could not complete the appointment, you can choose to cancel or reschedule.'
             }
           >
             <View

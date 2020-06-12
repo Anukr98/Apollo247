@@ -5,6 +5,10 @@ import {
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
+  PlacesApiResponse,
+  getDeliveryTime,
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -47,6 +51,14 @@ import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
 import firebase from 'react-native-firebase';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  ShoppingCartItem,
+  ShoppingCartContextProps,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -122,60 +134,62 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.DELIVERED:
       statusString = 'Order Delivered';
       break;
-    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-      statusString = 'Items Returned';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-      statusString = 'Order Confirmed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-      statusString = 'Order Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-      statusString = 'Order Placed';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-      statusString = 'Order Verified';
-      break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
       statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
       break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-      statusString = 'Prescription Cart Ready';
-      break;
-    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-      statusString = 'Prescription Uploaded';
-      break;
-    case MEDICINE_ORDER_STATUS.QUOTE:
-      statusString = 'Quote';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Return Accepted';
-      break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-      statusString = 'Payment Success';
-      break;
-    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-      statusString = 'Order Initiated';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
-      statusString = 'Payment Failed';
-      break;
-    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
-      statusString = 'Ready At Store';
-      break;
-    case MEDICINE_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment Pending';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;
+    default:
+      statusString = (status || '')
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
+  }
+  return statusString;
+};
+
+export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
+  let statusString = '';
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      statusString = 'Cancel Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      statusString = 'Order Dispatched';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_BILLED:
+      statusString = 'Order Billed and Packed';
+      break;
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      statusString = 'Order Picked Up';
+      break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Order Ready at Store';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      statusString = 'Return Requested';
+      break;
+    case 'TO_BE_DELIVERED' as any:
+      statusString = 'Expected Order Delivery';
+      break;
+    default:
+      statusString = (status || '')
+        .split('_')
+        .map((item) => `${item.slice(0, 1).toUpperCase()}${item.slice(1).toLowerCase()}`)
+        .join(' ');
   }
   return statusString;
 };
@@ -376,19 +390,34 @@ export const getNetStatus = async () => {
 };
 
 export const nextAvailability = (nextSlot: string) => {
-  const today: Date = new Date();
-  const date2: Date = new Date(nextSlot);
-  const secs = (date2 as any) - (today as any);
-  const mins = Math.ceil(secs / (60 * 1000));
-  let hours: number = 0;
-  if (mins > 0 && mins < 60) {
-    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
-  } else if (mins >= 60 && mins < 1380) {
-    hours = Math.ceil(mins / 60);
-    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
-  } else if (mins >= 1380) {
-    const days = Math.ceil(mins / (24 * 60));
-    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  return `available in ${mhdMY(nextSlot, 'min')}`;
+};
+
+export const mhdMY = (
+  time: string,
+  mText: string = 'minute',
+  hText: string = 'hour',
+  dText: string = 'day',
+  MText: string = 'month',
+  YText: string = 'year'
+) => {
+  const current = moment(new Date());
+  const difference = moment.duration(moment(time).diff(current));
+  const min = Math.ceil(difference.asMinutes());
+  const hours = Math.ceil(difference.asHours());
+  const days = Math.ceil(difference.asDays());
+  const months = Math.ceil(difference.asMonths());
+  const year = Math.ceil(difference.asYears());
+  if (min > 0 && min < 24) {
+    return `${min} ${mText}${min !== 1 ? 's' : ''}`;
+  } else if (hours > 0 && hours < 24) {
+    return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
+  } else if (days > 0 && days < 30) {
+    return `${days} ${dText}${days !== 1 ? 's' : ''}`;
+  } else if (months > 0 && months < 12) {
+    return `${months} ${MText}${months !== 1 ? 's' : ''}`;
+  } else if (year > 0 && year < 30) {
+    return `${year} ${YText}${year !== 1 ? 's' : ''}`;
   }
 };
 
@@ -396,16 +425,15 @@ export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
 };
 
-const findAddrComponents = (
+export const findAddrComponents = (
   proptoFind: GooglePlacesType,
-  addrComponents: {
-    long_name: string;
-    short_name: string;
-    types: GooglePlacesType[];
-  }[]
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  key?: 'long_name' | 'short_name' // default long_name
 ) => {
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
-    .long_name;
+  const _key = key || 'long_name';
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { [_key]: '' })[
+    _key
+  ];
 };
 
 const getlocationData = (
@@ -441,6 +469,11 @@ const getlocationData = (
                 findAddrComponents('locality', addrComponents) ||
                 findAddrComponents('administrative_area_level_2', addrComponents),
               state: findAddrComponents('administrative_area_level_1', addrComponents),
+              stateCode: findAddrComponents(
+                'administrative_area_level_1',
+                addrComponents,
+                'short_name'
+              ),
               country: findAddrComponents('country', addrComponents),
               pincode: findAddrComponents('postal_code', addrComponents),
               lastUpdated: new Date().getTime(),
@@ -614,7 +647,7 @@ export const getUserCurrentPosition = async () => {
 
 const { height } = Dimensions.get('window');
 
-export const isIphone5s = () => height === 568;
+// export const isIphone5s = () => height === 568;
 export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
 
@@ -795,10 +828,10 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
     console.log('\n********* WebEngageEvent End *********\n');
-    if (getBuildEnvironment() !== 'DEV') {
-      // Don't post events in DEV environment
-      webengage.track(eventName, attributes);
-    }
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    webengage.track(eventName, attributes);
+    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -806,7 +839,8 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
 
 export const postwebEngageAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
+  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
+  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section']
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -819,6 +853,8 @@ export const postwebEngageAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    Section: section ? section : '',
+    revenue: price,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -838,6 +874,16 @@ export const postWEGNeedHelpEvent = (
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
+};
+
+export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
+  console.log(whatsAppAllow, 'whatsAppAllow');
+  webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
+};
+
+export const postWEGReferralCodeEvent = (ReferralCode: string) => {
+  console.log(ReferralCode, 'Referral Code');
+  webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
 export const permissionHandler = (
@@ -997,6 +1043,20 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
   }
 };
 
+export const SetAppsFlyerCustID = (patientId: string) => {
+  try {
+    console.log('\n********* SetAppsFlyerCustID Start *********\n');
+    console.log(`SetAppsFlyerCustID ${patientId}`);
+    console.log('\n********* SetAppsFlyerCustID End *********\n');
+
+    appsFlyer.setCustomerUserId(patientId, (res) => {
+      console.log('AppsFlyerEventSuccess', res);
+    });
+  } catch (error) {
+    console.log('********* Unable to post AppsFlyerEvent *********', { error });
+  }
+};
+
 export const postAppsFlyerAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
   source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
@@ -1012,6 +1072,7 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
+    revenue: price,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1036,14 +1097,14 @@ export const postFirebaseAddToCartEvent = (
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
-      'product name': name,
-      'product id': sku,
+      productname: name,
+      productid: sku,
       Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id || '',
+      BrandID: '',
+      categoryname: '',
+      categoryID: category_id || '',
       Price: price,
-      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      DiscountedPrice: typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
     };
@@ -1079,3 +1140,103 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
     value: formatedValue,
   };
 });
+
+export const getFormattedLocation = (
+  addrComponents: PlacesApiResponse['results'][0]['address_components'],
+  latLang: PlacesApiResponse['results'][0]['geometry']['location']
+) => {
+  const { lat, lng } = latLang || {};
+
+  const area = [
+    findAddrComponents('route', addrComponents),
+    findAddrComponents('sublocality_level_2', addrComponents),
+    findAddrComponents('sublocality_level_1', addrComponents),
+  ].filter((i) => i);
+
+  return {
+    displayName:
+      (area || []).pop() ||
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    latitude: lat,
+    longitude: lng,
+    area: area.join(', '),
+    city:
+      findAddrComponents('locality', addrComponents) ||
+      findAddrComponents('administrative_area_level_2', addrComponents),
+    state: findAddrComponents('administrative_area_level_1', addrComponents),
+    stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
+    country: findAddrComponents('country', addrComponents),
+    pincode: findAddrComponents('postal_code', addrComponents),
+    lastUpdated: new Date().getTime(),
+  } as LocationData;
+};
+
+export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
+  return (
+    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
+    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+  );
+};
+
+export const addPharmaItemToCart = (
+  cartItem: ShoppingCartItem,
+  pincode: string,
+  addCartItem: ShoppingCartContextProps['addCartItem'],
+  setLoading: UIElementsContextProps['setLoading'],
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  onComplete?: () => void
+) => {
+  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const navigate = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+      'product name': cartItem.name,
+      'product id': cartItem.id,
+      pincode: pincode,
+      'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    };
+    console.log('eventAttributes------------------------', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
+    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+      sku: cartItem.id,
+      deliveryError: unServiceableMsg,
+    });
+  };
+  setLoading && setLoading(true);
+  getDeliveryTime({
+    postalcode: pincode,
+    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
+    lookup: [
+      {
+        sku: cartItem.id,
+        qty: cartItem.quantity,
+      },
+    ],
+  })
+    .then((res) => {
+      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      if (deliveryDate) {
+        if (isDeliveryDateWithInXDays(deliveryDate)) {
+          addCartItem!(cartItem);
+        } else {
+          navigate();
+        }
+      } else {
+        addCartItem!(cartItem);
+      }
+    })
+    .catch(() => {
+      addCartItem!(cartItem);
+    })
+    .finally(() => {
+      setLoading && setLoading(false);
+      onComplete && onComplete();
+    });
+};
+
+export const dataSavedUserID = async (key: string) => {
+  let userId: any = await AsyncStorage.getItem(key);
+  userId = JSON.parse(userId);
+  return userId;
+};

@@ -124,13 +124,21 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       minWidth: 'auto',
       padding: 0,
-      marginRight: 16,
+      marginRight: 10,
       paddingTop: 8,
+      fontSize: 16,
+      fontWeight: 500,
+      textTransform: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     missCall: {
@@ -250,9 +258,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
       '&:focus': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     imageUpload: {
@@ -413,6 +423,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
+  const doctorAutoResponse = '^^#doctorAutoResponse';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -505,7 +516,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== covertAudioMsg &&
           message.message.message !== cancelConsultInitiated &&
           message.message.message !== callAbandonment &&
-          message.message.message !== appointmentComplete
+          message.message.message !== appointmentComplete &&
+          message.message.message !== doctorAutoResponse
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -681,7 +693,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -789,7 +802,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
-      rowData.message !== appointmentComplete
+      rowData.message !== appointmentComplete &&
+      rowData.message !== doctorAutoResponse
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -1013,7 +1027,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 component="label"
                 disabled={fileUploading}
               >
-                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <span>Attach</span>
+                <span><img src={require('images/round-attach.svg')} alt="" /></span>
                 <input
                   type="file"
                   style={{ display: 'none' }}

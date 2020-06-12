@@ -22,6 +22,12 @@ const DropdownIndicator = (props: any) => {
 const useStyles = makeStyles((theme: Theme) => ({
   mainContainer: {
     width: '100%',
+
+    '& textarea:focus': {
+      borderRadius: '5px',
+      boxShadow: '0 0 5px #00b38e',
+      backgroundColor: '#ffffff',
+    },
   },
   sectionContainer: {
     marginBottom: 20,
@@ -125,6 +131,10 @@ export const RefferalCode: React.FC = () => {
           onChange={(newValue: any) => {
             const updatedValue = newValue ? newValue.value : '';
             setReferralSpecialtyName(updatedValue);
+            if (updatedValue === '') {
+              setReferralDescription('');
+              setReferralError(false);
+            }
           }}
           noOptionsMessage={() => 'No speciality matching your search'}
           options={options}
@@ -188,6 +198,15 @@ export const RefferalCode: React.FC = () => {
                 backgroundColor: '#e6e6e680',
               },
             }),
+            clearIndicator: (base: any) => ({
+              ...base,
+              color: '#00b38e !important',
+              cursor: 'pointer',
+              borderRadius: '50%',
+              '&:hover': {
+                backgroundColor: '#e6e6e680',
+              },
+            }),
             menu: (base: any) => ({
               ...base,
               margin: '2px 0',
@@ -215,8 +234,6 @@ export const RefferalCode: React.FC = () => {
           }}
           components={{
             DropdownIndicator,
-            ClearIndicator: null,
-            IndicatorSeparator: null,
           }}
         />
       </div>
@@ -228,11 +245,11 @@ export const RefferalCode: React.FC = () => {
           variant="outlined"
           placeholder="Enter reason for referral"
           multiline
-          disabled={!caseSheetEdit}
+          disabled={!caseSheetEdit || buildOption(referralSpecialtyName) === ''}
           required
           onFocus={(e) => moveCursorToEnd(e.currentTarget)}
           error={referralError}
-          defaultValue={referralDescription}
+          value={referralDescription}
           helperText={referralError && 'This field is required'}
           InputProps={{
             classes: {
@@ -245,13 +262,12 @@ export const RefferalCode: React.FC = () => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
+            setReferralDescription(e.target.value);
           }}
           onBlur={(e) => {
             const value = e.target.value.trim();
             if (referralSpecialtyName && !value) setReferralError(true);
             else setReferralError(false);
-
-            setReferralDescription(value);
           }}
         />
       </div>

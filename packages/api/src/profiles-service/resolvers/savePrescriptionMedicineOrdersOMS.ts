@@ -10,6 +10,7 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrdersStatus,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -23,6 +24,7 @@ import { ApiConstants } from 'ApiConstants';
 import { medicineSendPrescription } from 'helpers/emailTemplates/medicineSendPrescription';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { sendMail } from 'notifications-service/resolvers/email';
+import { format, addMinutes } from 'date-fns';
 
 export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
   input PrescriptionMedicineOrderOMSInput {
@@ -41,6 +43,7 @@ export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
     email: String
     NonCartOrderCity: NonCartOrderOMSCity
     orderAutoId: Int
+    shopAddress: ShopAddress
   }
 
   enum NonCartOrderOMSCity {
@@ -90,6 +93,16 @@ type PrescriptionMedicineOrderOMSInput = {
   payment?: PrescriptionMedicinePaymentOMSDetails;
   email: string;
   NonCartOrderCity: NonCartOrderOMSCity;
+  shopAddress: ShopAddress;
+};
+
+type ShopAddress = {
+  storename: string;
+  address: string;
+  workinghrs: string;
+  phone: string;
+  city: string;
+  state: string;
 };
 
 type PrescriptionMedicinePaymentOMSDetails = {
@@ -127,6 +140,19 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
+  if (!prescriptionMedicineOMSInput.patinetAddressId && !prescriptionMedicineOMSInput.shopId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  }
+  if (prescriptionMedicineOMSInput.patinetAddressId) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      prescriptionMedicineOMSInput.patinetAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+  }
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
@@ -144,6 +170,8 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     patientAddressId: prescriptionMedicineOMSInput.patinetAddressId,
     currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
     isEprescription: prescriptionMedicineOMSInput.isEprescription,
+    shopAddress: JSON.stringify(prescriptionMedicineOMSInput.shopAddress),
+    isOmsOrder: true,
   };
   let patientAddressDetails;
   if (
@@ -162,19 +190,30 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
   if (saveOrder) {
+    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      medicineOrders: saveOrder,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
       deliveryAddress1 = '',
       deliveryAddress2 = '',
       landmark = '',
       deliveryAddress = 'Kakinada',
-      deliveryState = 'Telangana';
+      deliveryState = 'Telangana',
+      stateCode = 'TS',
+      lat = 0,
+      long = 0;
     if (patientAddressDetails) {
       deliveryState = patientAddressDetails.state;
       deliveryAddress1 = patientAddressDetails.addressLine1;
       deliveryAddress2 = patientAddressDetails.addressLine2;
       landmark = patientAddressDetails.landmark || landmark;
-
+      lat = patientAddressDetails.latitude || lat;
+      long = patientAddressDetails.longitude || long;
+      stateCode = patientAddressDetails.stateCode || stateCode;
       deliveryAddress =
         patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
       deliveryCity = patientAddressDetails.city || deliveryCity;
@@ -202,10 +241,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
       patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
     }
+
     const medicineOrderPharma = {
       orderid: saveOrder.orderAutoId,
-      orderdate: saveOrder.quoteDateTime, //"04-22-2020 14:46:41",
-      couponcode: '',
+      orderdate: format(addMinutes(saveOrder.quoteDateTime, 330), 'MM-dd-yyyy HH:mm:ss'),
+      couponcode: saveOrder.coupon,
       drname: '',
       VendorName: 'Apollo247',
       shippingmethod:
@@ -227,21 +267,22 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         billingaddress: deliveryAddress.trim(),
         billingpincode: deliveryZipcode,
         billingcity: deliveryCity,
-        billingstateid: 'TS',
+        billingstateid: stateCode,
         shippingaddress: deliveryAddress.trim(),
         shippingpincode: deliveryZipcode,
         shippingcity: deliveryCity,
-        shippingstateid: 'TS',
+        shippingstateid: stateCode,
         customerid: '',
-        patiendname: '',
-        customername: patientDetails.firstName + ' ' + patientDetails.lastName,
+        patiendname: patientDetails.firstName,
+        customername:
+          patientDetails.firstName + (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
         primarycontactno: patientDetails.mobileNumber.substr(3),
         secondarycontactno: '',
         age: patientAge,
-        emailid: patientDetails.emailAddress,
+        emailid: patientDetails.emailAddress || '',
         cardno: '0',
-        latitude: 17.4538043,
-        longitude: 78.3694429,
+        latitude: lat,
+        longitude: long,
       },
       paymentdetails: [],
       itemdetails: [],
@@ -292,12 +333,18 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       ''
     );
     const orderResp: PharmaResult = JSON.parse(textRes);
-
     if (orderResp.Status === false) {
       errorCode = -1;
       errorMessage = orderResp.Message;
       orderStatus = MEDICINE_ORDER_STATUS.ORDER_FAILED;
     } else {
+      const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+        orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+        medicineOrders: saveOrder,
+        statusDate: new Date(),
+        statusMessage: orderResp.Message,
+      };
+      await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
       await medicineOrdersRepo.updateMedicineOrderDetails(
         saveOrder.id,
         saveOrder.orderAutoId,

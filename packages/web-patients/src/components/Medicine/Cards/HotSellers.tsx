@@ -180,102 +180,105 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
       <Slider {...sliderSettings}>
         {props.data &&
           props.data.products &&
-          props.data.products.map((hotSeller) => (
-            <div key={hotSeller.sku} className={classes.card}>
-              <div className={classes.cardWrap}>
-                {!!Number(hotSeller.special_price!) &&
-                  Number(hotSeller.price) !== Number(hotSeller.special_price!) && (
-                    <div className={classes.offerPrice}>
-                      <span>
-                        -
-                        {Math.floor(
-                          ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
-                            hotSeller.price) *
-                            100
-                        )}
-                        %
-                      </span>
+          props.data.products.map((hotSeller) =>
+            hotSeller.is_in_stock ? (
+              <div key={hotSeller.sku} className={classes.card}>
+                <div className={classes.cardWrap}>
+                  {!!Number(hotSeller.special_price!) &&
+                    Number(hotSeller.price) !== Number(hotSeller.special_price!) && (
+                      <div className={classes.offerPrice}>
+                        <span>
+                          -
+                          {Math.floor(
+                            ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
+                              hotSeller.price) *
+                              100
+                          )}
+                          %
+                        </span>
+                      </div>
+                    )}
+                  <Link to={clientRoutes.medicineDetails(hotSeller.url_key)}>
+                    <div className={classes.productIcon}>
+                      <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
                     </div>
-                  )}
-                <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
-                  <div className={classes.productIcon}>
-                    <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
-                  </div>
-                  <div className={classes.productTitle}>{hotSeller.name}</div>
-                </Link>
-                <div className={classes.bottomSection}>
-                  <div className={classes.priceGroup}>
-                    {hotSeller &&
-                    hotSeller.special_price &&
-                    hotSeller.price !== hotSeller.special_price ? (
-                      <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                    ) : (
-                      <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
-                    )}
-                    <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
-                  </div>
-                  <div className={classes.addToCart}>
-                    {itemIndexInCart(hotSeller) === -1 ? (
-                      <AphButton
-                        onClick={() => {
-                          const cartItem: MedicineCartItem = {
-                            description: hotSeller.description,
-                            id: hotSeller.id,
-                            image: hotSeller.image,
-                            is_in_stock: hotSeller.is_in_stock,
-                            is_prescription_required: hotSeller.is_prescription_required,
-                            name: hotSeller.name,
-                            price: hotSeller.price,
-                            sku: hotSeller.sku,
-                            special_price: hotSeller.special_price,
-                            small_image: hotSeller.small_image,
-                            status: hotSeller.status,
-                            thumbnail: hotSeller.thumbnail,
-                            type_id: hotSeller.type_id,
-                            mou: hotSeller.mou,
-                            quantity: 1,
-                            isShippable: true,
-                          };
-                          /**Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Add to Cart',
-                            label: hotSeller.name,
-                            value: hotSeller.special_price || hotSeller.price,
-                          });
-                          /**Gtm code End  */
-                          const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                          if (index >= 0) {
-                            updateCartItem && updateCartItem(cartItem);
-                          } else {
-                            addCartItem && addCartItem(cartItem);
-                          }
-                        }}
-                      >
-                        Add To Cart
-                      </AphButton>
-                    ) : (
-                      <AphButton
-                        onClick={() => {
-                          /**Gtm code start  */
-                          gtmTracking({
-                            category: 'Pharmacy',
-                            action: 'Remove From Cart',
-                            label: hotSeller.name,
-                            value: hotSeller.special_price || hotSeller.price,
-                          });
-                          /**Gtm code End  */
-                          removeCartItem && removeCartItem(hotSeller.id);
-                        }}
-                      >
-                        Remove
-                      </AphButton>
-                    )}
+                    <div className={classes.productTitle}>{hotSeller.name}</div>
+                  </Link>
+                  <div className={classes.bottomSection}>
+                    <div className={classes.priceGroup}>
+                      {hotSeller &&
+                      hotSeller.special_price &&
+                      hotSeller.price !== hotSeller.special_price ? (
+                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                      ) : (
+                        <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
+                      )}
+                      <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
+                    </div>
+                    <div className={classes.addToCart}>
+                      {itemIndexInCart(hotSeller) === -1 ? (
+                        <AphButton
+                          onClick={() => {
+                            const cartItem: MedicineCartItem = {
+                              url_key: hotSeller.url_key,
+                              description: hotSeller.description,
+                              id: hotSeller.id,
+                              image: hotSeller.image,
+                              is_in_stock: hotSeller.is_in_stock,
+                              is_prescription_required: hotSeller.is_prescription_required,
+                              name: hotSeller.name,
+                              price: hotSeller.price,
+                              sku: hotSeller.sku,
+                              special_price: hotSeller.special_price,
+                              small_image: hotSeller.small_image,
+                              status: hotSeller.status,
+                              thumbnail: hotSeller.thumbnail,
+                              type_id: hotSeller.type_id,
+                              mou: hotSeller.mou,
+                              quantity: 1,
+                              isShippable: true,
+                            };
+                            /**Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Add to Cart',
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code End  */
+                            const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                            if (index >= 0) {
+                              updateCartItem && updateCartItem(cartItem);
+                            } else {
+                              addCartItem && addCartItem(cartItem);
+                            }
+                          }}
+                        >
+                          Add To Cart
+                        </AphButton>
+                      ) : (
+                        <AphButton
+                          onClick={() => {
+                            /**Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Remove From Cart',
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code End  */
+                            removeCartItem && removeCartItem(hotSeller.id);
+                          }}
+                        >
+                          Remove
+                        </AphButton>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ) : null
+          )}
       </Slider>
     </div>
   );

@@ -140,6 +140,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       '&:hover': {
         backgroundColor: 'transparent',
+        boxShadow: 'none',
       },
     },
     btnContainer: {
@@ -362,10 +363,10 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
             </Grid>
           </Grid>
         )}
-      <div className={classes.helpTxt}>
+      {/* <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
-      </div>
+      </div> */}
       <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
         <Grid item lg={12} sm={12} xs={12}>
           <AphButton

@@ -11,6 +11,13 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { uploadPhotoTracking } from '../../webEngageTracking';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import {
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  acceptedFilesNamesForFileUpload,
+  INVALID_FILE_SIZE_ERROR,
+  INVALID_FILE_TYPE_ERROR,
+  toBase64,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -139,6 +146,9 @@ const client = new AphStorageClient(
 interface UploadPrescriptionProps {
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
+  isNonCartFlow: boolean;
+  isPresReview?: boolean;
+  setPrescriptionForReview?: any;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -150,31 +160,24 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const toBase64 = (file: any) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = (error) => reject(error);
-    });
-
   return (
     <div className={classes.root}>
-      <div className={classes.orderSteps}>
-        Order medicines in 2 simple steps —
-        <div className={classes.stepsInfo}>
-          <div className={classes.steps}>
-            Upload <br />
-            your prescription
+      {!props.isPresReview && (
+        <div className={classes.orderSteps}>
+          Order medicines in 2 simple steps —
+          <div className={classes.stepsInfo}>
+            <div className={classes.steps}>
+              Upload <br />
+              your prescription
+            </div>
+            <div className={classes.stepsArrow}>
+              <img src={require('images/ic_steps_arrow.svg')} alt="" />
+            </div>
+            <div className={classes.steps}>Order Through our customer care</div>
           </div>
-          <div className={classes.stepsArrow}>
-            <img src={require('images/ic_steps_arrow.svg')} alt="" />
-          </div>
-          <div className={classes.steps}>Order Through our customer care</div>
         </div>
-      </div>
+      )}
+
       <div className={classes.dialogContent}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(43vh - 52px)'}>
           <div className={classes.customScrollBar}>
@@ -190,54 +193,64 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       const file = fileNames[0] || null;
                       const fileExtension = file.name.split('.').pop();
                       const fileSize = file.size;
-                      if (fileSize > 2000000) {
+                      if (fileSize > MAX_FILE_SIZE_FOR_UPLOAD) {
                         setIsAlertOpen(true);
-                        setAlertMessage('Invalid File Size. File size must be less than 2MB');
+                        setAlertMessage(INVALID_FILE_SIZE_ERROR);
                       } else if (
                         fileExtension &&
-                        (fileExtension.toLowerCase() === 'png' ||
-                          fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'jpeg' ||
-                          fileExtension.toLowerCase() === 'pdf')
+                        fileExtension &&
+                        acceptedFilesNamesForFileUpload.includes(fileExtension.toLowerCase())
                       ) {
                         setIsUploading(true);
                         if (file) {
-                          const aphBlob = await client
+                          await client
                             .uploadBrowserFile({ file })
+                            .then((res: any) => {
+                              if (res && res.name) {
+                                const fileName = res.name as string;
+                                const url = client.getBlobUrl(fileName);
+
+                                if (props.isPresReview) {
+                                  props.setPrescriptionForReview &&
+                                    props.setPrescriptionForReview({
+                                      imageUrl: url,
+                                      name: fileName,
+                                      fileType: fileExtension.toLowerCase(),
+                                      baseFormat: res,
+                                    });
+                                  props.closeDialog();
+                                  setIsUploading(false);
+                                  return;
+                                }
+
+                                toBase64(file).then((res: any) => {
+                                  setPrescriptionUploaded &&
+                                    setPrescriptionUploaded({
+                                      imageUrl: url,
+                                      name: fileName,
+                                      fileType: fileExtension.toLowerCase(),
+                                      baseFormat: res,
+                                    });
+                                });
+                                if (props.isNonCartFlow) {
+                                  setTimeout(() => {
+                                    window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                                  }, 3000);
+                                } else {
+                                  props.closeDialog();
+                                  setIsUploading(false);
+                                }
+                              }
+                            })
                             .catch((error) => {
                               throw error;
                             });
-                          if (aphBlob && aphBlob.name) {
-                            const url = client.getBlobUrl(aphBlob.name);
-                            toBase64(file).then((res: any) => {
-                              setPrescriptionUploaded &&
-                                setPrescriptionUploaded({
-                                  imageUrl: url,
-                                  name: aphBlob.name,
-                                  fileType: fileExtension.toLowerCase(),
-                                  baseFormat: res,
-                                });
-                            });
-                            const currentUrl = window.location.href;
-                            if (
-                              currentUrl.endsWith('/medicines') ||
-                              currentUrl.includes('/medicines/')
-                            ) {
-                              setTimeout(() => {
-                                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
-                              }, 3000);
-                            } else {
-                              props.closeDialog();
-                              setIsUploading(false);
-                            }
-                          }
                         }
                       } else {
                         setIsAlertOpen(true);
-                        setAlertMessage(
-                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                        );
+                        setAlertMessage(INVALID_FILE_TYPE_ERROR);
                       }
+
                       setIsUploading(false);
                     }
                   }}
@@ -277,13 +290,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               <ol>
                 <li>Take clear Picture of your entire prescription.</li>
                 <li>Doctor details &amp; date of the prescription should be clearly visible.</li>
-                <li>Medicines will be dispensed as per prescription</li>
+                {!props.isPresReview && <li>Medicines will be dispensed as per prescription</li>}
               </ol>
             </div>
-            <div className={classes.bottomNotes}>
-              * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
-              meets all government regulations.
-            </div>
+            {!props.isPresReview && (
+              <div className={classes.bottomNotes}>
+                * Our pharmacist will dispense medicines only if the prescription is valid &amp; it
+                meets all government regulations.
+              </div>
+            )}
           </div>
         </Scrollbars>
       </div>

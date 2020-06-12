@@ -16,7 +16,7 @@ interface UserDetail {
 window.webengage = window.webengage || {};
 
 export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
-  const {  emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData
+  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
   if (window && window.webengage) {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
@@ -26,29 +26,29 @@ export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_first_name', firstName);
       window.webengage.user.setAttribute('we_last_name', lastName);
     } catch (err) {
-      console.log('Webengage user tracking err: ', err)
+      console.log('Webengage user tracking err: ', err);
     }
   }
-}
-export const webengageUserLoginTracking = (id:string) => {
+};
+export const webengageUserLoginTracking = (id: string) => {
   if (window && window.webengage) {
     try {
       window.webengage.user.login(id);
     } catch (err) {
-      console.log('Webengage user login tracking err: ', err)
+      console.log('Webengage user login tracking err: ', err);
     }
   }
-}
+};
 
 export const webengageUserLogoutTracking = () => {
   if (window && window.webengage) {
     try {
       window.webengage.user.logout();
     } catch (err) {
-      console.log('Webengage user logout tracking err: ', err)
+      console.log('Webengage user logout tracking err: ', err);
     }
   }
-}
+};
 
 export const phrConsultTabClickTracking = (userData: any) => {
   if (window && window.webengage) {
@@ -151,6 +151,71 @@ export const phrConsultCardClickTracking = (data: any) => {
         'Mobile Number': mobileNumber,
         'Customer ID': id,
         'Consult ID': consultId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+// Payment Instrument Click
+interface PaymentDetail {
+  paymentMode: string;
+  type: string;
+  orderAutoId: number;
+  orderId: string;
+}
+export const paymentInstrumentClickTracking = (data: PaymentDetail) => {
+  if (window && window.webengage) {
+    const { paymentMode, type, orderAutoId, orderId = null } = data;
+    try {
+      window.webengage.track('Payment Instrument', {
+        Payment_Mode: paymentMode,
+        Type: type,
+        order_AutoId: orderAutoId,
+        order_Id: orderId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+interface PaymentStatusData {
+  paymentStatus: string;
+  type: string;
+  orderAutoId: number;
+  orderId: string;
+}
+export const paymentStatusTracking = (data: PaymentStatusData) => {
+  if (window && window.webengage) {
+    const { paymentStatus, type, orderAutoId, orderId = null } = data;
+    try {
+      window.webengage.track('Payment Status', {
+        Payment_Status: paymentStatus,
+        Type: type,
+        order_AutoId: orderAutoId,
+        order_Id: orderId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+interface MedicineDetails {
+  sku: string;
+  name: string;
+  category_id: string;
+}
+
+export const notifyMeTracking = (data: MedicineDetails) => {
+  if (window && window.webengage) {
+    const { sku, name, category_id } = data;
+    try {
+      window.webengage.track('Notify Me', {
+        'product name': name,
+        'product id': sku,
+        'category ID': category_id,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);

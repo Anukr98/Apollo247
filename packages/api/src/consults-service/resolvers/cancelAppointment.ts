@@ -21,6 +21,8 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { log } from 'customWinstonLogger';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -61,7 +63,9 @@ const cancelAppointment: Resolver<
   CancelAppointmentResult
 > = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointment = await appointmentRepo.findById(cancelAppointmentInput.appointmentId);
+  const appointment = await appointmentRepo.findAppointmentPaymentById(
+    cancelAppointmentInput.appointmentId
+  );
   if (!appointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -75,12 +79,6 @@ const cancelAppointment: Resolver<
   )
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
-  if (
-    appointment.appointmentDateTime <= new Date() &&
-    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(
     cancelAppointmentInput.appointmentId
@@ -110,6 +108,41 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
   );
+  if (
+    appointment.appointmentPayments.length &&
+    appointment.appointmentPayments[0].amountPaid >= 1
+  ) {
+    let refundResponse = await initiateRefund(
+      {
+        orderId: appointment.paymentOrderId,
+        txnId: appointment.appointmentPayments[0].paymentRefId,
+        refundAmount: appointment.appointmentPayments[0].amountPaid,
+        appointment: appointment,
+        appointmentPayments: appointment.appointmentPayments[0],
+      },
+      consultsDb
+    );
+    refundResponse = refundResponse as PaytmResponse;
+    if (refundResponse.refundId) {
+      sendNotification(
+        {
+          appointmentId: appointment.id,
+          notificationType: NotificationType.APPOINTMENT_PAYMENT_REFUND,
+        },
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+    } else {
+      log(
+        'consultServiceLogger',
+        'Refund failed cancelAppointment',
+        'cancelAppointment()',
+        JSON.stringify(refundResponse),
+        'true'
+      );
+    }
+  }
 
   //update slot status in ES as open
   const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
