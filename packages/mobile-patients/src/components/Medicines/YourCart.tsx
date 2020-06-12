@@ -772,8 +772,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
     const FreeShipping =
-      AppConfig.Configuration.FREE_SHIPPING_VALUE > 0 &&
-      cartTotal - couponDiscount > AppConfig.Configuration.FREE_SHIPPING_VALUE &&
+      AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
+      cartTotal - couponDiscount >
+        AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
       cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
       AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY - (cartTotal - couponDiscount);
     return (
@@ -848,7 +849,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             />
           );
         })}
-        {cartItems.length > 0 && FreeShipping && (
+        {cartItems.length > 0 && FreeShipping ? (
           <View
             style={{
               shadowColor: 'rgba(128, 128, 128, 0.3)',
@@ -877,7 +878,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               of product for FREE Delivery
             </Text>
           </View>
-        )}
+        ) : null}
       </View>
     );
   };
