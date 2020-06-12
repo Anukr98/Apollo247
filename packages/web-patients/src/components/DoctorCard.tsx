@@ -25,7 +25,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, getDiffInDays } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -177,16 +177,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       return 0;
     }
   };
-  const getDiffInDays = () => {
-    if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
-      const currentTime = moment(new Date());
-      const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
-      return Math.round(differenceInDays) + 1;
-    } else {
-      return 0;
-    }
-  };
   const differenceInMinutes = getDiffInMinutes();
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
@@ -209,7 +199,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
         );
       } else if (differenceInMinutes >= 1380) {
-        return <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInDays()} Days</div>;
+        return (
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
+          </div>
+        );
       }
     } else {
       return null;

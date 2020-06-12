@@ -395,8 +395,11 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     return `${medicineName}${mou! > 1 ? ` (${mou}${isTablet ? ' tabs' : ''})` : ''}`;
   };
 
-  const shouldShow = (time: string) => {
-    return moment('2020-06-06T00:00:00.000Z').diff(time) < 0;
+  const getItemName = (itemObj: ItemObject, index: number) => {
+    const isRepeatedItem = billedItemDetails.find(
+      (item: ItemObject, idx: number) => index !== idx && item.itemId === itemObj.itemId
+    );
+    return isRepeatedItem ? `${itemObj.itemName}-batch:<${itemObj.batchId}>` : itemObj.itemName;
   };
 
   return isLoading ? (
@@ -476,10 +479,10 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
               billedPaymentDetails &&
               billedPaymentDetails.discountValue // check for supporting old orders
                 ? billedItemDetails.map(
-                    (item: ItemObject) =>
+                    (item: ItemObject, idx: number) =>
                       item && (
                         <div key={item.itemId} className={classes.tableRow}>
-                          <div className={classes.medicineName}>{item.itemName}</div>
+                          <div className={classes.medicineName}>{getItemName(item, idx)}</div>
                           <div>{item.issuedQty.toFixed(1)}</div>
                           <div>Rs.{item.mrp}</div>
                         </div>

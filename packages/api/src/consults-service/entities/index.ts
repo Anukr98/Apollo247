@@ -818,6 +818,9 @@ export class CaseSheet extends BaseEntity {
   preperationTimeInSeconds: number;
 
   @Column({ nullable: true })
+  prescriptionGeneratedDate: Date;
+
+  @Column({ nullable: true })
   referralSpecialtyName: string;
 
   @Column({ nullable: true })

@@ -5,11 +5,13 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -149,9 +151,10 @@ const saveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
-  const currentStatus = orderDetails.shopId
-    ? MEDICINE_ORDER_STATUS.READY_AT_STORE
-    : MEDICINE_ORDER_STATUS.ORDER_BILLED;
+  const currentStatus =
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? MEDICINE_ORDER_STATUS.READY_AT_STORE
+      : MEDICINE_ORDER_STATUS.ORDER_BILLED;
   const statusDate = format(
     addMinutes(parseISO(saveOrderShipmentInvoiceInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
@@ -161,6 +164,14 @@ const saveOrderShipmentInvoice: Resolver<
     medicineOrderShipments: shipmentDetails,
     statusDate: new Date(statusDate),
   };
+
+  log(
+    'profileServiceLogger',
+    `ORDER_BILLED_API_CALL_FROM_OMS_FOR_ORDER_ID:${saveOrderShipmentInvoiceInput.orderId}`,
+    `saveOrderShipmentInvoice call from OMS`,
+    JSON.stringify(saveOrderShipmentInvoiceInput),
+    ''
+  );
 
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
@@ -183,13 +194,14 @@ const saveOrderShipmentInvoice: Resolver<
     }),
     itemDetails: JSON.stringify(
       saveOrderShipmentInvoiceInput.itemDetails.map((item) => {
+        const quantity = item.quantity / item.packSize;
         return {
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: Number((item.quantity / item.packSize).toFixed(2)),
+          issuedQty: Number(quantity.toFixed(2)),
           mou: item.packSize,
-          discountPrice: Number((item.packSize * item.discountPrice).toFixed(2)),
+          discountPrice: Number((item.discountPrice / quantity).toFixed(2)),
           mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
         };
       })

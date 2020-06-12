@@ -16,7 +16,7 @@ import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { g, medicineDescription } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import styles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails.styles';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
@@ -26,13 +26,14 @@ export interface CaseSheetDetailsProps extends NavigationScreenProps {
 
 export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const [showCF, setshowCF] = useState<boolean>(true);
-  const [showVital, setshowVital] = useState<boolean>(false);
-  const [showMedicalDetails, setshowMedicalDetails] = useState(false);
-  const [showNotes, setshowNotes] = useState(false);
-  const [showDiagnosis, setshowDiagnosis] = useState(false);
-  const [showMP, setshowMP] = useState(false);
-  const [showTP, setshowTP] = useState(false);
-  const [showReferral, setshowReferral] = useState(false);
+  const [showVital, setshowVital] = useState<boolean>(true);
+  const [showMedicalDetails, setshowMedicalDetails] = useState(true);
+  const [showNotes, setshowNotes] = useState(true);
+  const [showDiagnosis, setshowDiagnosis] = useState(true);
+  const [showMP, setshowMP] = useState(true);
+  const [showTP, setshowTP] = useState(true);
+  const [showAdvice, setShowAdvice] = useState(true);
+  const [showReferral, setshowReferral] = useState(true);
   const [showHelpModel, setshowHelpModel] = useState(false);
 
   const consultDetails: GetCaseSheet_getCaseSheet_pastAppointments = props.navigation.getParam(
@@ -44,6 +45,12 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const caseSheet = (g(consultDetails, 'caseSheet') || []).filter(
     (item) => item.doctorType !== DoctorType.JUNIOR
   );
+
+  const jrCaseSheet = (g(consultDetails, 'caseSheet') || []).filter(
+    (item) => item.doctorType === DoctorType.JUNIOR
+  );
+  console.log(caseSheet, jrCaseSheet, g(consultDetails, 'caseSheet'), 'sdnkj');
+
   const { doctorDetails } = useAuth();
 
   const renderHeader = () => {
@@ -64,7 +71,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
   const renderChiefComplaints = () => {
     const symptoms = caseSheet.length > 0 ? caseSheet[0].symptoms : null;
-    if (symptoms)
+    if (symptoms && symptoms.length > 0) {
       return (
         <CollapseCard
           heading={strings.case_sheet.symptoms}
@@ -72,27 +79,29 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           onPress={() => setshowCF(!showCF)}
           containerStyle={{ marginVertical: 10 }}
         >
-          {symptoms &&
-            symptoms.map((i) => {
-              if (i) {
-                const description = [
-                  `${strings.common.since}: ${i.since || '-'}`,
-                  `${strings.common.how_often}: ${i.howOften || '-'}`,
-                  `${strings.common.severity}: ${i.severity || '-'}`,
-                  `Details: ${i.details || '-'}`,
-                ]
-                  .filter((d) => d !== '')
-                  .join('\n');
-                return (
-                  <View style={styles.symptomView}>
-                    <Text style={styles.symptomText}>{i.symptom}</Text>
-                    <Text style={styles.symptomdetails}>{description}</Text>
-                  </View>
-                );
-              }
-            })}
+          {symptoms.map((i) => {
+            if (i) {
+              const description = [
+                `${strings.common.since}: ${i.since || '-'}`,
+                `${strings.common.how_often}: ${i.howOften || '-'}`,
+                `${strings.common.severity}: ${i.severity || '-'}`,
+                `Details: ${i.details || '-'}`,
+              ]
+                .filter((d) => d !== '')
+                .join('\n');
+              return (
+                <View style={styles.symptomView}>
+                  <Text style={styles.symptomText}>{i.symptom}</Text>
+                  <Text style={styles.symptomdetails}>{description}</Text>
+                </View>
+              );
+            }
+          })}
         </CollapseCard>
       );
+    } else {
+      return null;
+    }
   };
 
   const renderVitals = () => {
@@ -212,7 +221,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   };
 
   const renderNotes = () => {
-    if (caseSheet.length && caseSheet[0].notes)
+    if (jrCaseSheet.length > 0 && jrCaseSheet[0].notes)
       return (
         <CollapseCard
           heading={strings.case_sheet.jr_doctor_notes}
@@ -221,95 +230,144 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           containerStyle={{ marginVertical: 10 }}
         >
           <View style={{ marginHorizontal: 16 }}>
-            <Text style={styles.caseSheetNote}>{caseSheet[0].notes}</Text>
+            <Text style={styles.caseSheetNote}>{jrCaseSheet[0].notes}</Text>
           </View>
         </CollapseCard>
       );
   };
   const renderDiagnosis = () => {
-    return (
-      <CollapseCard
-        heading={strings.case_sheet.diagnosis}
-        collapse={showDiagnosis}
-        onPress={() => setshowDiagnosis(!showDiagnosis)}
-        containerStyle={{ marginVertical: 10 }}
-      >
-        <View style={{ marginHorizontal: 16 }}>
-          {renderLabelDesc(strings.case_sheet.diagonsed_medical_condi)}
-          {caseSheet.length > 0 && (
+    if (caseSheet.length > 0 && caseSheet[0].diagnosis && caseSheet[0].diagnosis.length > 0)
+      return (
+        <CollapseCard
+          heading={strings.case_sheet.diagnosis}
+          collapse={showDiagnosis}
+          onPress={() => setshowDiagnosis(!showDiagnosis)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={{ marginHorizontal: 16 }}>
+            {renderLabelDesc(strings.case_sheet.diagonsed_medical_condi)}
             <View style={styles.caseSheetDescrView}>
-              {caseSheet[0].diagnosticPrescription
-                ? caseSheet[0].diagnosticPrescription.map(
-                    (item) =>
-                      item && (
-                        <CapsuleView
-                          diseaseName={item.itemname || ''}
-                          containerStyle={styles.capsuleContainer}
-                        />
-                      )
-                  )
-                : null}
+              {caseSheet[0].diagnosis.map((item) =>
+                item && item.name ? (
+                  <CapsuleView diseaseName={item.name} containerStyle={styles.capsuleContainer} />
+                ) : null
+              )}
             </View>
-          )}
-        </View>
-      </CollapseCard>
-    );
+          </View>
+        </CollapseCard>
+      );
   };
   const renderMP = () => {
-    return (
-      <CollapseCard
-        heading={strings.case_sheet.medicine_prescription}
-        collapse={showMP}
-        onPress={() => setshowMP(!showMP)}
-        containerStyle={{ marginVertical: 10 }}
-      >
-        <View style={styles.MPView}>
-          {renderLabelDesc(strings.common.medicines)}
-          {caseSheet.length > 0 &&
-            caseSheet[0].medicinePrescription &&
-            caseSheet[0].medicinePrescription.map(
+    if (
+      caseSheet.length > 0 &&
+      caseSheet[0].medicinePrescription &&
+      caseSheet[0].medicinePrescription.length > 0
+    ) {
+      return (
+        <CollapseCard
+          heading={strings.case_sheet.medicine_prescription}
+          collapse={showMP}
+          onPress={() => setshowMP(!showMP)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={styles.MPView}>
+            {renderLabelDesc(strings.common.medicines)}
+            {caseSheet[0].medicinePrescription.map(
               (item) =>
                 item && (
                   <View>
                     <Text style={styles.medicineName}>{item.medicineName}</Text>
+                    <Text style={styles.medDescription}>{medicineDescription(item)}</Text>
                   </View>
                 )
             )}
-        </View>
-      </CollapseCard>
-    );
+          </View>
+        </CollapseCard>
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderTP = () => {
-    return (
-      <CollapseCard
-        heading={strings.case_sheet.test_prescription}
-        collapse={showTP}
-        onPress={() => setshowTP(!showTP)}
-        containerStyle={{ marginVertical: 10 }}
-      >
-        <View style={styles.TPview}>{renderLabelDesc('Tests')}</View>
-      </CollapseCard>
-    );
+    if (
+      caseSheet.length > 0 &&
+      caseSheet[0].diagnosticPrescription &&
+      caseSheet[0].diagnosticPrescription.length > 0
+    ) {
+      return (
+        <CollapseCard
+          heading={strings.case_sheet.test_prescription}
+          collapse={showTP}
+          onPress={() => setshowTP(!showTP)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={styles.TPview}>
+            {renderLabelDesc('Tests')}
+            {caseSheet[0].diagnosticPrescription.map(
+              (item) =>
+                item && (
+                  <View>
+                    <Text style={styles.medicineName}>{item.itemname}</Text>
+                  </View>
+                )
+            )}
+          </View>
+        </CollapseCard>
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderReferral = () => {
-    return (
-      <CollapseCard
-        heading={strings.case_sheet.referral}
-        collapse={showReferral}
-        onPress={() => setshowReferral(!showReferral)}
-        containerStyle={{ marginVertical: 10 }}
-      >
-        <View style={styles.referralView}>
-          <Text style={styles.referralText}>{`${caseSheet[0].referralSpecialtyName}${
-            caseSheet[0].referralDescription ? `:${caseSheet[0].referralDescription}` : ''
-          }`}</Text>
-        </View>
-      </CollapseCard>
-    );
+    if (caseSheet.length > 0 && caseSheet[0].referralSpecialtyName) {
+      return (
+        <CollapseCard
+          heading={strings.case_sheet.referral}
+          collapse={showReferral}
+          onPress={() => setshowReferral(!showReferral)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={styles.referralView}>
+            <Text style={styles.referralText}>{`${caseSheet[0].referralSpecialtyName}${
+              caseSheet[0].referralDescription ? ` : ${caseSheet[0].referralDescription}` : ''
+            }`}</Text>
+          </View>
+        </CollapseCard>
+      );
+    } else {
+      return null;
+    }
   };
-
+  const renderAdvice = () => {
+    if (
+      caseSheet.length > 0 &&
+      caseSheet[0].otherInstructions &&
+      caseSheet[0].otherInstructions.length > 0
+    ) {
+      return (
+        <CollapseCard
+          heading={strings.case_sheet.advice_instructions}
+          collapse={showAdvice}
+          onPress={() => setShowAdvice(!showAdvice)}
+          containerStyle={{ marginVertical: 10 }}
+        >
+          <View style={styles.referralView}>
+            {caseSheet[0].otherInstructions
+              .filter((i) => i && i.instruction)
+              .map((i, index) =>
+                i && i.instruction ? (
+                  <Text style={styles.adviceText}>{`${index + 1}. ${i.instruction}`}</Text>
+                ) : null
+              )}
+          </View>
+        </CollapseCard>
+      );
+    } else {
+      return null;
+    }
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -318,12 +376,18 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         }}
       >
         {renderHeader()}
-        <ScrollView bounces={false} style={{ zIndex: 1 }}>
+        <ScrollView
+          bounces={false}
+          style={{ zIndex: 1 }}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
           <Text style={styles.scrollViewText}>{`${strings.case_sheet.submitted_by} ${
             doctorDetails ? doctorDetails!.firstName : ''
-          } ${strings.case_sheet.on} ${moment(consultDetails.appointmentDateTime).format(
-            'DD/MM/YYYY'
-          )} at\n${moment(consultDetails.appointmentDateTime).format('hh.mm A')}`}</Text>
+          } ${strings.case_sheet.on} ${moment(
+            consultDetails.sdConsultationDate || consultDetails.appointmentDateTime
+          ).format('DD/MM/YYYY')} at\n${moment(
+            consultDetails.sdConsultationDate || consultDetails.appointmentDateTime
+          ).format('hh.mm A')}`}</Text>
           <Text style={styles.apptId}>
             {strings.case_sheet.appt_id}: {consultDetails.displayId}
           </Text>
@@ -334,7 +398,8 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderDiagnosis()}
           {renderMP()}
           {renderTP()}
-          {caseSheet[0].referralSpecialtyName && renderReferral()}
+          {renderAdvice()}
+          {renderReferral()}
         </ScrollView>
       </SafeAreaView>
       {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}

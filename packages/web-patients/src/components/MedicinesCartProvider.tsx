@@ -111,6 +111,8 @@ export interface MedicineCartContextProps {
   setMedicineAddress: ((medicineAddress: string) => void) | null;
   setPharmaAddressDetails: ((pharmaAddressDetails: PharmaAddressDetails) => void) | null;
   pharmaAddressDetails: PharmaAddressDetails;
+  headerPincodeError: string | null;
+  setHeaderPincodeError: ((headerPincodeError: string | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -154,6 +156,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setMedicineAddress: null,
   setPharmaAddressDetails: null,
   pharmaAddressDetails: null,
+  headerPincodeError: null,
+  setHeaderPincodeError: null,
 });
 
 enum CartTypes {
@@ -232,6 +236,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [pharmaAddressDetails, setPharmaAddressDetails] = useState<PharmaAddressDetails>(
     pharmaDefObject
   );
+  const [headerPincodeError, setHeaderPincodeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (medicineAddress) {
@@ -486,6 +491,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setMedicineAddress,
         pharmaAddressDetails,
         setPharmaAddressDetails,
+        setHeaderPincodeError,
+        headerPincodeError,
       }}
     >
       {props.children}
@@ -536,4 +543,6 @@ export const useShoppingCart = () => ({
   setMedicineAddress: useShoppingCartContext().setMedicineAddress,
   pharmaAddressDetails: useShoppingCartContext().pharmaAddressDetails,
   setPharmaAddressDetails: useShoppingCartContext().setPharmaAddressDetails,
+  setHeaderPincodeError: useShoppingCartContext().setHeaderPincodeError,
+  headerPincodeError: useShoppingCartContext().headerPincodeError,
 });

@@ -1,5 +1,8 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
+import moment from 'moment';
+import { GooglePlacesType } from 'components/LocationProvider';
+
 declare global {
   interface Window {
     opera: any;
@@ -147,13 +150,40 @@ const toBase64 = (file: any) =>
     reader.onerror = (error) => reject(error);
   });
 
+const getDiffInDays = (nextAvailability: string) => {
+  if (nextAvailability && nextAvailability.length > 0) {
+    const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+    const currentTime = moment(new Date());
+    const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
+    return differenceInDays;
+  } else {
+    return 0;
+  }
+};
+
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
 const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
 const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
+const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
+const TAT_API_TIMEOUT_IN_SEC = 20;
+
+const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
+  return findItem ? findItem.short_name || findItem.long_name : '';
+};
 
 export {
+  getDiffInDays,
+  NO_SERVICEABLE_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,
@@ -168,4 +198,6 @@ export {
   INVALID_FILE_SIZE_ERROR,
   INVALID_FILE_TYPE_ERROR,
   toBase64,
+  TAT_API_TIMEOUT_IN_SEC,
+  findAddrComponents,
 };
