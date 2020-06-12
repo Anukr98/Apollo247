@@ -25,6 +25,7 @@ import {
   PickCallIcon,
   UnMuteIcon,
   VideoOffIcon,
+  UploadHealthRecords,
   VideoOnIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -5895,9 +5896,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 9,
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -5908,11 +5909,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <Image
-                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  resizeMode={'contain'}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
                 />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
               </TouchableOpacity>
               <View>
                 <TextInput
@@ -5920,7 +5928,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   placeholder="Type here…"
                   multiline={true}
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 5,
                     height: 40,
                     width: width - 120,
@@ -5940,7 +5948,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 0,
                     height: 2,
                     width: width - 120,
@@ -6000,9 +6008,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 9,
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6013,11 +6021,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <Image
-                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  resizeMode={'contain'}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
                 />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
               </TouchableOpacity>
               <View>
                 <TextInput
@@ -6025,7 +6040,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   placeholder="Type here…"
                   multiline={true}
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 5,
                     height: 40,
                     width: width - 120,
@@ -6045,7 +6060,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 0,
                     height: 2,
                     width: width - 120,
