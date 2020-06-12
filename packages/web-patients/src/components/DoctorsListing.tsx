@@ -22,6 +22,7 @@ import { readableParam } from 'helpers/commonHelpers';
 import moment from 'moment';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -498,8 +499,15 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       : scrollbar.current.scrollToTop();
   };
 
+  const metaTagProps = {
+    title: `${specialityName} - Book Online Appointments And Consultations - Apollo 247`,
+    desciption: `Book online appointments with ${specialityName} in just a few clicks. Consult the best ${specialityName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  }
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>

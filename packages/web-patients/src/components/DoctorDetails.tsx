@@ -35,7 +35,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { gtmTracking } from 'gtmTracking';
 import { getOpeningHrs } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
-
+import { MetaTagsComp } from 'MetaTagsComp';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -240,6 +240,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [data, setData] = useState<any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
+  const [metaTagProps, setMetaTagProps] = useState(null);
 
   const currentUserId = currentPatient && currentPatient.id;
 
@@ -260,6 +261,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ) {
           const {
             getDoctorDetailsById: {
+              id,
               fullName,
               photoUrl,
               firstName,
@@ -269,6 +271,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               onlineConsultationFees,
               physicalConsultationFees,
               consultHours,
+              salutation
             },
           } = response.data;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
@@ -336,6 +339,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
             medicalSpecialty: specialty ? specialty.name : '',
           });
+          setMetaTagProps({
+            title: `${salutation}: ${fullName} - Online Consultation/Appointment - Apollo 247`,
+            description: `Book an appointment with <Doctor Name> - ${specialty && specialty.name} and consult online at Apollo 247. Know more about <Dr Name> and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            canonicalLink: `https://www.apollo247.com/doctors/${fullName}-${id}`
+          })
         }
       });
   }, []);
@@ -402,6 +410,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
     return (
       <div className={classes.root}>
+        <MetaTagsComp {...metaTagProps}/>
         <Header />
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.container}>
