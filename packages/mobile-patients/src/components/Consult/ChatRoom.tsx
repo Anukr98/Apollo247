@@ -140,6 +140,7 @@ import { FeedbackPopup } from '../FeedbackPopup';
 import { RenderPdf } from '../ui/RenderPdf';
 import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 interface OpentokStreamObject {
   connection: {
@@ -5674,6 +5675,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
+        blockCamera={isCall}
+        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
