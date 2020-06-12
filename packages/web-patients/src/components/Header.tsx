@@ -179,6 +179,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       transition: '0.1s ease',
       overflow: 'hidden',
+      zIndex: 9,
     },
     userAccountList: {
       padding: 0,
