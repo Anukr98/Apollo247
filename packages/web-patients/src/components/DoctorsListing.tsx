@@ -373,7 +373,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               });
           });
         }
-        console.log(potentialActionSchema);
         setStructuredJSON({
           '@context': 'https://schema.org/',
           '@type': 'MedicalSpecialty',
