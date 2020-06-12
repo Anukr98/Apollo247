@@ -123,6 +123,7 @@ export enum ApiConstants {
   PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better. You may be required to pay additional fees for registration at Hospital for Visit Clinic appointments.',
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
+  DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE = 'Diagnostic test payment failed',
