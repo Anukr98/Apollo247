@@ -743,7 +743,6 @@ export type CaseSheetMedicinePrescription = {
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
   itemname: string;
-  testInstruction: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {

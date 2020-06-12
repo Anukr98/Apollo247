@@ -63,7 +63,6 @@ const buildDiagnosis = (): CaseSheetDiagnosis => {
 
 const buildDiagnosisPrescription = (): CaseSheetDiagnosisPrescription => ({
   itemname: faker.commerce.productName(),
-  testInstruction: faker.commerce.testInstruction(),
 });
 
 const buildOtherInstruction = (): CaseSheetOtherInstruction => {

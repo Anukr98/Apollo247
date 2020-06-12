@@ -13979,12 +13979,6 @@
             "deprecationReason": null
           },
           {
-            "name": "DROPS",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "GEL",
             "description": null,
             "isDeprecated": false,
@@ -15897,18 +15891,6 @@
         "fields": [
           {
             "name": "itemname",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "testInstruction",
             "description": null,
             "args": [],
             "type": {
@@ -35836,16 +35818,6 @@
         "inputFields": [
           {
             "name": "itemname",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "testInstruction",
             "description": null,
             "type": {
               "kind": "SCALAR",
