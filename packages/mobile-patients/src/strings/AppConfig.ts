@@ -2,23 +2,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 
-const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
-const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
-const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
-const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://magento.apollo247.com';
-const testApiCredentialsDev = {
-  UserName: 'ASKAPOLLO',
-  Password: '3HAQbAb9wrsykr8TMLnV',
-  InterfaceClient: 'ASKAPOLLO',
-};
-const testApiCredentialsProd = {
-  Username: 'MCKINSEY',
-  Password: 'ERVEYCWTALAOHELEEBRY',
-  InterfaceClient: 'MCKINSEY',
-};
-
 export type PharmacyHomepageInfo = {
   section_key: string;
   section_name: string;
@@ -36,6 +19,23 @@ export enum AppEnv {
 }
 
 const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+
+const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
+const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
+const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
+const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
+const apolloProdBaseUrl = 'https://magento.apollo247.com';
+const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const testApiCredentialsDev = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+const testApiCredentialsProd = {
+  Username: 'MCKINSEY',
+  Password: 'ERVEYCWTALAOHELEEBRY',
+  InterfaceClient: 'MCKINSEY',
+};
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
@@ -78,9 +78,15 @@ const appStaticVariables = {
       visible: true,
     },
     {
+      section_key: 'monsoon_essentials',
+      section_name: 'MONSOON ESSENTIALS',
+      section_position: '5',
+      visible: true,
+    },
+    {
       section_key: 'shop_by_brand',
       section_name: 'SHOP BY BRAND',
-      section_position: '5',
+      section_position: '6',
       visible: true,
     },
   ] as PharmacyHomepageInfo[],
