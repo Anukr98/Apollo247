@@ -71,7 +71,7 @@ import {
   PatientInfoWithSource,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { 
+import {
   FirebaseEventName,
   PatientInfoFirebase,
   PatientInfoWithSourceFirebase,
@@ -105,6 +105,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
 import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { handleDeepLink } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { Vitals } = NativeModules;
 
@@ -305,6 +306,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
+    // handleDeepLink(props.navigation);
     isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
@@ -461,15 +464,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     source?: PatientInfoWithSourceFirebase['Source']
   ) => {
     const eventAttributes: PatientInfoFirebase = {
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
     };
     if (source) {
       (eventAttributes as PatientInfoWithSourceFirebase)['Source'] = source;
