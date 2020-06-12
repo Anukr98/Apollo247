@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
@@ -76,8 +76,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeBtns: {
       position: 'absolute',
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       zIndex: 9,
     },
     stopCallIcon: {
@@ -94,8 +94,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeVideoImg: {
       zIndex: 9,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       backgroundColor: '#000',
     },
@@ -135,6 +135,18 @@ const useStyles = makeStyles((theme: Theme) => {
     patientName: {
       fontSize: 20,
       fontWeight: 600,
+    },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
+    minSubscriber: {
+      '& > div:first-child': {
+        minHeight: 'auto !important',
+      },
     },
   };
 });
@@ -314,7 +326,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       />
                     )}
                   <OTStreams>
-                    <OTSubscriber eventHandlers={subscriberHandler} />
+                    <OTSubscriber
+                      eventHandlers={subscriberHandler}
+                      className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    />
                   </OTStreams>
                   {props.showVideoChat && (
                     <div>
