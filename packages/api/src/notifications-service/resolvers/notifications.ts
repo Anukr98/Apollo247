@@ -658,30 +658,6 @@ export async function sendNotification(
     notificationBody = content;
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
-<<<<<<< HEAD
-    //send whatsapp message
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
-
-    //send sms to doctor if Appointment DateTime is less than 24 hours
-    const presentDate = new Date();
-    const laterDate =
-      appointment.appointmentDateTime > presentDate ? appointment.appointmentDateTime : presentDate;
-    const earlierDate =
-      appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
-    const hoursDifference = differenceInHours(laterDate, earlierDate);
-
-    if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
-      let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
-        '{0}',
-        doctorDetails.fullName
-      );
-      doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-      doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-      doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
-=======
->>>>>>> parent of 63497c6da5... APP-1922 : send sms to doctor if Appointment DateTime is less than 24 hours
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',
