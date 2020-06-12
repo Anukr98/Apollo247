@@ -204,19 +204,25 @@ const styles = StyleSheet.create({
   },
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    // justifyContent: 'space-between',
-    // alignItems: 'flex-end',
-    // marginVertical: 18,
-    // flex: 1,
     flexWrap: 'wrap',
-    paddingTop: 10,
+    padding: 20,
   },
   ctaWhiteButtonViewStyle: {
-    flex: 1,
-    minHeight: 40,
-    height: 'auto',
+    padding: 8,
+    borderRadius: 10,
     backgroundColor: theme.colors.WHITE,
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  textViewStyle: {
+    padding: 8,
+    marginRight: 15,
+    marginVertical: 5,
   },
   ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
   ctaOrangeTextStyle: {
@@ -1257,87 +1263,42 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     return null;
   };
-
-  const alertParams = [
-    {
-      text: 'MYSELF',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'N',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'O',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'P',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'Q',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'R',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'S',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'P',
-      index: 0,
-      type: 'white-button',
-    },
-    {
-      text: 'SOMEONE ELSE',
-      index: 1,
-      type: 'orange-button',
-    },
-  ];
-
+  const selectUser = (selectedUser: any) => {
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+    AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+  };
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {alertParams.map((item, index, array) =>
-        item.type == 'orange-link' ? (
-          <Text
-            onPress={() => {
-              console.log('myself');
-            }}
-            style={[styles.ctaOrangeTextStyle, { marginRight: index == array.length - 1 ? 0 : 16 }]}
-          >
-            {item.text}
-          </Text>
-        ) : (
-          <Button
-            style={[
-              item.type == 'white-button'
-                ? styles.ctaWhiteButtonViewStyle
-                : styles.ctaOrangeButtonViewStyle,
-              { marginRight: index == array.length - 1 ? 0 : 16 },
-            ]}
-            titleTextStyle={[item.type == 'white-button' && styles.ctaOrangeTextStyle]}
-            title={item.text}
-            onPress={() => {
-              if (index == 0) {
-                setShowProfilePopUp(false);
-              } else {
-                setShowList(true);
-              }
-            }}
-          />
-        )
-      )}
+      {allCurrentPatients.slice(0, 5).map((item: any, index: any, array: any) => (
+        <TouchableOpacity
+          onPress={() => {
+            setShowProfilePopUp(false);
+            selectUser(item);
+          }}
+          style={[styles.ctaWhiteButtonViewStyle]}
+        >
+          <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+        </TouchableOpacity>
+      ))}
+      <View style={[styles.textViewStyle]}>
+        <Text
+          onPress={() => {
+            if (allCurrentPatients.length > 6) {
+              setShowList(true);
+            } else {
+              setShowProfilePopUp(false);
+              props.navigation.navigate(AppRoutes.EditProfile, {
+                isEdit: false,
+                isPoptype: true,
+                mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              });
+            }
+          }}
+          style={[styles.ctaOrangeTextStyle]}
+        >
+          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
+        </Text>
+      </View>
     </View>
   );
 
@@ -1416,12 +1377,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setShowProfilePopUp(false);
         }}
       >
-        <TouchableOpacity
+        <View
           style={styles.mainView}
-          onPress={() => {
-            //TODO:comment this if any issues with modal closing
-            setShowProfilePopUp(false);
-          }}
+          // onPress={() => {
+          //   //TODO:comment this if any issues with modal closing
+          //   setShowProfilePopUp(false);
+          // }}
         >
           <View style={styles.subViewPopup}>
             {renderProfileDrop()}
@@ -1431,7 +1392,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             </Text>
             {renderCTAs()}
           </View>
-        </TouchableOpacity>
+        </View>
       </Modal>
     );
   };
