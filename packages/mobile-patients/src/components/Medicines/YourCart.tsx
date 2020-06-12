@@ -220,6 +220,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+  const isPreviousPageUploadPrescription = navigatedFrom === 'uploadPrescription';
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -704,40 +705,43 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'MEDICINES CART'}
+        title={isPreviousPageUploadPrescription ? 'PLACE ORDER' : 'MEDICINES CART'}
         rightComponent={
           <View>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                if (navigatedFrom === 'registration') {
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [
-                        NavigationActions.navigate({
-                          routeName: AppRoutes.ConsultRoom,
-                        }),
-                      ],
-                    })
-                  );
-                } else {
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                  setCoupon!(null);
-                  setStoreId!('');
-                }
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(13),
-                  color: theme.colors.APP_YELLOW,
+            {
+              !isPreviousPageUploadPrescription &&
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  if (navigatedFrom === 'registration') {
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.ConsultRoom,
+                          }),
+                        ],
+                      })
+                    );
+                  } else {
+                    props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                    setCoupon!(null);
+                    setStoreId!('');
+                  }
                 }}
               >
-                ADD ITEMS
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansSemiBold(13),
+                    color: theme.colors.APP_YELLOW,
+                  }}
+                >
+                  ADD ITEMS
+                </Text>
+              </TouchableOpacity>
+            }
           </View>
         }
         onPressLeftIcon={() => {
@@ -907,7 +911,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
-                checkServicability(item);
+                if (isPreviousPageUploadPrescription) {
+                  setDeliveryAddressId && setDeliveryAddressId(item.id);
+                } else {
+                  checkServicability(item);
+                }
               }}
               containerStyle={{ marginTop: 16 }}
               hideSeparator={index + 1 === array.length}
@@ -938,7 +946,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             )}
           </View>
         </View>
-        {deliveryTime || deliveryError ? (
+        {(deliveryTime || deliveryError) && !isPreviousPageUploadPrescription ? (
           <View>
             <View style={styles.separatorStyle} />
             <View style={styles.deliveryContainerStyle}>
@@ -1893,6 +1901,29 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       });
   };
 
+  const renderPaymentMethod = () => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          marginHorizontal: 20,
+          marginTop: 16,
+          marginBottom: 24,
+          padding: 20,
+        }}
+      >
+        <RadioSelectionItem
+          key={'cod'}
+          title={'Cash On Delivery'}
+          isSelected={true}
+          onPress={() => {}}
+          hideSeparator={true}
+          textStyle={{ ...theme.fonts.IBMPlexSansMedium(16), marginTop: 2 }}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1904,14 +1935,19 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           bounces={false}
         >
           <View style={{ marginVertical: 24 }}>
-            {renderItemsInCart()}
+            {!isPreviousPageUploadPrescription && renderItemsInCart()}
             <MedicineUploadPrescriptionView
               selectedTab={selectedTab}
               setSelectedTab={setselectedTab}
               navigation={props.navigation}
             />
             {renderDelivery()}
-            {renderTotalCharges()}
+            {
+              isPreviousPageUploadPrescription ?
+              renderPaymentMethod() :
+              renderTotalCharges()
+            }
+            {/* {renderTotalCharges()} */}
             {/* {renderOneapollotext()} */}
             {/* {renderMedicineSuggestions()} */}
           </View>
@@ -1930,10 +1966,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
+            title={isPreviousPageUploadPrescription ? 'PLACE ORDER' : `PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
             onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
-              onPressProceedToPay();
+              if (isPreviousPageUploadPrescription) {
+                // remove uploaded prescription after success
+                console.log('upload prescription cod api');
+              } else {
+                CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
+                onPressProceedToPay();
+              }
             }}
             style={{ flex: 1, marginHorizontal: 40 }}
           />

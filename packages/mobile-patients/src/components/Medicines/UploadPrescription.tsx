@@ -116,6 +116,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     addresses,
     stores,
     setAddresses,
+    setPhysicalPrescriptions: setPhysicalPrescription,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [durationDays, setDurationDays] = useState<string>('');
@@ -344,7 +345,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         },
       };
-      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+
+      const newuploadedPrescriptions = PhysicalPrescriptions.map(
+        (item, index) =>
+          ({
+            ...item,
+            uploadedUrl: phyPresUrls![index],
+            prismPrescriptionFileId: phyPresPrismIds![index],
+          } as PhysicalPrescription)
+      );
+      setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
+      setLoading!(false);
+      props.navigation.push(AppRoutes.YourCart, { movedFrom: 'uploadPrescription'});
+      // submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
@@ -686,10 +699,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
               ...fonts.IBMPlexSansBold(13),
               color: theme.colors.APP_YELLOW,
               lineHeight: 24,
-              paddingBottom: 4,
-              marginBottom: 16,
+              // paddingBottom: 4,
+              // marginBottom: 16,
               paddingRight: 24,
-              paddingTop: 16,
+              // paddingTop: 16,
               textAlign: 'right',
             }}
             onPress={() => setShowPopop(true)}
