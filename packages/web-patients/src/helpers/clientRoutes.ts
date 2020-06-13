@@ -53,6 +53,7 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  kavachLanding: () => '/covid19/kavach',
   covidDetails: () => '/covid19/*',
   aboutUs: () => '/aboutUs',
   needHelp: () => '/needHelp',
