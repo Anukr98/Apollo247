@@ -60,6 +60,7 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
+import { SpecialityListing } from 'components/SpecialityListing';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -202,6 +203,7 @@ const App: React.FC = () => {
             component={ClinicCheckout}
           />
           <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
+          <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
         </Switch>
       </div>
     </Scrollbars>
