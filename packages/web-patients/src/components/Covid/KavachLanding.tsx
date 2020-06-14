@@ -73,10 +73,14 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
-      height: 310,
+      // height: 310,
       border: '1px solid #eee',
       borderRadius: 5,
       overflow: 'hidden',
+      '& img': {
+        width: '100%',
+        height: '100%',
+      },
     },
     kavachFormContainer: {
       background: '#fff',
@@ -134,6 +138,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     error: {
       color: '#890000',
+      margin: '-15px 0 0',
+      fontSize: 12,
     },
     card: {
       padding: '20px 15px',
@@ -378,7 +384,9 @@ export const KavachLanding: React.FC = (props) => {
           <div className={classes.shareDetails}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={8}>
-                <div className={classes.kavachBanner}></div>
+                <div className={classes.kavachBanner}>
+                  <img src={require('images/corona-banner.jpg')} />
+                </div>
               </Grid>
               <Grid item xs={12} md={4}>
                 <div className={classes.kavachFormContainer}>
@@ -429,7 +437,9 @@ export const KavachLanding: React.FC = (props) => {
                         </MenuItem>
                         <MenuItem value={'Hyderabad'}>Hyderabad</MenuItem>
                         <MenuItem value={'Chennai'}>Chennai</MenuItem>
-                        <MenuItem value={'Delhi'}>Delhi</MenuItem>
+                        <MenuItem value={'Delhi'}>New Delhi</MenuItem>
+                        <MenuItem value={'Bengaluru'}>Bengaluru</MenuItem>
+                        <MenuItem value={'Kolkata'}>Kolkata</MenuItem>
                       </Select>
                     </FormControl>
                     {!isLoading ? (
@@ -578,7 +588,7 @@ export const KavachLanding: React.FC = (props) => {
               </Grid>
             </Grid>
           </div>
-          <div className={classes.image}></div>
+          {/* <div className={classes.image}></div> */}
           <div className={classes.faq}>
             <Typography component="h6" className={classes.uppercase}>
               Frequently Asked Questions
@@ -1449,7 +1459,7 @@ export const KavachLanding: React.FC = (props) => {
               className={classes.seeMore}
               onClick={() => setShowmore(!showmore)}
             >
-              {showmore ? <p>See Less</p> : <p>See More</p>}
+              {showmore ? <span>See Less</span> : <span>See More</span>}
             </a>
           </div>
         </div>
