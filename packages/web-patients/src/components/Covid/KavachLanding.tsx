@@ -929,7 +929,7 @@ export const KavachLanding: React.FC = (props) => {
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
-              <ExpansionPanel
+              {/* <ExpansionPanel
                 expanded={expanded === 'panel13'}
                 onChange={handleChange('panel13')}
                 className={classes.panelRoot}
@@ -955,7 +955,7 @@ export const KavachLanding: React.FC = (props) => {
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
-              </ExpansionPanel>
+              </ExpansionPanel>*/}
               <ExpansionPanel
                 expanded={expanded === 'panel14'}
                 onChange={handleChange('panel14')}
