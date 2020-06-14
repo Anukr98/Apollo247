@@ -15,6 +15,7 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import { MascotWithMessage } from '../MascotWithMessage';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -363,12 +364,25 @@ export const KavachLanding: React.FC = (props) => {
   };
 
   const submitKavachForm = () => {
-    console.log('make api call');
     setIsLoading(true);
-    setTimeout(() => {
+    const userData = {
+      fullName: userName,
+      mobileNumber: userMobileNumber,
+      email: userEmail,
+      location,
+    };
+    fetchUtil(process.env.KAVACH_FORM_SUBMIT_URL, 'POST', userData, '', true).then((res: any) => {
+      if (res && res.success) {
+        setUserEmail('');
+        setUserMobileNumber('');
+        setUserName('');
+        setLocation('');
+        setIsPopoverOpen(true);
+      } else {
+        alert('something went wrong');
+      }
       setIsLoading(false);
-      setIsPopoverOpen(true);
-    }, 4000);
+    });
   };
   return (
     <div className={classes.kavachLanding}>
