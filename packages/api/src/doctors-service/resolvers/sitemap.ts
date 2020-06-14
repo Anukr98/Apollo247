@@ -108,7 +108,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   return 'Sitemap generated :) ' + uploadPath;
 };
 
-export const sitemapkResolvers = {
+export const sitemapResolvers = {
   Mutation: {
     generateSitemap,
   },

@@ -76,7 +76,7 @@ import {
 
 import { winstonLogger } from 'customWinstonLogger';
 import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/deepLink';
-import { sitemapTypeDefs, sitemapkResolvers } from 'doctors-service/resolvers/sitemap';
+import { sitemapTypeDefs, sitemapResolvers } from 'doctors-service/resolvers/sitemap';
 
 (async () => {
   await connect();
@@ -193,7 +193,7 @@ import { sitemapTypeDefs, sitemapkResolvers } from 'doctors-service/resolvers/si
       },
       {
         typeDefs: sitemapTypeDefs,
-        resolvers: sitemapkResolvers,
+        resolvers: sitemapResolvers,
       },
     ]),
     plugins: [
