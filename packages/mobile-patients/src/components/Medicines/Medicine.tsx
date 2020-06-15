@@ -337,7 +337,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const banners = g(data, 'mainbanners') || [];
+  const banners = (g(data, 'mainbanners') || [])
+    .filter((banner) => Number(banner.status))
+    .filter(
+      (banner) =>
+        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
+        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
+    );
   const healthAreas = g(data, 'healthareas') || [];
   const dealsOfTheDay = g(data, 'deals_of_the_day') || [];
   const shopByCategory = g(data, 'shop_by_category') || [];
@@ -637,6 +643,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
+          resizeMode="stretch"
           onLoadStart={() => {
             setImageLoading({ ...imageLoading, [item.image]: true });
           }}
@@ -646,7 +653,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onLoad={(value) => {
             if (index == 0) {
               const { height, width } = value.nativeEvent.source;
-              console.log(height, width, 'dsniu');
               setImgHeight(height * (winWidth / width));
             }
           }}
