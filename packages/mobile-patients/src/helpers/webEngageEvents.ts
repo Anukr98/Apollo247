@@ -265,7 +265,8 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -409,7 +410,8 @@ export interface WebEngageEvents {
     'Store Name'?: string;
     'Store Number'?: string;
     'Store Address'?: string;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -594,7 +596,8 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Doctor Name': string;
     'Net Amount': number;
-    revenue: number;
+    af_revenue: number;
+    af_currency: string;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
