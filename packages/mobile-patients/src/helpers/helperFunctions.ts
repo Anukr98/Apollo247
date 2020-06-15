@@ -854,7 +854,12 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
-    revenue: price,
+    af_revenue: special_price
+      ? typeof special_price == 'string'
+        ? Number(special_price)
+        : special_price
+      : price,
+    af_currency: 'INR',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1072,7 +1077,12 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
-    revenue: price,
+    af_revenue: special_price
+      ? typeof special_price == 'string'
+        ? Number(special_price)
+        : special_price
+      : price,
+    af_currency: 'INR',
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };

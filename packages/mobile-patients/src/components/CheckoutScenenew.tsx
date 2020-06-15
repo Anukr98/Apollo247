@@ -229,7 +229,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
-        revenue: getFormattedAmount(grandTotal),
+        af_revenue: getFormattedAmount(grandTotal),
+        af_currency: 'INR',
       };
       return eventAttributes;
     } catch (error) {

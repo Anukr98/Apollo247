@@ -425,6 +425,8 @@ export interface FirebaseEvents {
     Gender: string;
     Mobile_Number: number;
     Customer_ID: string;
+    af_revenue: number;
+    af_currency: string;
   };
   [FirebaseEventName.RATING_GIVEN]: {
     'Patient UHID': string;
