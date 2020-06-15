@@ -662,6 +662,11 @@ export const FavouriteMedicines: React.FC = () => {
       value: 'Month(s)',
       selected: false,
     },
+    {
+      id: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
+      value: 'Till next review',
+      selected: false,
+    },
   ];
   let dosageFrequency = [
     {
@@ -782,6 +787,16 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
     {
+      id: ROUTE_OF_ADMINISTRATION.INTRANASAL_SPRAY,
+      value: 'Intranasal spray',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR,
+      value: 'Intra-articular',
+      selected: false,
+    },
+    {
       id: ROUTE_OF_ADMINISTRATION.LOCAL_APPLICATION,
       value: 'Local application',
       selected: false,
@@ -789,6 +804,10 @@ export const FavouriteMedicines: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.NASAL_DROPS,
       value: 'Nasal drops',
+      selected: false,
+    },{
+      id: ROUTE_OF_ADMINISTRATION.NASALLY,
+      value: 'Nasally',
       selected: false,
     },
     {
@@ -816,6 +835,11 @@ export const FavouriteMedicines: React.FC = () => {
       value: 'Sublingual',
       selected: false,
     },
+    {
+      id: ROUTE_OF_ADMINISTRATION.TRIGGER_POINT_INJECTION,
+      value: 'Trigger point injection',
+      selected: false,
+    },
   ];
   const medicineMappingObj: any = {
     syrup: {
@@ -841,6 +865,11 @@ export const FavouriteMedicines: React.FC = () => {
     suspension: {
       defaultSetting: MEDICINE_FORM_TYPES.OTHERS,
       defaultUnitDp: 'ML',
+      defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
+    },
+    sachet: {
+      defaultSetting: MEDICINE_FORM_TYPES.OTHERS,
+      defaultUnitDp: 'Sachet(s)',
       defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
     },
     tablet: {
@@ -919,6 +948,9 @@ export const FavouriteMedicines: React.FC = () => {
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
+    SACHET: { value: 'sachet(s)' },
+    INTERNATIONAL_UNIT: { value: 'international unit(s)' },
+    TEASPOON: { value: 'teaspoon(s)' },
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
@@ -929,7 +961,7 @@ export const FavouriteMedicines: React.FC = () => {
   const [medicine, setMedicine] = useState('');
   const [frequency, setFrequency] = useState(dosageFrequency[0].id);
   const [roaOption, setRoaOption] = useState(roaOptionsList[0].id);
-  const [forUnit, setforUnit] = useState(forOptions[0].id);
+  const [forUnit, setforUnit] = useState(forOptions[3].id);
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
 
@@ -1207,9 +1239,8 @@ export const FavouriteMedicines: React.FC = () => {
     });
     setDaySlots(dayslots);
     if (selectedMedicinesArr) {
-      console.log(selectedMedicinesArr[idx]);
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
-      setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!);
+      setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays! && Number(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!) !== 0 ? selectedMedicinesArr[idx].medicineConsumptionDurationInDays! : '');
       if (
         selectedMedicinesArr[idx].medicineUnit &&
         dosageList.indexOf(selectedMedicinesArr[idx].medicineUnit) < 0
@@ -1259,7 +1290,7 @@ export const FavouriteMedicines: React.FC = () => {
       setforUnit(
         selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
           ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
-          : forOptions[0].id
+          : forOptions[3].id
       );
       setMedicineForm(
         selectedMedicinesArr[idx].medicineFormTypes!
@@ -1311,7 +1342,7 @@ export const FavouriteMedicines: React.FC = () => {
   }, [searchInput]);
   const resetFrequencyFor = () => {
     setFrequency(dosageFrequency[0].id);
-    setforUnit(forOptions[0].id);
+    setforUnit(forOptions[3].id);
     setRoaOption(roaOptionsList[0].id);
     dosageFrequency = dosageFrequency.map((dosageObj: FrequencyType) => {
       dosageObj.selected = false;
@@ -1478,23 +1509,26 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0) {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
-      setErrorState({
-        ...errorState,
-        durationErr: true,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else {
+    } 
+    // else if (daySlotsArr.length === 0) {
+    //   setErrorState({
+    //     ...errorState,
+    //     durationErr: false,
+    //     daySlotErr: true,
+    //     tobeTakenErr: false,
+    //     dosageErr: false,
+    //   });
+    // } 
+    // else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     durationErr: true,
+    //     daySlotErr: false,
+    //     tobeTakenErr: false,
+    //     dosageErr: false,
+    //   });
+    // } 
+    else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1689,23 +1723,26 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0) {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
-      setErrorState({
-        ...errorState,
-        durationErr: true,
-        daySlotErr: false,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else {
+    } 
+    // else if (daySlotsArr.length === 0) {
+    //   setErrorState({
+    //     ...errorState,
+    //     durationErr: false,
+    //     daySlotErr: true,
+    //     tobeTakenErr: false,
+    //     dosageErr: false,
+    //   });
+    // }
+    //  else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
+    //   setErrorState({
+    //     ...errorState,
+    //     durationErr: true,
+    //     daySlotErr: false,
+    //     tobeTakenErr: false,
+    //     dosageErr: false,
+    //   });
+    // } 
+    else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -2456,7 +2493,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   },
                                 }}
                                 onChange={(e: any) => {
-                                  setforUnit(e.target.value as MEDICINE_CONSUMPTION_DURATION);
+                                  setforUnit(e.target.value as any);
                                 }}
                               >
                                 {forOptionHtml}
