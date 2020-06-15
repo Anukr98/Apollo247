@@ -24,6 +24,7 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import { RenderPdfStyles } from '@aph/mobile-doctors/src/components/ui/RenderPdf.styles';
 import { nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -170,7 +171,9 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
             ? height - 160
             : ctas
             ? Platform.OS === 'ios'
-              ? height - 165
+              ? isIphoneX()
+                ? height - 196
+                : height - 165
               : height - 175
             : height - 100,
           backgroundColor: 'transparent',

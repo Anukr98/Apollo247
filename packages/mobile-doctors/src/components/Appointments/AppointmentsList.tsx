@@ -183,7 +183,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     patientId: string,
     appId: string,
     apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
-    prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+    prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null,
+    caseSheetEdit?: boolean
   ) => {
     callPermissions(() => {
       props.navigation.push(AppRoutes.ConsultRoomScreen, {
@@ -195,6 +196,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         AppointmentStatus: apointmentData.status,
         AppoinementData: apointmentData,
         prevCaseSheet: prevCaseSheet,
+        caseSheetEnableEdit: caseSheetEdit,
       });
     });
   };
@@ -396,7 +398,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                       patientId,
                                       appId,
                                       i,
-                                      prevCaseSheet
+                                      prevCaseSheet,
+                                      true
                                     );
                                   })
                                   .catch(() => {

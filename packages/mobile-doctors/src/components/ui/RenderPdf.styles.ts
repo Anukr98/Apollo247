@@ -27,11 +27,12 @@ export const RenderPdfStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0,0.1)',
     zIndex: 5,
+    elevation: 200,
   },
   menucontainer: {
     alignSelf: 'flex-end',
     marginRight: 20,
-    marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
+    marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 80 : 58) : 36,
     backgroundColor: theme.colors.WHITE,
     paddingHorizontal: 12,
     paddingVertical: 3,
@@ -45,7 +46,7 @@ export const RenderPdfStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   menuItemText: {
-    ...theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE),
+    ...theme.viewStyles.text('M', 13, theme.colors.SHARP_BLUE),
     marginVertical: 9,
     marginLeft: 2,
   },

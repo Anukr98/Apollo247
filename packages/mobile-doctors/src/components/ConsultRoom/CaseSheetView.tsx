@@ -542,7 +542,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const renderButtonsView = () => {
     return (
-      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', paddingTop: 0 }}
+      >
         <View>
           {!showButtons ? (
             <View style={styles.footerButtonsContainersave}>
@@ -602,6 +604,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <StickyBottomComponent
           style={{
             backgroundColor: '#f0f4f5',
+            paddingTop: 0,
           }}
         >
           <View style={styles.footerButtonsContainer}>
@@ -631,7 +634,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           style={{
             backgroundColor: '#f0f4f5',
             justifyContent: 'center',
-            paddingBottom: 16,
+            paddingTop: 0,
           }}
         >
           <View style={styles.footerButtonsContainersave}>
@@ -660,7 +663,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const renderEditPreviewButtons = () => {
     return (
-      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', paddingTop: 0 }}
+      >
         <View style={styles.footerButtonsContainer}>
           <Button
             title={caseSheetEdit ? 'SAVE' : 'EDIT CASE SHEET'}
