@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -109,7 +109,7 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
+    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
