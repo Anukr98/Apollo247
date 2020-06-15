@@ -159,13 +159,61 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     heading: {},
-    detailsContent: {},
+    panelRoot: {
+      boxShadow: 'none',
+      borderTop: '1px solid rgba(2, 71, 91, .2)',
+      borderRadius: '0 !important',
+      '&:before': {
+        display: 'none',
+      },
+    },
+    panelHeader: {
+      padding: 0,
+    },
+    summaryContent: {},
+    expandIcon: {
+      color: '#02475b',
+      margin: 0,
+    },
+    panelExpanded: {
+      margin: 0,
+    },
+    panelDetails: {
+      padding: 0,
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+      },
+    },
+    panelHeading: {
+      margin: 0,
+      fontSize: 14,
+      fontWeight: 500,
+    },
+    detailsContent: {
+      '& p': {
+        margin: '0 0 10px',
+        '&:last-child': {
+          margin: 0,
+        },
+      },
+    },
+    faqList: {
+      padding: '0 0 0 20px',
+      margin: 0,
+      listStyle: 'decimal',
+    },
+    tsContent: {},
   };
 });
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
+  const [expanded, setExpanded] = React.useState<string | false>(false);
 
+  const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
+  };
   return (
     <div className={classes.slContainer}>
       <Header />
@@ -210,6 +258,7 @@ export const SpecialityListing: React.FC = (props) => {
                   <div className={classes.sectionHeader}>
                     <Typography component="h4">Top Specialites</Typography>
                   </div>
+                  <div className={classes.tsContent}></div>
                 </div>
                 <div className={classes.otherSpeciality}>
                   <div className={classes.sectionHeader}>
@@ -219,23 +268,31 @@ export const SpecialityListing: React.FC = (props) => {
                 </div>
                 <div className={classes.faq}>
                   <Typography component="h5">Frequently asked questions</Typography>
-                  <ExpansionPanel>
+                  <ExpansionPanel
+                    className={classes.panelRoot}
+                    expanded={expanded === 'panel1'}
+                    onChange={handleChange('panel1')}
+                  >
                     <ExpansionPanelSummary
                       expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1a-content"
-                      id="panel1a-header"
+                      classes={{
+                        root: classes.panelHeader,
+                        content: classes.summaryContent,
+                        expandIcon: classes.expandIcon,
+                        expanded: classes.panelExpanded,
+                      }}
                     >
-                      <Typography className={classes.heading}>
+                      <Typography className={classes.panelHeading}>
                         How do I book an online consultation?
                       </Typography>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         <Typography>
                           You can book an online consultation either on the website or mobile app of
                           Apollo 24/7 in two ways.
                         </Typography>
-                        <ul>
+                        <ul className={classes.faqList}>
                           <li>
                             Click on the ‘Find a Doctor’ button on the homepage of the website/app,
                             select a specialty or type the name of the doctor directly. Once you
@@ -253,17 +310,25 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
-                  <ExpansionPanel>
+                  <ExpansionPanel
+                    className={classes.panelRoot}
+                    expanded={expanded === 'panel2'}
+                    onChange={handleChange('panel2')}
+                  >
                     <ExpansionPanelSummary
                       expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel2a-content"
-                      id="panel2a-header"
+                      classes={{
+                        root: classes.panelHeader,
+                        content: classes.summaryContent,
+                        expandIcon: classes.expandIcon,
+                        expanded: classes.panelExpanded,
+                      }}
                     >
-                      <Typography className={classes.heading}>
+                      <Typography className={classes.panelHeading}>
                         For how long can I speak to the doctor??
                       </Typography>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         <Typography>
                           Once you book an online consultation on our app, you will get 15 minutes
@@ -273,17 +338,25 @@ export const SpecialityListing: React.FC = (props) => {
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
-                  <ExpansionPanel>
+                  <ExpansionPanel
+                    className={classes.panelRoot}
+                    expanded={expanded === 'panel3'}
+                    onChange={handleChange('panel3')}
+                  >
                     <ExpansionPanelSummary
                       expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel3a-content"
-                      id="panel3a-header"
+                      classes={{
+                        root: classes.panelHeader,
+                        content: classes.summaryContent,
+                        expandIcon: classes.expandIcon,
+                        expanded: classes.panelExpanded,
+                      }}
                     >
-                      <Typography className={classes.heading}>
+                      <Typography className={classes.panelHeading}>
                         How do I book a follow-up session with the same doctor on the app?
                       </Typography>
                     </ExpansionPanelSummary>
-                    <ExpansionPanelDetails>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         <Typography>
                           To book a follow-up session with the same doctor, select the ‘Active
