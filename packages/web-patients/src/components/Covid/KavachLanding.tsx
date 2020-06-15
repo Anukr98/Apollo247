@@ -77,13 +77,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
-      // height: 310,
-      border: '1px solid #eee',
-      borderRadius: 5,
-      overflow: 'hidden',
       '& img': {
         width: '100%',
         height: '100%',
+        borderRadius: 5,
       },
     },
     kavachFormContainer: {
