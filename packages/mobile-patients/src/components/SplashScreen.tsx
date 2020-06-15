@@ -502,6 +502,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_top6_specailties',
             ]);
         })
         .then((snapshot) => {
@@ -526,6 +527,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+          const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+          QA_top6_specailties &&
+            updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          console.log('QA_top6_specailties--------------------', QA_top6_specailties);
 
           const myValye = snapshot;
           let index: number = 0;

@@ -74,6 +74,7 @@ const Common = {
   PLATINUM_GREY: platinumGrey,
   REDEEMED_TEXT: '#c3202b',
   CONSUTL_STEPS: 'rgba(1, 71, 91, 0.6)',
+  BORDER_BOTTOM_COLOR:'#979797'
 };
 
 const Header = {
