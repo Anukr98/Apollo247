@@ -230,7 +230,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             paddingLeft: 20,
             paddingBottom: 20,
             color: theme.colors.LIGHT_BLUE,
-            ...theme.fonts.IBMPlexSansMedium(12),
+            ...theme.fonts.IBMPlexSansMedium(13),
           }}
         >
           Coming Soon!
