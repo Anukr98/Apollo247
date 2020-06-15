@@ -5828,85 +5828,86 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       ) : null}
+      {displayUploadHealthRecords ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 1001,
+            backgroundColor: '#000',
+            opacity: 0.85,
+            justifyContent: 'flex-end',
+          }}
+        >
+          <View
+            style={{
+              left: 35,
+            }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
+              }}
+            >
+              {'You can upload your Health Records here'}
+            </Text>
+            <FreeArrowIcon style={{ width: 33, height: 33 }} />
+          </View>
+          <View
+            style={{
+              width: width,
+              height: 66,
+              backgroundColor: 'transparent',
+              bottom: 0,
+              top: isIphoneX() ? 2 : 0,
+              paddingBottom: isIphoneX() ? 100 : 0,
+            }}
+          >
+            <View style={{ flexDirection: 'row', width: width }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={{
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
+                  marginLeft: 5,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
+                }}
+                onPress={async () => {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                  setDisplayUploadHealthRecords(false);
+                }}
+              >
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+                />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      ) : null}
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
         }}
       >
-        {displayUploadHealthRecords ? (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              zIndex: 1001,
-              backgroundColor: '#000',
-              opacity: 0.85,
-              justifyContent: 'flex-end',
-            }}
-          >
-            <View
-              style={{
-                left: 35,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
-                }}
-              >
-                {'You can upload your Health Records here'}
-              </Text>
-              <FreeArrowIcon style={{ width: 33, height: 33 }} />
-            </View>
-            <View
-              style={{
-                width: width,
-                height: 66,
-                backgroundColor: 'transparent',
-                bottom: 0,
-                top: isIphoneX() ? 2 : 0,
-              }}
-            >
-              <View style={{ flexDirection: 'row', width: width }}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={{
-                    width: 50,
-                    height: 50,
-                    marginTop: 10,
-                    marginLeft: 5,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'transparent',
-                  }}
-                  onPress={async () => {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                    setDisplayUploadHealthRecords(false);
-                  }}
-                >
-                  <UploadHealthRecords
-                    style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                  />
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
-                      marginTop: 5,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {'Upload Records'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        ) : null}
         <Header
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
