@@ -443,7 +443,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
 
   const apiDetails = {
-    skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
+    skuUrl: 'https://uat.apollopharmacy.in/popcsrchsku_api.php',
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
@@ -460,7 +460,7 @@ export const MedicineDetails: React.FC = (props) => {
     await axios
       .post(
         apiDetails.skuUrl || '',
-        { params: sku },
+        { params: sku, level: 'product' },
         {
           headers: {
             Authorization: apiDetails.authToken,

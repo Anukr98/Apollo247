@@ -208,6 +208,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const apiDetails = {
+  skuUrl: 'https://uat.apollopharmacy.in/popcsrchsku_api.php',
   url: process.env.PHARMACY_MED_CATEGORY_LIST,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
@@ -280,32 +281,47 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicineList && paramSearchType !== 'search-medicines' && Number(paramSearchText) > 0) {
+    if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       axios
         .post(
-          apiDetails.url || '',
-          {
-            category_id: paramSearchText,
-            page_id: 1,
-          },
+          apiDetails.skuUrl || '',
+          { params: paramSearchText, level: 'category' },
           {
             headers: {
               Authorization: apiDetails.authToken,
-              Accept: '*/*',
             },
           }
         )
         .then(({ data }) => {
-          if (data && data.products) {
-            setMedicineList(data.products);
-            setHeading('');
-            setIsLoading(false);
-          }
+          axios
+            .post(
+              apiDetails.url || '',
+              {
+                category_id: data.category_id || paramSearchText,
+                page_id: 1,
+              },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                  Accept: '*/*',
+                },
+              }
+            )
+            .then(({ data }) => {
+              if (data && data.products) {
+                setMedicineList(data.products);
+                setHeading('');
+                setIsLoading(false);
+              }
+            })
+            .catch((e) => {
+              setIsLoading(false);
+              setHeading('');
+            });
         })
         .catch((e) => {
-          setIsLoading(false);
-          setHeading('');
+          console.log(e);
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();

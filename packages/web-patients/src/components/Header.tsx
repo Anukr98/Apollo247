@@ -251,7 +251,7 @@ export const Header: React.FC = (props) => {
   const MedicineRoutes = [
     clientRoutes.medicines(),
     clientRoutes.searchByMedicine(params.searchMedicineType, params.searchText),
-    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.sku),
+    clientRoutes.medicineCategoryDetails(params.searchMedicineType, params.searchText, params.sku),
     clientRoutes.medicineDetails(params.sku),
     clientRoutes.medicineAllBrands(),
     clientRoutes.prescriptionsLanding(),
