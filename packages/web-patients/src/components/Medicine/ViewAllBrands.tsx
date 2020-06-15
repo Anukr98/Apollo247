@@ -11,6 +11,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -339,9 +340,15 @@ export const ViewAllBrands: React.FC = (props) => {
     return map;
   };
   const grouped = groupBy(showData, (brand: filter) => brand.key);
+  const metaTagProps = {
+    title: 'Medicine Brands In India - Buy Medicines From Top Brands Online - Apollo 247',
+    desciption: "Buy medicines online from top brands in India at Apollo 247 - India's online pharmacy store. Get all the medicines from the best medicine brands in India right here. Buy now!",
+    canonicalLink: window && window.location && window.location.href,
+  }
   return (
     <div className={classes.root}>
       <Header />
+      <MetaTagsComp {...metaTagProps} />
       <div className={classes.container}>
         <div className={classes.viewAllBrands}>
           <div className={classes.breadcrumbs}>
