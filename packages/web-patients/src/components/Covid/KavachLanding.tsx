@@ -23,6 +23,9 @@ const useStyles = makeStyles((theme: Theme) => {
     kavachContent: {
       padding: 30,
       background: '#f7f8f5',
+      [theme.breakpoints.down('sm')]: {
+        padding: '20px 15px',
+      },
     },
     container: {
       width: 1064,
@@ -183,7 +186,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       background: '#fff',
       borderRadius: 5,
-      margin: '24px 0 20px',
+      margin: '44px 0 20px',
       textAlign: 'center',
       '& h3': {
         fontSize: 23,
@@ -243,6 +246,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     detailsContent: {
+      width: '80%',
       '& p': {
         margin: '0 0 10px',
         '&:last-child': {
@@ -503,12 +507,13 @@ export const KavachLanding: React.FC = (props) => {
           <div className={classes.aboutSection}>
             <Typography component="h3">About Apollo Kavach Program</Typography>
             <Typography>
-              As COVID-19 cases continue to rise so does our effort in combating the pandemic
-              introducing project Kavach with curated protective plans to keep you safe.
+              As the number of COVID-19 cases continue to rise, so does our effort in combating the
+              pandemic. Introducing Project Kavach - a comprehensive and integrated response plan to
+              keep you safe against the Coronavirus.
             </Typography>
             <Typography>
-              Using our strong digital backbone, our prowess in telemedicine and robust COVID 19
-              protocols, the Apollo Kavach initiative gives you 360-degree protection.
+              Using our strong digital backbone, our prowess in telemedicine, and robust COVID-19
+              protocols, the Apollo Kavach initiative offers you 360-degree protection.
             </Typography>
           </div>
           <div className={classes.covidCare}>
@@ -520,13 +525,13 @@ export const KavachLanding: React.FC = (props) => {
                   </Typography>
                   <ul className="careList">
                     <li>Clinical needs </li>
-                    <li>Mobility and Lung therapy</li>
+                    <li>Mobility and lung therapy</li>
                     <li>Nutrition and immunity</li>
                     <li>Mental health and wellness</li>
                     <li>Education to care giver and other family members</li>
-                    <li>Motivation and positive thinking allaying anxiety and fears</li>
+                    <li>Motivation and positive thinking to ease anxiety and fears</li>
                     <li>
-                      Support service for medications, consumables, diagnostics, referral to
+                      Support services for medications, consumables, diagnostics, and referrals to
                       hospital
                     </li>
                   </ul>
@@ -536,19 +541,17 @@ export const KavachLanding: React.FC = (props) => {
                     The Covid Care Home Kit
                   </Typography>
                   <ul className="careList">
-                    <li>Digital Thermometer to check temperature</li>
-                    <li>Pulse Oximeter to monitor blood oxygen levels &amp; Heart rate</li>
+                    <li>Digital thermometer for temperature checks</li>
+                    <li>Pulse Oximeter to monitor blood oxygen levels &amp; heart rate</li>
                     <li>Incentive Spirometer for breathing exercises</li>
-                    <li>3 ply Mask Infection Prevention</li>
-                    <li>Examination gloves for Infection Prevention</li>
-                    <li>Paper gloves for Infection Prevention</li>
-                    <li>Sanitizer - 500 ML for Hand Hygiene</li>
-                    <li>Surface Disinfectant for Surface Sanitisation</li>
-                    <li>
-                      Anti-Bacterial Wipe for Smaller surfaces to be cleaned like Mobile Phones
-                    </li>
-                    <li>Waste Disposal Bags for Laundry &amp; waste collection</li>
-                    <li>Spiral Note pad &amp; pen for records</li>
+                    <li>3 ply face mask for infection prevention</li>
+                    <li>Examination gloves for infection prevention</li>
+                    <li>Paper gloves for infection prevention</li>
+                    <li>Sanitizer - 500 ML for hand hygiene</li>
+                    <li>Surface disinfectant for surface sanitisation</li>
+                    <li>Anti-bacterial wipes for smaller surfaces like mobile phones</li>
+                    <li>Waste disposal bags for laundry &amp; waste collection</li>
+                    <li>Spiral note pad &amp; pen for record-keeping</li>
                   </ul>
                 </div>
               </Grid>
@@ -560,12 +563,12 @@ export const KavachLanding: React.FC = (props) => {
                         <img src={require('images/stay-i.png')} /> hotel
                       </Typography>
                       <ul className="careList">
-                        <li>Medically Supervised Rooms</li>
-                        <li>All Meals in a day</li>
-                        <li>Round the clock Care</li>
-                        <li>Laundry &amp; Maintenance Provided</li>
-                        <li>Ensured Early Intervention</li>
-                        <li>Decreased Risk of adverse outcomes</li>
+                        <li>Medically supervised rooms</li>
+                        <li>All meals in a day covered</li>
+                        <li>Round-the-clock care</li>
+                        <li>Laundry and maintenance services</li>
+                        <li>Ensured early intervention</li>
+                        <li>Decreased risk of adverse outcomes</li>
                       </ul>
                     </div>
                   </Grid>
@@ -573,12 +576,12 @@ export const KavachLanding: React.FC = (props) => {
                     <div className={classes.card}>
                       <Typography component="h4">COVID Mangement</Typography>
                       <ul className="careList">
-                        <li> Specialist Consultation</li>
-                        <li>All Protocols under ICMR Guidelines</li>
-                        <li>International Infection Control Protocols</li>
-                        <li>Patient Segregation to prevent cross infection</li>
-                        <li>Covid Testing</li>
-                        <li>In Hospital Treatment</li>
+                        <li>Specialist consultation</li>
+                        <li>All protocols under ICMR guidelines</li>
+                        <li>International infection control protocols</li>
+                        <li>Patient segregation to prevent cross infection</li>
+                        <li>COVID-19 testing</li>
+                        <li>In-hospital treatment </li>
                       </ul>
                     </div>
                   </Grid>
@@ -624,15 +627,15 @@ export const KavachLanding: React.FC = (props) => {
                     expanded: classes.panelExpanded,
                   }}
                 >
-                  <Typography className={classes.panelHeading}>What is Stay I @HOME</Typography>
+                  <Typography className={classes.panelHeading}>What is Stay I@HOME?</Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Stay I @HOME is a monitored Home Isolation service offered by Apollo Homecare.
+                      Stay I@HOME is a monitored home isolation service offered by Apollo Homecare.
                       The services are based on the latest guidelines from Indian Council of Medical
                       Research (ICMR)/ Ministry of Health and Family Welfare (MoHFW), which
-                      recommends Home Isolation for patients who are pre-symptomatic or have very
+                      recommends home isolation for patients who are pre-symptomatic or have very
                       mild symptoms, and are either positive or suspected of COVID-19.
                     </Typography>
                   </div>
@@ -653,22 +656,22 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What are the Benefits of Stay I @HOME?
+                    What are the benefits of Stay I@HOME?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <ul className={classes.faqList}>
-                      <li> Helps reduce the risk of transmission to family members</li>
+                      <li>Helps reduce the risk of transmission to family members</li>
                       <li>
-                        Monitored Home Isolation for better compliance, adhering to all the
+                        Monitored home isolation for better compliance, adhering to all the
                         guidelines
                       </li>
                       <li>
                         Ensures early intervention, if any new symptoms or signs are developing
-                        throughout the Isolation period.
+                        throughout the isolation period.
                       </li>
-                      <li>Reduces the risk of adverse outcome</li>
+                      <li>Reduces the risk of adverse outcomes</li>
                     </ul>
                   </div>
                 </ExpansionPanelDetails>
@@ -688,16 +691,25 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What will I get in Isolation Kit?
+                    What will I get in the Isolation Kit?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography>
-                      Digital Thermomter, Pulse Oxymeter, Incentive Spiromter, 3 ply Mask,
-                      Examination gloves, Paper gloves, Sanitizer - 500 ML, Surface Disinfectant,
-                      Aniti Bacterial Wipe, Waste Disposal Bags, Spiral Note pad &amp; pen.
-                    </Typography>
+                    <Typography>The Isolation Kit contains a</Typography>
+                    <ul className={classes.faqList}>
+                      <li>Digital Thermometer</li>
+                      <li> Pulse Oximeter</li>
+                      <li> Incentive Spirometer</li>
+                      <li> 3 ply mask</li>
+                      <li> Examination gloves</li>
+                      <li> Paper gloves</li>
+                      <li> Sanitizer (500 ML)</li>
+                      <li> Surface disinfectant</li>
+                      <li>Anti-bacterial wipes</li>
+                      <li>Waste disposal bags</li>
+                      <li>Spiral note pad and pen</li>
+                    </ul>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -716,12 +728,12 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What is duration of Stay I @ HOME?
+                    What is the duration of Stay I@HOME?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography>Package duration is 14 days.</Typography>
+                    <Typography>The duration of Stay I@HOME is 14 days.</Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -746,16 +758,17 @@ export const KavachLanding: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      <span className={classes.fontBold}>In Basic Plan</span> every alternate day
-                      patient will get Physician consultation through Video call and COVID Care
-                      Coordinator Tele-Call every day.
+                      In the<span className={classes.fontBold}> Basic Plan, </span> every alternate
+                      day the patient will get consultation with the physician through a video call
+                      and a tele-call with the COVID Care Coordinator every day.
                     </Typography>
                     <Typography>
-                      <span className={classes.fontBold}>In Advance Plan </span> every alternate day
-                      patient will get Physician consultation through Video call, COVID Care
-                      Coordinator Tele-Call every day, Video call from Engagement and Motivation
-                      Team every alternate day, Tele-Rehab daily in week-1 and alternate day in
-                      week-2. Dietician and Counsellor once a week.
+                      In the<span className={classes.fontBold}> Advance Plan, </span> the patient
+                      will get consultation with the physician through a video call every alternate
+                      day, a tele-call with the COVID Care Coordinator every day, a video call from
+                      the Engagement and Motivation Team every alternate day, Tele-Rehab daily in
+                      week-1 and alternate day in week-2, and consultation with a Dietician and
+                      Counsellor once a week.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -775,13 +788,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Will there be any physical visit by Physician?
+                    Will there be any physical visit by the doctor?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      No. Physician will be available only through Video call.
+                      No. There will be no physical visits by the doctor. Instead, the doctor will
+                      speak to you through a video call.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -801,14 +815,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Will there be any care giver provided to patient at Home?
+                    Will there be any care giver provided to the patient at home?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      No. The caregiver must be identified by the family and will follow guidelines
-                      given.
+                      No, you will have to identify the care giver who will need to follow the
+                      guidelines provided.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -828,14 +842,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Whom can I reach in case of Emergency?
+                    Whom can I reach in case of an emergency?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      COVID Care Coordinator will be available for any emergency and patient can
-                      also reach at 1800-102-8586
+                      You can reach out to the COVID Care Coordinator for any emergencies. You can
+                      also reach out to us at our helpline number - 1800-102-8586.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -855,12 +869,15 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    In which cities services are provided?
+                    In which cities are the services provided?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography>Hyderabad, Delhi, Chennai, Bangalore and Kolkata.</Typography>
+                    <Typography>
+                      These services are available in Hyderabad, Delhi, Chennai, Bangalore, and
+                      Kolkata.
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -885,7 +902,8 @@ export const KavachLanding: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Online payments modes are accepted. Pay U Money, Paytm, Google Pay etc.
+                      All online payment modes such as Google Pay, Paytm, PayU Money, etc. are
+                      accepted to pay for the services.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -905,20 +923,20 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What are prices of Basic and Advance package?
+                    What are the prices of the Basic Plan and Advance Plan?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      <span className={classes.fontBold}> Basic Plan</span> will cost Rs. 300/- per
-                      day which cost to Rs. 4200/- and Isolation KIT will cost Rs. 6000/- (Total Rs,
-                      10,200/-).
+                      The <span className={classes.fontBold}>Basic Plan</span> will cost Rs.300 per
+                      day (Rs. 4200 for 14 days) and Isolation Kit will cost Rs. 6000. Hence, the
+                      total package will cost you Rs. 10200.
                     </Typography>
                     <Typography>
-                      <span className={classes.fontBold}>Advance Plan></span> will cost Rs. 600/-
-                      per day which cost Rs, 8400/- and Isolation KIT will cost Rs. 6000/- (Total
-                      Rs, 14,400/-).
+                      The <span className={classes.fontBold}>Advance Plan</span> will cost Rs.600
+                      per day (Rs. 8400 for 14 days) and Isolation Kit will cost Rs.6000. Hence, the
+                      total package will cost you Rs. 14,400.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -938,13 +956,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    By when Isolation kit will be delivered?
+                    By when will my Isolation Kit be delivered?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Once payment is received, Isolation KIT will be delivered within 6 hours.
+                      Once the payment is received, you will receive your Isolation Kit within 6
+                      hours.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -964,15 +983,15 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Why I should choose Stay I @HOME?
+                    Why should I choose Stay I@HOME?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <ul className={classes.faqList}>
-                      <li>Affordable pricing, </li>
-                      <li> Package based on ICMR guidelines,</li>
-                      <li> Highly Experienced team of Doctor’s for your care.</li>
+                      <li>Affordable pricing</li>
+                      <li> Package based on ICMR guidelines</li>
+                      <li> Highly experienced team of doctors for your care.</li>
                     </ul>
                   </div>
                 </ExpansionPanelDetails>
@@ -992,14 +1011,15 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What is required from patient?
+                    What is required from the patient?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      A care giver to take care of patient, A smart phone with good internet
-                      connectivity, Isolation room for patient.
+                      A care giver to take care of the patient, a smart phone with good internet
+                      connectivity, and an isolation room for patient are the requirements from the
+                      patient’s side.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1019,22 +1039,18 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Why are charging when the government is giving out these services at hospital
+                    Why is there a charge when the government hospitals are offering these services
                     for free?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Sir – These are the best suited for individuals who had a travel history, been
-                      in contact with Covid-19 patient or asked to be in isolation by authorities.
-                    </Typography>
-                    <Typography>
-                      These are private hotels that agreed and partnered to increase the capability
-                      of controlling the situation. For everyone's comfort, we are taking this step.
-                      As self-isolation was the suggestion to ensure the symptoms of covid-19 are
-                      controlled, in case there is no scope for you to self-quarantine, these
-                      facilities will support as quarantine facilities.
+                      These services are chargeable because these are private hotels that agreed and
+                      partnered to increase the capability of controlling the situation. This step
+                      has been taken for everyone's comfort. As self-isolation was a suggestion to
+                      control the symptoms of COVID-19, in case there is no scope for you to
+                      self-quarantine, these facilities will support as quarantine facilities.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1054,14 +1070,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What facilities will the rooms have?
+                    What are the facilities I can expect from the rooms?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
                       The rooms will be clean, hygienic and comfortable. The rooms will be
-                      air-conditioned with wi-fi connectivity. There will a television for
+                      air-conditioned with Wi-fi connectivity. There will be a television for
                       entertainment. Toiletries and consumables for self-cleaning and maintaining
                       hygiene as well as masks and gloves will be provided.
                     </Typography>
@@ -1083,15 +1099,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What are the things that I have to carry with me!
+                    What are the things I need to carry to the facility?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Sir – you will receive an email with all the pre-requisites and things you
-                      will have to carry to the facility upon booking confirmation. Rest be assured,
-                      I will be more than happy to help in case you need any additional information.
+                      Upon booking confirmation, you will receive an email with all the
+                      pre-requisites and things you will have to carry to the facility.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1111,13 +1126,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What in case the guest requires medicine?
+                    What if the guest requires medicines?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Medicines will be delivered to the guest as required as per the prescription.
+                      Medicines will be delivered to the guest as and when required as per the
+                      prescription.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1137,15 +1153,15 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What about food? Will home food be allowed?
+                    Will food be provided at the facility? Is home food allowed?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Third party delivery – Zomato will be the food delivery partner; three meals a
-                      day, breakfast, lunch and dinner, delivery at facility. (included in room
-                      rent)
+                      We have tied-up with Zomato as our food delivery partner who will provide 3
+                      meals a day - breakfast, lunch and dinner, at the facility (included in room
+                      rent).
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1199,7 +1215,7 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Will there be provision for laundry?
+                    Will there be a provision for laundry?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1228,7 +1244,7 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What in case the room needs to be cleaned, something needs to be repaired?
+                    What if the room needs to be cleaned or something needs to be repaired?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1256,14 +1272,14 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What will happen to the room after a guest checks out?
+                    Will rooms be cleaned after the guest checks out?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      After checkout, the room will be completely cleaned and disinfected by trained
-                      housekeeping personnel wearing PPE.
+                      Yes. After checkout, the room will be completely cleaned and disinfected by
+                      trained housekeeping personnel wearing PPE.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1283,7 +1299,7 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What Dos and Dont’s should the guest observe during the stay?
+                    What are the Do’s and Dont’s should the guest observe during the day?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1293,7 +1309,7 @@ export const KavachLanding: React.FC = (props) => {
                         Guests are not permitted to step out of the room. If needed, they should
                         contact the on duty staff at the facility and wait for instructions.
                       </li>
-                      <li>Guests should switch off the electronic devices if not needed. </li>
+                      <li>Guests should switch off the electronic devices if not needed.</li>
                       <li>
                         No visitors will be allowed. In case of an emergency, the in-house nurse /
                         health supervisor to approve and guest to wear the necessary PPE before
@@ -1304,10 +1320,8 @@ export const KavachLanding: React.FC = (props) => {
                         bags and keep them outside the room. They must use the dustbins kept in the
                         rooms for collecting all garbage during the day/ night.
                       </li>
-                      <li>
-                        Guests should keep the doors to be kept closed.Guests will not be permitted
-                        into the kitchen and washing area
-                      </li>
+                      <li>Guests should keep the doors closed.</li>
+                      <li>Guests will not be permitted into the kitchen and washing area</li>
                     </ul>
                   </div>
                 </ExpansionPanelDetails>
@@ -1327,7 +1341,7 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    What is the USP of the Kit?
+                    What is the USP of the kit?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1335,11 +1349,10 @@ export const KavachLanding: React.FC = (props) => {
                     <ul className={classes.faqList}>
                       <li>Addresses the need of both care provider and the patient.</li>
                       <li>
-                        {' '}
-                        It covers all the elements from the point of view of vitals monitoring
-                        ,infection control , prevention of spread ,proper waste disposal elements ,
+                        It covers all the elements from the point of view of vitals monitoring,
+                        infection control, prevention of spread, proper waste disposal elements,
                         education to patient and family members as laid down by the guidelines for
-                        home isolation{' '}
+                        home isolation.
                       </li>
                     </ul>
                   </div>
@@ -1360,7 +1373,7 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Is it mandatory to buy a kit?
+                    Is it mandatory to buy the kit?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
@@ -1368,7 +1381,7 @@ export const KavachLanding: React.FC = (props) => {
                     <Typography>
                       Yes. Without this we cannot ensure protection of the patient and the other
                       family members and we will not be able to get the vital parameters data from
-                      the patient
+                      the patient.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -1388,18 +1401,15 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    Can we exclude some components of kit based on Customer’s requirement?
+                    Can I exclude some components of the kit as per my requirement?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <ul className={classes.faqList}>
-                      <li>No it is a bundled package</li>
-                      <li>
-                        Similarly the duration of the program cannot be altered to anything less
-                        than 14 days
-                      </li>
-                    </ul>
+                    <Typography>
+                      No it is a bundled package. Similarly, the duration of the program cannot be
+                      altered to anything less than 14 days.
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -1418,30 +1428,29 @@ export const KavachLanding: React.FC = (props) => {
                   }}
                 >
                   <Typography className={classes.panelHeading}>
-                    If Customer asks which one to choose from Home / Facility – which product should
-                    be pushed first and why?
+                    How do I choose between Home and Facility isolation options?
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      <span className={classes.fontBold}>Home-</span> more cost effective ,
-                      convenient and can be availed if you have
+                      <span className={classes.fontBold}>Home - </span> more cost effective,
+                      convenient and can be availed if you have:
                     </Typography>
                     <ul className={`${classes.faqList} ${classes.mb20}`}>
                       <li>A separate room for isolation</li>
                       <li>There is a care provider available to assist</li>
-                      <li> You have Wi-Fi /net connectivity available to you</li>
+                      <li>You have Wi-Fi/net connectivity available to you</li>
                     </ul>
                     <Typography>
-                      <span className={classes.fontBold}>Facility-</span> If you are alone or there
-                      is no separate room for isolation or there is no support for routine things
-                      like meals etc., at home -then in that case it is suggested for you to have
-                      facility isolation.
+                      <span className={classes.fontBold}>Facility - </span> If you are alone or
+                      there is no separate room for isolation or there is no support for routine
+                      things like meals etc., at home, then it is suggested for you to have facility
+                      isolation.
                     </Typography>
                     <Typography>
                       In case there are more than 1 senior citizen’s or at risk family members at
-                      home-Stay I facility is recommended
+                      home, Stay I@Facility is recommended.
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
