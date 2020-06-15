@@ -128,6 +128,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
   };
 });
 interface ConsultProps {
@@ -244,7 +251,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 )}
 
                 <OTStreams>
-                  <OTSubscriber />
+                  <OTSubscriber className={classes.subscriber} />
                 </OTStreams>
 
                 {props.showVideoChat && (

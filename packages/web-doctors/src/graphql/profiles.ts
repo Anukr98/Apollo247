@@ -1328,6 +1328,7 @@ export const SEARCH_DIAGNOSTICS = gql`
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         itemName
+        itemId
       }
     }
   }

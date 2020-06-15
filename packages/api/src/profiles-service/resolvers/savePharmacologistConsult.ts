@@ -80,6 +80,8 @@ const savePharmacologistConsult: Resolver<
     patientName: patientDetails.firstName,
     date: date,
     patientQueries: savePharmacologistConsultInput.queries,
+    email: savePharmacologistConsultInput.emailId,
+    phone: patientDetails.mobileNumber,
   });
   const attachments: EmailAttachMent[] = [];
   if (savePharmacologistConsultInput.prescriptionImageUrl) {
