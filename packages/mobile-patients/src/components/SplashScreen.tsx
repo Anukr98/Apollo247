@@ -545,9 +545,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
             'QA_min_value_to_nudge_users_to_avail_free_delivery'
           ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
           const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
             'min_value_to_nudge_users_to_avail_free_delivery'
           ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
           minValueForPharmacyFreeDelivery &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
 
@@ -599,40 +611,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                     if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
                       showUpdateAlert(nietos[6].value);
                     }
-                    QAMinValueToNudgeUsersToAvailFreeDelivery &&
-                      updateAppConfig(
-                        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-                        QAMinValueToNudgeUsersToAvailFreeDelivery
-                      );
                   } else {
                     if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
                       showUpdateAlert(nietos[2].value);
                     }
-                    minValueToNudgeUsersToAvailFreeDelivery &&
-                      updateAppConfig(
-                        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-                        minValueToNudgeUsersToAvailFreeDelivery
-                      );
                   }
                 } else {
                   if (buildName() === 'QA') {
                     if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
                       showUpdateAlert(nietos[4].value);
                     }
-                    QAMinValueToNudgeUsersToAvailFreeDelivery &&
-                      updateAppConfig(
-                        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-                        QAMinValueToNudgeUsersToAvailFreeDelivery
-                      );
                   } else {
                     if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
                       showUpdateAlert(nietos[0].value);
                     }
-                    minValueToNudgeUsersToAvailFreeDelivery &&
-                      updateAppConfig(
-                        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-                        minValueToNudgeUsersToAvailFreeDelivery
-                      );
                   }
                 }
               }
