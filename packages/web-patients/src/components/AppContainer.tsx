@@ -61,6 +61,7 @@ import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
 import { SpecialityListing } from 'components/SpecialityListing';
+import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -130,6 +131,7 @@ const App: React.FC = () => {
           />
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} />
+          <Route exact path={clientRoutes.specialtiesDetails()} component={SpecialtyDetails} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
