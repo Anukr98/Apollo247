@@ -232,7 +232,8 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           <Link
             className={
               doctorRoutes.find((route) => route === currentPath) ||
-              currentPath.includes('specialties')
+              currentPath.includes('specialties') ||
+              currentPath.includes('doctors')
                 ? classes.menuItemActive
                 : ''
             }
@@ -284,7 +285,12 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       ) : (
         <>
           <Link
-            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties')
+                ? classes.menuItemActive
+                : ''
+            }
             to={clientRoutes.doctorsLanding()}
             title={'Doctors'}
           >
