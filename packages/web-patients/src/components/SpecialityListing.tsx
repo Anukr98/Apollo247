@@ -258,7 +258,11 @@ export const SpecialityListing: React.FC = (props) => {
                   <div className={classes.sectionHeader}>
                     <Typography component="h4">Top Specialites</Typography>
                   </div>
-                  <div className={classes.tsContent}></div>
+                  <div className={classes.tsContent}>
+                    <div className={classes.specialityCard}>
+                      <Typography component="h6">Paediatrics</Typography>
+                    </div>
+                  </div>
                 </div>
                 <div className={classes.otherSpeciality}>
                   <div className={classes.sectionHeader}>
