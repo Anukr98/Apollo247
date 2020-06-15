@@ -4,26 +4,47 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
-import { Doctor, Secretary, DoctorSecretary } from 'doctors-service/entities';
+import {
+  Doctor,
+  Secretary,
+  DoctorSecretary,
+  DoctorPatientExternalConnect,
+} from 'doctors-service/entities';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { DoctorSecretaryRepository } from 'doctors-service/repositories/doctorSecretary';
+import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
 
 export const delegateFunctionsTypeDefs = gql`
   type DoctorSecretaryData {
     doctor: Profile
     secretary: Secretary
   }
+  type SaveExternalConnectResult {
+    status: Boolean
+  }
   extend type Mutation {
     updateDelegateNumber(delegateNumber: String): Profile
     removeDelegateNumber: Profile
     addSecretary(secretaryId: ID!): DoctorSecretaryData
     removeSecretary(secretaryId: ID!): DoctorDetails
+    updatSaveExternalConnect(
+      doctorId: String
+      patientId: String
+      externalConnect: Boolean
+    ): SaveExternalConnectResult
   }
+
   extend type Query {
     getSecretaryList: [SecretaryDetails]
   }
 `;
+type SaveExternalConnectResult = {
+  status: boolean;
+};
+const getRepos = ({ doctorsDb }: DoctorsServiceContext) => ({
+  externalConnectRepo: doctorsDb.getCustomRepository(DoctorPatientExternalConnectRepository),
+});
 
 const updateDelegateNumber: Resolver<
   null,
@@ -155,6 +176,21 @@ const removeSecretary: Resolver<
 
   return updatedDoctorData;
 };
+const updatSaveExternalConnect: Resolver<
+  null,
+  { doctorId: string; patientId: string; externalConnect: boolean },
+  DoctorsServiceContext,
+  SaveExternalConnectResult
+> = async (parent, args, context) => {
+  const { externalConnectRepo } = getRepos(context);
+  const attrs: Partial<DoctorPatientExternalConnect> = {
+    patientId: args.patientId,
+    doctorId: args.doctorId,
+    externalConnect: args.externalConnect,
+  };
+  await externalConnectRepo.saveExternalConnectData(attrs);
+  return { status: true };
+};
 
 export const delegateFunctionsResolvers = {
   Mutation: {
@@ -162,6 +198,7 @@ export const delegateFunctionsResolvers = {
     removeDelegateNumber,
     addSecretary,
     removeSecretary,
+    updatSaveExternalConnect,
   },
 
   Query: { getSecretaryList },
