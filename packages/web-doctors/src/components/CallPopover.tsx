@@ -908,6 +908,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
   const {
+    medicinePrescription,
+    otherInstructions,
+    diagnosis,
+    diagnosticPrescription,
     appointmentInfo,
     followUpDate,
     followUpAfterInDays,
@@ -962,6 +966,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
+  const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
 
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
@@ -2111,6 +2116,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           className={classes.endconsultButton}
                           disabled={sendToPatientButtonDisable}
                           onClick={() => {
+                            const emptyArr= [];
+                            if(diagnosis.length < 1){
+                              emptyArr.push('Diagnosis');
+                            }
+                            if(medicinePrescription.length < 1){
+                              emptyArr.push('Medicine');
+                            }
+                            if(diagnosticPrescription.length < 1){
+                              emptyArr.push('Tests');
+                            }
+                            if(otherInstructions.length < 1){
+                              emptyArr.push('Advice');
+                            }
+                            emptyArr.length > 0 ? setEmptyFieldsString(emptyArr.join(',')) : setEmptyFieldsString(''); 
                             props.setShowConfirmPrescription(true);
                             setIsConfirmationChecked(false)
                             // localStorage.removeItem(`${params.id}`);
@@ -3289,9 +3308,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             className={classes.content}
             >These fields are blank in Prescription
             </Typography>
-
+            <span>{emptyFieldsString}</span>
             </div>
-        
         <div>
         <FormControlLabel
         control={<Checkbox checked={isConfirmationChecked} onChange={(event) => {

@@ -1226,75 +1226,75 @@ export const ConsultTabs: React.FC = () => {
 
   const sendToPatientAction = () => {
    
-    // client
-    //   .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
-    //     mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
-    //     variables: {
-    //       caseSheetId: caseSheetId,
-    //       sentToPatient: true,
-    //       vitals: {
-    //         height: height,
-    //         temperature: temperature,
-    //         weight: weight,
-    //         bp: bp,
-    //       }
-    //     },
-    //   })
-    //   .then((_data) => {
-    //     if (
-    //       _data &&
-    //       _data!.data!.updatePatientPrescriptionSentStatus &&
-    //       _data!.data!.updatePatientPrescriptionSentStatus.blobName
-    //     ) {
-    //       const url = storageClient.getBlobUrl(
-    //         _data!.data!.updatePatientPrescriptionSentStatus.blobName
-    //       );
-    //       setPrescriptionPdf(url);
-    //       setShowConfirmPrescription(false);
-    //     }
-    //     if (
-    //       _data &&
-    //       _data!.data!.updatePatientPrescriptionSentStatus &&
-    //       _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
-    //     ) {
-    //       setSdConsultationDate(
-    //         _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
-    //       );
-    //     }
-    //     setAppointmentStatus('COMPLETED');
-    //     setSentToPatient(true);
-    //     setIsPdfPageOpen(true);
-    //     setUrlToPatient(true);
-    //   })
-    //   .catch((e) => {
-    //     console.log(casesheetInfo.getCaseSheet.patientDetails.firstName);
-    //     const patientName =
-    //       casesheetInfo.getCaseSheet.patientDetails.firstName +
-    //       ' ' +
-    //       casesheetInfo.getCaseSheet.patientDetails.lastName;
-    //     const logObject = {
-    //       api: 'UpdatePatientPrescriptionSentStatus',
-    //       inputParam: JSON.stringify({
-    //         caseSheetId: caseSheetId,
-    //         sentToPatient: true,
-    //       }),
-    //       appointmentId: appointmentId,
-    //       doctorId: currentPatient!.id,
-    //       doctorDisplayName: currentPatient!.displayName,
-    //       patientId: params.patientId,
-    //       patientName: patientName,
-    //       currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-    //       appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-    //         'MMMM DD YYYY h:mm:ss a'
-    //       ),
-    //       error: JSON.stringify(error),
-    //     };
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+          caseSheetId: caseSheetId,
+          sentToPatient: true,
+          vitals: {
+            height: height,
+            temperature: temperature,
+            weight: weight,
+            bp: bp,
+          }
+        },
+      })
+      .then((_data) => {
+        if (
+          _data &&
+          _data!.data!.updatePatientPrescriptionSentStatus &&
+          _data!.data!.updatePatientPrescriptionSentStatus.blobName
+        ) {
+          const url = storageClient.getBlobUrl(
+            _data!.data!.updatePatientPrescriptionSentStatus.blobName
+          );
+          setPrescriptionPdf(url);
+          setShowConfirmPrescription(false);
+        }
+        if (
+          _data &&
+          _data!.data!.updatePatientPrescriptionSentStatus &&
+          _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+        ) {
+          setSdConsultationDate(
+            _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+          );
+        }
+        setAppointmentStatus('COMPLETED');
+        setSentToPatient(true);
+        setIsPdfPageOpen(true);
+        setUrlToPatient(true);
+      })
+      .catch((e) => {
+        console.log(casesheetInfo.getCaseSheet.patientDetails.firstName);
+        const patientName =
+          casesheetInfo.getCaseSheet.patientDetails.firstName +
+          ' ' +
+          casesheetInfo.getCaseSheet.patientDetails.lastName;
+        const logObject = {
+          api: 'UpdatePatientPrescriptionSentStatus',
+          inputParam: JSON.stringify({
+            caseSheetId: caseSheetId,
+            sentToPatient: true,
+          }),
+          appointmentId: appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
 
-    //     sessionClient.notify(JSON.stringify(logObject));
-    //     alert('Error occured while sending prescription to patient');
-    //     console.log('Error occured while sending prescription to patient', e);
-    //     setSaving(false);
-    //   });
+        sessionClient.notify(JSON.stringify(logObject));
+        alert('Error occured while sending prescription to patient');
+        console.log('Error occured while sending prescription to patient', e);
+        setSaving(false);
+      });
   };
 
   const saveCasesheetAction = (flag: boolean, sendToPatientFlag: boolean) => {
