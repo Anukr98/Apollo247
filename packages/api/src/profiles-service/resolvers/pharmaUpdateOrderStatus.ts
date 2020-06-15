@@ -131,6 +131,13 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -248,8 +255,16 @@ const createOneApolloTransaction = async (
   mobileNumber: string
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
+  //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -364,14 +379,17 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction response- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(oneApolloResponse),
-      ''
-    );
+    if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
+      const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction response- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(oneApolloResponse),
+        ''
+      );
+    }
+    return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
   }

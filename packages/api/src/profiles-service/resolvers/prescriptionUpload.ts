@@ -40,6 +40,10 @@ export const prescriptionUploadTypeDefs = gql`
       prescriptionInput: PrescriptionUploadRequest
       uhid: String
     ): PrescriptionResponse
+    uploadMediaDocument(
+      prescriptionInput: PrescriptionUploadRequest
+      uhid: String
+    ): PrescriptionResponse
   }
 `;
 
@@ -81,8 +85,43 @@ export const uploadPrescriptions: Resolver<
   );
   return { recordId: uploadedFileDetails.response };
 };
+
+export const uploadMediaDocument: Resolver<
+  null,
+  PrescriptionInputArgs,
+  ProfilesServiceContext,
+  { recordId: string }
+> = async (parent, { prescriptionInput, uhid }, {}) => {
+  if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+
+  prescriptionInput.prescriptionName = 'MediaDocument';
+  prescriptionInput.dateOfPrescription =
+    getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
+  prescriptionInput.startDate = prescriptionInput.startDate
+    ? getUnixTime(new Date(prescriptionInput.startDate)) * 1000
+    : 0;
+  prescriptionInput.endDate = prescriptionInput.endDate
+    ? getUnixTime(new Date(prescriptionInput.endDate)) * 1000
+    : 0;
+  prescriptionInput.prescriptionSource =
+    ApiConstants.PRESCRIPTION_SOURCE_PREFIX + lowerCase(prescriptionInput.prescriptionSource);
+  prescriptionInput.prescriptionDetail = [];
+
+  prescriptionInput.prescriptionFiles.map((item) => {
+    item.id = '';
+    item.dateCreated = getUnixTime(new Date()) * 1000;
+  });
+
+  const uploadedFileDetails: PrescriptionUploadResponse = await savePrescription(
+    uhid,
+    prescriptionInput
+  );
+  return { recordId: uploadedFileDetails.response };
+};
+
 export const prescriptionUploadResolvers = {
   Mutation: {
     uploadPrescriptions,
+    uploadMediaDocument,
   },
 };
