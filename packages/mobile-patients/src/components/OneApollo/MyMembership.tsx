@@ -33,13 +33,13 @@ const styles = StyleSheet.create({
   pointsContainer: {
     display: 'flex',
     flexDirection: 'row',
-    paddingTop: 7
+    paddingTop: 7,
   },
   benefitsImage: {
     width: 50,
     height: 50,
     resizeMode: 'contain',
-    marginRight: 10
+    marginRight: 10,
   },
   benefitsHeading: {
     color: theme.colors.LIGHT_BLUE,
@@ -51,17 +51,16 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(10),
     marginTop: 5,
     marginBottom: 7,
-  }
+  },
 });
 
 type tierType = {
   tier?: String;
 };
 
-export interface MyMembershipProps extends tierType { }
+export interface MyMembershipProps extends tierType {}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
-
   const membershipType = props.tier;
   const [showGoldContent, setShowGoldContent] = useState<boolean>(membershipType === 'Silver');
   const [showBenefits, setShowBenefits] = useState<boolean>(true);
@@ -72,12 +71,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderBanner = () => {
     return (
       <View style={{ padding: 20, display: 'flex' }}>
-        <SilverMembershipBanner style={{
-          width: '100%',
-          height: 200,
-        }} />
+        <SilverMembershipBanner
+          style={{
+            width: '100%',
+            height: 200,
+          }}
+        />
       </View>
-    )
+    );
   };
 
   const renderMembershipBenefits = () => {
@@ -91,20 +92,24 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             setShowBenefits(!showBenefits);
           }}
         >
-          <View style={{
-            padding: 20,
-            paddingTop: 10,
-          }}>
+          <View
+            style={{
+              padding: 20,
+              paddingTop: 10,
+            }}
+          >
             <View
               style={{
                 display: 'flex',
-                flexDirection: 'row'
+                flexDirection: 'row',
               }}
             >
               <MembershipBenefitsOne style={styles.benefitsImage} />
-              <View style={{
-                alignSelf: 'center'
-              }}>
+              <View
+                style={{
+                  alignSelf: 'center',
+                }}
+              >
                 <Text style={styles.benefitsHeading}>Apollo Clinics</Text>
                 <Text style={styles.benefitsDescription}>Free home sample collections</Text>
               </View>
@@ -117,9 +122,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               }}
             >
               <MembershipBenefitsTwo style={styles.benefitsImage} />
-              <View style={{
-                alignSelf: 'center'
-              }}>
+              <View
+                style={{
+                  alignSelf: 'center',
+                }}
+              >
                 <Text style={styles.benefitsHeading}>Apollo Cradle</Text>
                 <Text style={styles.benefitsDescription}>Avail 15% discount on Health Checks</Text>
               </View>
@@ -132,9 +139,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               }}
             >
               <MembershipBenefitsThree style={styles.benefitsImage} />
-              <View style={{
-                alignSelf: 'center'
-              }}>
+              <View
+                style={{
+                  alignSelf: 'center',
+                }}
+              >
                 <Text style={styles.benefitsHeading}>Apollo Diagnostics</Text>
                 <Text style={[styles.benefitsDescription, { marginBottom: 0 }]}>
                   Avail 5% discount on Lab & Imaging
@@ -160,15 +169,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           setShowCreditEarnings(!showCreditEarnings);
         }}
       >
-        <View style={{
-          padding: 20,
-          paddingTop: 10,
-        }}>
-          <Text
-            style={styles.subHeading}
-          >
-            On every pharmacy transaction at Apollo 247 earn HCs
-          </Text>
+        <View
+          style={{
+            padding: 20,
+            paddingTop: 10,
+          }}
+        >
+          <Text style={styles.subHeading}>On pharmacy transactions at Apollo 247 earn HCs</Text>
           <View style={styles.pointsContainer}>
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={styles.bulletText}>5% of non-pharmaceutical products</Text>
@@ -181,6 +188,15 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={styles.bulletText}>10% of Apollo brand products</Text>
           </View>
+          <Text
+            style={{
+              marginTop: 10,
+              color: theme.colors.APP_GREEN,
+              ...theme.fonts.IBMPlexSansMedium(11),
+            }}
+          >
+            T&C Apply
+          </Text>
         </View>
       </CollapseCard>
     );
@@ -202,14 +218,25 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             {
               padding: 20,
               paddingTop: 10,
-            }
+              paddingBottom: 10,
+            },
           ]}
         >
           Redeem your health credits on transactions at Apollo 247 pharmacy orders at a value of
           <Text style={{ color: theme.colors.LIGHT_BLUE }}> 1 HC = ₹ 1</Text>
         </Text>
+        <Text
+          style={{
+            paddingLeft: 20,
+            paddingBottom: 20,
+            color: theme.colors.LIGHT_BLUE,
+            ...theme.fonts.IBMPlexSansMedium(12),
+          }}
+        >
+          Coming Soon!
+        </Text>
       </CollapseCard>
-    )
+    );
   };
 
   const renderMembershipUpgrades = () => {
@@ -244,47 +271,51 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               }
             }}
           >
-            {
-              membershipType === 'Silver' && (
-                <View>
-                  <OneApolloGold style={{
+            {membershipType === 'Silver' && (
+              <View>
+                <OneApolloGold
+                  style={{
                     width: 300,
                     height: 200,
                     resizeMode: 'contain',
                     marginRight: 10,
-                  }} />
-                  <View
+                  }}
+                />
+                <View
+                  style={{
+                    position: 'absolute',
+                    alignSelf: 'center',
+                    marginVertical: 80,
+                  }}
+                >
+                  <OneApolloLockIcon
                     style={{
-                      position: 'absolute',
+                      resizeMode: 'contain',
                       alignSelf: 'center',
-                      marginVertical: 80,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      color: theme.colors.PLATINUM_GREY,
+                      ...theme.fonts.IBMPlexSansMedium(10),
+                      marginTop: 10,
                     }}
                   >
-                    <OneApolloLockIcon
-                      style={{
-                        resizeMode: 'contain',
-                        alignSelf: 'center'
-                      }}
-                    />
-                    <Text
-                      style={{
-                        color: theme.colors.PLATINUM_GREY,
-                        ...theme.fonts.IBMPlexSansMedium(10),
-                        marginTop: 10
-                      }}
-                    >Gold</Text>
-                  </View>
+                    Gold
+                  </Text>
                 </View>
-              )
-            }
+              </View>
+            )}
             <View>
-              <OneApolloPlatinum style={{
-                width: 300,
-                height: 200,
-                resizeMode: 'contain',
-                marginRight: 10,
-                marginLeft: 10,
-              }} />
+              <OneApolloPlatinum
+                style={{
+                  width: 300,
+                  height: 200,
+                  resizeMode: 'contain',
+                  marginRight: 10,
+                  marginLeft: 10,
+                }}
+              />
               <View
                 style={{
                   position: 'absolute',
@@ -295,16 +326,18 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 <OneApolloLockIcon
                   style={{
                     resizeMode: 'contain',
-                    alignSelf: 'center'
+                    alignSelf: 'center',
                   }}
                 />
                 <Text
                   style={{
                     color: theme.colors.PLATINUM_GREY,
                     ...theme.fonts.IBMPlexSansMedium(10),
-                    marginTop: 10
+                    marginTop: 10,
                   }}
-                >Platinum</Text>
+                >
+                  Platinum
+                </Text>
               </View>
             </View>
           </ScrollView>
@@ -315,30 +348,24 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(11),
             }}
           >
-            {
-              showGoldContent ?
-                'Upgrade to gold and enjoy more benefits by satisfying either of the conditions:' :
-                'Upgrade to platinum and enjoy more benefits by satisfying either of the conditions:'
-            }
+            {showGoldContent
+              ? 'Upgrade to gold and enjoy more benefits by satisfying either of the conditions:'
+              : 'Upgrade to platinum and enjoy more benefits by satisfying either of the conditions:'}
           </Text>
           <View style={styles.pointsContainer}>
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={[styles.bulletText, { color: theme.colors.PLATINUM_GREY }]}>
-              {
-                showGoldContent ?
-                  'Spend Rs. 75,000 in one year period' :
-                  'Spend Rs. 2,00,000 in one year period'
-              }
+              {showGoldContent
+                ? 'Spend Rs. 75,000 in one year period'
+                : 'Spend Rs. 2,00,000 in one year period'}
             </Text>
           </View>
           <View style={styles.pointsContainer}>
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={[styles.bulletText, { color: theme.colors.PLATINUM_GREY }]}>
-              {
-                showGoldContent ?
-                  'Buy an annual gym membership from Apollo Life' :
-                  'Maintain Gold membership for 2 consecutive years'
-              }
+              {showGoldContent
+                ? 'Buy an annual gym membership from Apollo Life'
+                : 'Maintain Gold membership for 2 consecutive years'}
             </Text>
           </View>
         </View>
@@ -352,10 +379,12 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       {renderMembershipBenefits()}
       {renderHealthCreditEarning()}
       {renderHealthCreditRedemption()}
-      {
-        (membershipType !== 'Platinum') && renderMembershipUpgrades()
-      }
-      <TouchableOpacity onPress={() => { Linking.openURL('https://www.oneapollo.com/') }}>
+      {membershipType !== 'Platinum' && renderMembershipUpgrades()}
+      <TouchableOpacity
+        onPress={() => {
+          Linking.openURL('https://www.oneapollo.com/');
+        }}
+      >
         <Text
           style={{
             paddingLeft: 20,
@@ -363,7 +392,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             color: theme.colors.APP_YELLOW,
             ...theme.fonts.IBMPlexSansMedium(11),
           }}
-        >KNOW MORE</Text>
+        >
+          KNOW MORE
+        </Text>
       </TouchableOpacity>
     </View>
   );
