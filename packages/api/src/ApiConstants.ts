@@ -341,4 +341,9 @@ export enum ApiConstants {
   PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
   PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
   // end of pharmacologist email config
+
+  //PHRV1 constants start
+  LABTEST_SOURCE_SELF_UPLOADED = '247self',
+  PRESCRIPTION_SOURCE_PREFIX = '247',
+  //PHRV1 constants end
 }
