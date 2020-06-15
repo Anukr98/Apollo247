@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '20px',
       },
       [theme.breakpoints.down('xs')]: {
-        marginTop: 50,
+        marginTop: 99,
       },
     },
     medicineDetailsHeader: {
