@@ -511,6 +511,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_min_value_to_nudge_users_to_avail_free_delivery',
+              'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
             ]);
@@ -540,6 +542,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
+          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'QA_min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
+          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
           minValueForPharmacyFreeDelivery &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
 
