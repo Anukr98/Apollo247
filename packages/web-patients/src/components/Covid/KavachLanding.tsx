@@ -170,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mb20: {
-      marginBottom: 20,
+      marginBottom: '20px !important',
     },
     packages: {},
     videoContainer: {
@@ -183,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       background: '#fff',
       borderRadius: 5,
-      margin: '20px 0',
+      margin: '24px 0 20px',
       textAlign: 'center',
       '& h3': {
         fontSize: 23,
@@ -254,6 +254,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 0 0 20px',
       margin: 0,
       listStyle: 'decimal',
+      '& li': {
+        fontSize: 12,
+        lineHeight: '20px',
+      },
     },
     fontBold: {
       fontWeight: 700,
@@ -270,9 +274,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '10px 0 0',
       fontWeight: 'bold',
     },
-    stayI: {
-      width: 109,
-    },
+
     heightAuto: {
       height: 'auto !important',
     },
@@ -399,7 +401,7 @@ export const KavachLanding: React.FC = (props) => {
             <Grid container spacing={3}>
               <Grid item xs={12} md={8}>
                 <div className={classes.kavachBanner}>
-                  <img src={require('images/corona-banner.jpg')} />
+                  <img src={require('images/corona-banner.png')} />
                 </div>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -501,8 +503,8 @@ export const KavachLanding: React.FC = (props) => {
           <div className={classes.aboutSection}>
             <Typography component="h3">About Apollo Kavach Program</Typography>
             <Typography>
-              As COVID-19 cases continue to rise So does our effort in combating the pandemic
-              Introducing Project Kavach with curated protective plans to keep you safe.
+              As COVID-19 cases continue to rise so does our effort in combating the pandemic
+              introducing project Kavach with curated protective plans to keep you safe.
             </Typography>
             <Typography>
               Using our strong digital backbone, our prowess in telemedicine and robust COVID 19
@@ -514,7 +516,7 @@ export const KavachLanding: React.FC = (props) => {
               <Grid item xs={12} md={4}>
                 <div className={`${classes.card} ${classes.mb20}`}>
                   <Typography component="h4">
-                    <img className={classes.stayI} src={require('images/stay-i.png')} /> at home
+                    <img src={require('images/stay-i.png')} /> at home
                   </Typography>
                   <ul className="careList">
                     <li>Clinical needs </li>
@@ -746,7 +748,7 @@ export const KavachLanding: React.FC = (props) => {
                     <Typography>
                       <span className={classes.fontBold}>In Basic Plan</span> every alternate day
                       patient will get Physician consultation through Video call and COVID Care
-                      Coordinator Tele-Call every day.{' '}
+                      Coordinator Tele-Call every day.
                     </Typography>
                     <Typography>
                       <span className={classes.fontBold}>In Advance Plan </span> every alternate day
@@ -909,10 +911,14 @@ export const KavachLanding: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <Typography>
-                      Basic Plan will cost Rs. 300/- per day which cost to Rs. 4200/- and Isolation
-                      KIT will cost Rs. 6000/- (Total Rs, 10,200/-). Advance Plan will cost Rs.
-                      600/- per day which cost Rs, 8400/- and Isolation KIT will cost Rs. 6000/-
-                      (Total Rs, 14,400/-).
+                      <span className={classes.fontBold}> Basic Plan</span> will cost Rs. 300/- per
+                      day which cost to Rs. 4200/- and Isolation KIT will cost Rs. 6000/- (Total Rs,
+                      10,200/-).
+                    </Typography>
+                    <Typography>
+                      <span className={classes.fontBold}>Advance Plan></span> will cost Rs. 600/-
+                      per day which cost Rs, 8400/- and Isolation KIT will cost Rs. 6000/- (Total
+                      Rs, 14,400/-).
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -943,33 +949,6 @@ export const KavachLanding: React.FC = (props) => {
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
-              {/* <ExpansionPanel
-                expanded={expanded === 'panel13'}
-                onChange={handleChange('panel13')}
-                className={classes.panelRoot}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
-                >
-                  <Typography className={classes.panelHeading}>
-                    How to download Ask Apollo app? Can I get a demo?
-                  </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>
-                      Ask Apollo app can be download from Google Play store and IOS. Navigation
-                      queries will be answered by Apollo Home Care team.
-                    </Typography>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>*/}
               <ExpansionPanel
                 expanded={expanded === 'panel14'}
                 onChange={handleChange('panel14')}
@@ -1449,9 +1428,9 @@ export const KavachLanding: React.FC = (props) => {
                       <span className={classes.fontBold}>Home-</span> more cost effective ,
                       convenient and can be availed if you have
                     </Typography>
-                    <ul className={classes.faqList}>
+                    <ul className={`${classes.faqList} ${classes.mb20}`}>
                       <li>A separate room for isolation</li>
-                      <li>.There is a care provider available to assist</li>
+                      <li>There is a care provider available to assist</li>
                       <li> You have Wi-Fi /net connectivity available to you</li>
                     </ul>
                     <Typography>
