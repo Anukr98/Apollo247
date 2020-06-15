@@ -73,6 +73,7 @@ const App: React.FC = () => {
   );
 };
 
+// @ts-ignore
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {

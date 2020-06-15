@@ -15,7 +15,6 @@
     "start": "npm run apollo:codegen && webpack-dev-server",
     "test": "cypress open --project src",
     "typecheck": "tsc --project . --noEmit",
-    "bootstrap": "cd node_modules/@aph/universal && npm install && npm run build && cd ../web-ui-components && npm install && npm run build",
     "clean": "rm -rf .awcache && rm -rf dist && rm -rf node_modules && rm -rf package-lock.json"
   },
   "devDependencies": {
