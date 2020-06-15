@@ -84,6 +84,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  Alert,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -624,9 +625,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
-  const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({});
+  const [bannerLoading, setBannerLoading] = useState(true);
 
-  const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
+  const renderBannerImageToGetAspectRatio = () => {
+    const imageUri = g(banners, '0' as any, 'image');
+    const imageFullUri = imageUri ? `${config.IMAGES_BASE_URL[0]}${imageUri}` : '';
+    return (
+      !!imageFullUri && (
+        <View style={{ height: 0 }}>
+          <ImageNative
+            onLoad={(value) => {
+              const { height, width } = value.nativeEvent.source;
+              setImgHeight(height * (winWidth / width));
+              setBannerLoading(false);
+            }}
+            style={{ width: '100%', height: 120 }}
+            source={{ uri: imageFullUri }}
+          />
+        </View>
+      )
+    );
+  };
+
+  const renderSliderItem = ({ item }: { item: OfferBannerSection }) => {
     const handleOnPress = () => {
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
@@ -644,18 +665,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
         <ImageNative
           resizeMode="stretch"
-          onLoadStart={() => {
-            setImageLoading({ ...imageLoading, [item.image]: true });
-          }}
-          onLoadEnd={() => {
-            setImageLoading({ ...imageLoading, [item.image]: false });
-          }}
-          onLoad={(value) => {
-            if (index == 0) {
-              const { height, width } = value.nativeEvent.source;
-              setImgHeight(height * (winWidth / width));
-            }
-          }}
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image}` }}
         />
@@ -664,7 +673,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderBanners = () => {
-    if (loading) {
+    if (loading || bannerLoading) {
       return (
         <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
           <Spinner
@@ -677,7 +686,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       return (
         <View style={{ marginBottom: 17 }}>
           <AppIntroSlider
-            extraData={imageLoading}
             slides={banners}
             showNextButton={false}
             showDoneButton={false}
@@ -1583,6 +1591,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
+        {renderBannerImageToGetAspectRatio()}
         {renderBanners()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
