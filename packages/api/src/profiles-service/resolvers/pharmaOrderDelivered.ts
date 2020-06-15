@@ -183,7 +183,15 @@ const createOneApolloTransaction = async (
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -214,16 +222,11 @@ const createOneApolloTransaction = async (
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-      let netPrice = item.discountPrice
-        ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
-        : +item.mrp.toFixed(1) * item.issuedQty;
-
-      let netMrp = +item.mrp.toFixed(1) * item.issuedQty;
-      let netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
-
-      netPrice = +netPrice.toFixed(1);
-      netMrp = +netMrp.toFixed(1);
-      netDiscount = +netDiscount.toFixed(1);
+      const netMrp = +(+item.mrp * +item.issuedQty).toFixed(1);
+      const netDiscount = +(+item.discountPrice
+        ? (+item.discountPrice * +item.issuedQty).toFixed(1)
+        : 0);
+      const netPrice: number = netMrp - netDiscount;
 
       transactionLineItems.push({
         ProductCode: item.itemId,

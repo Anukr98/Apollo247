@@ -131,6 +131,13 @@ const updateOrderStatus: Resolver<
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
+  log(
+    'profileServiceLogger',
+    `ORDER_STATUS_CHANGE_${updateOrderStatusInput.status}_FOR_ORDER_ID:${updateOrderStatusInput.orderId}`,
+    `updateOrderStatus call from OMS`,
+    JSON.stringify(updateOrderStatusInput),
+    ''
+  );
   if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
@@ -248,8 +255,16 @@ const createOneApolloTransaction = async (
   mobileNumber: string
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
+  //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -280,16 +295,13 @@ const createOneApolloTransaction = async (
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-      let netPrice = item.discountPrice
-        ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
-        : +item.mrp.toFixed(1) * item.issuedQty;
 
-      let netMrp = +item.mrp.toFixed(1) * item.issuedQty;
-      let netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
+      const netMrp = +(+item.mrp * +item.issuedQty).toFixed(1);
+      const netDiscount = +(+item.discountPrice
+        ? (+item.discountPrice * +item.issuedQty).toFixed(1)
+        : 0);
+      const netPrice: number = netMrp - netDiscount;
 
-      netPrice = +netPrice.toFixed(1);
-      netMrp = +netMrp.toFixed(1);
-      netDiscount = +netDiscount.toFixed(1);
       transactionLineItems.push({
         ProductCode: item.itemId,
         NetAmount: netPrice,
@@ -340,16 +352,16 @@ const createOneApolloTransaction = async (
     });
     transactionLineItems.forEach((val, i, arr) => {
       if (val.ProductCode) {
-        switch (itemTypemap[val.ProductCode]) {
-          case 'PHARMA':
+        switch (itemTypemap[val.ProductCode].toLowerCase()) {
+          case 'pharma':
             arr[i].ProductName = ProductTypes.PHARMA;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
             break;
-          case 'FMCG':
+          case 'fmcg':
             arr[i].ProductName = ProductTypes.FMCG;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
             break;
-          case 'PL':
+          case 'pl':
             arr[i].ProductName = ProductTypes.PL;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
             break;
