@@ -341,7 +341,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           });
           setMetaTagProps({
             title: `${salutation}: ${fullName} - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with <Doctor Name> - ${specialty && specialty.name} and consult online at Apollo 247. Know more about <Dr Name> and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${specialty && specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink: `https://www.apollo247.com/doctors/${fullName}-${id}`
           })
         }
