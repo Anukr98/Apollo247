@@ -3,12 +3,27 @@ import { Theme, Grid, CircularProgress, Popover, Link, Typography } from '@mater
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import { Specialities } from 'components/Specialities';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import { useParams } from 'hooks/routerHooks';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useLocationDetails } from 'components/LocationProvider';
+import { gtmTracking } from '../gtmTracking';
+import { SearchObject } from 'components/DoctorsFilter';
+import {
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import { readableParam } from 'helpers/commonHelpers';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -150,7 +165,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     otherSpeciality: {},
     faq: {
-      padding: '20px 0',
+      padding: '20px',
+      background: '#ffffff',
+      borderRadius: 5,
       '& h5': {
         fontSize: 16,
         fontWeight: 'bold',
@@ -191,6 +208,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     detailsContent: {
+      width: '80%',
       '& p': {
         margin: '0 0 10px',
         '&:last-child': {
@@ -203,17 +221,393 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 0,
       listStyle: 'decimal',
     },
-    tsContent: {},
+    tsContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '20px 0',
+    },
+    osContainer: {
+      padding: '20px 0',
+    },
+    specialityCard: {
+      width: 150,
+      background: '#fff',
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      padding: 10,
+      textAlign: 'center',
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 500,
+      },
+      '& img': {
+        width: 40,
+        margin: '10px 0',
+      },
+      '& p': {
+        fontSize: 12,
+        color: 'rgb(2, 71, 91, 0.6)',
+        lineHeight: '12px',
+        padding: '0 10px',
+        fontWeight: 500,
+      },
+    },
+    symptoms: {
+      fontSize: '10px !important',
+      margin: '20px 0 0',
+      fontWeight: 500,
+      color: '#02475b !important',
+      padding: '0 !important',
+    },
+    specialityDetails: {
+      padding: '20px 0',
+    },
+    videoContainer: {
+      height: 180,
+      border: '1px solid #eee',
+      borderRadius: 5,
+    },
+    card: {
+      background: '#ffffff',
+      borderRadius: 5,
+      padding: 15,
+      margin: '20px 0 0',
+      '& h5': {
+        fontSize: 16,
+        fontWeight: 600,
+        margin: '0 0 10px',
+        lineHeight: '16px',
+      },
+    },
+    cardList: {
+      padding: '0 0 0 20px',
+      margin: 0,
+      '& li': {
+        fontSize: 14,
+        fontWeight: 500,
+        lineHeight: '24px',
+      },
+    },
+    symptomContainer: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+      '& a': {
+        fontSize: 13,
+        color: '#fc9916',
+        textTransform: 'uppercase',
+        display: 'block',
+        fontWeight: 700,
+      },
+    },
+    appDetails: {
+      '& h6': {
+        color: '#0589bb',
+        fontSize: 14,
+        margin: '0 0 5px',
+        fontWeight: 500,
+      },
+      '& p': {
+        fontSize: 12,
+        color: 'rgb(2, 71, 91, 0.6)',
+        lineHeight: '18px',
+      },
+    },
+    appDownload: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      margin: '10px 0 0',
+      fontWeight: 500,
+      '& button': {
+        color: '#fc9916',
+        width: '100%',
+        margin: '0 0 0 20px',
+      },
+    },
+    tabsContainer: {},
+    tabRoot: {
+      background: '#f7f8f5',
+      padding: 10,
+      boxShadow: ' 0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      minWidth: 140,
+      opacity: 1,
+      position: 'relative',
+      border: '1px solid transparent',
+      minHeight: 'auto',
+      overflow: 'visible',
+      '& span': {
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: 'none',
+        lineHeight: '15px',
+        position: 'relative',
+        zIndex: 5,
+      },
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        bottom: -34,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid transparent',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
+      },
+      '&:after': {
+        content: "''",
+        position: 'absolute',
+        bottom: -35,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+        width: 20,
+        height: '100%',
+        margin: '0 auto',
+        borderRadius: 4,
+        borderTop: '10px solid transparent',
+        borderBottom: '10px solid transparent',
+        borderLeft: ' 40px solid transparent',
+        borderRight: '40px solid transparent',
+      },
+    },
+    tabSelected: {
+      borderColor: '#00b38e',
+      '&:before': {
+        borderTopColor: '#f7f8f5',
+      },
+      '&:after': {
+        borderTopColor: '#00b38e',
+      },
+    },
+    tabsRoot: {
+      '& >div': {
+        '& >div': {
+          justifyContent: 'space-between',
+          padding: '10px 0 30px',
+        },
+      },
+    },
+    tabsIndicator: {
+      display: 'none',
+    },
+    tabContent: {},
+    chatContainer: {},
+    tabHead: {
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        margin: '0 20px 0 0',
+      },
+      '& h6': {
+        color: '#0589bb',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        fontWeight: 600,
+      },
+    },
+    tabBody: {
+      padding: '20px 0',
+      borderTop: '1px solid #eeeeee',
+      borderBottom: '1px solid #eeeeee',
+      margin: '20px 0',
+    },
+    tabList: {
+      padding: 0,
+      margin: 0,
+      listStyle: 'none',
+      '& li': {
+        padding: '5px 0',
+        display: 'flex',
+        alignItems: 'center',
+        '& p': {
+          fontSize: 12,
+          color: 'rgb(2, 71, 91, 0.6)',
+          margin: '0 0 0 15px',
+          fontWeight: 500,
+        },
+      },
+    },
+    highlight: {
+      '& p': {
+        color: '#0589bb !important',
+      },
+    },
   };
 });
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <div>{children}</div>}
+    </div>
+  );
+}
+function a11yProps(index: any) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+const searchObject: SearchObject = {
+  searchKeyword: '',
+  cityName: [],
+  experience: [],
+  availability: [],
+  fees: [],
+  gender: [],
+  language: [],
+  dateSelected: '',
+  specialtyName: '',
+  prakticeSpecialties: '',
+};
+interface DoctorsLandingProps {
+  history: History;
+}
 
 export const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
   const [expanded, setExpanded] = React.useState<string | false>(false);
+  const [value, setValue] = React.useState(0);
+  const urlParams = new URLSearchParams(window.location.search);
+  const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
+  const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
+  const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
+  const [specialitySelected, setSpecialitySelected] = useState<string>('');
+  const apolloClient = useApolloClient();
+  const [specialtyId, setSpecialtyId] = useState<string>('');
+  const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
+  const { currentPatient } = useAllCurrentPatients();
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
+  const [disableFilters, setDisableFilters] = useState<boolean>(true);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setValue(newValue);
+  };
+  const {
+    currentPincode,
+    currentLong,
+    currentLat,
+    getCurrentLocationPincode,
+  } = useLocationDetails();
+  const params = useParams<{
+    specialty: string;
+  }>();
+
+  useEffect(() => {
+    /**Gtm code start start */
+    gtmTracking({
+      category: 'Consultations',
+      action: 'Landing Page',
+      label: 'Listing Page Viewed',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  useEffect(() => {
+    if (params && params.specialty) {
+      const decoded = decodeURIComponent(params.specialty);
+      const specialityName = readableParam(decoded);
+      apolloClient
+        .query({
+          query: GET_ALL_SPECIALITIES,
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          response.data &&
+            response.data.getAllSpecialties &&
+            response.data.getAllSpecialties.map((specialty: any) => {
+              if (specialty && specialty.name && specialty.name.toLowerCase() === specialityName) {
+                setSpecialtyId(specialty.id);
+                setSpecialitySelected(specialty.name);
+              }
+            });
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
+      setLoading(true);
+      apolloClient
+        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+          variables: {
+            searchText: filterOptions.searchKeyword,
+            patientId: currentPatient ? currentPatient.id : '',
+            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setData(response.data);
+          setLoading(false);
+        });
+    }
+  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
+
+  useEffect(() => {
+    if (specialitySelected.length > 0) {
+      const specialityName = specialitySelected.split('_');
+      setFilterOptions({
+        searchKeyword: specialityName[0],
+        specialtyName: specialityName[0], // this is used to disable filter if specialty selected and changed.
+        cityName: [],
+        experience: [],
+        availability: [],
+        fees: [],
+        gender: [],
+        language: [],
+        dateSelected: '',
+        prakticeSpecialties: '',
+      });
+      setShowSearchAndPastSearch(false);
+
+      /**Gtm code start start */
+      gtmTracking({
+        category: 'Consultations',
+        action: specialitySelected,
+        label: 'Listing Page Viewed',
+      });
+      /**Gtm code start end */
+    }
+  }, [specialitySelected]);
+
   return (
     <div className={classes.slContainer}>
       <Header />
@@ -261,6 +655,31 @@ export const SpecialityListing: React.FC = (props) => {
                   <div className={classes.tsContent}>
                     <div className={classes.specialityCard}>
                       <Typography component="h6">Paediatrics</Typography>
+                      <img src={require('images/ic-baby.svg')} />
+                      <Typography>For your child’s health problems</Typography>
+                      <Typography className={classes.symptoms}>Fever, cough, diarrhoea</Typography>
+                    </div>
+                    <div className={classes.specialityCard}>
+                      <Typography component="h6">General Physician</Typography>
+                      <img src={require('images/ic_doctor_consult.svg')} />
+                      <Typography>For any common health issue</Typography>
+                      <Typography className={classes.symptoms}>Fever, headache, asthma</Typography>
+                    </div>
+                    <div className={classes.specialityCard}>
+                      <Typography component="h6">Dermatology</Typography>
+                      <img src={require('images/ic-hair.svg')} />
+                      <Typography>For skin &amp; hair problems</Typography>
+                      <Typography className={classes.symptoms}>
+                        Skin rash, acne, skin patch
+                      </Typography>
+                    </div>
+                    <div className={classes.specialityCard}>
+                      <Typography component="h6">Gynaecology</Typography>
+                      <img src={require('images/ic-gynaec.svg')} />
+                      <Typography>For women’s health </Typography>
+                      <Typography className={classes.symptoms}>
+                        Irregular periods, pregnancy
+                      </Typography>
                     </div>
                   </div>
                 </div>
@@ -268,7 +687,24 @@ export const SpecialityListing: React.FC = (props) => {
                   <div className={classes.sectionHeader}>
                     <Typography component="h4">Other Specialites</Typography>
                   </div>
-                  {/* <Specialities /> */}
+                  <div className={classes.osContainer}>
+                    <Specialities
+                      keyword={filterOptions.searchKeyword}
+                      matched={(matchingSpecialities) =>
+                        setMatchingSpecialities(matchingSpecialities)
+                      }
+                      speciality={(specialitySelected) => setSpecialitySelected(specialitySelected)}
+                      specialityId={(specialityId: string) => setSpecialtyId(specialityId)}
+                      disableFilter={(disableFilters) => {
+                        setDisableFilters(disableFilters);
+                      }}
+                      subHeading={
+                        filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                          ? 'Matching Specialities'
+                          : 'Specialities'
+                      }
+                    />
+                  </div>
                 </div>
                 <div className={classes.faq}>
                   <Typography component="h5">Frequently asked questions</Typography>
@@ -377,7 +813,144 @@ export const SpecialityListing: React.FC = (props) => {
                 </div>
               </div>
             </Grid>
-            <Grid item sm={4}></Grid>
+            <Grid item sm={4}>
+              <div className={classes.specialityDetails}>
+                <div className={classes.videoContainer}></div>
+                <div className={classes.card}>
+                  <div className={classes.symptomContainer}>
+                    <img src={require('images/ic-symptomtracker.svg')} />
+                    <div>
+                      <Typography component="h6">
+                        Not sure about which speciality to choose?
+                      </Typography>
+                      <a href="javascript:void(0)">Track your Symptoms</a>
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.card}>
+                  <Typography component="h5">Why Apollo247</Typography>
+                  <ul className={classes.cardList}>
+                    <li>Verified doctor listing</li>
+                    <li>99% +ve feedback</li>
+                    <li>Free follow-up session</li>
+                    <li>In hac habitasse platea dictumst. Vivamus adipiscing fermentum </li>
+                  </ul>
+                </div>
+                <div className={classes.card}>
+                  <Typography component="h5">How it works</Typography>
+                  <div className={classes.tabsContainer}>
+                    <Tabs
+                      value={value}
+                      onChange={handleTabChange}
+                      aria-label="simple tabs example"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                    >
+                      <Tab
+                        label="Chat/Audio/Video"
+                        {...a11yProps(0)}
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                      />
+                      <Tab
+                        label="Meet in Person"
+                        {...a11yProps(1)}
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                      />
+                    </Tabs>
+                    <div className={classes.tabContent}>
+                      <TabPanel value={value} index={0}>
+                        <div className={classes.chatContainer}>
+                          <div className={classes.tabHead}>
+                            <img src={require('images/video-calling.svg')} />
+                            <Typography component="h6">
+                              How to consult via chat/audio/video?
+                            </Typography>
+                          </div>
+                          <div className={classes.tabBody}>
+                            <ul className={classes.tabList}>
+                              <li>
+                                <img src={require('images/consult-doc.svg')} />
+                                <Typography>Choose the doctor</Typography>
+                              </li>
+                              <li>
+                                <img src={require('images/slot.svg')} />
+                                <Typography>Book a slot</Typography>
+                              </li>
+                              <li>
+                                <img src={require('images/ic-payment.svg')} />
+                                <Typography>Make payment</Typography>
+                              </li>
+                              <li className={classes.highlight}>
+                                <img src={require('images/ic-video.svg')} />
+                                <Typography>Speak to the doctor via video/audio/chat</Typography>
+                              </li>
+                              <li>
+                                <img src={require('images/prescription.svg')} />
+                                <Typography>Receive prescriptions instantly </Typography>
+                              </li>
+                              <li className={classes.highlight}>
+                                <img src={require('images/chat.svg')} />
+                                <Typography>
+                                  Chat with the doctor for 6 days after your consult
+                                </Typography>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </TabPanel>
+                      <TabPanel value={value} index={1}>
+                        <div className={classes.tabHead}>
+                          <img src={require('images/ic-specialist.svg')} />
+                          <Typography component="h6">How to consult in Person?</Typography>
+                        </div>
+                        <div className={classes.tabBody}>
+                          <ul className={classes.tabList}>
+                            <li>
+                              <img src={require('images/consult-doc.svg')} />
+                              <Typography>Choose the doctor</Typography>
+                            </li>
+                            <li>
+                              <img src={require('images/slot.svg')} />
+                              <Typography>Book a slot</Typography>
+                            </li>
+                            <li>
+                              <img src={require('images/ic-payment.svg')} />
+                              <Typography>Make payment</Typography>
+                            </li>
+                            <li className={classes.highlight}>
+                              <img src={require('images/hospital.svg')} />
+                              <Typography>Visit the doctor at Hospital/Clinic</Typography>
+                            </li>
+                            <li>
+                              <img src={require('images/prescription.svg')} />
+                              <Typography>Receive prescriptions instantly </Typography>
+                            </li>
+                          </ul>
+                        </div>
+                      </TabPanel>
+                    </div>
+                  </div>
+                  <div className={classes.appDetails}>
+                    <Typography component="h6">Consultancy works only on our mobile app</Typography>
+                    <Typography>
+                      To enjoy enhanced consultation experience download our mobile app
+                    </Typography>
+                    <div className={classes.appDownload}>
+                      <img src={require('images/apollo247.png')} />
+                      <AphButton>Download the App</AphButton>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Grid>
           </Grid>
         </div>
       </div>
