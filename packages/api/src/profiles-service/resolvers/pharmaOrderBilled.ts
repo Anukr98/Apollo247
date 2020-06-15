@@ -5,6 +5,7 @@ import {
   MedicineOrderInvoice,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -28,12 +29,30 @@ export const saveOrderShipmentInvoiceTypeDefs = gql`
     quantity: Int
     batch: String
     unitPrice: Float
+    discountPrice: Float
+    packSize: Int
+    isSubstitute: Boolean
+    substitute: [SubstituteDetails]
+  }
+
+  input SubstituteDetails {
+    articleCode: String
+    articleName: String
+    quantity: Int
+    batch: String
+    unitPrice: Float
+    packSize: Int
+    discountPrice: Float
   }
 
   input BillingDetails {
     invoiceTime: String
     invoiceNo: String
     invoiceValue: Float
+    cashValue: Float
+    prepaidValue: Float
+    discountValue: Float
+    deliveryCharges: Float
   }
 
   type SaveOrderShipmentInvoiceResult {
@@ -73,6 +92,10 @@ type BillingDetails = {
   invoiceTime: string;
   invoiceNo: string;
   invoiceValue: string;
+  cashValue: number;
+  prepaidValue: number;
+  discountValue: number;
+  deliveryCharges: number;
 };
 
 type ArticleDetails = {
@@ -81,6 +104,20 @@ type ArticleDetails = {
   quantity: number;
   batch: string;
   unitPrice: number;
+  discountPrice: number;
+  packSize: number;
+  isSubstitute: boolean;
+  substitute: SubstituteDetails[];
+};
+
+type SubstituteDetails = {
+  articleCode: string;
+  articleName: string;
+  quantity: number;
+  batch: string;
+  unitPrice: number;
+  discountPrice: number;
+  packSize: number;
 };
 
 type SaveOrderShipmentInvoiceInputArgs = {
@@ -113,18 +150,23 @@ const saveOrderShipmentInvoice: Resolver<
   if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
+  const currentStatus =
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? MEDICINE_ORDER_STATUS.READY_AT_STORE
+      : MEDICINE_ORDER_STATUS.ORDER_BILLED;
   const statusDate = format(
     addMinutes(parseISO(saveOrderShipmentInvoiceInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+    orderStatus: currentStatus,
     medicineOrderShipments: shipmentDetails,
     statusDate: new Date(statusDate),
   };
 
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
+  const billDetails: BillingDetails = saveOrderShipmentInvoiceInput.billingDetails;
   const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
     orderNo: saveOrderShipmentInvoiceInput.orderId,
     apOrderNo: shipmentDetails.apOrderNo,
@@ -134,8 +176,12 @@ const saveOrderShipmentInvoice: Resolver<
         addMinutes(parseISO(saveOrderShipmentInvoiceInput.billingDetails.invoiceTime), -330),
         "yyyy-MM-dd'T'HH:mm:ss.SSSX"
       ),
-      billNumber: saveOrderShipmentInvoiceInput.billingDetails.invoiceNo,
-      invoiceValue: saveOrderShipmentInvoiceInput.billingDetails.invoiceValue,
+      billNumber: billDetails.invoiceNo,
+      invoiceValue: billDetails.invoiceValue,
+      cashValue: billDetails.cashValue,
+      prepaidValue: billDetails.prepaidValue,
+      discountValue: billDetails.discountValue,
+      deliveryCharges: billDetails.deliveryCharges,
     }),
     itemDetails: JSON.stringify(
       saveOrderShipmentInvoiceInput.itemDetails.map((item) => {
@@ -143,8 +189,10 @@ const saveOrderShipmentInvoice: Resolver<
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: item.quantity,
-          mrp: item.quantity * item.unitPrice,
+          issuedQty: Number((item.quantity / item.packSize).toFixed(2)),
+          mou: item.packSize,
+          discountPrice: Number((item.packSize * item.discountPrice).toFixed(2)),
+          mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
         };
       })
     ),
@@ -155,7 +203,7 @@ const saveOrderShipmentInvoice: Resolver<
 
   await medicineOrdersRepo.updateMedicineOrderShipment(
     {
-      currentStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      currentStatus: currentStatus,
     },
     shipmentDetails.apOrderNo
   );
@@ -168,7 +216,7 @@ const saveOrderShipmentInvoice: Resolver<
   });
   if (!unBilledShipments) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      orderStatus: currentStatus,
       medicineOrders: orderDetails,
       statusDate: new Date(statusDate),
     };
@@ -177,7 +225,7 @@ const saveOrderShipmentInvoice: Resolver<
       orderDetails.id,
       orderDetails.orderAutoId,
       new Date(statusDate),
-      MEDICINE_ORDER_STATUS.ORDER_BILLED
+      currentStatus
     );
   }
 

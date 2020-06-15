@@ -5,6 +5,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -70,7 +71,7 @@ const updateOrderStatus: Resolver<
   ProfilesServiceContext,
   UpdateOrderStatusResult
 > = async (parent, { updateOrderStatusInput }, { profilesDb }) => {
-  const status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
+  let status = MEDICINE_ORDER_STATUS[updateOrderStatusInput.status];
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
     updateOrderStatusInput.orderId
@@ -110,6 +111,12 @@ const updateOrderStatus: Resolver<
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   }
 
+  if (
+    status == MEDICINE_ORDER_STATUS.DELIVERED &&
+    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+  ) {
+    status = MEDICINE_ORDER_STATUS.PICKEDUP;
+  }
   if (shipmentDetails) {
     if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});

@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     backArrow: {
+      zIndex: 2,
       cursor: 'pointer',
       marginRight: 20,
       [theme.breakpoints.up(1220)]: {
@@ -80,7 +81,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       padding: 20,
-      paddingTop: 0,
       color: '#01475b',
       fontWeight: 500,
       display: 'flex',
@@ -89,9 +89,10 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         bottom: 0,
         color: '#fff',
+        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0), #000000 113%)',
       },
       [theme.breakpoints.up(1220)]: {
-        padding: '0 40px 34px 40px',
+        padding: '40px 40px 34px 40px',
       },
       '& h2': {
         margin: 0,

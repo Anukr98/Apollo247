@@ -18,7 +18,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postFirebaseEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
@@ -223,8 +223,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             Payment_Mode: item.paymentMode,
             Type: 'Consultation',
             Appointment_Id: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+            Mobile_Number: g(currentPatient, 'mobileNumber'),
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+          postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
         } catch (error) {}
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 

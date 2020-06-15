@@ -810,11 +810,11 @@ export class Patient extends BaseEntity {
   isActive: Boolean;
 
   @Index('Patient_whatsAppConsult')
-  @Column({ default: true })
+  @Column({ default: false })
   whatsAppConsult: Boolean;
 
   @Index('Patient_whatsAppMedicine')
-  @Column({ default: true })
+  @Column({ default: false })
   whatsAppMedicine: Boolean;
 
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)

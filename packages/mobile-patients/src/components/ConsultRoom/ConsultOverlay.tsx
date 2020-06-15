@@ -62,6 +62,7 @@ import {
   handleGraphQlError,
   postAppsFlyerEvent,
   postWebEngageEvent,
+  postFirebaseEvent,
   postWEGWhatsAppEvent,
   dataSavedUserID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -89,6 +90,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -122,7 +124,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(false);
+  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const doctorFees =
     tabs[0].title === selectedTab
@@ -497,6 +499,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : '',
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
   const whatsappAPICalled = () => {
@@ -854,12 +857,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
-    whatsAppUpdateAPICall(
-      client,
-      g(currentPatient, 'whatsAppMedicine'),
-      optedFor,
-      userId ? userId : g(currentPatient, 'id')
-    )
+    whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
         console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();

@@ -6,7 +6,7 @@ export interface MedicineProduct {
   id: number;
   category_id: string;
   image: string | null;
-  is_in_stock: boolean;
+  is_in_stock: number;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
@@ -16,7 +16,7 @@ export interface MedicineProduct {
   status: number;
   thumbnail: string | null;
   type_id: 'Fmcg' | 'Pharma';
-  mou: string;
+  mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
 }
@@ -71,6 +71,7 @@ export interface Store {
   phone: string;
   city: string;
   state: string;
+  state_id: string;
   message: string;
 }
 
@@ -101,6 +102,7 @@ export interface GetStoreInventoryResponse {
   itemDetails: {
     itemId: string;
     qty: number;
+    mrp: number;
   }[];
 }
 
@@ -112,20 +114,8 @@ export interface GetDeliveryTimeResponse {
   }[];
   errorMSG?: string;
 }
-interface InventoryCheckApiResponse {
-  InvChkResult: {
-    Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
-    Status: boolean;
-    item:
-      | {
-          artCode: string;
-          batch: string;
-          expDate: string; //'2024-05-30 00:00:00.0'
-          mrp: number;
-          qoh: number;
-        }[]
-      | null;
-  };
+interface MedCartItemsDetailsResponse {
+  productdp: MedicineProduct[];
 }
 
 export type GooglePlacesType =
@@ -382,18 +372,17 @@ export const pinCodeServiceabilityApi = (
   );
 };
 
-export const inventoryCheckApi = (
+export const medCartItemsDetailsApi = (
   itemIds: string[]
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
   return Axios.post(
-    `${config.INVENTORY_CHECK[0]}/INV_CHECK`, //Production
+    config.MED_CART_ITEMS_DETAILS[0],
     {
-      siteid: '14057',
-      Itemid: itemIds.map((ItemID) => ({ ItemID })),
+      params: itemIds.toString(),
     },
     {
       headers: {
-        Token: config.INVENTORY_CHECK[1],
+        Authorization: config.MED_CART_ITEMS_DETAILS[1],
       },
     }
   );

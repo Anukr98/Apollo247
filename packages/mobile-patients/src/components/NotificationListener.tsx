@@ -75,7 +75,8 @@ type CustomNotificationType =
   | 'Appointment_Canceled'
   | 'PRESCRIPTION_READY'
   | 'doctor_Noshow_Reschedule_Appointment'
-  | 'Appointment_Canceled_Refund';
+  | 'Appointment_Canceled_Refund'
+  | 'Appointment_Payment_Pending_Failure';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -492,7 +493,33 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
-
+      case 'Appointment_Payment_Pending_Failure':
+        {
+          const { data } = notification;
+          const { doctorId, content } = data;
+          showAphAlert!({
+            title: ' ',
+            description: content,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'BOOK AGAIN',
+                onPress: () => {
+                  props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: doctorId });
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
       case 'Cart_Ready':
         {
           // data.deliveredDate
@@ -534,7 +561,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: medicineDetails.type_id == 'Pharma',
+                        isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                       } as ShoppingCartItem;
                     })
@@ -752,6 +779,23 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       ).setDescription('Demo app description');
       // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
+    } catch (error) {
+      CommonBugFender('NotificationListener_channel_try', error);
+      aphConsole.log('error in notification channel', error);
+    }
+    try {
+      const channelForCalls = new firebase.notifications.Android.Channel(
+        'fcm_FirebaseNotifiction_call_channel',
+        'Apollo Audio & Video calls',
+        firebase.notifications.Android.Importance.Default
+      )
+        .setDescription('Apollo Consultation')
+        .setSound('incallmanager_ringtone.mp3')
+        .enableLights(true)
+        .enableVibration(true)
+        .setVibrationPattern([1000])
+        .setShowBadge(true);
+      firebase.notifications().android.createChannel(channelForCalls);
     } catch (error) {
       CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);

@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
 export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
   isTest?: boolean;
   selectedTab?: string; // should be one of 'Home Delivery' | 'Store Pick Up';
+  setSelectedTab?: (selectedTab: string) => void;
 }
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
@@ -68,6 +69,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     showPrescriptionAtStore,
     setShowPrescriptionAtStore,
     deliveryAddressId,
+    setDeliveryAddressId,
   } = useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
@@ -304,10 +306,9 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           style={{ marginTop: 9, flexDirection: 'row' }}
           onPress={() => {
             if (props.selectedTab == 'Home Delivery' || deliveryAddressId) {
-              showAphAlert!({
-                title: string.common.uhOh,
-                description: string.medicine_cart.showPresAtStoreForStorePickUp,
-              });
+              setShowPrescriptionAtStore!(!showPrescriptionAtStore);
+              setDeliveryAddressId!('');
+              props.setSelectedTab && props.setSelectedTab('Store Pick Up');
             } else {
               setShowPrescriptionAtStore!(!showPrescriptionAtStore);
             }

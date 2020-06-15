@@ -514,7 +514,7 @@ export const MyAccount: React.FC = (props) => {
             data.data.sendMessageToMobileNumber.status &&
             data.data.sendMessageToMobileNumber.status === 'OK'
           ) {
-            alert(data.data.sendMessageToMobileNumber.message);
+            alert(`We have sent the app invite to ${mobileNumberWithPrefix}`);
             setDeepLink('');
             setMobileNumber('');
           } else {
@@ -971,7 +971,15 @@ export const MyAccount: React.FC = (props) => {
                       <div className={classes.errorText}>Please enter valid mobile number</div>
                     )}
 
-                    <AphButton disabled={(showErrorMessage || mobileNumber === '' || mobileNumber.trim().length < 10) ? true : false} color="primary" onClick={() => shareDeepLink()}>
+                    <AphButton
+                      disabled={
+                        showErrorMessage || mobileNumber === '' || mobileNumber.trim().length < 10
+                          ? true
+                          : false
+                      }
+                      color="primary"
+                      onClick={() => shareDeepLink()}
+                    >
                       Send
                     </AphButton>
                     {loading && <CircularProgress className={classes.loader} />}

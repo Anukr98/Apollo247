@@ -100,6 +100,7 @@
     "react-apollo-hooks": "^0.4.5",
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "16.8.6",
+    "react-dropzone": "^11.0.1",
     "react-helmet": "^5.2.1",
     "react-hot-loader": "^4.9.0",
     "react-image-gallery": "^0.9.1",

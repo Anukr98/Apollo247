@@ -62,6 +62,7 @@ import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
   doRequestAndAccessLocationModified,
   g,
+  postFirebaseEvent,
   postWebEngageEvent,
   UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -70,6 +71,11 @@ import {
   PatientInfoWithSource,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  FirebaseEventName,
+  PatientInfoFirebase,
+  PatientInfoWithSourceFirebase,
+} from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -99,6 +105,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
 import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { handleDeepLink } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { Vitals } = NativeModules;
 
@@ -299,6 +306,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
+    // handleDeepLink(props.navigation);
     isserviceable();
     if (diagnosticsCities.length) {
       // Don't call getDiagnosticsCites API if already fetched
@@ -438,12 +447,43 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         eventName == WebEngageEventName.NEED_HELP)
     ) {
       (eventAttributes as PatientInfoWithSource)['Source'] = source;
-      if (locationDetails && locationDetails.pincode) {
-        (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-        (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
-      }
+    }
+    if (
+      locationDetails &&
+      locationDetails.pincode &&
+      eventName == WebEngageEventName.BUY_MEDICINES
+    ) {
+      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
     }
     postWebEngageEvent(eventName, eventAttributes);
+  };
+
+  const postHomeFireBaseEvent = (
+    eventName: FirebaseEventName,
+    source?: PatientInfoWithSourceFirebase['Source']
+  ) => {
+    const eventAttributes: PatientInfoFirebase = {
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
+    };
+    if (source) {
+      (eventAttributes as PatientInfoWithSourceFirebase)['Source'] = source;
+    }
+    if (
+      locationDetails &&
+      locationDetails.pincode &&
+      eventName == FirebaseEventName.BUY_MEDICINES
+    ) {
+      (eventAttributes as PatientInfoWithSourceFirebase)['Pincode'] = locationDetails.pincode;
+      (eventAttributes as PatientInfoWithSourceFirebase)['Serviceability'] = serviceable;
+    }
+    postFirebaseEvent(eventName, eventAttributes);
   };
 
   const onProfileChange = () => {
@@ -486,6 +526,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Book Doctor Appointment',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
         props.navigation.navigate(AppRoutes.DoctorSearch);
         // showProfileSelectionAlert();
@@ -496,6 +537,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Buy Medicines',
       image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
       },
@@ -505,6 +547,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Order Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
         props.navigation.navigate('TESTS', { focusSearch: true });
       },
@@ -514,6 +557,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
         getTokenforCM();
       },
@@ -523,6 +567,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Understand Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
         props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
       },
@@ -532,6 +577,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'View Health Records',
       image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         props.navigation.navigate('HEALTH RECORDS');
       },
@@ -902,22 +948,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
+                  postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
+                  postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
                   props.navigation.navigate('TESTS');
                 } else if (i == 4) {
+                  postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');

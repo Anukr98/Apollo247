@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('./../winston-logger')('Universal-Error-Logs');
 
 function getAddressDetails(addressId) {
   return new Promise(async (resolve, reject) => {
@@ -31,7 +32,9 @@ function getAddressDetails(addressId) {
         resolve(response.data.data.getPatientAddressById.patientAddress);
       })
       .catch((error) => {
-        logger.error(`processOrders()-> ${error.stack}`);
+        logger.error(
+          `error while fethcing address details processOrders() ${addressId}-> ${error.stack}`
+        );
         console.log(error, 'address error');
       });
   });

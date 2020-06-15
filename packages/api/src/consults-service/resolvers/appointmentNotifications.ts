@@ -167,22 +167,11 @@ const sendApptReminderNotification: Resolver<
         doctorNotification: true,
       };
       if (args.inNextMin != 1) {
-        if (appt.caseSheet.length > 0) {
-          if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-            appt.caseSheet[0].doctorType == 'JUNIOR'
-          ) {
-            pushNotificationInput.notificationType =
-              NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
-          } else if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
-            appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
-            args.inNextMin == 15
-          ) {
+        if (appt.isConsultStarted) {
+          if (args.inNextMin == 15) {
             pushNotificationInput.notificationType = NotificationType.VIRTUAL_REMINDER_15;
           }
-        }
-        if (appt.caseSheet.length == 0) {
+        } else {
           pushNotificationInput.notificationType =
             NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
         }
@@ -229,27 +218,13 @@ const sendPhysicalApptReminderNotification: Resolver<
       if (args.inNextMin != 15) {
         if (args.inNextMin == 1) {
           pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_1;
-        } else if (appt.caseSheet.length > 0) {
-          if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-            appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString()
-          ) {
-            pushNotificationInput.notificationType =
-              NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
-          } else if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
-            appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
-            args.inNextMin == 59
-          ) {
+        } else if (appt.isConsultStarted) {
+          if (args.inNextMin == 59) {
             pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_60;
-          } else if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
-            appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
-            args.inNextMin == 179
-          ) {
+          } else if (args.inNextMin == 179) {
             pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_180;
           }
-        } else if (appt.caseSheet.length == 0) {
+        } else {
           pushNotificationInput.notificationType =
             NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
         }

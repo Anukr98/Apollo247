@@ -17,7 +17,17 @@ import {
   OnlineHeader,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { nextAvailability, mhdMY, g, timeDiffFromNow } from '../../helpers/helperFunctions';
+import {
+  nextAvailability,
+  mhdMY,
+  g,
+  timeDiffFromNow,
+  postWebEngageEvent,
+} from '../../helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { ConsultMode } from '../../graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -57,11 +67,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    marginTop: 18,
-    marginHorizontal: 20,
+    marginTop: 14,
+    marginHorizontal: 0,
+    width: '100%',
+    height: 46,
+    backgroundColor: '#f0fffc',
   },
   checkboxTextStyle: {
-    ...theme.viewStyles.text('SB', 10, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('SB', 12, theme.colors.SHERPA_BLUE),
     marginLeft: 8,
   },
   cardContainer: {
@@ -76,7 +89,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     paddingBottom: 9,
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
   headingTextContainer: {
@@ -158,7 +171,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const ConsultType = props.navigation.getParam('ConsultType');
   const params = props.navigation.getParam('params');
   const { setLoading } = useUIElements();
-  const { currentPatientId } = useAllCurrentPatients();
+  const { currentPatientId, currentPatient } = useAllCurrentPatients();
 
   const client = useApolloClient();
 
@@ -176,6 +189,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         })
         .then((data) => {
           const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
+          console.log('getPastAppointmentsCount', data);
           if (count && count > 0) {
             setHideCheckbox(true);
           }
@@ -212,7 +226,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const renderCheckbox = () => {
     return (
       <View style={styles.checkboxContainer}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setConsultedChecked(!consultedChecked)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{ marginLeft: 17 }}
+          onPress={() => setConsultedChecked(!consultedChecked)}
+        >
           {consultedChecked ? <CheckedIcon /> : <CheckUnselectedIcon />}
         </TouchableOpacity>
         <Text style={styles.checkboxTextStyle}>
@@ -286,6 +304,18 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     );
   };
 
+  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
+      'Consult Type': consultType,
+      'Doctor ID': DoctorId,
+      'Doctor Name': DoctorName,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
+  };
   const renderOnlineCard = () => {
     return renderCard(
       <OnlineHeader />,
@@ -316,6 +346,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
+        postWebengaegConsultType('Online');
       }
     );
   };
@@ -350,9 +381,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           externalConnect: hideCheckbox ? null : consultedChecked,
           ...params,
         });
+        postWebengaegConsultType('In Person');
       }
     );
   };
+  // let ScrollViewRef: any;
 
   return (
     <View style={styles.mainContainer}>
@@ -363,6 +396,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           bounces={false}
           style={styles.mainContainer}
           contentContainerStyle={styles.ScrollViewStyle}
+          // ref={(ref) => (ScrollViewRef = ref)}
+          // onScroll={(event) => {
+          //   console.log('event', event.nativeEvent.contentOffset.y);
+          // }}
         >
           {hideCheckbox ? null : renderCheckbox()}
           {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}

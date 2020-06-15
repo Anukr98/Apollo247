@@ -2127,9 +2127,10 @@ export const ADD_TO_CONSULT_QUEUE = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;
@@ -2328,9 +2329,10 @@ export const AUTOMATED_QUESTIONS = gql`
       juniorDoctorsList {
         juniorDoctorId
         doctorName
-        queueCount
+        # queueCount
       }
       totalJuniorDoctors
+      isJdAllowed
     }
   }
 `;
@@ -2553,6 +2555,30 @@ export const UNLINK_UHID = gql`
   }
 `;
 
+export const GET_ONEAPOLLO_USER = gql`
+  query getOneApolloUser($patientId: String!) {
+    getOneApolloUser(patientId: $patientId) {
+      name
+      earnedHC
+      availableHC
+      tier
+    }
+  }
+`;
+
+export const GET_ONEAPOLLO_USERTXNS = gql`
+  query getOneApolloUserTransactions {
+    getOneApolloUserTransactions {
+      earnedHC
+      transactionDate
+      grossAmount
+      netAmount
+      transactionDate
+      businessUnit
+      redeemedHC
+    }
+  }
+`;
 export const UPDATE_WHATSAPP_STATUS = gql`
   mutation updateWhatsAppStatus(
     $whatsAppMedicine: Boolean

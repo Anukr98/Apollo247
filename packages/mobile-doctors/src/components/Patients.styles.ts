@@ -54,4 +54,37 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
     maxWidth: '75%',
   },
+  replyChatCta: {
+    backgroundColor: theme.colors.APP_YELLOW,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 100,
+    height: 24,
+    width: 80,
+  },
+  chatCta: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 100,
+    height: 24,
+    width: 80,
+  },
+  chaticonStyle: {
+    width: 29,
+    height: 29,
+    position: 'absolute',
+    left: '10%',
+  },
+  replyText: {
+    position: 'absolute',
+    right: '14%',
+    ...theme.viewStyles.text('SB', 10, theme.colors.WHITE, 1, 14),
+  },
+  chatText: {
+    position: 'absolute',
+    right: '18%',
+    ...theme.viewStyles.text('SB', 10, theme.colors.APP_YELLOW, 1, 14),
+  },
 });

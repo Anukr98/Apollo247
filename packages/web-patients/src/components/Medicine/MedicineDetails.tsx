@@ -18,6 +18,14 @@ import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking } from '../../gtmTracking';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { useCurrentPatient } from 'hooks/authHooks';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -360,6 +368,58 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    autoSearch: {
+      backgroundColor: '#fff',
+      padding: '20px 40px',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      marginTop: -48,
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        boxShadow: 'none',
+        padding: 0,
+        marginTop: -10,
+      },
+      '& >div:first-child': {
+        flex: 1,
+        [theme.breakpoints.down('xs')]: {
+          top: 50,
+        },
+      },
+    },
+    searchRight: {
+      marginLeft: 'auto',
+      paddingLeft: 40,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    uploadPreBtn: {
+      backgroundColor: '#fff',
+      color: '#fcb716',
+      border: '1px solid #fcb716',
+      minWidth: 105,
+      '&:hover': {
+        backgroundColor: '#fff',
+        color: '#fcb716',
+      },
+    },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
+    specialOffer: {
+      cursor: 'pointer',
+      paddingLeft: 20,
+      fontSize: 16,
+      color: '#01475b',
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 10,
+      },
+    },
   };
 });
 
@@ -379,10 +439,21 @@ export const MedicineDetails: React.FC = (props) => {
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [productSchemaJSON, setProductSchemaJSON] = React.useState(null);
   const [drugSchemaJSON, setDrugSchemaJSON] = React.useState(null);
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
   };
 
   const getMedicineDetails = async (sku: string) => {
@@ -412,7 +483,6 @@ export const MedicineDetails: React.FC = (props) => {
             /**schema markup  start*/
             const {
               manufacturer,
-              description,
               image,
               name,
               special_price,
@@ -423,13 +493,24 @@ export const MedicineDetails: React.FC = (props) => {
               PharmaOverview,
               url_key,
             } = data.productdp[0];
+            let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
+            if (
+              type_id &&
+              type_id.toLowerCase() === 'pharma' &&
+              Array.isArray(PharmaOverview) &&
+              PharmaOverview.length
+            ) {
+              const { Overview } = PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
+              const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
+              description = desc.length ? desc[0].CaptionDesc : '';
+            }
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
               name: name,
               image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
-              description: description,
+              description,
               brand: manufacturer,
               sku: params.sku,
               gtin8: id,
@@ -443,23 +524,18 @@ export const MedicineDetails: React.FC = (props) => {
                 itemCondition: 'https://schema.org/NewCondition',
               },
             });
-            if (
-              type_id &&
-              type_id === 'Pharma' &&
-              Array.isArray(PharmaOverview) &&
-              PharmaOverview.length
-            ) {
-              const { generic, Doseform, Overview } = PharmaOverview[0];
-              const description = Overview.filter((desc: any) => desc.Caption === 'USES');
+            if (type_id && type_id.toLowerCase() === 'pharma') {
+              const { generic, Doseform } =
+                PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name: name,
-                description: description.length ? description[0].CaptionDesc : '',
-                activeIngredient: generic.length ? generic.split('+') : '',
+                description,
+                activeIngredient: generic && generic.length ? generic.split('+') : '',
                 dosageForm: Doseform,
               });
-            };
+            }
             /**schema markup End */
 
             /**Gtm code start  */
@@ -474,11 +550,11 @@ export const MedicineDetails: React.FC = (props) => {
             /**Gtm code End  */
           })
           .catch((e) => {
-            alert(e);
+            console.log(e);
           });
       })
       .catch((e) => {
-        alert(e);
+        console.log(e);
       });
   };
 
@@ -648,17 +724,19 @@ export const MedicineDetails: React.FC = (props) => {
       />
     ));
   };
-  const description =
-    medicineDetails &&
-    medicineDetails.description
-      .split('&lt;')
-      .join('<')
-      .split('&gt;')
-      .join('>')
-      .replace(/(<([^>]+)>)/gi, '')
-      .replace(/&amp;amp;/g, '&')
-      .replace(/&amp;nbsp;/g, ' ')
-      .replace(/&amp;/g, '&');
+
+  const renderInfo = () => {
+    return (
+      medicineDetails.description &&
+      medicineDetails.description
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;rn/g, '>')
+        .replace(/&gt;r/g, '>')
+        .replace(/&gt;/g, '>')
+        .replace(/\.t/, '.')
+    );
+  };
 
   return (
     <div className={classes.root}>
@@ -682,6 +760,36 @@ export const MedicineDetails: React.FC = (props) => {
                   </a>
                   <div className={classes.detailsHeader}>Product Detail</div>
                 </div>
+
+                <div className={classes.autoSearch}>
+                  <MedicineAutoSearch />
+                  <div className={classes.searchRight}>
+                    <AphButton
+                      className={classes.uploadPreBtn}
+                      onClick={() => {
+                        handleUploadPrescription();
+                      }}
+                      title={'Upload Prescription'}
+                    >
+                      Upload
+                    </AphButton>
+                    <div
+                      className={classes.specialOffer}
+                      onClick={() =>
+                        (window.location.href = clientRoutes.searchByMedicine(
+                          'deals-of-the-day',
+                          '1195' // this is hardcoded as per the request.
+                        ))
+                      }
+                    >
+                      <span>
+                        <img src={require('images/offer-icon.svg')} alt="" />
+                      </span>
+                      <span>Special offers</span>
+                    </div>
+                  </div>
+                </div>
+
                 {medicineDetails ? (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
@@ -724,7 +832,7 @@ export const MedicineDetails: React.FC = (props) => {
                                     : ''
                                 }`}
                               </div>
-                              {medicineDetails.is_prescription_required !== '0' && (
+                              {Number(medicineDetails.is_prescription_required) !== 0 && (
                                 <div className={classes.prescriptionBox}>
                                   <span>This medicine requires doctor’s prescription</span>
                                   <span className={classes.preImg}>
@@ -758,10 +866,9 @@ export const MedicineDetails: React.FC = (props) => {
                               <div className={classes.productDetailed}>
                                 <div className={classes.productInfo}>Product Information</div>
                                 <div className={classes.productDescription}>
-                                  {description &&
-                                    description.split('rn').map((data, index) => {
-                                      return <p key={index}>{data}</p>;
-                                    })}
+                                  {medicineDetails.description && (
+                                    <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                  )}
                                 </div>
                               </div>
                             ) : null}
@@ -787,6 +894,26 @@ export const MedicineDetails: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription
+          closeDialog={() => {
+            setIsUploadPreDialogOpen(false);
+          }}
+          isNonCartFlow={true}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+        />
+      </AphDialog>
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+          isNonCartFlow={true}
+        />
+      </AphDialog>
+
       <div className={classes.footerLinks}>
         <BottomLinks />
         {!onePrimaryUser && <ManageProfile />}

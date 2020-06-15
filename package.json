@@ -8,7 +8,8 @@
     "clean": "lerna exec -- rm -rf dist/* && lerna clean",
     "format": "lerna run format",
     "lint": "lerna run lint",
-    "typecheck": "lerna run typecheck"
+    "typecheck": "lerna run typecheck",
+    "doctor": "cd packages/web-doctors && npm run start"
   },
   "devDependencies": {
     "typescript": "3.5.2",

@@ -65,13 +65,17 @@ export const More: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_more.png')} />
 );
 
-export const DropdownGreen: React.FC<IconProps> = (props) => (
+export const Dropdown: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 9, width: 14, left: 5 }}
     size="sm"
     {...props}
     source={require('../../images/icons/expand.png')}
   />
+);
+
+export const DropdownGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_dropdown_green.png')} />
 );
 
 export const Download: React.FC<IconProps> = (props) => (
@@ -772,4 +776,28 @@ export const FileBig: React.FC<IconProps> = (props) => (
     {...props}
     source={require('../../images/icons/ic_file_big.png')}
   />
+);
+
+export const ChatWhite: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/chat_white.png')}
+  />
+);
+export const ChatOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 44, width: 44 }}
+    {...props}
+    source={require('../../images/icons/chat_Orange.png')}
+  />
+);
+export const MedicineIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/med_icon.png')} />
+);
+export const TestsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/test_icon.png')} />
+);
+export const AdviceIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/advice_icon.png')} />
 );

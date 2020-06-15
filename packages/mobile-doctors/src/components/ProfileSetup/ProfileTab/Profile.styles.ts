@@ -1,9 +1,9 @@
 /* eslint-disable import/no-default-export */
-import { StyleSheet, Platform } from 'react-native';
-
+import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+
+const { width } = Dimensions.get('screen');
 
 export default StyleSheet.create({
   container: {
@@ -75,8 +75,10 @@ export default StyleSheet.create({
     ...theme.viewStyles.whiteRoundedCornerCard,
   },
   imageview: {
-    height: 141,
-    marginBottom: 16,
+    minHeight: 141,
+    maxHeight: width - 32,
+    width: width - 32,
+    resizeMode: 'contain',
   },
   drname: {
     ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -116,7 +118,12 @@ export default StyleSheet.create({
     height: 1,
     opacity: 0.1,
   },
-  profileDateView: { overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 },
+  profileDateView: {
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   highlighstyle: {
     color: theme.colors.darkBlueColor(),
     ...theme.fonts.IBMPlexSansBold(18),
@@ -127,4 +134,12 @@ export default StyleSheet.create({
   },
   dropDownView: { alignItems: 'flex-end', alignSelf: 'flex-end' },
   selectDoctor: { flexDirection: 'row', justifyContent: 'space-between' },
+  profileContainerStyle: {
+    overflow: 'hidden',
+    minHeight: 141,
+    maxHeight: width - 32,
+    width: width - 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

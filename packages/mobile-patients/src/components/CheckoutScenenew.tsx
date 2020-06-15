@@ -109,6 +109,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     addresses,
     stores,
     coupon,
+    pinCode,
   } = useShoppingCart();
 
   type bankOptions = {
@@ -229,9 +230,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Payment status': 1,
         'Payment Type': 'Prepaid',
         'Service Area': 'Pharmacy',
+        'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
         af_currency: 'INR',
       };
+      if (store) {
+        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store Name'] = store.storename;
+        eventAttributes['Store Number'] = store.phone;
+        eventAttributes['Store Address'] = store.address;
+      }
       return eventAttributes;
     } catch (error) {
       return {};
@@ -338,7 +346,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
-    const { storename, address, workinghrs, phone, city, state } = selectedStore || {};
+    const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         coupon: coupon ? coupon.code : '',
@@ -347,7 +355,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
-        shopAddress: selectedStore ? { storename, address, workinghrs, phone, city, state } : null,
+        shopAddress: selectedStore
+          ? {
+              storename,
+              address,
+              workinghrs,
+              phone,
+              city,
+              state,
+              zipcode: pinCode,
+              stateCode: state_id,
+            }
+          : null,
         showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
         patientAddressId: deliveryAddressId,
         medicineDeliveryType: deliveryType!,
@@ -430,15 +449,24 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('CheckoutScene_saveOrder', error);
         setLoading && setLoading(false);
-        if (g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE') {
+
+        const isPriceMismatch =
+          g(error, 'graphQLErrors', '0', 'message') == 'SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR';
+        const isCouponError =
+          g(error, 'graphQLErrors', '0' as any, 'message') == 'INVALID_COUPON_CODE';
+
+        if (isPriceMismatch || isCouponError) {
           props.navigation.goBack();
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: 'Sorry, invalid coupon applied. Remove the coupon and try again.',
-          });
-        } else {
-          handleGraphQlError(error);
         }
+
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: isPriceMismatch
+            ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
+            : isCouponError
+            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+            : `Your order failed due to some temporary issue :( Please submit the order again.`,
+        });
       });
   };
 

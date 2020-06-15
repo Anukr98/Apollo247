@@ -1,6 +1,6 @@
 import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -76,6 +76,8 @@ export interface ShoppingCartContextProps {
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
+  storesInventory: GetStoreInventoryResponse[];
+  setStoresInventory: ((store: GetStoreInventoryResponse[]) => void) | null;
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
@@ -144,6 +146,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   stores: [],
   setStores: null,
+  storesInventory: [],
+  setStoresInventory: null,
+
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
@@ -186,6 +191,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [storesInventory, setStoresInventory] = useState<GetStoreInventoryResponse[]>([]);
   const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
@@ -492,6 +498,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         stores,
         setStores,
+        storesInventory,
+        setStoresInventory,
         storeId,
         setStoreId,
         showPrescriptionAtStore,

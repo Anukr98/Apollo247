@@ -10,6 +10,7 @@ export interface UpdatePatientPrescriptionSentStatus_updatePatientPrescriptionSe
   __typename: "PatientPrescriptionSentResponse";
   success: boolean | null;
   blobName: string | null;
+  prescriptionGeneratedDate: any | null;
 }
 
 export interface UpdatePatientPrescriptionSentStatus {

@@ -27,6 +27,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   postAppsFlyerEvent,
+  postFirebaseEvent
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -60,6 +61,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 // import { NotificationListener } from '../NotificationListener';
@@ -859,6 +861,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
+
   };
 
   const moveBack = () => {

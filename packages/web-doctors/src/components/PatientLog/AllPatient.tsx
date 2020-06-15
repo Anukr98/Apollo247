@@ -112,7 +112,6 @@ const useStyles = makeStyles((theme: Theme) =>
     chatIcon: {
       height: 10,
       width: 10,
-      marginTop: -18,
       paddingRight: 15,
     },
     pastConsult: {
@@ -225,6 +224,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         <div
                           className={classes.ChatStyle}
                           onClick={() => {
+                            localStorage.setItem('callBackUrl', '/patientlog');
                             if (
                               patient.appointmentids.length > 0 &&
                               patient.unreadMessagesCount.length > 0 &&
@@ -272,19 +272,25 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                       item
                       className={`${classes.valign} ${classes.pastConsult}`}
                     >
-                      <Link
-                        to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}
+                      <div
+                        onClick={() => {
+                          localStorage.setItem('callBackUrl', '/patientlog');
+                        }}
                       >
-                        <Typography
-                          gutterBottom
-                          variant="body1"
-                          className={classes.mainHeadingconsult}
+                        <Link
+                          to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}
                         >
-                          {patient.appointmentids.length > 1
-                            ? `${patient.appointmentids.length} Past Consults`
-                            : `${patient.appointmentids.length} Past Consult`}
-                        </Typography>
-                      </Link>
+                          <Typography
+                            gutterBottom
+                            variant="body1"
+                            className={classes.mainHeadingconsult}
+                          >
+                            {patient.appointmentids.length > 1
+                              ? `${patient.appointmentids.length} Past Consults`
+                              : `${patient.appointmentids.length} Past Consult`}
+                          </Typography>
+                        </Link>
+                      </div>
                       <div className={classes.section2}>
                         <Link
                           to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}

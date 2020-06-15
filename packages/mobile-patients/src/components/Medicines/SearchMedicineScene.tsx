@@ -334,7 +334,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: type_id == 'Pharma',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
         quantity: 1,
         thumbnail,
         isInStock: true,
@@ -663,7 +663,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         }}
         isMedicineAddedToCart={isMedicineAddedToCart}
         isCardExpanded={!!foundMedicineInCart}
-        isInStock={medicine.is_in_stock}
+        isInStock={!!medicine.is_in_stock}
         packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={'unsubscribed'}
