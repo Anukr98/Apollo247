@@ -294,14 +294,21 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
   medicineName: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
   medicineConsumptionDurationInDays: string | null;
   medicineConsumptionDuration: string | null;
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions {

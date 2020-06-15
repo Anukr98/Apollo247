@@ -72,6 +72,9 @@ export const LatestArticle: React.FC<IconProps> = (props) => (
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );
+export const Copy: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/copy.png')} />
+);
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.png')} />
@@ -509,10 +512,6 @@ export const FreeShippingIcon: React.FC<IconProps> = (props) => (
 
 export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
-);
-
-export const FreeArrowIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
 );
 
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (

@@ -27,7 +27,11 @@ import {
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
-import { pharmaStateCodeMapping, getDiffInDays } from 'helpers/commonHelpers';
+import {
+  pharmaStateCodeMapping,
+  getDiffInDays,
+  TAT_API_TIMEOUT_IN_SEC,
+} from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
 export const formatAddress = (address: Address) => {
@@ -368,6 +372,20 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddressId && setDeliveryAddressId('');
   };
 
+  const setDefaultDeliveryTime = () => {
+    const nextDeliveryDate = moment()
+      .set({
+        hour: 20,
+        minute: 0,
+      })
+      .add(2, 'days')
+      .format('DD-MMM-YYYY HH:mm');
+    setErrorDeliveryTimeMsg('');
+    setDeliveryTime(nextDeliveryDate);
+    setDeliveryLoading(false);
+    setIsLoading(false);
+  };
+
   const fetchDeliveryTime = async (zipCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
@@ -387,6 +405,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          timeout: TAT_API_TIMEOUT_IN_SEC * 1000,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
@@ -443,21 +462,23 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
               setErrorDeliveryTimeMsg('');
               setDeliveryTime(deliveryTime);
-            } else if (typeof res.data.errorMSG === 'string') {
-              setErrorDeliveryTimeMsg(res.data.errorMSG);
-              setDeliveryTime('');
+            } else if (
+              typeof res.data.errorMSG === 'string' ||
+              typeof res.data.errorMsg === 'string'
+            ) {
+              setDefaultDeliveryTime();
             }
           }
           setSelectingAddress(false);
-
-          // setIsLoading(false);
         } catch (error) {
-          setDeliveryLoading(false);
-          setIsLoading(false);
           console.log(error);
+          setDefaultDeliveryTime();
         }
       })
-      .catch((error: any) => console.log(error));
+      .catch((error: any) => {
+        console.log(error);
+        setDefaultDeliveryTime();
+      });
   };
 
   if (isError) {

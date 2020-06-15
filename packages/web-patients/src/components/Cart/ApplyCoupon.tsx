@@ -178,7 +178,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
-  >([]);
+  >(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
@@ -224,7 +224,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (availableCoupons.length === 0) {
+    if (!availableCoupons) {
       setIsLoading(true);
       getCouponMutation()
         .then(({ data }) => {
@@ -301,7 +301,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {availableCoupons.length > 0 && (
+                {availableCoupons && availableCoupons.length > 0 && (
                   <div className={classes.pinSearch}>
                     <AphTextField
                       inputProps={{
@@ -342,7 +342,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 )}
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
-                  {availableCoupons.length > 0 ? (
+                  {availableCoupons && availableCoupons.length > 0 ? (
                     availableCoupons.map(
                       (couponDetails, index) =>
                         couponDetails && (
