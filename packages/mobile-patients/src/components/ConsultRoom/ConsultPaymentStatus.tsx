@@ -1,6 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -35,6 +35,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Clipboard,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -69,7 +70,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { success, failure, pending } = Payment;
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const [copiedText, setCopiedText] = useState('');
 
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+  };
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -315,7 +320,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <View style={{ flex: 0.39, justifyContent: 'flex-start', alignItems: 'center' }}>
           <View style={{ flex: 0.6, justifyContent: 'flex-start', alignItems: 'center' }}>
             {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-            {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+            <TouchableOpacity
+              style={styles.refStyles}
+              onPress={() => copyToClipboard(refNumberText)}
+            >
+              {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
+              <Copy style={styles.iconStyle} />
+            </TouchableOpacity>
           </View>
           <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
             {renderViewInvoice()}
@@ -563,5 +574,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 5,
+  },
+  refStyles: {
+    flexDirection: 'row',
+  },
+  iconStyle: {
+    marginLeft: 6,
+    marginTop: 5,
+    width: 9,
+    height: 10,
   },
 });

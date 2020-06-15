@@ -1,6 +1,7 @@
 import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
+import { GooglePlacesType } from 'components/LocationProvider';
 
 declare global {
   interface Window {
@@ -166,6 +167,27 @@ const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
+const TAT_API_TIMEOUT_IN_SEC = 20;
+
+const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
+  return findItem ? findItem.short_name || findItem.long_name : '';
+};
+
+const ORDER_BILLING_STATUS_STRINGS = {
+  TOTAL_ORDER_BILLED: 'Total Ordered Value',
+  TOTAL_BILLED_VALUE: 'Total Billed Value',
+  COD_AMOUNT_TO_PAY: 'COD amount to Pay',
+  REFUND_TO_BE_INITIATED: 'Refund to be initiated',
+  AMOUNT_TO_BE_PAID_ON_DELIVERY: 'Amount to be paid on delivery',
+};
 
 export {
   getDiffInDays,
@@ -184,4 +206,7 @@ export {
   INVALID_FILE_SIZE_ERROR,
   INVALID_FILE_TYPE_ERROR,
   toBase64,
+  TAT_API_TIMEOUT_IN_SEC,
+  findAddrComponents,
+  ORDER_BILLING_STATUS_STRINGS,
 };

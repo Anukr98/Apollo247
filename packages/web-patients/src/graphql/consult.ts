@@ -111,12 +111,7 @@ export const CONSULT_COUPONS_LIST = gql`
     getConsultCouponList {
       coupons {
         code
-        couponPharmaRule {
-          couponCategoryApplicable
-          discountApplicableOn
-          messageOnCouponScreen
-          successMessage
-        }
+        displayStatus
         couponConsultRule {
           isActive
         }

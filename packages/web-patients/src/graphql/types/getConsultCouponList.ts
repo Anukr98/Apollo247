@@ -3,19 +3,9 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { CouponCategoryApplicable, PharmaDiscountApplicableOn } from "./globalTypes";
-
 // ====================================================
 // GraphQL query operation: getConsultCouponList
 // ====================================================
-
-export interface getConsultCouponList_getConsultCouponList_coupons_couponPharmaRule {
-  __typename: "CouponPharmaRule";
-  couponCategoryApplicable: CouponCategoryApplicable | null;
-  discountApplicableOn: PharmaDiscountApplicableOn | null;
-  messageOnCouponScreen: string | null;
-  successMessage: string | null;
-}
 
 export interface getConsultCouponList_getConsultCouponList_coupons_couponConsultRule {
   __typename: "CouponConsultRule";
@@ -25,7 +15,7 @@ export interface getConsultCouponList_getConsultCouponList_coupons_couponConsult
 export interface getConsultCouponList_getConsultCouponList_coupons {
   __typename: "ConsultCoupon";
   code: string | null;
-  couponPharmaRule: getConsultCouponList_getConsultCouponList_coupons_couponPharmaRule | null;
+  displayStatus: boolean | null;
   couponConsultRule: getConsultCouponList_getConsultCouponList_coupons_couponConsultRule | null;
   createdDate: any | null;
   description: string | null;

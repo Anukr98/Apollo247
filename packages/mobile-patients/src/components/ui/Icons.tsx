@@ -72,6 +72,9 @@ export const LatestArticle: React.FC<IconProps> = (props) => (
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );
+export const Copy: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/copy.png')} />
+);
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.png')} />

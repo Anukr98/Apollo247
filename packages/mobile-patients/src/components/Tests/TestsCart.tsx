@@ -755,7 +755,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           !hideLoader && setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
-              aphConsole.log('locaion data', data);
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
@@ -767,7 +766,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 (filterArray = clinics.filter((item) =>
                   item.City.toLowerCase().includes(city.toLowerCase())
                 ));
-              aphConsole.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
               setSlicedStoreList((filterArray || []).slice(0, 2));
@@ -1216,14 +1214,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onFinishUpload = () => {
-    console.log(
-      physicalPrescriptions,
-      ePrescriptions,
-      isEPrescriptionUploadComplete,
-      isPhysicalUploadComplete,
-      'hhruso'
-    );
-
     if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length == 0 &&
