@@ -9,6 +9,8 @@ import {
   Paper,
   FormHelperText,
   Typography,
+  Checkbox,
+  FormControlLabel
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
@@ -50,7 +52,7 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
-import { getLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
+import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -783,6 +785,45 @@ const useStyles = makeStyles((theme: Theme) => {
         opacity: 0.7,
       },
     },
+    content: {
+      position: 'relative',
+      borderRadius: '5px',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      width: '100%',
+      marginBottom: 15,
+      '& textarea': {
+        border: 'none',
+        padding: 15,
+        fontSize: 15,
+        fontWeight: 500,
+        paddingRight: 60,
+        borderRadius: 0,
+      },
+      '& p': {
+        position: 'absolute',
+        bottom: -20,
+        color: '#890000 !important',
+      },
+    },
+    vitalLeft: {
+      width: '45%',
+      display: 'inline-block',
+      paddingRight: 10,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingRight: 0,
+      },
+    },
+    vitalRight: {
+      width: '45%',
+      display: 'inline-block',
+      float: 'right',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingRight: 0,
+      },
+    },
   };
 });
 
@@ -828,6 +869,8 @@ interface CallPopoverProps {
   setIsClickedOnEdit: (flag: boolean) => void;
   isClickedOnPriview: boolean;
   setIsClickedOnPriview: (flag: boolean) => void;
+  showConfirmPrescription: boolean;
+  setShowConfirmPrescription: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -872,11 +915,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     patientDetails,
     height,
     weight,
+    temperature,
+    bp,
+    setWeight,
+    setHeight,
+    setTemperature,
+    setBp,
     setVitalError,
     referralSpecialtyName,
     referralDescription,
     setReferralError,
     medicationHistory,
+    vitalError,
   } = useContext(CaseSheetContext);
 
   const covertVideoMsg = '^^convert`video^^';
@@ -911,6 +961,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
   const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
+  const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
+
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == 'number') {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != 'undefined') {
+      element.focus();
+      var range = element.createTextRange();
+      range.collapse(false);
+      range.select();
+    }
+  };
 
   const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
 
@@ -1868,6 +1930,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         return localStorageItem ? localStorageItem.height : height;
       case 'weight':
         return localStorageItem ? localStorageItem.weight : weight;
+      case 'bp':
+        return localStorageItem ? localStorageItem.bp : bp;
+      case 'temperature':
+        return localStorageItem ? localStorageItem.temperature : temperature;
       case 'referralSpecialtyName':
         return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
       case 'referralDescription':
@@ -2045,9 +2111,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           className={classes.endconsultButton}
                           disabled={sendToPatientButtonDisable}
                           onClick={() => {
-                            localStorage.removeItem(`${params.id}`);
-                            setSendToPatientButtonDisable(true);
-                            props.saveCasesheetAction(true, true);
+                            props.setShowConfirmPrescription(true);
+                            setIsConfirmationChecked(false)
+                            // localStorage.removeItem(`${params.id}`);
+                            // setSendToPatientButtonDisable(true);
+                            // props.saveCasesheetAction(true, true);
                           }}
                         >
                           {sendToPatientButtonDisable && 'Please wait...'}
@@ -2102,15 +2170,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      const isEmptyFields = checkForEmptyFields();
-                      if (!isEmptyFields) {
+                      // const isEmptyFields = checkForEmptyFields();
+                      // if (!isEmptyFields) {
                         stopInterval();
                         if (showVideo) {
                           stopAudioVideoCall();
                         }
                         props.endConsultAction();
                         isConsultStarted = false;
-                      }
+                      // }
                     }}
                   >
                     <svg
@@ -3047,6 +3115,206 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <div className={classes.okButtonWrapper}>
               <Button className={classes.okButton} onClick={() => setShowReferral(false)}>
                 Ok
+              </Button>
+            </div>
+          </div>
+        </Paper>
+      </Modal>
+      {/* referral field required popup end */}
+      
+      {/* send to patient fields popup end */}
+      <Modal
+        open={props.showConfirmPrescription}
+        onClose={() => props.setShowConfirmPrescription(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => props.setShowConfirmPrescription(false)}
+              />
+            </Button>
+          </div>
+          <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
+          <h3>
+             Vital Details on the casesheet are entered as follows.
+            </h3>
+          <div>
+        <Typography 
+        className={classes.vitalLeft} 
+        component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Height
+          </Typography>
+          <Typography component="div" 
+          className={classes.content}
+          >
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+              fullWidth
+              required
+              multiline
+              error={
+                getDefaultValue('height') === '' ||
+                getDefaultValue('height') === null ||
+                getDefaultValue('height') === undefined
+              }
+              helperText={vitalError.height}
+              defaultValue={getDefaultValue('height')}
+              onBlur={(e) => {
+                // if (e.target.value !== '' && e.target.value.trim() !== '')
+                //   setVitalError({
+                //     ...vitalError,
+                //     height: '',
+                //   });
+                // else
+                //   setVitalError({
+                //     ...vitalError,
+                //     height: 'This field is required',
+                //   });
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.height = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+                setHeight(e.target.value);
+              }}
+              //disabled={!caseSheetEdit}
+            />
+          </Typography>
+        </Typography>
+        <Typography component="div" 
+        className={classes.vitalRight}
+        >
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Weight
+          </Typography>
+          <Typography component="div" 
+          className={classes.content}
+          >
+            <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+              fullWidth
+              required
+              multiline
+              error={
+                getDefaultValue('weight') === '' ||
+                getDefaultValue('weight') === null ||
+                getDefaultValue('weight') === undefined
+              }
+              helperText={vitalError.weight}
+              defaultValue={getDefaultValue('weight')}
+              onBlur={(e) => {
+                // if (e.target.value !== '' && e.target.value.trim() !== '')
+                //   setVitalError({
+                //     ...vitalError,
+                //     weight: '',
+                //   });
+                // else
+                //   setVitalError({
+                //     ...vitalError,
+                //     weight: 'This field is required',
+                //   });
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.weight = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+                setWeight(e.target.value);
+              }}
+              //disabled={!caseSheetEdit}
+            />
+          </Typography>
+        </Typography>
+        <div>
+          <Typography component="div" 
+          className={classes.vitalLeft}
+          >
+            <Typography component="h5" variant="h5" className={classes.header}>
+              BP
+            </Typography>
+            <Typography component="div" 
+            className={classes.content}
+            >
+              <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                fullWidth
+                multiline
+                defaultValue={getDefaultValue('bp')}
+                onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.bp = e.target.value;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
+                  setBp(e.target.value);
+                }}
+                //disabled={!caseSheetEdit}
+              />
+            </Typography>
+          </Typography>
+          <Typography component="div" 
+           className={classes.vitalRight}
+          >
+            <Typography component="h5" variant="h5" className={classes.header}>
+              Temperature
+            </Typography>
+            <Typography component="div" 
+            className={classes.content}
+            >
+              <AphTextField
+                onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                fullWidth
+                multiline
+                defaultValue={getDefaultValue('temperature')}
+                onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.temperature = e.target.value;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
+                  setTemperature(e.target.value);
+                }}
+                //disabled={!caseSheetEdit}
+              />
+            </Typography>
+          </Typography>
+        </div>
+        <div>
+        <Typography component="div" 
+            className={classes.content}
+            >These fields are blank in Prescription
+            </Typography>
+
+            </div>
+        
+        <div>
+        <FormControlLabel
+        control={<Checkbox checked={isConfirmationChecked} onChange={(event) => {
+          setIsConfirmationChecked(event.target.checked);
+          //setReason(e.target.value as string);
+        }} name="confirmationcheck" />}
+        label="The prescription is ready to be sent"
+       
+      />
+        </div>
+      </div>
+            <div className={classes.okButtonWrapper}>
+              <Button className={classes.needHelp} onClick={() => props.setShowConfirmPrescription(false)}>
+                Cancel
+              </Button>
+              <Button className={classes.needHelp} 
+              disabled={!isConfirmationChecked}
+              onClick={() => {
+                localStorage.removeItem(`${params.id}`);
+                setSendToPatientButtonDisable(true);
+                props.saveCasesheetAction(true, true);
+              }}>
+                Send Prescription
               </Button>
             </div>
           </div>
