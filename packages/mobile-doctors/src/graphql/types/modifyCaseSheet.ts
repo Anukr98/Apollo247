@@ -188,6 +188,25 @@ export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
   medicineCustomDosage: string | null;
 }
 
+export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  externalId: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineInstructions: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDuration: string | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
+}
+
 export interface modifyCaseSheet_modifyCaseSheet_otherInstructions {
   __typename: "OtherInstructions";
   instruction: string | null;
@@ -221,6 +240,7 @@ export interface modifyCaseSheet_modifyCaseSheet {
   followUpConsultType: APPOINTMENT_TYPE | null;
   id: string | null;
   medicinePrescription: (modifyCaseSheet_modifyCaseSheet_medicinePrescription | null)[] | null;
+  removedMedicinePrescription: (modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription | null)[] | null;
   notes: string | null;
   otherInstructions: (modifyCaseSheet_modifyCaseSheet_otherInstructions | null)[] | null;
   patientId: string | null;

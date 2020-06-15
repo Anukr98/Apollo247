@@ -36,7 +36,10 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
-import { SUBMIT_JD_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  SUBMIT_JD_CASESHEET,
+  CREATE_CASESHEET_FOR_SRD,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 
 const styles = AppointmentsListStyles;
 
@@ -141,7 +144,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     doctorId: string,
     patientId: string,
     appId: string,
-    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
+    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
+    prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
   ) => {
     return [
       {
@@ -158,7 +162,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             .then(() => {
               hideAphAlert!();
               setLoading && setLoading(false);
-              navigateToConsultRoom(doctorId, patientId, appId, apointmentData);
+              navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
             })
             .catch(() => {
               hideAphAlert!();
@@ -178,7 +182,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     doctorId: string,
     patientId: string,
     appId: string,
-    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
+    apointmentData: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
+    prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
   ) => {
     callPermissions(() => {
       props.navigation.push(AppRoutes.ConsultRoomScreen, {
@@ -189,6 +194,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         Appintmentdatetime: apointmentData.appointmentDateTime,
         AppointmentStatus: apointmentData.status,
         AppoinementData: apointmentData,
+        prevCaseSheet: prevCaseSheet,
       });
     });
   };
@@ -228,6 +234,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 ) => j && j.doctorType !== DoctorType.JUNIOR
               )
               .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+          const prevCaseSheet =
+            caseSheet && caseSheet.length > 1
+              ? g(caseSheet && caseSheet[0], 'sentToPatient')
+                ? caseSheet[0]
+                : caseSheet[1]
+              : null;
           const jrCaseSheet =
             i.caseSheet &&
             i.caseSheet.find(
@@ -260,7 +272,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           } :)`,
                           description:
                             'Patient Details and Junior Doctor Case Sheet is not yet completed for this Appointment, Do you still want to proceed to Start consultation ?',
-                          CTAs: alertCTAS(doctorId, patientId, appId, i),
+                          CTAs: alertCTAS(doctorId, patientId, appId, i, prevCaseSheet),
                         });
                     } else if (
                       ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
@@ -273,7 +285,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           } :)`,
                           description:
                             'Junior Doctor consultation is not yet initiated for this Appointment, Do you still want to proceed to Start consultation ?',
-                          CTAs: alertCTAS(doctorId, patientId, appId, i),
+                          CTAs: alertCTAS(doctorId, patientId, appId, i, prevCaseSheet),
                         });
                     } else if (
                       (jrCaseSheet &&
@@ -369,7 +381,33 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             {
                               title: 'Issue New Prescription',
                               onPress: () => {
-                                //createSeniorDoctorCaseSheet
+                                setLoading && setLoading(true);
+                                client
+                                  .mutate({
+                                    mutation: CREATE_CASESHEET_FOR_SRD,
+                                    variables: {
+                                      appointmentId: i.id,
+                                    },
+                                  })
+                                  .then((data) => {
+                                    setLoading && setLoading(false);
+                                    navigateToConsultRoom(
+                                      doctorId,
+                                      patientId,
+                                      appId,
+                                      i,
+                                      prevCaseSheet
+                                    );
+                                  })
+                                  .catch(() => {
+                                    setLoading && setLoading(false);
+                                    showAphAlert &&
+                                      showAphAlert({
+                                        title: 'Alert!',
+                                        description:
+                                          'Error occured while creating Case Sheet. Please try again',
+                                      });
+                                  });
                               },
                             },
                           ],
@@ -378,14 +416,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                               title: 'VIEW CASESHEET',
                               variant: 'white',
                               onPress: () => {
-                                navigateToConsultRoom(doctorId, patientId, appId, i);
+                                navigateToConsultRoom(doctorId, patientId, appId, i, prevCaseSheet);
                               },
                             },
                           ],
                         });
                       } else {
                         setLoading && setLoading(false);
-                        navigateToConsultRoom(doctorId, patientId, appId, i);
+                        navigateToConsultRoom(doctorId, patientId, appId, i, prevCaseSheet);
                       }
                     }
                   }}
