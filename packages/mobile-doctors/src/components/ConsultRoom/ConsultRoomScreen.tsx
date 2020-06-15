@@ -1,13 +1,13 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
+import { useAudioVideo } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
-import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
+import { ConsultRoomScreenStyles } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
   BackArrow,
   Call,
@@ -16,9 +16,11 @@ import {
   DotIcon,
   Down,
   RoundCallIcon,
-  RoundVideoIcon,
   RoundChatIcon,
+  RoundVideoIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
+import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -62,10 +64,12 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault,
   GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_lifeStyle,
   GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
   APPT_CALL_TYPE,
@@ -102,20 +106,14 @@ import {
   BackHandler,
   Dimensions,
   FlatList,
-  Image,
   Keyboard,
-  Platform,
   SafeAreaView,
-  StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps } from 'react-navigation';
-import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
-import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
-import { useAudioVideo } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -135,7 +133,9 @@ export interface ConsultRoomScreenProps
     AppId: string;
     Appintmentdatetime: string; //Date;
     AppoinementData: any;
+    prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null;
     activeTabIndex?: number;
+    caseSheetEnableEdit?: boolean;
   }> {
   activeTabIndex?: number;
 }
@@ -189,7 +189,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
-  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
+  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(
+    props.navigation.getParam('caseSheetEnableEdit') || false
+  );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
   const [chatFiles, setChatFiles] = useState<{ prismId: string | null; url: string }[]>([]);
   const [symptonsData, setSymptonsData] = useState<
@@ -270,7 +272,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       if (callhandelBack) {
         saveDetails(true, true, undefined, () => {
           setLoading && setLoading(false);
-          props.navigation.pop();
+          props.navigation.popToTop();
         });
         return true;
       } else {
@@ -329,7 +331,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null
   >();
+  const [removedMedicinePrescriptionData, setRemovedMedicinePrescriptionData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null
+  >([]);
+  const [existingMedicineId, setExistingMedicingId] = useState<string[]>([]);
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
+  const [caseSheetVersion, setCaseSheetVersion] = useState<number>(1);
+
   const [switchValue, setSwitchValue] = useState<boolean | null>(true);
   const [followupDays, setFollowupDays] = useState<number | string>();
   const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
@@ -513,6 +521,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       )
       .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
       .filter((i) => i !== null || i !== '') as string[]);
+    setRemovedMedicinePrescriptionData(
+      (g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
+        .filter(
+          (item, index, self) =>
+            index ===
+            self.findIndex(
+              (t) =>
+                t &&
+                item &&
+                (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                  (item.externalId || item.id || item.medicineName || '').toLowerCase()
+            )
+        )
+        .map((i) => {
+          if (i) {
+            if (i.externalId || (i.id && i.id !== '')) {
+              return { ...i, externalId: i.externalId || i.id };
+            } else {
+              return { ...i, externalId: i.medicineName };
+            }
+          }
+          return i;
+        })
+    );
     setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
     setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
     setFollowUpConsultationType(
@@ -535,6 +567,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       );
       setReferralReason(g(caseSheet, 'caseSheetDetails', 'referralDescription') || '');
     }
+    setCaseSheetVersion(g(caseSheet, 'caseSheetDetails', 'version') || 1);
   };
   const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
@@ -548,6 +581,56 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
         setcaseSheet(caseSheet);
         setData(caseSheet);
+        if (props.navigation.getParam('prevCaseSheet')) {
+          setExistingMedicingId([
+            ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
+              .filter(
+                (item, index, self) =>
+                  index ===
+                  self.findIndex(
+                    (t) =>
+                      t &&
+                      item &&
+                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                  )
+              )
+              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+              .filter((i) => i !== null || i !== '') as string[]),
+          ]);
+        } else {
+          setExistingMedicingId([
+            ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+              .filter(
+                (item, index, self) =>
+                  index ===
+                  self.findIndex(
+                    (t) =>
+                      t &&
+                      item &&
+                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                  )
+              )
+              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+              .filter((i) => i !== null || i !== '') as string[]),
+            ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
+              .filter(
+                (item, index, self) =>
+                  index ===
+                  self.findIndex(
+                    (t) =>
+                      t &&
+                      item &&
+                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                  )
+              )
+              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+              .filter((i) => i !== null || i !== '') as string[]),
+          ]);
+        }
+
         setLoading && setLoading(false);
       })
       .catch((e) => {
@@ -578,6 +661,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     medicalHistory,
     selectedReferral,
     referralReason,
+    removedMedicinePrescriptionData,
   ]);
 
   const getInputData = () => {
@@ -644,6 +728,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >=
                   0
               )
+              .map((i) => {
+                if (i) {
+                  return {
+                    id: i.externalId === i.medicineName ? '' : i.externalId || '',
+                    medicineConsumptionDuration: i.medicineConsumptionDuration || '',
+                    medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays || '',
+                    medicineConsumptionDurationUnit: i.medicineConsumptionDurationUnit,
+                    medicineDosage: i.medicineDosage || '',
+                    medicineFormTypes: i.medicineFormTypes || MEDICINE_FORM_TYPES.OTHERS,
+                    medicineFrequency: i.medicineFrequency,
+                    medicineInstructions: i.medicineInstructions || '',
+                    medicineName: i.medicineName || '',
+                    medicineTimings: i.medicineTimings || [],
+                    medicineToBeTaken: i.medicineToBeTaken || [],
+                    medicineUnit: i.medicineUnit,
+                    routeOfAdministration: i.routeOfAdministration,
+                    medicineCustomDosage: i.medicineCustomDosage || '',
+                  };
+                } else {
+                  return '';
+                }
+              })
+              .filter((i) => i !== '')
+          : null,
+      removedMedicinePrescription:
+        removedMedicinePrescriptionData && removedMedicinePrescriptionData.length > 0
+          ? removedMedicinePrescriptionData
               .map((i) => {
                 if (i) {
                   return {
@@ -1504,6 +1615,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             {activeTabIndex == tabsData[0].title ? (
               <CaseSheetView
                 // disableConsultButton={!!PatientConsultTime}
+                caseSheetVersion={caseSheetVersion}
                 overlayDisplay={(component) => {
                   setOverlayDisplay(component);
                 }}
@@ -1567,6 +1679,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setMedicinePrescriptionData={setMedicinePrescriptionData}
                 selectedMedicinesId={selectedMedicinesId}
                 setSelectedMedicinesId={setSelectedMedicinesId}
+                existingMedicineId={existingMedicineId}
+                removedMedicinePrescriptionData={removedMedicinePrescriptionData}
+                setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
                 switchValue={switchValue}
                 setSwitchValue={setSwitchValue}
                 followupDays={followupDays}
@@ -1681,23 +1796,25 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onStopConsult = () => {
     console.log('onStopConsult');
     endCallNotificationAPI(false);
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: messageCodes.stopConsultMsg,
-          messageDate: new Date(),
+    if (caseSheetVersion <= 1) {
+      pubnub.publish(
+        {
+          message: {
+            isTyping: true,
+            message: messageCodes.stopConsultMsg,
+            messageDate: new Date(),
+          },
+          channel: channel,
+          storeInHistory: true,
         },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {
-        setStartConsult(false);
-        stopInterval();
-        callOptions.stopMissedCallTimer();
-        stopNoShow();
-      }
-    );
+        (status, response) => {
+          setStartConsult(false);
+          stopInterval();
+          callOptions.stopMissedCallTimer();
+          stopNoShow();
+        }
+      );
+    }
   };
 
   const renderCancelPopup = () => {
@@ -1934,22 +2051,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
           {
             icon: (
-              <>
-                <View
-                  style={{
-                    marginTop: 0,
-                    opacity:
-                      (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ? 0.5 : 1,
-                  }}
-                >
-                  {(appointmentData || {}).status == 'COMPLETED' ||
-                  showEditPreviewButtons ||
-                  callOptions.isAudio ||
-                  callOptions.isVideo ? null : (
-                    <DotIcon />
-                  )}
-                </View>
-              </>
+              <View
+                style={{
+                  marginTop: 0,
+                  opacity:
+                    (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ? 0.5 : 1,
+                }}
+              >
+                {showEditPreviewButtons || callOptions.isAudio || callOptions.isVideo ? null : (
+                  <DotIcon />
+                )}
+              </View>
             ),
             onPress: () =>
               (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE'
@@ -1960,84 +2072,99 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     );
   };
+  const menuOptions = [
+    {
+      title: strings.consult_room.reschedule,
+      onPress: () => {
+        setDisplayReSchedulePopUp(true);
+      },
+    },
+    {
+      title: strings.consult.end_cancel_consult,
+      onPress: () => {
+        if (
+          (appointmentData || {}).status === STATUS.PENDING ||
+          (appointmentData || {}).status === STATUS.IN_PROGRESS ||
+          ((appointmentData || {}).appointmentStatus === STATUS.COMPLETED &&
+            (appointmentData || {}).sentToPatient === false)
+        ) {
+          setshowCancelPopup(true);
+        } else {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Alert!',
+              description: 'You are not allowed to cancel the appointment.',
+            });
+        }
+      },
+    },
+  ];
+  const menuOptionsComplete = [
+    {
+      title: 'Issue New Prescription',
+      onPress: () => {
+        createCaseSheetSRDAPI();
+        setCaseSheetEdit(true);
+      },
+    },
+  ];
 
   const renderDropdown = () => {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          alignItems: 'flex-end',
-          overflow: 'hidden',
-          ...Platform.select({
-            ios: {
-              zIndex: 1,
-            },
-            android: {
-              elevation: 12,
-              zIndex: 2,
-            },
-          }),
-        }}
-      >
+      <View style={styles.fullScreen}>
         <TouchableOpacity
           activeOpacity={1}
-          style={{
-            width: '100%',
-            height: '100%',
-            alignItems: 'flex-end',
-          }}
+          style={{ flex: 1 }}
           onPress={() => {
             setDropdownShow(false);
           }}
         >
-          <DropDown
-            containerStyle={{
-              width: '50%',
-              marginRight: 20,
-              marginTop: 40,
-              height: 120,
-            }}
-            options={[
-              {
-                optionText: strings.consult_room.reschedule,
-                onPress: () => {
-                  setDropdownShow(false);
-                  setDisplayReSchedulePopUp(true);
-                },
-              },
-              {
-                optionText: strings.consult.end_cancel_consult,
-                onPress: () => {
-                  if (
-                    (appointmentData || {}).status === STATUS.PENDING ||
-                    (appointmentData || {}).status === STATUS.IN_PROGRESS ||
-                    ((appointmentData || {}).appointmentStatus === STATUS.COMPLETED &&
-                      (appointmentData || {}).sentToPatient === false)
-                    // (appointmentData.appointmentStatus === STATUS.COMPLETED &&
-                    //   appointmentData.sentToPatient === false) ||
-                    // // (isClickedOnPriview || props.sentToPatient === false) &&
-                    // caseSheetEdit ||
-                    // (!caseSheetEdit &&
-                    //   (appointmentData.status === STATUS.PENDING ||
-                    //     appointmentData.status === STATUS.IN_PROGRESS))
-                  ) {
-                    setDropdownShow(false);
-                    setshowCancelPopup(true);
-                  } else {
-                    showAphAlert &&
-                      showAphAlert({
-                        title: 'Alert!',
-                        description: 'You are not allowed to cancel the appointment.',
-                      });
-                  }
-                },
-              },
-            ]}
-          />
+          <View style={styles.menucontainer}>
+            {menuOptionsComplete &&
+            g(caseSheet, 'caseSheetDetails', 'sentToPatient') &&
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED
+              ? menuOptionsComplete.map((i, index) => {
+                  return (
+                    <View style={styles.menuTextContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          i.onPress();
+                          setDropdownShow(false);
+                        }}
+                        activeOpacity={1}
+                      >
+                        <Text style={styles.menuItemText}>{i.title}</Text>
+                      </TouchableOpacity>
+                      {index !== menuOptionsComplete.length - 1 ? (
+                        <View style={styles.seperatorStyle} />
+                      ) : null}
+                    </View>
+                  );
+                })
+              : null}
+            {menuOptions &&
+            !g(caseSheet, 'caseSheetDetails', 'sentToPatient') &&
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'status') !== STATUS.COMPLETED
+              ? menuOptions.map((i, index) => {
+                  return (
+                    <View style={styles.menuTextContainer}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          i.onPress();
+                          setDropdownShow(false);
+                        }}
+                        activeOpacity={1}
+                      >
+                        <Text style={styles.menuItemText}>{i.title}</Text>
+                      </TouchableOpacity>
+                      {index !== menuOptions.length - 1 ? (
+                        <View style={styles.seperatorStyle} />
+                      ) : null}
+                    </View>
+                  );
+                })
+              : null}
+          </View>
         </TouchableOpacity>
       </View>
     );

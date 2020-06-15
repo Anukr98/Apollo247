@@ -133,22 +133,77 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         followUpParentId
         isJdQuestionsComplete
         caseSheet {
+          id
+          blobName
+          doctorId
+          patientId
+          sentToPatient
+          status
+          referralSpecialtyName
+          referralDescription
           appointment {
             appointmentDateTime
+          }
+          medicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          removedMedicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          otherInstructions {
+            instruction
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+            details
+          }
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
           }
           followUp
           followUpDate
           followUpAfterInDays
-          symptoms {
-            symptom
-          }
-          id
-          status
           doctorType
-          sentToPatient
-          blobName
-          doctorId
+          followUpConsultType
+          consultType
+          notes
+          updatedDate
           isJdConsultStarted
+          version
         }
         patientInfo {
           id
@@ -372,6 +427,23 @@ export const MODIFY_CASESHEET = gql`
         routeOfAdministration
         medicineCustomDosage
       }
+      removedMedicinePrescription {
+        id
+        externalId
+        medicineName
+        medicineDosage
+        medicineToBeTaken
+        medicineInstructions
+        medicineTimings
+        medicineUnit
+        medicineConsumptionDurationInDays
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
+      }
       notes
       otherInstructions {
         instruction
@@ -389,6 +461,7 @@ export const MODIFY_CASESHEET = gql`
       updatedDate
       referralSpecialtyName
       referralDescription
+      version
     }
   }
 `;
@@ -707,6 +780,23 @@ export const GET_CASESHEET = gql`
           routeOfAdministration
           medicineCustomDosage
         }
+        removedMedicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
         otherInstructions {
           instruction
         }
@@ -730,6 +820,7 @@ export const GET_CASESHEET = gql`
         consultType
         notes
         updatedDate
+        version
       }
       pastAppointments {
         id
@@ -779,10 +870,28 @@ export const GET_CASESHEET = gql`
             routeOfAdministration
             medicineCustomDosage
           }
+          removedMedicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
           otherInstructions {
             instruction
           }
           notes
+          version
         }
         appointmentType
         sdConsultationDate

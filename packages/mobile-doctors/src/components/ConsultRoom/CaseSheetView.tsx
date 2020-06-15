@@ -59,6 +59,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
@@ -119,6 +120,7 @@ interface DataPair {
 }
 
 export interface CaseSheetViewProps extends NavigationScreenProps {
+  caseSheetVersion: number;
   inCall: boolean;
   onStartConsult: () => void;
   onEndConsult: () => void;
@@ -228,6 +230,15 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   >;
   selectedMedicinesId: string[];
   setSelectedMedicinesId: React.Dispatch<React.SetStateAction<string[]>>;
+  existingMedicineId: string[];
+  removedMedicinePrescriptionData:
+    | (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[]
+    | null;
+  setRemovedMedicinePrescriptionData: React.Dispatch<
+    React.SetStateAction<
+      (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null
+    >
+  >;
   switchValue: boolean | null;
   setSwitchValue: React.Dispatch<React.SetStateAction<boolean | null>>;
   followupDays: string | number | undefined;
@@ -338,6 +349,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     referralReason,
     setReferralReason,
     inCall,
+    caseSheetVersion,
+    existingMedicineId,
+    removedMedicinePrescriptionData,
+    setRemovedMedicinePrescriptionData,
   } = props;
 
   const sendToPatientAction = () => {
@@ -421,8 +436,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       pdfUrl: pdf || prescriptionPdf,
       isResend: pdf === undefined,
     };
-    console.log(followupObj, 'followupObj');
-
     props.messagePublish &&
       props.messagePublish({
         id: followupObj.doctorId,
@@ -446,6 +459,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >= 0
             )) ||
           [],
+        removedMedicine: removedMedicinePrescriptionData,
         tests: tests.filter((i) => i.isSelected).map((i) => ({ itemname: i.itemname })),
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
@@ -485,7 +499,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log(_data, 'EndAppointmentSession');
         setCaseSheetEdit(false);
         setLoading && setLoading(false);
         props.overlayDisplay(null);
@@ -505,10 +518,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       .catch((e) => {
         setLoading && setLoading(false);
         props.overlayDisplay(null);
-        console.log('Error occured while End casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
         showAphAlert &&
           showAphAlert({
             title: strings.common.uh_oh,
@@ -520,39 +531,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [enableConsultButton, setEnableConsultButton] = useState(false);
 
   useEffect(() => {
-    // Start timer if consult is about to start within next 10 minutes so that if the user
-    // is in the same screen for next 10 minutes we can keep on checking and enable consult button, no need to refresh the page
-    // StartConsult Button will be disabled for previous (completed) appointments.
-
-    // const _now = moment(new Date());
-    // const _consultStartTime = moment
-    //   .utc(Appintmentdatetimeconsultpage)
-    //   .clone()
-    //   .local();
-    // const _consultEndTime = _consultStartTime.clone().add(15, 'minutes');
-    // const _consultSubtractTime = _consultStartTime.clone().subtract(15, 'minutes');
-
-    // const isConsultInBetween = _now.isBetween(_consultSubtractTime, _consultEndTime);
-    // const diffBwConsultStartAndNowInMins = moment
-    //   .duration(moment(_consultSubtractTime).diff(_now))
-    //   .asMinutes();
-    // const isAboutToStartWithinTenMinutes =
-    //   diffBwConsultStartAndNowInMins > 0 && diffBwConsultStartAndNowInMins < 25;
-
-    // if (isConsultInBetween) {
-    //   setEnableConsultButton(true);
-    // } else if (isAboutToStartWithinTenMinutes) {
-    //   // Start timer here and clear when consult time starts
-    //   console.log('timer started');
-    //   const consultDisableInterval = setInterval(() => {
-    //     if (moment(new Date()).isBetween(_consultStartTime, _consultEndTime)) {
-    //       setEnableConsultButton(true);
-    //       clearInterval(consultDisableInterval);
-    //       console.log('timer cleared');
-    //     }
-    //   }, 1000);
-    // }
-
     const enableStates = ['NEW', 'TRANSFER', 'RESCHEDULE'];
     const appointmentState = g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentState');
     if (enableStates.includes(appointmentState || '')) {
@@ -564,7 +542,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const renderButtonsView = () => {
     return (
-      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', paddingTop: 0 }}
+      >
         <View>
           {!showButtons ? (
             <View style={styles.footerButtonsContainersave}>
@@ -624,6 +604,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <StickyBottomComponent
           style={{
             backgroundColor: '#f0f4f5',
+            paddingTop: 0,
           }}
         >
           <View style={styles.footerButtonsContainer}>
@@ -653,7 +634,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           style={{
             backgroundColor: '#f0f4f5',
             justifyContent: 'center',
-            paddingBottom: 16,
+            paddingTop: 0,
           }}
         >
           <View style={styles.footerButtonsContainersave}>
@@ -682,7 +663,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const renderEditPreviewButtons = () => {
     return (
-      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', paddingTop: 0 }}
+      >
         <View style={styles.footerButtonsContainer}>
           <Button
             title={caseSheetEdit ? 'SAVE' : 'EDIT CASE SHEET'}
@@ -826,7 +809,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   props.overlayDisplay(
                     <AddSymptomPopUp
                       onDone={(data) => {
-                        console.log(data, 'newdata');
                         if (
                           (symptonsData || []).findIndex((i) => i && i.symptom === data.symptom) < 0
                         ) {
@@ -1241,24 +1223,34 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderMedicineDetails = (
     item:
       | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
-      | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+      | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
+    removedItem?: boolean
   ) => {
     return (
-      <Text
-        style={{
-          ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
-          flex: 0.95,
-        }}
-      >
-        {item.medicineName + '\n'}
+      <View style={{ flex: 0.95 }}>
         <Text
           style={{
+            ...theme.viewStyles.text('SB', 14, '#02475b', 1, undefined, 0.02),
+            textDecorationLine: removedItem ? 'line-through' : 'none',
+            marginBottom: removedItem ? 4 : 0,
+          }}
+        >
+          {item.medicineName}
+        </Text>
+        {removedItem ? (
+          <Text style={theme.viewStyles.text('S', 12, theme.colors.DARK_RED, 1, undefined, 0.02)}>
+            {strings.case_sheet.med_remove}
+          </Text>
+        ) : null}
+        <Text
+          style={{
+            marginTop: 4,
             ...theme.viewStyles.text('S', 12, '#02475b', 1, 14, 0.02),
           }}
         >
           {medicineDescription(item)}
         </Text>
-      </Text>
+      </View>
     );
   };
 
@@ -1271,13 +1263,22 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <View style={{ marginHorizontal: 20, marginBottom: 19 }}>
           {renderHeaderText(strings.common.medicines)}
-          {medicinePrescriptionData == null || medicinePrescriptionData.length == 0
+          {medicinePrescriptionData &&
+          medicinePrescriptionData.length == 0 &&
+          removedMedicinePrescriptionData &&
+          removedMedicinePrescriptionData.length == 0
             ? renderInfoText(strings.case_sheet.no_medicine_Added)
-            : medicinePrescriptionData.map((showdata, i) => {
+            : null}
+          {medicinePrescriptionData && medicinePrescriptionData.length > 0
+            ? medicinePrescriptionData.map((showdata, index) => {
                 if (showdata) {
                   const isSelected =
                     selectedMedicinesId.findIndex(
-                      (i) => i === (showdata.externalId || showdata.id)
+                      (j) => j === (showdata.externalId || showdata.id)
+                    ) >= 0;
+                  const isExisting =
+                    existingMedicineId.findIndex(
+                      (j) => j === (showdata.externalId || showdata.id)
                     ) >= 0;
                   return (
                     <TouchableOpacity
@@ -1293,9 +1294,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 setMedicinePrescriptionData([
                                   ...(medicinePrescriptionData.filter(
                                     (
-                                      i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                      j: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
                                     ) =>
-                                      ((i || {}).externalId || (i || {}).id) !==
+                                      ((j || {}).externalId || (j || {}).id) !==
                                       (data.externalId || data.id)
                                   ) || []),
                                   data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -1303,10 +1304,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 setSelectedMedicinesId(
                                   [
                                     ...selectedMedicinesId.filter(
-                                      (i) => i !== (data.externalId || data.id)
+                                      (j) => j !== (data.externalId || data.id)
                                     ),
                                     data.externalId || data.id || '',
-                                  ].filter((i) => i !== '')
+                                  ].filter((j) => j !== '')
                                 );
                               }}
                             />
@@ -1329,14 +1330,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                   [
                                     ...selectedMedicinesId,
                                     showdata.externalId || showdata.id || '',
-                                  ].filter((i) => i !== '')
+                                  ].filter((j) => j !== '')
                                 );
                               } else {
                                 setSelectedMedicinesId([
                                   ...selectedMedicinesId.filter(
-                                    (i) => i != (showdata.externalId || showdata.id)
+                                    (j) => j != (showdata.externalId || showdata.id)
                                   ),
                                 ]);
+                                if (isExisting && caseSheetVersion > 1) {
+                                  setMedicinePrescriptionData([
+                                    ...(medicinePrescriptionData.filter(
+                                      (
+                                        j: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                      ) =>
+                                        ((j || {}).externalId || (j || {}).id) !==
+                                        (showdata.externalId || showdata.id)
+                                    ) || []),
+                                  ]);
+                                  setRemovedMedicinePrescriptionData([
+                                    showdata,
+                                    ...(removedMedicinePrescriptionData || []),
+                                  ]);
+                                }
                               }
                             }
                           }}
@@ -1357,8 +1373,78 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 } else {
                   return null;
                 }
-              })}
-
+              })
+            : null}
+          {removedMedicinePrescriptionData && removedMedicinePrescriptionData.length > 0
+            ? removedMedicinePrescriptionData.map((showdata, index) => {
+                if (showdata) {
+                  const isSelected =
+                    selectedMedicinesId.findIndex(
+                      (j) => j === (showdata.externalId || showdata.id)
+                    ) >= 0;
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        if (caseSheetEdit) {
+                          props.overlayDisplay(
+                            <AddMedicinePopUp
+                              allowedDosages={g(caseSheet, 'allowedDosages')}
+                              data={showdata}
+                              onClose={() => props.overlayDisplay(null)}
+                              onAddnew={(data) => {
+                                setMedicinePrescriptionData([
+                                  ...((medicinePrescriptionData || []).filter(
+                                    (
+                                      j: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                    ) =>
+                                      ((j || {}).externalId || (j || {}).id) !==
+                                      (data.externalId || data.id)
+                                  ) || []),
+                                  data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                ]);
+                                setSelectedMedicinesId(
+                                  [
+                                    ...selectedMedicinesId.filter(
+                                      (j) => j !== (data.externalId || data.id)
+                                    ),
+                                    data.externalId || data.id || '',
+                                  ].filter((j) => j !== '')
+                                );
+                                setRemovedMedicinePrescriptionData([
+                                  ...((removedMedicinePrescriptionData || []).filter(
+                                    (
+                                      j: GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null
+                                    ) =>
+                                      ((j || {}).externalId || (j || {}).id) !==
+                                      (data.externalId || data.id)
+                                  ) || []),
+                                ]);
+                              }}
+                            />
+                          );
+                        }
+                      }}
+                    >
+                      <View style={styles.dataCardsStyle}>
+                        {renderMedicineDetails(showdata, true)}
+                        {isSelected ? (
+                          <CheckboxSelected
+                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                          />
+                        ) : (
+                          <CheckboxUnSelected
+                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                } else {
+                  return null;
+                }
+              })
+            : null}
           {props.favMed
             ? props.favMed.length > 0 && renderHeaderText(strings.smartPrescr.fav_med)
             : null}
@@ -1379,7 +1465,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 data={med}
                                 onClose={() => props.overlayDisplay(null)}
                                 onAddnew={(data) => {
-                                  console.log(medicinePrescriptionData, selectedMedicinesId);
                                   if (medicinePrescriptionData) {
                                     setMedicinePrescriptionData([
                                       ...(medicinePrescriptionData.filter(
@@ -1774,125 +1859,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  // const removeInstrution = (item: string | null) => {
-  //   console.log('item', item);
-  //   const list = otherInstructionsData.filter(
-  //     (other: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions) =>
-  //       other.instruction != item
-  //   );
-  //   setOtherInstructionsData(list);
-  // };
-  // const renderOtherInstructionsView = () => {
-  //   return (
-  //     <View style={{ zIndex: -1 }}>
-  //       <CollapseCard
-  //         heading={strings.common.other_instructions}
-  //         collapse={otherInstructions}
-  //         onPress={() => setOtherInstructions(!otherInstructions)}
-  //       >
-  //         <Text style={[styles.familyText, { marginBottom: 12 }]}>
-  //           {strings.case_sheet.instructions_to_patient}
-  //         </Text>
-  //         {otherInstructionsData == null ? (
-  //           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
-  //             {strings.common.no_data}
-  //           </Text>
-  //         ) : (
-  //           otherInstructionsData.map(
-  //             (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions, i: any) => {
-  //               return (
-  //                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-  //                   <DiagnosicsCard
-  //                     diseaseName={showdata.instruction}
-  //                     icon={
-  //                       <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
-  //                         {<DiagonisisRemove />}
-  //                       </TouchableOpacity>
-  //                     }
-  //                   />
-  //                 </View>
-  //               );
-  //             }
-  //           )
-  //         )}
-  //         {otherInstructionsadd ? (
-  //           <View>
-  //             <Text style={[styles.familyText, { marginBottom: 12 }]}>
-  //               {strings.common.add_instructions}
-  //             </Text>
-  //             <View
-  //               style={{
-  //                 flexDirection: 'row',
-  //                 justifyContent: 'center',
-  //                 alignItems: 'center',
-  //                 backgroundColor: '#fff',
-  //                 borderWidth: 1,
-  //                 borderColor: '#30c1a3',
-  //                 borderRadius: 10,
-  //                 marginBottom: 16,
-  //                 marginLeft: 20,
-  //                 marginRight: 20,
-  //               }}
-  //             >
-  //               <TextInput
-  //                 style={{
-  //                   flex: 1,
-  //                   ...theme.fonts.IBMPlexSansMedium(14),
-  //                   paddingLeft: 12,
-  //                   marginTop: 12,
-  //                   marginLeft: 0,
-  //                   color: '#01475b',
-  //                   marginBottom: 16,
-  //                 }}
-  //                 placeholder={strings.common.enter_instructions_here}
-  //                 underlineColorAndroid="transparent"
-  //                 multiline={true}
-  //                 placeholderTextColor="rgba(2, 71, 91, 0.4)"
-  //                 value={othervalue}
-  //                 maxLength={100}
-  //                 onChangeText={(othervalue) => setOthervalue(othervalue)}
-  //               />
-  //               <TouchableOpacity
-  //                 onPress={() => {
-  //                   if (othervalue == '' || othervalue.trim() == '') {
-  //                     Alert.alert(strings.alerts.please_add_other_instructions);
-  //                   } else if (
-  //                     otherInstructionsData.find((item: any) => item.instruction == othervalue)
-  //                   ) {
-  //                     Alert.alert(strings.alerts.instruction_already_added);
-  //                   } else {
-  //                     setOtherInstructionsData([
-  //                       ...otherInstructionsData,
-  //                       {
-  //                         instruction: othervalue,
-  //                       },
-  //                     ]);
-
-  //                     setOtherInstructionsAdd(!otherInstructionsadd);
-  //                     setOthervalue('');
-  //                     // renderOtherInstructionsView();
-  //                   }
-  //                 }}
-  //               >
-  //                 <View style={{ alignItems: 'flex-end', margin: 8 }}>
-  //                   <Green />
-  //                 </View>
-  //               </TouchableOpacity>
-  //             </View>
-  //           </View>
-  //         ) : (
-  //           caseSheetEdit && (
-  //             <AddIconLabel
-  //               label={strings.buttons.add_instructions}
-  //               onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}
-  //               style={{ marginLeft: 16, marginTop: 0, marginBottom: 19 }}
-  //             />
-  //           )
-  //         )}
-  //       </CollapseCard>
-  //     </View>
-  //   );
-  // };
   const renderHeaderText = (header: string) => {
     return (
       <Text
@@ -2653,19 +2619,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
             {renderHeaderText(strings.case_sheet.referral_drop_selection_header)}
-            {/* <MaterialMenu
-              options={specialtiesData}
-              selectedText={selectedReferral ? selectedReferral.key : ''}
-              menuContainerStyle={styles.materialContainer}
-              onPress={(item) => {
-                setSelectedReferral(item);
-              }}
-              selectedTextStyle={styles.selTextStyle}
-              itemTextStyle={styles.textItemStyle}
-              itemContainer={styles.itemContainerStyle}
-              bottomPadding={{ paddingBottom: 10 }}
-              disable={!caseSheetEdit}
-            > */}
             <View style={styles.menuContainer}>
               <TouchableOpacity
                 activeOpacity={1}

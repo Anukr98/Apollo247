@@ -20,6 +20,7 @@ const styles = UIElementsProviderStyles;
 
 export interface UIElementsContextProps {
   loading: boolean;
+  isAlertVisible: boolean;
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
@@ -31,6 +32,7 @@ export interface UIElementsContextProps {
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
   loading: false,
+  isAlertVisible: false,
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
@@ -252,6 +254,7 @@ export const UIElementsProvider: React.FC = (props) => {
       value={{
         loading,
         setLoading,
+        isAlertVisible,
         showAphAlert,
         hideAphAlert,
         showPopup,
