@@ -4,13 +4,25 @@ import 'unfetch/polyfill';
 import { AppContainer } from 'components/AppContainer';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import TagManager from 'react-gtm-module'
+
+const tagManagerArgs = {
+  gtmId: 'GTM-PNGHP4L',
+  auth: process.env.NODE_ENV === 'production' ? 'ZYg6LjWjUuzof34ZcHS7HA' : 'W92SKp1i2YZ7knnE2uBPtw',
+  preview: process.env.NODE_ENV === 'production' ? 'env-1' : 'env-76'
+}
+
+TagManager.initialize(tagManagerArgs)
 
 declare global {
   interface Window {
     // add you custom properties and methods
     gep(a: any, b: any, c?: any, d?: any): void;
+
     _ur(a: any, b?: any, c?: any): void;
+
     _cb(a: any, b: any, c: any, d: any, e: any, f: any): void;
+
     _ob(a: any, b: any, c: any, d: any, e: any, f: any): void;
   }
 }
