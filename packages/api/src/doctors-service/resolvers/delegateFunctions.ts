@@ -188,7 +188,7 @@ const updatSaveExternalConnect: Resolver<
     doctorId: args.doctorId,
     externalConnect: args.externalConnect,
   };
-  externalConnectRepo.saveExternalConnectData(attrs);
+  await externalConnectRepo.saveExternalConnectData(attrs);
   return { status: true };
 };
 
