@@ -3303,13 +3303,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Typography>
           </Typography>
         </div>
+        {emptyFieldsString && (
         <div>
         <Typography component="div" 
             className={classes.content}
             >These fields are blank in Prescription
             </Typography>
             <span>{emptyFieldsString}</span>
-            </div>
+            </div>)}
         <div>
         <FormControlLabel
         control={<Checkbox checked={isConfirmationChecked} onChange={(event) => {
