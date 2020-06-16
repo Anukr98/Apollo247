@@ -1225,7 +1225,6 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendToPatientAction = () => {
-   
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -1237,7 +1236,7 @@ export const ConsultTabs: React.FC = () => {
             temperature: temperature,
             weight: weight,
             bp: bp,
-          }
+          },
         },
       })
       .then((_data) => {
