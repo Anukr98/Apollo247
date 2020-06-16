@@ -11,6 +11,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -163,6 +164,14 @@ const saveOrderShipmentInvoice: Resolver<
     medicineOrderShipments: shipmentDetails,
     statusDate: new Date(statusDate),
   };
+
+  log(
+    'profileServiceLogger',
+    `ORDER_BILLED_API_CALL_FROM_OMS_FOR_ORDER_ID:${saveOrderShipmentInvoiceInput.orderId}`,
+    `saveOrderShipmentInvoice call from OMS`,
+    JSON.stringify(saveOrderShipmentInvoiceInput),
+    ''
+  );
 
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
