@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
@@ -288,19 +289,25 @@ const createOneApolloTransaction = async (
 
   const itemTypemap: ItemsSkuTypeMap = {};
   const itemSku: string[] = [];
-  let grossAmount: number = 0;
   let netAmount: number = 0;
   let totalDiscount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-
-      const netMrp = +(+item.mrp * +item.issuedQty).toFixed(1);
-      const netDiscount = +(+item.discountPrice
-        ? (+item.discountPrice * +item.issuedQty).toFixed(1)
-        : 0);
-      const netPrice: number = netMrp - netDiscount;
+      const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(1));
+      let netDiscount = 0;
+      if (item.discountPrice) {
+        netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(1));
+      }
+      const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction Payload- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify({ netPrice: netPrice, netDiscount: netDiscount, netMrp: netMrp }),
+        ''
+      );
 
       transactionLineItems.push({
         ProductCode: item.itemId,
@@ -308,16 +315,15 @@ const createOneApolloTransaction = async (
         GrossAmount: netMrp,
         DiscountAmount: netDiscount,
       });
-      totalDiscount += netDiscount;
-      grossAmount += netMrp;
-      netAmount += netPrice;
+      totalDiscount = +new Decimal(netDiscount).plus(totalDiscount);
+      netAmount = +new Decimal(netPrice).plus(netAmount);
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
       Transaction.BillNo = billDetails.billNumber;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
-      Transaction.GrossAmount = grossAmount;
+      Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);
       Transaction.Discount = totalDiscount;
     }
   });
