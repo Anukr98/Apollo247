@@ -523,27 +523,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onComplete: () => void
   ) => {
     const validation = cartValidation(
-      storeItems
-        .filter((storeItem) => cartItems.find((cartItem) => cartItem.id == storeItem.itemId))
-        .map((storeItem) => {
-          const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
-          const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
-          const storeItemSP =
-            cartItem.specialPrice && cartItem.price != storeItemPrice
-              ? getSpecialPriceFromRelativePrices(
-                  cartItem.price,
-                  cartItem.specialPrice,
-                  storeItem.mrp * Number(cartItem.mou)
-                )
-              : cartItem.specialPrice;
-          return {
-            sku: cartItem.id,
-            name: cartItem.name,
-            is_in_stock: 1,
-            price: storeItemPrice,
-            special_price: storeItemSP,
-          } as MedicineProduct;
-        }),
+      storeItems.map((storeItem) => {
+        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+        const storeItemSP =
+          cartItem.specialPrice && cartItem.price != storeItemPrice
+            ? getSpecialPriceFromRelativePrices(
+                cartItem.price,
+                cartItem.specialPrice,
+                storeItem.mrp * Number(cartItem.mou)
+              )
+            : cartItem.specialPrice;
+        return {
+          sku: cartItem.id,
+          name: cartItem.name,
+          is_in_stock: 1,
+          price: storeItemPrice,
+          special_price: storeItemSP,
+        } as MedicineProduct;
+      }),
       cartItems
     );
     if (validation.alertText) {
