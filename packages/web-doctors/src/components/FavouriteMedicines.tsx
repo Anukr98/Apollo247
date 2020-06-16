@@ -1996,7 +1996,18 @@ export const FavouriteMedicines: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
-  console.log(errorState);
+  const setInTheTime = (slotId: string, selected: boolean) =>{
+      const slots = daySlots.map((slot: SlotsObject) => {  
+        if (slot.id === slotId && selected) {
+          slot.selected = true;
+        }
+        if (slot.id === slotId && !selected) {
+          slot.selected = false;
+        }
+        return slot;
+      });
+      setDaySlots(slots);
+  }
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -2190,6 +2201,11 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
+                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                          setInTheTime('morning', true);
+                                        }else{
+                                          setInTheTime('morning', false);
+                                        }
                                       }}
                                       onKeyPress={(e) => {
                                         if (
@@ -2215,6 +2231,11 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNoon}
                                       onChange={(event: any) => {
                                         setCustomDosageNoon(event.target.value);
+                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                          setInTheTime('noon', true);
+                                        }else{
+                                          setInTheTime('noon', false);
+                                        }
                                       }}
                                       onKeyPress={(e) => {
                                         if (
@@ -2240,6 +2261,11 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageEvening}
                                       onChange={(event: any) => {
                                         setCustomDosageEvening(event.target.value);
+                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                          setInTheTime('evening', true);
+                                        }else{
+                                          setInTheTime('evening', false);
+                                        }
                                       }}
                                       onKeyPress={(e) => {
                                         if (
@@ -2264,6 +2290,12 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNight}
                                       onChange={(event: any) => {
                                         setCustomDosageNight(event.target.value);
+                                        console.log(parseInt(event.target.value));
+                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                          setInTheTime('night', true);
+                                        }else{
+                                          setInTheTime('night', false);
+                                        }
                                       }}
                                       onKeyPress={(e) => {
                                         if (
