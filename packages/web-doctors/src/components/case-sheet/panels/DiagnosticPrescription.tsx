@@ -741,7 +741,7 @@ export const DiagnosticPrescription: React.FC = () => {
             >
               <img src={require('images/ic_back.svg')} alt="" />
             </Button>
-            {'ADD A TEST'}
+            {!editTest!.isEdit ? 'ADD A TEST' : selectedValue.itemName}
             <Button
               className={classes.cross}
               onClick={() => {
