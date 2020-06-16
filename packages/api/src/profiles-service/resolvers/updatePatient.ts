@@ -86,8 +86,6 @@ const updatePatient: Resolver<
     const checkEmployeeId = await patientRepo.findEmpId(patientInput.employeeId, patientInput.id);
     if (checkEmployeeId) {
       throw new AphError(AphErrorMessages.INVALID_EMPLOYEE_ID, undefined, {});
-    } else {
-      await updateEntity<Patient>(Patient, patientInput.id, updateAttrs);
     }
   }
 
