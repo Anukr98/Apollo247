@@ -47,7 +47,7 @@ export const prescriptionUploadTypeDefs = gql`
   }
 `;
 
-type PrescriptionInputArgs = { prescriptionInput: PrescriptionUploadRequest; uhid: string };
+export type PrescriptionInputArgs = { prescriptionInput: PrescriptionUploadRequest; uhid: string };
 export enum prescriptionSource {
   SELF = 'SELF',
   EPRESCRIPTION = 'EPRESCRIPTION',
@@ -56,9 +56,9 @@ export enum prescriptionSource {
 export const uploadPrescriptions: Resolver<
   null,
   PrescriptionInputArgs,
-  ProfilesServiceContext,
+  null,
   { recordId: string }
-> = async (parent, { prescriptionInput, uhid }, {}) => {
+> = async (parent, { prescriptionInput, uhid }) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
   prescriptionInput.prescriptionName = 'Prescribed By' + prescriptionInput.prescribedBy;
