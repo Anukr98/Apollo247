@@ -29,6 +29,7 @@ import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
 import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -535,9 +536,16 @@ export const MedicineLanding: React.FC = (props: any) => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
   };
+  const metaTagProps = {
+    title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    desciption: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    canonicalLink: 'https://www.apollo247.com/medicines'
+  }
+
 
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>

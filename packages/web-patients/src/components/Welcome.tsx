@@ -11,6 +11,7 @@ import { Relation } from 'graphql/types/globalTypes';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -49,10 +50,16 @@ export const Welcome: React.FC = (props) => {
     name: 'Apollo 24*7',
     url: 'https://www.apollo247.com/',
   };
+  const metaTagProps = {
+    title: 'Doctor Appointments Online, Order Medicines And Pathological Tests - Apollo 247',
+    desciption: 'Find doctors online and book appointments and consult online. Order pathological tests and buy medicines in just a few clicks. Apollo 247 is your one-stop healthcare and medical solution.',
+    canonicalLink: window && window.location && window.location.href
+  }
 
   return (
     <div className={classes.welcome}>
       <Header />
+      <MetaTagsComp {...metaTagProps} />
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       <div className={classes.container}>
         <div className={classes.pageContainer}>

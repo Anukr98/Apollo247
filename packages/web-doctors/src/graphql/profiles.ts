@@ -1334,8 +1334,16 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
-  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
-    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+  mutation UpdatePatientPrescriptionSentStatus(
+    $caseSheetId: ID!
+    $sentToPatient: Boolean!
+    $vitals: Vitals
+  ) {
+    updatePatientPrescriptionSentStatus(
+      caseSheetId: $caseSheetId
+      sentToPatient: $sentToPatient
+      vitals: $vitals
+    ) {
       success
       blobName
       prescriptionGeneratedDate
