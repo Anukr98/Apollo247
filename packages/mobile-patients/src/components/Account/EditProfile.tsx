@@ -255,7 +255,10 @@ export interface EditProfileProps extends NavigationScreenProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
-  const relationArray: RelationArray[] = getRelations() || relationArray1;
+  const [selectedGenderRelationArray, setSelectedGenderRelationArray] = useState<RelationArray[]>(
+    getRelations() || relationArray1
+  );
+  const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
@@ -331,6 +334,88 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setPhotoUrl(profileData.photoUrl || '');
     }
   }, []);
+
+  useEffect(() => {
+    if (!profileData) {
+      if (gender == Gender.MALE) {
+        setRelation(undefined);
+        const maleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.FATHER,
+            title: 'Father',
+          },
+          {
+            key: Relation.SON,
+            title: 'Son',
+          },
+          {
+            key: Relation.HUSBAND,
+            title: 'Husband',
+          },
+          {
+            key: Relation.GRANDFATHER,
+            title: 'Grandfather',
+          },
+          {
+            key: Relation.GRANDSON,
+            title: 'Grandson',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          // {
+          //   key: Relation.FRIEND,
+          //   title: 'Friend',
+          // },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(maleRelationArray);
+      } else if (gender == Gender.FEMALE) {
+        setRelation(undefined);
+        const femaleRelationArray: RelationArray[] = [
+          { key: Relation.ME, title: 'Self' },
+          {
+            key: Relation.MOTHER,
+            title: 'Mother',
+          },
+          {
+            key: Relation.DAUGHTER,
+            title: 'Daughter',
+          },
+          {
+            key: Relation.WIFE,
+            title: 'Wife',
+          },
+          {
+            key: Relation.GRANDMOTHER,
+            title: 'Grandmother',
+          },
+          {
+            key: Relation.GRANDDAUGHTER,
+            title: 'Granddaughter',
+          },
+          {
+            key: Relation.COUSIN,
+            title: 'Cousin',
+          },
+          // {
+          //   key: Relation.FRIEND,
+          //   title: 'Friend',
+          // },
+          {
+            key: Relation.OTHER,
+            title: 'Other',
+          },
+        ];
+        setSelectedGenderRelationArray(femaleRelationArray);
+      }
+    }
+  }, [gender]);
 
   const deleteConfirmation = () => {
     showAphAlert!({
@@ -705,7 +790,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderRelation = () => {
-    const relationsData = relationArray.map((i) => {
+    const relationsData = selectedGenderRelationArray.map((i) => {
       return { key: i.key, value: i.title };
     });
 
