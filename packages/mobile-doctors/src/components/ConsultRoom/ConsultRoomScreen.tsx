@@ -1167,7 +1167,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       withPresence: true,
     });
 
-    getHistory();
+    getHistory(0);
     pubnub.addListener({
       status: (statusEvent) => {
         if (statusEvent.category === Pubnub.CATEGORIES.PNConnectedCategory) {
@@ -1322,15 +1322,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, []);
 
   let insertText: object[] = [];
-  const getHistory = () => {
+  const newmessage: object[] = [];
+
+  const getHistory = (timetoken: number) => {
     pubnub.history(
       {
         channel: channel,
         reverse: true,
         count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
       },
       (status, res) => {
-        const newmessage: object[] = [];
+        const end: any = res.endTimeToken ? res.endTimeToken : 1;
         res &&
           res.messages.forEach((element, index) => {
             const item = element.entry;
@@ -1365,7 +1369,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (messages.length !== newmessage.length) {
             console.log('set saved');
             insertText = newmessage;
-
+            if (res.messages.length == 100) {
+              getHistory(end);
+              return;
+            }
             setMessages(newmessage as []);
             if (!callOptions.isVideo || !callOptions.isAudio) {
               console.log('chat icon', chatReceived);
