@@ -17,6 +17,7 @@ import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils
 
 interface OptionType {
   itemname: string;
+  testInstruction: string;
   __typename: 'DiagnosticPrescription';
 }
 
@@ -243,8 +244,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     deleteImage: {
       position: 'absolute',
-      top: 7,
-      right: 7,
+      top: 8,
+      right: 32,
+      cursor: 'pointer',
     },
     testModal: {
       width: 480,
@@ -286,7 +288,7 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       backgroundColor: '#ffffff',
       position: 'relative',
-      top: 208,
+      //top: 208,
       zIndex: 1,
       textAlign: 'right',
       paddingTop: 19,
@@ -341,6 +343,33 @@ const useStyles = makeStyles((theme: Theme) =>
         fontSize: 12,
         fontWeight: 'normal',
       },
+    },
+    updateTest: {
+      top: '3px',
+      color: '#666666',
+      right: '2px',
+      cursor: 'pointer',
+      padding: '5px 0',
+      position: 'absolute',
+      minWidth: '23px',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+      },
+    },
+    instructionsTextArea: {
+      '& textArea': {
+        maxHeight: '200px',
+        overflow: 'auto',
+      },
+    },
+    notesWrapper: {
+      padding: 16,
+      height: 312,
+    },
+    notesWrapperEdit: {
+      marginTop: 15,
+      marginBottom: 48,
     },
   })
 );
@@ -468,6 +497,10 @@ export const DiagnosticPrescription: React.FC = () => {
   const [showFavMedicine, setShowFavMedicine] = useState<boolean>(false);
   const [isSuggestionSelected, setIsSuggestionSelected] = useState<boolean>(false);
   const [selectedValue, setSelectedValue] = useState<any>({});
+  const [editTest, setEditTest] = useState<any>({
+    index: null,
+    isEdit: false,
+  });
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
@@ -557,6 +590,30 @@ export const DiagnosticPrescription: React.FC = () => {
       />
     );
   }
+  const onCloseTest = () => {
+    setShowAddCondition(false);
+    setIsSuggestionSelected(false);
+    setEditTest({ index: null, isEdit: false });
+  };
+
+  const onAddorUpdateTest = () => {
+    if (editTest!.isEdit) selectedValues[editTest.index] = selectedValue;
+    else selectedValues && selectedValues.push(selectedValue);
+
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.diagnosticPrescription = selectedValues;
+      updateLocalStorageItem(params.id, storageItem);
+    }
+    setSelectedValues(selectedValues);
+    onCloseTest();
+    suggestions = suggestions.filter((val) => selectedValues && selectedValues.includes(val!));
+    setState({
+      single: '',
+      popper: '',
+    });
+    setOtherDiagnostic('');
+  };
 
   const autosuggestProps = {
     renderInputComponent,
@@ -575,59 +632,10 @@ export const DiagnosticPrescription: React.FC = () => {
               Tests
             </Typography>
             <Typography component="div" className={classes.listContainer}>
-              {/* {selectedValues !== null &&
-                selectedValues.length > 0 &&
-                selectedValues!.map((item, idx) =>
-                  item.itemName
-                    ? item.itemName!.trim() !== '' && (
-                        <Chip
-                          className={classes.othersBtn}
-                          key={idx}
-                          label={item!.itemName}
-                          onDelete={() => handleDelete(item, idx)}
-                          deleteIcon={
-                            <img
-                              className={classes.deleteImage}
-                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                              alt=""
-                            />
-                          }
-                        />
-                      )
-                    : item.itemname &&
-                      item.itemname!.trim() !== '' && (
-                        <Chip
-                          className={classes.othersBtn}
-                          key={idx}
-                          label={item!.itemname}
-                          onDelete={() => handleDelete(item, idx)}
-                          deleteIcon={
-                            <img
-                              className={classes.deleteImage}
-                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                              alt=""
-                            />
-                          }
-                        />
-                      )
-                )} */}
               {selectedValues!.map(
                 (item, idx) =>
                   item.itemName &&
                   item.itemName!.trim() !== '' && (
-                    // <Chip
-                    //   className={classes.othersBtn}
-                    //   key={idx}
-                    //   label={item!.itemName}
-                    //   onDelete={() => handleDelete(item, idx)}
-                    //   deleteIcon={
-                    //     <img
-                    //       className={classes.deleteImage}
-                    //       src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                    //       alt=""
-                    //     />
-                    //   }
-                    // />
                     <div style={{ wordBreak: 'break-word' }}>
                       <div className={classes.testCard}>
                         <h5>{item!.itemName}</h5>
@@ -635,6 +643,23 @@ export const DiagnosticPrescription: React.FC = () => {
                           className={classes.deleteImage}
                           src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                           alt=""
+                          onClick={() => handleDelete(item, idx)}
+                        />
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                          className={classes.updateTest}
+                          onClick={() => {
+                            setShowAddCondition(true);
+                            setEditTest({
+                              index: idx,
+                              isEdit: true,
+                            });
+                            setSelectedValue({
+                              ...item,
+                              index: idx,
+                            });
+                          }}
                         />
                         <h6>{item!.testInstruction}</h6>
                       </div>
@@ -660,32 +685,6 @@ export const DiagnosticPrescription: React.FC = () => {
                 <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
               </AphButton>
             )}
-
-            {/* {otherDiagnostic.trim().length > 2 && (
-              <AphButton
-                className={classes.darkGreenaddBtn}
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (otherDiagnostic.trim() !== '') {
-                    const daignosisValue = selectedValues!.splice(idx, 0, {
-                      itemName: otherDiagnostic,
-                      __typename: 'DiagnosticPrescription',
-                    });
-                    setShowAddOtherTests(false);
-                    setShowAddCondition(false);
-                    setIdx(selectedValues!.length + 1);
-                    setTimeout(() => {
-                      setOtherDiagnostic('');
-                    }, 10);
-                  } else {
-                    setOtherDiagnostic('');
-                  }
-                }}
-              >
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-              </AphButton>
-            )} */}
           </Typography>
         </Grid>
         {favTests && favTests.length > 0 && (
@@ -736,8 +735,7 @@ export const DiagnosticPrescription: React.FC = () => {
           <AphDialogTitle className={classes.popupHeading}>
             <Button
               onClick={() => {
-                setShowAddCondition(false);
-                setIsSuggestionSelected(false);
+                onCloseTest();
               }}
               className={classes.backArrow}
             >
@@ -747,96 +745,85 @@ export const DiagnosticPrescription: React.FC = () => {
             <Button
               className={classes.cross}
               onClick={() => {
-                setShowAddCondition(false);
-                setIsSuggestionSelected(false);
+                onCloseTest();
               }}
             >
               <img src={require('images/ic_cross.svg')} alt="" />
             </Button>
           </AphDialogTitle>
-          <Autosuggest
-            onSuggestionSelected={(e, { suggestion }) => {
-              console.log(suggestion);
-              // selectedValues && selectedValues.push(suggestion);
-              // const storageItem = getLocalStorageItem(params.id);
-              // if (storageItem) {
-              //   storageItem.diagnosticPrescription = selectedValues;
-              //   updateLocalStorageItem(params.id, storageItem);
-              // }
-              // setSelectedValues(selectedValues);
-              // setShowAddCondition(false);
-              // suggestions = suggestions.filter(
-              //   (val) => selectedValues && selectedValues.includes(val!)
-              // );
-              // setState({
-              //   single: '',
-              //   popper: '',
-              // });
-              // setOtherDiagnostic('');
-              suggestion.testInstruction = '';
-              setIsSuggestionSelected(true);
-              setSelectedValue(suggestion);
-            }}
-            {...autosuggestProps}
-            inputProps={{
-              //classes,
-              id: 'react-autosuggest-simple',
-              placeholder: 'Search Tests',
-              value: state.single,
-              onChange: handleChange('single'),
-              onKeyPress: (e) => {
-                // if (e.which == 13 || e.keyCode == 13) {
-                //   if (selectedValues && suggestions.length === 1) {
-                //     selectedValues.push(suggestions[0]);
-                //     const storageItem = getLocalStorageItem(params.id);
-                //     if (storageItem) {
-                //       storageItem.diagnosticPrescription = selectedValues;
-                //       updateLocalStorageItem(params.id, storageItem);
-                //     }
-                //     setSelectedValues(selectedValues);
-                //     setShowAddCondition(false);
-                //     suggestions = suggestions.filter((val) => selectedValues.includes(val!));
-                //     setState({
-                //       single: '',
-                //       popper: '',
-                //     });
-                //     setOtherDiagnostic('');
-                //   }
-                // }
-              },
-            }}
-            theme={{
-              container: classes.suggestionsContainer,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestionItem,
-              suggestionHighlighted: classes.suggestionHighlighted,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper
-                {...options.containerProps}
-                square
-                classes={{ root: classes.suggestionPopover }}
-              >
-                {options.children}
-              </Paper>
-            )}
-          />
-          {isSuggestionSelected && (
+          {!editTest!.isEdit && (
+            <Autosuggest
+              onSuggestionSelected={(e, { suggestion }) => {
+                suggestion.testInstruction = '';
+                setIsSuggestionSelected(true);
+                setSelectedValue(suggestion);
+              }}
+              {...autosuggestProps}
+              inputProps={{
+                //classes,
+                id: 'react-autosuggest-simple',
+                placeholder: 'Search Tests',
+                value: state.single,
+                onChange: handleChange('single'),
+                onKeyPress: (e) => {
+                  // if (e.which == 13 || e.keyCode == 13) {
+                  //   if (selectedValues && suggestions.length === 1) {
+                  //     selectedValues.push(suggestions[0]);
+                  //     const storageItem = getLocalStorageItem(params.id);
+                  //     if (storageItem) {
+                  //       storageItem.diagnosticPrescription = selectedValues;
+                  //       updateLocalStorageItem(params.id, storageItem);
+                  //     }
+                  //     setSelectedValues(selectedValues);
+                  //     setShowAddCondition(false);
+                  //     suggestions = suggestions.filter((val) => selectedValues.includes(val!));
+                  //     setState({
+                  //       single: '',
+                  //       popper: '',
+                  //     });
+                  //     setOtherDiagnostic('');
+                  //   }
+                  // }
+                },
+              }}
+              theme={{
+                container: classes.suggestionsContainer,
+                suggestionsList: classes.suggestionsList,
+                suggestion: classes.suggestionItem,
+                suggestionHighlighted: classes.suggestionHighlighted,
+              }}
+              renderSuggestionsContainer={(options) => (
+                <Paper
+                  {...options.containerProps}
+                  square
+                  classes={{ root: classes.suggestionPopover }}
+                >
+                  {options.children}
+                </Paper>
+              )}
+            />
+          )}
+          {(isSuggestionSelected || editTest!.isEdit) && (
             <>
-              <div style={{ padding: 16 }}>
+              <div
+                className={
+                  !editTest!.isEdit
+                    ? classes.notesWrapper
+                    : `${classes.notesWrapper} ${classes.notesWrapperEdit}`
+                }
+              >
                 <Typography className={classes.instructionsLabel} component="h5" variant="h5">
-                  testInstruction/Notes
+                  Instruction/Notes
                 </Typography>
 
                 <AphTextField
-                  autoFocus
+                  className={classes.instructionsTextArea}
                   fullWidth
                   multiline
                   placeholder="Type here..."
                   value={selectedValue!.testInstruction}
                   onChange={(e) => {
-                    let val = e.target.value;
-                    setSelectedValue({ ...selectedValue, testInstruction: val });
+                    setSelectedValue({ ...selectedValue, testInstruction: e.target.value });
                   }}
                 />
               </div>
@@ -845,8 +832,7 @@ export const DiagnosticPrescription: React.FC = () => {
                   color="secondary"
                   className={classes.cancelBtn}
                   onClick={() => {
-                    setShowAddCondition(false);
-                    setIsSuggestionSelected(false);
+                    onCloseTest();
                   }}
                 >
                   Cancel
@@ -855,25 +841,10 @@ export const DiagnosticPrescription: React.FC = () => {
                   color="primary"
                   className={classes.updateBtn}
                   onClick={() => {
-                    selectedValues && selectedValues.push(selectedValue);
-                    const storageItem = getLocalStorageItem(params.id);
-                    if (storageItem) {
-                      storageItem.diagnosticPrescription = selectedValues;
-                      updateLocalStorageItem(params.id, storageItem);
-                    }
-                    setSelectedValues(selectedValues);
-                    setShowAddCondition(false);
-                    suggestions = suggestions.filter(
-                      (val) => selectedValues && selectedValues.includes(val!)
-                    );
-                    setState({
-                      single: '',
-                      popper: '',
-                    });
-                    setOtherDiagnostic('');
+                    onAddorUpdateTest();
                   }}
                 >
-                  Add Test
+                  {!editTest!.isEdit ? 'Add Test' : 'Update Test'}
                 </AphButton>
               </div>
             </>
