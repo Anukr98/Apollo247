@@ -476,6 +476,13 @@ export interface UpdatePatientInput {
   deviceCode?: string | null;
 }
 
+export interface Vitals {
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
