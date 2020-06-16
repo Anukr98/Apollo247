@@ -642,6 +642,25 @@ export const PayMedicine: React.FC = (props) => {
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: totalWithCouponDiscount,
+          ecommObj: {
+            'ecommerce': {
+              'items': [{
+                'item_name': 'Donut Friday Scented T-Shirt',
+                'item_id': '67890',
+                'price': '33.75',
+                'item_brand': 'Google',
+                'item_category': 'Apparel',
+                'item_category_2': 'Mens',
+                'item_category_3': 'Shirts',
+                'item_category_4': 'Tshirts',
+                'item_variant': 'Black',
+                'item_list_name': 'Search Results',
+                'item_list_id': 'SR123',
+                'index': 2,
+                'quantity': '1'
+              }]
+            }
+          }
         });
         /**Gtm code end  */
 

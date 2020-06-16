@@ -1,12 +1,18 @@
-export const gtmTracking = (gtmObj: any) => {
-  const { category, action, label, value } = gtmObj;
+interface GtmObj {
+  category: string;
+  action: string;
+  label: string;
+  value?: any;
+  ecommObj?: any;
+}
+export const gtmTracking = (gtmObj: GtmObj) => {
+  const { category, action, label, value, ecommObj } = gtmObj;
   try {
-    window && window.gep && window.gep(category, action, label, value);
+    window && window.gep && window.gep(category, action, label, value, ecommObj);
   } catch (err) {
     console.log('GTM ERROR: ', err);
   }
 };
-
 export const _urTracking = (params: any) => {
   const { userId, isApolloCustomer, profileFetchedCount } = params;
   try {
@@ -42,11 +48,12 @@ export const _obTracking = (params: any) => {
     couponCode,
     couponValue,
     finalBookingValue,
+    ecommObj
   } = params;
   try {
     window &&
       window._ob &&
-      window._ob(userLocation, paymentType, itemCount, couponCode, couponValue, finalBookingValue);
+      window._ob(userLocation, paymentType, itemCount, couponCode, couponValue, finalBookingValue, ecommObj);
   } catch (err) {
     console.log('GTM ERROR: ', err);
   }

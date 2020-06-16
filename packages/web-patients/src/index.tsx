@@ -17,13 +17,13 @@ TagManager.initialize(tagManagerArgs)
 declare global {
   interface Window {
     // add you custom properties and methods
-    gep(a: any, b: any, c?: any, d?: any): void;
+    gep(a: any, b: any, c?: any, d?: any, e?: any): void;
 
     _ur(a: any, b?: any, c?: any): void;
 
     _cb(a: any, b: any, c: any, d: any, e: any, f: any): void;
 
-    _ob(a: any, b: any, c: any, d: any, e: any, f: any): void;
+    _ob(a: any, b: any, c: any, d: any, e: any, f: any, h: any): void;
   }
 }
 

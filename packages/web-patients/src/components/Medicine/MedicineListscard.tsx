@@ -278,6 +278,20 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                   action: 'Remove From Cart',
                                   label: medicine.name,
                                   value: medicine.special_price || medicine.price,
+                                  ecommObj: {
+                                    'event': 'remove_from_cart',
+                                    'ecommerce': {
+                                      'items': [{
+                                        'item_name': medicine.name,
+                                        'item_id': medicine.sku,
+                                        'price': medicine.price,
+                                        'item_category': 'Pharmacy',
+                                        'item_variant': 'Default',
+                                        'index': 1,
+                                        'quantity': medicine.mou
+                                      }]
+                                    }
+                                  }
                                 });
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
@@ -317,6 +331,23 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 action: 'Add to Cart',
                                 label: medicine.name,
                                 value: medicine.special_price || medicine.price,
+                                ecommObj: {
+                                  'event': 'add_to_cart',
+                                  'ecommerce': {
+                                    'items':
+                                      [{
+                                        'item_name': medicine.name,
+                                        'item_id': medicine.sku,
+                                        'price': medicine.price,
+                                        'item_category': 'Pharmacy',
+                                        'item_category_2': medicine.type_id ? medicine.type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
+                                        // 'item_category_4': '', // future reference
+                                        'item_variant': 'Default',
+                                        'index': 1,
+                                        'quantity': medicine.mou
+                                      }]
+                                  }
+                                }
                               });
                               /**Gtm code End  */
                               addCartItem && addCartItem(cartItem);
