@@ -104,6 +104,8 @@ const styles = StyleSheet.create({
   },
 });
 
+let count = 0;
+
 type profile = {
   id?: number;
   email?: string;
@@ -173,7 +175,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     let primary;
     let secondary = [];
     let areUhidsLinked = false;
-    let count = 0;
 
     profiles!.forEach((profile) => {
       if (profile!.isUhidPrimary) {
