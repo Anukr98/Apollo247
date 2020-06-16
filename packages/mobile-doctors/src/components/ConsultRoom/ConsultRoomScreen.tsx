@@ -2245,45 +2245,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const closeviews = () => {
     setPatientImageshow(false);
-  };
-  const popupView = (children: React.ReactNode) => {
-    return (
-      <View style={styles.positionAbsolute}>
-        <View
-          style={{
-            ...styles.positionAbsolute,
-            backgroundColor: 'black',
-            opacity: 0.6,
-          }}
-        />
-        <View
-          style={{
-            alignSelf: 'flex-end',
-            backgroundColor: 'transparent',
-            marginRight: 16,
-            marginTop: 30,
-            zIndex: 10,
-          }}
-        >
-          <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
-            <CrossPopup
-              style={{
-                marginRight: 1,
-                height: 28,
-                width: 28,
-              }}
-            />
-          </TouchableOpacity>
-        </View>
-        {children}
-      </View>
-    );
+    setOverlayDisplay(null);
   };
 
-  const imageOpen = () => {
-    console.log(url);
-    return popupView(<ImageZoom source={{ uri: url }} zoom pan />);
-  };
+  useEffect(() => {
+    if (patientImageshow) {
+      setOverlayDisplay(<ImageZoom source={{ uri: url }} zoom pan onClose={() => closeviews()} />);
+    }
+  }, [patientImageshow]);
 
   return (
     <View
@@ -2329,7 +2298,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {renderTabPage()}
         {showPopUp && CallPopUp()}
         {uploadPrescriptionPopup()}
-        {patientImageshow && imageOpen()}
         {showPDF && (
           <RenderPdf
             uri={url}

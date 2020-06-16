@@ -105,6 +105,9 @@ export const Remove: React.FC<IconProps> = (props) => (
 export const Reload: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/ic_reset.png')} />
 );
+export const Reset: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_reload.png')} />
+);
 
 export const SortDecreasing: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />

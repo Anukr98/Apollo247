@@ -75,7 +75,7 @@ export const AudioVideoStyles = StyleSheet.create({
     width: 155,
     height: 205,
     alignItems: 'center',
-    backgroundColor: theme.colors.WHITE,
+    backgroundColor: theme.colors.whiteColor(0.6),
   },
   placeHolderImageStyle: {
     height: width,
