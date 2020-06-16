@@ -148,6 +148,12 @@ const useStyles = makeStyles((theme: Theme) => {
         minHeight: 'auto !important',
       },
     },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -178,39 +184,7 @@ function getCookieValue() {
   }
   return '';
 }
-type OpentokStreamObject = {
-  connection: {
-    connectionId: string;
-    creationTime: string;
-    data: string;
-  };
-  connectionId: string;
-  creationTime: string;
-  hasAudio: boolean;
-  hasVideo: boolean;
-  height: number;
-  name: string;
-  sessionId: string;
-  streamId: string;
-  videoType: 'camera' | 'screen';
-  width: number;
-};
-type OpenTokAudioStream = {
-  audioStats: {
-    audioBytesReceived: number;
-    audioPacketsLost: number;
-    audioPacketsReceived: number;
-  };
-  stream: OpentokStreamObject;
-};
-type OpenTokVideoStream = {
-  videoStats: {
-    videoBytesReceived: number;
-    videoPacketsLost: number;
-    videoPacketsReceived: number;
-  };
-  stream: OpentokStreamObject;
-};
+
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
@@ -252,8 +226,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
     },
-    streamPropertyChanged: (event: string) => {
+    streamPropertyChanged: (event: any) => {
       console.log('session streamPropertyChanged destroyed!', event);
+      const subscribers = event.target.getSubscribersForStream(event.stream);
+      if (subscribers.length) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
   };
   const publisherHandler = {
@@ -283,13 +262,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     otrnError: (error: string) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
-    audioNetworkStats: (event: OpenTokAudioStream) => {
-      setCallerAudio(event.stream.hasAudio);
-    },
-    videoNetworkStats: (event: OpenTokVideoStream) => {
-      setCallerVideo(event.stream.hasVideo);
-    },
   };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo) return `Patient has off their audio and video`;
+    else if (!callerAudio) return `Patient has off their audio`;
+    else if (!callerVideo) return `Patient has off their video`;
+    else return null;
+  };
+
   return (
     <div className={classes.consult}>
       <div>
@@ -314,6 +295,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
 
@@ -372,6 +354,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                     />
                   </OTStreams>
+
                   {props.showVideoChat && (
                     <div>
                       {!subscribeToVideo && (
