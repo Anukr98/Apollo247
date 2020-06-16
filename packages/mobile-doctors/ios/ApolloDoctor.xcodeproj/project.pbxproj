@@ -474,7 +474,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 01;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -499,7 +499,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -516,7 +516,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 01;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -540,7 +540,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

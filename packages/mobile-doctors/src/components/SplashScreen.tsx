@@ -290,7 +290,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
               Linking.openURL(
                 Platform.OS === 'ios'
-                  ? 'https://apps.apple.com/in/developer/apollo-hospital/id1159230884'
+                  ? 'https://apps.apple.com/in/app/apollo-doctor-247/id1507758016'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.doctorapp'
               ).catch((err) => console.log('An error occurred', err));
             }}
