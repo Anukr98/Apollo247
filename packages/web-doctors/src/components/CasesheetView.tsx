@@ -304,29 +304,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     referralSpecialtyName,
   } = useContext(CaseSheetContext);
 
-  /*console.log({
-    patientDetails,
-    sdConsultationDate,
-    height,
-    weight,
-    bp,
-    temperature,
-    appointmentInfo,
-    consultType,
-    createdDoctorProfile,
-    followUp,
-    followUpAfterInDays,
-    followUpDate,
-    followUpConsultType,
-    diagnosis,
-    otherInstructions,
-    symptoms,
-    diagnosticPrescription,
-    medicinePrescription,
-  });
-
-  console.log({ currentDoctor });*/
-
   const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
@@ -574,11 +551,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <h3>
                 {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
               </h3>
-              {/* {currentDoctor.qualification && (
+              {currentDoctor.qualification && (
                 <p className={`${classes.specialty} ${classes.qualification}`}>
                   {currentDoctor.qualification}
                 </p>
-              )} */}
+              )}
 
               <p className={classes.specialty}>{`${
                 createdDoctorProfile.specialty.specialistSingularTerm
