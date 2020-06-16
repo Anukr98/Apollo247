@@ -241,7 +241,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           }
         })
         .catch((e) => {
-          setIsLoading(false);
+          console.log(e);
         })
         .finally(() => setIsLoading(false));
     }
