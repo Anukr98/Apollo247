@@ -4,10 +4,12 @@ android/app/build
 android/build
 android/.gradle
 android/local.properties
+package-lock.json
 ios/build
 .Trash*
 .DS_Store
 types/
+package-lock.json
 
 # Ignore Xcode user-related files
 xcuserdata/

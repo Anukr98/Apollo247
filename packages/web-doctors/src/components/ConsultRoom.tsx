@@ -518,6 +518,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  async function imageExists(image_url: string) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', image_url, false);
+    http.send();
+    return http.status !== 404;
+  }
+
+  const handleImageError = async (e: any, imageUrl: string) => {
+    e.persist();
+    const isImageExist = await imageExists(imageUrl);
+    if (isImageExist) {
+      e.target.src = imageUrl;
+      return;
+    } else {
+      e.target.src = 'https://flevix.com/wp-content/uploads/2019/07/Spin-Preloader.gif';
+      setTimeout(() => {
+        handleImageError(e, imageUrl);
+      }, 1000 * 10);
+    }
+  };
+
   const uploadfile = (url: string) => {
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
@@ -682,7 +703,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         <img src={require('images/pdf_thumbnail.png')} />
                       </a>
                     ) : (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
@@ -784,7 +811,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     className={classes.imageUpload}
                   >
                     {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     ) : (
                       <a href={rowData.url} target="_blank">
                         <img src={require('images/pdf_thumbnail.png')} />
@@ -891,7 +924,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         <img src={require('images/pdf_thumbnail.png')} />
                       </a>
                     ) : (
-                      <img src={rowData.url} alt={rowData.url} />
+                      <img
+                        src={rowData.url}
+                        alt={rowData.url}
+                        onError={(e: any) => {
+                          handleImageError(e, rowData.url);
+                        }}
+                      />
                     )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
@@ -1005,7 +1044,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }}
                   />
                   <span>Attach</span>
-                  <span><img src={require('images/round-attach.svg')} alt="" /></span>
+                  <span>
+                    <img src={require('images/round-attach.svg')} alt="" />
+                  </span>
                 </Button>
                 <AphTextField
                   autoFocus

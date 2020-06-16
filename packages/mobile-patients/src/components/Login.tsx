@@ -327,7 +327,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 .catch((error: Error) => {
                   console.log(error, 'error');
                   setShowSpinner(false);
-                  setBugFenderLog('OTP_SEND_FAIL', error);
+                  // setBugFenderLog('OTP_SEND_FAIL', error);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
                   CommonBugFender('OTP_SEND_FAIL', error);
