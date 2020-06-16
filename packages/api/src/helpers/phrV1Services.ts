@@ -34,7 +34,6 @@ export async function saveLabResults(
   apiUrl = apiUrl.replace('{UHID}', uhid);
 
   const reqStartTime = new Date();
-  console.log('prismTimeoutMillSeconds', prismTimeoutMillSeconds);
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
@@ -55,6 +54,7 @@ export async function saveLabResults(
           'uploadLabResultsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
           `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
         return data;
       },
       (err) => {
@@ -108,6 +108,8 @@ export async function savePrescription(
           'uploadPrescriptionsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
           `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
+
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
         return data;
       },
       (err) => {

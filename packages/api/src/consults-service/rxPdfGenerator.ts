@@ -1111,8 +1111,6 @@ export const uploadPdfBase64ToPrism = async (
   const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
     recordId: string;
   };
-
-  console.log('uploadedResult', uploadedResult);
   const fileId = uploadedResult.recordId;
 
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
