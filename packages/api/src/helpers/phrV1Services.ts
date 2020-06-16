@@ -53,7 +53,7 @@ export async function saveLabResults(
         dLogger(
           reqStartTime,
           'uploadLabResultsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${data}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
         return data;
       },
@@ -61,7 +61,7 @@ export async function saveLabResults(
         dLogger(
           reqStartTime,
           'uploadLabResultsToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${err}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
@@ -106,7 +106,7 @@ export async function savePrescription(
         dLogger(
           reqStartTime,
           'uploadPrescriptionsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${data}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
         return data;
       },
@@ -114,7 +114,7 @@ export async function savePrescription(
         dLogger(
           reqStartTime,
           'uploadPrescriptionsToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${err}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);

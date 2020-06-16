@@ -350,7 +350,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
               <ul>
                 {searchMedicines.map((medicine) => (
                   <li key={medicine.id}>
-                    <Link to={clientRoutes.medicineDetails(medicine.url_key)}>
+                    <Link
+                      to="#"
+                      onClick={() => {
+                        setSearchText('');
+                        window.location.href = clientRoutes.medicineDetails(medicine.url_key);
+                      }}
+                    >
                       <div className={classes.medicineImg}>
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />
