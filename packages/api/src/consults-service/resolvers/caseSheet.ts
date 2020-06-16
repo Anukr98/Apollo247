@@ -1245,7 +1245,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
@@ -1351,7 +1353,9 @@ const generatePrescriptionTemp: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
