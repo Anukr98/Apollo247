@@ -28,7 +28,7 @@ export const delegateFunctionsTypeDefs = gql`
     removeDelegateNumber: Profile
     addSecretary(secretaryId: ID!): DoctorSecretaryData
     removeSecretary(secretaryId: ID!): DoctorDetails
-    updatSaveExternalConnect(
+    updateSaveExternalConnect(
       doctorId: String
       patientId: String
       externalConnect: Boolean
@@ -176,7 +176,7 @@ const removeSecretary: Resolver<
 
   return updatedDoctorData;
 };
-const updatSaveExternalConnect: Resolver<
+const updateSaveExternalConnect: Resolver<
   null,
   { doctorId: string; patientId: string; externalConnect: boolean },
   DoctorsServiceContext,
@@ -198,7 +198,7 @@ export const delegateFunctionsResolvers = {
     removeDelegateNumber,
     addSecretary,
     removeSecretary,
-    updatSaveExternalConnect,
+    updateSaveExternalConnect,
   },
 
   Query: { getSecretaryList },
