@@ -31,6 +31,7 @@ export const updatePatientTypeDefs = gql`
     relation: Relation
     photoUrl: String
     deviceCode: String
+    employeeId: String
   }
 
   input UpdatePatientAllergiesInput {
@@ -99,7 +100,9 @@ const updatePatient: Resolver<
       await patientRepo.createNewUhid(updatePatient.id);
     }
   }
-
+  if (patient.employeeId == patientInput.employeeId) {
+    throw new AphError(AphErrorMessages.INVALID_EMPLOYEE_ID, undefined, {});
+  }
   // let regCode = '';
   // const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
   // const getCode = await regCodeRepo.updateCodeStatus('', patient);
