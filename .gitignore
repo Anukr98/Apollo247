@@ -8,3 +8,17 @@ packages/api/debug-logs/doctors-search.log
 *.log
 paytm-integration/env
 packages/mobile-patients/android/app/debug.keystore
+package-lock.json
+packages/aph-corporate/package-lock.json
+package-lock.json
+packages/aph-corporate/package-lock.json
+packages/api/package-lock.json
+packages/mobile-doctors/package-lock.json
+packages/mobile-patients/package-lock.json
+packages/mobile-ui-components/package-lock.json
+packages/shared-ui-components/package-lock.json
+packages/universal/package-lock.json
+packages/web-doctors/package-lock.json
+packages/web-patients/package-lock.json
+packages/web-ui-components/package-lock.json
+paytm-integration/package-lock.json
