@@ -3,7 +3,7 @@ node_modules
 .npm-cache
 .Trash*
 .awcache
-
+package-lock.json
 .DS_Store
 node_modules
 npm-debug.log
