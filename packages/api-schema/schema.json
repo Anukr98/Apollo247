@@ -24620,7 +24620,7 @@
             "deprecationReason": null
           },
           {
-            "name": "updatSaveExternalConnect",
+            "name": "updateSaveExternalConnect",
             "description": null,
             "args": [
               {
