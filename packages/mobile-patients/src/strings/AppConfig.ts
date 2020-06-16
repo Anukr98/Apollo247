@@ -51,26 +51,32 @@ const QA_top6_specailties = [
   {
     speciality_id: '121f66e5-f2ca-4d35-9960-31038435fae3',
     speciality_order: '1',
+    speciality_name: 'Endocrinology',
   },
   {
     speciality_id: 'de9ac89b-55ba-4c42-bad3-635c6cb97e7a',
     speciality_order: '2',
+    speciality_name: 'ENT',
   },
   {
     speciality_id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
     speciality_order: '3',
+    speciality_name: 'Dermatology',
   },
   {
     speciality_id: 'ff3bbb0c-3c63-44e3-a478-e4ef769ab946',
     speciality_order: '4',
+    speciality_name: 'Orthopaedics',
   },
   {
     speciality_id: 'dfe0b6a4-d0d4-4f54-a4b0-9f5c9bd7b39c',
     speciality_order: '5',
+    speciality_name: 'Cardiology',
   },
   {
     speciality_id: '7f1679fe-3c6c-4a08-8376-c528f031c1f9',
     speciality_order: '6',
+    speciality_name: 'Neurology',
   },
 ];
 

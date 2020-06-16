@@ -1052,6 +1052,10 @@ export const TxnIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/txnicon.png')} />
 );
 
+export const SympTrackerIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic-symptomtracker.png')} />
+);
+
 export const InPersonHeader: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 49, height: 56 }}

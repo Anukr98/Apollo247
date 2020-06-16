@@ -8,6 +8,7 @@ import {
   DropdownGreen,
   PrimaryIcon,
   LinkedUhidIcon,
+  SympTrackerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -97,6 +98,7 @@ import { useAppCommonData } from '../AppCommonDataProvider';
 import { useUIElements } from '../UIElementsProvider';
 import { ProfileList } from '../ui/ProfileList';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import Video from 'react-native-video';
 
 const { width } = Dimensions.get('window');
 
@@ -158,12 +160,29 @@ const styles = StyleSheet.create({
     lineHeight: 12,
     letterSpacing: 0.04,
   },
+  whichSpecialityTxt: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginTop: 12,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  TrackTxt: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    marginTop: 5,
+    color: theme.colors.APP_YELLOW,
+  },
   alphabetText: {
     ...theme.fonts.IBMPlexSansMedium(13),
     color: theme.colors.LIGHT_BLUE,
     opacity: 0.6,
     lineHeight: 20,
     letterSpacing: 0.04,
+  },
+  bookConsultTxt: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    // lineHeight: 20,
+    marginLeft: 20,
+    marginTop: 8,
   },
   listView: {
     ...theme.viewStyles.cardViewStyle,
@@ -352,6 +371,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   } = useAppCommonData();
   const [showList, setShowList] = useState<boolean>(false);
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(true);
+  const [playVideo, setPlayVideo] = useState<boolean>(false);
+  const [paused, setPaused] = useState<boolean>(true);
+
   const Alphabets = [
     'A',
     'B',
@@ -612,15 +634,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const fetchTopSpecialities = (data: getAllSpecialties_getAllSpecialties[]) => {
     const topSpecialityIDs = AppConfig.Configuration.TOP_SPECIALITIES;
     const topSpecialities: any = [];
-    console.log('topSpecialityIDs----------------------------', topSpecialityIDs[4]);
+    console.log('topSpecialityIDs----------------------------', topSpecialityIDs);
     topSpecialityIDs.forEach((ids) => {
       let array = data.filter((item) => {
         return ids.speciality_id == item.id;
+      });
+      data = data.filter((item) => {
+        return ids.speciality_id != item.id;
       });
       array.length && topSpecialities.push(array[0]);
     });
     console.log('TopSpecialities----------------------------', topSpecialities);
     setTopSpecialities(topSpecialities);
+    setSpecialities(data);
   };
 
   const fetchPastSearches = async () => {
@@ -929,7 +955,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderSpecialityText = () => {
     const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
-    if (SpecialitiesList && SpecialitiesList.length > 0 && displaySpeialist) {
+    if (
+      SpecialitiesList &&
+      SpecialitiesList.length > 0 &&
+      displaySpeialist &&
+      searchText.length < 3
+    ) {
       return (
         <View style={{ alignItems: 'center', marginVertical: 15 }}>
           <Text style={styles.specialityText}>Start your care now by choosing from</Text>
@@ -941,7 +972,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderTopSpecialities = () => {
     // const TopSpecialities = Specialities.slice(0, 6);
-    if (TopSpecialities && TopSpecialities.length > 0 && displaySpeialist) {
+    if (
+      TopSpecialities &&
+      TopSpecialities.length > 0 &&
+      displaySpeialist &&
+      searchText.length < 3
+    ) {
       return (
         <View style={{}}>
           <SectionHeaderComponent
@@ -959,36 +995,61 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           >
             {TopSpecialities.map((item, index) => {
               return (
-                <TouchableOpacity style={styles.topSpecilityCard} key={index}>
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      borderBottomWidth: 0.2,
-                      borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
-                    }}
-                  >
-                    <Text numberOfLines={2} style={styles.topSpecialityName}>
-                      {item.name}
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'center' }}>
-                    <Image
-                      source={{ uri: item.image }}
-                      resizeMode={'contain'}
-                      style={{ height: 40, width: 40, marginVertical: 14 }}
-                    />
-                  </View>
-                  <View style={{ alignItems: 'center', height: 30, justifyContent: 'center' }}>
-                    <Text numberOfLines={2} style={styles.topSpecialityDescription}>
-                      For your childs health problems
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'center', marginVertical: 12 }}>
-                    <Text style={styles.topSpecialityFriendlyname}>
-                      {item.userFriendlyNomenclature}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                <Mutation<saveSearch> mutation={SAVE_SEARCH}>
+                  {(mutate, { loading, data, error }) => (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        CommonLogEvent(AppRoutes.DoctorSearch, item.name);
+                        postSpecialityEvent(item.name, item.id);
+                        onClickSearch(item.id, item.name, item.specialistPluralTerm || '');
+                        const searchInput = {
+                          type: SEARCH_TYPE.SPECIALTY,
+                          typeId: item.id,
+                          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+                        };
+                        if (searchText.length > 2) {
+                          mutate({
+                            variables: {
+                              saveSearchInput: searchInput,
+                            },
+                          });
+                        }
+                      }}
+                      style={styles.topSpecilityCard}
+                      key={index}
+                    >
+                      <View
+                        style={{
+                          alignItems: 'center',
+                          borderBottomWidth: 0.2,
+                          borderBottomColor: theme.colors.BORDER_BOTTOM_COLOR,
+                        }}
+                      >
+                        <Text numberOfLines={2} style={styles.topSpecialityName}>
+                          {item.name}
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: 'center' }}>
+                        <Image
+                          source={{ uri: item.image }}
+                          resizeMode={'contain'}
+                          style={{ height: 40, width: 40, marginVertical: 14 }}
+                        />
+                      </View>
+                      <View style={{ alignItems: 'center', height: 30, justifyContent: 'center' }}>
+                        <Text numberOfLines={2} style={styles.topSpecialityDescription}>
+                          For your childs health problems
+                        </Text>
+                      </View>
+                      <View style={{ alignItems: 'center', marginVertical: 12 }}>
+                        <Text style={styles.topSpecialityFriendlyname}>
+                          {item.userFriendlyNomenclature}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </Mutation>
               );
             })}
           </View>
@@ -1026,20 +1087,26 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           />
           <View style={{ flexDirection: 'row' }}>
             <FlatList
-              contentContainerStyle={{
-                // flexWrap: 'wrap',
-                marginHorizontal: 12,
-              }}
+              contentContainerStyle={
+                {
+                  // flexWrap: 'wrap',
+                  // marginHorizontal: 12,
+                }
+              }
               bounces={false}
               data={SpecialitiesList}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) =>
-                renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
+                index == 6
+                  ? renderBookConsultVideo()
+                  : index == 12
+                  ? renderTrackSymptoms()
+                  : renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
               }
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
             />
-            <View style={{ position: 'absolute', right: 3, marginTop: 8 }}>
+            {/* <View style={{ position: 'absolute', right: 3, marginTop: 8 }}>
               {Alphabets.map((item, i) => {
                 return (
                   <View>
@@ -1047,11 +1114,83 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   </View>
                 );
               })}
-            </View>
+            </View> */}
           </View>
         </View>
       );
     }
+  };
+
+  const renderBookConsultVideo = () => {
+    return (
+      <View>
+        <Text style={styles.bookConsultTxt}>How to Book Consult?</Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setPlayVideo(true);
+            setPaused(!paused);
+            console.log(playVideo);
+          }}
+        >
+          {playVideo ? (
+            <Video
+              source={{
+                uri:
+                  'https://pivv.s3.ap-south-1.amazonaws.com/InAppIcons/Consult+An+Apollo+Doctor+(Horizontal).mp4',
+              }}
+              // ref={(ref: any) => {}}
+              onLoad={(data) => {
+                console.log(JSON.stringify(data));
+              }}
+              // onReadyForDisplay={() => {
+              //   Alert.alert('Ready for display');
+              // }}
+              // onBuffer={() => {
+              //   Alert.alert('buffer');
+              // }} // Callback when remote video is buffering
+              // onError={() => {
+              //   Alert.alert('error');
+              // }} // Callback when video cannot be loaded
+              paused={paused}
+              controls={true}
+              style={{ height: 0.374 * width, width: width, marginVertical: 10 }}
+              volume={0.5}
+            />
+          ) : (
+            <Image
+              style={{ height: 0.374 * width, width: width, marginVertical: 10 }}
+              source={require('@aph/mobile-patients/src/components/ui/icons/bookconsult.png')}
+            />
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderTrackSymptoms = () => {
+    return (
+      <View style={{ backgroundColor: '#fff', marginVertical: 8, flexDirection: 'row' }}>
+        <SympTrackerIcon
+          style={{
+            width: 40,
+            height: 40,
+            marginVertical: 16,
+            marginHorizontal: 15,
+          }}
+        />
+        <View>
+          <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.SymptomChecker);
+            }}
+          >
+            <Text style={styles.TrackTxt}>TRACK YOUR SYMPTOMS</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   };
 
   const postSpecialityEvent = (speciality: string, specialityId: string) => {
@@ -1159,7 +1298,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 }
               }}
               style={{
-                marginHorizontal: 10,
+                marginHorizontal: 20,
                 marginVertical: 8,
                 marginTop: rowID === 0 ? 16 : 6,
                 marginBottom: length === rowID + 1 ? 16 : 6,
@@ -1416,9 +1555,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               }}
             />
             <FlatList
-              contentContainerStyle={{
-                marginHorizontal: 12,
-              }}
+              contentContainerStyle={
+                {
+                  // marginHorizontal: 12,
+                }
+              }
               bounces={false}
               data={possibleMatches.specialties}
               onEndReachedThreshold={0.5}
