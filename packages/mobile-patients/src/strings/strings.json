@@ -314,6 +314,9 @@
     "failure": "TXN_FAILURE",
     "pending": "PAYMENT_PENDING_PG"
   },
+  "alerts": {
+    "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
+  },
   "muiltdosages": [
     {
       "single": "tablet",

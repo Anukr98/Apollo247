@@ -578,11 +578,11 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
       ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails.uhid
       : '';
-  const patientRelation =
+  const patientMobileNumber =
     casesheetInfo &&
     casesheetInfo.getJuniorDoctorCaseSheet &&
     casesheetInfo.getJuniorDoctorCaseSheet.patientDetails
-      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.relation
+      ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.mobileNumber
       : '';
   const patientAppointmentId =
     (casesheetInfo &&
@@ -612,9 +612,6 @@ export const JDConsultRoom: React.FC = () => {
       'dd/MM/yyyy, hh:mm a'
     );
   }
-
-  const patientRelationHeader =
-    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1467,8 +1464,8 @@ export const JDConsultRoom: React.FC = () => {
                         <span>({userCardStrip})</span>
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
-                        {patientRelationHeader}
+                        <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
+                        {patientMobileNumber}
                       </div>
                       <div className={classes.patientTextInfo}>
                         <label>Appt ID:</label> {patientAppointmentId}

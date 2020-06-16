@@ -97,6 +97,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingRight: 3,

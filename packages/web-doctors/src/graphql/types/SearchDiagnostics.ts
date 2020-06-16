@@ -9,6 +9,7 @@
 export interface SearchDiagnostics_searchDiagnostics_diagnostics {
   __typename: "Diagnostics";
   itemName: string;
+  itemId: number;
 }
 
 export interface SearchDiagnostics_searchDiagnostics {

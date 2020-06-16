@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
 
 export interface StoreDriveWayPickupPopupProps {
   onPressOkGotIt: () => void;
-  store: Store;
+  store?: Store;
 }
 
 export const StoreDriveWayPickupPopup: React.FC<StoreDriveWayPickupPopupProps> = (props) => {
