@@ -538,17 +538,17 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
   const vitalsArr = [];
-  if(weight && weight.trim() !== ''){
-    vitalsArr.push('Weight : '+ weight)
+  if (weight && weight.trim() !== '') {
+    vitalsArr.push('Weight : ' + weight);
   }
-  if(height && height.trim() !== ''){
-    vitalsArr.push('Height : '+ height)
+  if (height && height.trim() !== '') {
+    vitalsArr.push('Height : ' + height);
   }
-  if(bp && bp.trim() !== ''){
-    vitalsArr.push('BP : '+ bp)
+  if (bp && bp.trim() !== '') {
+    vitalsArr.push('BP : ' + bp);
   }
-  if(temperature && temperature.trim() !== ''){
-    vitalsArr.push('Temperature : '+ temperature);
+  if (temperature && temperature.trim() !== '') {
+    vitalsArr.push('Temperature : ' + temperature);
   }
   return (
     <div className={classes.root} id={'prescriptionWrapper'}>

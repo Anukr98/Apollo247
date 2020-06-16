@@ -2197,7 +2197,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.backButton}
                         onClick={() => {
                           const isEmptyFields = checkForEmptyFields();
-                      if (!isEmptyFields) {props.saveCasesheetAction(true, false)}}}
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                          }
+                        }}
                       >
                         Save
                       </Button>
@@ -2206,12 +2209,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         disabled={props.saving}
                         onClick={() => {
                           const isEmptyFields = checkForEmptyFields();
-                      if (!isEmptyFields) {
-                          props.saveCasesheetAction(true, false);
-                          props.setIsClickedOnEdit(false);
-                          props.setIsClickedOnPriview(true);
-                          props.setIsPdfPageOpen(true);
-                        }}}
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                            props.setIsClickedOnEdit(false);
+                            props.setIsClickedOnPriview(true);
+                            props.setIsPdfPageOpen(true);
+                          }
+                        }}
                       >
                         Preview Prescription
                       </Button>
@@ -2231,8 +2235,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     onClick={() => {
                       const isEmptyFields = checkForEmptyFields();
                       if (!isEmptyFields) {
-                      props.saveCasesheetAction(true, false);
-                    }
+                        props.saveCasesheetAction(true, false);
+                      }
                     }}
                   >
                     Save
@@ -2243,12 +2247,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     onClick={() => {
                       const isEmptyFields = checkForEmptyFields();
                       if (!isEmptyFields) {
-                      stopInterval();
-                      if (showVideo) {
-                        stopAudioVideoCall();
-                      }
-                      props.endConsultAction();
-                      isConsultStarted = false;
+                        stopInterval();
+                        if (showVideo) {
+                          stopAudioVideoCall();
+                        }
+                        props.endConsultAction();
+                        isConsultStarted = false;
                       }
                     }}
                   >
@@ -3317,15 +3321,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             </div>
             <div className={classes.bottomActions}>
-              {!sendToPatientButtonDisable && (<Button
-                onClick={() => props.setShowConfirmPrescription(false)}
-                classes={{
-                  root: classes.canceledBtn,
-                  disabled: classes.cancelBtnDisabled,
-                }}
-              >
-                Cancel
-              </Button>)}
+              {!sendToPatientButtonDisable && (
+                <Button
+                  onClick={() => props.setShowConfirmPrescription(false)}
+                  classes={{
+                    root: classes.canceledBtn,
+                    disabled: classes.cancelBtnDisabled,
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 classes={{
                   root: classes.sendBtn,
@@ -3338,13 +3344,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.saveCasesheetAction(true, true);
                 }}
               >
-                
                 {sendToPatientButtonDisable && 'Please wait...'}
-                          {sendToPatientButtonDisable ? (
-                            <CircularProgress size={22} />
-                          ) : (
-                            'Send Prescription'
-                          )}
+                {sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send Prescription'}
               </Button>
             </div>
           </div>
