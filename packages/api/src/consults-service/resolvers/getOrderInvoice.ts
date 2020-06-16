@@ -195,7 +195,7 @@ const getOrderInvoice: Resolver<
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .moveDown(0.3)
 
-      .fillColor('#6d7278')
+      .fillColor('#828691')
       .text(`${todayDate}`, { align: 'right' });
     doc.moveDown(2);
   };
