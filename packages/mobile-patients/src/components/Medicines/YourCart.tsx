@@ -1,11 +1,9 @@
 import {
-  aphConsole,
   dataSavedUserID,
   doRequestAndAccessLocationModified,
   findAddrComponents,
   formatAddress,
   g,
-  handleGraphQlError,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
@@ -300,7 +298,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const getUserAddress = async () => {
     setLoading!(true);
     const userId = await dataSavedUserID('selectedProfileId');
-    console.log('selectedProfileId', userId);
     ((navigatedFrom === 'splashscreen' || 'registration') &&
       addresses.length == 0 &&
       client
@@ -501,9 +498,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }),
         {} as { [key: string]: string[] }
       );
-
-      console.log('storeIdAndItemsMapping:-\n', { storeIdAndItemsMapping });
-
       const storesInventory = await Promise.all(
         Object.keys(storeIdAndItemsMapping).map((storeId) =>
           getStoreInventoryApi(storeId, storeIdAndItemsMapping[storeId])
@@ -513,10 +507,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         (item) => item.data.itemDetails && item.data.shopId
       );
       if (!storeItems.length) {
-        throw 'Error';
+        setLoading!(false);
+        return;
       }
-
-      console.log('storeItems:-\n', { storeItems });
 
       const filteredStoreItems = storeItems
         .map((storeItem) => storeItem.data.itemDetails)
@@ -525,11 +518,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
           return getFromattedStoreInventory(storeItem, cartItem);
         });
-
       const validation = cartValidation(filteredStoreItems, cartItems);
-      console.log('\n\n\n\ncartValidation');
-      console.log({ filteredStoreItems, cartItems, newItems: validation.newItems });
-      console.log('\n\n\n\n');
 
       if (validation.alertText) {
         // Below line is to stop TAT useEffect from triggering due to change in cart items
@@ -1586,7 +1575,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -1608,14 +1596,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          console.log('precp:di', newuploadedPrescriptions);
 
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
           CommonBugFender('YourCart_physicalPrescriptionUpload', e);
-          aphConsole.log({ e });
           setLoading!(false);
           renderAlert('Error occurred while uploading prescriptions.');
         });
