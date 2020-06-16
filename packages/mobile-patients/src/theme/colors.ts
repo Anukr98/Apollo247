@@ -25,6 +25,8 @@ const deepRed = '#a30808';
 const lightPaleRed = '#EDC6C2';
 const paleLightGray = '#F1F1F1';
 const platinumGrey = '#525252';
+const bondi_blue = '#0187ba';
+const lightGray2 = '#cccccc';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -74,6 +76,8 @@ const Common = {
   PLATINUM_GREY: platinumGrey,
   REDEEMED_TEXT: '#c3202b',
   CONSUTL_STEPS: 'rgba(1, 71, 91, 0.6)',
+  BONDI_BLUE: bondi_blue,
+  LIGHT_GRAY_2: lightGray2,
 };
 
 const Header = {

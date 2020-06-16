@@ -20,7 +20,9 @@ import moment from 'moment';
 
 const styles = StyleSheet.create({
   container: {
-    ...theme.viewStyles.container,
+    // ...theme.viewStyles.container,
+    flex: 1,
+    backgroundColor: theme.colors.WHITE,
     position: 'absolute',
     top: Platform.OS === 'ios' ? 20 : 0,
     bottom: 0,
@@ -79,6 +81,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f8f5',
     shadowRadius: 0,
   },
+  //start
+  content: {
+    flexDirection: 'row',
+    // flex: 0.7,
+  },
+
+  // menu Column - left
+  menuColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.colors.CARD_BG,
+  },
+  menuItem: {
+    paddingVertical: 21,
+    paddingRight: 12,
+    paddingLeft: 30,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // backgroundColor: theme.colors.CARD_BG,
+    borderBottomWidth: 0.2,
+    borderBottomColor: theme.colors.LIGHT_GRAY_2,
+    flexDirection: 'row',
+  },
+  selectedMenuItem: {
+    backgroundColor: theme.colors.WHITE,
+  },
+
+  menuItemText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+  },
+
+  // settings column -right
+  settingsColumn: {
+    flex: 1,
+    padding: 15,
+  },
+  settingsView: {
+    justifyContent: 'center',
+    backgroundColor: theme.colors.WHITE,
+  },
+  selectedMenuItemText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.BONDI_BLUE),
+  },
+  //end
 });
 
 type dataType = {
@@ -106,8 +152,125 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
 
   // const { currentUser } = useAuth();
+  const [menuItems, setMenuItems] = useState([
+    { id: '1', name: 'City' },
+    { id: '2', name: 'Brands' },
+    { id: '3', name: 'Experience' },
+    { id: '4', name: 'Availability' },
+    { id: '5', name: 'Fees' },
+    { id: '6', name: 'Gender' },
+    { id: '7', name: 'Language' },
+  ]);
+  const renderFilterSection = (id: number) => {
+    const sectionData = data[id];
+    const { label, options, selectedOptions } = sectionData;
+    return (
+      <>
+        {label.length ? (
+          <View style={styles.settingsView}>
+            <Text style={styles.leftText}>{label}</Text>
+          </View>
+        ) : null}
+        <View
+          style={[
+            styles.optionsView,
+            !showCalander && label === 'Availability' ? { paddingHorizontal: 20 } : {},
+          ]}
+        >
+          {selectedOptions &&
+            options &&
+            options.length > 0 &&
+            options.map((name) => (
+              <Button
+                title={name.replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())}
+                style={[
+                  styles.buttonStyle,
+                  selectedOptions.includes(name)
+                    ? { backgroundColor: theme.colors.APP_GREEN }
+                    : null,
+                ]}
+                titleTextStyle={[
+                  styles.buttonTextStyle,
+                  selectedOptions.includes(name) ? { color: theme.colors.WHITE } : null,
+                ]}
+                onPress={() => {
+                  let selectedData = [...data][id]['selectedOptions'] || [];
+                  const dataCopy = [...data];
 
+                  if (selectedData.includes(name)) {
+                    selectedData = selectedData.filter((item: string) => item !== name);
+                  } else {
+                    selectedData.push(name);
+                  }
+                  dataCopy[id] = {
+                    ...dataCopy[id],
+                    selectedOptions: selectedData,
+                  };
+                  setData(dataCopy);
+                }}
+              />
+            ))}
+        </View>
+      </>
+    );
+  };
+  const renderSelectedView = (selectedItem: string) => {
+    switch (selectedItem) {
+      case '1':
+        return null;
+      case '2':
+        return null;
+      case '3':
+        return renderFilterSection(0);
+      case '4':
+        return renderFilterSection(1);
+      case '5':
+        return renderFilterSection(2);
+      case '6':
+        return renderFilterSection(3);
+      case '7':
+        return renderFilterSection(4);
+      default:
+        return renderFilterSection(0);
+    }
+  };
+  // this holds the keys of the menuItems for the view to know which category is currently being rendered.
+  const [selectedItem, setSelectedItem] = useState('1');
+  const filtersCard = () => {
+    return (
+      <View style={styles.content}>
+        <View style={styles.menuColumn}>
+          {menuItems.map((item, index) => {
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => setSelectedItem(item.id)}
+                style={[styles.menuItem, item.id === selectedItem ? styles.selectedMenuItem : null]}
+              >
+                <Text
+                  style={[
+                    item.id === selectedItem ? styles.selectedMenuItemText : styles.menuItemText,
+                  ]}
+                >
+                  {item.name}
+                </Text>
+                <Text style={{ marginLeft: 10 }}>1</Text>
+              </TouchableOpacity>
+            );
+          })}
+          <View
+            style={{ display: 'flex', backgroundColor: theme.colors.CARD_BG, height: '100%' }}
+          />
+        </View>
+        <View style={styles.settingsColumn}>
+          {/* Option 1: AGE */}
+          {renderSelectedView(selectedItem)}
+        </View>
+      </View>
+    );
+  };
   const filterCardsView = () => {
+    console.log('data===>', data);
     return (
       <View style={{ marginVertical: 16 }}>
         {data.map(({ label, options, selectedOptions }: filterDataType, index: number) => {
@@ -331,10 +494,12 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       props.filterLength();
     }
     return (
-      <StickyBottomComponent defaultBG>
+      <StickyBottomComponent
+        style={{ backgroundColor: theme.colors.WHITE, elevation: 20, height: '12%' }}
+      >
         <Button
           title={'APPLY FILTERS'}
-          style={{ flex: 1, marginHorizontal: 40 }}
+          style={{ flex: 1, marginHorizontal: 40, marginTop: 15 }}
           onPress={() => {
             props.setData(data);
             props.onClickClose(data);
@@ -349,8 +514,8 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     <SafeAreaView style={styles.container}>
       {renderTopView()}
       <ScrollView style={{ flex: 1 }} bounces={false}>
-        {filterCardsView()}
-        <View style={{ height: 80 }} />
+        {filtersCard()}
+        <View style={{ height: 160 }} />
       </ScrollView>
       {bottomButton()}
     </SafeAreaView>

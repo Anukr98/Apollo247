@@ -169,27 +169,27 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
   const filterData: filterDataType[] = [
     {
-      label: 'Experience In Years',
+      label: 'In Years',
       options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
       selectedOptions: [],
     },
     {
-      label: 'Availability',
+      label: '',
       options: ['Now', 'Today', 'Tomorrow', 'Next 3 Days'],
       selectedOptions: [],
     },
     {
-      label: 'Fees In Rupees',
+      label: 'In Rupees',
       options: ['100 - 500', '501 - 1000', '1000+'],
       selectedOptions: [],
     },
     {
-      label: 'Gender',
+      label: '',
       options: [Gender.MALE, Gender.FEMALE],
       selectedOptions: [],
     },
     {
-      label: 'Language',
+      label: '',
       options: ['Hindi', 'English', 'Telugu'],
       selectedOptions: [],
     },
