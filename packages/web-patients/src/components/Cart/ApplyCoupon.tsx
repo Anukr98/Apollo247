@@ -238,12 +238,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               (coupon) => coupon.displayStatus
             );
             setAvailableCoupons(visibleCoupons);
-            setIsLoading(false);
           }
         })
         .catch((e) => {
-          setIsLoading(false);
-        });
+          console.log(e);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [availableCoupons]);
 
