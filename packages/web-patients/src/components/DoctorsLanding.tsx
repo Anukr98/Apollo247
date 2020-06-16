@@ -247,6 +247,15 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!params.specialty) {
+      setSpecialitySelected('');
+      setFilterOptions(searchObject);
+      setDisableFilters(true);
+      setShowSearchAndPastSearch(true);
+    }
+  }, [params.specialty]);
+
   if (!currentPincode && currentLat && currentLong) {
     getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);
   }
@@ -437,12 +446,13 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
-  
+
   const metaTagProps = {
     title: 'Online Doctor Consultation 24|7 - Book Doctor Appointments Online - Apollo 247',
-    desciption: 'Online doctor consultation at Apollo 247. Book doctor appointments online in just a few clicks. Get all your need in one place at Apollo 247 - your one-stop solution for all medical needs.',
-    canonicalLink: window && window.location && window.location.href
-  }
+    desciption:
+      'Online doctor consultation at Apollo 247. Book doctor appointments online in just a few clicks. Get all your need in one place at Apollo 247 - your one-stop solution for all medical needs.',
+    canonicalLink: window && window.location && window.location.href,
+  };
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
