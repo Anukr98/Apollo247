@@ -752,7 +752,7 @@ export class Patient extends BaseEntity {
   dateOfBirth: Date;
 
   @Column({ nullable: true })
-  employeeId: String;
+  employeeId: string;
 
   @Column({ nullable: true })
   @IsOptional()
