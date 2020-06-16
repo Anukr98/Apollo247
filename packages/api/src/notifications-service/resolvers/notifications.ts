@@ -670,6 +670,12 @@ export async function sendNotification(
     const hoursDifference = differenceInHours(laterDate, earlierDate);
 
     if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
+      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
+        '{0}',
+        doctorDetails.fullName
+      )
+        .replace('{1}', patientDetails.firstName)
+        .replace('{2}', apptDate.toString());
       let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
         '{0}',
         doctorDetails.fullName
@@ -678,6 +684,7 @@ export async function sendNotification(
       doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
       doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
       sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
     }
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
