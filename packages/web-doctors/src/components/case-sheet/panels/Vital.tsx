@@ -186,16 +186,16 @@ export const Vital: React.FC = () => {
               helperText={vitalError.height}
               defaultValue={getDefaultValue('height')}
               onBlur={(e) => {
-                if (e.target.value !== '' && e.target.value.trim() !== '')
-                  setVitalError({
-                    ...vitalError,
-                    height: '',
-                  });
-                else
-                  setVitalError({
-                    ...vitalError,
-                    height: 'This field is required',
-                  });
+                // if (e.target.value !== '' && e.target.value.trim() !== '')
+                //   setVitalError({
+                //     ...vitalError,
+                //     height: '',
+                //   });
+                // else
+                //   setVitalError({
+                //     ...vitalError,
+                //     height: 'This field is required',
+                //   });
                 const storageItem = getLocalStorageItem(params.id);
                 if (storageItem) {
                   storageItem.height = e.target.value;
