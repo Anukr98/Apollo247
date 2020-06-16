@@ -2025,42 +2025,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const checkForEmptyFields = () => {
-    const heightValue = getDefaultValue('height') || '';
-    const weightValue = getDefaultValue('weight') || '';
     const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
     const referralDescription = getDefaultValue('referralDescription') || '';
-    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
-      if (vitalIgnored) {
-        setVitalError({
-          height: '',
-          weight: '',
-        });
-        return false;
-      } else {
-        if (heightValue.trim() === '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: 'This field is required',
-          });
-          return true;
-        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: '',
-          });
-          return true;
-        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: '',
-            weight: 'This field is required',
-          });
-          return true;
-        }
-      }
-    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+    if (referralSpecialtyName && referralDescription.trim() === '') {
       setShowVital(false);
       setVitalError({
         height: '',
@@ -2267,15 +2234,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      // const isEmptyFields = checkForEmptyFields();
-                      // if (!isEmptyFields) {
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
                       stopInterval();
                       if (showVideo) {
                         stopAudioVideoCall();
                       }
                       props.endConsultAction();
                       isConsultStarted = false;
-                      // }
+                      }
                     }}
                   >
                     <svg
