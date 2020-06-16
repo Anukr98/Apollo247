@@ -183,7 +183,15 @@ const createOneApolloTransaction = async (
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -299,14 +307,17 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
-    const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
-    log(
-      'profileServiceLogger',
-      `oneApollo Transaction response- ${order.orderAutoId}`,
-      'createOneApolloTransaction()',
-      JSON.stringify(oneApolloResponse),
-      ''
-    );
+    if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
+      const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction response- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(oneApolloResponse),
+        ''
+      );
+    }
+    return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
   }

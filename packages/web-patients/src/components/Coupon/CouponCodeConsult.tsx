@@ -211,12 +211,12 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
             data.getConsultCouponList.coupons.length > 0
           ) {
             setAvailableCoupons(data.getConsultCouponList.coupons);
-            setIsLoading(false);
           }
         })
         .catch((e) => {
-          setIsLoading(false);
-        });
+          console.log(e);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [availableCoupons]);
 
