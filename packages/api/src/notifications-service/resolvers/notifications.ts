@@ -1279,7 +1279,7 @@ export async function sendReminderNotification(
       }
     }
 
-    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -1287,8 +1287,8 @@ export async function sendReminderNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {
