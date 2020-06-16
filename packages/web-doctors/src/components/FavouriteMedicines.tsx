@@ -2201,7 +2201,9 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                        if(event.target.value && event.target.value.trim() !== '' && 
+                                        event.target.value.trim() !== '0' && 
+                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
                                           setInTheTime('morning', true);
                                         }else{
                                           setInTheTime('morning', false);
@@ -2231,7 +2233,9 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNoon}
                                       onChange={(event: any) => {
                                         setCustomDosageNoon(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                        if(event.target.value && event.target.value.trim() !== '' && 
+                                        event.target.value.trim() !== '0' && 
+                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
                                           setInTheTime('noon', true);
                                         }else{
                                           setInTheTime('noon', false);
@@ -2261,7 +2265,9 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageEvening}
                                       onChange={(event: any) => {
                                         setCustomDosageEvening(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                        if(event.target.value && event.target.value.trim() !== '' && 
+                                        event.target.value.trim() !== '0' && 
+                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
                                           setInTheTime('evening', true);
                                         }else{
                                           setInTheTime('evening', false);
@@ -2290,8 +2296,9 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNight}
                                       onChange={(event: any) => {
                                         setCustomDosageNight(event.target.value);
-                                        console.log(parseInt(event.target.value));
-                                        if(event.target.value && event.target.value.trim() !== '' && event.target.value.trim() !== '0' && parseInt(event.target.value.trim()) > 0 ){
+                                        if(event.target.value && event.target.value.trim() !== '' && 
+                                        event.target.value.trim() !== '0' && 
+                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
                                           setInTheTime('night', true);
                                         }else{
                                           setInTheTime('night', false);
