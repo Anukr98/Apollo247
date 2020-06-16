@@ -494,17 +494,28 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     cartItems: ShoppingCartItem[]
   ) => {
     try {
-      // TODO: can be optimized
-      const uniqueStoreIds = tatResponse
-        .filter((v, i, a) => a.findIndex((t) => t.siteId === v.siteId) === i)
-        .map((item) => item.siteId);
-      const storesInventory = await getStoresInventory(uniqueStoreIds, cartItems);
+      const storeIdAndItemsMapping = tatResponse.reduce(
+        (prevVal, currentVal) => ({
+          ...prevVal,
+          [currentVal.siteId]: [...(prevVal[currentVal.siteId] || []), currentVal.artCode],
+        }),
+        {} as { [key: string]: string[] }
+      );
+
+      console.log('storeIdAndItemsMapping:-\n', { storeIdAndItemsMapping });
+
+      const storesInventory = await Promise.all(
+        Object.keys(storeIdAndItemsMapping).map((storeId) =>
+          getStoreInventoryApi(storeId, storeIdAndItemsMapping[storeId])
+        )
+      );
       const storeItems = storesInventory.filter(
         (item) => item.data.itemDetails && item.data.shopId
       );
       if (!storeItems.length) {
         throw 'Error';
       }
+
       console.log('storeItems:-\n', { storeItems });
 
       const filteredStoreItems = storeItems
@@ -515,7 +526,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           return getFromattedStoreInventory(storeItem, cartItem);
         });
 
-      // updateCartItemsWithStorePrice(filteredStoreItems, cartItems, () => setLoading!(false));
       const validation = cartValidation(filteredStoreItems, cartItems);
       console.log('\n\n\n\ncartValidation');
       console.log({ filteredStoreItems, cartItems, newItems: validation.newItems });
