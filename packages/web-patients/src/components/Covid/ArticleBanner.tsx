@@ -7,8 +7,8 @@ import { AphButton } from '@aph/web-ui-components';
 import Typography from '@material-ui/core/Typography';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
 import { CallOurExperts } from 'components/CallOurExperts';
-
 import { ShareWidget } from 'components/ShareWidget';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -66,7 +66,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     subcribeBtn: {
-      marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
       minWidth: 148,
@@ -111,6 +110,8 @@ const useStyles = makeStyles((theme: Theme) => {
     rightGroup: {
       marginLeft: 'auto',
       paddingLeft: 20,
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -247,6 +248,28 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    shareIcon: {
+      display: 'flex',
+      marginRight: 40,
+      color: '#fcb716',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      position: 'relative',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 5,
+      },
+    },
+    desktopHide: {
+      marginLeft: 'auto',
+      marginRight: 15,
+      fontSize: 13,
+      lineHeight: '23px',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -279,6 +302,19 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
         </Link>
+        <div
+          className={`${classes.shareIcon} ${classes.desktopHide}`}
+          onMouseEnter={() => {
+            setShowShareWidget(true);
+          }}
+          onMouseLeave={() => {
+            setShowShareWidget(false);
+          }}
+        >
+          <span><img src={require('images/ic-share-yellow.svg')} alt="" /></span>
+          <span>Share</span>
+          {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
+        </div>
         <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
           Subscribe
         </AphButton>
@@ -297,20 +333,20 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
             </span>
           </div>
         </div>
-        <div
-          className={classes.views}
-          onMouseEnter={() => {
-            setShowShareWidget(true);
-          }}
-          onMouseLeave={() => {
-            setShowShareWidget(false);
-          }}
-        >
-          <img src={require('images/ic-views.svg')} alt="" />
-          <span>Share</span>
-          {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
-        </div>
         <div className={classes.rightGroup}>
+          <div
+            className={classes.shareIcon}
+            onMouseEnter={() => {
+              setShowShareWidget(true);
+            }}
+            onMouseLeave={() => {
+              setShowShareWidget(false);
+            }}
+          >
+            <span><img src={require('images/ic-share-yellow.svg')} alt="" /></span>
+            <span>Share</span>
+            {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
+          </div>
           <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
             Subscribe
           </AphButton>
