@@ -1179,16 +1179,12 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
           statusDate
           orderStatus
         }
+        medicineOrderLineItems {
+          medicineName
+        }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            statusDate
-            hideStatus
-            orderStatus
+          medicineOrderInvoice {
+            itemDetails
           }
         }
       }

@@ -223,7 +223,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const renderDetails = () => {
     return (
       <View style={styles.detailsViewStyle}>
-        <Text style={styles.titleStyle}>{props.title || 'Medicines'}</Text>
+        <Text numberOfLines={1} ellipsizeMode="middle" style={styles.titleStyle}>
+          {props.title || 'Medicines'}
+        </Text>
         {renderDescriptionAndId()}
         {renderGraphicalStatus()}
         {renderStatusAndTime()}
