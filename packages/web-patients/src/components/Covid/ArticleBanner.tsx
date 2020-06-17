@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
 import { CallOurExperts } from 'components/CallOurExperts';
 
+import { ShareWidget } from 'components/ShareWidget';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -152,7 +153,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     views: {
       opacity: 0.8,
-      display: 'none',
       [theme.breakpoints.down('xs')]: {
         opacity: 1,
         float: 'right',
@@ -261,6 +261,8 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const classes = useStyles({});
   const subRef = React.useRef(null);
   const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
+  const [showShareWidget, setShowShareWidget] = useState(false);
+
   const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>
@@ -286,13 +288,27 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
           <h2>{title}</h2>
           <div className={classes.articleInformation}>
             <span className={classes.type}>{type}</span>
-            <span className={classes.views}>
+            {/* <span className={classes.views}>
               <img src={require('images/ic-views.svg')} alt="" /> 276 Views
-            </span>
+            </span> */}
+
             <span className={classes.source}>
               {source && source.length && <>Sourced from {source}</>}
             </span>
           </div>
+        </div>
+        <div
+          className={classes.views}
+          onMouseEnter={() => {
+            setShowShareWidget(true);
+          }}
+          onMouseLeave={() => {
+            setShowShareWidget(false);
+          }}
+        >
+          <img src={require('images/ic-views.svg')} alt="" />
+          <span>Share</span>
+          {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
         </div>
         <div className={classes.rightGroup}>
           <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
