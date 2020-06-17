@@ -1322,7 +1322,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, []);
 
   let insertText: object[] = [];
-  const newmessage: object[] = [];
+  const newmessage: any[] = [];
 
   const getHistory = (timetoken: number) => {
     pubnub.history(
@@ -1334,46 +1334,40 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         start: timetoken,
       },
       (status, res) => {
-        const end: any = res.endTimeToken ? res.endTimeToken : 1;
-        res &&
-          res.messages.forEach((element, index) => {
-            const item = element.entry;
-            // console.log(item, 'element');
-            if (item.prismId) {
-              getPrismUrls(client, patientId, item.prismId)
-                .then((data) => {
-                  if (data && data.urls) {
-                    item.url = data.urls[0] || item.url;
-                  }
-                })
-                .catch((e) => {
-                  CommonBugFender('ChatRoom_getPrismUrls', e);
-                });
-            }
-            newmessage[newmessage.length] = item;
-          });
         try {
-          const files: { prismId: string | null; url: string }[] = [];
-          res.messages.forEach((element, index) => {
-            newmessage[index] = element.entry;
-            if (
-              element.entry.id === patientId &&
-              element.entry.message === messageCodes.imageconsult
-            ) {
-              files.push({ prismId: element.entry.prismId, url: element.entry.url });
-            }
-          });
-          console.log('res', res.messages);
-          setChatFiles(files);
-          AsyncStorage.setItem('chatFileData', JSON.stringify(files));
+          const end: any = res.endTimeToken ? res.endTimeToken : 1;
+          res &&
+            res.messages.forEach((element, index) => {
+              const item = element.entry;
+              if (item.prismId) {
+                getPrismUrls(client, patientId, item.prismId)
+                  .then((data) => {
+                    if (data && data.urls) {
+                      item.url = data.urls[0] || item.url;
+                    }
+                  })
+                  .catch((e) => {
+                    CommonBugFender('ChatRoom_getPrismUrls', e);
+                  });
+              }
+              newmessage[newmessage.length] = item;
+            });
           if (messages.length !== newmessage.length) {
-            console.log('set saved');
-            insertText = newmessage;
             if (res.messages.length == 100) {
               getHistory(end);
               return;
             }
+            insertText = newmessage;
             setMessages(newmessage as []);
+            const files: { prismId: string | null; url: string }[] = [];
+
+            newmessage.forEach((element, index) => {
+              if (element.id === patientId && element.message === messageCodes.imageconsult) {
+                files.push({ prismId: element.prismId, url: element.url });
+              }
+            });
+            setChatFiles(files);
+            AsyncStorage.setItem('chatFileData', JSON.stringify(files));
             if (!callOptions.isVideo || !callOptions.isAudio) {
               console.log('chat icon', chatReceived);
               setChatReceived(true);
