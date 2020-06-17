@@ -148,6 +148,7 @@ export enum LOGIN_TYPE {
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
+  TILL_NEXT_REVIEW = "TILL_NEXT_REVIEW",
   WEEKS = "WEEKS",
 }
 
@@ -234,9 +235,11 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
+  INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT",
   LOTION = "LOTION",
   MG = "MG",
   ML = "ML",
@@ -254,6 +257,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  TEASPOON = "TEASPOON",
   UNIT = "UNIT",
 }
 
@@ -334,15 +338,19 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
   INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
   NASAL_DROPS = "NASAL_DROPS",
   ORALLY = "ORALLY",
   ORAL_DROPS = "ORAL_DROPS",
   PER_RECTAL = "PER_RECTAL",
   SUBCUTANEOUS = "SUBCUTANEOUS",
   SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
 }
 
 export enum Relation {
@@ -436,6 +444,11 @@ export enum notificationStatus {
 
 export enum notificationType {
   CHAT = "CHAT",
+}
+
+export enum prescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
 }
 
 export interface AddMedicalRecordInput {
@@ -649,6 +662,23 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
+export interface LabResultFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface LabResultsUploadRequest {
+  labTestName: string;
+  labTestDate: any;
+  labTestRefferedBy?: string | null;
+  observation?: string | null;
+  identifier?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (TestResultsParameter | null)[] | null;
+  testResultFiles?: (LabResultFileProperties | null)[] | null;
+}
+
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
@@ -820,6 +850,16 @@ export interface PrescriptionMedicinePaymentOMSDetails {
   paymentDateTime?: any | null;
 }
 
+export interface PrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: prescriptionSource;
+  prescriptionFiles?: (prescriptionFileProperties | null)[] | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -858,6 +898,13 @@ export interface ShopAddress {
   state?: string | null;
   zipcode?: string | null;
   stateCode?: string | null;
+}
+
+export interface TestResultsParameter {
+  parameterName: string;
+  result: string;
+  unit: string;
+  range?: string | null;
 }
 
 export interface UpdateAppointmentSessionInput {
@@ -916,6 +963,12 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface prescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
 }
 
 //==============================================================
