@@ -962,7 +962,7 @@ export const FavouriteMedicines: React.FC = () => {
   const [medicine, setMedicine] = useState('');
   const [frequency, setFrequency] = useState(dosageFrequency[0].id);
   const [roaOption, setRoaOption] = useState(roaOptionsList[0].id);
-  const [forUnit, setforUnit] = useState(forOptions[3].id);
+  const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
 
@@ -1296,7 +1296,7 @@ export const FavouriteMedicines: React.FC = () => {
       setforUnit(
         selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
           ? selectedMedicinesArr[idx].medicineConsumptionDurationUnit!
-          : forOptions[3].id
+          : forOptions[0].id
       );
       setMedicineForm(
         selectedMedicinesArr[idx].medicineFormTypes!
@@ -1348,7 +1348,7 @@ export const FavouriteMedicines: React.FC = () => {
   }, [searchInput]);
   const resetFrequencyFor = () => {
     setFrequency(dosageFrequency[0].id);
-    setforUnit(forOptions[3].id);
+    setforUnit(forOptions[0].id);
     setRoaOption(roaOptionsList[0].id);
     dosageFrequency = dosageFrequency.map((dosageObj: FrequencyType) => {
       dosageObj.selected = false;
