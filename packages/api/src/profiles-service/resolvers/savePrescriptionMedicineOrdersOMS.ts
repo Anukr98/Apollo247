@@ -44,6 +44,8 @@ export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
     NonCartOrderCity: NonCartOrderOMSCity
     orderAutoId: Int
     shopAddress: ShopAddress
+    prescriptionOptionSelected: String
+    durationDays: Int
   }
 
   enum NonCartOrderOMSCity {
@@ -94,6 +96,8 @@ type PrescriptionMedicineOrderOMSInput = {
   email: string;
   NonCartOrderCity: NonCartOrderOMSCity;
   shopAddress: ShopAddress;
+  prescriptionOptionSelected: string;
+  durationDays: number;
 };
 
 type ShopAddress = {
@@ -287,6 +291,8 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       paymentdetails: [],
       itemdetails: [],
       imageurl: orderPrescriptionUrl,
+      prescriptionOptionSelected: prescriptionMedicineOMSInput.prescriptionOptionSelected,
+      durationDays: prescriptionMedicineOMSInput.durationDays,
     };
 
     const placeOrderUrl = process.env.PHARMACY_MED_PLACE_OMS_ORDERS
@@ -373,15 +379,15 @@ const savePrescriptionMedicineOrderOMS: Resolver<
 
         const toEmailId =
           process.env.NODE_ENV == 'dev' ||
-          process.env.NODE_ENV == 'development' ||
-          process.env.NODE_ENV == 'local'
+            process.env.NODE_ENV == 'development' ||
+            process.env.NODE_ENV == 'local'
             ? ApiConstants.MEDICINE_SUPPORT_EMAILID
             : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
         let ccEmailIds =
           process.env.NODE_ENV == 'dev' ||
-          process.env.NODE_ENV == 'development' ||
-          process.env.NODE_ENV == 'local'
+            process.env.NODE_ENV == 'development' ||
+            process.env.NODE_ENV == 'local'
             ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
             : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
