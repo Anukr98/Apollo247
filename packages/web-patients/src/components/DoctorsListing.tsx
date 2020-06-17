@@ -395,38 +395,45 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }, [loading]);
 
   useEffect(() => {
-    if (data && data.getDoctorsBySpecialtyAndFilters && data.getDoctorsBySpecialtyAndFilters.doctors) {
+    if (
+      data &&
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctors
+    ) {
       /**Gtm code start start */
       let ecommItems: any[] = [];
       data.getDoctorsBySpecialtyAndFilters.doctors.map((doc: docDetails, ind: number) => {
         ecommItems.push({
-          'item_name': doc.fullName,
-          'item_id': doc.id,
-          'item_category': 'Consultations',
-          'item_category_2': doc.specialty && doc.specialty.name,
-          'item_category_3': doc.doctorHospital && doc.doctorHospital.length 
-          && doc.doctorHospital[0].facility && doc.doctorHospital[0].facility.city,
+          item_name: doc.fullName,
+          item_id: doc.id,
+          item_category: 'Consultations',
+          item_category_2: doc.specialty && doc.specialty.name,
+          item_category_3:
+            doc.doctorHospital &&
+            doc.doctorHospital.length &&
+            doc.doctorHospital[0].facility &&
+            doc.doctorHospital[0].facility.city,
           // 'item_category_4': '', // Future USe
-          'item_variant': 'Virtual / Physcial',
-          'index': ind + 1,
-          'quantity': '1'
-        })
-      })
+          item_variant: 'Virtual / Physcial',
+          index: ind + 1,
+          quantity: '1',
+        });
+      });
       gtmTracking({
         category: 'Consultations',
         action: 'Landing Page',
         label: 'Listing Page Viewed',
         value: null,
         ecommObj: {
-          'event': 'view_item_list',
-          'ecommerce': {
-            'items': ecommItems
-          }
-        }
+          event: 'view_item_list',
+          ecommerce: {
+            items: ecommItems,
+          },
+        },
       });
       /**Gtm code start end */
     }
-  }, [data])
+  }, [data]);
 
   if (loading)
     <div className={classes.circlularProgress}>
@@ -544,7 +551,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     title: `${specialityName} - Book Online Appointments And Consultations - Apollo 247`,
     desciption: `Book online appointments with ${specialityName} in just a few clicks. Consult the best ${specialityName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
     canonicalLink: window && window.location && window.location.href,
-  }
+  };
 
   return (
     <div className={classes.root}>

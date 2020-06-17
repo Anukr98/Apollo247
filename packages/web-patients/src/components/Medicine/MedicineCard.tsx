@@ -251,22 +251,27 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                             label: product.name,
                             value: product.special_price || product.price,
                             ecommObj: {
-                              'event': 'add_to_cart',
-                              'ecommerce': {
-                                'items':
-                                  [{
-                                    'item_name': product.name,
-                                    'item_id': product.sku,
-                                    'price': product.price,
-                                    'item_category': 'Pharmacy',
-                                    'item_category_2': product.type_id ? product.type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
+                              event: 'add_to_cart',
+                              ecommerce: {
+                                items: [
+                                  {
+                                    item_name: product.name,
+                                    item_id: product.sku,
+                                    price: product.price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: product.type_id
+                                      ? product.type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
                                     // 'item_category_4': '', // future reference
-                                    'item_variant': 'Default',
-                                    'index': 1,
-                                    'quantity': product.mou
-                                  }]
-                              }
-                            }
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity: 1,
+                                  },
+                                ],
+                              },
+                            },
                           });
                           /**Gtm code End  */
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);

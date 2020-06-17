@@ -493,7 +493,7 @@ export const MedicineDetails: React.FC = (props) => {
               type_id,
               PharmaOverview,
               url_key,
-              mou
+              mou,
             } = data.productdp[0];
             let { description } = data.productdp[0];
             window.history.replaceState(null, '', url_key);
@@ -549,22 +549,28 @@ export const MedicineDetails: React.FC = (props) => {
                 label: name,
                 value: null,
                 ecommObj: {
-                  'event': 'view_item',
-                  'ecommerce': {
-                    'items': [{
-                      'item_name': name, // Name or ID is required.
-                      'item_id': sku,
-                      price,
-                      'item_brand': manufacturer,
-                      'item_category': 'Pharmacy',
-                      'item_category_2': type_id ? type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
-                      // 'item_category_4': '', //parked for future
-                      'item_variant': 'Default',
-                      'index': 1,
-                      'quantity': mou
-                    }]
-                  }
-                }
+                  event: 'view_item',
+                  ecommerce: {
+                    items: [
+                      {
+                        item_name: name, // Name or ID is required.
+                        item_id: sku,
+                        price,
+                        item_brand: manufacturer,
+                        item_category: 'Pharmacy',
+                        item_category_2: type_id
+                          ? type_id.toLowerCase() === 'pharma'
+                            ? 'Drugs'
+                            : 'FMCG'
+                          : null,
+                        // 'item_category_4': '', //parked for future
+                        item_variant: 'Default',
+                        index: 1,
+                        quantity: mou,
+                      },
+                    ],
+                  },
+                },
               });
             /**Gtm code End  */
           })

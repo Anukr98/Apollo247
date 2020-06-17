@@ -334,19 +334,21 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       label: item.name,
                       value: item.special_price || item.price,
                       ecommObj: {
-                        'event': 'remove_from_cart',
-                        'ecommerce': {
-                          'items': [{
-                            'item_name': item.name,
-                            'item_id': item.sku,
-                            'price': item.price,
-                            'item_category': 'Pharmacy',
-                            'item_variant': 'Default',
-                            'index': 1,
-                            'quantity': item.mou
-                          }]
-                        }
-                      }
+                        event: 'remove_from_cart',
+                        ecommerce: {
+                          items: [
+                            {
+                              item_name: item.name,
+                              item_id: item.sku,
+                              price: item.price,
+                              item_category: 'Pharmacy',
+                              item_variant: 'Default',
+                              index: 1,
+                              quantity: item.quantity,
+                            },
+                          ],
+                        },
+                      },
                     });
                     /**Gtm code End  */
                     removeCartItem && removeCartItem(item.id);

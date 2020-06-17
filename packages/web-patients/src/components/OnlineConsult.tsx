@@ -250,10 +250,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
-  const doctorAvailableTime =
-    moment()
-      .add(props.doctorAvailableIn, 'm')
-      .toDate() || new Date();
+  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
@@ -551,34 +548,60 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         /* Gtm code start */
         const specialty = getSpeciality();
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-        const { city, fullName, id, doctorType, doctorHospital, physicalConsultationFees } = doctorDetails.getDoctorDetailsById;
-        let items = [], count = 0;
-        onlineConsultationFees && items.push({
-          'item_name': fullName,
-          'item_id': id,
-          'price': Number(onlineConsultationFees),
-          'item_brand': doctorType && doctorType.toLocaleLowerCase() === 'apollo' ? 'Apollo' : 'Partner Doctors',
-          'item_category': 'Consultations',
-          'item_category_2': specialty,
-          'item_category_3': city || doctorHospital && doctorHospital.length && doctorHospital[0].facility && doctorHospital[0].facility.city,
-          // 'item_category_4': '', // For Future
-          'item_variant': 'Virtual',
-          'index': ++count,
-          'quantity': 1,
-        })
-        physicalConsultationFees && items.push({
-          'item_name': fullName,
-          'item_id': id,
-          'price': Number(physicalConsultationFees),
-          'item_brand': doctorType && doctorType.toLocaleLowerCase() === 'apollo' ? 'Apollo' : 'Partner Doctors',
-          'item_category': 'Consultations',
-          'item_category_2': specialty,
-          'item_category_3': city || doctorHospital && doctorHospital.length && doctorHospital[0].facility && doctorHospital[0].facility.city,
-          // 'item_category_4': '', // For Future
-          'item_variant': 'Physcial',
-          'index': ++count,
-          'quantity': 1,
-        })
+        const {
+          city,
+          fullName,
+          id,
+          doctorType,
+          doctorHospital,
+          physicalConsultationFees,
+        } = doctorDetails.getDoctorDetailsById;
+        let items = [],
+          count = 0;
+        onlineConsultationFees &&
+          items.push({
+            item_name: fullName,
+            item_id: id,
+            price: Number(onlineConsultationFees),
+            item_brand:
+              doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+                ? 'Apollo'
+                : 'Partner Doctors',
+            item_category: 'Consultations',
+            item_category_2: specialty,
+            item_category_3:
+              city ||
+              (doctorHospital &&
+                doctorHospital.length &&
+                doctorHospital[0].facility &&
+                doctorHospital[0].facility.city),
+            // 'item_category_4': '', // For Future
+            item_variant: 'Virtual',
+            index: ++count,
+            quantity: 1,
+          });
+        physicalConsultationFees &&
+          items.push({
+            item_name: fullName,
+            item_id: id,
+            price: Number(physicalConsultationFees),
+            item_brand:
+              doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+                ? 'Apollo'
+                : 'Partner Doctors',
+            item_category: 'Consultations',
+            item_category_2: specialty,
+            item_category_3:
+              city ||
+              (doctorHospital &&
+                doctorHospital.length &&
+                doctorHospital[0].facility &&
+                doctorHospital[0].facility.city),
+            // 'item_category_4': '', // For Future
+            item_variant: 'Physcial',
+            index: ++count,
+            quantity: 1,
+          });
         _cbTracking({
           specialty: specialty,
           bookingType: AppointmentType.ONLINE,
@@ -587,10 +610,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           couponValue: couponValue ? couponValue : null,
           finalBookingValue: revisedAmount,
           ecommObj: {
-            'ecommerce': {
-              'items': items
-            }
-          }
+            ecommerce: {
+              items: items,
+            },
+          },
         });
         /* Gtm code END */
         disableSubmit = false;

@@ -24,6 +24,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { gtmTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -314,6 +315,39 @@ export const SearchByMedicine: React.FC = (props) => {
                 setMedicineList(data.products);
                 setHeading('');
                 setIsLoading(false);
+                /** gtm code start */
+                let gtmItems: any[] = [];
+                if (data.products.length) {
+                  data.products.map((prod: MedicineProduct, key: number) => {
+                    const { name, sku, price, type_id } = prod;
+                    gtmItems.push({
+                      item_name: name,
+                      item_id: sku,
+                      price: price,
+                      item_category: 'Pharmacy',
+                      item_category_2: type_id
+                        ? type_id.toLowerCase() === 'pharma'
+                          ? 'Drugs'
+                          : 'FMCG'
+                        : null,
+                      // 'item_category_4': '',             // park for future use
+                      item_variant: 'Default',
+                      index: key + 1,
+                      quantity: 1,
+                    });
+                  });
+                }
+                gtmTracking({
+                  category: 'Pharmacy',
+                  action: 'List Views',
+                  label: '',
+                  value: null,
+                  ecommObj: {
+                    event: 'view_item_list',
+                    ecommerce: { items: gtmItems },
+                  },
+                });
+                /** gtm code end */
               }
             })
             .catch((e) => {

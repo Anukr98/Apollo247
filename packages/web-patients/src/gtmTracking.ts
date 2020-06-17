@@ -30,12 +30,20 @@ export const _cbTracking = (params: any) => {
     couponCode,
     couponValue,
     finalBookingValue,
-    ecommObj
+    ecommObj,
   } = params;
   try {
     window &&
       window._cb &&
-      window._cb(specialty, bookingType, scheduledDate, couponCode, couponValue, finalBookingValue, ecommObj);
+      window._cb(
+        specialty,
+        bookingType,
+        scheduledDate,
+        couponCode,
+        couponValue,
+        finalBookingValue,
+        ecommObj
+      );
   } catch (err) {
     console.log('GTM ERROR: ', err);
   }
@@ -49,12 +57,20 @@ export const _obTracking = (params: any) => {
     couponCode,
     couponValue,
     finalBookingValue,
-    ecommObj
+    ecommObj,
   } = params;
   try {
     window &&
       window._ob &&
-      window._ob(userLocation, paymentType, itemCount, couponCode, couponValue, finalBookingValue, ecommObj);
+      window._ob(
+        userLocation,
+        paymentType,
+        itemCount,
+        couponCode,
+        couponValue,
+        finalBookingValue,
+        ecommObj
+      );
   } catch (err) {
     console.log('GTM ERROR: ', err);
   }

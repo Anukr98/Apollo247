@@ -727,22 +727,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           label: data.name,
                           value: data.special_price || data.price,
                           ecommObj: {
-                            'event': 'add_to_cart',
-                            'ecommerce': {
-                              'items':
-                                [{
-                                  'item_name': data.name,
-                                  'item_id': data.sku,
-                                  'price': data.price,
-                                  'item_category': 'Pharmacy',
-                                  'item_category_2': data.type_id ? data.type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
+                            event: 'add_to_cart',
+                            ecommerce: {
+                              items: [
+                                {
+                                  item_name: data.name,
+                                  item_id: data.sku,
+                                  price: data.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: data.type_id
+                                    ? data.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
                                   // 'item_category_4': '', // future reference
-                                  'item_variant': 'Default',
-                                  'index': 1,
-                                  'quantity': data.mou
-                                }]
-                            }
-                          }
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: medicineQty,
+                                },
+                              ],
+                            },
+                          },
                         });
                       /**Gtm code End  */
                       applyCartOperations(cartItem);
