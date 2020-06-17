@@ -16,12 +16,7 @@ import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
-import {
-  readableParam,
-  DOCTORS_SORT_BY,
-  DOCTOR_CATEGORY,
-  SearchObject,
-} from 'helpers/commonHelpers';
+import { readableParam, DOCTOR_CATEGORY, SearchObject } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -226,16 +221,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -280,12 +271,7 @@ interface SpecialityProps {
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const classes = useStyles({});
-  const {
-    currentPincode,
-    currentLong,
-    currentLat,
-    getCurrentLocationPincode,
-  } = useLocationDetails();
+  const { currentPincode, currentLong, currentLat } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const params = useParams<{
     specialty: string;
@@ -295,14 +281,13 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [data, setData] = useState<GetDoctorsBySpecialtyAndFilters | null>(null);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [isFilterOpen, setisFilterOpen] = useState(false);
   const [filter, setFilter] = useState<SearchObject>(searchObject);
   const [filteredDoctorData, setFilteredDoctorData] = useState<DoctorDetails[] | null>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
   const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(false);
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<DOCTORS_SORT_BY>(DOCTORS_SORT_BY.AVAILAIBILITY);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
+  const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
 
   const specialtyLen = params.specialty.length;
   const specialtyId = params.specialty.slice(specialtyLen - 36);
@@ -372,6 +357,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
           setDoctorData(doctors || []);
+          setOnlyFilteredCount(doctors.length || 0);
           const finalList = getFilteredDoctorList(doctors || []);
           setFilteredDoctorData(finalList);
           doctors.map((doctorDetails: docDetails) => {
@@ -452,7 +438,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       setFilteredDoctorData(filterDoctorsData);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData]); // have to add sortBY
+  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -505,9 +491,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 </AphButton>
               </div>
               <div className={classes.tabsFilter}>
-                <h4>
-                  {filteredDoctorData ? filteredDoctorData.length : 0} Doctors found near Madhapur
-                </h4>
+                <h4>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h4>
                 <div className={classes.filterButtons}>
                   <AphButton
                     onClick={() => {
@@ -528,14 +512,13 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 </div>
               </div>
               <Filters
-                setSortBy={setSortBy}
-                sortBy={sortBy}
                 isOnlineSelected={isOnlineSelected}
                 setIsOnlineSelected={setIsOnlineSelected}
                 isPhysicalSelected={isPhysicalSelected}
                 setIsPhysicalSelected={setIsPhysicalSelected}
                 setFilter={setFilter}
                 filter={filter}
+                onlyFilteredCount={onlyFilteredCount}
               />
               {(filter.language.length > 0 ||
                 filter.availability.length > 0 ||

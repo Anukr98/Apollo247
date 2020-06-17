@@ -130,8 +130,8 @@ const App: React.FC = () => {
             component={DoctorDetails}
           />
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} />
-          {/* <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} /> */}
+          {/* <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} /> */}
+          <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
@@ -209,7 +209,11 @@ const App: React.FC = () => {
             component={ClinicCheckout}
           />
           <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
-          <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
+          <Route
+            exact
+            path={clientRoutes.medicinePrescription()}
+            component={MedicinePrescriptions}
+          />
         </Switch>
       </div>
     </Scrollbars>

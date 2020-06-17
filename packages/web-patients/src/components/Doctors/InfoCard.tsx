@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Avatar } from '@material-ui/core';
+import { Theme, Avatar, Modal, CircularProgress } from '@material-ui/core';
 import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -9,9 +9,16 @@ import {
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
 } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import { ConsultMode } from 'graphql/types/globalTypes';
+import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { getDiffInDays } from 'helpers/commonHelpers';
 import moment from 'moment';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
+import { useMutation } from 'react-apollo-hooks';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { BookConsult } from 'components/BookConsult';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -150,7 +157,11 @@ interface InfoCardProps {
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const { doctorInfo, nextAvailability } = props;
+  const { isSignedIn } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
+  const [popupLoading, setPopupLoading] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
 
   const consultMode =
     doctorInfo &&
@@ -228,6 +239,8 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
       }
     });
 
+  const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
+
   return (
     <div className={classes.root}>
       <div className={classes.topContent}>
@@ -255,7 +268,6 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           </div>
         </div>
         <div className={classes.doctorInfo}>
-          {/* <div className={`${classes.availability}`}></div> */}
           <>{availabilityMarkup()}</>
           <div className={`${classes.apolloLogo}`}>
             <img src={require('images/ic_apollo.svg')} alt="" />
@@ -287,11 +299,63 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           </div>
         </div>
       </div>
-      <div className={classes.bottomAction}>
-        <AphButton fullWidth color="primary" className={classes.button}>
-          {getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? 'CONSULT NOW' : 'BOOK APPOINTMENT'}
-        </AphButton>
-      </div>
+      <ProtectedWithLoginPopup>
+        {({ protectWithLoginPopup }) => (
+          <div className={classes.bottomAction}>
+            <AphButton
+              onClick={() => {
+                if (!isSignedIn) {
+                  protectWithLoginPopup();
+                } else {
+                  setPopupLoading(true);
+                  saveSearchMutation({
+                    variables: {
+                      saveSearchInput: {
+                        type: SEARCH_TYPE.DOCTOR,
+                        typeId: doctorInfo.id,
+                        patient: currentPatient ? currentPatient.id : '',
+                      },
+                    },
+                    fetchPolicy: 'no-cache',
+                  })
+                    .then(() => {
+                      setPopupLoading(false);
+                    })
+                    .catch((e) => {
+                      console.log(e);
+                    })
+                    .finally(() => {
+                      setIsPopoverOpen(true);
+                    });
+                }
+              }}
+              fullWidth
+              color="primary"
+              className={classes.button}
+            >
+              {popupLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
+            </AphButton>
+          </div>
+        )}
+      </ProtectedWithLoginPopup>
+      <Modal
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <BookConsult
+          doctorId={doctorInfo.id}
+          doctorAvailableIn={differenceInMinutes}
+          setIsPopoverOpen={setIsPopoverOpen}
+        />
+      </Modal>
     </div>
   );
 };

@@ -10,8 +10,8 @@ export const clientRoutes = {
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
     `/specialties/${specialty}/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
-  specialties: (specialty: string) => `/specialties/${specialty}`,
   // specialties: (specialty: string) => `/specialties/${specialty}`,
+  specialties: (specialty: string) => `/specialties/${specialty}`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
