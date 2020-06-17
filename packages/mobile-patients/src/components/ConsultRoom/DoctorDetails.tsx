@@ -1,10 +1,17 @@
 import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_APPOINTMENT_HISTORY,
   GET_DOCTOR_DETAILS_BY_ID,
@@ -19,51 +26,41 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
-  g,
-  timeDiffFromNow,
-  getNetStatus,
-  statusBarHeight,
-  postWebEngageEvent,
   callPermissions,
+  g,
+  getNetStatus,
   postAppsFlyerEvent,
-  postFirebaseEvent
+  postFirebaseEvent,
+  postWebEngageEvent,
+  statusBarHeight,
+  timeDiffFromNow,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Moment from 'moment';
+import { default as Moment, default as moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
   Dimensions,
   Image,
-  Platform,
   SafeAreaView,
   ScrollView,
   Share,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useAppCommonData } from '../AppCommonDataProvider';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import moment from 'moment';
+import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { useAppCommonData } from '../AppCommonDataProvider';
 // import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
@@ -862,7 +859,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
-
   };
 
   const moveBack = () => {
@@ -957,7 +953,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={props.navigation.getParam('consultModeSelected')}
           externalConnect={props.navigation.getParam('externalConnect')}
-          // availableSlots={availableSlots}
+          availableMode={'BOTH'}
         />
       )}
       <Animated.View
