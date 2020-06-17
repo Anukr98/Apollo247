@@ -192,7 +192,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
     setSortBy(value);
   };
   const [isFilterOpen, setisFilterOpen] = React.useState(false);
-  const [localFilter, setLocalFilter] = useState<any>(filter);
+  const [localFilter, setLocalFilter] = useState<SearchObject>(filter);
 
   const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
   const experienceList = [
@@ -400,7 +400,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
             </div>
           </div>
           <div className={classes.dialogActions}>
-            <span className={classes.resultFound}>13 Doctors found</span>
+            {/* <span className={classes.resultFound}>13 Doctors found</span> */}
             <AphButton
               className={classes.clearBtn}
               onClick={() => {

@@ -331,7 +331,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     feeRange = [];
   }
 
-  const apiVairables = {
+  const apiVariables = {
     patientId: currentPatient ? currentPatient.id : '',
     specialty: prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? '' : specialtyId,
     city: filter.cityName,
@@ -359,7 +359,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     apolloClient
       .query({
         query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-        variables: { filterInput: apiVairables },
+        variables: { filterInput: apiVariables },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
@@ -575,7 +575,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       }
                       if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
                         nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
-                      } else if (availableMode === 'PHYSICAL') {
+                      } else {
                         nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
                       }
                       return (
