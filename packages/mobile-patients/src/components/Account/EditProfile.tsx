@@ -365,10 +365,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             key: Relation.COUSIN,
             title: 'Cousin',
           },
-          // {
-          //   key: Relation.FRIEND,
-          //   title: 'Friend',
-          // },
           {
             key: Relation.OTHER,
             title: 'Other',
@@ -403,10 +399,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             key: Relation.COUSIN,
             title: 'Cousin',
           },
-          // {
-          //   key: Relation.FRIEND,
-          //   title: 'Friend',
-          // },
           {
             key: Relation.OTHER,
             title: 'Other',
