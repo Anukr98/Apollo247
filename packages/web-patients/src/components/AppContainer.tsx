@@ -145,7 +145,11 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
           <Route
             exact
-            path={clientRoutes.medicineCategoryDetails(':searchMedicineType', ':sku')}
+            path={clientRoutes.medicineCategoryDetails(
+              ':searchMedicineType',
+              ':searchText',
+              ':sku'
+            )}
             component={MedicineDetails}
           />
           <Route
