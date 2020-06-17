@@ -62,6 +62,7 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
+  medicinePrescription: () => '/medicine-prescription',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
