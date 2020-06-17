@@ -3,7 +3,14 @@ import { Theme, RadioGroup, FormControlLabel, Checkbox, Modal } from '@material-
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphRadio } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
-import { DOCTORS_SORT_BY, SearchObject } from 'helpers/commonHelpers';
+import {
+  SearchObject,
+  feeInRupees,
+  experienceList,
+  genderList,
+  languageList,
+  availabilityList,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -168,10 +175,9 @@ interface FilterProps {
   setIsOnlineSelected: (isOnlineSelected: boolean) => void;
   isPhysicalSelected: boolean;
   setIsPhysicalSelected: (isPhysicalSelected: boolean) => void;
-  setSortBy: (sortBy: DOCTORS_SORT_BY) => void;
-  sortBy: DOCTORS_SORT_BY;
   setFilter: (filter: SearchObject) => void;
   filter: SearchObject;
+  onlyFilteredCount: number;
 }
 
 export const Filters: React.FC<FilterProps> = (props) => {
@@ -181,29 +187,13 @@ export const Filters: React.FC<FilterProps> = (props) => {
     setIsOnlineSelected,
     isPhysicalSelected,
     setIsPhysicalSelected,
-    sortBy,
-    setSortBy,
     setFilter,
     filter,
+    onlyFilteredCount,
   } = props;
 
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = (event.target as HTMLInputElement).value as DOCTORS_SORT_BY;
-    setSortBy(value);
-  };
   const [isFilterOpen, setisFilterOpen] = React.useState(false);
   const [localFilter, setLocalFilter] = useState<SearchObject>(filter);
-
-  const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
-  const experienceList = [
-    { key: '0-5', value: '0 - 5' },
-    { key: '6-10', value: '6 - 10' },
-    { key: '11-15', value: '11 - 15' },
-    { key: '16+', value: '16 +' },
-  ];
-  const genderList = ['Male', 'Female'];
-  const languageList = ['English', 'Telugu'];
-  const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
@@ -246,28 +236,6 @@ export const Filters: React.FC<FilterProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.filters}>
         <div className={classes.leftGroup}>
-          <span className={classes.sortBy}>Sort by</span>
-          <RadioGroup
-            row
-            className={classes.radioGroup}
-            aria-label="quiz"
-            name="quiz"
-            value={sortBy}
-            onChange={handleRadioChange}
-          >
-            <FormControlLabel
-              checked={sortBy === DOCTORS_SORT_BY.NEAR_BY}
-              value={DOCTORS_SORT_BY.NEAR_BY}
-              control={<AphRadio color="primary" />}
-              label="Nearby"
-            />
-            <FormControlLabel
-              checked={sortBy === DOCTORS_SORT_BY.AVAILAIBILITY}
-              value={DOCTORS_SORT_BY.AVAILAIBILITY}
-              control={<AphRadio color="primary" />}
-              label="Availability"
-            />
-          </RadioGroup>
           <FormControlLabel
             control={
               <AphCheckbox
@@ -297,7 +265,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
         </div>
         <div className={classes.filterAction}>
           <AphButton onClick={() => setisFilterOpen(true)}>
-            Filters <img src={require('images/ic_filters.svg')} alt="" />
+            Filters(5) <img src={require('images/ic_filters.svg')} alt="" />
           </AphButton>
         </div>
       </div>
@@ -315,13 +283,6 @@ export const Filters: React.FC<FilterProps> = (props) => {
           </div>
           <div className={classes.dialogContent}>
             <div className={classes.filterGroup}>
-              {/* <div className={classes.filterType}>
-                <h4>City</h4>
-                <div className={classes.filterBtns}>
-                  <AphButton className={classes.filterActive}>Hyderabad</AphButton>
-                  <AphButton>Chennai</AphButton>
-                </div>
-              </div> */}
               <div className={classes.filterType}>
                 <h4>Experience In Years</h4>
                 <div className={classes.filterBtns}>
@@ -372,12 +333,12 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterBtns}>
                   {genderList.map((gender) => (
                     <AphButton
-                      className={applyClass(localFilter.gender, gender)}
+                      className={applyClass(localFilter.gender, gender.key)}
                       onClick={() => {
-                        setFilterValues('gender', gender);
+                        setFilterValues('gender', gender.key);
                       }}
                     >
-                      {gender}
+                      {gender.value}
                     </AphButton>
                   ))}
                 </div>
@@ -400,7 +361,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
             </div>
           </div>
           <div className={classes.dialogActions}>
-            {/* <span className={classes.resultFound}>13 Doctors found</span> */}
+            <span className={classes.resultFound}>{onlyFilteredCount} Doctors found</span>
             <AphButton
               className={classes.clearBtn}
               onClick={() => {

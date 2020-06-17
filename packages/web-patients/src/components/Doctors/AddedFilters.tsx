@@ -2,7 +2,7 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
-import { SearchObject } from 'helpers/commonHelpers';
+import { SearchObject, experienceList, genderList } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -79,21 +79,22 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.dialogContent}>
         <div className={classes.filterGroup}>
-          {/* <div className={classes.filterType}>
-            <h4>City</h4>
-            <div className={classes.filterBtns}>
-              <AphButton>Hyderabad</AphButton>
-            </div>
-          </div> */}
           {filter.experience.length > 0 && (
             <div className={classes.filterType}>
               <h4>Experience In Years</h4>
               <div className={classes.filterBtns}>
-                {filter.experience.map((exp) => (
-                  <AphButton className={applyClass(filter.experience, exp)}>{exp}</AphButton>
-                ))}
-                {/* <AphButton>0 - 5</AphButton>
-              <AphButton>6 - 10</AphButton> */}
+                {filter.experience.map((exp) => {
+                  const filterdExperience = experienceList.find(
+                    (experienceObj) => experienceObj.key === exp
+                  );
+                  return (
+                    filterdExperience && (
+                      <AphButton disabled className={applyClass(filter.experience, exp)}>
+                        {filterdExperience.value}
+                      </AphButton>
+                    )
+                  );
+                })}
               </div>
             </div>
           )}
@@ -101,9 +102,8 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
             <div className={classes.filterType}>
               <h4>Availability</h4>
               <div className={classes.filterBtns}>
-                {/* <AphButton>Now</AphButton> */}
                 {filter.availability.map((availability) => (
-                  <AphButton className={applyClass(filter.availability, availability)}>
+                  <AphButton disabled className={applyClass(filter.availability, availability)}>
                     {availability}
                   </AphButton>
                 ))}
@@ -114,10 +114,10 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
             <div className={classes.filterType}>
               <h4>Fees In Rupees</h4>
               <div className={classes.filterBtns}>
-                {/* <AphButton>100 - 500</AphButton>
-              <AphButton>500 - 1000</AphButton> */}
                 {filter.fees.map((fee) => (
-                  <AphButton className={applyClass(filter.experience, fee)}>{fee}</AphButton>
+                  <AphButton disabled className={applyClass(filter.experience, fee)}>
+                    {fee}
+                  </AphButton>
                 ))}
               </div>
             </div>
@@ -126,10 +126,16 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
             <div className={classes.filterType}>
               <h4>Gender</h4>
               <div className={classes.filterBtns}>
-                {/* <AphButton>Male</AphButton> */}
-                {filter.gender.map((gender) => (
-                  <AphButton className={applyClass(filter.experience, gender)}>{gender}</AphButton>
-                ))}
+                {filter.gender.map((gender) => {
+                  const filteredGender = genderList.find((genderObj) => genderObj.key === gender);
+                  return (
+                    filteredGender && (
+                      <AphButton disabled className={applyClass(filter.experience, gender)}>
+                        {filteredGender.value}
+                      </AphButton>
+                    )
+                  );
+                })}
               </div>
             </div>
           )}
@@ -138,7 +144,7 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
               <h4>Language</h4>
               <div className={classes.filterBtns}>
                 {filter.language.map((language) => (
-                  <AphButton className={applyClass(filter.language, language)}>
+                  <AphButton disabled className={applyClass(filter.language, language)}>
                     {language}
                   </AphButton>
                 ))}
