@@ -191,6 +191,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sound')
     implementation project(':opentok-react-native')
     implementation project(':react-native-call-detection')
     implementation project(':react-native-keep-awake')

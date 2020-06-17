@@ -21,6 +21,8 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import CallDetectorManager from 'react-native-call-detection';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import RNSound from 'react-native-sound';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -151,12 +153,14 @@ let missedCallTimer: NodeJS.Timeout;
 const styles = AudioVideoStyles;
 let connectionCount = 0;
 let callDetector: any = null;
-
+RNSound.setCategory('Playback');
+let audioTrack: RNSound | null = null;
 export const AudioVideoProvider: React.FC = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
   const [isVideo, setIsVideo] = useState<boolean>(false);
   const [isMinimized, setIsMinimized] = useState<boolean>(true);
   const [callAccepted, setCallAccepted] = useState<boolean>(false);
+  const [callConnected, setCallConnected] = useState<boolean>(false);
   const [messageReceived, setMessageReceived] = useState<boolean>(false);
   const [openTokConfig, setOpenTokKeys] = useState<OpenTokKeys>({ sessionId: '', token: '' });
   const [callerName, setCallerName] = useState<string>('Patient');
@@ -180,14 +184,41 @@ export const AudioVideoProvider: React.FC = (props) => {
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
 
   useEffect(() => {
-    if (callAccepted) {
+    if (callConnected && callAccepted) {
       startTimer(0);
+      if (audioTrack) {
+        audioTrack.stop();
+      }
+    } else if (callAccepted) {
+      if (audioTrack) {
+        audioTrack.stop();
+      }
     }
-  }, [callAccepted]);
+  }, [callConnected, callAccepted]);
+
+  useEffect(() => {
+    audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
+      CommonBugFender('Loading_callertune__failed', error);
+    });
+  }, []);
 
   useEffect(() => {
     if (isAudio || isVideo) {
       AppState.addEventListener('change', _handleAppStateChange);
+      try {
+        if (audioTrack) {
+          audioTrack.play();
+          audioTrack.setNumberOfLoops(-1);
+        } else {
+          audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
+            CommonBugFender('Loading_callertune__failed', error);
+          });
+          audioTrack.play();
+          audioTrack.setNumberOfLoops(-1);
+        }
+      } catch (e) {
+        CommonBugFender('playing_callertune__failed', e);
+      }
       callDetector = new CallDetectorManager(
         (
           event: 'Connected' | 'Disconnected' | 'Dialing' | 'Incoming' | 'Offhook' | 'Missed',
@@ -248,7 +279,6 @@ export const AudioVideoProvider: React.FC = (props) => {
     stopMissedCallTimer();
     missedCallTimer = setInterval(() => {
       timer = timer - 1;
-
       if (timer === 0) {
         setmMissedCallCount(missedCallCount + 1);
         stopMissedCallTimer();
@@ -266,7 +296,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       <View
         style={[
           isMinimized ? styles.imageContainerMinimized : styles.imageContainer,
-          !callerVideo ? { zIndex: 103 } : {},
+          !callerVideo || isAudio ? { zIndex: 103 } : {},
         ]}
       >
         {patientImage ? (
@@ -328,10 +358,14 @@ export const AudioVideoProvider: React.FC = (props) => {
     setMessageReceived(false);
     setIsMinimized(true);
     setCallAccepted(false);
+    setCallConnected(false);
     setCallerAudio(true);
     setCallerVideo(true);
     setAudioEnabled(true);
     setVideoEnabled(true);
+    if (audioTrack) {
+      audioTrack.stop();
+    }
     withCallBack && callBacks.onCallEnd(callType, callDuration);
   };
 
@@ -427,7 +461,11 @@ export const AudioVideoProvider: React.FC = (props) => {
               : null,
           ]}
         >
-          {callAccepted ? callDuration : strings.consult_room.calling}
+          {callAccepted
+            ? callConnected
+              ? callDuration
+              : strings.consult_room.connecting
+            : strings.consult_room.calling}
         </Text>
         {isPaused !== '' ? (
           <Text style={styles.alertText}>
@@ -439,22 +477,35 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
-      // console.log('Publisher stream created!', event);
+      console.log('Publisher stream created!', event);
+      setCallConnected(false);
+      if (!callAccepted && !callConnected) {
+        if (audioTrack) {
+          audioTrack.stop(() => {
+            if (audioTrack) {
+              audioTrack.play();
+            }
+          });
+        }
+      }
     },
     streamDestroyed: (event: string) => {
-      // console.log('Publisher stream destroyed!', event);
+      console.log('Publisher stream destroyed!', event);
     },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
-      // console.log(`There was an error with the subscriber: ${error}`);
+      console.log(`There was an error with the subscriber: ${error}`);
     },
     connected: (event: string) => {
-      // console.log('Subscribe stream connected!', event);
+      setCallConnected(true);
+      if (audioTrack) {
+        audioTrack.stop(() => {});
+      }
     },
     disconnected: (event: string) => {
-      // console.log('Subscribe stream disconnected!', event);
+      console.log('Subscribe stream disconnected!', event);
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -481,6 +532,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       setIsMinimized(true);
       stopTimer();
       setCallAccepted(false);
+      setCallConnected(false);
       setMessageReceived(false);
       // console.log('session stream connectionDestroyed!', event);
     },
