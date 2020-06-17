@@ -560,7 +560,8 @@ const getJuniorDoctorCaseSheet: Resolver<
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
-    secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber
+    secretaryDetails != null &&
+    mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -651,7 +652,8 @@ const getCaseSheet: Resolver<
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
-    secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber
+    secretaryDetails != null &&
+    mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
