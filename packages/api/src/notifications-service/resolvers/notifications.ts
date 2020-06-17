@@ -668,6 +668,20 @@ export async function sendNotification(
     const earlierDate =
       appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
     const hoursDifference = differenceInHours(laterDate, earlierDate);
+    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
+    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
+    if (
+      appointment.appointmentDateTime <= todaysDate &&
+      appointment.appointmentDateTime >= yesterdaysDate
+    ) {
+      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
+        '{0}',
+        doctorDetails.fullName
+      )
+        .replace('{1}', patientDetails.firstName)
+        .replace('{2}', apptDate.toString());
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
+    }
 
     if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
       let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
@@ -1279,7 +1293,7 @@ export async function sendReminderNotification(
       }
     }
 
-    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -1287,8 +1301,8 @@ export async function sendReminderNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {

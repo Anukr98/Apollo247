@@ -34,7 +34,7 @@ export async function saveLabResults(
   apiUrl = apiUrl.replace('{UHID}', uhid);
 
   const reqStartTime = new Date();
-  console.log('prismTimeoutMillSeconds', prismTimeoutMillSeconds);
+
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
@@ -53,15 +53,16 @@ export async function saveLabResults(
         dLogger(
           reqStartTime,
           'uploadLabResultsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${data}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
         return data;
       },
       (err) => {
         dLogger(
           reqStartTime,
           'uploadLabResultsToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${err}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
@@ -106,15 +107,16 @@ export async function savePrescription(
         dLogger(
           reqStartTime,
           'uploadPrescriptionsToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${data}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
         );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
         return data;
       },
       (err) => {
         dLogger(
           reqStartTime,
           'uploadPrescriptionsToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${err}`
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
         );
         if (err.name === 'AbortError') {
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);

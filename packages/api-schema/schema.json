@@ -24620,7 +24620,7 @@
             "deprecationReason": null
           },
           {
-            "name": "updatSaveExternalConnect",
+            "name": "updateSaveExternalConnect",
             "description": null,
             "args": [
               {
@@ -27013,6 +27013,16 @@
           },
           {
             "name": "deviceCode",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "employeeId",
             "description": null,
             "type": {
               "kind": "SCALAR",

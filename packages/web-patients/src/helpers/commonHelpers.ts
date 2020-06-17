@@ -189,7 +189,50 @@ const ORDER_BILLING_STATUS_STRINGS = {
   AMOUNT_TO_BE_PAID_ON_DELIVERY: 'Amount to be paid on delivery',
 };
 
+// Starting of doctors list based on specialty related changes
+
+enum DOCTOR_CATEGORY {
+  APOLLO = 'APOLLO',
+  PARTNER = 'PARTNER',
+}
+
+interface SearchObject {
+  searchKeyword: string;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
+  dateSelected: string;
+  specialtyName: string;
+  prakticeSpecialties: string | null;
+}
+
+const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
+const experienceList = [
+  { key: '0-5', value: '0 - 5' },
+  { key: '6-10', value: '6 - 10' },
+  { key: '11-15', value: '11 - 15' },
+  { key: '16+', value: '16 +' },
+];
+const genderList = [
+  { key: 'MALE', value: 'Male' },
+  { key: 'FEMALE', value: 'Female' },
+];
+const languageList = ['English', 'Telugu'];
+const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+
+// End of doctors list based on specialty related changes
+
 export {
+  feeInRupees,
+  experienceList,
+  genderList,
+  languageList,
+  availabilityList,
+  SearchObject,
+  DOCTOR_CATEGORY,
   getDiffInDays,
   NO_SERVICEABLE_MESSAGE,
   sortByProperty,

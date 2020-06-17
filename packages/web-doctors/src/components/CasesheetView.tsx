@@ -304,29 +304,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     referralSpecialtyName,
   } = useContext(CaseSheetContext);
 
-  /*console.log({
-    patientDetails,
-    sdConsultationDate,
-    height,
-    weight,
-    bp,
-    temperature,
-    appointmentInfo,
-    consultType,
-    createdDoctorProfile,
-    followUp,
-    followUpAfterInDays,
-    followUpDate,
-    followUpConsultType,
-    diagnosis,
-    otherInstructions,
-    symptoms,
-    diagnosticPrescription,
-    medicinePrescription,
-  });
-
-  console.log({ currentDoctor });*/
-
   const [loader, setLoader] = useState<boolean>(false);
   let doctorFacilityDetails = null;
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
@@ -560,7 +537,19 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-
+  const vitalsArr = [];
+  if (weight && weight.trim() !== '') {
+    vitalsArr.push('Weight : ' + weight);
+  }
+  if (height && height.trim() !== '') {
+    vitalsArr.push('Height : ' + height);
+  }
+  if (bp && bp.trim() !== '') {
+    vitalsArr.push('BP : ' + bp);
+  }
+  if (temperature && temperature.trim() !== '') {
+    vitalsArr.push('Temperature : ' + temperature);
+  }
   return (
     <div className={classes.root} id={'prescriptionWrapper'}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -574,11 +563,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <h3>
                 {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
               </h3>
-              {/* {currentDoctor.qualification && (
+              {currentDoctor.qualification && (
                 <p className={`${classes.specialty} ${classes.qualification}`}>
                   {currentDoctor.qualification}
                 </p>
-              )} */}
+              )}
 
               <p className={classes.specialty}>{`${
                 createdDoctorProfile.specialty.specialistSingularTerm
@@ -698,18 +687,14 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
-                {weight || height || bp || temperature ? (
+                {vitalsArr.length > 0 ? (
                   <div className={classes.complaintsInfoRow}>
                     <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
                       VITALS <span className={classes.subInfo}>(as declared by patient)</span>
                     </div>
                     <div className={classes.labelContent}>
                       <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
-                        {`${weight ? `Weight : ${weight}` : ''} ${
-                          height ? `| Height: ${height}` : ''
-                        } ${bp ? `| BP: ${bp}` : ''}  ${
-                          temperature ? `| Temperature: ${temperature}` : ''
-                        }`}
+                        {vitalsArr.join(' | ')}
                       </div>
                     </div>
                   </div>

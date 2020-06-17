@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Not } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
@@ -36,6 +36,15 @@ const dLogger = debugLog(
 export class PatientRepository extends Repository<Patient> {
   findById(id: string) {
     return this.findOne({ where: { id } });
+  }
+
+  findEmpId(empId: string, patientId: string) {
+    return this.findOne({
+      where: {
+        employeeId: empId,
+        id: Not(patientId),
+      },
+    });
   }
 
   findPatientDetailsByIdsAndFields(ids: string[], fields: string[]) {

@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme, RadioGroup, FormControlLabel, Checkbox, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphRadio } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
+import {
+  SearchObject,
+  feeInRupees,
+  experienceList,
+  genderList,
+  languageList,
+  availabilityList,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& span': {
           paddingRight: 2,
         },
-      }
+      },
     },
     sortBy: {
       paddingRight: 10,
@@ -67,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      outline: 'none',   
+      outline: 'none',
     },
     dialogPaper: {
       backgroundColor: '#f7f8f5',
@@ -162,32 +170,81 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Filters: React.FC = (props) => {
+interface FilterProps {
+  isOnlineSelected: boolean;
+  setIsOnlineSelected: (isOnlineSelected: boolean) => void;
+  isPhysicalSelected: boolean;
+  setIsPhysicalSelected: (isPhysicalSelected: boolean) => void;
+  setFilter: (filter: SearchObject) => void;
+  filter: SearchObject;
+  onlyFilteredCount: number;
+}
+
+export const Filters: React.FC<FilterProps> = (props) => {
   const classes = useStyles({});
-  const [value, setValue] = React.useState('');
-  const [error, setError] = React.useState(false);
-  const [helperText, setHelperText] = React.useState('Choose wisely');
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue((event.target as HTMLInputElement).value);
-    setHelperText(' ');
-    setError(false);
-  };
+  const {
+    isOnlineSelected,
+    setIsOnlineSelected,
+    isPhysicalSelected,
+    setIsPhysicalSelected,
+    setFilter,
+    filter,
+    onlyFilteredCount,
+  } = props;
+
   const [isFilterOpen, setisFilterOpen] = React.useState(false);
+  const [localFilter, setLocalFilter] = useState<SearchObject>(filter);
+
+  const applyClass = (type: Array<string>, value: string) => {
+    return type.includes(value) ? classes.filterActive : '';
+  };
+
+  const filterValues = (valueList: Array<string>, value: string) => {
+    if (valueList.includes(value)) {
+      valueList = valueList.filter((val) => val !== value);
+    } else {
+      valueList.push(value);
+    }
+    return valueList;
+  };
+
+  const setFilterValues = (type: string, value: string) => {
+    if (type === 'experience') {
+      let { experience } = localFilter;
+      experience = filterValues(experience, value);
+      setLocalFilter({ ...localFilter, experience });
+    } else if (type === 'fee') {
+      let { fees } = localFilter;
+      fees = filterValues(fees, value);
+      setLocalFilter({ ...localFilter, fees });
+    } else if (type === 'gender') {
+      let { gender } = localFilter;
+      gender = filterValues(gender, value);
+      setLocalFilter({ ...localFilter, gender });
+    } else if (type === 'language') {
+      let { language } = localFilter;
+      language = filterValues(language, value);
+      setLocalFilter({ ...localFilter, language });
+    } else if (type === 'availability') {
+      let { availability } = localFilter;
+      availability = filterValues(availability, value);
+      setLocalFilter({ ...localFilter, availability });
+    }
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.filters}>
         <div className={classes.leftGroup}>
-          <span className={classes.sortBy}>Sort by</span>
-          <RadioGroup row className={classes.radioGroup} aria-label="quiz" name="quiz" value={value} onChange={handleRadioChange}>
-            <FormControlLabel value="nearby" control={<AphRadio color="primary" />} label="Nearby" />
-            <FormControlLabel value="availability" control={<AphRadio color="primary" />} label="Availability" />
-          </RadioGroup>
           <FormControlLabel
             control={
               <AphCheckbox
                 color="primary"
                 name="onlineconsults"
+                onChange={(e) => {
+                  setIsOnlineSelected(e.target.checked);
+                }}
+                checked={isOnlineSelected}
               />
             }
             label="Online Consults"
@@ -197,89 +254,145 @@ export const Filters: React.FC = (props) => {
               <AphCheckbox
                 color="primary"
                 name="inperson"
+                onChange={(e) => {
+                  setIsPhysicalSelected(e.target.checked);
+                }}
+                checked={isPhysicalSelected}
               />
             }
             label="In-Person Consults"
           />
         </div>
         <div className={classes.filterAction}>
-          <AphButton
-            onClick={()=> setisFilterOpen(true)}
-          >
-            Filters <img src={require('images/ic_filters.svg')} alt="" />
+          <AphButton onClick={() => setisFilterOpen(true)}>
+            Filters(5) <img src={require('images/ic_filters.svg')} alt="" />
           </AphButton>
         </div>
       </div>
       <Modal
         className={classes.modalDialog}
         open={isFilterOpen}
-        onClose={()=> setisFilterOpen(false)}
+        onClose={() => setisFilterOpen(false)}
       >
         <div className={classes.dialogPaper}>
           <div className={classes.dialogHeader}>
             <h3>Filters</h3>
-            <AphButton
-              onClick={()=> setisFilterOpen(false)}
-            >
+            <AphButton onClick={() => setisFilterOpen(false)}>
               <img src={require('images/ic_cross.svg')} alt="" />
             </AphButton>
           </div>
           <div className={classes.dialogContent}>
             <div className={classes.filterGroup}>
               <div className={classes.filterType}>
-                <h4>City</h4>
-                <div className={classes.filterBtns}>
-                  <AphButton className={classes.filterActive}>Hyderabad</AphButton>
-                  <AphButton>Chennai</AphButton>
-                </div>
-              </div>
-              <div className={classes.filterType}>
                 <h4>Experience In Years</h4>
                 <div className={classes.filterBtns}>
-                  <AphButton>0 - 5</AphButton>
-                  <AphButton>6 - 10</AphButton>
-                  <AphButton>11 - 15</AphButton>
-                  <AphButton>16 +</AphButton>
+                  {experienceList.map((obj, idx) => (
+                    <AphButton
+                      className={applyClass(localFilter.experience, obj.key)}
+                      onClick={() => {
+                        setFilterValues('experience', obj.key);
+                      }}
+                    >
+                      {obj.value}
+                    </AphButton>
+                  ))}
                 </div>
               </div>
               <div className={classes.filterType}>
                 <h4>Availability</h4>
                 <div className={classes.filterBtns}>
-                  <AphButton>Now</AphButton>
-                  <AphButton>Today</AphButton>
-                  <AphButton>Tomorrow</AphButton>
-                  <AphButton>Next 3 days</AphButton>
+                  {availabilityList.map((availability: string) => (
+                    <AphButton
+                      className={applyClass(localFilter.availability, availability)}
+                      onClick={() => {
+                        setFilterValues('availability', availability);
+                      }}
+                    >
+                      {availability}
+                    </AphButton>
+                  ))}
                 </div>
               </div>
               <div className={classes.filterType}>
                 <h4>Fees In Rupees</h4>
                 <div className={classes.filterBtns}>
-                  <AphButton>100 - 500</AphButton>
-                  <AphButton>500 - 1000</AphButton>
-                  <AphButton>1000 +</AphButton>
+                  {feeInRupees.map((fee) => (
+                    <AphButton
+                      className={applyClass(localFilter.fees, fee)}
+                      onClick={() => {
+                        setFilterValues('fee', fee);
+                      }}
+                    >
+                      {fee}
+                    </AphButton>
+                  ))}
                 </div>
               </div>
               <div className={classes.filterType}>
                 <h4>Gender</h4>
                 <div className={classes.filterBtns}>
-                  <AphButton>Male</AphButton>
-                  <AphButton>Female</AphButton>
+                  {genderList.map((gender) => (
+                    <AphButton
+                      className={applyClass(localFilter.gender, gender.key)}
+                      onClick={() => {
+                        setFilterValues('gender', gender.key);
+                      }}
+                    >
+                      {gender.value}
+                    </AphButton>
+                  ))}
                 </div>
               </div>
               <div className={classes.filterType}>
                 <h4>Language</h4>
                 <div className={classes.filterBtns}>
-                  <AphButton>English</AphButton>
-                  <AphButton>English</AphButton>
-                  <AphButton>Telugu</AphButton>
+                  {languageList.map((language: string) => (
+                    <AphButton
+                      className={applyClass(localFilter.language, language)}
+                      onClick={() => {
+                        setFilterValues('language', language);
+                      }}
+                    >
+                      {language}
+                    </AphButton>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
           <div className={classes.dialogActions}>
-            <span className={classes.resultFound}>13 Doctors found</span>
-            <AphButton className={classes.clearBtn}>Clear Filters</AphButton>
-            <AphButton className={classes.applyBtn}>Apply Filters</AphButton>
+            <span className={classes.resultFound}>{onlyFilteredCount} Doctors found</span>
+            <AphButton
+              className={classes.clearBtn}
+              onClick={() => {
+                const filterInitialValues: SearchObject = {
+                  searchKeyword: '',
+                  cityName: [],
+                  experience: [],
+                  availability: [],
+                  fees: [],
+                  gender: [],
+                  language: [],
+                  dateSelected: '',
+                  specialtyName: '',
+                  prakticeSpecialties: '',
+                };
+                setLocalFilter(filterInitialValues);
+                setFilter(filterInitialValues);
+                setisFilterOpen(false);
+              }}
+            >
+              Clear Filters
+            </AphButton>
+            <AphButton
+              onClick={() => {
+                setFilter(localFilter);
+                setisFilterOpen(false);
+              }}
+              className={classes.applyBtn}
+            >
+              Apply Filters
+            </AphButton>
           </div>
         </div>
       </Modal>

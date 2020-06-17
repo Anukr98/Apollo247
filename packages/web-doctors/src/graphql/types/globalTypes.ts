@@ -131,6 +131,7 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
@@ -303,6 +304,7 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+  testInstruction?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -472,6 +474,13 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+}
+
+export interface Vitals {
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
 }
 
 //==============================================================

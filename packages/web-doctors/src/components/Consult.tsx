@@ -148,6 +148,12 @@ const useStyles = makeStyles((theme: Theme) => {
         minHeight: 'auto !important',
       },
     },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -178,10 +184,14 @@ function getCookieValue() {
   }
   return '';
 }
+
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
@@ -217,8 +227,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
     },
-    streamPropertyChanged: (event: string) => {
+    streamPropertyChanged: (event: any) => {
       console.log('session streamPropertyChanged destroyed!', event);
+      const subscribers = event.target.getSubscribersForStream(event.stream);
+      if (subscribers.length) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
   };
   const publisherHandler = {
@@ -248,7 +263,34 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     otrnError: (error: string) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
+    videoDisabled: (error: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setDowngradeToAudio(true);
+      }
+    },
+    videoEnabled: (error: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setDowngradeToAudio(false);
+      }
+    },
   };
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
+      return `Audio & Video are paused`;
+    else if (!callerAudio) return `Audio is paused`;
+    else if (!callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
+      return `Video is paused`;
+    else return null;
+  };
+
   return (
     <div className={classes.consult}>
       <div>
@@ -273,6 +315,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+              <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
 
@@ -331,6 +375,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                     />
                   </OTStreams>
+
                   {props.showVideoChat && (
                     <div>
                       {!subscribeToVideo && (

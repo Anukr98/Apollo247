@@ -10,8 +10,8 @@ export const clientRoutes = {
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
     `/specialties/${specialty}/${doctorName}-${doctorId}`,
   doctorsLanding: () => '/doctors',
+  // specialties: (specialty: string) => `/specialties/${specialty}`,
   specialties: (specialty: string) => `/specialties/${specialty}`,
-  specialtiesDetails: () => `/specialties`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -35,9 +35,9 @@ export const clientRoutes = {
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
   searchByMedicine: (searchMedicineType: string, searchText: string) =>
     `/medicine/${searchMedicineType}/${searchText}`,
-  medicineDetails: (sku: string) => `/medicine-details/${sku}`,
-  medicineCategoryDetails: (searchMedicineType: string, sku: string) =>
-    `/medicine-details/${searchMedicineType}/${sku}`,
+  medicineDetails: (sku: string) => `/medicine/${sku}`,
+  medicineCategoryDetails: (searchMedicineType: string, searchText: string, sku: string) =>
+    `/medicine/${searchMedicineType}/${searchText}/${sku}`,
   addressBook: () => '/address-book',
   symptomsTrackerFor: () => '/track-symptoms-for',
   symptomsTracker: () => '/track-symptoms',
@@ -63,6 +63,7 @@ export const clientRoutes = {
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
   specialityListing: () => '/specialities',
+  medicinePrescription: () => '/medicine-prescription',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
