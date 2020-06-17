@@ -975,7 +975,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
-            onPress={() => console.log('proceed')}
+            onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>

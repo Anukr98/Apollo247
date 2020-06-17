@@ -119,6 +119,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setPhysicalPrescriptions: setPhysicalPrescription,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
+  const [prescriptionOption, setPrescriptionOption] = useState<string>('specified');
   const [durationDays, setDurationDays] = useState<string>('');
   const medicineDetailOptions = [
     {
@@ -162,56 +163,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         });
       })
     );
-  };
-  const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
-    const deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-    const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
-    const storeAddress = storeId && stores.find((item) => item.storeid == storeId);
-    const storeAddressLine = storeAddress && `${storeAddress.storename}, ${storeAddress.address}`;
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
-      'Order ID': `${orderId}`,
-      'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
-      StoreId: storeId, // incase of store delivery
-      'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
-      Pincode: pinCode,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
-
-    try {
-      // const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-      //   type: 'Pharmacy_Submit_Prescription',
-      // };
-      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
-    } catch (error) {}
-  };
-
-  const submitPrescriptionMedicineOrder = (
-    variables: savePrescriptionMedicineOrderOMSVariables
-  ) => {
-    client
-      .mutate({
-        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
-        variables,
-      })
-      .then(({ data }) => {
-        console.log({ data });
-        const { errorCode, orderAutoId } = g(data, 'SavePrescriptionMedicineOrder') || {};
-        postwebEngageSubmitPrescriptionEvent(orderAutoId);
-        if (errorCode) {
-          renderErrorAlert(`Something went wrong, unable to place order.`);
-          return;
-        }
-        props.navigation.goBack();
-        renderSuccessPopup();
-      })
-      .catch((e) => {
-        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
-        renderErrorAlert(`Something went wrong, please try later.`);
-      })
-      .finally(() => {
-        setLoading!(false);
-      });
   };
 
   const updateAddressLatLong = async (
@@ -280,12 +231,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         setLoading!(false);
         props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
       } else {
-        if (selectedMedicineOption === 'search') {
-          setLoading!(false);
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
-        } else {
-          onSubmitOrder(false);
-        }
+        onSubmitOrder(false);
       }
     };
 
@@ -356,8 +302,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       );
       setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
       setLoading!(false);
-      props.navigation.push(AppRoutes.YourCart, { movedFrom: 'uploadPrescription'});
       // submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+
+      if (selectedMedicineOption === 'search') {
+        props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
+      } else {
+        props.navigation.push(AppRoutes.YourCartUploadPrescription);
+      }
     } catch (error) {
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
@@ -369,14 +320,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     showAphAlert!({
       title: 'Uh oh.. :(',
       description: desc,
-      unDismissable: true,
-    });
-
-  const renderSuccessPopup = () =>
-    showAphAlert!({
-      title: 'Hi:)',
-      description:
-        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
       unDismissable: true,
     });
 
@@ -594,75 +537,123 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         </View>
       );
     } else if (selectedMedicineOption === 'all') {
+      const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
         <View style={{
           backgroundColor: theme.colors.WHITE,
           margin: 0,
           width: '100%',
         }}>
-          <View style={{
-            display: 'flex',
-            flexDirection: 'row',
-            backgroundColor: theme.colors.CARD_BG,
-            padding: 10,
-            shadowColor: theme.colors.SHADOW_GRAY,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.4,
-            shadowRadius: 8,
-            elevation: 4,
-          }}>
+          <TouchableOpacity
+            style={[
+              {
+                display: 'flex',
+                flexDirection: 'row',
+                padding: 10,
+              },
+              !isDurationDaysSelected ?
+              {
+                backgroundColor: theme.colors.CARD_BG,
+                shadowColor: theme.colors.SHADOW_GRAY,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.4,
+                shadowRadius: 8,
+                elevation: 4,
+              } : {}
+            ]}
+            onPress={() => setPrescriptionOption('specified')}
+          >
             <Text style={{
-              color: theme.colors.APP_GREEN,
+              color: isDurationDaysSelected ? theme.colors.LIGHT_BLUE : theme.colors.APP_GREEN,
               ...theme.fonts.IBMPlexSansMedium(13),
               marginLeft: 35,
               marginRight: 25,
             }}>
               As specified in prescription
             </Text>
-            <GreenTickIcon style={{
-              resizeMode: 'contain',
-            }} />
-          </View>
-          <View style={{
-            margin: 10,
-            marginBottom: 0,
-            marginLeft: 45,
-            display: 'flex',
-            flexDirection: 'row',
-          }}>
-            <Text style={{
-              color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(13),
-            }}>
-              Duration -
-            </Text>
-            <TextInputComponent
-              conatinerstyles={{
-                width: 30,
-                marginLeft: 10,
-                marginRight: 10,
-                marginTop: -5,
-                paddingTop: 0,
+            {
+              !isDurationDaysSelected && (
+                <GreenTickIcon style={{
+                  resizeMode: 'contain',
+                }} />
+              )
+            }
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={[
+                {
+                  padding: 10,
+                  paddingLeft: 45,
+                },
+                isDurationDaysSelected ?
+                {
+                  backgroundColor: theme.colors.CARD_BG,
+                  shadowColor: theme.colors.SHADOW_GRAY,
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 8,
+                  elevation: 4,
+                } : {}
+              ]}
+            onPress={() => setPrescriptionOption('duration')}
+          >
+            <View 
+              style={{
+                display: 'flex',
+                flexDirection: 'row'
               }}
-              inputStyle={{
-                color: theme.colors.LIGHT_BLUE,
-                opacity: 0.5,
+            >
+              <Text style={{
+                color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
                 ...theme.fonts.IBMPlexSansMedium(13),
-                textAlign: 'center',
-                borderBottomWidth: 1,
-                paddingBottom: 0,
-              }}
-              keyboardType={'numeric'}
-              value={durationDays}
-              onChangeText={(value) => setDurationDays(value)}
-            />
-            <Text style={{
-              color: theme.colors.LIGHT_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(13),
-            }}>
-              Days
-            </Text>
-          </View>
+              }}>
+                Duration -
+              </Text>
+              <TextInputComponent
+                conatinerstyles={{
+                  width: 30,
+                  marginLeft: 10,
+                  marginRight: 10,
+                  marginTop: -5,
+                  paddingTop: 0,
+                }}
+                inputStyle={{
+                  color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
+                  opacity: 0.5,
+                  ...theme.fonts.IBMPlexSansMedium(13),
+                  textAlign: 'center',
+                  borderBottomWidth: 1,
+                  paddingBottom: 0,
+                }}
+                keyboardType={'numeric'}
+                value={durationDays}
+                onChangeText={(value) => setDurationDays(value)}
+              />
+              <Text style={{
+                color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
+                ...theme.fonts.IBMPlexSansMedium(13),
+              }}>
+                Days
+              </Text>
+              {
+                isDurationDaysSelected && (
+                  <GreenTickIcon style={{
+                    resizeMode: 'contain',
+                    marginLeft: 50,
+                  }} />
+                )
+              }
+            </View>
+            {
+              isDurationDaysSelected && (
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(11),
+                  }}
+                >* Order for minimum 7 days</Text>
+              )
+            }
+          </TouchableOpacity>
           <View 
             style={{
               height: 1,
@@ -672,6 +663,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         </View>
       );
     }
+  };
+
+  const disableSubmitButton = () => {
+    const isPrescriptions = !(PhysicalPrescriptions.length || EPrescriptions.length);
+    let durationDaysInput = false;
+    if (selectedMedicineOption && selectedMedicineOption === 'all' && prescriptionOption === 'duration') {
+      if (durationDays === '' || parseInt(durationDays) < 7) durationDaysInput = true;
+    }
+    return isPrescriptions || !selectedMedicineOption || durationDaysInput || loading;
   };
 
   return (
@@ -715,12 +715,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Button
-          disabled={
-            !(PhysicalPrescriptions.length || EPrescriptions.length) ||
-            !selectedMedicineOption ||
-            // !(storeId || deliveryAddressId) ||
-            loading
-          }
+          disabled={disableSubmitButton()}
           title={'SUBMIT'}
           onPress={onPressSubmit}
           style={{ marginHorizontal: 60, flex: 1 }}

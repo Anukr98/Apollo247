@@ -36,13 +36,15 @@ import {
   UPDATE_PATIENT_ADDRESS,
   UPLOAD_DOCUMENT,
   VALIDATE_PHARMA_COUPON,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
-import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { uploadDocument, uploadDocumentVariables } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   getDeliveryTime,
   getPlaceInfoByPincode,
@@ -79,6 +81,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import {
   NavigationActions,
@@ -90,7 +93,7 @@ import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '../../graphql/types/getPatientAddressList';
-import { CouponCategoryApplicable, OrderLineItems } from '../../graphql/types/globalTypes';
+import { CouponCategoryApplicable, OrderLineItems, PRISM_DOCUMENT_CATEGORY, UPLOAD_FILE_TYPES, MEDICINE_DELIVERY_TYPE, BOOKING_SOURCE, DEVICE_TYPE, NonCartOrderOMSCity } from '../../graphql/types/globalTypes';
 import {
   validatePharmaCoupon,
   validatePharmaCouponVariables,
@@ -164,9 +167,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourCartProps extends NavigationScreenProps {}
+export interface YourCartUploadPrescriptionProps extends NavigationScreenProps {}
 
-export const YourCart: React.FC<YourCartProps> = (props) => {
+export const YourCartUploadPrescription: React.FC<YourCartUploadPrescriptionProps> = (props) => {
   const {
     updateCartItem,
     removeCartItem,
@@ -198,6 +201,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ePrescriptions,
     setShowPrescriptionAtStore,
     setAddresses,
+    stores,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -259,6 +263,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    console.log('here: ', physicalPrescriptions);
     const location = pharmacyLocation || locationDetails;
     if (!(location && location.pincode)) {
       doRequestAndAccessLocationModified()
@@ -313,7 +318,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const getUserAddress = async () => {
     setLoading!(true);
     const userId = await dataSavedUserID('selectedProfileId');
-    console.log('selectedProfileId', userId);
     ((navigatedFrom === 'splashscreen' || 'registration') &&
       addresses.length == 0 &&
       client
@@ -516,27 +520,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onComplete: () => void
   ) => {
     const validation = cartValidation(
-      storeItems
-        .filter((storeItem) => cartItems.find((cartItem) => cartItem.id == storeItem.itemId))
-        .map((storeItem) => {
-          const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
-          const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
-          const storeItemSP =
-            cartItem.specialPrice && cartItem.price != storeItemPrice
-              ? getSpecialPriceFromRelativePrices(
-                  cartItem.price,
-                  cartItem.specialPrice,
-                  storeItem.mrp * Number(cartItem.mou)
-                )
-              : cartItem.specialPrice;
-          return {
-            sku: cartItem.id,
-            name: cartItem.name,
-            is_in_stock: 1,
-            price: storeItemPrice,
-            special_price: storeItemSP,
-          } as MedicineProduct;
-        }),
+      storeItems.map((storeItem) => {
+        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+        const storeItemSP =
+          cartItem.specialPrice && cartItem.price != storeItemPrice
+            ? getSpecialPriceFromRelativePrices(
+                cartItem.price,
+                cartItem.specialPrice,
+                storeItem.mrp * Number(cartItem.mou)
+              )
+            : cartItem.specialPrice;
+        return {
+          sku: cartItem.id,
+          name: cartItem.name,
+          is_in_stock: 1,
+          price: storeItemPrice,
+          special_price: storeItemSP,
+        } as MedicineProduct;
+      }),
       cartItems
     );
     if (validation.alertText) {
@@ -678,16 +680,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     } catch (error) {}
   };
 
-  const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
-    if (!(unit < 1)) {
-      updateCartItem && updateCartItem({ id, quantity: unit });
-    }
-  };
-
-  const onRemoveCartItem = ({ id }: ShoppingCartItem) => {
-    removeCartItem && removeCartItem(id);
-  };
-
   const renderHeader = () => {
     return (
       <Header
@@ -696,42 +688,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'MEDICINES CART'}
-        rightComponent={
-          <View>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                if (navigatedFrom === 'registration') {
-                  props.navigation.dispatch(
-                    StackActions.reset({
-                      index: 0,
-                      key: null,
-                      actions: [
-                        NavigationActions.navigate({
-                          routeName: AppRoutes.ConsultRoom,
-                        }),
-                      ],
-                    })
-                  );
-                } else {
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                  setCoupon!(null);
-                  setStoreId!('');
-                }
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(13),
-                  color: theme.colors.APP_YELLOW,
-                }}
-              >
-                ADD ITEMS
-              </Text>
-            </TouchableOpacity>
-          </View>
-        }
+        title={'PLACE ORDER'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
           props.navigation.goBack();
@@ -745,101 +702,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       <View style={styles.labelView}>
         <Text style={styles.labelTextStyle}>{label}</Text>
         {rightText && <Text style={styles.labelTextStyle}>{rightText}</Text>}
-      </View>
-    );
-  };
-
-  const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': id,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': '',
-      Source: 'List',
-      'Section Name': 'CART',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
-  const renderItemsInCart = () => {
-    const cartItemsCount =
-      cartItems.length > 10 || cartItems.length == 0
-        ? `${cartItems.length}`
-        : `0${cartItems.length}`;
-    return (
-      <View>
-        {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
-        {cartItems.length == 0 && (
-          <Text
-            style={{
-              color: theme.colors.FILTER_CARD_LABEL,
-              ...theme.fonts.IBMPlexSansMedium(13),
-              margin: 20,
-              textAlign: 'center',
-              opacity: 0.3,
-            }}
-          >
-            Your Cart is empty
-          </Text>
-        )}
-        {cartItems.map((medicine, index, array) => {
-          const medicineCardContainerStyle = [
-            { marginBottom: 8, marginHorizontal: 20 },
-            index == 0 ? { marginTop: 20 } : {},
-            index == array.length - 1 ? { marginBottom: 20 } : {},
-          ];
-          const imageUrl = medicine.prescriptionRequired
-            ? ''
-            : medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-            ? medicine.thumbnail.startsWith('http')
-              ? medicine.thumbnail
-              : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
-            : '';
-
-          return (
-            <MedicineCard
-              // personName={
-              //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
-              // }
-              containerStyle={medicineCardContainerStyle}
-              key={medicine.id}
-              onPress={() => {
-                postwebEngageProductClickedEvent(medicine);
-                CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: medicine.id,
-                  title: medicine.name,
-                });
-              }}
-              medicineName={medicine.name}
-              price={medicine.price}
-              specialPrice={(coupon && medicine.couponPrice) || medicine.specialPrice}
-              unit={medicine.quantity}
-              imageUrl={imageUrl}
-              onPressAdd={() => {}}
-              onPressRemove={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
-                onRemoveCartItem(medicine);
-              }}
-              onChangeUnit={(unit) => {
-                CommonLogEvent(AppRoutes.YourCart, 'Change unit in cart');
-                onUpdateCartItem(medicine, unit);
-              }}
-              isCardExpanded={true}
-              isInStock={medicine.isInStock}
-              unserviceable={medicine.unserviceable}
-              showRemoveWhenOutOfStock={!medicine.isInStock || medicine.unserviceable}
-              isPrescriptionRequired={medicine.prescriptionRequired}
-              subscriptionStatus={'unsubscribed'}
-              packOfCount={parseInt(medicine.mou || '0')}
-              onChangeSubscription={() => {}}
-              onEditPress={() => {}}
-              onAddSubscriptionPress={() => {}}
-            />
-          );
-        })}
       </View>
     );
   };
@@ -1202,258 +1064,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const renderCouponSection = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          if (cartTotal == 0) {
-            renderAlert('Please add items in the cart to apply coupon.');
-          } else {
-            props.navigation.navigate(AppRoutes.ApplyCouponScene);
-            setCoupon!(null);
-          }
-        }}
-      >
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            ...theme.viewStyles.shadowStyle,
-            padding: 16,
-            marginHorizontal: 20,
-            marginTop: 16,
-            marginBottom: 4,
-          }}
-        >
-          <View style={{ flexDirection: 'row' }}>
-            <CouponIcon />
-            <View style={{ flex: 1 }}>
-              {!coupon ? (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 17, theme.colors.SHERPA_BLUE),
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  {'Apply Coupon'}
-                </Text>
-              ) : (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 17, theme.colors.SHERPA_BLUE),
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('M', 17, '#00b38e'),
-                      paddingHorizontal: 16,
-                    }}
-                  >
-                    {coupon.code + ' '}
-                  </Text>
-                  Applied
-                </Text>
-              )}
-
-              {!!coupon && (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#01475b', 1, 24),
-                    paddingHorizontal: 16,
-                    marginTop: 1,
-                  }}
-                >
-                  {coupon.successMessage}
-                </Text>
-              )}
-            </View>
-            <ArrowRight />
-          </View>
-          {!!coupon && (
-            <View
-              style={{
-                marginTop: 8,
-                borderRadius: 3,
-                backgroundColor: 'rgba(0, 135, 186, 0.07)',
-                borderColor: '#0087ba',
-                borderWidth: 1,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 16, '#0087ba'),
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                }}
-              >
-                {coupon.discountedTotals!.couponDiscount > 0
-                  ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
-                  : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
-              </Text>
-            </View>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderTotalCharges = () => {
-    return (
-      <View>
-        {renderLabel('TOTAL CHARGES')}
-        {renderCouponSection()}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            marginTop: 8,
-            marginBottom: 12,
-            padding: 16,
-          }}
-        >
-          <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>MRP Total</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
-          </View>
-          {productDiscount > 0 && (
-            <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-              <Text style={styles.blueTextStyle}>Product Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {productDiscount.toFixed(2)}</Text>
-            </View>
-          )}
-          <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-            <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
-          </View>
-          <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-            <Text style={styles.blueTextStyle}>Packaging Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {packagingCharges.toFixed(2)}</Text>
-          </View>
-          {/* <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-              <Text style={styles.blueTextStyle}>Packaging Charges</Text>
-              <Text style={styles.blueTextStyle}>+ Rs. {(0).toFixed(2)}</Text>
-            </View> */}
-          <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
-          {!!coupon && (
-            <>
-              <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-                <Text style={styles.blueTextStyle}>Total</Text>
-                <Text style={styles.blueTextStyle}>
-                  Rs. {(cartTotal - productDiscount + deliveryCharges).toFixed(2)}
-                </Text>
-              </View>
-              <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-                <Text style={styles.blueTextStyle}>Discount({coupon.code})</Text>
-                <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
-              </View>
-              <View
-                style={[
-                  styles.separatorStyle,
-                  { marginTop: 16, marginBottom: 7, borderBottomWidth: 0.75 },
-                ]}
-              />
-            </>
-          )}
-          <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-            <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold(16) }]}>
-              TO PAY
-            </Text>
-            <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold(16) }]}>
-              Rs. {grandTotal.toFixed(2)}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const medicineSuggestions = [
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-    {
-      name: 'Metformin 500mg',
-      requirePrescription: false,
-      cost: 'Rs. 120',
-    },
-  ];
-
-  const renderMedicineItem = (
-    item: { name: string; cost: string },
-    index: number,
-    length: number
-  ) => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          shadowRadius: 4,
-          marginBottom: 20,
-          marginTop: 11,
-          marginHorizontal: 6,
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 8,
-        }}
-      >
-        <MedicineIcon />
-        <Text style={[styles.blueTextStyle, { paddingTop: 4 }]}>{item.name}</Text>
-        <View style={[styles.separatorStyle, { marginTop: 3, marginBottom: 5 }]} />
-        <Text style={styles.medicineCostStyle}>
-          {item.cost} <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>/strip</Text>
-        </Text>
-      </View>
-    );
-  };
-
-  /*
-  const renderMedicineSuggestions = () => {
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          paddingTop: 16,
-          marginTop: 12,
-        }}
-      >
-        {renderLabel('YOU SHOULD ALSO ADD')}
-        <FlatList
-          contentContainerStyle={{
-            marginHorizontal: 14,
-          }}
-          horizontal={true}
-          bounces={false}
-          data={medicineSuggestions}
-          renderItem={({ item, index }) =>
-            renderMedicineItem(item, index, medicineSuggestions.length)
-          }
-          keyExtractor={(_, index) => index.toString()}
-          showsHorizontalScrollIndicator={false}
-        />
-      </View>
-    );
-  };
-  */
-
-  const disableProceedToPay = !(
-    cartItems.length > 0 &&
+  const disablePlaceOrder = !(
     !showDeliverySpinner &&
-    !cartItems.find((item) => !item.isInStock) &&
-    !cartItems.find((item) => item.unserviceable) &&
     !!(deliveryAddressId || storeId) &&
-    (uploadPrescriptionRequired
-      ? (storeId && showPrescriptionAtStore) ||
-        physicalPrescriptions.length > 0 ||
-        ePrescriptions.length > 0
-      : true)
+    ((storeId && showPrescriptionAtStore) ||
+    physicalPrescriptions.length > 0 ||
+    ePrescriptions.length > 0)
   );
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
@@ -1480,7 +1096,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -1502,7 +1117,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          console.log('precp:di', newuploadedPrescriptions);
 
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
@@ -1542,13 +1156,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const onFinishUpload = () => {
-    console.log(
-      physicalPrescriptions,
-      ePrescriptions,
-      isEPrescriptionUploadComplete,
-      isPhysicalUploadComplete,
-      'hhruso'
-    );
+    // console.log(
+    //   physicalPrescriptions,
+    //   ePrescriptions,
+    //   isEPrescriptionUploadComplete,
+    //   isPhysicalUploadComplete,
+    //   'hhruso'
+    // );
 
     if (
       physicalPrescriptions.length > 0 &&
@@ -1783,74 +1397,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     };
   };
 
-  const cartItemsInStockAndPriceVerification = async (
-    cartItems: ShoppingCartItem[],
-    onComplete: () => void
-  ) => {
-    try {
-      const response = await medCartItemsDetailsApi(cartItems.map((item) => item.id));
-      const validation = cartValidation(response.data.productdp, cartItems);
-      if (validation.alertText) {
-        setLoading!(false);
-        showAphAlert!({
-          title: 'Hi! :)',
-          description: validation.alertText,
-          onPressOk: () => {
-            hideAphAlert!();
-            if (validation.newItems.find((item) => !item.isInStock)) {
-              scrollViewRef.current && scrollViewRef.current.scrollTo(0, 0, true);
-            }
-          },
-        });
-        setCartItems!(validation.newItems);
-      } else {
-        onComplete();
-      }
-    } catch (error) {
-      setLoading!(false);
-      renderAlert('Sorry! We’re unable to check availability of cart items.');
-    }
-  };
-
-  const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    whatsappAPICalled();
-    const proceed = () => {
-      const prescriptions = physicalPrescriptions;
-      if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-        setLoading!(false);
-        forwardToCheckout();
-      } else {
-        if (prescriptions.length > 0) {
-          physicalPrescriptionUpload();
-        }
-        if (ePrescriptions.length > 0) {
-          ePrescriptionUpload();
-        }
-      }
-    };
-
-    const addressLatLongCheckAndProceed = () => {
-      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
-      if (
-        g(selectedAddress, 'latitude') &&
-        g(selectedAddress, 'longitude') &&
-        g(selectedAddress, 'stateCode')
-      ) {
-        proceed();
-      } else {
-        setLoading!(true);
-        updateAddressLatLong(selectedAddress!, proceed);
-      }
-    };
-    if (deliveryAddressId) {
-      setLoading!(true);
-      cartItemsInStockAndPriceVerification(cartItems, addressLatLongCheckAndProceed);
-    } else {
-      proceed();
-    }
-  };
-
   const renderOneapollotext = () => {
     return (
       <View style={styles.oneApollotxt}>
@@ -1871,6 +1417,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       </View>
     );
   };
+  
   const callWhatsOptAPICall = async (optedFor: boolean) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
@@ -1884,6 +1431,176 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       });
   };
 
+  const renderPaymentMethod = () => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          marginHorizontal: 20,
+          marginTop: 16,
+          marginBottom: 24,
+          padding: 20,
+        }}
+      >
+        <RadioSelectionItem
+          key={'cod'}
+          title={'Cash On Delivery'}
+          isSelected={true}
+          onPress={() => {}}
+          hideSeparator={true}
+          textStyle={{ ...theme.fonts.IBMPlexSansMedium(16), marginTop: 2 }}
+        />
+      </View>
+    );
+  };
+
+  const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
+    const deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
+    const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
+    const storeAddress = storeId && stores.find((item) => item.storeid == storeId);
+    const storeAddressLine = storeAddress && `${storeAddress.storename}, ${storeAddress.address}`;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
+      'Order ID': `${orderId}`,
+      'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
+      StoreId: storeId, // incase of store delivery
+      'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+      Pincode: pinCode,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+  };
+
+  const placeOrder = async (email?: string) => {
+    setLoading!(true);
+    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
+    const zipcode = g(selectedAddress, 'zipcode');
+    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
+      (addr) => addr == Number(zipcode)
+    );
+
+    CommonLogEvent(
+      AppRoutes.UploadPrescription,
+      'Graph ql call for save prescription medicine order'
+    );
+    try {
+      // Physical Prescription Upload
+      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(physicalPrescriptions);
+      console.log('upload of prescriptions done');
+
+      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
+        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
+        : [];
+
+      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+      const phyPresPrismIds = physicalPrescriptions.map(
+        (item) => item.prismPrescriptionFileId
+      ).filter((i) => i);
+
+      const ePresUrls = ePrescriptions.map((item) => item.uploadedUrl).filter((i) => i);
+      const ePresPrismIds = ePrescriptions.map((item) => item.prismPrescriptionFileId).filter(
+        (i) => i
+      );
+
+      const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+        prescriptionMedicineOMSInput: {
+          patientId: (currentPatient && currentPatient.id) || '',
+          medicineDeliveryType: deliveryAddressId
+            ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+            : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          shopId: storeId || '0',
+          appointmentId: '',
+          patinetAddressId: deliveryAddressId || '',
+          prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
+          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+          isEprescription: ePrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+          // Values for chennai order
+          email: isChennaiAddress && email ? email.trim() : null,
+          NonCartOrderCity: isChennaiAddress ? NonCartOrderOMSCity.CHENNAI : null,
+          bookingSource: BOOKING_SOURCE.MOBILE,
+          deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+        },
+      };
+
+      setLoading!(false);
+      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+    } catch (error) {
+      setLoading!(false);
+      CommonBugFender('UploadPrescription_onPressSubmit_try', error);
+      renderErrorAlert('Error occurred while uploading physical prescription(s).');
+    }
+  };
+
+  const submitPrescriptionMedicineOrder = (
+    variables: savePrescriptionMedicineOrderOMSVariables
+  ) => {
+    client
+      .mutate({
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
+        variables,
+      })
+      .then(({ data }) => {
+        console.log({ data });
+        const { errorCode, orderAutoId } = g(data, 'SavePrescriptionMedicineOrder') || {};
+        postwebEngageSubmitPrescriptionEvent(orderAutoId);
+        if (errorCode) {
+          renderErrorAlert(`Something went wrong, unable to place order.`);
+          return;
+        }
+        props.navigation.goBack();
+        renderSuccessPopup();
+      })
+      .catch((e) => {
+        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
+        console.log({ e });
+        renderErrorAlert(`Something went wrong, please try later.`);
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
+  };
+
+  const renderErrorAlert = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: desc,
+      unDismissable: true,
+  });
+
+  const renderSuccessPopup = () =>
+    showAphAlert!({
+      title: 'Hi:)',
+      description:
+        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
+      unDismissable: true,
+  });
+
+  const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
+    return Promise.all(
+      physicalPrescriptions.map((item) => {
+        const variables = {
+          UploadDocumentInput: {
+            base64FileInput: item.base64,
+            category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
+            fileType:
+              item.fileType == 'jpg'
+                ? UPLOAD_FILE_TYPES.JPEG
+                : item.fileType == 'png'
+                ? UPLOAD_FILE_TYPES.PNG
+                : item.fileType == 'pdf'
+                ? UPLOAD_FILE_TYPES.PDF
+                : UPLOAD_FILE_TYPES.JPEG,
+            patientId: g(currentPatient, 'id')!,
+          },
+        };
+        console.log(JSON.stringify(variables));
+        return client.mutate<uploadDocument, uploadDocumentVariables>({
+          mutation: UPLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables,
+        });
+      })
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1895,16 +1612,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           bounces={false}
         >
           <View style={{ marginVertical: 24 }}>
-            {renderItemsInCart()}
             <MedicineUploadPrescriptionView
               selectedTab={selectedTab}
               setSelectedTab={setselectedTab}
               navigation={props.navigation}
             />
             {renderDelivery()}
-            {renderTotalCharges()}
-            {renderOneapollotext()}
-            {/* {renderMedicineSuggestions()} */}
+            {renderPaymentMethod()}
+            {/* {renderOneapollotext()} */}
           </View>
           {!g(currentPatient, 'whatsAppMedicine') ? (
             <WhatsAppStatus
@@ -1920,11 +1635,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         </ScrollView>
         <StickyBottomComponent defaultBG>
           <Button
-            disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
+            disabled={disablePlaceOrder}
+            title={'PLACE ORDER'}
             onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
-              onPressProceedToPay();
+              // remove uploaded prescription after success
+              placeOrder();
+              console.log('upload prescription cod api');
             }}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
