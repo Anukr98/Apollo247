@@ -14,7 +14,15 @@ import {
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
+import {
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+  AppState,
+  AppStateStatus,
+  Platform,
+} from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
@@ -468,9 +476,11 @@ export const AudioVideoProvider: React.FC = (props) => {
             : strings.consult_room.calling}
         </Text>
         {isPaused !== '' ? (
-          <Text style={styles.alertText}>
-            {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}
-          </Text>
+          <View style={styles.alertContainer}>
+            <Text style={styles.alertText}>
+              {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}
+            </Text>
+          </View>
         ) : null}
       </View>
     );

@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 
@@ -204,8 +204,19 @@ export const AudioVideoStyles = StyleSheet.create({
     zIndex: 103,
     borderRadius: 10,
   },
+  alertContainer: {
+    backgroundColor: 'white',
+    paddingTop: 2,
+    paddingBottom: Platform.OS === 'ios' ? 3 : 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginTop: 2,
+    marginHorizontal: 16,
+    borderRadius: 100,
+  },
   alertText: {
-    color: theme.colors.NOTIFICATION_DOT,
+    color: theme.colors.APP_RED,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     zIndex: 105,
     elevation: 5,
