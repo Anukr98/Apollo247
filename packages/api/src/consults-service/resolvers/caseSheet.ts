@@ -307,10 +307,12 @@ export const caseSheetTypeDefs = gql`
 
   type DiagnosticPrescription {
     itemname: String
+    testInstruction: String
   }
 
   input DiagnosticPrescriptionInput {
     itemname: String
+    testInstruction: String
   }
 
   enum MEDICINE_FORM_TYPES {
@@ -558,7 +560,7 @@ const getJuniorDoctorCaseSheet: Resolver<
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
-    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+    secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -649,7 +651,7 @@ const getCaseSheet: Resolver<
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
-    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+    secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber
   )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -1243,7 +1245,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
@@ -1349,7 +1353,9 @@ const generatePrescriptionTemp: Resolver<
     const prismUploadResponse = await uploadPdfBase64ToPrism(
       uploadPdfInput,
       patientData,
-      patientsDb
+      patientsDb,
+      doctorData,
+      getCaseSheetData
     );
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,

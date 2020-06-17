@@ -51,8 +51,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
@@ -68,8 +68,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeBtns: {
       position: 'absolute',
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       zIndex: 9,
     },
     stopCallIcon: {
@@ -86,8 +86,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeVideoImg: {
       zIndex: 9,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       backgroundColor: '#000',
     },
@@ -135,6 +135,17 @@ const useStyles = makeStyles((theme: Theme) => {
         left: '50%',
       },
     },
+    minSubscriber: {
+      '& > div:first-child': {
+        minHeight: 'auto !important',
+      },
+    },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -171,8 +182,18 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
   const { patientDetails } = useContext(CaseSheetContextJrd);
   const apikey = process.env.OPENTOK_KEY;
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo) return `Patient has off their audio and video`;
+    else if (!callerAudio) return `Patient has off their audio`;
+    else if (!callerVideo) return `Patient has off their video`;
+    else return null;
+  };
+
   return (
     <div className={classes.consult}>
       <div>
@@ -197,6 +218,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
 
@@ -210,6 +232,13 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   props.toggelChatVideo();
                   props.stopAudioVideoCallpatient();
                   setIscall(false);
+                },
+                streamPropertyChanged: (event: any) => {
+                  const subscribers = event.target.getSubscribersForStream(event.stream);
+                  if (subscribers.length) {
+                    setCallerAudio(event.stream.hasAudio);
+                    setCallerVideo(event.stream.hasVideo);
+                  }
                 },
               }}
             >
@@ -251,7 +280,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 )}
 
                 <OTStreams>
-                  <OTSubscriber className={classes.subscriber} />
+                  <OTSubscriber
+                    className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                  />
                 </OTStreams>
 
                 {props.showVideoChat && (

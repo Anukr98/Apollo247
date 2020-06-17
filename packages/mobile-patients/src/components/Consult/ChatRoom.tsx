@@ -1831,7 +1831,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const successSteps = [
-    'Let’s get you feeling better in 5 simple steps :)\n',
+    'Let’s get you feeling better by following simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
