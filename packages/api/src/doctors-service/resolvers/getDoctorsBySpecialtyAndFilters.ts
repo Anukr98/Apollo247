@@ -186,7 +186,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
   if (args.filterInput.experience && args.filterInput.experience.length > 0) {
-    let elasticExperience: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticExperience: { [index: string]: any } = [];
     args.filterInput.experience.forEach((experience) => {
       elasticExperience.push({
         range: { experience: { gte: experience.minimum, lte: experience.maximum } },
@@ -197,7 +198,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
   if (args.filterInput.fees && args.filterInput.fees.length > 0) {
-    let elasticFee: { [index: string]: any } = [];
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const elasticFee: { [index: string]: any } = [];
     args.filterInput.fees.forEach((fee) => {
       elasticFee.push({
         range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },

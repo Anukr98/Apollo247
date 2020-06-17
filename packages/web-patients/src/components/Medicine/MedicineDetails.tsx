@@ -25,6 +25,7 @@ import { useCurrentPatient } from 'hooks/authHooks';
 import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -84,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '20px',
       },
       [theme.breakpoints.down('xs')]: {
-        marginTop: 50,
+        marginTop: 99,
       },
     },
     medicineDetailsHeader: {
@@ -460,7 +461,7 @@ export const MedicineDetails: React.FC = (props) => {
     await axios
       .post(
         apiDetails.skuUrl || '',
-        { params: sku },
+        { params: sku, level: 'product' },
         {
           headers: {
             Authorization: apiDetails.authToken,
@@ -737,9 +738,14 @@ export const MedicineDetails: React.FC = (props) => {
         .replace(/\.t/, '.')
     );
   };
-
+  const metaTagProps = {
+    title: `Buy / Order ${params.sku} Online At Best Price - Pharmacy Store - Apollo 247`,
+    desciption: `Buy ${params.sku} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${params.sku} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
+    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`,
+  };
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
       {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>

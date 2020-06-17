@@ -202,6 +202,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 <Link
                   to={clientRoutes.medicineCategoryDetails(
                     params.searchMedicineType,
+                    params.searchText,
                     product.url_key
                   )}
                 >
