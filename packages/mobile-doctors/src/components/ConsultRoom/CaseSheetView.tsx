@@ -397,6 +397,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         }
       })
       .catch((e) => {
+        setLoading && setLoading(false);
         showAphAlert &&
           showAphAlert({
             title: strings.common.uh_oh,
