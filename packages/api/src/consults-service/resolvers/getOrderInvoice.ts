@@ -188,14 +188,14 @@ const getOrderInvoice: Resolver<
       .fillColor('#828691')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text(' RA Puram, Chennai - 600028', { align: 'right' })
-      .moveDown(1)
+      .moveDown(0.4)
 
       .text('GST Number - 33AAACA5443N1ZP', { align: 'right' })
       .fillColor('#6d7278')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-      .moveDown(0.3)
+      .moveDown(0.2)
 
-      .fillColor('#6d7278')
+      .fillColor('#828691')
       .text(`${todayDate}`, { align: 'right' });
     doc.moveDown(2);
   };
