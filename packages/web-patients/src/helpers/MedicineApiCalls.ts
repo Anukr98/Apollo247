@@ -193,6 +193,7 @@ interface OfferBannerSection {
 }
 
 export interface MedicinePageAPiResponse {
+  monsoon_essentials: { products: MedicineProduct[] };
   mainbanners: OfferBannerSection[];
   mainbanners_desktop: OfferBannerSection[];
   healthareas: MedicinePageSection[];

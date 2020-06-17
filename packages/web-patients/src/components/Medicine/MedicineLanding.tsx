@@ -520,6 +520,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       value: <DayDeals data={data.deals_of_the_day} />,
     },
     { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} /> },
+    { key: 'Monsoon Essentials', value: <HotSellers data={data.monsoon_essentials} /> },
     {
       key: 'Shop by Category',
       value: <ShopByCategory data={data.shop_by_category} />,
