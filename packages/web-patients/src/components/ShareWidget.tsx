@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 30,
       padding: 16,
       minWidth: 196,
+      zIndex: 2,
       '& h3': {
         fontSize: 15,
         fontWeight: 'bold',
@@ -52,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b !important',
       fontWeight: 'normal',
       marginBottom: 20,
+      width: '100%',
       '&:hover': {
         border: 'none',
         backgroundColor: 'transparent',
@@ -76,6 +78,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ShareWidgetProps {
   title: string;
   url: string;
+  closeShareWidget: () => void;
 }
 
 export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
@@ -83,16 +86,20 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
 
   return (
     <div className={classes.shareWidgetContainer}>
-      <div className={classes.closeBtn}>
+      <div className={classes.closeBtn} onClick={() => props.closeShareWidget()}>
         <img src={require('images/ic_cross.svg')} alt="" />
       </div>
       <h3>Share this article</h3>
       <TwitterShareButton className={classes.shareButton} url={props.url} title={props.title}>
-        <span><TwitterIcon size={32} round /></span>
+        <span>
+          <TwitterIcon size={32} round />
+        </span>
         <span>Twitter</span>
       </TwitterShareButton>
       <WhatsappShareButton className={classes.shareButton} url={props.url} title={props.title}>
-        <span><WhatsappIcon size={32} round /></span>
+        <span>
+          <WhatsappIcon size={32} round />
+        </span>
         <span>WhatsApp</span>
       </WhatsappShareButton>
       <FacebookShareButton
@@ -102,7 +109,9 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
         }
         title={props.title}
       >
-        <span><FacebookIcon size={32} round /></span>
+        <span>
+          <FacebookIcon size={32} round />
+        </span>
         <span>Faceboook</span>
       </FacebookShareButton>
     </div>

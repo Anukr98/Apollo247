@@ -307,13 +307,20 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
           onMouseEnter={() => {
             setShowShareWidget(true);
           }}
-          onMouseLeave={() => {
-            setShowShareWidget(false);
-          }}
         >
-          <span><img src={require('images/ic-share-yellow.svg')} alt="" /></span>
+          <span>
+            <img src={require('images/ic-share-yellow.svg')} alt="" />
+          </span>
           <span>Share</span>
-          {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
+          {showShareWidget && (
+            <ShareWidget
+              title={props.title}
+              closeShareWidget={() => {
+                setShowShareWidget(false);
+              }}
+              url={window.location.href}
+            />
+          )}
         </div>
         <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
           Subscribe
@@ -339,13 +346,20 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
             onMouseEnter={() => {
               setShowShareWidget(true);
             }}
-            onMouseLeave={() => {
-              setShowShareWidget(false);
-            }}
           >
-            <span><img src={require('images/ic-share-yellow.svg')} alt="" /></span>
+            <span>
+              <img src={require('images/ic-share-yellow.svg')} alt="" />
+            </span>
             <span>Share</span>
-            {showShareWidget && <ShareWidget title={props.title} url={window.location.href} />}
+            {showShareWidget && (
+              <ShareWidget
+                title={props.title}
+                closeShareWidget={() => {
+                  setShowShareWidget(false);
+                }}
+                url={window.location.href}
+              />
+            )}
           </div>
           <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
             Subscribe
