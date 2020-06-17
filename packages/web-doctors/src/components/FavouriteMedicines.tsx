@@ -805,7 +805,8 @@ export const FavouriteMedicines: React.FC = () => {
       id: ROUTE_OF_ADMINISTRATION.NASAL_DROPS,
       value: 'Nasal drops',
       selected: false,
-    },{
+    },
+    {
       id: ROUTE_OF_ADMINISTRATION.NASALLY,
       value: 'Nasally',
       selected: false,
@@ -1240,7 +1241,12 @@ export const FavouriteMedicines: React.FC = () => {
     setDaySlots(dayslots);
     if (selectedMedicinesArr) {
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
-      setConsumptionDuration(selectedMedicinesArr[idx].medicineConsumptionDurationInDays! && Number(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!) !== 0 ? selectedMedicinesArr[idx].medicineConsumptionDurationInDays! : '');
+      setConsumptionDuration(
+        selectedMedicinesArr[idx].medicineConsumptionDurationInDays! &&
+          Number(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!) !== 0
+          ? selectedMedicinesArr[idx].medicineConsumptionDurationInDays!
+          : ''
+      );
       if (
         selectedMedicinesArr[idx].medicineUnit &&
         dosageList.indexOf(selectedMedicinesArr[idx].medicineUnit) < 0
@@ -1435,7 +1441,24 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageEvening.trim());
     if (customDosageNight && customDosageNight.trim() !== '')
       customDosageArray.push(customDosageNight.trim());
-    if (!isCustomform && tabletsCount.trim() === '') {
+    if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+      medicineUnit !== 'AS_PRESCRIBED'
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1509,16 +1532,15 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    // else if (daySlotsArr.length === 0) {
-    //   setErrorState({
-    //     ...errorState,
-    //     durationErr: false,
-    //     daySlotErr: true,
-    //     tobeTakenErr: false,
-    //     dosageErr: false,
-    //   });
-    // } 
+    } else if (daySlotsArr.length === 0) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    }
     // else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
     //   setErrorState({
     //     ...errorState,
@@ -1527,7 +1549,7 @@ export const FavouriteMedicines: React.FC = () => {
     //     tobeTakenErr: false,
     //     dosageErr: false,
     //   });
-    // } 
+    // }
     else {
       setErrorState({
         ...errorState,
@@ -1649,7 +1671,24 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageEvening.trim());
     if (customDosageNight && customDosageNight.trim() !== '')
       customDosageArray.push(customDosageNight.trim());
-    if (!isCustomform && tabletsCount.trim() === '') {
+    if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+      medicineUnit !== 'AS_PRESCRIBED'
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1723,16 +1762,15 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    // else if (daySlotsArr.length === 0) {
-    //   setErrorState({
-    //     ...errorState,
-    //     durationErr: false,
-    //     daySlotErr: true,
-    //     tobeTakenErr: false,
-    //     dosageErr: false,
-    //   });
-    // }
+    } else if (daySlotsArr.length === 0) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    }
     //  else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
     //   setErrorState({
     //     ...errorState,
@@ -1741,7 +1779,7 @@ export const FavouriteMedicines: React.FC = () => {
     //     tobeTakenErr: false,
     //     dosageErr: false,
     //   });
-    // } 
+    // }
     else {
       setErrorState({
         ...errorState,
@@ -1996,18 +2034,18 @@ export const FavouriteMedicines: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
-  const setInTheTime = (slotId: string, selected: boolean) =>{
-      const slots = daySlots.map((slot: SlotsObject) => {  
-        if (slot.id === slotId && selected) {
-          slot.selected = true;
-        }
-        if (slot.id === slotId && !selected) {
-          slot.selected = false;
-        }
-        return slot;
-      });
-      setDaySlots(slots);
-  }
+  const setInTheTime = (slotId: string, selected: boolean) => {
+    const slots = daySlots.map((slot: SlotsObject) => {
+      if (slot.id === slotId && selected) {
+        slot.selected = true;
+      }
+      if (slot.id === slotId && !selected) {
+        slot.selected = false;
+      }
+      return slot;
+    });
+    setDaySlots(slots);
+  };
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -2201,11 +2239,15 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageMorning}
                                       onChange={(event: any) => {
                                         setCustomDosageMorning(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && 
-                                        event.target.value.trim() !== '0' && 
-                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
+                                        if (
+                                          event.target.value &&
+                                          event.target.value.trim() !== '' &&
+                                          event.target.value.trim() !== '0' &&
+                                          (parseInt(event.target.value.trim()) > 0 ||
+                                            Number(event.target.value.trim()) > 0)
+                                        ) {
                                           setInTheTime('morning', true);
-                                        }else{
+                                        } else {
                                           setInTheTime('morning', false);
                                         }
                                       }}
@@ -2233,11 +2275,15 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNoon}
                                       onChange={(event: any) => {
                                         setCustomDosageNoon(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && 
-                                        event.target.value.trim() !== '0' && 
-                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
+                                        if (
+                                          event.target.value &&
+                                          event.target.value.trim() !== '' &&
+                                          event.target.value.trim() !== '0' &&
+                                          (parseInt(event.target.value.trim()) > 0 ||
+                                            Number(event.target.value.trim()) > 0)
+                                        ) {
                                           setInTheTime('noon', true);
-                                        }else{
+                                        } else {
                                           setInTheTime('noon', false);
                                         }
                                       }}
@@ -2265,11 +2311,15 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageEvening}
                                       onChange={(event: any) => {
                                         setCustomDosageEvening(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && 
-                                        event.target.value.trim() !== '0' && 
-                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
+                                        if (
+                                          event.target.value &&
+                                          event.target.value.trim() !== '' &&
+                                          event.target.value.trim() !== '0' &&
+                                          (parseInt(event.target.value.trim()) > 0 ||
+                                            Number(event.target.value.trim()) > 0)
+                                        ) {
                                           setInTheTime('evening', true);
-                                        }else{
+                                        } else {
                                           setInTheTime('evening', false);
                                         }
                                       }}
@@ -2296,11 +2346,15 @@ export const FavouriteMedicines: React.FC = () => {
                                       value={customDosageNight}
                                       onChange={(event: any) => {
                                         setCustomDosageNight(event.target.value);
-                                        if(event.target.value && event.target.value.trim() !== '' && 
-                                        event.target.value.trim() !== '0' && 
-                                        (parseInt(event.target.value.trim()) > 0 || Number(event.target.value.trim()) > 0) ){
+                                        if (
+                                          event.target.value &&
+                                          event.target.value.trim() !== '' &&
+                                          event.target.value.trim() !== '0' &&
+                                          (parseInt(event.target.value.trim()) > 0 ||
+                                            Number(event.target.value.trim()) > 0)
+                                        ) {
                                           setInTheTime('night', true);
-                                        }else{
+                                        } else {
                                           setInTheTime('night', false);
                                         }
                                       }}
