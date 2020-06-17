@@ -24,7 +24,6 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
 import { MetaTagsComp } from 'MetaTagsComp';
-import { gtmTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -210,6 +209,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const apiDetails = {
+  skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
   url: process.env.PHARMACY_MED_CATEGORY_LIST,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
@@ -282,61 +282,47 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicineList && paramSearchType !== 'search-medicines' && Number(paramSearchText) > 0) {
+    if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       axios
         .post(
-          apiDetails.url || '',
-          {
-            category_id: paramSearchText,
-            page_id: 1,
-          },
+          apiDetails.skuUrl || '',
+          { params: paramSearchText, level: 'category' },
           {
             headers: {
               Authorization: apiDetails.authToken,
-              Accept: '*/*',
             },
           }
         )
         .then(({ data }) => {
-          if (data && data.products) {
-            setMedicineList(data.products);
-            /** gtm code start */
-            let gtmItems: any[] = [];
-            if (data.products.length) {
-              data.products.map((prod: MedicineProduct, key: number) => {
-                const { name, sku, price, type_id } = prod;
-                gtmItems.push({
-                  item_name: name,
-                  'item_id': sku,
-                  'price': price,
-                  'item_category': 'Pharmacy',
-                  'item_category_2': type_id ? type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
-                  // 'item_category_4': '',             // park for future use
-                  'item_variant': 'Default',
-                  'index': key + 1,
-                  'quantity': 1
-                })
-              })
-            }
-            gtmTracking({
-              category: 'Pharmacy',
-              action: 'List Views',
-              label: '',
-              value: null,
-              ecommObj: {
-                event: params.searchMedicineType,
-                ecommerce: { items: gtmItems }
+          axios
+            .post(
+              apiDetails.url || '',
+              {
+                category_id: data.category_id || paramSearchText,
+                page_id: 1,
+              },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                  Accept: '*/*',
+                },
+              }
+            )
+            .then(({ data }) => {
+              if (data && data.products) {
+                setMedicineList(data.products);
+                setHeading('');
+                setIsLoading(false);
               }
             })
-            /** gtm code end */
-            setHeading('');
-            setIsLoading(false);
-          }
+            .catch((e) => {
+              setIsLoading(false);
+              setHeading('');
+            });
         })
         .catch((e) => {
-          setIsLoading(false);
-          setHeading('');
+          console.log(e);
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
@@ -476,8 +462,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const metaTagProps = {
     title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
     desciption: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
-    canonicalLink: window && window.location && window.location.href
-  }
+    canonicalLink: window && window.location && window.location.href,
+  };
 
   return (
     <div className={classes.root}>
