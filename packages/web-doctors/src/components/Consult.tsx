@@ -283,11 +283,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const isPaused = () => {
-    if (!callerAudio && !callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
+    if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
       return `Audio & Video are paused`;
     else if (!callerAudio) return `Audio is paused`;
-    else if (!callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
-      return `Video is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
     else return null;
   };
 
