@@ -189,7 +189,33 @@ const ORDER_BILLING_STATUS_STRINGS = {
   AMOUNT_TO_BE_PAID_ON_DELIVERY: 'Amount to be paid on delivery',
 };
 
+enum DOCTORS_SORT_BY {
+  NEAR_BY = 'NEARBY',
+  AVAILAIBILITY = 'AVAILAIBILITY',
+}
+
+enum DOCTOR_CATEGORY {
+  APOLLO = 'APOLLO',
+  PARTNER = 'PARTNER',
+}
+
+interface SearchObject {
+  searchKeyword: string;
+  cityName: string[] | null;
+  experience: string[] | null;
+  availability: string[] | null;
+  fees: string[] | null;
+  gender: string[] | null;
+  language: string[] | null;
+  dateSelected: string;
+  specialtyName: string;
+  prakticeSpecialties: string | null;
+}
+
 export {
+  SearchObject,
+  DOCTOR_CATEGORY,
+  DOCTORS_SORT_BY,
   getDiffInDays,
   NO_SERVICEABLE_MESSAGE,
   sortByProperty,

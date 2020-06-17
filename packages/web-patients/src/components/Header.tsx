@@ -231,7 +231,7 @@ export const Header: React.FC = (props) => {
     sku: string;
   }>();
   const handleClick = (e: any) => {
-    if (node.current.contains(e.target) && !_isEmpty(e.target)) {
+    if (node.current && node.current.contains(e.target) && !_isEmpty(e.target)) {
       // inside click
       return;
     }
