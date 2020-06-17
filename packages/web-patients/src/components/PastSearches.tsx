@@ -160,7 +160,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                       disableFilter(false);
                       const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                       const encoded = encodeURIComponent(specialityUpdated);
-                      history.push(clientRoutes.specialties(encoded));
+                      history.push(clientRoutes.specialties(`${encoded}${searchDetails.typeId}`));
                     }}
                     key={_uniqueId('psearch_spl_')}
                   >

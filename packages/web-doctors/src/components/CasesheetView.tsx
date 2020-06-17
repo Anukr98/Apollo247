@@ -537,7 +537,19 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     symptom && symptom.details && symptomArray.push(`Details: ${symptom.details}`);
     return symptomArray.length > 0 ? symptomArray.join(' | ') : '';
   };
-
+  const vitalsArr = [];
+  if (weight && weight.trim() !== '') {
+    vitalsArr.push('Weight : ' + weight);
+  }
+  if (height && height.trim() !== '') {
+    vitalsArr.push('Height : ' + height);
+  }
+  if (bp && bp.trim() !== '') {
+    vitalsArr.push('BP : ' + bp);
+  }
+  if (temperature && temperature.trim() !== '') {
+    vitalsArr.push('Temperature : ' + temperature);
+  }
   return (
     <div className={classes.root} id={'prescriptionWrapper'}>
       <div className={classes.previewHeader}>Prescription</div>
@@ -675,18 +687,14 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
                   </div>
                 ))}
-                {weight || height || bp || temperature ? (
+                {vitalsArr.length > 0 ? (
                   <div className={classes.complaintsInfoRow}>
                     <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
                       VITALS <span className={classes.subInfo}>(as declared by patient)</span>
                     </div>
                     <div className={classes.labelContent}>
                       <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
-                        {`${weight ? `Weight : ${weight}` : ''} ${
-                          height ? `| Height: ${height}` : ''
-                        } ${bp ? `| BP: ${bp}` : ''}  ${
-                          temperature ? `| Temperature: ${temperature}` : ''
-                        }`}
+                        {vitalsArr.join(' | ')}
                       </div>
                     </div>
                   </div>
@@ -729,7 +737,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   {diagnosticPrescription.map(
                     (prescription) =>
                       (prescription.itemname || prescription.itemName) && (
-                        <li>{prescription.itemname || prescription.itemName}</li>
+                        <li>
+                          {prescription.itemname || prescription.itemName}
+                          <br />
+                          <span>{prescription.testInstruction}</span>
+                        </li>
                       )
                   )}
                 </ol>

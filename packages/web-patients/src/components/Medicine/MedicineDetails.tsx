@@ -461,7 +461,7 @@ export const MedicineDetails: React.FC = (props) => {
     await axios
       .post(
         apiDetails.skuUrl || '',
-        { params: sku },
+        { params: sku, level: 'product' },
         {
           headers: {
             Authorization: apiDetails.authToken,
@@ -759,8 +759,8 @@ export const MedicineDetails: React.FC = (props) => {
   const metaTagProps = {
     title: `Buy / Order ${params.sku} Online At Best Price - Pharmacy Store - Apollo 247`,
     desciption: `Buy ${params.sku} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${params.sku} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
-    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`
-  }
+    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`,
+  };
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />

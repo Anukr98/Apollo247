@@ -26,6 +26,7 @@ export interface MedicineProduct {
   category_id: string;
 }
 export interface Brand {
+  url_key: string;
   category_id: string;
   image_url: number;
   title: string;
@@ -173,11 +174,13 @@ export interface PlacesApiResponse {
 
 // MedicineLandingPageAPi
 export interface MedicinePageSection {
+  url_key: string;
   category_id: string;
   title: string;
   image_url: string;
 }
 export interface DealsOfTheDaySection {
+  url_key: string;
   category_id: string;
   image_url: string;
   position: number;
@@ -191,6 +194,7 @@ interface OfferBannerSection {
 }
 
 export interface MedicinePageAPiResponse {
+  monsoon_essentials: { products: MedicineProduct[] };
   mainbanners: OfferBannerSection[];
   mainbanners_desktop: OfferBannerSection[];
   healthareas: MedicinePageSection[];
