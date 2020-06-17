@@ -3,6 +3,7 @@ import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entit
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
+import { redis } from 'profiles-service/database/connectRedis';
 
 import {
   PrismGetAuthTokenResponse,
@@ -19,6 +20,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
+import { map } from 'bluebird';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -50,33 +52,57 @@ export class PatientRepository extends Repository<Patient> {
       .where('patient.id IN (:...ids)', { ids })
       .getMany();
   }
-
+  //cache this
   async getDeviceCodeCount(deviceCode: string) {
     const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
-      .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
+      .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
       .getRawMany();
     return deviceCodeCount.length;
   }
-  getPatientDetails(id: string) {
-    return this.findOne({
-      where: { id, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+
+  async getPatientDetails(id: string) {
+    const patient = await this.getByIdFromRedis;
+    return patient;
   }
 
   findByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber, isActive: true },
+    return this.getByMobileFromRedis(mobileNumber);
+  }
+
+  async getByIdFromRedis(id: string | number) {
+    if ((await redis.exists(`patient:${id}`)) > 0) {
+      return await redis.get(`patient:${id}`);
+    } else return await this.setByIdFromRedis(id);
+  }
+
+  async getPatientData(id: string | number) {
+    const relations = [
+      'lifeStyle',
+      'healthVault',
+      'familyHistory',
+      'patientAddress',
+      'patientDeviceTokens',
+      'patientNotificationSettings',
+      'patientMedicalHistory',
+    ];
+    return this.findOne({
+      where: { id, isActive: true },
+      relations: relations,
+    });
+  }
+
+  async setByIdFromRedis(id: string | number) {
+    const patientDetails = await this.getPatientData(id);
+    await redis.set(`Patient:${id}`, JSON.stringify(patientDetails));
+    await redis.expire(`Patient:${id}`, 3600);
+    return patientDetails;
+  }
+
+  async setByMobileFromRedis(mobile: string) {
+    const patients = await this.find({
+      where: { mobile, isActive: true },
       relations: [
         'lifeStyle',
         'healthVault',
@@ -87,6 +113,28 @@ export class PatientRepository extends Repository<Patient> {
         'patientMedicalHistory',
       ],
     });
+    const patientIds: string[] = await patients.map((patient) => {
+      return patient.id;
+    });
+    await redis.set(`Patient:mobile:${mobile}`, patientIds.join(','));
+    await redis.expire(`Patient:mobile:${mobile}`, 3600);
+    return patients;
+  }
+
+  async getByMobileFromRedis(mobile: string) {
+    const ids = await redis.get(`Patient:mobile:${mobile}`);
+    if (typeof ids === 'string') {
+      const patientIds: string[] = ids.split(',');
+      const patients = patientIds.map((patientId: string) => {
+        const patient = redis.get(`Patient:${patientId}`);
+        if (typeof patient === 'string') {
+          return JSON.parse(patient);
+        }
+      });
+      return patients;
+    } else {
+      return this.setByMobileFromRedis(mobile);
+    }
   }
 
   async findByMobileNumberLogin(mobileNumber: string) {
