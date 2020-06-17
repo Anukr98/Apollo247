@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.zmxv.RNSound.RNSoundPackage;
 import com.opentokreactnative.OTPackage;
 import com.pritesh.calldetection.CallDetectionManager;
 import com.corbt.keepawake.KCKeepAwakePackage;

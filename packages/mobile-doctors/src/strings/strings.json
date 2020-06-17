@@ -413,7 +413,8 @@
     "ringing": "RINGING",
     "case_sheet": "Case Sheet",
     "chat": "Chat",
-    "why_do_you_reschudule": "Why do you want to reschedule this consult?"
+    "why_do_you_reschudule": "Why do you want to reschedule this consult?",
+    "connecting": "Connecting..."
   },
   "medicine": {
     "dosage": "Dosage",

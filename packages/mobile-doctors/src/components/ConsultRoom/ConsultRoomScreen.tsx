@@ -949,8 +949,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   }, [caseSheetEdit]);
 
-  const stopAllCalls = () => {
-    if (callOptions.isAudio || callOptions.isVideo) {
+  const stopAllCalls = (callType?: 'A' | 'V') => {
+    if (callOptions.isAudio || callOptions.isVideo || callType) {
       endCallNotificationAPI(true);
       callOptions.stopCalls(false);
       const text = {
@@ -971,7 +971,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       );
       const stoptext = {
         id: doctorId,
-        message: `${callOptions.isVideo ? 'Video' : 'Audio'} ${strings.consult_room.call_ended}`,
+        message: `${callOptions.isVideo || callType === 'V' ? 'Video' : 'Audio'} ${
+          strings.consult_room.call_ended
+        }`,
         duration: callData.callDuration,
         isTyping: true,
         messageDate: new Date(),
@@ -1454,7 +1456,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (status, response) => {
         if (response) {
           callOptions.startMissedCallTimer(45, (count) => {
-            stopAllCalls();
+            stopAllCalls(callType);
             // if (missedCallCounter < 2) {
 
             // } else {

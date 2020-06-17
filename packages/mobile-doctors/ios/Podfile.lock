@@ -389,6 +389,11 @@ PODS:
     - RSKImageCropper
   - RNPermissions (2.0.10):
     - React
+  - RNSound (0.11.0):
+    - React
+    - RNSound/Core (= 0.11.0)
+  - RNSound/Core (0.11.0):
+    - React
   - RNSVG (11.0.1):
     - React
   - RNVectorIcons (6.6.0):
@@ -457,6 +462,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -590,6 +596,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-crop-picker"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -674,11 +682,12 @@ SPEC CHECKSUMS:
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
   RNImageCropPicker: fcdbbbef2f0ea869c6d9ce39b8e4fd67e94009f4
   RNPermissions: 8afd37dbc1be65748363c6a90caffd1806567651
+  RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSVG: 67f1f12dae2cef6ed59a42cae74a6b8f5a9e7b46
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 9eeae69c9486701846f4b82c578db8d66b443bb9
+PODFILE CHECKSUM: d99499a9a49a552ee428ef0a4e191d9fee6d1ef5
 
 COCOAPODS: 1.8.4

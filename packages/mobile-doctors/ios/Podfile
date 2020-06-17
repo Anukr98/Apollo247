@@ -74,4 +74,6 @@ target 'ApolloDoctor' do
 
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
 
+  pod 'RNSound', :path => '../node_modules/react-native-sound'
+
 end
