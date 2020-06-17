@@ -61,7 +61,7 @@ export const uploadPrescriptions: Resolver<
 > = async (parent, { prescriptionInput, uhid }) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
-  prescriptionInput.prescriptionName = 'Prescribed By ' + prescriptionInput.prescribedBy;
+  prescriptionInput.prescriptionName = 'Prescribed By' + prescriptionInput.prescribedBy;
   prescriptionInput.dateOfPrescription =
     getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
   prescriptionInput.startDate = prescriptionInput.startDate
@@ -83,7 +83,6 @@ export const uploadPrescriptions: Resolver<
     uhid,
     prescriptionInput
   );
-
   return { recordId: uploadedFileDetails.response };
 };
 
@@ -117,7 +116,6 @@ export const uploadMediaDocument: Resolver<
     uhid,
     prescriptionInput
   );
-
   return { recordId: uploadedFileDetails.response };
 };
 

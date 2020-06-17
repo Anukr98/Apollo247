@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import {
   sendReminderNotification,
   NotificationType,
+  DOCTOR_CALL_TYPE,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';

@@ -165,9 +165,9 @@ const validateConsultCoupon: Resolver<
   //consult mode check
   if (
     couponRulesData.couponApplicability &&
-    args.consultType.toString() != couponRulesData.couponApplicability.toString() &&
-    couponRulesData.couponApplicability.toString() != APPOINTMENT_TYPE.BOTH.toString() &&
-    args.consultType.toString() != APPOINTMENT_TYPE.BOTH.toString()
+    (args.consultType.toString() != couponRulesData.couponApplicability.toString() &&
+      couponRulesData.couponApplicability.toString() != APPOINTMENT_TYPE.BOTH.toString() &&
+      args.consultType.toString() != APPOINTMENT_TYPE.BOTH.toString())
   )
     return {
       validityStatus: false,
