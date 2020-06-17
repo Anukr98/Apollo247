@@ -265,9 +265,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const isPaused = () => {
-    if (!callerAudio && !callerVideo) return `Patient has off their audio and video`;
-    else if (!callerAudio) return `Patient has off their audio`;
-    else if (!callerVideo) return `Patient has off their video`;
+    if (!callerAudio && !callerVideo) return `Audio & Video are Paused`;
+    else if (!callerAudio) return `Audio is Paused`;
+    else if (!callerVideo) return `Video is Paused`;
     else return null;
   };
 
