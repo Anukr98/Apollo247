@@ -219,7 +219,7 @@ const App: React.FC = () => {
     </Scrollbars>
   );
 };
-
+// @ts-ignore
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
