@@ -636,7 +636,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 (item, idx) =>
                   item.itemName &&
                   item.itemName!.trim() !== '' && (
-                    <div style={{ wordBreak: 'break-word' }}>
+                    <div style={{ wordBreak: 'break-word' }} key={`${item.itemName}  ${idx}`}>
                       <div className={classes.testCard}>
                         <h5>{item!.itemName}</h5>
                         <img
