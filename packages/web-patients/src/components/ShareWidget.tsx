@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ShareWidgetProps {
   title: string;
   url: string;
-  closeShareWidget: () => void;
+  closeShareWidget: (e: any) => void;
 }
 
 export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
@@ -83,7 +83,7 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
 
   return (
     <div className={classes.shareWidgetContainer}>
-      <div className={classes.closeBtn} onClick={() => props.closeShareWidget()}>
+      <div className={classes.closeBtn} onClick={(e) => props.closeShareWidget(e)}>
         <img src={require('images/ic_cross.svg')} alt="" />
       </div>
       <h3>Share this article</h3>
