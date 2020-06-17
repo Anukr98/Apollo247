@@ -184,8 +184,14 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const { patientDetails } = useContext(CaseSheetContextJrd);
   const apikey = process.env.OPENTOK_KEY;
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
 
   const isPaused = () => {
     if (!callerAudio && !callerVideo) return `Audio & Video are Paused`;
@@ -218,6 +224,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
@@ -282,6 +289,20 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 <OTStreams>
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    eventHandlers={{
+                      videoDisabled: (error: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
+                        if (error.reason === 'quality') {
+                          setDowngradeToAudio(true);
+                        }
+                      },
+                      videoEnabled: (error: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
+                        if (error.reason === 'quality') {
+                          setDowngradeToAudio(false);
+                        }
+                      },
+                    }}
                   />
                 </OTStreams>
 

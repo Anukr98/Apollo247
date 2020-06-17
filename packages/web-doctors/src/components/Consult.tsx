@@ -191,6 +191,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [mute, setMute] = React.useState(true);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
@@ -262,6 +263,23 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     otrnError: (error: string) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
+    videoDisabled: (error: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setDowngradeToAudio(true);
+      }
+    },
+    videoEnabled: (error: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(error)}`);
+      if (error.reason === 'quality') {
+        setDowngradeToAudio(false);
+      }
+    },
+  };
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
   };
 
   const isPaused = () => {
@@ -295,6 +313,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
