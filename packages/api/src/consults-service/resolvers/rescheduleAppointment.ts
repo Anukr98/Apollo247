@@ -355,7 +355,6 @@ const bookRescheduleAppointment: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
     const slotApptDt = format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
     const actualApptDt = format(appointmentDateTime, 'yyyy-MM-dd');
@@ -373,7 +372,7 @@ const bookRescheduleAppointment: Resolver<
     console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
     const esDocotrStatusOpen =
       status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
-    await appointmentRepo.updateDoctorSlotStatusES(
+    const DoctorSLotStatus = await appointmentRepo.updateDoctorSlotStatusES(
       appointment.doctorId,
       apptDt,
       sl,

@@ -58,9 +58,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
     return count;
   }
   checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
-    return this.count({
-      where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }],
-    });
+    return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
   }
 
   getDayStarAndEndTimesArray(dayAllTimings: string, index: number): DayTimes[] {

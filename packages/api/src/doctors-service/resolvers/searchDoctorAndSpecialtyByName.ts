@@ -5,6 +5,7 @@ import { Doctor, DoctorSpecialty } from 'doctors-service/entities/';
 import {
   DoctorSlotAvailability,
   Geolocation,
+  FacilityDistanceMap,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { Client, RequestParams } from '@elastic/elasticsearch';
