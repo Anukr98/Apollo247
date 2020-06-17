@@ -5,6 +5,13 @@ import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
+import {
+  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
+  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
+} from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
+import { ConsultMode } from 'graphql/types/globalTypes';
+import { getDiffInDays } from 'helpers/commonHelpers';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -18,13 +25,13 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
-		},
-		iconGroup: {
-			paddingTop: 10,
-		},
+    },
+    iconGroup: {
+      paddingTop: 10,
+    },
     topContent: {
-			padding: 15,
-			paddingTop: 24,
+      padding: 15,
+      paddingTop: 24,
       display: 'flex',
       position: 'relative',
       cursor: 'pointer',
@@ -53,10 +60,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 600,
       color: '#0087ba',
-			letterSpacing: 0.25,
-			'& span': {
-				fontSize: 13,
-			},
+      letterSpacing: 0.25,
+      '& span': {
+        fontSize: 13,
+      },
     },
     doctorExp: {
       paddingLeft: 8,
@@ -99,13 +106,13 @@ const useStyles = makeStyles((theme: Theme) => {
     availableNow: {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white,
-		},
-		apolloLogo: {
+    },
+    apolloLogo: {
       textAlign: 'center',
       position: 'absolute',
       right: -5,
-			top: -8,
-		},
+      top: -8,
+    },
     bottomAction: {
       position: 'absolute',
       width: '100%',
@@ -121,78 +128,170 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 10,
       right: 10,
       top: 0,
-		},
-		consultType: {
-			display: 'flex',
-			justifyContent: 'center',
-			fontSize: 7,
-			color: '#658f9b',
-			textAlign: 'center',
-			'& span': {
-				paddingLeft: 5,
-				paddingRight: 5,
-			},
-		},
+    },
+    consultType: {
+      display: 'flex',
+      justifyContent: 'center',
+      fontSize: 7,
+      color: '#658f9b',
+      textAlign: 'center',
+      '& span': {
+        paddingLeft: 5,
+        paddingRight: 5,
+      },
+    },
   });
 });
 
-export const InfoCard: React.FC = (props) => {
+interface InfoCardProps {
+  doctorInfo: DoctorDetails;
+  nextAvailability: string;
+}
+
+export const InfoCard: React.FC<InfoCardProps> = (props) => {
+  const { doctorInfo, nextAvailability } = props;
   const classes = useStyles({});
+
+  const consultMode =
+    doctorInfo &&
+    doctorInfo.consultHours &&
+    doctorInfo.consultHours.length > 0 &&
+    doctorInfo.consultHours[0] &&
+    doctorInfo.consultHours[0].consultMode
+      ? doctorInfo.consultHours[0].consultMode
+      : '';
+
+  const getDiffInMinutes = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+      const currentTime = moment(new Date());
+      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+    } else {
+      return 0;
+    }
+  };
+
+  const getDiffInHours = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+      const currentTime = moment(new Date());
+      const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+      return Math.round(differenceInHours) + 1;
+    } else {
+      return 0;
+    }
+  };
+  const differenceInMinutes = getDiffInMinutes();
+  const availabilityMarkup = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      if (differenceInMinutes === 0) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
+        );
+      } else if (differenceInMinutes > 0 && differenceInMinutes <= 15) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>
+            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
+          </div>
+        );
+      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+        );
+      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
+        );
+      } else if (differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {getDiffInDays(nextAvailability)} Days
+          </div>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+
+  const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
+
+  doctorInfo &&
+    _forEach(doctorInfo.doctorHospital, (hospitalDetails) => {
+      if (
+        hospitalDetails &&
+        (hospitalDetails.facility.facilityType === 'CLINIC' ||
+          hospitalDetails.facility.facilityType === 'HOSPITAL')
+      ) {
+        clinics.push(hospitalDetails);
+      }
+    });
 
   return (
     <div className={classes.root}>
-      <div
-        className={classes.topContent}
-      >
-				<div className={classes.iconGroup}>
-					<Avatar
-						alt=""
-						src={require('images/no_photo_icon_round.svg')}
-						className={classes.doctorAvatar}
-					/>
-					<div className={classes.consultType}>
-						<span>
-							<img src={require('images/ic-video.svg')} alt="" /><br/>Online
-						</span>
-						<span><img src={require('images/fa-solid-hospital.svg')} alt="" /><br/>In-Person</span>
-					</div>
-				</div>
-        <div className={classes.doctorInfo}>
-          <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>
-					<div className={`${classes.apolloLogo}`}><img src={require('images/ic_apollo.svg')} alt="" /></div>
-          <div className={classes.doctorName}>
-						Dr. Gennifer Ghosh
+      <div className={classes.topContent}>
+        <div className={classes.iconGroup}>
+          <Avatar
+            alt=""
+            src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
+            className={classes.doctorAvatar}
+          />
+          <div className={classes.consultType}>
+            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+              <span>
+                <img src={require('images/ic-video.svg')} alt="" />
+                <br />
+                Online
+              </span>
+            )}
+            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+              <span>
+                <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                <br />
+                In-Person
+              </span>
+            )}
           </div>
+        </div>
+        <div className={classes.doctorInfo}>
+          {/* <div className={`${classes.availability}`}></div> */}
+          <>{availabilityMarkup()}</>
+          <div className={`${classes.apolloLogo}`}>
+            <img src={require('images/ic_apollo.svg')} alt="" />
+          </div>
+          <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
           <div className={classes.doctorType}>
-            <span title={'Specialty'}>
-							Family Physician
-            </span>
+            <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
             <span className={classes.doctorExp} title={'Experiance'}>
-							7 YRS Exp.
+              {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
             </span>
           </div>
           <div className={classes.doctorspecialty} title={'Specialty'}>
-            <p>Starts at <span>₹ 500</span></p>
+            <p>
+              Starts at{' '}
+              <span>
+                ₹ {doctorInfo.onlineConsultationFees || doctorInfo.physicalConsultationFees}
+              </span>
+            </p>
           </div>
           <div className={classes.doctorDetails} title={'Location'}>
-						<p>MBBS, Internal Medicine</p>
-            <p>Apollo Hospitals, Jubilee Hills</p>
+            <p>{doctorInfo.qualification}</p>
+            {
+              <p>
+                {clinics && clinics.length > 0
+                  ? clinics[0].facility.name + ',' + clinics[0].facility.city
+                  : ''}
+              </p>
+            }
           </div>
         </div>
       </div>
-			<div
-        className={classes.bottomAction}
-      >
-				<AphButton
-					fullWidth
-					color="primary"
-					className={classes.button}
-				>
-					Book Appointment
-				</AphButton>
-      </div>			
+      <div className={classes.bottomAction}>
+        <AphButton fullWidth color="primary" className={classes.button}>
+          {getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? 'CONSULT NOW' : 'BOOK APPOINTMENT'}
+        </AphButton>
+      </div>
     </div>
   );
 };
-
-
