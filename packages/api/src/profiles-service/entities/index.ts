@@ -30,6 +30,36 @@ export enum ONE_APOLLO_STORE_CODE {
   WEBCUS = 'WEBCUS',
 }
 
+export enum ONE_APOLLO_PRODUCT_CATEGORY {
+  PRIVATE_LABEL = 'A247',
+  NON_PHARMA = 'F247',
+  PHARMA = 'P247',
+}
+
+export type OneApollTransaction = {
+  BillNo: string;
+  BU: string;
+  StoreCode: string;
+  NetAmount: number;
+  GrossAmount: number;
+  TransactionDate: Date;
+  MobileNumber: string;
+  SendCommunication: boolean;
+  CalculateHealthCredits: boolean;
+  Gender: Gender;
+  Discount: number;
+  TransactionLineItems: Partial<TransactionLineItems>[];
+};
+
+export type TransactionLineItems = {
+  ProductCode: string;
+  ProductName: string;
+  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
+  NetAmount: number;
+  GrossAmount: number;
+  DiscountAmount: number;
+};
+
 export enum CouponApplicability {
   CONSULT = 'CONSULT',
   PHARMACY = 'PHARMACY',
@@ -796,6 +826,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   primaryPatientId: string;
 
+  @Index('Patient_uhid')
   @Column({ nullable: true })
   uhid: string;
 

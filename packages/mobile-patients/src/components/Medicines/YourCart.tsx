@@ -22,7 +22,12 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CouponIcon,
+  MedicineIcon,
+  FreeShippingIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -58,6 +63,8 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
+  postPharmacyStorePickupViewed,
+  postPharmacyStoreSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   WebEngageEventName,
@@ -201,6 +208,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
+  const selectedStore =
+    (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
+  const selectedAddress =
+    (deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId)) || undefined;
 
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
@@ -277,32 +288,28 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (deliveryAddressId && addresses) {
-      const selectedAddressIndex = addresses.findIndex(
-        (address) => address.id == deliveryAddressId
-      );
-      addresses &&
-        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
-          .then(({ data: { Availability } }) => {
-            setCheckingServicability(false);
-            if (Availability) {
-              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
-            } else {
-              postPhamracyCartAddressSelectedFailure(
-                addresses[selectedAddressIndex].zipcode!,
-                formatAddress(addresses[selectedAddressIndex]),
-                'No'
-              );
-              setDeliveryAddressId && setDeliveryAddressId('');
-              renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
-            aphConsole.log({ e });
-            setCheckingServicability(false);
-            handleGraphQlError(e);
-          });
+    if (selectedAddress) {
+      pinCodeServiceabilityApi(selectedAddress.zipcode!)
+        .then(({ data: { Availability } }) => {
+          setCheckingServicability(false);
+          if (Availability) {
+            setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+          } else {
+            postPhamracyCartAddressSelectedFailure(
+              selectedAddress.zipcode!,
+              formatAddress(selectedAddress),
+              'No'
+            );
+            setDeliveryAddressId && setDeliveryAddressId('');
+            renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
+          aphConsole.log({ e });
+          setCheckingServicability(false);
+          handleGraphQlError(e);
+        });
     }
   }, []);
 
@@ -361,7 +368,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     if (deliveryAddressId && cartItems.length > 0) {
       setLastCartItemsReplica(cartItemsReplica);
-      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       setdeliveryTime('...');
       setshowDeliverySpinner(true);
       const lookUp = cartItems.map((item) => {
@@ -450,6 +456,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     // update cart item prices if any
     if (storeId && cartItems.length) {
       const onComplete = () => {
+        selectedStore && postPharmacyStoreSelectedSuccess(pinCode, selectedStore);
         setShowDriveWayPopup(true);
       };
       updateCartItemsWithStorePrice(
@@ -516,27 +523,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onComplete: () => void
   ) => {
     const validation = cartValidation(
-      storeItems
-        .filter((storeItem) => cartItems.find((cartItem) => cartItem.id == storeItem.itemId))
-        .map((storeItem) => {
-          const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
-          const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
-          const storeItemSP =
-            cartItem.specialPrice && cartItem.price != storeItemPrice
-              ? getSpecialPriceFromRelativePrices(
-                  cartItem.price,
-                  cartItem.specialPrice,
-                  storeItem.mrp * Number(cartItem.mou)
-                )
-              : cartItem.specialPrice;
-          return {
-            sku: cartItem.id,
-            name: cartItem.name,
-            is_in_stock: 1,
-            price: storeItemPrice,
-            special_price: storeItemSP,
-          } as MedicineProduct;
-        }),
+      storeItems.map((storeItem) => {
+        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+        const storeItemPrice = Number((storeItem.mrp * Number(cartItem.mou)).toFixed(2));
+        const storeItemSP =
+          cartItem.specialPrice && cartItem.price != storeItemPrice
+            ? getSpecialPriceFromRelativePrices(
+                cartItem.price,
+                cartItem.specialPrice,
+                storeItem.mrp * Number(cartItem.mou)
+              )
+            : cartItem.specialPrice;
+        return {
+          sku: cartItem.id,
+          name: cartItem.name,
+          is_in_stock: 1,
+          price: storeItemPrice,
+          special_price: storeItemSP,
+        } as MedicineProduct;
+      }),
       cartItems
     );
     if (validation.alertText) {
@@ -768,6 +773,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       cartItems.length > 10 || cartItems.length == 0
         ? `${cartItems.length}`
         : `0${cartItems.length}`;
+    const FreeShipping =
+      AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
+      cartTotal - couponDiscount >
+        AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
+      cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
+      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY - (cartTotal - couponDiscount);
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
@@ -788,7 +799,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
             index == 0 ? { marginTop: 20 } : {},
-            index == array.length - 1 ? { marginBottom: 20 } : {},
+            index == array.length - 1 ? (FreeShipping ? {} : { marginBottom: 20 }) : {},
           ];
           const imageUrl = medicine.prescriptionRequired
             ? ''
@@ -840,6 +851,36 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             />
           );
         })}
+        {cartItems.length > 0 && FreeShipping ? (
+          <View
+            style={{
+              shadowColor: 'rgba(128, 128, 128, 0.3)',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 5,
+              elevation: 5,
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              marginBottom: 20,
+              backgroundColor: '#f7f8f5',
+              borderRadius: 10,
+              paddingHorizontal: 17,
+              paddingVertical: 11,
+              paddingBottom: 9,
+            }}
+          >
+            <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0),
+                alignSelf: 'center',
+              }}
+            >
+              Add <Text style={{ color: '#fc9916' }}>Rs. {FreeShipping.toFixed(2)}</Text> worth more
+              of product for FREE Delivery
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -979,6 +1020,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     stores: Store[],
     storesInventory: GetStoreInventoryResponse[]
   ) => {
+    postPharmacyStorePickupViewed({
+      Pincode: pinCode,
+      'Store display success': activeStores.length ? 'Yes' : 'No',
+    });
     setStorePickUpLoading(false);
     setLoading!(false);
     setStores!(stores);
@@ -1525,7 +1570,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const forwardToCheckout = () => {
-    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
     const zipcode = g(selectedAddress, 'zipcode');
     const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
       (addr) => addr == Number(zipcode)
@@ -1543,14 +1587,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const onFinishUpload = () => {
-    console.log(
-      physicalPrescriptions,
-      ePrescriptions,
-      isEPrescriptionUploadComplete,
-      isPhysicalUploadComplete,
-      'hhruso'
-    );
-
     if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length == 0 &&
@@ -1594,6 +1630,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
     };
+    if (selectedStore) {
+      eventAttributes['Store Id'] = selectedStore.storeid;
+      eventAttributes['Store Name'] = selectedStore.storename;
+    }
     postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 
@@ -1832,7 +1872,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     };
 
     const addressLatLongCheckAndProceed = () => {
-      const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       if (
         g(selectedAddress, 'latitude') &&
         g(selectedAddress, 'longitude') &&
@@ -1933,7 +1972,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       </SafeAreaView>
       {showDriveWayPopup && (
         <StoreDriveWayPickupPopup
-          store={activeStores.find((item) => item.storeid == storeId)!}
+          store={selectedStore}
           onPressOkGotIt={() => setShowDriveWayPopup(false)}
         />
       )}

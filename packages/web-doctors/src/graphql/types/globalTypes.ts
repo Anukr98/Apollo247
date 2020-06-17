@@ -84,6 +84,7 @@ export enum LoggedInUserType {
 export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = "DAYS",
   MONTHS = "MONTHS",
+  TILL_NEXT_REVIEW = "TILL_NEXT_REVIEW",
   WEEKS = "WEEKS",
 }
 
@@ -130,9 +131,11 @@ export enum MEDICINE_UNIT {
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROP = "DROP",
+  DROPS = "DROPS",
   GEL = "GEL",
   GM = "GM",
   INJECTION = "INJECTION",
+  INTERNATIONAL_UNIT = "INTERNATIONAL_UNIT",
   LOTION = "LOTION",
   MG = "MG",
   ML = "ML",
@@ -150,6 +153,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  TEASPOON = "TEASPOON",
   UNIT = "UNIT",
 }
 
@@ -167,15 +171,19 @@ export enum ROUTE_OF_ADMINISTRATION {
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
   INTRAVAGINAL = "INTRAVAGINAL",
   INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
   LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
   NASAL_DROPS = "NASAL_DROPS",
   ORALLY = "ORALLY",
   ORAL_DROPS = "ORAL_DROPS",
   PER_RECTAL = "PER_RECTAL",
   SUBCUTANEOUS = "SUBCUTANEOUS",
   SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
 }
 
 export enum Relation {
@@ -296,6 +304,7 @@ export interface DiagnosisInput {
 
 export interface DiagnosticPrescriptionInput {
   itemname?: string | null;
+  testInstruction?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -465,6 +474,13 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+}
+
+export interface Vitals {
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
 }
 
 //==============================================================

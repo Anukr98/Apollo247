@@ -139,6 +139,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
+    if (doctor['physicalConsultationFees'] === 0) {
+      doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+    }
+    if (doctor['onlineConsultationFees'] === 0) {
+      doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+    }
     doctor['activeSlotCount'] = 0;
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
@@ -240,6 +246,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    if (doctor['physicalConsultationFees'] === 0) {
+      doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+    }
+    if (doctor['onlineConsultationFees'] === 0) {
+      doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+    }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
@@ -312,6 +324,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
+  console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
+  console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
+  console.log('matchedDoctors', matchedDoctors);
   matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
@@ -346,6 +361,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       doctor['id'] = doctor.doctorId;
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
+      if (doctor['physicalConsultationFees'] === 0) {
+        doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+      }
+      if (doctor['onlineConsultationFees'] === 0) {
+        doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+      }
       doctor['earliestSlotavailableInMinutes'] = 0;
       let bufferTime = 5;
       for (const consultHour of doctor.consultHours) {

@@ -215,7 +215,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ match: { languages: language } });
     });
   }
-
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     body: {
@@ -228,6 +227,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
   const getDetails = await client.search(searchParams);
 
   for (const doc of getDetails.body.hits.hits) {
@@ -237,6 +237,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
+    if (doctor['physicalConsultationFees'] === 0) {
+      doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
+    }
+    if (doctor['onlineConsultationFees'] === 0) {
+      doctor['onlineConsultationFees'] = doctor['physicalConsultationFees'];
+    }
     doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
     let bufferTime = 5;
@@ -419,7 +425,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
-      } else {
+      } else if (j < earlyAvailableNonStarApolloDoctors.length) {
         earlyAvailableApolloDoctors.push(earlyAvailableNonStarApolloDoctors[j]);
         j++;
       }
@@ -448,7 +454,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         j++;
       }
     }
-
     doctors = earlyAvailableApolloDoctors
       .concat(
         earlyAvailableNonApolloDoctors.sort(

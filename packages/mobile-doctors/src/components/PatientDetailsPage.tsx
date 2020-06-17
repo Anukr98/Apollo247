@@ -56,8 +56,6 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       .then((data) => {
         try {
           const result = g(data, 'data', 'getCaseSheet');
-          console.log(result, 'result');
-
           if (result) {
             if (result.patientDetails) {
               setPatientDetails(result.patientDetails);
@@ -73,7 +71,6 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                     .toDate()
                     .getTime()
               );
-            console.log(sortedActivities, 'sortedActivities');
 
             //setPastList(result.pastAppointments);
             setPastList(sortedActivities);

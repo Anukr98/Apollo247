@@ -649,6 +649,7 @@ export enum MEDICINE_CONSUMPTION_DURATION {
   DAYS = 'DAYS',
   MONTHS = 'MONTHS',
   WEEKS = 'WEEKS',
+  TILL_NEXT_REVIEW = 'TILL_NEXT_REVIEW',
 }
 export enum MEDICINE_FREQUENCY {
   AS_NEEDED = 'AS_NEEDED',
@@ -690,10 +691,12 @@ export enum MEDICINE_UNIT {
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
-  DROPS = 'DROP',
+  DROPS = 'DROPS',
+  DROP = 'DROP',
   GEL = 'GEL',
   GM = 'GM',
   INJECTION = 'INJECTION',
+  INTERNATIONAL_UNIT = 'INTERNATIONAL_UNIT',
   LOTION = 'LOTION',
   ML = 'ML',
   MG = 'MG',
@@ -711,6 +714,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = 'SUSPENSION',
   SYRUP = 'SYRUP',
   TABLET = 'TABLET',
+  TEASPOON = 'TEASPOON',
   UNIT = 'UNIT',
 }
 
@@ -739,6 +743,7 @@ export type CaseSheetMedicinePrescription = {
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
   itemname: string;
+  testInstruction: string;
 };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
