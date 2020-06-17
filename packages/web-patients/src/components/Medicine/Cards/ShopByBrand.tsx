@@ -108,7 +108,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
             formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={index} className={classes.card}>
-                <Link to={clientRoutes.searchByMedicine(formattedTitle, brand.category_id)}>
+                <Link to={clientRoutes.searchByMedicine('shop-by-brand', brand.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img

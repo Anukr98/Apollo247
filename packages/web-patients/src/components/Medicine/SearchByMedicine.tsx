@@ -209,7 +209,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const apiDetails = {
-  skuUrl: 'https://uat.apollopharmacy.in/popcsrchsku_api.php',
+  skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
   url: process.env.PHARMACY_MED_CATEGORY_LIST,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
@@ -462,8 +462,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const metaTagProps = {
     title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
     desciption: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
-    canonicalLink: window && window.location && window.location.href
-  }
+    canonicalLink: window && window.location && window.location.href,
+  };
 
   return (
     <div className={classes.root}>

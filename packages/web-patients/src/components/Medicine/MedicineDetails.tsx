@@ -444,7 +444,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
 
   const apiDetails = {
-    skuUrl: 'https://uat.apollopharmacy.in/popcsrchsku_api.php',
+    skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
@@ -741,8 +741,8 @@ export const MedicineDetails: React.FC = (props) => {
   const metaTagProps = {
     title: `Buy / Order ${params.sku} Online At Best Price - Pharmacy Store - Apollo 247`,
     desciption: `Buy ${params.sku} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${params.sku} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
-    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`
-  }
+    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`,
+  };
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />

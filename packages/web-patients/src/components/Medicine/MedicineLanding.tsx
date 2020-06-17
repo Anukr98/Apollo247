@@ -539,9 +539,8 @@ export const MedicineLanding: React.FC = (props: any) => {
   const metaTagProps = {
     title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
     desciption: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
-    canonicalLink: 'https://www.apollo247.com/medicines'
-  }
-
+    canonicalLink: 'https://www.apollo247.com/medicines',
+  };
 
   return (
     <div className={classes.root}>
