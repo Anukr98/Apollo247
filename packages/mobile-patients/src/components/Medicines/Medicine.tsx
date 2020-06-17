@@ -654,9 +654,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           category_id: item.category_id,
           title: 'PRODUCTS',
         });
-      } else if (item.product_id) {
+      } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-          sku: item.product_id,
+          sku: item.sku,
         });
       }
     };
