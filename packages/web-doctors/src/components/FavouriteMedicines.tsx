@@ -1433,13 +1433,13 @@ export const FavouriteMedicines: React.FC = () => {
       return slot.selected !== false;
     });
     let customDosageArray = [];
-    if (customDosageMorning && customDosageMorning.trim() !== '')
+    if (customDosageMorning && customDosageMorning.trim() !== '' && customDosageMorning.trim() !== '0')
       customDosageArray.push(customDosageMorning.trim());
-    if (customDosageNoon && customDosageNoon.trim() !== '')
+    if (customDosageNoon && customDosageNoon.trim() !== '' && customDosageNoon.trim() !== '0')
       customDosageArray.push(customDosageNoon.trim());
-    if (customDosageEvening && customDosageEvening.trim() !== '')
+    if (customDosageEvening && customDosageEvening.trim() !== '' && customDosageEvening.trim() !== 'o')
       customDosageArray.push(customDosageEvening.trim());
-    if (customDosageNight && customDosageNight.trim() !== '')
+    if (customDosageNight && customDosageNight.trim() !== '' && customDosageNight.trim() !== '0')
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
@@ -1468,10 +1468,40 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      customDosageMorning.trim() === '' &&
-      customDosageNoon.trim() === '' &&
-      customDosageEvening.trim() === '' &&
-      customDosageNight.trim() === ''
+      (
+        (
+          (
+            customDosageMorning.trim() === '' &&
+            customDosageNoon.trim() === '' &&
+            customDosageEvening.trim() === '' &&
+            customDosageNight.trim() === ''
+          ) || 
+          (
+            customDosageMorning.trim() === '0' &&
+            customDosageNoon.trim() === '0' &&
+            customDosageEvening.trim() === '0' &&
+            customDosageNight.trim() === '0'
+          )
+        ) ||
+        (
+          (
+            customDosageMorning.trim() === '' ||
+            customDosageMorning.trim() === '0'
+          ) && 
+          (
+            customDosageNoon.trim() === '' ||
+            customDosageNoon.trim() === '0'
+          ) &&
+          (
+            customDosageEvening.trim() === '' ||
+            customDosageEvening.trim() === '0'
+          ) &&
+          (
+            customDosageNight.trim() === '' ||
+            customDosageNight.trim() === '0'
+          )
+        )
+      )
     ) {
       setErrorState({
         ...errorState,
@@ -1482,8 +1512,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      customDosageMorning.trim() !== '' &&
-      daySlotsArr.indexOf('MORNING') < 0
+      ((customDosageMorning.trim() !== '' && customDosageMorning.trim() !== '0' &&
+      daySlotsArr.indexOf('MORNING') < 0) ||
+      (daySlotsArr.indexOf('MORNING') > -1  && customDosageMorning.trim() === ''))
     ) {
       setErrorState({
         ...errorState,
@@ -1492,7 +1523,12 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && customDosageNoon.trim() !== '' && daySlotsArr.indexOf('NOON') < 0) {
+    } else if (isCustomform && 
+      ((customDosageNoon.trim() !== '' && 
+        customDosageNoon.trim() !== '0' && 
+        daySlotsArr.indexOf('NOON') < 0) ||
+        (daySlotsArr.indexOf('NOON') > -1  && customDosageNoon.trim() === ''))
+      ) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1502,8 +1538,10 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      customDosageEvening.trim() !== '' &&
-      daySlotsArr.indexOf('EVENING') < 0
+      ((customDosageEvening.trim() !== '' &&
+      customDosageEvening.trim() !== '0' &&
+      daySlotsArr.indexOf('EVENING') < 0) ||
+      (daySlotsArr.indexOf('EVENING') > -1  && customDosageEvening.trim() === ''))
     ) {
       setErrorState({
         ...errorState,
@@ -1514,8 +1552,10 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      customDosageNight.trim() !== '' &&
-      daySlotsArr.indexOf('NIGHT') < 0
+      ((customDosageNight.trim() !== '' &&
+      customDosageNight.trim() !== '0' &&
+      daySlotsArr.indexOf('NIGHT') < 0) ||
+      (daySlotsArr.indexOf('NIGHT') > -1  && customDosageNight.trim() === ''))
     ) {
       setErrorState({
         ...errorState,
@@ -1524,7 +1564,7 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
+    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
