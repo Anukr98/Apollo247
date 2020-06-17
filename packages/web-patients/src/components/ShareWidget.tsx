@@ -3,16 +3,13 @@ import { Popover, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 import {
-  EmailShareButton,
   FacebookShareButton,
-  InstapaperShareButton,
   LinkedinShareButton,
   TelegramShareButton,
   TwitterShareButton,
   WhatsappShareButton,
   TwitterIcon,
   WhatsappIcon,
-  EmailIcon,
   FacebookIcon,
   LinkedinIcon,
   TelegramIcon,
@@ -114,6 +111,30 @@ export const ShareWidget: React.FC<ShareWidgetProps> = (props) => {
         </span>
         <span>Faceboook</span>
       </FacebookShareButton>
+      <TelegramShareButton
+        className={classes.shareButton}
+        url={
+          'https://www.apollo247.com/covid19/article/what-safety-precautions-should-employees-returning-work-after-lockdown-take'
+        }
+        title={props.title}
+      >
+        <span>
+          <TelegramIcon size={32} round />
+        </span>
+        <span>Telegram</span>
+      </TelegramShareButton>
+      <LinkedinShareButton
+        className={classes.shareButton}
+        url={
+          'https://www.apollo247.com/covid19/article/what-safety-precautions-should-employees-returning-work-after-lockdown-take'
+        }
+        title={props.title}
+      >
+        <span>
+          <LinkedinIcon size={32} round />
+        </span>
+        <span>LinkedIn</span>
+      </LinkedinShareButton>
     </div>
   );
 };
