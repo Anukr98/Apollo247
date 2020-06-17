@@ -81,6 +81,8 @@ import {
   getNextAvailableSlots,
   getPrismUrls,
   insertMessage,
+  getPastAppoinmentCount,
+  updateExternalConnect,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   WebEngageEventName,
@@ -142,6 +144,7 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { CustomAlert } from '../ui/CustomAlert';
 
 interface OpentokStreamObject {
   connection: {
@@ -334,6 +337,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
+  const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
 
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
@@ -569,6 +573,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
+    getAppointmentCount();
     // requestToJrDoctor();
     // updateSessionAPI();
   }, []);
@@ -605,6 +610,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const client = useApolloClient();
+
+  const getAppointmentCount = () => {
+    getPastAppoinmentCount(client, doctorId, patientId)
+      .then((data: any) => {
+        console.log('getAppointmentCount', data);
+        console.log('getAppointmentCount', data.data.data.getPastAppointmentsCount.count);
+
+        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'count');
+
+        console.log('count', count);
+
+        if (count && count > 0) {
+          setShowConnectAlertPopup(false);
+        } else {
+          setShowConnectAlertPopup(true);
+        }
+      })
+      .catch((error) => {
+        console.log('InsertMessageToDoctor_error', error);
+      });
+  };
+
+  const getUpdateExternalConnect = (connected: boolean) => {
+    updateExternalConnect(client, doctorId, patientId, connected)
+      .then((data) => {
+        console.log('getUpdateExternalConnect', data);
+      })
+      .catch((error) => {
+        console.log('InsertMessageToDoctor_error', error);
+      });
+  };
 
   const InsertMessageToDoctor = (message: string) => {
     console.log('sendMessageToDoctor', sendMessageToDoctor);
@@ -6501,6 +6537,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setUrl('');
           }}
           navigation={props.navigation}
+        />
+      )}
+      {showConnectAlertPopup && (
+        <CustomAlert
+          description={'Have you consulted with Dr. Simran before?'}
+          onNoPress={() => {
+            setShowConnectAlertPopup(false);
+            getUpdateExternalConnect(false);
+          }}
+          onYesPress={() => {
+            setShowConnectAlertPopup(false);
+            getUpdateExternalConnect(true);
+          }}
         />
       )}
     </View>
