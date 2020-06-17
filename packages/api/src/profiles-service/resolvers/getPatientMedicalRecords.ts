@@ -2,20 +2,16 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicalRecords } from 'profiles-service/entities';
-import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+
 import winston from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
-import {
-  PrismLabTestResult,
-  PrismHealthCheckResult,
-  PrismHospitalizationResult,
-} from 'types/prismMedicalRecords';
+import { getLabResults, getPrescriptionData } from 'helpers/phrV1Services';
+import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
@@ -97,10 +93,76 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String
   }
 
+  type LabTestFileParameters {
+    parameterName: String
+    result: String
+    unit: String
+    range: String
+    outOfRange: Boolean
+    resultDate: Int
+  }
+
+  type LabResultsBaseResponse {
+    authToken: String
+    userId: String!
+    id: String!
+    labTestName: String!
+    labTestSource: String!
+    packageId: String
+    packageName: String
+    labTestDate: Date!
+    labTestRefferedBy: String
+    observation: String
+    additionalNotes: String
+    consultId: String
+    tag: String
+    labTestResults: [LabTestFileParameters]
+  }
+
+  type LabResultsDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [LabResultsBaseResponse]
+  }
+
+  type PrescriptionsBaseResponse {
+    authToken: String
+    userId: String
+    id: String!
+    prescriptionName: String!
+    dateOfPrescription: Int!
+    startDate: Int
+    endDate: Int
+    prescribedBy: String
+    notes: String
+    prescriptionSource: String
+    source: String!
+  }
+
+  type PrecriptionFileParameters {
+    id: String
+    fileName: String
+    mimeType: String
+    content: String
+    byteContent: String
+    dateCreated: Int
+  }
+
+  type PrescriptionDownloadResponse {
+    errorCode: Int
+    errorMsg: String
+    errorType: String
+    response: [PrescriptionsBaseResponse]
+    prescriptionFiles: [PrecriptionFileParameters]
+  }
+
   type PrismMedicalRecordsResult {
     labTests: [LabTestResult]
     healthChecks: [HealthCheckResult]
     hospitalizations: [HospitalizationResult]
+    labResults: LabResultsDownloadResponse
+    prescriptions: PrescriptionDownloadResponse
   }
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
@@ -157,6 +219,8 @@ type PrismMedicalRecordsResult = {
   labTests: LabTestResult[];
   healthChecks: HealthCheckResult[];
   hospitalizations: HospitalizationResult[];
+  labResults: LabResultsDownloadResponse;
+  prescriptions: PrescriptionDownloadResponse;
 };
 
 const getPatientMedicalRecords: Resolver<
@@ -165,7 +229,8 @@ const getPatientMedicalRecords: Resolver<
   ProfilesServiceContext,
   MedicalRecordsResult
 > = async (parent, args, { profilesDb, doctorsDb }) => {
-  const { patientId, offset, limit } = args;
+  //commented to support backward compatability
+  /*const { patientId, offset, limit } = args;
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(patientId);
@@ -180,8 +245,9 @@ const getPatientMedicalRecords: Resolver<
     primaryPatientIds,
     offset,
     limit
-  );
-  return { medicalRecords };
+  ); 
+  return { medicalRecords };*/
+  return { medicalRecords: [] };
 };
 
 //configure winston for profiles service
@@ -209,6 +275,25 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.findById(args.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+
+  //get labresults
+  const labResults = await getLabResults(patientDetails.uhid);
+  const prescriptions = await getPrescriptionData(patientDetails.uhid);
+
+  //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
+  const result = {
+    labTests: [],
+    healthChecks: [],
+    hospitalizations: [],
+    labResults: labResults,
+    prescriptions: prescriptions,
+  };
+
+  /*
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
@@ -369,13 +454,7 @@ const getPatientPrismMedicalRecords: Resolver<
       source: element.source,
     };
     formattedHospitalizations.push(hospitalizationResult);
-  });
-
-  const result = {
-    labTests: formattedLabResults,
-    healthChecks: formattedHealthChecks,
-    hospitalizations: formattedHospitalizations,
-  };
+  }); */
 
   return result;
 };
