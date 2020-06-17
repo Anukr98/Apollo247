@@ -5,6 +5,8 @@ import {
   LabResultsUploadRequest,
   PrescriptionUploadRequest,
   PrescriptionUploadResponse,
+  PrescriptionDownloadResponse,
+  LabResultsDownloadResponse,
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -122,6 +124,106 @@ export async function savePrescription(
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
         } else {
           throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+//get Prescription Data in bulk
+export async function getPrescriptionData(uhid: string): Promise<PrescriptionDownloadResponse> {
+  if (!process.env.PHR_V1_GET_PRESCRIPTIONS || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_PRESCRIPTIONS.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getPriscriptionDataFromPrism PRISM_GET_PRESCRIPTION_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getPriscriptionDataFromPrism PRISM_GET_PRESCRIPTION_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+//get Lab Results Data in bulk
+export async function getLabResults(uhid: string): Promise<LabResultsDownloadResponse> {
+  if (!process.env.PHR_V1_GET_LABRESULTS || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_LABRESULTS.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getLabResultsFromPrism PRISM_GET_LABRESULTS_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_LABRESULTS_FETCH_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getLabResultsFromPrism PRISM_GET_LABRESULTS_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_LABRESULTS_FETCH_ERROR);
         }
       }
     )
