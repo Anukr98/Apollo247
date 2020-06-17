@@ -8,4 +8,3 @@ packages/api/debug-logs/doctors-search.log
 *.log
 paytm-integration/env
 packages/mobile-patients/android/app/debug.keystore
-package-lock.json
