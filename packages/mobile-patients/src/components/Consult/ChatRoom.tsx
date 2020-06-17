@@ -5938,7 +5938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               {'You can upload your Health Records here'}
             </Text>
-            <FreeArrowIcon style={{ width: 33, height: 33 }} />
+            <FreeArrowIcon style={{ width: 33, height: 33, marginTop: 4, marginBottom: -6 }} />
           </View>
           <View
             style={{
