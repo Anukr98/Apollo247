@@ -30,11 +30,12 @@ export const _cbTracking = (params: any) => {
     couponCode,
     couponValue,
     finalBookingValue,
+    ecommObj
   } = params;
   try {
     window &&
       window._cb &&
-      window._cb(specialty, bookingType, scheduledDate, couponCode, couponValue, finalBookingValue);
+      window._cb(specialty, bookingType, scheduledDate, couponCode, couponValue, finalBookingValue, ecommObj);
   } catch (err) {
     console.log('GTM ERROR: ', err);
   }

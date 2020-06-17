@@ -411,7 +411,6 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 isShippable: true,
                               };
                               /* Gtm code start  */
-                              debugger;
                               gtmTracking({
                                 category: 'Pharmacy',
                                 action: 'Add to Cart',

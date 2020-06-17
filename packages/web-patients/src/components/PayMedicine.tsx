@@ -635,6 +635,22 @@ export const PayMedicine: React.FC = (props) => {
     paymentMutation()
       .then((res) => {
         /**Gtm code start  */
+        let ecommItems:any[] = [];
+        cartItems.map((items, key) => {
+          ecommItems.push(
+            {
+              'item_name': items.name,
+              'item_id': items.sku,
+              'price': items.price,
+              'item_category': 'Pharmacy',
+              'item_category_2': items.type_id ? items.type_id.toLowerCase() === 'pharma' ? 'Drugs' : 'FMCG' : null,
+              // 'item_category_4': '', // for future
+              'item_variant': 'Default',
+              'index': key + 1,
+              'quantity': items.mou
+            
+          })
+        })
         _obTracking({
           userLocation: city,
           paymentType: value === 'COD' ? 'COD' : 'Prepaid',
@@ -644,21 +660,7 @@ export const PayMedicine: React.FC = (props) => {
           finalBookingValue: totalWithCouponDiscount,
           ecommObj: {
             'ecommerce': {
-              'items': [{
-                'item_name': 'Donut Friday Scented T-Shirt',
-                'item_id': '67890',
-                'price': '33.75',
-                'item_brand': 'Google',
-                'item_category': 'Apparel',
-                'item_category_2': 'Mens',
-                'item_category_3': 'Shirts',
-                'item_category_4': 'Tshirts',
-                'item_variant': 'Black',
-                'item_list_name': 'Search Results',
-                'item_list_id': 'SR123',
-                'index': 2,
-                'quantity': '1'
-              }]
+              'items': ecommItems
             }
           }
         });
