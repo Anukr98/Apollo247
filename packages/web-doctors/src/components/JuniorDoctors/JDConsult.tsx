@@ -194,9 +194,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   };
 
   const isPaused = () => {
-    if (!callerAudio && !callerVideo) return `Audio & Video are Paused`;
-    else if (!callerAudio) return `Audio is Paused`;
-    else if (!callerVideo) return `Video is Paused`;
+    if (!callerAudio && !callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
+      return `Audio & Video are paused`;
+    else if (!callerAudio) return `Audio is paused`;
+    else if (!callerVideo && subscribeToVideo && getCookieValue() === 'videocall')
+      return `Video is paused`;
     else return null;
   };
 
