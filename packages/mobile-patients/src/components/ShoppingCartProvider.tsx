@@ -318,7 +318,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
   );
 
-  const uploadPrescriptionRequired = cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length;
+  const uploadPrescriptionRequired = cartItems.findIndex((item) => item.prescriptionRequired) != -1;
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);
