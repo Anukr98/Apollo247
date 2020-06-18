@@ -24372,6 +24372,33 @@
             "deprecationReason": null
           },
           {
+            "name": "createPatient",
+            "description": null,
+            "args": [
+              {
+                "name": "createPatientInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "CreatePatientInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "CreatePatientResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updateDelegateNumber",
             "description": null,
             "args": [
@@ -33725,10 +33752,49 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "source",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "PROFILE_SOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "PROFILE_SOURCE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "WEB",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MOBILE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ORDER_PUNCHING_TOOL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
@@ -40001,7 +40067,11 @@
       {
         "name": "include",
         "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
-        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+        "locations": [
+          "FIELD",
+          "FRAGMENT_SPREAD",
+          "INLINE_FRAGMENT"
+        ],
         "args": [
           {
             "name": "if",
@@ -40022,7 +40092,11 @@
       {
         "name": "skip",
         "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
-        "locations": ["FIELD", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"],
+        "locations": [
+          "FIELD",
+          "FRAGMENT_SPREAD",
+          "INLINE_FRAGMENT"
+        ],
         "args": [
           {
             "name": "if",
@@ -40043,7 +40117,10 @@
       {
         "name": "deprecated",
         "description": "Marks an element of a GraphQL schema as no longer supported.",
-        "locations": ["FIELD_DEFINITION", "ENUM_VALUE"],
+        "locations": [
+          "FIELD_DEFINITION",
+          "ENUM_VALUE"
+        ],
         "args": [
           {
             "name": "reason",
@@ -40060,7 +40137,10 @@
       {
         "name": "key",
         "description": "",
-        "locations": ["OBJECT", "INTERFACE"],
+        "locations": [
+          "OBJECT",
+          "INTERFACE"
+        ],
         "args": [
           {
             "name": "fields",
@@ -40081,19 +40161,26 @@
       {
         "name": "extends",
         "description": "",
-        "locations": ["OBJECT"],
+        "locations": [
+          "OBJECT"
+        ],
         "args": []
       },
       {
         "name": "external",
         "description": "",
-        "locations": ["OBJECT", "FIELD_DEFINITION"],
+        "locations": [
+          "OBJECT",
+          "FIELD_DEFINITION"
+        ],
         "args": []
       },
       {
         "name": "requires",
         "description": "",
-        "locations": ["FIELD_DEFINITION"],
+        "locations": [
+          "FIELD_DEFINITION"
+        ],
         "args": [
           {
             "name": "fields",
@@ -40114,7 +40201,9 @@
       {
         "name": "provides",
         "description": "",
-        "locations": ["FIELD_DEFINITION"],
+        "locations": [
+          "FIELD_DEFINITION"
+        ],
         "args": [
           {
             "name": "fields",

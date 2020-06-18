@@ -196,7 +196,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
-  ORDER_PUNCHING = 'ORDER_PUNCHING',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 export enum DEVICE_TYPE {
@@ -292,6 +292,8 @@ enum customerTypeInCoupons {
 }
 
 export enum PROFILE_SOURCE {
+  WEB = 'WEB',
+  MOBILE = 'MOBILE',
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
@@ -840,6 +842,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @Column({ nullable: true })
+  source: PROFILE_SOURCE;
 
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })

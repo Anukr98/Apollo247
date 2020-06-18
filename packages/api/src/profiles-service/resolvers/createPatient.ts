@@ -15,7 +15,13 @@ export const createPatientTypeDefs = gql`
     gender: Gender
     emailAddress: String
     dateOfBirth: Date
-    patientDetails: PatientDetails
+    source: PROFILE_SOURCE
+  }
+
+  enum PROFILE_SOURCE {
+    WEB
+    MOBILE
+    ORDER_PUNCHING_TOOL
   }
 
   type CreatePatientResult {
