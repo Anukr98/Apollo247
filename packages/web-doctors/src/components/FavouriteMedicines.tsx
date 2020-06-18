@@ -633,6 +633,11 @@ export const FavouriteMedicines: React.FC = () => {
       value: 'As Needed',
       selected: false,
     },
+    {
+      id: 'NOT_SPECIFIC',
+      value: 'not specific',
+      selected: false,
+    },
   ]);
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
@@ -1366,16 +1371,16 @@ export const FavouriteMedicines: React.FC = () => {
   };
   const daySlotsToggleAction = (slotId: string) => {
     let isAsNeededSelected = false;
-    if (slotId === 'AS_NEEDED') {
+    if (slotId === 'AS_NEEDED' || slotId === 'NOT_SPECIFIC') {
       daySlots.map((slot: SlotsObject) => {
-        if (slot && slot.id === 'AS_NEEDED' && !slot.selected) {
+        if (slot && !slot.selected && (slot.id === slotId)) {
           isAsNeededSelected = true;
         }
       });
     }
     const slots = daySlots.map((slot: SlotsObject) => {
       if (!isAsNeededSelected) {
-        if (slot && slot.id === 'AS_NEEDED') {
+        if (slot && (slot.id === 'AS_NEEDED' || slot.id === 'NOT_SPECIFIC')) {
           slot.selected = false;
         } else {
           if (slot && slotId === slot.id) {
@@ -1383,7 +1388,7 @@ export const FavouriteMedicines: React.FC = () => {
           }
         }
       } else {
-        slot.selected = slot && slotId === slot.id && slotId === 'AS_NEEDED' ? true : false;
+        slot.selected = slot && slotId === slot.id  ? true : false;
       }
       return slot;
     });
@@ -1406,7 +1411,7 @@ export const FavouriteMedicines: React.FC = () => {
       <button
         key={daySlotitem.id}
         className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
-          isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
+          isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC') ? classes.none : ''
         }`}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
