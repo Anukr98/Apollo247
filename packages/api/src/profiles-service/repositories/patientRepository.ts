@@ -1,8 +1,9 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, AfterUpdate } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
+import { redis } from 'profiles-service/database/connectRedis';
 
 import {
   PrismGetAuthTokenResponse,
@@ -19,6 +20,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
+import { constant } from 'lodash';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -31,11 +33,17 @@ const dLogger = debugLog(
   'patientRepository',
   Math.floor(Math.random() * 100000000)
 );
-
+const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
+const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
+const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
-  findById(id: string) {
-    return this.findOne({ where: { id } });
+  @AfterUpdate()
+  dropPatientCache() {
+    this.dropCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${this.getId}`);
+  }
+  async findById(id: string) {
+    return this.getByIdCache(id);
   }
 
   async findOrCreatePatient(
@@ -63,31 +71,78 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
-      .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
+    const cacheCount = redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
+    if (typeof cacheCount === 'string') {
+      return parseInt(cacheCount);
+    }
+    const deviceCodeCount: number = (await this.createQueryBuilder('patient')
+      .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getRawMany();
-    return deviceCodeCount.length;
-  }
-  getPatientDetails(id: string) {
-    return this.findOne({
-      where: { id, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+      .getRawMany()).length;
+    this.setCache(
+      `${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`,
+      deviceCodeCount.toString()
+    );
+    return deviceCodeCount;
   }
 
-  findByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber, isActive: true },
+  async getPatientDetails(id: string) {
+    return await this.getByIdCache(id);
+  }
+
+  async findByMobileNumber(mobileNumber: string) {
+    return await this.getByMobileCache(mobileNumber);
+  }
+
+  async getByIdCache(id: string | number) {
+    const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    dLogger(
+      new Date(),
+      'Redis Cache Read of Patient',
+      `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
+    );
+    if (typeof cache === 'string') {
+      return JSON.parse(cache);
+    } else return await this.setByIdCache(id);
+  }
+
+  async getPatientData(id: string | number) {
+    const relations = [
+      'lifeStyle',
+      'healthVault',
+      'familyHistory',
+      'patientAddress',
+      'patientDeviceTokens',
+      'patientNotificationSettings',
+      'patientMedicalHistory',
+    ];
+    return this.findOne({
+      where: { id, isActive: true },
+      relations: relations,
+    });
+  }
+  async setCache(key: string, value: string) {
+    await redis.set(key, value);
+    await redis.expire(key, 3600);
+  }
+  async dropCache(key: string) {
+    await redis.del(key);
+  }
+  async setByIdCache(id: string | number) {
+    const patientDetails = await this.getPatientData(id);
+    this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, JSON.stringify(patientDetails));
+    dLogger(
+      new Date(),
+      'Redis Cache Write of Patient',
+      `Cache miss/write ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
+    );
+    return patientDetails;
+  }
+
+  async setByMobileCache(mobile: string) {
+    const patients = await this.find({
+      where: { mobile, isActive: true },
       relations: [
         'lifeStyle',
         'healthVault',
@@ -98,18 +153,59 @@ export class PatientRepository extends Repository<Patient> {
         'patientMedicalHistory',
       ],
     });
+    const patientIds: string[] = await patients.map((patient) => {
+      this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient));
+      return patient.id;
+    });
+    this.setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','));
+    dLogger(
+      new Date(),
+      'Redis Cache Write of Patient',
+      `Cache miss/write ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
+    );
+    return patients;
+  }
+
+  async getByMobileCache(mobile: string) {
+    const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    if (typeof ids === 'string') {
+      dLogger(
+        new Date(),
+        'Redis Cache Read of Patient',
+        `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
+      );
+      const patientIds: string[] = ids.split(',');
+      const patients = patientIds.map((patientId: string) => {
+        const patient = redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
+        if (typeof patient === 'string') {
+          dLogger(
+            new Date(),
+            'Redis Cache Read of Patient',
+            `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`
+          );
+          return JSON.parse(patient);
+        }
+      });
+      return patients;
+    } else {
+      return this.setByMobileCache(mobile);
+    }
   }
 
   async findByMobileNumberLogin(mobileNumber: string) {
-    const patientList = await this.find({
-      where: { mobileNumber, isActive: true },
-    });
+    const patientList = await this.getByMobileCache(mobileNumber);
+    let finalList: Patient[] = patientList;
     console.log('patient list count', patientList.length);
     if (patientList.length > 1) {
-      patientList.map((patient) => {
+      patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
+          finalList = patientList.filter((p) => p.id !== patient.id);
+          await this.setCache(
+            `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobileNumber}`,
+            finalList.map((p) => p.id).join(',')
+          );
         } else if (patient.primaryPatientId == null) {
           this.update(patient.id, { primaryPatientId: patient.id });
         }
@@ -119,34 +215,11 @@ export class PatientRepository extends Repository<Patient> {
         this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
       }
     }
-
-    return this.find({
-      where: { mobileNumber, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+    return finalList;
   }
 
-  findDetailsByMobileNumber(mobileNumber: string) {
-    return this.findOne({
-      where: { mobileNumber, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+  async findDetailsByMobileNumber(mobileNumber: string) {
+    return (await this.getByMobileCache(mobileNumber))[0];
   }
 
   updatePatientAllergies(id: string, allergies: string) {
@@ -801,9 +874,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   getIdsByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber, isActive: true },
-    });
+    return this.getByMobileCache(mobileNumber);
   }
 
   async getLinkedPatientIds(patientId: string) {
