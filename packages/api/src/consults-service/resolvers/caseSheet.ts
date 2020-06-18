@@ -358,6 +358,7 @@ export const caseSheetTypeDefs = gql`
     ORAL_DROPS
     NASAL_DROPS
     EYE_DROPS
+    EYE_OINTMENT
     EAR_DROPS
     INTRAVAGINAL
     NASALLY
