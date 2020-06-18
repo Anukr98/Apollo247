@@ -1811,15 +1811,18 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     }
-    //  else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     durationErr: true,
-    //     daySlotErr: false,
-    //     tobeTakenErr: false,
-    //     dosageErr: false,
-    //   });
-    // }
+    else if (
+      (forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) && 
+      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } 
     else {
       setErrorState({
         ...errorState,
@@ -2055,7 +2058,52 @@ export const FavouriteMedicines: React.FC = () => {
       </MenuItem>
     );
   });
-
+  const resetCustomTimeOptions = () =>{
+    if (
+      customDosageMorning &&
+      customDosageMorning.trim() !== '' &&
+      customDosageMorning.trim() !== '0' &&
+      (parseInt(customDosageMorning.trim()) > 0 ||
+        Number(customDosageMorning.trim()) > 0)
+    ) {
+      setInTheTime('morning', true);
+    } else {
+      setInTheTime('morning', false);
+    }
+    if (
+      customDosageNoon &&
+      customDosageNoon.trim() !== '' &&
+      customDosageNoon.trim() !== '0' &&
+      (parseInt(customDosageNoon.trim()) > 0 ||
+        Number(customDosageNoon.trim()) > 0)
+    ) {
+      setInTheTime('noon', true);
+    } else {
+      setInTheTime('noon', false);
+    }
+    if (
+      customDosageEvening &&
+      customDosageEvening.trim() !== '' &&
+      customDosageEvening.trim() !== '0' &&
+      (parseInt(customDosageEvening.trim()) > 0 ||
+        Number(customDosageEvening.trim()) > 0)
+    ) {
+      setInTheTime('evening', true);
+    } else {
+      setInTheTime('evening', false);
+    }
+    if (
+      customDosageNight &&
+      customDosageNight.trim() !== '' &&
+      customDosageNight.trim() !== '0' &&
+      (parseInt(customDosageNight.trim()) > 0 ||
+        Number(customDosageNight.trim()) > 0)
+    ) {
+      setInTheTime('night', true);
+    } else {
+      setInTheTime('night', false);
+    }
+  }
   const resetOptions = () => {
     //const [checked, setChecked] = useState(false);
     const dayslots = daySlots.map((slot: SlotsObject) => {
@@ -2550,9 +2598,7 @@ export const FavouriteMedicines: React.FC = () => {
                               <span
                                 onClick={() => {
                                   setIsCustomForm(!isCustomform);
-                                  // medicineCustomDosage && medicineCustomDosage !== ''
-                                  //   ? setMedicineCustomDosage('')
-                                  //   : setMedicineCustomDosage('0-0-0-0');
+                                  resetCustomTimeOptions();
                                 }}
                               >
                                 {isCustomform ? 'DEFAULT' : 'CUSTOM'}
@@ -2596,6 +2642,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 placeholder=""
                                 inputProps={{ maxLength: 6 }}
                                 value={consumptionDuration}
+                                disabled={forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW ? true: false}
                                 onChange={(event: any) => {
                                   setConsumptionDuration(event.target.value);
                                 }}
@@ -2627,6 +2674,10 @@ export const FavouriteMedicines: React.FC = () => {
                                 }}
                                 onChange={(e: any) => {
                                   setforUnit(e.target.value as any);
+                                  if(e.target.value ===
+                                    MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW){
+                                      setConsumptionDuration('')
+                                  }
                                 }}
                               >
                                 {forOptionHtml}
@@ -2661,7 +2712,7 @@ export const FavouriteMedicines: React.FC = () => {
                             </div>
                           </Grid>
                           <div className={classes.numDays}>
-                            {errorState.durationErr && (
+                            {errorState.durationErr && forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
                               <FormHelperText
                                 className={classes.helpText}
                                 component="div"
