@@ -348,4 +348,9 @@ export enum ApiConstants {
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
   PRESCRIPTION_SOURCE_PREFIX = '247',
   //PHRV1 constants end
+
+  //REDIS KEYS
+  REDIS_URL = 'apollodev.redis.cache.windows.net',
+  REDIS_PORT = 6379,
+  REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
 }
