@@ -148,12 +148,11 @@ export class PatientRepository extends Repository<Patient> {
     if (typeof ids === 'string') {
       dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientkMobileKey}${mobile}`);
       const patientIds: string[] = ids.split(',');
-      const patients = patientIds.map((patientId: string) => {
-        const patient = redis.get(`${PatientKey}${patientId}`);
-        if (typeof patient === 'string') {
-          dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientKey}${patientId}`);
-          return JSON.parse(patient);
-        }
+      const patients: Patient[] = [];
+      patientIds.map(async (patientId: string) => {
+        const patient = await this.getByIdCache(`${PatientKey}${patientId}`);
+        dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientKey}${patientId}`);
+        patients.push(patient);
       });
       return patients;
     } else {
