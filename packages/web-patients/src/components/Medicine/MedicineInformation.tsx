@@ -441,7 +441,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
-          timeout: TAT_API_TIMEOUT_IN_SEC * 1000,
+          timeout: TAT_API_TIMEOUT_IN_SEC,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
