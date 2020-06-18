@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';

@@ -33,6 +33,7 @@ export const prescriptionUploadTypeDefs = gql`
 
   type PrescriptionResponse {
     recordId: String
+    fileUrl: String
   }
 
   extend type Mutation {
@@ -60,6 +61,8 @@ export const uploadPrescriptions: Resolver<
   { recordId: string }
 > = async (parent, { prescriptionInput, uhid }) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+  if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
   prescriptionInput.prescriptionName = 'Prescribed By ' + prescriptionInput.prescribedBy;
   prescriptionInput.dateOfPrescription =
@@ -83,7 +86,16 @@ export const uploadPrescriptions: Resolver<
     uhid,
     prescriptionInput
   );
-  return { recordId: uploadedFileDetails.response };
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
+  prescriptionDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+
+  return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
 export const uploadMediaDocument: Resolver<
@@ -93,6 +105,8 @@ export const uploadMediaDocument: Resolver<
   { recordId: string }
 > = async (parent, { prescriptionInput, uhid }, {}) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+  if (!process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
   prescriptionInput.prescriptionName = 'MediaDocument';
   prescriptionInput.dateOfPrescription =
@@ -116,7 +130,15 @@ export const uploadMediaDocument: Resolver<
     uhid,
     prescriptionInput
   );
-  return { recordId: uploadedFileDetails.response };
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
+  prescriptionDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+  return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
 export const prescriptionUploadResolvers = {

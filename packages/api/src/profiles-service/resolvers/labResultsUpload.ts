@@ -35,6 +35,7 @@ export const labResultsUploadTypeDefs = gql`
 
   type LabResultsResponse {
     recordId: String
+    fileUrl: String
   }
 
   extend type Mutation {
@@ -51,6 +52,9 @@ const uploadLabResults: Resolver<
   { recordId: string }
 > = async (parent, { labResultsInput, uhid }, {}) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+  if (!process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
   labResultsInput.labTestSource = ApiConstants.LABTEST_SOURCE_SELF_UPLOADED;
   labResultsInput.labTestDate = getUnixTime(new Date(labResultsInput.labTestDate)) * 1000;
   labResultsInput.identifier = '';
@@ -65,7 +69,16 @@ const uploadLabResults: Resolver<
   });
 
   const uploadedFileDetails: LabResultsUploadResponse = await saveLabResults(uhid, labResultsInput);
-  return { recordId: uploadedFileDetails.response };
+
+  let labResultDocumentUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  labResultDocumentUrl = labResultDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', uhid);
+  labResultDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+
+  return { recordId: uploadedFileDetails.response, fileUrl: labResultDocumentUrl };
 };
 export const labResultsUploadResolvers = {
   Mutation: {
