@@ -24,6 +24,11 @@ export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
 };
 
+export const isPhoneNumberValid = (number: string) => {
+  const isValidNumber = /^[6-9]{1}\d{0,9}$/.test(number);
+  return isValidNumber;
+};
+
 type TimeArray = {
   label: string;
   time: string[];
