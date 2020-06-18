@@ -200,6 +200,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-sound')
+    implementation project(':react-native-system-setting')
     implementation project(':react-native-incall-manager')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')

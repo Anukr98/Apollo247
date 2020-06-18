@@ -120,7 +120,6 @@ import {
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
-import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { WebView } from 'react-native-webview';
@@ -583,6 +582,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     AppState.addEventListener('change', _handleAppStateChange);
   }, []);
 
+  const playSound = () => {
+    try {
+      maxVolume();
+      if (audioTrack) {
+        audioTrack.play();
+        audioTrack.setNumberOfLoops(15);
+        console.log('call audioTrack');
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
+  const stopSound = () => {
+    try {
+      setPrevVolume();
+      if (audioTrack) {
+        audioTrack.stop();
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
   useEffect(() => {
     console.log('callType', callType);
     if (callType) {
@@ -590,15 +613,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (callType === 'VIDEO') {
           setOnSubscribe(true);
           setIsAudio(false);
-          InCallManager.startRingtone('_BUNDLE_');
-          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         } else if (callType === 'AUDIO') {
           setOnSubscribe(true);
           setIsAudio(true);
           callhandelBack = false;
-          InCallManager.startRingtone('_BUNDLE_');
-          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         }
+        playSound();
       });
     }
     if (prescription) {
@@ -1006,15 +1026,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (callType === 'VIDEO') {
               setOnSubscribe(true);
               setIsAudio(false);
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
             } else if (callType === 'AUDIO') {
               setOnSubscribe(true);
               setIsAudio(true);
               callhandelBack = false;
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
             }
+            playSound();
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1024,8 +1041,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               changeVideoStyles();
@@ -2043,7 +2059,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
 
@@ -2053,18 +2069,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         stopCallAbondmentTimer();
-        InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-        // console.log("AUDIO_CALL_STARTED");
-
-        // InCallManager.chooseAudioRoute('EARPIECE')
+        playSound();
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
-        InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        playSound();
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
         stopInterval();
@@ -2103,8 +2114,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
-        InCallManager.stopRingtone();
-        InCallManager.stop();
+        stopSound();
         addMessages(message);
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
@@ -5376,8 +5386,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               changeVideoStyles();
