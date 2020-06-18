@@ -32,12 +32,14 @@ const dLogger = debugLog(
   'patientRepository',
   Math.floor(Math.random() * 100000000)
 );
-
+const PatientKey: string = 'patient:';
+const PatientkMobileKey: string = 'patient:mobile:';
+const keyPrefix: string = 'Patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   @AfterUpdate()
   dropPatientCache() {
-    this.dropCache(`patient:${this.getId}`);
+    this.dropCache(`${PatientKey}${this.getId}`);
   }
   async findById(id: string) {
     return this.getByIdCache(id);
@@ -56,16 +58,17 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const cacheCount = redis.get(`Patient:deviceCodeCount:${deviceCode}`);
+    const cacheCount = redis.get(`${keyPrefix}${deviceCode}`);
     if (typeof cacheCount === 'string') {
       return parseInt(cacheCount);
     }
+    console.log(cacheCount);
     const deviceCodeCount: number = (await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
       .getRawMany()).length;
-    this.setCache(`Patient:deviceCodeCount:${deviceCode}`, deviceCodeCount.toString());
+    this.setCache(`${keyPrefix}${deviceCode}`, deviceCodeCount.toString());
     return deviceCodeCount;
   }
 
@@ -78,8 +81,8 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
-    const cache = await redis.get(`patient:${id}`);
-    dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit patient:${id}`);
+    const cache = await redis.get(`${PatientKey}${id}`);
+    dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientKey}${id}`);
     if (typeof cache === 'string') {
       return JSON.parse(cache);
     } else return await this.setByIdCache(id);
@@ -109,8 +112,8 @@ export class PatientRepository extends Repository<Patient> {
   }
   async setByIdCache(id: string | number) {
     const patientDetails = await this.getPatientData(id);
-    await this.setCache(`Patient:${id}`, JSON.stringify(patientDetails));
-    dLogger(new Date(), 'Redis Cache Write of Patient', `Cache miss/write patient:${id}`);
+    await this.setCache(`${PatientKey}${id}`, JSON.stringify(patientDetails));
+    dLogger(new Date(), 'Redis Cache Write of Patient', `Cache miss/write ${PatientKey}${id}`);
     return patientDetails;
   }
 
@@ -128,27 +131,27 @@ export class PatientRepository extends Repository<Patient> {
       ],
     });
     const patientIds: string[] = await patients.map((patient) => {
-      this.setCache(`Patient:${patient.id}`, JSON.stringify(patient));
+      this.setCache(`${PatientKey}${patient.id}`, JSON.stringify(patient));
       return patient.id;
     });
-    await this.setCache(`Patient:mobile:${mobile}`, patientIds.join(','));
+    await this.setCache(`${PatientkMobileKey}${mobile}`, patientIds.join(','));
     dLogger(
       new Date(),
       'Redis Cache Write of Patient',
-      `Cache miss/write Patient:mobile:${mobile}`
+      `Cache miss/write ${PatientkMobileKey}${mobile}`
     );
     return patients;
   }
 
   async getByMobileCache(mobile: string) {
-    const ids = await redis.get(`Patient:mobile:${mobile}`);
+    const ids = await redis.get(`${PatientkMobileKey}${mobile}`);
     if (typeof ids === 'string') {
-      dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit Patient:mobile:${mobile}`);
+      dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientkMobileKey}${mobile}`);
       const patientIds: string[] = ids.split(',');
       const patients = patientIds.map((patientId: string) => {
-        const patient = redis.get(`Patient:${patientId}`);
+        const patient = redis.get(`${PatientKey}${patientId}`);
         if (typeof patient === 'string') {
-          dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit Patient:${patientId}`);
+          dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit ${PatientKey}${patientId}`);
           return JSON.parse(patient);
         }
       });
