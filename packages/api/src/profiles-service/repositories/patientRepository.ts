@@ -56,7 +56,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
-    const cacheCount = redis.get(deviceCode);
+    const cacheCount = redis.get(`Patient:deviceCodeCount:${deviceCode}`);
     if (typeof cacheCount === 'string') {
       return parseInt(cacheCount);
     }
@@ -65,7 +65,7 @@ export class PatientRepository extends Repository<Patient> {
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
       .getRawMany()).length;
-    this.setCache(`deviceCode:${deviceCode}`, deviceCodeCount.toString());
+    this.setCache(`Patient:deviceCodeCount:${deviceCode}`, deviceCodeCount.toString());
     return deviceCodeCount;
   }
 
