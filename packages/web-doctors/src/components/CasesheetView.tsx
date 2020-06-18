@@ -8,7 +8,7 @@ import moment from 'moment';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { isEmpty, trim } from 'lodash';
-import { MEDICINE_FREQUENCY } from 'graphql/types/globalTypes';
+import { MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from 'graphql/types/globalTypes';
 import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -472,9 +472,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       ) => {
         const forHtml = prescription.medicineConsumptionDurationInDays ? ` for ${Number(prescription.medicineConsumptionDurationInDays)}` : ' '
         const duration =
-          prescription.medicineConsumptionDurationInDays &&
           `${forHtml} ${Number(prescription.medicineConsumptionDurationInDays)} ${
-            prescription.medicineConsumptionDurationUnit
+            prescription.medicineConsumptionDurationUnit && prescription.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
               ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
               : prescription.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
           } `;
@@ -508,12 +507,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
         }
-        // if(prescription!.medicineTimings &&
-        //   prescription!.medicineTimings!.length === 1 &&
-        //   prescription!.medicineTimings[0] === 'NOT_SPECIFIC'
-        //   ){
-        //   timesString = '';
-        // }
+        if(prescription!.medicineTimings &&
+          prescription!.medicineTimings!.length === 1 &&
+          prescription!.medicineTimings[0] === 'NOT_SPECIFIC'
+          ){
+          timesString = '';
+        }
         let dosageHtml = '';
         if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
           const dosageTimingArray = prescription!.medicineCustomDosage!.split('-');
