@@ -14,6 +14,7 @@ import {
   MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
   MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -32,7 +33,7 @@ import {
   prescriptionSource,
   PrescriptionInputArgs,
 } from 'profiles-service/resolvers/prescriptionUpload';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -50,6 +51,7 @@ export const convertCaseSheetToRxPdfData = async (
     frequency: string;
     instructions: string;
     routeOfAdministration?: string;
+    medicineFormTypes?: MEDICINE_FORM_TYPES;
   };
 
   let prescriptions: PrescriptionData[] | [];
@@ -130,7 +132,10 @@ export const convertCaseSheetToRxPdfData = async (
       if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
         frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
-      if (csRx.medicineConsumptionDurationInDays) {
+      if (
+        csRx.medicineConsumptionDurationInDays &&
+        csRx.medicineConsumptionDurationUnit != MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+      ) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDurationInDays;
         if (csRx.medicineConsumptionDurationUnit) {
@@ -140,6 +145,10 @@ export const convertCaseSheetToRxPdfData = async (
               : csRx.medicineConsumptionDurationUnit.replace('S', '');
           frequency = frequency + ' ' + unit;
         }
+      }
+
+      if (csRx.medicineConsumptionDurationUnit == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) {
+        frequency += csRx.medicineConsumptionDurationUnit.split('_').join(' ');
       }
 
       if (csRx.medicineToBeTaken)
@@ -157,7 +166,10 @@ export const convertCaseSheetToRxPdfData = async (
           csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
         ) {
           frequency = frequency + ' ' + csRx.medicineTimings[0].split('_').join(' ');
-        } else {
+        } else if (
+          csRx.medicineTimings.length == 1 &&
+          csRx.medicineTimings[0] != MEDICINE_TIMINGS.NOT_SPECIFIC
+        ) {
           frequency = frequency + ' in the';
           frequency =
             frequency +
@@ -184,6 +196,7 @@ export const convertCaseSheetToRxPdfData = async (
         frequency,
         instructions,
         routeOfAdministration,
+        medicineFormTypes: csRx.medicineFormTypes,
       } as PrescriptionData;
     });
   }
@@ -667,7 +680,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
           .text(
-            `To be taken: ${prescription.routeOfAdministration.split('_').join(' ')} `,
+            `To be ${
+              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            }: ${
+              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+                ? prescription.routeOfAdministration.split('_').join(' ')
+                : 'Intra-articular'
+            } `,
             margin + 30
           )
           .moveDown(0.8);
