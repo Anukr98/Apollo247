@@ -1,10 +1,9 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, AfterUpdate } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { redis } from 'profiles-service/database/connectRedis';
-import { PatientCache } from 'profiles-service/entities/cache';
 
 import {
   PrismGetAuthTokenResponse,
@@ -37,10 +36,13 @@ const dLogger = debugLog(
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
+  @AfterUpdate()
+  dropPatientCache() {
+    this.dropCache(`patient:${this.getId}`);
+  }
   async findById(id: string) {
     return this.getByIdCache(id);
   }
-
   findPatientDetailsByIdsAndFields(ids: string[], fields: string[]) {
     return this.createQueryBuilder('patient')
       .select(fields)
@@ -53,35 +55,27 @@ export class PatientRepository extends Repository<Patient> {
       .where('patient.id IN (:...ids)', { ids })
       .getMany();
   }
-  //cache this
+
   async getDeviceCodeCount(deviceCode: string) {
-    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
+    const cacheCount = redis.get(deviceCode);
+    if (typeof cacheCount === 'string') {
+      return parseInt(cacheCount);
+    }
+    const deviceCodeCount: number = (await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })
       .groupBy('patient."mobileNumber"')
-      .getRawMany();
-    return deviceCodeCount.length;
+      .getRawMany()).length;
+    this.setCache(`deviceCode:${deviceCode}`, deviceCodeCount.toString());
+    return deviceCodeCount;
   }
 
   async getPatientDetails(id: string) {
-    // const patient = await this.getByIdCache(id);
-    return this.getByIdCache(id);
+    return await this.getByIdCache(id);
   }
 
-  findByMobileNumber(mobileNumber: string) {
-    // return this.getByMobileCache(mobileNumber);
-    return this.find({
-      where: { mobileNumber, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
+  async findByMobileNumber(mobileNumber: string) {
+    return await this.getByMobileCache(mobileNumber);
   }
 
   async getByIdCache(id: string | number) {
@@ -109,7 +103,7 @@ export class PatientRepository extends Repository<Patient> {
   }
   async setCache(key: string, value: string) {
     await redis.set(key, value);
-    await redis.expire(key, 3600);
+    await redis.expire(key, process.env.EXPIRE_SECONDS);
   }
   async dropCache(key: string) {
     await redis.del(key);
@@ -173,16 +167,13 @@ export class PatientRepository extends Repository<Patient> {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
-          await this.dropCache(`patient:${patient.id}`);
         } else if (patient.primaryPatientId == null) {
           this.update(patient.id, { primaryPatientId: patient.id });
-          await this.dropCache(`patient:${patient.id}`);
         }
       });
     } else {
       if (patientList[0].primaryPatientId == null) {
         this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
-        await this.dropCache(`patient:${patientList[0].id}`);
       }
     }
 
@@ -542,7 +533,6 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateProfiles(updateAttrs: Partial<Patient>[]) {
-    this.dropCache(`patient:${this.getId}`);
     return this.save(updateAttrs).catch((savePatientError) => {
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
         savePatientError,
@@ -551,12 +541,10 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateProfile(id: string, patientAttrs: Partial<Patient>) {
-    this.dropCache(`patient:${id}`);
     return this.update(id, patientAttrs);
   }
 
   updateUhid(id: string, uhid: string) {
-    this.dropCache(`patient:${id}`);
     return this.update(id, {
       uhid,
       uhidCreatedDate: new Date(),
@@ -603,12 +591,10 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateToken(id: string, athsToken: string) {
-    this.dropCache(`patient:${id}`);
     return this.update(id, { athsToken });
   }
 
   deleteProfile(id: string) {
-    this.dropCache(`patient:${id}`);
     return this.update(id, { isActive: false });
   }
 
