@@ -1770,6 +1770,7 @@ export const UPLOAD_LAB_RESULTS = gql`
   mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
     uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
       recordId
+      fileUrl
     }
   }
 `;
@@ -1781,6 +1782,7 @@ export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
   ) {
     uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
       recordId
+      fileUrl
     }
   }
 `;
@@ -2338,6 +2340,7 @@ export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
   ) {
     uploadMediaDocument(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
       recordId
+      fileUrl
     }
   }
 `;

@@ -42,6 +42,7 @@ import {
   CANCEL_APPOINTMENT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -64,8 +65,11 @@ import {
   notificationStatus,
   notificationType,
   REQUEST_ROLES,
+  PrescriptionUploadRequest,
   STATUS,
   TRANSFER_INITIATED_TYPE,
+  prescriptionSource,
+  prescriptionFileProperties,
   Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -5498,6 +5502,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload fileType', type);
     console.log('chanel', channel);
     console.log('resource', resource);
+    console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5507,55 +5512,55 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'png'
       ) {
         console.log('item', item.base64);
+        const formattedDate = moment(new Date()).format('YYYY-MM-DD');
+        const prescriptionFile: prescriptionFileProperties = {
+          fileName: resource[0].title,
+          mimeType: mimeType(resource[0].title + '.' + type),
+          content: base66,
+        };
+        const inputData: PrescriptionUploadRequest = {
+          prescribedBy: appointmentData.doctorInfo.displayName,
+          dateOfPrescription: formattedDate,
+          startDate: null,
+          endDate: null,
+          prescriptionSource: prescriptionSource.SELF,
+          prescriptionFiles: [prescriptionFile],
+        };
+        console.log('PrescriptionUploadRequest', inputData);
         setLoading(true);
         client
-          .mutate<uploadChatDocumentToPrism>({
-            mutation: UPLOAD_CHAT_FILE_PRISM,
+          .mutate({
+            mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
             fetchPolicy: 'no-cache',
             variables: {
-              fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
-              base64FileInput: item.base64, //resource.data,
-              appointmentId: channel,
-              patientId: patientId,
+              PrescriptionUploadRequest: inputData,
+              uhid: 'APJ1.0002014819',
             },
           })
           .then((data) => {
             console.log('upload data', data);
             setLoading(false);
-            if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
-              const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
-              getPrismUrls(client, patientId, [prismFeildId])
-                .then((data: any) => {
-                  console.log('api call data', data);
-                  const text = {
-                    id: patientId,
-                    message: imageconsult,
-                    fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
-                      ? 'pdf'
-                      : 'image',
-                    prismId: prismFeildId,
-                    url: (data.urls && data.urls[0]) || '',
-                    messageDate: new Date(),
-                  };
-                  pubnub.publish(
-                    {
-                      channel: channel,
-                      message: text,
-                      storeInHistory: true,
-                      sendByPost: true,
-                    },
-                    (status, response) => {}
-                  );
-                  InsertMessageToDoctor('ImageUploaded');
-                  KeepAwake.activate();
-                })
-                .catch((e) => {
-                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setLoading(false);
-                });
+            const fileUrl = g(data.data!, 'uploadMediaDocument', 'fileUrl');
+            if (fileUrl) {
+              console.log('api call data', fileUrl);
+              const text = {
+                id: patientId,
+                message: imageconsult,
+                fileType: (fileUrl || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
+                url: fileUrl || '',
+                messageDate: new Date(),
+              };
+              pubnub.publish(
+                {
+                  channel: channel,
+                  message: text,
+                  storeInHistory: true,
+                  sendByPost: true,
+                },
+                (status, response) => {}
+              );
+              InsertMessageToDoctor('ImageUploaded');
+              KeepAwake.activate();
             } else {
               Alert.alert('Upload document failed');
             }
