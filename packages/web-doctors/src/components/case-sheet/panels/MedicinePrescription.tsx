@@ -1589,7 +1589,7 @@ export const MedicinePrescription: React.FC = () => {
     let isAsNeededSelected = false;
     if (slotId === 'AS_NEEDED' || slotId === 'NOT_SPECIFIC') {
       daySlots.map((slot: SlotsObject) => {
-        if (slot && !slot.selected && (slot.id === slotId)) {
+        if (slot && !slot.selected && slot.id === slotId) {
           isAsNeededSelected = true;
         }
       });
@@ -1604,7 +1604,7 @@ export const MedicinePrescription: React.FC = () => {
           }
         }
       } else {
-        slot.selected = slot && slotId === slot.id  ? true : false;
+        slot.selected = slot && slotId === slot.id ? true : false;
       }
       return slot;
     });
@@ -1627,10 +1627,12 @@ export const MedicinePrescription: React.FC = () => {
       <AphButton
         key={daySlotitem.id}
         className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
-          isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC') ? classes.none : ''
+          isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC')
+            ? classes.none
+            : ''
         }`}
         onClick={() => {
-          if(!isCustomform){
+          if (!isCustomform) {
             daySlotsToggleAction(daySlotitem.id);
           }
         }}
@@ -1663,17 +1665,27 @@ export const MedicinePrescription: React.FC = () => {
       '-' +
       customDosageNight.trim();
     let customDosageArray = [];
-    if (customDosageMorning && customDosageMorning.trim() !== '' && customDosageMorning.trim() !== '0')
+    if (
+      customDosageMorning &&
+      customDosageMorning.trim() !== '' &&
+      customDosageMorning.trim() !== '0'
+    )
       customDosageArray.push(customDosageMorning.trim());
     if (customDosageNoon && customDosageNoon.trim() !== '' && customDosageNoon.trim() !== '0')
       customDosageArray.push(customDosageNoon.trim());
-    if (customDosageEvening && customDosageEvening.trim() !== '' && customDosageEvening.trim() !== '0')
+    if (
+      customDosageEvening &&
+      customDosageEvening.trim() !== '' &&
+      customDosageEvening.trim() !== '0'
+    )
       customDosageArray.push(customDosageEvening.trim());
     if (customDosageNight && customDosageNight.trim() !== '' && customDosageNight.trim() !== '0')
       customDosageArray.push(customDosageNight.trim());
-    if (!isCustomform && tabletsCount.trim() === '' &&
-    medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT) {
-      console.log('aaaaaaaaaa');
+    if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1686,8 +1698,7 @@ export const MedicinePrescription: React.FC = () => {
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
       medicineUnit !== 'AS_PRESCRIBED'
-    ){
-      console.log('bbbbbbbbbbbbb');
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1697,42 +1708,19 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (
-        (
-          (
-            customDosageMorning.trim() === '' &&
-            customDosageNoon.trim() === '' &&
-            customDosageEvening.trim() === '' &&
-            customDosageNight.trim() === ''
-          ) || 
-          (
-            customDosageMorning.trim() === '0' &&
-            customDosageNoon.trim() === '0' &&
-            customDosageEvening.trim() === '0' &&
-            customDosageNight.trim() === '0'
-          )
-        ) ||
-        (
-          (
-            customDosageMorning.trim() === '' ||
-            customDosageMorning.trim() === '0'
-          ) && 
-          (
-            customDosageNoon.trim() === '' ||
-            customDosageNoon.trim() === '0'
-          ) &&
-          (
-            customDosageEvening.trim() === '' ||
-            customDosageEvening.trim() === '0'
-          ) &&
-          (
-            customDosageNight.trim() === '' ||
-            customDosageNight.trim() === '0'
-          )
-        )
-      )
+      ((customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
+        customDosageNight.trim() === '') ||
+        (customDosageMorning.trim() === '0' &&
+          customDosageNoon.trim() === '0' &&
+          customDosageEvening.trim() === '0' &&
+          customDosageNight.trim() === '0') ||
+        ((customDosageMorning.trim() === '' || customDosageMorning.trim() === '0') &&
+          (customDosageNoon.trim() === '' || customDosageNoon.trim() === '0') &&
+          (customDosageEvening.trim() === '' || customDosageEvening.trim() === '0') &&
+          (customDosageNight.trim() === '' || customDosageNight.trim() === '0')))
     ) {
-      console.log('dddddddddddd');
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1742,11 +1730,11 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      ((customDosageMorning.trim() !== '' && customDosageMorning.trim() !== '0' &&
-      daySlotsArr.indexOf('MORNING') < 0) ||
-      (daySlotsArr.indexOf('MORNING') > -1  && customDosageMorning.trim() === ''))
+      ((customDosageMorning.trim() !== '' &&
+        customDosageMorning.trim() !== '0' &&
+        daySlotsArr.indexOf('MORNING') < 0) ||
+        (daySlotsArr.indexOf('MORNING') > -1 && customDosageMorning.trim() === ''))
     ) {
-      console.log(111111111, customDosageMorning.trim(), daySlotsArr, daySlotsArr.indexOf('MORNING') < 0)
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1754,13 +1742,13 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && 
-      ((customDosageNoon.trim() !== '' && 
-      customDosageNoon.trim() !== '0' && 
-      daySlotsArr.indexOf('NOON') < 0) ||
-      (daySlotsArr.indexOf('NOON') > -1  && customDosageNoon.trim() === ''))
-      ) {
-      console.log(22222222, customDosageNoon.trim(), daySlotsArr, daySlotsArr.indexOf('NOON') < 0)
+    } else if (
+      isCustomform &&
+      ((customDosageNoon.trim() !== '' &&
+        customDosageNoon.trim() !== '0' &&
+        daySlotsArr.indexOf('NOON') < 0) ||
+        (daySlotsArr.indexOf('NOON') > -1 && customDosageNoon.trim() === ''))
+    ) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1771,11 +1759,10 @@ export const MedicinePrescription: React.FC = () => {
     } else if (
       isCustomform &&
       ((customDosageEvening.trim() !== '' &&
-      customDosageEvening.trim() !== '0' &&
-      daySlotsArr.indexOf('EVENING') < 0) ||
-      (daySlotsArr.indexOf('EVENING') > -1  && customDosageEvening.trim() === ''))
+        customDosageEvening.trim() !== '0' &&
+        daySlotsArr.indexOf('EVENING') < 0) ||
+        (daySlotsArr.indexOf('EVENING') > -1 && customDosageEvening.trim() === ''))
     ) {
-      console.log(33333333, customDosageEvening.trim(), daySlotsArr, daySlotsArr.indexOf('EVENING') < 0)
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1786,11 +1773,10 @@ export const MedicinePrescription: React.FC = () => {
     } else if (
       isCustomform &&
       ((customDosageNight.trim() !== '' &&
-      customDosageNight.trim() !== '0' &&
-      daySlotsArr.indexOf('NIGHT') < 0) ||
-      (daySlotsArr.indexOf('NIGHT') > -1  && customDosageNight.trim() === ''))
+        customDosageNight.trim() !== '0' &&
+        daySlotsArr.indexOf('NIGHT') < 0) ||
+        (daySlotsArr.indexOf('NIGHT') > -1 && customDosageNight.trim() === ''))
     ) {
-      console.log(444444444, customDosageNight.trim(), daySlotsArr, daySlotsArr.indexOf('NIGHT') < 0)
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1798,8 +1784,7 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
+    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1807,8 +1792,7 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    else if (daySlotsArr.length === 0) {
+    } else if (daySlotsArr.length === 0) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1816,9 +1800,8 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    else if (
-      (forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) && 
+    } else if (
+      forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
       (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
     ) {
       setErrorState({
@@ -1828,8 +1811,7 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } 
-    else {
+    } else {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -2086,13 +2068,12 @@ export const MedicinePrescription: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
-  const resetCustomTimeOptions = () =>{
+  const resetCustomTimeOptions = () => {
     if (
       customDosageMorning &&
       customDosageMorning.trim() !== '' &&
       customDosageMorning.trim() !== '0' &&
-      (parseInt(customDosageMorning.trim()) > 0 ||
-        Number(customDosageMorning.trim()) > 0)
+      (parseInt(customDosageMorning.trim()) > 0 || Number(customDosageMorning.trim()) > 0)
     ) {
       setInTheTime('morning', true);
     } else {
@@ -2102,8 +2083,7 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNoon &&
       customDosageNoon.trim() !== '' &&
       customDosageNoon.trim() !== '0' &&
-      (parseInt(customDosageNoon.trim()) > 0 ||
-        Number(customDosageNoon.trim()) > 0)
+      (parseInt(customDosageNoon.trim()) > 0 || Number(customDosageNoon.trim()) > 0)
     ) {
       setInTheTime('noon', true);
     } else {
@@ -2113,8 +2093,7 @@ export const MedicinePrescription: React.FC = () => {
       customDosageEvening &&
       customDosageEvening.trim() !== '' &&
       customDosageEvening.trim() !== '0' &&
-      (parseInt(customDosageEvening.trim()) > 0 ||
-        Number(customDosageEvening.trim()) > 0)
+      (parseInt(customDosageEvening.trim()) > 0 || Number(customDosageEvening.trim()) > 0)
     ) {
       setInTheTime('evening', true);
     } else {
@@ -2124,14 +2103,13 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNight &&
       customDosageNight.trim() !== '' &&
       customDosageNight.trim() !== '0' &&
-      (parseInt(customDosageNight.trim()) > 0 ||
-        Number(customDosageNight.trim()) > 0)
+      (parseInt(customDosageNight.trim()) > 0 || Number(customDosageNight.trim()) > 0)
     ) {
       setInTheTime('night', true);
     } else {
       setInTheTime('night', false);
     }
-  }
+  };
   const resetOptions = () => {
     resetFrequencyFor();
     setMedicineForm('OTHERS');
@@ -2157,12 +2135,16 @@ export const MedicinePrescription: React.FC = () => {
       medicines.length > 0 &&
       medicines!.map((_medicine: any, index: number) => {
         const medicine = _medicine!;
-        const forHtml = medicine.medicineConsumptionDurationInDays ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}` : ' '
-        const duration =`${forHtml} ${
-            medicine.medicineConsumptionDurationUnit && medicine.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-              ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-              : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
-          } `;
+        const forHtml = medicine.medicineConsumptionDurationInDays
+          ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
+          : ' ';
+        const duration = `${forHtml} ${
+          medicine.medicineConsumptionDurationUnit &&
+          medicine.medicineConsumptionDurationUnit !==
+            MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+            : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+        } `;
 
         const whenString =
           medicine.medicineToBeTaken.length > 0
@@ -2192,7 +2174,10 @@ export const MedicinePrescription: React.FC = () => {
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
         }
-        if(medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'NOT_SPECIFIC'){
+        if (
+          medicine.medicineTimings.length === 1 &&
+          medicine.medicineTimings[0] === 'NOT_SPECIFIC'
+        ) {
           timesString = '';
         }
         let dosageHtml = '';
@@ -2295,7 +2280,9 @@ export const MedicinePrescription: React.FC = () => {
               `}
               </h6>
               {medicine.routeOfAdministration && (
-                <h6>{`${medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'}: ${medicine.routeOfAdministration
+                <h6>{`${
+                  medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                }: ${medicine.routeOfAdministration
                   .split('_')
                   .join(' ')
                   .toLowerCase()}`}</h6>
@@ -2333,12 +2320,18 @@ export const MedicinePrescription: React.FC = () => {
             <div className={classes.mediceneContainer}>
               {favouriteMedicine.map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
-                const forFavHtml = favMedicine.medicineConsumptionDurationInDays ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}` : ' ';
-                const favDurations = `${forFavHtml} ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
-                    favMedicine.medicineConsumptionDurationUnit && favMedicine.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-                      ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-                      :  favMedicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
-                  } `;
+                const forFavHtml = favMedicine.medicineConsumptionDurationInDays
+                  ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
+                  : ' ';
+                const favDurations = `${forFavHtml} ${Number(
+                  favMedicine.medicineConsumptionDurationInDays
+                )} ${
+                  favMedicine.medicineConsumptionDurationUnit &&
+                  favMedicine.medicineConsumptionDurationUnit !==
+                    MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                    ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+                    : favMedicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+                } `;
                 const favWhenString =
                   favMedicine.medicineToBeTaken.length > 0
                     ? toBeTaken(favMedicine.medicineToBeTaken)
@@ -2367,7 +2360,10 @@ export const MedicinePrescription: React.FC = () => {
                 if (favTimesString && favTimesString !== '') {
                   favTimesString = favTimesString.replace(/,(?=[^,]*$)/, 'and');
                 }
-                if(favMedicine.medicineTimings.length === 1 && favMedicine.medicineTimings[0] === 'NOT_SPECIFIC'){
+                if (
+                  favMedicine.medicineTimings.length === 1 &&
+                  favMedicine.medicineTimings[0] === 'NOT_SPECIFIC'
+                ) {
                   favTimesString = '';
                 }
                 const favDosageCount = favMedicine.medicineDosage;
@@ -2425,7 +2421,11 @@ export const MedicinePrescription: React.FC = () => {
                     `}
                       </h6>
                       {favMedicine.routeOfAdministration && (
-                        <h6>{`${favMedicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'}: ${favMedicine.routeOfAdministration
+                        <h6>{`${
+                          favMedicine.medicineFormTypes === 'OTHERS'
+                            ? 'To be taken'
+                            : 'To be Applied'
+                        }: ${favMedicine.routeOfAdministration
                           .split('_')
                           .join(' ')
                           .toLowerCase()}`}</h6>
@@ -2831,7 +2831,11 @@ export const MedicinePrescription: React.FC = () => {
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
-                            disabled={forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW ? true: false}
+                            disabled={
+                              forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                ? true
+                                : false
+                            }
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
                             }}
@@ -2863,9 +2867,10 @@ export const MedicinePrescription: React.FC = () => {
                             }}
                             onChange={(e: any) => {
                               setforUnit(e.target.value as any);
-                              if(e.target.value ===
-                                MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW){
-                                  setConsumptionDuration('')
+                              if (
+                                e.target.value === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                              ) {
+                                setConsumptionDuration('');
                               }
                             }}
                           >
@@ -2901,15 +2906,16 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                       </Grid>
                       <div className={classes.numDays}>
-                        {errorState.durationErr && forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please enter number of {term(forUnit.toLowerCase(), '(s)')}
-                          </FormHelperText>
-                        )}
+                        {errorState.durationErr &&
+                          forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                            </FormHelperText>
+                          )}
                       </div>
                       <Grid item lg={12} xs={12}>
                         <h6 className={classes.instructionText}>Instructions/Notes</h6>
@@ -3411,7 +3417,11 @@ export const MedicinePrescription: React.FC = () => {
                               placeholder=""
                               inputProps={{ maxLength: 6 }}
                               value={consumptionDuration}
-                              disabled={forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW ? true: false}
+                              disabled={
+                                forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                  ? true
+                                  : false
+                              }
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
                               }}
@@ -3443,9 +3453,10 @@ export const MedicinePrescription: React.FC = () => {
                               }}
                               onChange={(e: any) => {
                                 setforUnit(e.target.value as any);
-                                if(e.target.value ===
-                                  MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW){
-                                    setConsumptionDuration('');
+                                if (
+                                  e.target.value === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                ) {
+                                  setConsumptionDuration('');
                                 }
                               }}
                             >
@@ -3481,15 +3492,16 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
                         <div className={classes.numDays}>
-                          {errorState.durationErr && forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.durationErr}
-                            >
-                              Please enter number of {term(forUnit.toLowerCase(), '(s)')}
-                            </FormHelperText>
-                          )}
+                          {errorState.durationErr &&
+                            forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
+                              <FormHelperText
+                                className={classes.helpText}
+                                component="div"
+                                error={errorState.durationErr}
+                              >
+                                Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                              </FormHelperText>
+                            )}
                         </div>
                         <Grid item lg={12} xs={12}>
                           <h6 className={classes.instructionText}>Instructions/Notes</h6>

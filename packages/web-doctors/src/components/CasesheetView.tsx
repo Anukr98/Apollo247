@@ -470,14 +470,16 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
         index: number
       ) => {
-        const forHtml = prescription.medicineConsumptionDurationInDays ? ` for ${Number(prescription.medicineConsumptionDurationInDays)}` : ' '
-        const duration =
-          `${forHtml} ${Number(prescription.medicineConsumptionDurationInDays)} ${
-            prescription.medicineConsumptionDurationUnit && prescription.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-              ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-              : prescription.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
-          } `;
-
+        const forHtml = prescription.medicineConsumptionDurationInDays
+          ? ` for ${Number(prescription.medicineConsumptionDurationInDays)}`
+          : ' ';
+        const duration = `${forHtml} ${
+          prescription.medicineConsumptionDurationUnit &&
+          prescription.medicineConsumptionDurationUnit !==
+            MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+            : prescription.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+        } `;
         const whenString =
           prescription!.medicineToBeTaken!.length > 0
             ? toBeTaken(prescription!.medicineToBeTaken)
@@ -507,10 +509,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
         }
-        if(prescription!.medicineTimings &&
+        if (
+          prescription!.medicineTimings &&
           prescription!.medicineTimings!.length === 1 &&
           prescription!.medicineTimings[0] === 'NOT_SPECIFIC'
-          ){
+        ) {
           timesString = '';
         }
         let dosageHtml = '';
@@ -568,7 +571,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               !isEmpty(trim(prescription.routeOfAdministration)) && (
                 <>
                   <br />
-                  <span>{`${prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'}: ${prescription.routeOfAdministration
+                  <span>{`${
+                    prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                  }: ${prescription.routeOfAdministration
                     .split('_')
                     .join(' ')
                     .toLowerCase()}`}</span>
