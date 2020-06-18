@@ -126,7 +126,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       title: 'Search and add medicine'
     },
     {
-      id: 'all',
+      id: 'prescribed',
       title: 'All medicine from prescription'
     },
     {
@@ -507,7 +507,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     paddingBottom: index + 1 === array.length ? 16 : 10,
                     padding: 10,
                   }}
-                  hideSeparator={index + 1 === array.length || (selectedMedicineOption == item.id && selectedMedicineOption == 'all')}
+                  hideSeparator={index + 1 === array.length || (selectedMedicineOption == item.id && selectedMedicineOption == 'prescribed')}
                   textStyle={{
                     ...theme.fonts.IBMPlexSansMedium(16),
                   }}
@@ -540,7 +540,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           </Text>
         </View>
       );
-    } else if (selectedMedicineOption === 'all') {
+    } else if (selectedMedicineOption === 'prescribed') {
       const isDurationDaysSelected = prescriptionOption === 'duration';
       return (
         <View style={{
@@ -676,7 +676,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const disableSubmitButton = () => {
     const isPrescriptions = !(PhysicalPrescriptions.length || EPrescriptions.length);
     let durationDaysInput = false;
-    if (selectedMedicineOption && selectedMedicineOption === 'all' && prescriptionOption === 'duration') {
+    if (selectedMedicineOption && selectedMedicineOption === 'prescribed' && prescriptionOption === 'duration') {
       if (durationDays === '' || parseInt(durationDays) < 7) durationDaysInput = true;
     }
     return isPrescriptions || !selectedMedicineOption || durationDaysInput || loading;
