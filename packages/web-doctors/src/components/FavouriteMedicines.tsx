@@ -1586,15 +1586,16 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     }
-    // else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     durationErr: true,
-    //     daySlotErr: false,
-    //     tobeTakenErr: false,
-    //     dosageErr: false,
-    //   });
-    // }
+    else if ((forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) && 
+      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    }
     else {
       setErrorState({
         ...errorState,
