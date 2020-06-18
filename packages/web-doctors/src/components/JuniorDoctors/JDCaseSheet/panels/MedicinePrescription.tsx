@@ -802,6 +802,11 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
     {
+      id: ROUTE_OF_ADMINISTRATION.EYE_OINTMENT,
+      value: 'Eye Ointment',
+      selected: false,
+    },
+    {
       id: ROUTE_OF_ADMINISTRATION.GARGLE,
       value: 'Gargle',
       selected: false,
