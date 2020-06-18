@@ -22,6 +22,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedAndTestFeedbackPopup';
 import SystemSetting from 'react-native-system-setting';
 import RNSound from 'react-native-sound';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   okButtonStyle: {
@@ -139,16 +140,19 @@ export const UIElementsProvider: React.FC = (props) => {
     );
   }, []);
 
-  const setPrevVolume = () => {
+  const setPrevVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
     if (mediaVolume !== -1) {
       SystemSetting.setVolume(mediaVolume);
-      setMediaVolume(-1);
+      AsyncStorage.setItem('mediaVolume', '-1');
     }
   };
-  const maxVolume = () => {
+  const maxVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+
     if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
-        setMediaVolume(volume);
+        AsyncStorage.setItem('mediaVolume', volume.toString());
       });
     }
     SystemSetting.setVolume(1);
