@@ -445,11 +445,11 @@ const getCurrentPatients: Resolver<
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
-  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
-
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
   if (patients.length > 0) return { patients };
+
+  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
 
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
