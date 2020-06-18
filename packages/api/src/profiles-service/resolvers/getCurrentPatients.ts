@@ -16,6 +16,7 @@ import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { debugLog } from 'customWinstonLogger';
 import { Gender } from 'doctors-service/entities';
+import { getRegisteredUsers } from 'helpers/phrV1Services';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -139,7 +140,7 @@ export type GetCurrentPatientsResult = {
 const apiCallId = Math.floor(Math.random() * 10000000);
 const dLogger = debugLog('profileServiceLogger', 'getCurrentPatients', apiCallId);
 
-const getCurrentPatients: Resolver<
+/*const getCurrentPatients: Resolver<
   null,
   { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
@@ -297,7 +298,7 @@ const getCurrentPatients: Resolver<
   }
 
   return { patients };
-};
+}; */
 
 const getLoginPatients: Resolver<
   null,
@@ -434,6 +435,58 @@ const getLoginPatients: Resolver<
       `${JSON.stringify(versionUpdateRecords)} --- ${JSON.stringify(updatedProfiles)}`
     );
   }
+
+  return { patients };
+};
+
+const getCurrentPatients: Resolver<
+  null,
+  { appVersion: string; deviceType: DEVICE_TYPE },
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { mobileNumber, profilesDb }) => {
+  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
+
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+  if (patients.length > 0) return { patients };
+
+  const findOrCreatePatient = async (
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
+    createOptions: Partial<Patient>
+  ): Promise<Patient> => {
+    const existingPatient = await Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    });
+    return existingPatient || Patient.create(createOptions).save();
+  };
+
+  const patientPromises: Object[] = uhids.response.map((data) => {
+    return findOrCreatePatient(
+      { uhid: data.uhid, mobileNumber, isActive: true },
+      {
+        firstName: data.userName,
+        lastName: '',
+        gender: data.gender
+          ? data.gender.toUpperCase() === Gender.FEMALE
+            ? Gender.FEMALE
+            : Gender.MALE
+          : undefined,
+        mobileNumber,
+        uhid: data.uhid,
+        dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
+        androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
+        iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
+        primaryUhid: data.uhid,
+      }
+    );
+  });
+
+  await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+    throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
+  });
+
+  patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
 
   return { patients };
 };

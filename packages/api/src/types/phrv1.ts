@@ -2,7 +2,15 @@ export interface GetUsersResponse {
   errorCode: null;
   errorMsg: null;
   errorType: null;
-  response: {}[];
+  response: {
+    userName: string;
+    hospital: string;
+    activeStatus: string;
+    siteKey: string;
+    gender: string;
+    dob: string;
+    uhid: string;
+  }[];
 }
 
 export interface LabResultsUploadRequest {
@@ -144,4 +152,11 @@ export interface PrescriptionDownloadResponse {
       dateCreated: number;
     }[];
   }[];
+}
+
+export interface CreateNewUsersResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string; //"A new User has been successfully added"
 }
