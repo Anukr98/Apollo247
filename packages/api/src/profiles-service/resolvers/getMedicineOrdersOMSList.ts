@@ -7,6 +7,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime } from 'date-fns';
+import { Tedis } from 'redis-typescript';
+import { ApiConstants } from 'ApiConstants';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
@@ -103,10 +105,38 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     bankTxnId: String
   }
 
+  type RecommendedProductsListResult {
+    recommendedProducts: [RecommendedProducts]
+  }
+
+  type RecommendedProducts {
+    productSku: String
+    productName: String
+    productImage: String
+    productPrice: String
+    productSpecialPrice: String
+    isPrescriptionNeeded: String
+    categoryName: String
+    status: String
+    mou: String
+  }
+
+  type ProductAvailabilityResult {
+    productAvailabilityList: [ProductAvailability]
+  }
+
+  type ProductAvailability {
+    productSku: String
+    status: Boolean
+    quantity: String
+  }
+
   extend type Query {
     getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(patientId: String, orderAutoId: Int): MedicineOrderOMSDetailsResult!
     getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
+    getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
+    checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
   }
 `;
 
@@ -116,6 +146,32 @@ type MedicineOrdersOMSListResult = {
 
 type MedicineOrderOMSDetailsResult = {
   medicineOrderDetails: MedicineOrders;
+};
+
+type RecommendedProductsListResult = {
+  recommendedProducts: RecommendedProducts[];
+};
+
+type RecommendedProducts = {
+  productSku: string;
+  productName: string;
+  productImage: string;
+  productPrice: string;
+  productSpecialPrice: string;
+  isPrescriptionNeeded: string;
+  categoryName: string;
+  status: string;
+  mou: string;
+};
+
+type ProductAvailabilityResult = {
+  productAvailabilityList: ProductAvailability[];
+};
+
+type ProductAvailability = {
+  productSku: string;
+  status: boolean;
+  quantity: string;
 };
 
 const getMedicineOrdersOMSList: Resolver<
@@ -197,10 +253,84 @@ const getMedicineOMSPaymentOrder: Resolver<
   return { medicineOrdersList };
 };
 
+const getRecommendedProductsList: Resolver<
+  null,
+  { patientUhid: string },
+  ProfilesServiceContext,
+  RecommendedProductsListResult
+> = async (parent, args, { profilesDb }) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  const redisKeys = await tedis.keys('*');
+  const recommendedProductsList: RecommendedProducts[] = [];
+  for (let k = 0; k <= 5; k++) {
+    const skuDets = await tedis.hgetall(redisKeys[k]);
+    //console.log(skuDets, skuDets.name, 'redis keys length');
+    const recommendedProducts: RecommendedProducts = {
+      productImage: skuDets.gallery_images,
+      productPrice: skuDets.price,
+      productName: skuDets.name,
+      productSku: skuDets.sku,
+      productSpecialPrice: skuDets.special_price,
+      isPrescriptionNeeded: skuDets.is_prescription_required,
+      categoryName: skuDets.category_name,
+      status: skuDets.status,
+      mou: skuDets.mou,
+    };
+    recommendedProductsList.push(recommendedProducts);
+  }
+
+  return { recommendedProducts: recommendedProductsList };
+};
+
+const checkIfProductsOnline: Resolver<
+  null,
+  { productSkus: string[] },
+  ProfilesServiceContext,
+  ProductAvailabilityResult
+> = async (parent, args, { profilesDb }) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  //const redisKeys = await tedis.keys('*');
+  async function checkProduct(sku: string) {
+    return new Promise<ProductAvailability>(async (resolve) => {
+      const skuDets = await tedis.hgetall(sku);
+      const product: ProductAvailability = {
+        productSku: sku,
+        status: false,
+        quantity: '0',
+      };
+      if (skuDets && skuDets.status == 'Enabled') {
+        product.status = true;
+        product.quantity = skuDets.qty;
+      }
+      productAvailability.push(product);
+      resolve(product);
+    });
+  }
+  const promises: object[] = [];
+  const productAvailability: ProductAvailability[] = [];
+  if (args.productSkus.length > 0) {
+    args.productSkus.forEach(async (sku) => {
+      promises.push(checkProduct(sku));
+    });
+  }
+  await Promise.all(promises);
+  return { productAvailabilityList: productAvailability };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
     getMedicineOrderOMSDetails,
     getMedicineOMSPaymentOrder,
+    getRecommendedProductsList,
+    checkIfProductsOnline,
   },
 };

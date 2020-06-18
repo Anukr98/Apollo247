@@ -879,6 +879,7 @@ export const GET_CASESHEET = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         followUp
         followUpDate

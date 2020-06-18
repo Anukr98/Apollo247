@@ -27,6 +27,7 @@ export type DownloadDocumentsInput = {
 
 type DownloadDocsInputArgs = { downloadDocumentsInput: DownloadDocumentsInput };
 
+//not in use, preserved for backward compatability
 const downloadDocuments: Resolver<
   null,
   DownloadDocsInputArgs,

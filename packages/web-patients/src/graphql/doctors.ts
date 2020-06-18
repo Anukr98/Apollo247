@@ -114,6 +114,9 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           weekDay
           endTime
         }
+        onlineConsultationFees
+        physicalConsultationFees
+        doctorType
         doctorHospital {
           facility {
             city

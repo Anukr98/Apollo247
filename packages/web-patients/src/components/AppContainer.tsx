@@ -60,7 +60,9 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
+import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
+import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,8 +131,8 @@ const App: React.FC = () => {
             component={DoctorDetails}
           />
           <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} />
-          <Route exact path={clientRoutes.specialtiesDetails()} component={SpecialtyDetails} />
+          {/* <Route exact path={clientRoutes.specialties(':specialty')} component={DoctorsLanding} /> */}
+          <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
@@ -144,7 +146,11 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
           <Route
             exact
-            path={clientRoutes.medicineCategoryDetails(':searchMedicineType', ':sku')}
+            path={clientRoutes.medicineCategoryDetails(
+              ':searchMedicineType',
+              ':searchText',
+              ':sku'
+            )}
             component={MedicineDetails}
           />
           <Route
@@ -204,12 +210,18 @@ const App: React.FC = () => {
             component={ClinicCheckout}
           />
           <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
+          <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
+          <Route
+            exact
+            path={clientRoutes.medicinePrescription()}
+            component={MedicinePrescriptions}
+          />
         </Switch>
       </div>
     </Scrollbars>
   );
 };
-
+// @ts-ignore
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {

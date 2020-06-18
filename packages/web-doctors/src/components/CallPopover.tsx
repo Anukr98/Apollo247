@@ -2025,42 +2025,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const checkForEmptyFields = () => {
-    const heightValue = getDefaultValue('height') || '';
-    const weightValue = getDefaultValue('weight') || '';
     const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
     const referralDescription = getDefaultValue('referralDescription') || '';
-    if (!vitalIgnored && (heightValue.trim() === '' || weightValue.trim() === '')) {
-      if (vitalIgnored) {
-        setVitalError({
-          height: '',
-          weight: '',
-        });
-        return false;
-      } else {
-        if (heightValue.trim() === '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: 'This field is required',
-          });
-          return true;
-        } else if (heightValue.trim() === '' && weightValue.trim() !== '') {
-          setShowVital(true);
-          setVitalError({
-            height: 'This field is required',
-            weight: '',
-          });
-          return true;
-        } else if (heightValue.trim() !== '' && weightValue.trim() === '') {
-          setShowVital(true);
-          setVitalError({
-            height: '',
-            weight: 'This field is required',
-          });
-          return true;
-        }
-      }
-    } else if (referralSpecialtyName && referralDescription.trim() === '') {
+    if (referralSpecialtyName && referralDescription.trim() === '') {
       setShowVital(false);
       setVitalError({
         height: '',
@@ -2203,10 +2170,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               emptyArr.push('Tests');
                             }
                             if (otherInstructions.length < 1) {
-                              emptyArr.push('Advice');
+                              emptyArr.push('Advices');
                             }
                             emptyArr.length > 0
-                              ? setEmptyFieldsString(emptyArr.join(','))
+                              ? setEmptyFieldsString(emptyArr.join(', '))
                               : setEmptyFieldsString('');
                             props.setShowConfirmPrescription(true);
                             setIsConfirmationChecked(false);
@@ -2228,7 +2195,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <Fragment>
                       <Button
                         className={classes.backButton}
-                        onClick={() => props.saveCasesheetAction(true, false)}
+                        onClick={() => {
+                          const isEmptyFields = checkForEmptyFields();
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                          }
+                        }}
                       >
                         Save
                       </Button>
@@ -2236,10 +2208,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.endconsultButton}
                         disabled={props.saving}
                         onClick={() => {
-                          props.saveCasesheetAction(true, false);
-                          props.setIsClickedOnEdit(false);
-                          props.setIsClickedOnPriview(true);
-                          props.setIsPdfPageOpen(true);
+                          const isEmptyFields = checkForEmptyFields();
+                          if (!isEmptyFields) {
+                            props.saveCasesheetAction(true, false);
+                            props.setIsClickedOnEdit(false);
+                            props.setIsClickedOnPriview(true);
+                            props.setIsPdfPageOpen(true);
+                          }
                         }}
                       >
                         Preview Prescription
@@ -2258,7 +2233,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.backButton}
                     disabled={props.saving}
                     onClick={() => {
-                      props.saveCasesheetAction(true, false);
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
+                        props.saveCasesheetAction(true, false);
+                      }
                     }}
                   >
                     Save
@@ -2267,15 +2245,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      // const isEmptyFields = checkForEmptyFields();
-                      // if (!isEmptyFields) {
-                      stopInterval();
-                      if (showVideo) {
-                        stopAudioVideoCall();
+                      const isEmptyFields = checkForEmptyFields();
+                      if (!isEmptyFields) {
+                        stopInterval();
+                        if (showVideo) {
+                          stopAudioVideoCall();
+                        }
+                        props.endConsultAction();
+                        isConsultStarted = false;
                       }
-                      props.endConsultAction();
-                      isConsultStarted = false;
-                      // }
                     }}
                   >
                     <svg
@@ -3236,7 +3214,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Button>
           </div>
           <div className={classes.dialogBody}>
-            <h3>Vital Details on the casesheet are entered as follows.</h3>
+            <h3>Vital details on the case sheet are entered as follows</h3>
             <div className={classes.formSection}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
@@ -3245,14 +3223,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <AphTextField
                       onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
-                      required
                       multiline
-                      error={
-                        getDefaultValue('height') === '' ||
-                        getDefaultValue('height') === null ||
-                        getDefaultValue('height') === undefined
-                      }
-                      helperText={vitalError.height}
                       defaultValue={getDefaultValue('height')}
                       onBlur={(e) => {
                         const storageItem = getLocalStorageItem(params.id);
@@ -3271,13 +3242,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <AphTextField
                       onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
-                      required
                       multiline
-                      error={
-                        getDefaultValue('weight') === '' ||
-                        getDefaultValue('weight') === null ||
-                        getDefaultValue('weight') === undefined
-                      }
                       helperText={vitalError.weight}
                       defaultValue={getDefaultValue('weight')}
                       onBlur={(e) => {
@@ -3334,7 +3299,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <div>
               {emptyFieldsString && (
                 <div className={classes.noteText}>
-                  These fields are blank in Prescription
+                  These fields are blank in the Prescription
                   <span>{emptyFieldsString}</span>
                 </div>
               )}
@@ -3356,28 +3321,31 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             </div>
             <div className={classes.bottomActions}>
-              <Button
-                onClick={() => props.setShowConfirmPrescription(false)}
-                classes={{
-                  root: classes.canceledBtn,
-                  disabled: classes.cancelBtnDisabled,
-                }}
-              >
-                Cancel
-              </Button>
+              {!sendToPatientButtonDisable && (
+                <Button
+                  onClick={() => props.setShowConfirmPrescription(false)}
+                  classes={{
+                    root: classes.canceledBtn,
+                    disabled: classes.cancelBtnDisabled,
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 classes={{
                   root: classes.sendBtn,
                   disabled: classes.sendBtnDisabled,
                 }}
-                disabled={!isConfirmationChecked}
+                disabled={sendToPatientButtonDisable || !isConfirmationChecked}
                 onClick={() => {
                   localStorage.removeItem(`${params.id}`);
                   setSendToPatientButtonDisable(true);
                   props.saveCasesheetAction(true, true);
                 }}
               >
-                Send Prescription
+                {sendToPatientButtonDisable && 'Please wait...'}
+                {sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send Prescription'}
               </Button>
             </div>
           </div>
