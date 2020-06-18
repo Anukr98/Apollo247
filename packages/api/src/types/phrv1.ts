@@ -2,7 +2,15 @@ export interface GetUsersResponse {
   errorCode: null;
   errorMsg: null;
   errorType: null;
-  response: {}[];
+  response: {
+    userName: string;
+    hospital: string;
+    activeStatus: string;
+    siteKey: string;
+    gender: string;
+    dob: string;
+    uhid: string;
+  }[];
 }
 
 export interface LabResultsUploadRequest {
