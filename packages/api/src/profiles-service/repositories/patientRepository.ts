@@ -103,7 +103,9 @@ export class PatientRepository extends Repository<Patient> {
       `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
     );
     if (typeof cache === 'string') {
-      return JSON.parse(cache);
+      const patient: Patient = JSON.parse(cache);
+      patient.dateOfBirth = new Date(patient.dateOfBirth);
+      return patient;
     } else return await this.setByIdCache(id);
   }
 
@@ -142,7 +144,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async setByMobileCache(mobile: string) {
     const patients = await this.find({
-      where: { mobile, isActive: true },
+      where: { mobileNumber: mobile, isActive: true },
       relations: [
         'lifeStyle',
         'healthVault',
@@ -168,7 +170,6 @@ export class PatientRepository extends Repository<Patient> {
 
   async getByMobileCache(mobile: string) {
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
-    console.log('ids from redis', ids, `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (typeof ids === 'string') {
       dLogger(
         new Date(),
@@ -176,20 +177,19 @@ export class PatientRepository extends Repository<Patient> {
         `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
       );
       const patientIds: string[] = ids.split(',');
-      const patients = patientIds.map(async (patientId: string) => {
-        return await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
-        // console.log(patient, 'from redic cache');
-        // if (typeof patient === 'string') {
-        //   dLogger(
-        //     new Date(),
-        //     'Redis Cache Read of Patient',
-        //     `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`
-        //   );
-        //   return JSON.parse(patient);
-        // }
-      });
-      const resp = await Promise.all(patients);
-      return resp.map((res: string) => JSON.parse(res));
+      const patients: Patient[] = [];
+      for (let index = 0; index < patientIds.length; index++) {
+        let patient = await this.getByIdCache(patientIds[index]);
+        if (patient) {
+          patients.push(patient);
+        }
+        dLogger(
+          new Date(),
+          'Redis Cache Read of Patient',
+          `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientIds[index]}`
+        );
+      }
+      return patients;
     } else {
       return await this.setByMobileCache(mobile);
     }
