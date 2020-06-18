@@ -99,7 +99,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     amountPaid: Float
     paymentRefId: String
     paymentStatus: String
-
     paymentDateTime: Date
     responseCode: String
     responseMessage: String
@@ -118,6 +117,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     productSpecialPrice: String
     isPrescriptionNeeded: String
     categoryName: String
+    status: String
+    mou: String
   }
 
   type ProductAvailabilityResult {
@@ -127,6 +128,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
   type ProductAvailability {
     productSku: String
     status: Boolean
+    quantity: String
   }
 
   extend type Query {
@@ -159,6 +161,7 @@ type RecommendedProducts = {
   isPrescriptionNeeded: string;
   categoryName: string;
   status: string;
+  mou: string;
 };
 
 type ProductAvailabilityResult = {
@@ -168,6 +171,7 @@ type ProductAvailabilityResult = {
 type ProductAvailability = {
   productSku: string;
   status: boolean;
+  quantity: string;
 };
 
 const getMedicineOrdersOMSList: Resolver<
@@ -274,6 +278,7 @@ const getRecommendedProductsList: Resolver<
       isPrescriptionNeeded: skuDets.is_prescription_required,
       categoryName: skuDets.category_name,
       status: skuDets.status,
+      mou: skuDets.mou,
     };
     recommendedProductsList.push(recommendedProducts);
   }
@@ -299,9 +304,11 @@ const checkIfProductsOnline: Resolver<
       const product: ProductAvailability = {
         productSku: sku,
         status: false,
+        quantity: '0',
       };
       if (skuDets && skuDets.status == 'Enabled') {
         product.status = true;
+        product.quantity = skuDets.qty;
       }
       productAvailability.push(product);
       resolve(product);
