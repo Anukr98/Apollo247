@@ -264,7 +264,10 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       timeslot: '',
       shippingcharges: 0,
       categorytype: 'Pharma',
-      customercomment: '',
+      customercomment: JSON.stringify({
+        prescriptionOptionSelected: prescriptionMedicineOMSInput.prescriptionOptionSelected,
+        durationDays: prescriptionMedicineOMSInput.durationDays,
+      }),
       landmark: landmark,
       issubscribe: false,
       customerdetails: {
@@ -291,8 +294,6 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       paymentdetails: [],
       itemdetails: [],
       imageurl: orderPrescriptionUrl,
-      prescriptionOptionSelected: prescriptionMedicineOMSInput.prescriptionOptionSelected,
-      durationDays: prescriptionMedicineOMSInput.durationDays,
     };
 
     const placeOrderUrl = process.env.PHARMACY_MED_PLACE_OMS_ORDERS
