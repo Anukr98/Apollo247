@@ -32,6 +32,7 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import SystemSetting from 'react-native-system-setting';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -191,18 +192,24 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
-  const [mediaVolume, setMediaVolume] = useState<number>(-1);
 
-  const setPrevVolume = () => {
+  const setPrevVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+    console.log(mediaVolume, 'stipp');
     if (mediaVolume !== -1) {
       SystemSetting.setVolume(mediaVolume);
-      setMediaVolume(-1);
+      AsyncStorage.setItem('mediaVolume', '-1');
     }
   };
-  const maxVolume = () => {
+  const maxVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+
+    console.log(mediaVolume, mediaVolume === -1);
+
     if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
-        setMediaVolume(volume);
+        console.log(volume, 'bhj');
+        AsyncStorage.setItem('mediaVolume', volume.toString());
       });
     }
     SystemSetting.setVolume(1);
@@ -512,7 +519,6 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallConnected(false);
       if (!callAccepted && !callConnected) {
         if (audioTrack) {
-          setPrevVolume();
           audioTrack.stop(() => {
             if (audioTrack) {
               maxVolume();
