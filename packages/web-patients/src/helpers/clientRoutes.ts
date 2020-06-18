@@ -31,7 +31,7 @@ export const clientRoutes = {
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
-  medicineAllBrands: () => '/view-all-brands',
+  medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
   searchByMedicine: (searchMedicineType: string, searchText: string) =>
     `/medicine/${searchMedicineType}/${searchText}`,
@@ -62,6 +62,7 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
+  specialityListing: () => '/specialities',
   medicinePrescription: () => '/medicine-prescription',
 };
 

@@ -30,11 +30,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageContainer: {
       padding: 20,
+      '& a': {
+        color: '#fcb716',
+        fontWeight: '700',
+      },
       [theme.breakpoints.up('sm')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
         padding: 40,
       },
+    },
+    fontBold: {
+      fontWeight: 700,
     },
   };
 });
@@ -53,20 +60,24 @@ export const Privacy: React.FC = (props) => {
             </strong>
           </p>
           <p>
-            This Privacy Policy governs how we, [insert name of NewCo] (collectively, &ldquo;
-            <strong>[Initials of NewCo]</strong>&rdquo;, &ldquo;<strong>Apollo</strong>&rdquo;,
-            &ldquo;<strong>Company</strong>&rdquo;, &ldquo;<strong>we</strong>,&rdquo; &ldquo;
-            <strong>us</strong>,&rdquo; or &ldquo;<strong>our</strong>&rdquo;) collect, use, share
-            and process your information, that you provide to us through your use of the app,
-            Apollo247 and Website [insert website link] in the course of providing services (&ldquo;
-            <strong>Services</strong>&rdquo;) as defined in the Terms and Conditions [insert link
-            for terms and conditions] to you.
+            This Privacy Policy governs how we, Apollo247,
+            <span className={classes.fontBold}>“Apollo” </span>,
+            <span className={classes.fontBold}>“Company”</span>,
+            <span className={classes.fontBold}>“we”</span>,
+            <span className={classes.fontBold}>“us”</span> or
+            <span className={classes.fontBold}>"our”</span>) collect, use, share and process your
+            information, that you provide to us through your use of the app, Apollo 24*7 and Website{' '}
+            <a href="https://www.apollo247.com">www.apollo247.com </a> in the course of providing
+            services
+            <span className={classes.fontBold}>(“Services”)</span> as defined in the Terms and
+            Conditions <a href="https://www.apollo247.com/terms">https://www.apollo247.com/terms</a>{' '}
+            to you.
           </p>
           <p>
-            [Initials of NewCo], owner of the Apollo247 website and app (&ldquo;
-            <strong>Website</strong>&rdquo; / &ldquo;<strong>App</strong>&rdquo; respectively),
-            respects your privacy, and seeks to comply with applicable legal requirements in respect
-            of data collection, processing and transfer.
+            Apollo 24*7 website and app ( <span className={classes.fontBold}>“Website”</span> /
+            <span className={classes.fontBold}>“App”</span> respectively), respects your privacy,
+            and seeks to comply with applicable legal requirements in respect of data collection,
+            processing and transfer.
           </p>
           <p>
             Please read this Privacy Policy carefully. By accessing or using this website / app, you
@@ -88,15 +99,14 @@ export const Privacy: React.FC = (props) => {
             through it, even in conjugation conjunction with other information.
           </p>
           <p>
-            &ldquo;Sensitive Personal Data or Information&rdquo; means Personal Information of any
-            individual relating to password; financial information such as bank account or credit
-            card or debit card or other payment instrument details; physical, physiological and
-            mental health condition; sexual orientation; medical records and history; biometric
-            information; any detail relating to the above as provided to or received by Apollo247
-            for processing or storage. However, any data/ information relating to an individual that
-            is freely available or accessible in public domain or furnished under the Right to
-            Information Act, 2005 or any other law shall not qualify as Sensitive Personal Data or
-            Information.
+            “Sensitive Personal Data or Information” means Personal Information of any individual
+            relating to password; financial information such as bank account or credit card or debit
+            card or other payment instrument details; physical, physiological and mental health
+            condition; sexual orientation; medical records and history; biometric information; any
+            detail relating to the above as provided to or received by Apollo 24*7 for processing or
+            storage. However, any data/ information relating to an individual that is freely
+            available or accessible in public domain or furnished under the Right to Information
+            Act, 2005 or any other law shall not qualify as Sensitive Personal Data or Information.
           </p>
           <p>
             By clicking "I accept" when downloading the App or proceeding to the Website, and/or
@@ -119,20 +129,44 @@ export const Privacy: React.FC = (props) => {
             </li>
           </ol>
           <p>
-            Apollo247, like many other websites uses &ldquo;Cookies&rdquo;. Cookies are small data
-            files that a website stores on your web browser. These are used for the purpose of
-            storing your preferences, previous activities browsing activities, profiling and
-            tracking behaviour on this Website. By visiting Apollo247, you acknowledge, accept and
-            expressly authorize the placement of cookies on your web browser. We recommend that you
-            clear the cookies stored on your browser from time to time.
+            Apollo 24*7, like many other websites uses “Cookies”. Cookies are small data files that
+            a website stores on your web browser. These are used for the purpose of storing your
+            preferences, previous activities browsing activities, profiling and tracking behaviour
+            on this Website. By visiting Apollo 24*7, you acknowledge, accept and expressly
+            authorize the placement of cookies on your web browser. We recommend that you clear the
+            cookies stored on your browser from time to time.
           </p>
           <p>
-            When you sign up or register on the Apollo247 App or Website to use our Services, and
+            When you sign up or register on the Apollo 24*7 App or Website to use our Services, and
             during the course of actual usage of our Services, the types of information that will be
             collected by us include the following:
           </p>
           <ul>
             <li>Contact information: Name, Address, Contact details, Email ID, Phone Number;</li>
+            <li>
+              Demographic information: Gender, Age, Date of Birth; Marital Status, Nationality
+            </li>
+            <li>
+              Data regarding your usage of the services such as search history and history of the
+              appointments made by you through the use of Services;
+            </li>
+            <li>
+              Any other detail relating to the above as voluntarily provided to Apollo 24*7 by you,
+              for providing value added service;
+            </li>
+            <li>
+              Medical records and history which you voluntarily provide or is generated on usage of
+              any of the services availed by you from any entity in the Apollo Group;
+            </li>
+            <li>
+              Physical, physiological and mental health condition which you voluntarily provide or
+              is generated on usage of our services through the app/website;
+            </li>
+            <li>Data regarding your medical qualifications, registrations and certifications;</li>
+            <li>
+              Any additional information that you voluntarily choose to provide to Apollo 24*7
+              through any mode of communication or during any interaction.
+            </li>
           </ul>
           <ol start={3}>
             <li>
@@ -224,7 +258,7 @@ export const Privacy: React.FC = (props) => {
             </li>
             <li>
               To send notices, communications, alerts, new offers relevant to use of the Services
-              offered by Apollo247 on Website/app;
+              offered by Apollo 24*7 on Website/app;
             </li>
             <li>
               Carrying out our obligations in relation to any agreement with our business partners
@@ -235,9 +269,9 @@ export const Privacy: React.FC = (props) => {
               administrative and business purposes;
             </li>
             <li>
-              To send you information about special promotions or offers (either offered by
-              Apollo247 or by its business partners), new features or products both of the Apollo as
-              well as third-party offers or products with whom Apollo247 has a tie-up;
+              To send you information about special promotions or offers (either offered by Apollo
+              24*7 or by its business partners), new features or products both of the Apollo as well
+              as third-party offers or products with whom Apollo 24*7 has a tie-up;
             </li>
           </ul>
           <p>
@@ -250,7 +284,7 @@ export const Privacy: React.FC = (props) => {
             </li>
             <li>
               For sharing with your chosen HSP in the Apollo Group like doctors, hospitals,
-              diagnostic centres, chemists who may provide you services under the Apollo247
+              diagnostic centres, chemists who may provide you services under the Apollo 24*7
               Platform.
             </li>
             <li>Processing any orders you may place using our Services;</li>
@@ -309,12 +343,12 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol>
             <li>
-              <strong>Service Providers</strong>: We share personal information with companies that
-              provide Services on our behalf, such as website hosting, data storage, software
-              services, email services, marketing, fulfilling customer orders, providing payment
-              services, data analytics, data mining, providing customer services, and conducting
-              surveys. These companies may be located within or outside India, but in any case are
-              obligated to protect your data.
+              <span className={classes.fontBold}>Service Providers</span>: We share personal
+              information with companies that provide Services on our behalf, such as website
+              hosting, data storage, software services, email services, marketing, fulfilling
+              customer orders, providing payment services, data analytics, data mining, providing
+              customer services, and conducting surveys. These companies may be located within or
+              outside India, but in any case are obligated to protect your data.
             </li>
           </ol>
           <p>
@@ -328,12 +362,12 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol>
             <li>
-              <strong>Business Affiliates</strong>: We may disclose or transfer some of your
-              information to entities in the Apollo Group, affiliates, associates, subsidiary,
-              holding company of the Company, associates and subsidiary of holding company of the
-              Company including foreign entities, and in particular group companies and affiliates
-              who are involved in the provision of products and services, to the extent permitted by
-              applicable law.
+              <span className={classes.fontBold}>Business Affiliates</span>: We may disclose or
+              transfer some of your information to entities in the Apollo Group, affiliates,
+              associates, subsidiary, holding company of the Company, associates and subsidiary of
+              holding company of the Company including foreign entities, and in particular group
+              companies and affiliates who are involved in the provision of products and services,
+              to the extent permitted by applicable law.
             </li>
           </ol>
           <p>
@@ -345,7 +379,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol>
             <li>
-              <strong>Law Enforcement Agencies</strong>: We may share information with law
+              <strong>Law Enforcement Agencies</strong>:We may share information with law
               enforcement agencies pursuant to lawful requests for information, and otherwise as
               required under any law applicable at the given time, both in India and outside India.
             </li>
@@ -439,12 +473,13 @@ export const Privacy: React.FC = (props) => {
               necessary.
             </li>
             <li>
-              You may contact [please insert details of Grievance Officer] for any questions or for
-              exercise of these rights.
+              You may contact Grievance Officer for any questions or for exercise of these rights.
             </li>
           </ul>
-          <p>Address:</p>
-          <p>We will respond to your request within a reasonable time.</p>
+          <p>
+            Email: <span className={classes.fontBold}>grievance@apollo247.com</span>
+          </p>
+          <p>We will respond to your request within a reasonable time</p>
           <ol start={9}>
             <li>
               <strong>
@@ -471,12 +506,8 @@ export const Privacy: React.FC = (props) => {
             We may periodically revise or update this Privacy Policy. Your continued use of our
             products and services after the effective date of the Privacy Policy means that you
             accept the revised Privacy Policy. If you do not agree with any such revised terms,
-            please refrain from using our Services and&nbsp;contact us to close any account you may
-            have created.
-          </p>
-          <p>
-            The Rubix Cube is is not the only twisty puzzle. Learn about Pyraminx, the 2x2 and 4x4
-            cubes, the Megaminx on <a href="https://ruwix.com/">Ruwix.com</a>.
+            please refrain from using our Services and contact us to close any account you may have
+            created.
           </p>
         </div>
       </div>

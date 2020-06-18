@@ -7,6 +7,7 @@ import { AphButton } from '@aph/web-ui-components';
 import Typography from '@material-ui/core/Typography';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
 import { CallOurExperts } from 'components/CallOurExperts';
+import { ShareWidget } from 'components/ShareWidget';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -65,7 +66,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     subcribeBtn: {
-      marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
       minWidth: 148,
@@ -110,6 +110,8 @@ const useStyles = makeStyles((theme: Theme) => {
     rightGroup: {
       marginLeft: 'auto',
       paddingLeft: 20,
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -152,7 +154,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     views: {
       opacity: 0.8,
-      display: 'none',
       [theme.breakpoints.down('xs')]: {
         opacity: 1,
         float: 'right',
@@ -247,6 +248,28 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    shareIcon: {
+      display: 'flex',
+      marginRight: 40,
+      color: '#fcb716',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      position: 'relative',
+      '& img': {
+        verticalAlign: 'middle',
+        marginRight: 5,
+      },
+    },
+    desktopHide: {
+      marginLeft: 'auto',
+      marginRight: 15,
+      fontSize: 13,
+      lineHeight: '23px',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -261,6 +284,8 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const classes = useStyles({});
   const subRef = React.useRef(null);
   const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
+  const [showShareWidget, setShowShareWidget] = useState(false);
+
   const { title, type, source, isWebView } = props;
   return (
     <div className={classes.root}>
@@ -277,6 +302,27 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
         </Link>
+        <div
+          className={`${classes.shareIcon} ${classes.desktopHide}`}
+          onClick={(e) => {
+            setShowShareWidget(true);
+          }}
+        >
+          <span>
+            <img src={require('images/ic-share-yellow.svg')} alt="" />
+          </span>
+          <span>Share</span>
+          {showShareWidget && (
+            <ShareWidget
+              title={props.title}
+              closeShareWidget={(e) => {
+                e.stopPropagation();
+                setShowShareWidget(false);
+              }}
+              url={window.location.href}
+            />
+          )}
+        </div>
         <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
           Subscribe
         </AphButton>
@@ -286,15 +332,36 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
           <h2>{title}</h2>
           <div className={classes.articleInformation}>
             <span className={classes.type}>{type}</span>
-            <span className={classes.views}>
+            {/* <span className={classes.views}>
               <img src={require('images/ic-views.svg')} alt="" /> 276 Views
-            </span>
+            </span> */}
+
             <span className={classes.source}>
               {source && source.length && <>Sourced from {source}</>}
             </span>
           </div>
         </div>
         <div className={classes.rightGroup}>
+          <div
+            className={classes.shareIcon}
+            onMouseEnter={() => {
+              setShowShareWidget(true);
+            }}
+          >
+            <span>
+              <img src={require('images/ic-share-yellow.svg')} alt="" />
+            </span>
+            <span>Share</span>
+            {showShareWidget && (
+              <ShareWidget
+                title={props.title}
+                closeShareWidget={() => {
+                  setShowShareWidget(false);
+                }}
+                url={window.location.href}
+              />
+            )}
+          </div>
           <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
             Subscribe
           </AphButton>
