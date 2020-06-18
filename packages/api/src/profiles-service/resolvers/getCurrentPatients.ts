@@ -17,7 +17,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { debugLog } from 'customWinstonLogger';
 import { Gender } from 'doctors-service/entities';
 import { getRegisteredUsers } from 'helpers/phrV1Services';
-import { data } from 'pdfkit/js/reference';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
