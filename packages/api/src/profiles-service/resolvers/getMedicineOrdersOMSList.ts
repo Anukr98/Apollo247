@@ -99,7 +99,6 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     amountPaid: Float
     paymentRefId: String
     paymentStatus: String
-
     paymentDateTime: Date
     responseCode: String
     responseMessage: String
@@ -118,6 +117,18 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     productSpecialPrice: String
     isPrescriptionNeeded: String
     categoryName: String
+    status: String
+    mou: String
+  }
+
+  type ProductAvailabilityResult {
+    productAvailabilityList: [ProductAvailability]
+  }
+
+  type ProductAvailability {
+    productSku: String
+    status: Boolean
+    quantity: String
   }
 
   extend type Query {
@@ -125,6 +136,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     getMedicineOrderOMSDetails(patientId: String, orderAutoId: Int): MedicineOrderOMSDetailsResult!
     getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
+    checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
   }
 `;
 
@@ -148,6 +160,18 @@ type RecommendedProducts = {
   productSpecialPrice: string;
   isPrescriptionNeeded: string;
   categoryName: string;
+  status: string;
+  mou: string;
+};
+
+type ProductAvailabilityResult = {
+  productAvailabilityList: ProductAvailability[];
+};
+
+type ProductAvailability = {
+  productSku: string;
+  status: boolean;
+  quantity: string;
 };
 
 const getMedicineOrdersOMSList: Resolver<
@@ -244,7 +268,7 @@ const getRecommendedProductsList: Resolver<
   const recommendedProductsList: RecommendedProducts[] = [];
   for (let k = 0; k <= 5; k++) {
     const skuDets = await tedis.hgetall(redisKeys[k]);
-    console.log(skuDets, skuDets.name, 'redis keys length');
+    //console.log(skuDets, skuDets.name, 'redis keys length');
     const recommendedProducts: RecommendedProducts = {
       productImage: skuDets.gallery_images,
       productPrice: skuDets.price,
@@ -253,11 +277,52 @@ const getRecommendedProductsList: Resolver<
       productSpecialPrice: skuDets.special_price,
       isPrescriptionNeeded: skuDets.is_prescription_required,
       categoryName: skuDets.category_name,
+      status: skuDets.status,
+      mou: skuDets.mou,
     };
     recommendedProductsList.push(recommendedProducts);
   }
 
   return { recommendedProducts: recommendedProductsList };
+};
+
+const checkIfProductsOnline: Resolver<
+  null,
+  { productSkus: string[] },
+  ProfilesServiceContext,
+  ProductAvailabilityResult
+> = async (parent, args, { profilesDb }) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  //const redisKeys = await tedis.keys('*');
+  async function checkProduct(sku: string) {
+    return new Promise<ProductAvailability>(async (resolve) => {
+      const skuDets = await tedis.hgetall(sku);
+      const product: ProductAvailability = {
+        productSku: sku,
+        status: false,
+        quantity: '0',
+      };
+      if (skuDets && skuDets.status == 'Enabled') {
+        product.status = true;
+        product.quantity = skuDets.qty;
+      }
+      productAvailability.push(product);
+      resolve(product);
+    });
+  }
+  const promises: object[] = [];
+  const productAvailability: ProductAvailability[] = [];
+  if (args.productSkus.length > 0) {
+    args.productSkus.forEach(async (sku) => {
+      promises.push(checkProduct(sku));
+    });
+  }
+  await Promise.all(promises);
+  return { productAvailabilityList: productAvailability };
 };
 
 export const getMedicineOrdersOMSListResolvers = {
@@ -266,5 +331,6 @@ export const getMedicineOrdersOMSListResolvers = {
     getMedicineOrderOMSDetails,
     getMedicineOMSPaymentOrder,
     getRecommendedProductsList,
+    checkIfProductsOnline,
   },
 };
