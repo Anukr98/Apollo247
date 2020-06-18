@@ -23,6 +23,9 @@ export const saveMedicineOrderPaymentTypeDefs = gql`
     COD
     CASHLESS
     NO_PAYMENT
+    COD_HEALTH_CREDITS
+    CASHLESS_HEALTH_CREDITS
+    HEALTH_CREDITS
   }
 
   enum PHARMA_CART_TYPE {

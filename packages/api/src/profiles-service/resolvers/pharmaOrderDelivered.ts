@@ -22,6 +22,7 @@ import {
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { log } from 'customWinstonLogger';
+import { OneApollo } from 'profiles-service/repositories/ExternalRequests';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -308,7 +309,8 @@ const createOneApolloTransaction = async (
       ''
     );
     if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
-      const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
+      const oneApollo = new OneApollo();
+      const oneApolloResponse = await oneApollo.createOneApolloTransaction(Transaction);
       log(
         'profileServiceLogger',
         `oneApollo Transaction response- ${order.orderAutoId}`,
