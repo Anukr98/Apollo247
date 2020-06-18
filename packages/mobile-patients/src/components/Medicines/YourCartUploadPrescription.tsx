@@ -224,6 +224,8 @@ export const YourCartUploadPrescription: React.FC<YourCartUploadPrescriptionProp
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+  const prescriptionOption = props.navigation.getParam('prescriptionOptionSelected');
+  const durationDay = props.navigation.getParam('durationDays');
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -1517,6 +1519,8 @@ export const YourCartUploadPrescription: React.FC<YourCartUploadPrescriptionProp
           NonCartOrderCity: isChennaiAddress ? NonCartOrderOMSCity.CHENNAI : null,
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+          prescriptionOptionSelected: prescriptionOption,
+          durationDays: durationDay,
         },
       };
 
@@ -1638,9 +1642,7 @@ export const YourCartUploadPrescription: React.FC<YourCartUploadPrescriptionProp
             disabled={disablePlaceOrder}
             title={'PLACE ORDER'}
             onPress={() => {
-              // remove uploaded prescription after success
               placeOrder();
-              console.log('upload prescription cod api');
             }}
             style={{ flex: 1, marginHorizontal: 40 }}
           />

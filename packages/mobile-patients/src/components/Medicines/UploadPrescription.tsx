@@ -30,7 +30,6 @@ import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import {
   g,
   postWebEngageEvent,
@@ -155,7 +154,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             patientId: g(currentPatient, 'id')!,
           },
         };
-        console.log(JSON.stringify(variables));
         return client.mutate<uploadDocument, uploadDocumentVariables>({
           mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
@@ -272,25 +270,25 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         (i) => i
       );
 
-      const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
-        prescriptionMedicineOMSInput: {
-          patientId: (currentPatient && currentPatient.id) || '',
-          medicineDeliveryType: deliveryAddressId
-            ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-            : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          shopId: storeId || '0',
-          appointmentId: '',
-          patinetAddressId: deliveryAddressId || '',
-          prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
-          prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
-          isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-          // Values for chennai order
-          email: isChennaiOrder && email ? email.trim() : null,
-          NonCartOrderCity: isChennaiOrder ? NonCartOrderOMSCity.CHENNAI : null,
-          bookingSource: BOOKING_SOURCE.MOBILE,
-          deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-        },
-      };
+      // const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
+      //   prescriptionMedicineOMSInput: {
+      //     patientId: (currentPatient && currentPatient.id) || '',
+      //     medicineDeliveryType: deliveryAddressId
+      //       ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+      //       : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+      //     shopId: storeId || '0',
+      //     appointmentId: '',
+      //     patinetAddressId: deliveryAddressId || '',
+      //     prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
+      //     prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+      //     isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+      //     // Values for chennai order
+      //     email: isChennaiOrder && email ? email.trim() : null,
+      //     NonCartOrderCity: isChennaiOrder ? NonCartOrderOMSCity.CHENNAI : null,
+      //     bookingSource: BOOKING_SOURCE.MOBILE,
+      //     deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+      //   },
+      // };
 
       const newuploadedPrescriptions = PhysicalPrescriptions.map(
         (item, index) =>
@@ -307,7 +305,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       if (selectedMedicineOption === 'search') {
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
       } else {
-        props.navigation.push(AppRoutes.YourCartUploadPrescription);
+        const days = durationDays ? parseInt(durationDays) : null;
+        props.navigation.push(AppRoutes.YourCartUploadPrescription,
+          {
+            prescriptionOptionSelected: selectedMedicineOption,
+            durationDays: prescriptionOption === 'duration' ? days : null,
+          }
+        );
       }
     } catch (error) {
       setLoading!(false);
@@ -561,7 +565,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 elevation: 4,
               } : {}
             ]}
-            onPress={() => setPrescriptionOption('specified')}
+            onPress={() => {
+              setPrescriptionOption('specified');
+              setDurationDays('');
+            }}
           >
             <Text style={{
               color: isDurationDaysSelected ? theme.colors.LIGHT_BLUE : theme.colors.APP_GREEN,
@@ -628,6 +635,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 keyboardType={'numeric'}
                 value={durationDays}
                 onChangeText={(value) => setDurationDays(value)}
+                onFocus={() => setPrescriptionOption('duration')}
               />
               <Text style={{
                 color: isDurationDaysSelected ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
