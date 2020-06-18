@@ -30,7 +30,7 @@ import { gtmTracking } from '../../gtmTracking';
 import {
   pharmaStateCodeMapping,
   getDiffInDays,
-  TAT_API_TIMEOUT_IN_SEC,
+  TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 
@@ -406,7 +406,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
-          timeout: TAT_API_TIMEOUT_IN_SEC,
+          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
