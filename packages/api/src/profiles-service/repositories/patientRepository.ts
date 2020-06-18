@@ -168,6 +168,7 @@ export class PatientRepository extends Repository<Patient> {
 
   async getByMobileCache(mobile: string) {
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    console.log('ids from redis', ids, `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     if (typeof ids === 'string') {
       dLogger(
         new Date(),
@@ -175,20 +176,22 @@ export class PatientRepository extends Repository<Patient> {
         `Cache hit ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
       );
       const patientIds: string[] = ids.split(',');
-      const patients = patientIds.map((patientId: string) => {
-        const patient = redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
-        if (typeof patient === 'string') {
-          dLogger(
-            new Date(),
-            'Redis Cache Read of Patient',
-            `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`
-          );
-          return JSON.parse(patient);
-        }
+      const patients = patientIds.map(async (patientId: string) => {
+        return await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
+        // console.log(patient, 'from redic cache');
+        // if (typeof patient === 'string') {
+        //   dLogger(
+        //     new Date(),
+        //     'Redis Cache Read of Patient',
+        //     `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`
+        //   );
+        //   return JSON.parse(patient);
+        // }
       });
-      return patients;
+      const resp = await Promise.all(patients);
+      return resp.map((res: string) => JSON.parse(res));
     } else {
-      return this.setByMobileCache(mobile);
+      return await this.setByMobileCache(mobile);
     }
   }
 
