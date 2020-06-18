@@ -196,6 +196,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
+  ORDER_PUNCHING = 'ORDER_PUNCHING',
 }
 
 export enum DEVICE_TYPE {
@@ -288,6 +289,10 @@ export enum OTP_STATUS {
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
+}
+
+export enum PROFILE_SOURCE {
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 //medicine orders starts
