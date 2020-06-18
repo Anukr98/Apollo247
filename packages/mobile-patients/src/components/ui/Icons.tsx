@@ -514,6 +514,10 @@ export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
 );
 
+export const FreeArrowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
+);
+
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
 );
