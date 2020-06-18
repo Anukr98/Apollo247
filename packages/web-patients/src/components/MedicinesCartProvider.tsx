@@ -160,7 +160,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setHeaderPincodeError: null,
 });
 
-enum CartTypes {
+export enum CartTypes {
   PHARMA = 'PHARMA',
   FMCG = 'FMCG',
   BOTH = 'BOTH',
@@ -305,12 +305,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   }, [prescriptionUploaded, ePrescriptionData, uploadedEPrescription]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (
-      currentPatient &&
-      currentPatient.id &&
-      pharmaAddressDetails &&
-      pharmaAddressDetails.pincode
-    ) {
+    if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
       checkServiceAvailability(pharmaAddressDetails.pincode)
         .then(({ data }: any) => {
           if (data && data.Availability) {
