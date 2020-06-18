@@ -461,7 +461,7 @@ export const SearchByMedicine: React.FC = (props) => {
   };
   const metaTagProps = {
     title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
-    desciption: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
+    description: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
     canonicalLink: window && window.location && window.location.href,
   };
 

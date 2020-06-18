@@ -442,6 +442,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [drugSchemaJSON, setDrugSchemaJSON] = React.useState(null);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [metaTagProps, setMetaTagProps] = React.useState(null);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -538,7 +539,6 @@ export const MedicineDetails: React.FC = (props) => {
               });
             }
             /**schema markup End */
-
             /**Gtm code start  */
             data &&
               data.productdp &&
@@ -549,6 +549,14 @@ export const MedicineDetails: React.FC = (props) => {
                 label: data.productdp[0].name,
               });
             /**Gtm code End  */
+            data &&
+              data.productdp &&
+              data.productdp.length &&
+              setMetaTagProps({
+                title: `Buy / Order ${data.productdp[0].name} Online At Best Price - Pharmacy Store - Apollo 247`,
+                description: `Buy ${data.productdp[0].name} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${data.productdp[0].name} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
+                canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/medicines/${params.sku}`,
+              })
           })
           .catch((e) => {
             console.log(e);
@@ -738,11 +746,7 @@ export const MedicineDetails: React.FC = (props) => {
         .replace(/\.t/, '.')
     );
   };
-  const metaTagProps = {
-    title: `Buy / Order ${params.sku} Online At Best Price - Pharmacy Store - Apollo 247`,
-    desciption: `Buy ${params.sku} online in just a few clicks on Apollo 247 - one of India's leading online pharmacy store. Get ${params.sku} and a lot more at best prices. Head straight to Apollo 247 to know more.`,
-    canonicalLink: `https://www.apollo247.com/medicines/${params.sku}`,
-  };
+
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />

@@ -449,7 +449,7 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
 
   const metaTagProps = {
     title: 'Online Doctor Consultation 24|7 - Book Doctor Appointments Online - Apollo 247',
-    desciption:
+    description:
       'Online doctor consultation at Apollo 247. Book doctor appointments online in just a few clicks. Get all your need in one place at Apollo 247 - your one-stop solution for all medical needs.',
     canonicalLink: window && window.location && window.location.href,
   };
