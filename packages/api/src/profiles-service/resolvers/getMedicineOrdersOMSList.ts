@@ -7,6 +7,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime } from 'date-fns';
+import { Tedis } from 'redis-typescript';
+import { ApiConstants } from 'ApiConstants';
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
@@ -97,16 +99,32 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     amountPaid: Float
     paymentRefId: String
     paymentStatus: String
+
     paymentDateTime: Date
     responseCode: String
     responseMessage: String
     bankTxnId: String
   }
 
+  type RecommendedProductsListResult {
+    recommendedProducts: [RecommendedProducts]
+  }
+
+  type RecommendedProducts {
+    productSku: String
+    productName: String
+    productImage: String
+    productPrice: String
+    productSpecialPrice: String
+    isPrescriptionNeeded: String
+    categoryName: String
+  }
+
   extend type Query {
     getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(patientId: String, orderAutoId: Int): MedicineOrderOMSDetailsResult!
     getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
+    getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
   }
 `;
 
@@ -116,6 +134,20 @@ type MedicineOrdersOMSListResult = {
 
 type MedicineOrderOMSDetailsResult = {
   medicineOrderDetails: MedicineOrders;
+};
+
+type RecommendedProductsListResult = {
+  recommendedProducts: RecommendedProducts[];
+};
+
+type RecommendedProducts = {
+  productSku: string;
+  productName: string;
+  productImage: string;
+  productPrice: string;
+  productSpecialPrice: string;
+  isPrescriptionNeeded: string;
+  categoryName: string;
 };
 
 const getMedicineOrdersOMSList: Resolver<
@@ -197,10 +229,42 @@ const getMedicineOMSPaymentOrder: Resolver<
   return { medicineOrdersList };
 };
 
+const getRecommendedProductsList: Resolver<
+  null,
+  { patientUhid: string },
+  ProfilesServiceContext,
+  RecommendedProductsListResult
+> = async (parent, args, { profilesDb }) => {
+  const tedis = new Tedis({
+    port: <number>ApiConstants.REDIS_PORT,
+    host: ApiConstants.REDIS_URL.toString(),
+    password: ApiConstants.REDIS_PWD.toString(),
+  });
+  const redisKeys = await tedis.keys('*');
+  const recommendedProductsList: RecommendedProducts[] = [];
+  for (let k = 0; k <= 5; k++) {
+    const skuDets = await tedis.hgetall(redisKeys[k]);
+    console.log(skuDets, skuDets.name, 'redis keys length');
+    const recommendedProducts: RecommendedProducts = {
+      productImage: skuDets.gallery_images,
+      productPrice: skuDets.price,
+      productName: skuDets.name,
+      productSku: skuDets.sku,
+      productSpecialPrice: skuDets.special_price,
+      isPrescriptionNeeded: skuDets.is_prescription_required,
+      categoryName: skuDets.category_name,
+    };
+    recommendedProductsList.push(recommendedProducts);
+  }
+
+  return { recommendedProducts: recommendedProductsList };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
     getMedicineOrderOMSDetails,
     getMedicineOMSPaymentOrder,
+    getRecommendedProductsList,
   },
 };
