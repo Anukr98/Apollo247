@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: 'Fmcg' | 'Pharma';
+  type_id: 'FMCG' | 'Pharma' | 'PL';
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];

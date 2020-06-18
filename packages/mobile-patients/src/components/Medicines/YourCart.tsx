@@ -224,6 +224,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
+  const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
@@ -428,7 +429,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [deliveryAddressId, cartItems]);
 
   useEffect(() => {
-    // update cart item prices if any
+    // update cart item prices if any after store selected
     if (storeId && cartItems.length) {
       const onComplete = () => {
         selectedStore && postPharmacyStoreSelectedSuccess(pinCode, selectedStore);
@@ -446,7 +447,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const pincodeReplica = lastPincodeReplica;
     const cartItemsReplica =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (lastCartItemsReplica == cartItemsReplica) {
+    if (lastCartItemsReplicaForStorePickup == cartItemsReplica || selectedTab == tabs[0].title) {
       return;
     }
 
@@ -469,9 +470,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         fetchStorePickup(pinCode, true);
       }
     }
-    setLastCartItemsReplica(cartItemsReplica);
+    setLastCartItemsReplicaForStorePickup(cartItemsReplica);
     setLastPincodeReplica(pinCode);
-  }, [cartItems]);
+  }, [cartItems, selectedTab]);
 
   useEffect(() => {
     if (coupon && cartTotal > 0) {
@@ -586,10 +587,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     onComplete: () => void
   ) => {
     const validation = cartValidation(
-      storeItems.map((storeItem) => {
-        const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
-        return getFromattedStoreInventory(storeItem, cartItem);
-      }),
+      storeItems
+        .filter((storeItem) => cartItems.find((cartItem) => cartItem.id == storeItem.itemId))
+        .map((storeItem) => {
+          const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
+          return getFromattedStoreInventory(storeItem, cartItem);
+        }),
       cartItems
     );
     if (validation.alertText) {
@@ -765,7 +768,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 } else {
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
                   setCoupon!(null);
+                  // to stop triggering useEffect on every change in cart items
                   setStoreId!('');
+                  setselectedTab(tabs[0].title);
                 }
               }}
             >
@@ -1282,6 +1287,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setStoreId!('');
               setDeliveryAddressId!('');
               setShowPrescriptionAtStore!(false);
+              // store pickup related
+              // setLastCartItemsReplicaForStorePickup('');
               // delivery time related
               setdeliveryTime('');
               setdeliveryError('');
