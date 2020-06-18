@@ -122,7 +122,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
         try {
           const addrComponents = data.results[0].address_components || [];
           const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang);
+          const response = getFormattedLocation(addrComponents, latLang, pincode);
           setPharmacyLocation!(response);
           props.onComplete(true, response);
         } catch (e) {
