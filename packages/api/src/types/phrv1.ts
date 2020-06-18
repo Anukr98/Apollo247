@@ -153,3 +153,10 @@ export interface PrescriptionDownloadResponse {
     }[];
   }[];
 }
+
+export interface CreateNewUsersResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string; //"A new User has been successfully added"
+}
