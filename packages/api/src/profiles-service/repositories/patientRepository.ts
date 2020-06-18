@@ -3,7 +3,7 @@ import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entit
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
-import { redis } from 'profiles-service/database/connectRedis';
+import { pool } from 'profiles-service/database/connectRedis';
 
 import {
   PrismGetAuthTokenResponse,
@@ -71,7 +71,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getDeviceCodeCount(deviceCode: string) {
+    const redis = await pool.getTedis();
     const cacheCount = redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
+    pool.putTedis(redis);
     if (typeof cacheCount === 'string') {
       return parseInt(cacheCount);
     }
@@ -96,7 +98,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
+    const redis = await pool.getTedis();
     const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    pool.putTedis(redis);
     dLogger(
       new Date(),
       'Redis Cache Read of Patient',
@@ -125,11 +129,15 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
   async setCache(key: string, value: string) {
+    const redis = await pool.getTedis();
     await redis.set(key, value);
     await redis.expire(key, 3600);
+    pool.putTedis(redis);
   }
   async dropCache(key: string) {
+    const redis = await pool.getTedis();
     await redis.del(key);
+    pool.putTedis(redis);
   }
   async setByIdCache(id: string | number) {
     const patientDetails = await this.getPatientData(id);
@@ -169,7 +177,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByMobileCache(mobile: string) {
+    const redis = await pool.getTedis();
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
+    pool.putTedis(redis);
     if (typeof ids === 'string') {
       dLogger(
         new Date(),
