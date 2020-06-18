@@ -150,6 +150,8 @@ PODS:
   - RCTCallDetection (1.9.0):
     - React
   - RCTRequired (0.61.3)
+  - RCTSystemSetting (1.7.4):
+    - React
   - RCTTypeSafety (0.61.3):
     - FBLazyVector (= 0.61.3)
     - Folly (= 2018.10.22.00)
@@ -425,6 +427,7 @@ DEPENDENCIES:
   - QBImagePickerController (from `../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec`)
   - RCTCallDetection (from `../node_modules/react-native-call-detection`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
+  - RCTSystemSetting (from `../node_modules/react-native-system-setting`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
   - React (from `../node_modules/react-native/`)
   - React-Core (from `../node_modules/react-native/`)
@@ -528,6 +531,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-call-detection"
   RCTRequired:
     :path: "../node_modules/react-native/Libraries/RCTRequired"
+  RCTSystemSetting:
+    :path: "../node_modules/react-native-system-setting"
   RCTTypeSafety:
     :path: "../node_modules/react-native/Libraries/TypeSafety"
   React:
@@ -648,6 +653,7 @@ SPEC CHECKSUMS:
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTCallDetection: 07da027560ada435ff38087f1f5c4de67ad48318
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
+  RCTSystemSetting: f3123e7de51bf918bc4243167ba2885a72bf09ec
   RCTTypeSafety: e3cc0537400222250f0be37bd69f4b339d3c0a0f
   React: 3dc877fc32548b0c7108ca7f301466f4956cbff8
   React-Core: ca94e2e7d22cdcc266a405c4d2ad5e5675145776
@@ -688,6 +694,6 @@ SPEC CHECKSUMS:
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: d99499a9a49a552ee428ef0a4e191d9fee6d1ef5
+PODFILE CHECKSUM: 066aa1068288b2bea8082938f3f99e00e4e28154
 
 COCOAPODS: 1.8.4

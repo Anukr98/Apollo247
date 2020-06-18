@@ -76,4 +76,6 @@ target 'ApolloDoctor' do
 
   pod 'RNSound', :path => '../node_modules/react-native-sound'
 
+  pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
+
 end

@@ -31,6 +31,7 @@ import CallDetectorManager from 'react-native-call-detection';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import SystemSetting from 'react-native-system-setting';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -190,15 +191,32 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
+  const [mediaVolume, setMediaVolume] = useState<number>(-1);
 
+  const setPrevVolume = () => {
+    if (mediaVolume !== -1) {
+      SystemSetting.setVolume(mediaVolume);
+      setMediaVolume(-1);
+    }
+  };
+  const maxVolume = () => {
+    if (mediaVolume !== -1) {
+      SystemSetting.getVolume().then((volume: number) => {
+        setMediaVolume(volume);
+      });
+    }
+    SystemSetting.setVolume(1);
+  };
   useEffect(() => {
     if (callConnected && callAccepted) {
       startTimer(0);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     } else if (callAccepted) {
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     }
@@ -215,12 +233,14 @@ export const AudioVideoProvider: React.FC = (props) => {
       AppState.addEventListener('change', _handleAppStateChange);
       try {
         if (audioTrack) {
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         } else {
           audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
             CommonBugFender('Loading_callertune__failed', error);
           });
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         }
@@ -372,6 +392,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     setAudioEnabled(true);
     setVideoEnabled(true);
     if (audioTrack) {
+      setPrevVolume();
       audioTrack.stop();
     }
     withCallBack && callBacks.onCallEnd(callType, callDuration);
@@ -491,8 +512,10 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallConnected(false);
       if (!callAccepted && !callConnected) {
         if (audioTrack) {
+          setPrevVolume();
           audioTrack.stop(() => {
             if (audioTrack) {
+              maxVolume();
               audioTrack.play();
             }
           });
@@ -511,6 +534,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connected: (event: string) => {
       setCallConnected(true);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop(() => {});
       }
     },
