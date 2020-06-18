@@ -183,17 +183,17 @@ export class PatientRepository extends Repository<Patient> {
 
   async findByMobileNumberLogin(mobileNumber: string) {
     const patientList = await this.getByMobileCache(mobileNumber);
-    let finalList: string[] = patientList;
+    let finalList: Patient[] = patientList;
     console.log('patient list count', patientList.length);
     if (patientList.length > 1) {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
           this.update(patient.id, { isActive: false });
-          finalList = patientList.filter((p) => p !== patient.id);
+          finalList = patientList.filter((p) => p.id !== patient.id);
           await this.setCache(
             `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobileNumber}`,
-            finalList.join(',')
+            finalList.map((p) => p.id).join(',')
           );
         } else if (patient.primaryPatientId == null) {
           this.update(patient.id, { primaryPatientId: patient.id });
