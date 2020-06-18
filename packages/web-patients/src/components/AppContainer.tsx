@@ -60,6 +60,7 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
+import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 
@@ -209,6 +210,7 @@ const App: React.FC = () => {
             component={ClinicCheckout}
           />
           <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
+          <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
           <Route
             exact
             path={clientRoutes.medicinePrescription()}
