@@ -73,7 +73,9 @@ export class PatientRepository extends Repository<Patient> {
 
   async getByIdFromRedis(id: string | number) {
     if ((await redis.exists(`patient:${id}`)) > 0) {
-      return await redis.get(`patient:${id}`);
+      let patient = await redis.get(`patient:${id}`);
+      dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit patient:${id}`);
+      return patient;
     } else return await this.setByIdFromRedis(id);
   }
 
@@ -97,6 +99,7 @@ export class PatientRepository extends Repository<Patient> {
     const patientDetails = await this.getPatientData(id);
     await redis.set(`Patient:${id}`, JSON.stringify(patientDetails));
     await redis.expire(`Patient:${id}`, 3600);
+    dLogger(new Date(), 'Redis Cache Write of Patient', `Cache miss/write patient:${id}`);
     return patientDetails;
   }
 
@@ -118,16 +121,23 @@ export class PatientRepository extends Repository<Patient> {
     });
     await redis.set(`Patient:mobile:${mobile}`, patientIds.join(','));
     await redis.expire(`Patient:mobile:${mobile}`, 3600);
+    dLogger(
+      new Date(),
+      'Redis Cache Write of Patient',
+      `Cache miss/write Patient:mobile:${mobile}`
+    );
     return patients;
   }
 
   async getByMobileFromRedis(mobile: string) {
     const ids = await redis.get(`Patient:mobile:${mobile}`);
     if (typeof ids === 'string') {
+      dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit Patient:mobile:${mobile}`);
       const patientIds: string[] = ids.split(',');
       const patients = patientIds.map((patientId: string) => {
         const patient = redis.get(`Patient:${patientId}`);
         if (typeof patient === 'string') {
+          dLogger(new Date(), 'Redis Cache Read of Patient', `Cache hit Patient:${patientId}`);
           return JSON.parse(patient);
         }
       });
