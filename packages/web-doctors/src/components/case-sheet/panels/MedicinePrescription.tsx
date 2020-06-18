@@ -1620,7 +1620,9 @@ export const MedicinePrescription: React.FC = () => {
           isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
         }`}
         onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
+          if(!isCustomform){
+            daySlotsToggleAction(daySlotitem.id);
+          }
         }}
       >
         {daySlotitem.value}
@@ -1805,15 +1807,18 @@ export const MedicinePrescription: React.FC = () => {
         dosageErr: false,
       });
     } 
-    // else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     durationErr: true,
-    //     daySlotErr: false,
-    //     tobeTakenErr: false,
-    //     dosageErr: false,
-    //   });
-    // } 
+    else if (
+      (forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW) && 
+      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } 
     else {
       setErrorState({
         ...errorState,
@@ -2071,6 +2076,52 @@ export const MedicinePrescription: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
+  const resetCustomTimeOptions = () =>{
+    if (
+      customDosageMorning &&
+      customDosageMorning.trim() !== '' &&
+      customDosageMorning.trim() !== '0' &&
+      (parseInt(customDosageMorning.trim()) > 0 ||
+        Number(customDosageMorning.trim()) > 0)
+    ) {
+      setInTheTime('morning', true);
+    } else {
+      setInTheTime('morning', false);
+    }
+    if (
+      customDosageNoon &&
+      customDosageNoon.trim() !== '' &&
+      customDosageNoon.trim() !== '0' &&
+      (parseInt(customDosageNoon.trim()) > 0 ||
+        Number(customDosageNoon.trim()) > 0)
+    ) {
+      setInTheTime('noon', true);
+    } else {
+      setInTheTime('noon', false);
+    }
+    if (
+      customDosageEvening &&
+      customDosageEvening.trim() !== '' &&
+      customDosageEvening.trim() !== '0' &&
+      (parseInt(customDosageEvening.trim()) > 0 ||
+        Number(customDosageEvening.trim()) > 0)
+    ) {
+      setInTheTime('evening', true);
+    } else {
+      setInTheTime('evening', false);
+    }
+    if (
+      customDosageNight &&
+      customDosageNight.trim() !== '' &&
+      customDosageNight.trim() !== '0' &&
+      (parseInt(customDosageNight.trim()) > 0 ||
+        Number(customDosageNight.trim()) > 0)
+    ) {
+      setInTheTime('night', true);
+    } else {
+      setInTheTime('night', false);
+    }
+  }
   const resetOptions = () => {
     resetFrequencyFor();
     setMedicineForm('OTHERS');
@@ -2096,12 +2147,11 @@ export const MedicinePrescription: React.FC = () => {
       medicines.length > 0 &&
       medicines!.map((_medicine: any, index: number) => {
         const medicine = _medicine!;
-        const duration =
-          medicine.medicineConsumptionDurationInDays &&
-          ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
-            medicine.medicineConsumptionDurationUnit
+        const forHtml = medicine.medicineConsumptionDurationInDays ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}` : ' '
+        const duration =`${forHtml} ${
+            medicine.medicineConsumptionDurationUnit && medicine.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
               ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-              : 'day(s)'
+              : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
           } `;
 
         const whenString =
@@ -2270,12 +2320,11 @@ export const MedicinePrescription: React.FC = () => {
             <div className={classes.mediceneContainer}>
               {favouriteMedicine.map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
-                const favDurations =
-                  favMedicine.medicineConsumptionDurationInDays &&
-                  `for ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
-                    favMedicine.medicineConsumptionDurationUnit
+                const forFavHtml = favMedicine.medicineConsumptionDurationInDays ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}` : ' ';
+                const favDurations = `${forFavHtml} ${Number(favMedicine.medicineConsumptionDurationInDays)} ${
+                    favMedicine.medicineConsumptionDurationUnit && favMedicine.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
                       ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-                      : 'day(s)'
+                      :  favMedicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
                   } `;
                 const favWhenString =
                   favMedicine.medicineToBeTaken.length > 0
@@ -2724,9 +2773,7 @@ export const MedicinePrescription: React.FC = () => {
                           <span
                             onClick={() => {
                               setIsCustomForm(!isCustomform);
-                              // medicineCustomDosage && medicineCustomDosage !== ''
-                              //   ? setMedicineCustomDosage('')
-                              //   : setMedicineCustomDosage('0-0-0-0');
+                              resetCustomTimeOptions();
                             }}
                           >
                             {isCustomform ? 'DEFAULT' : 'CUSTOM'}
@@ -2768,6 +2815,7 @@ export const MedicinePrescription: React.FC = () => {
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
+                            disabled={forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW ? true: false}
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
                             }}
@@ -2799,6 +2847,10 @@ export const MedicinePrescription: React.FC = () => {
                             }}
                             onChange={(e: any) => {
                               setforUnit(e.target.value as any);
+                              if(e.target.value ===
+                                MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW){
+                                  setConsumptionDuration('')
+                              }
                             }}
                           >
                             {forOptionHtml}
@@ -2833,7 +2885,7 @@ export const MedicinePrescription: React.FC = () => {
                         </div>
                       </Grid>
                       <div className={classes.numDays}>
-                        {errorState.durationErr && (
+                        {errorState.durationErr && forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
@@ -3302,9 +3354,7 @@ export const MedicinePrescription: React.FC = () => {
                             <span
                               onClick={() => {
                                 setIsCustomForm(!isCustomform);
-                                // medicineCustomDosage && medicineCustomDosage !== ''
-                                //   ? setMedicineCustomDosage('')
-                                //   : setMedicineCustomDosage('0-0-0-0');
+                                resetCustomTimeOptions();
                               }}
                             >
                               {isCustomform ? 'DEFAULT' : 'CUSTOM'}
@@ -3345,6 +3395,7 @@ export const MedicinePrescription: React.FC = () => {
                               placeholder=""
                               inputProps={{ maxLength: 6 }}
                               value={consumptionDuration}
+                              disabled={forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW ? true: false}
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
                               }}
@@ -3376,6 +3427,10 @@ export const MedicinePrescription: React.FC = () => {
                               }}
                               onChange={(e: any) => {
                                 setforUnit(e.target.value as any);
+                                if(e.target.value ===
+                                  MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW){
+                                    setConsumptionDuration('');
+                                }
                               }}
                             >
                               {forOptionHtml}
@@ -3410,7 +3465,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </Grid>
                         <div className={classes.numDays}>
-                          {errorState.durationErr && (
+                          {errorState.durationErr && forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
                             <FormHelperText
                               className={classes.helpText}
                               component="div"
