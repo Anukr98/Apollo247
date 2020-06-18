@@ -524,6 +524,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       key: 'Shop by Category',
       value: <ShopByCategory data={data.shop_by_category} />,
     },
+    { key: 'Monsoon Essentials', value: <HotSellers data={data.monsoon_essentials} /> },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
 
@@ -539,9 +540,8 @@ export const MedicineLanding: React.FC = (props: any) => {
   const metaTagProps = {
     title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
     desciption: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
-    canonicalLink: 'https://www.apollo247.com/medicines'
-  }
-
+    canonicalLink: 'https://www.apollo247.com/medicines',
+  };
 
   return (
     <div className={classes.root}>

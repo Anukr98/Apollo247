@@ -44,6 +44,8 @@ export const savePrescriptionMedicineOrderOMSTypeDefs = gql`
     NonCartOrderCity: NonCartOrderOMSCity
     orderAutoId: Int
     shopAddress: ShopAddress
+    prescriptionOptionSelected: String
+    durationDays: Int
   }
 
   enum NonCartOrderOMSCity {
@@ -94,6 +96,8 @@ type PrescriptionMedicineOrderOMSInput = {
   email: string;
   NonCartOrderCity: NonCartOrderOMSCity;
   shopAddress: ShopAddress;
+  prescriptionOptionSelected: string;
+  durationDays: number;
 };
 
 type ShopAddress = {
@@ -260,7 +264,10 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       timeslot: '',
       shippingcharges: 0,
       categorytype: 'Pharma',
-      customercomment: '',
+      customercomment: JSON.stringify({
+        prescriptionOptionSelected: prescriptionMedicineOMSInput.prescriptionOptionSelected,
+        durationDays: prescriptionMedicineOMSInput.durationDays,
+      }),
       landmark: landmark,
       issubscribe: false,
       customerdetails: {
