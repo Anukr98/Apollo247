@@ -25,6 +25,8 @@ import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { findAddrComponents } from 'helpers/commonHelpers';
+import { CartTypes } from 'components/MedicinesCartProvider';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -372,46 +374,26 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setDeliveryTime(nextDeliveryDate);
     setErrorMessage('');
     setTatLoading(false);
-    getPlaceDetails(pinCode);
+    if (pharmaAddressDetails.pincode !== pinCode) {
+      getPlaceDetails(pinCode);
+    }
   };
 
-  const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
-    await axios
-      .get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
-      )
-      .then(({ data }) => {
-        try {
-          if (data && data.results[0] && data.results[0].address_components) {
-            const addrComponents = data.results[0].address_components || [];
-            const pincode = findAddrComponents('postal_code', addrComponents);
-            const city =
-              findAddrComponents('administrative_area_level_2', addrComponents) ||
-              findAddrComponents('locality', addrComponents);
-            const state = findAddrComponents('administrative_area_level_1', addrComponents);
-            const country = findAddrComponents('country', addrComponents);
-            setMedicineAddress(city);
-            setPharmaAddressDetails({
-              city,
-              state,
-              pincode,
-              country,
-            });
-            setHeaderPincodeError('0');
-          }
-        } catch {
-          (e: AxiosError) => {
-            console.log(e);
-            setIsAlertOpen(true);
-            setAlertMessage('Something went wrong :(');
-          };
-        }
-      })
-      .catch((e: AxiosError) => {
-        setIsAlertOpen(true);
-        setAlertMessage('Something went wrong :(');
-        console.log(e);
-      });
+  const setAddressDetails = (addrComponents: any) => {
+    const pincode = findAddrComponents('postal_code', addrComponents);
+    const city =
+      findAddrComponents('administrative_area_level_2', addrComponents) ||
+      findAddrComponents('locality', addrComponents);
+    const state = findAddrComponents('administrative_area_level_1', addrComponents);
+    const country = findAddrComponents('country', addrComponents);
+    setMedicineAddress(city);
+    setPharmaAddressDetails({
+      city,
+      state,
+      pincode,
+      country,
+    });
+    setHeaderPincodeError('0');
   };
 
   const getPlaceDetails = (pincode: string) => {
@@ -422,8 +404,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
-            const { lat, lng } = data.results[0].geometry.location;
-            getCurrentLocationDetails(lat, lng);
+            const addrComponents = data.results[0].address_components || [];
+            setAddressDetails(addrComponents);
           }
         } catch {
           (e: AxiosError) => {
@@ -447,7 +429,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         apiDetails.deliveryUrl || '',
         {
           postalcode: pinCode,
-          ordertype: 'pharma',
+          ordertype: _lowerCase(data.type_id) === 'pharma' ? CartTypes.PHARMA : CartTypes.FMCG,
           lookup: [
             {
               sku: data.sku || params.sku,
@@ -497,10 +479,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             }
           }
         } catch (error) {
+          console.log(error);
           setDefaultDeliveryTime();
         }
       })
       .catch((error: any) => {
+        console.log(error);
         setDefaultDeliveryTime();
       });
   };

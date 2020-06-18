@@ -384,6 +384,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryTime(nextDeliveryDate);
     setDeliveryLoading(false);
     setIsLoading(false);
+    changeCartTatStatus(true);
   };
 
   const fetchDeliveryTime = async (zipCode: string) => {
