@@ -30622,6 +30622,26 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "prescriptionOptionSelected",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "durationDays",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
