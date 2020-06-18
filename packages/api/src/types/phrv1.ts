@@ -46,6 +46,7 @@ export interface LabResultsDownloadResponse {
     authToken: string;
     userId: string;
     id: string;
+    fileUrl: string; //this is not given by PHR. Added for internal purpose
     labTestName: string;
     labTestSource: string;
     packageId: string;
@@ -123,6 +124,7 @@ export interface PrescriptionDownloadResponse {
   response: {
     authToken: string;
     userId: string;
+    fileUrl: string; //this is not given by PHR. Added for internal purpose
     id: string;
     prescriptionName: string;
     dateOfPrescription: number;
