@@ -20,7 +20,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
-import { map } from 'bluebird';
 
 type DeviceCount = {
   mobilenumber: string;
