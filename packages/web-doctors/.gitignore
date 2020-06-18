@@ -3,4 +3,3 @@ node_modules
 .npm-cache
 .Trash*
 .awcache*
-package-lock.json

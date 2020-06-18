@@ -183,7 +183,9 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                               speciality(e.currentTarget.title);
                               const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                               const encoded = encodeURIComponent(specialityUpdated);
-                              history.push(clientRoutes.specialties(encoded));
+                              history.push(
+                                clientRoutes.specialties(`${encoded}${specialityDetails.id}`)
+                              );
                               specialityId && specialityId(specialityDetails.id);
                               disableFilter(false);
                             }}

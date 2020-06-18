@@ -737,7 +737,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   {diagnosticPrescription.map(
                     (prescription) =>
                       (prescription.itemname || prescription.itemName) && (
-                        <li>{prescription.itemname || prescription.itemName}</li>
+                        <li>
+                          {prescription.itemname || prescription.itemName}
+                          <br />
+                          <span>{prescription.testInstruction}</span>
+                        </li>
                       )
                   )}
                 </ol>

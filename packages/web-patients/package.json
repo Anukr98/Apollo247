@@ -109,11 +109,17 @@
     "react-places-autocomplete": "^7.2.1",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
+    "react-share": "^4.2.0",
     "react-slick": "^0.15.4",
     "string-strip-html": "^4.3.10",
     "trackjs": "^3.7.2",
     "unfetch": "^4.1.0",
     "uuid": "^3.3.3",
-    "validator": "^11.1.0"
+    "validator": "^11.1.0",
+    "graphql": "^14.5.7"
+  },
+  "resolutions": {
+    "@types/graphql": "^14.2.1",
+    "graphql": "^14.5.7"
   }
 }
