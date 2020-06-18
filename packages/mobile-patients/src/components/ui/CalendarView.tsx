@@ -121,8 +121,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
 
   const renderWeekDays = () => {
     const dayHeaderViewStyle: StyleProp<ViewStyle> = {
-      margin: 16,
-      marginTop: 14,
+      marginVertical: 14,
       width: '97.4%',
       flexDirection: 'row',
       alignSelf: 'center',

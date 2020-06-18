@@ -64,7 +64,9 @@ export const CovidHealthScan: React.FC<IconProps> = (props) => (
 export const CovidExpert: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_ic_family_doctor.png')} />
 );
-
+export const CloseCal: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/closeCal.png')} />
+);
 export const LatestArticle: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_feed.png')} />
 );
@@ -1017,9 +1019,5 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDReadMore: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="lg"
-    {...props}
-    source={require('./icons/read-more.png')}
-  />
+  <IconBase size="lg" {...props} source={require('./icons/read-more.png')} />
 );

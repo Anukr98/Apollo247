@@ -89,7 +89,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-
+import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: screenWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -167,30 +167,41 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
+  const docFilters = props.navigation.getParam('filters');
   const filterData: filterDataType[] = [
     {
-      label: 'In Years',
-      options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
+      label: 'City',
+      options: docFilters['city'],
       selectedOptions: [],
     },
     {
-      label: '',
-      options: ['Now', 'Today', 'Tomorrow', 'Next 3 Days'],
+      label: 'Brands',
+      options: docFilters['brands'],
+      selectedOptions: [],
+    },
+    {
+      label: 'In Years',
+      options: getValuesArray(docFilters['experience']),
+      selectedOptions: [],
+    },
+    {
+      label: 'Availability',
+      options: getValuesArray(docFilters['availability']),
       selectedOptions: [],
     },
     {
       label: 'In Rupees',
-      options: ['100 - 500', '501 - 1000', '1000+'],
+      options: getValuesArray(docFilters['fees']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: [Gender.MALE, Gender.FEMALE],
+      options: getValuesArray(docFilters['gender']),
       selectedOptions: [],
     },
     {
       label: '',
-      options: ['Hindi', 'English', 'Telugu'],
+      options: getValuesArray(docFilters['language']),
       selectedOptions: [],
     },
   ];
@@ -440,8 +451,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     pinCode?: string
   ) => {
     const experienceArray: Range[] = [];
-    if (SearchData[0].selectedOptions && SearchData[0].selectedOptions.length > 0)
-      SearchData[0].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -455,8 +466,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
-      SearchData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[4].selectedOptions && SearchData[4].selectedOptions.length > 0)
+      SearchData[4].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -473,8 +484,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
-      SearchData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
+      SearchData[3].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
           availableNow = {
             availableNow: moment(new Date())
@@ -530,15 +541,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: SearchData[3].selectedOptions,
-      language: SearchData[4].selectedOptions,
+      gender: SearchData[5].selectedOptions,
+      language: SearchData[6].selectedOptions,
       ...availableNow,
       // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
       sort: sort,
     };
-    console.log('FilterInput', FilterInput);
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     client
       .query<getDoctorsBySpecialtyAndFilters>({
