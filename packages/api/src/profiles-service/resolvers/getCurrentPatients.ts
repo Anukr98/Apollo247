@@ -446,10 +446,9 @@ const getCurrentPatients: Resolver<
   GetCurrentPatientsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  let patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
-  if (patients.length > 0) return { patients };
+  let patients = await patientRepo.findByMobileNumber(mobileNumber);
 
-  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
+  if (patients.length > 0) return { patients };
 
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
@@ -461,26 +460,47 @@ const getCurrentPatients: Resolver<
     return existingPatient || Patient.create(createOptions).save();
   };
 
-  const patientPromises: Object[] = uhids.response.map((data) => {
-    return findOrCreatePatient(
-      { uhid: data.uhid, mobileNumber, isActive: true },
-      {
-        firstName: data.userName,
-        lastName: '',
-        gender: data.gender
-          ? data.gender.toUpperCase() === Gender.FEMALE
-            ? Gender.FEMALE
-            : Gender.MALE
-          : undefined,
-        mobileNumber,
-        uhid: data.uhid,
-        dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
-        androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
-        iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
-        primaryUhid: data.uhid,
-      }
-    );
-  });
+  let patientPromises: Object[] = [];
+  const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
+
+  if (uhids.errorCode == 0) {
+    //data exist in PRISM
+    patientPromises = uhids.response.map((data) => {
+      return findOrCreatePatient(
+        { uhid: data.uhid, mobileNumber, isActive: true },
+        {
+          firstName: data.userName,
+          lastName: '',
+          gender: data.gender
+            ? data.gender.toUpperCase() === Gender.FEMALE
+              ? Gender.FEMALE
+              : Gender.MALE
+            : undefined,
+          mobileNumber,
+          uhid: data.uhid,
+          dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
+          androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
+          iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
+          primaryUhid: data.uhid,
+        }
+      );
+    });
+  } else if (uhids.errorCode == -1014) {
+    //create new user flow, data not in prism
+    patientPromises = [
+      findOrCreatePatient(
+        { uhid: '', mobileNumber, isActive: true },
+        {
+          firstName: '',
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: '',
+          primaryUhid: '',
+        }
+      ),
+    ];
+  } else throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
 
   await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
