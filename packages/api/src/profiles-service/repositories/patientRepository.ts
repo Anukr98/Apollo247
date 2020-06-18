@@ -63,7 +63,6 @@ export class PatientRepository extends Repository<Patient> {
     if (typeof cacheCount === 'string') {
       return parseInt(cacheCount);
     }
-    console.log(cacheCount);
     const deviceCodeCount: number = (await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber'])
       .where('patient."deviceCode" = :deviceCode', { deviceCode })

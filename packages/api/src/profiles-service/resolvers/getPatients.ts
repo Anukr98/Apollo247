@@ -146,12 +146,9 @@ const addNewProfile: Resolver<
 > = async (parent, { patientProfileInput }, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
-  console.log('pateintDetails', pateintDetails);
   if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
-  console.log(savePatient);
-
   patientRepo.createNewUhid(savePatient.id);
   patientRepo.createAthsToken(savePatient.id);
   const patient = await patientRepo.getPatientDetails(savePatient.id);
