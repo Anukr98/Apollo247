@@ -76,7 +76,7 @@ const uploadLabResults: Resolver<
     process.env.PHR_V1_ACCESS_TOKEN
   );
   labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', uhid);
-  labResultDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+  labResultDocumentUrl = labResultDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
 
   return { recordId: uploadedFileDetails.response, fileUrl: labResultDocumentUrl };
 };

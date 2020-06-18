@@ -93,7 +93,10 @@ export const uploadPrescriptions: Resolver<
     process.env.PHR_V1_ACCESS_TOKEN
   );
   prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
-  prescriptionDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{RECORDID}',
+    uploadedFileDetails.response
+  );
 
   return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
@@ -137,7 +140,10 @@ export const uploadMediaDocument: Resolver<
     process.env.PHR_V1_ACCESS_TOKEN
   );
   prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', uhid);
-  prescriptionDocumentUrl.replace('{RECORDID}', uploadedFileDetails.response);
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{RECORDID}',
+    uploadedFileDetails.response
+  );
   return { recordId: uploadedFileDetails.response, fileUrl: prescriptionDocumentUrl };
 };
 
