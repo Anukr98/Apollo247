@@ -447,6 +447,10 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const uhids = await getRegisteredUsers(mobileNumber.replace('+91', ''));
 
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+  if (patients.length > 0) return { patients };
+
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -473,6 +477,7 @@ const getCurrentPatients: Resolver<
         dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
         androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
         iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
+        primaryUhid: data.uhid,
       }
     );
   });
@@ -480,8 +485,8 @@ const getCurrentPatients: Resolver<
   await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+
+  patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
 
   return { patients };
 };
