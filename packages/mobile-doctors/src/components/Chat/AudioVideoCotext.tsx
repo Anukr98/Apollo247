@@ -200,7 +200,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     }
   };
   const maxVolume = () => {
-    if (mediaVolume !== -1) {
+    if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
         setMediaVolume(volume);
       });
