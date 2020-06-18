@@ -739,8 +739,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       (prescription.itemname || prescription.itemName) && (
                         <li>
                           {prescription.itemname || prescription.itemName}
-                          <br />
-                          <span>{prescription.testInstruction}</span>
+                          <span style={{ whiteSpace: 'pre-line', display: 'block' }}>
+                            {prescription.testInstruction}
+                          </span>
                         </li>
                       )
                   )}
