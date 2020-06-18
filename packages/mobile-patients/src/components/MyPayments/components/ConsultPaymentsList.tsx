@@ -11,9 +11,10 @@ import PaymentsList from './PaymentsList';
 interface ConsultPaymentsListProps {
   patientId: string;
   navigationProps: any;
+  fromNotification?: boolean;
 }
 const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
-  const { patientId, navigationProps } = props;
+  const { patientId, navigationProps, fromNotification } = props;
   const { payments, loading } = useGetPayments('consult', patientId, navigationProps);
 
   if (loading) {
@@ -25,6 +26,7 @@ const ConsultPaymentsList: FC<ConsultPaymentsListProps> = (props) => {
       payments={payments}
       type="consult"
       navigationProps={navigationProps}
+      fromNotification={fromNotification}
     />
   );
 };

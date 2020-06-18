@@ -171,19 +171,31 @@ const getOrderInvoice: Resolver<
     doc
       .fontSize(11)
       .fillColor('#01475b')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text('Apollo 24X7', 370, margin, { align: 'right' })
       .moveDown(0.3)
 
       .fillColor('#828691')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text('Apollo Hospitals Enterprise Ltd.,', { align: 'right' })
       .moveDown(0.3)
 
+      .fillColor('#828691')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text('Redg Off : 19, Bishop Gardens,', { align: 'right' })
       .moveDown(0.3)
 
+      .fillColor('#828691')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text(' RA Puram, Chennai - 600028', { align: 'right' })
-      .moveDown(1)
+      .moveDown(0.4)
 
+      .text('GST Number - 33AAACA5443N1ZP', { align: 'right' })
+      .fillColor('#6d7278')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .moveDown(0.2)
+
+      .fillColor('#828691')
       .text(`${todayDate}`, { align: 'right' });
     doc.moveDown(2);
   };
@@ -197,7 +209,17 @@ const getOrderInvoice: Resolver<
     doc
       .fontSize(16)
       .fillColor('#01475b')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .text('PAYMENT RECEIPT', margin, doc.y, { align: 'center' })
+      .moveDown(0.3);
+
+    doc
+      .fontSize(16)
+      .fillColor('#6d7278')
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .text(`Invoice Number: APOLLO-CON-A${appointmentData[0].displayId} `, margin, doc.y, {
+        align: 'center',
+      })
       .moveDown(1.5);
 
     doc
@@ -311,7 +333,7 @@ const getOrderInvoice: Resolver<
       .moveDown(1);
 
     doc
-      .fontSize(12)
+      .fontSize(15)
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#01475b')
       .text('Total Amount', margin + 300, doc.y, {
@@ -319,6 +341,7 @@ const getOrderInvoice: Resolver<
         align: 'right',
       })
       .fillColor('#01475b')
+      .fontSize(15)
       .text(`Rs ${appointmentData[0].discountedAmount}`, margin + 450, doc.y, { align: 'left' })
       .moveDown(1);
 

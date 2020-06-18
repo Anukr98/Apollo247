@@ -2,6 +2,8 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { Vitals } from "./globalTypes";
+
 // ====================================================
 // GraphQL mutation operation: UpdatePatientPrescriptionSentStatus
 // ====================================================
@@ -20,4 +22,5 @@ export interface UpdatePatientPrescriptionSentStatus {
 export interface UpdatePatientPrescriptionSentStatusVariables {
   caseSheetId: string;
   sentToPatient: boolean;
+  vitals?: Vitals | null;
 }

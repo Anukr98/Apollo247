@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       position: 'sticky',
       top: 88,
-      zIndex: 99,
+      zIndex: 5,
       [theme.breakpoints.down('xs')]: {
         top: 70,
         paddingLeft: 0,

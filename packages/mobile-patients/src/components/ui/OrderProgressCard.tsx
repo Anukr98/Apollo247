@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, LayoutChangeEvent } from 'react-native';
 import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
@@ -77,6 +77,7 @@ export interface OrderProgressCardProps {
   time?: string;
   description?: string; // if falsy value it renders date & time
   style?: StyleProp<ViewStyle>;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
@@ -115,7 +116,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
   };
 
   return (
-    <View style={{ flexDirection: 'row' }}>
+    <View style={{ flexDirection: 'row' }} onLayout={(event) => props.onLayout!(event)}>
       {renderGraphicalStatus()}
       <View style={[styles.containerStyle1]}>
         <View
@@ -127,7 +128,13 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
         >
           {!props.isStatusDone ? (
             <>
-              <Text style={[styles.statusStyle, { color: 'rgba(1,71,91,0.35)' }]}>
+              <Text
+                style={[
+                  styles.statusStyle,
+                  { color: 'rgba(1,71,91,0.35)' },
+                  props.status == 'Order Ready at Store' && { textTransform: 'none' },
+                ]}
+              >
                 {props.status}
               </Text>
             </>
@@ -136,6 +143,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
               <Text
                 style={[
                   styles.statusStyle,
+                  props.status == 'Order Ready at Store' && { textTransform: 'none' },
                   props.status == 'Order Cancelled' && { color: '#890000' },
                 ]}
               >
