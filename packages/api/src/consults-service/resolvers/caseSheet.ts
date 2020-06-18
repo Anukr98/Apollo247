@@ -114,6 +114,7 @@ export const caseSheetTypeDefs = gql`
     NIGHT
     NOON
     AS_NEEDED
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {
