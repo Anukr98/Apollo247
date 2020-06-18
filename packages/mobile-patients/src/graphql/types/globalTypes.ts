@@ -810,6 +810,8 @@ export interface PrescriptionMedicineOrderOMSInput {
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
   shopAddress?: ShopAddress | null;
+  prescriptionOptionSelected?: string | null;
+  durationDays?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {

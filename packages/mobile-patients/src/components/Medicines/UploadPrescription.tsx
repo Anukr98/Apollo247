@@ -252,59 +252,43 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setLoading!(true);
 
     try {
-      // Physical Prescription Upload
-      const uploadedPhyPrescriptionsData = await uploadMultipleFiles(PhysicalPrescriptions);
-      console.log('upload of prescriptions done');
-
-      const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
-        ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
-        : [];
-
-      const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
-      const phyPresPrismIds = PhysicalPrescriptions.map(
-        (item) => item.prismPrescriptionFileId
-      ).filter((i) => i);
-
-      const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl).filter((i) => i);
-      const ePresPrismIds = EPrescriptions.map((item) => item.prismPrescriptionFileId).filter(
-        (i) => i
-      );
-
-      // const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
-      //   prescriptionMedicineOMSInput: {
-      //     patientId: (currentPatient && currentPatient.id) || '',
-      //     medicineDeliveryType: deliveryAddressId
-      //       ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-      //       : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-      //     shopId: storeId || '0',
-      //     appointmentId: '',
-      //     patinetAddressId: deliveryAddressId || '',
-      //     prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
-      //     prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
-      //     isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
-      //     // Values for chennai order
-      //     email: isChennaiOrder && email ? email.trim() : null,
-      //     NonCartOrderCity: isChennaiOrder ? NonCartOrderOMSCity.CHENNAI : null,
-      //     bookingSource: BOOKING_SOURCE.MOBILE,
-      //     deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-      //   },
-      // };
-
-      const newuploadedPrescriptions = PhysicalPrescriptions.map(
-        (item, index) =>
-          ({
-            ...item,
-            uploadedUrl: phyPresUrls![index],
-            prismPrescriptionFileId: phyPresPrismIds![index],
-          } as PhysicalPrescription)
-      );
-      setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
-      setLoading!(false);
-      // submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+      if (EPrescriptions.length !== 0) {
+        setEPrescriptions && setEPrescriptions([...EPrescriptions]);
+      }
 
       if (selectedMedicineOption === 'search') {
+        setPhysicalPrescription && setPhysicalPrescription([...PhysicalPrescriptions]);
+
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
       } else {
+        // Physical Prescription Upload
+        const uploadedPhyPrescriptionsData = await uploadMultipleFiles(PhysicalPrescriptions);
+        console.log('upload of prescriptions done');
+
+        const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
+          ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
+          : [];
+
+        const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
+        const phyPresPrismIds = PhysicalPrescriptions.map(
+          (item) => item.prismPrescriptionFileId
+        ).filter((i) => i);
+
+        const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl).filter((i) => i);
+        const ePresPrismIds = EPrescriptions.map((item) => item.prismPrescriptionFileId).filter(
+          (i) => i
+        );
+
+        const newuploadedPrescriptions = PhysicalPrescriptions.map(
+          (item, index) =>
+            ({
+              ...item,
+              uploadedUrl: phyPresUrls![index],
+              prismPrescriptionFileId: phyPresPrismIds![index],
+            } as PhysicalPrescription)
+        );
+        setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
+
         const days = durationDays ? parseInt(durationDays) : null;
         props.navigation.push(AppRoutes.YourCartUploadPrescription,
           {
@@ -313,6 +297,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           }
         );
       }
+
+      setLoading!(false);
     } catch (error) {
       setLoading!(false);
       CommonBugFender('UploadPrescription_onPressSubmit_try', error);
