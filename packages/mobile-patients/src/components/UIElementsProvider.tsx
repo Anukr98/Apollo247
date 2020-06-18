@@ -115,8 +115,6 @@ export const UIElementsProvider: React.FC = (props) => {
     transactionId: '',
   });
 
-  const [mediaVolume, setMediaVolume] = useState<number>(-1);
-
   useEffect(() => {
     if (isAlertVisible || loading) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
