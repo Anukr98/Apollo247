@@ -31,6 +31,8 @@ import CallDetectorManager from 'react-native-call-detection';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import SystemSetting from 'react-native-system-setting';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -191,14 +193,37 @@ export const AudioVideoProvider: React.FC = (props) => {
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
 
+  const setPrevVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+    console.log(mediaVolume, 'stipp');
+    if (mediaVolume !== -1) {
+      SystemSetting.setVolume(mediaVolume);
+      AsyncStorage.setItem('mediaVolume', '-1');
+    }
+  };
+  const maxVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+
+    console.log(mediaVolume, mediaVolume === -1);
+
+    if (mediaVolume === -1) {
+      SystemSetting.getVolume().then((volume: number) => {
+        console.log(volume, 'bhj');
+        AsyncStorage.setItem('mediaVolume', volume.toString());
+      });
+    }
+    SystemSetting.setVolume(1);
+  };
   useEffect(() => {
     if (callConnected && callAccepted) {
       startTimer(0);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     } else if (callAccepted) {
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     }
@@ -215,12 +240,14 @@ export const AudioVideoProvider: React.FC = (props) => {
       AppState.addEventListener('change', _handleAppStateChange);
       try {
         if (audioTrack) {
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         } else {
           audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
             CommonBugFender('Loading_callertune__failed', error);
           });
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         }
@@ -372,6 +399,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     setAudioEnabled(true);
     setVideoEnabled(true);
     if (audioTrack) {
+      setPrevVolume();
       audioTrack.stop();
     }
     withCallBack && callBacks.onCallEnd(callType, callDuration);
@@ -493,6 +521,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         if (audioTrack) {
           audioTrack.stop(() => {
             if (audioTrack) {
+              maxVolume();
               audioTrack.play();
             }
           });
@@ -511,6 +540,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connected: (event: string) => {
       setCallConnected(true);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop(() => {});
       }
     },
