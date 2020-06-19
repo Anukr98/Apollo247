@@ -20,6 +20,8 @@ import {
   ADD_MEDICAL_RECORD,
   UPLOAD_FILE,
   UPLOAD_DOCUMENT,
+  UPLOAD_LAB_RESULTS,
+  UPLOAD_HEALTH_RECORD_PRESCRIPTION,
   DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -30,6 +32,7 @@ import {
   AddMedicalRecordParametersInput,
   MedicalRecordType,
   MedicalTestUnit,
+  prescriptionSource,
   UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
@@ -40,6 +43,7 @@ import {
   isValidName,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -252,23 +256,49 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     return Promise.all(
       prescriptions.map((item) =>
-        client.mutate<uploadDocument>({
-          mutation: UPLOAD_DOCUMENT,
-          fetchPolicy: 'no-cache',
-          variables: {
-            UploadDocumentInput: {
-              base64FileInput: item.base64,
-              category:
-                typeofRecord === MedicRecordType.TEST_REPORT
-                  ? 'TestReports'
-                  : typeofRecord === MedicRecordType.PRESCRIPTION
-                  ? 'OpSummary'
-                  : 'HealthChecks',
-              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-              patientId: currentPatient && currentPatient.id,
-            },
-          },
-        })
+        typeofRecord === MedicRecordType.TEST_REPORT
+          ? client.mutate({
+              mutation: UPLOAD_LAB_RESULTS,
+              fetchPolicy: 'no-cache',
+              variables: {
+                LabResultsUploadRequest: {
+                  labTestName: testName,
+                  labTestDate:
+                    dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                  labTestResults: [],
+                  testResultFiles: [
+                    {
+                      fileName: item.title,
+                      mimeType: mimeType(item.title + '.' + item.fileType),
+                      content: item.base64,
+                    },
+                  ],
+                },
+                uhid: g(currentPatient, 'uhid'),
+              },
+            })
+          : client.mutate({
+              mutation: UPLOAD_HEALTH_RECORD_PRESCRIPTION,
+              fetchPolicy: 'no-cache',
+              variables: {
+                PrescriptionUploadRequest: {
+                  prescribedBy: docName,
+                  dateOfPrescription:
+                    dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                  startDate: null,
+                  endDate: null,
+                  prescriptionSource: prescriptionSource.SELF,
+                  prescriptionFiles: [
+                    {
+                      fileName: item.title,
+                      mimeType: mimeType(item.title + '.' + item.fileType),
+                      content: item.base64,
+                    },
+                  ],
+                },
+                uhid: g(currentPatient, 'uhid'),
+              },
+            })
       )
     );
   };
@@ -390,9 +420,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         multiplePhysicalPrescriptionUpload(Images)
           .then((data) => {
             console.log('uploaddocument', data);
-            const uploadUrlscheck = data.map((item) =>
-              item.data!.uploadDocument.status ? item.data!.uploadDocument : null
-            );
+            const uploadUrlscheck =
+              typeofRecord === MedicRecordType.TEST_REPORT
+                ? data.map((item) =>
+                    item.data!.uploadLabResults && item.data!.uploadLabResults.fileUrl
+                      ? item.data!.uploadLabResults
+                      : null
+                  )
+                : data.map((item) =>
+                    item.data!.uploadPrescriptions && item.data!.uploadPrescriptions.fileUrl
+                      ? item.data!.uploadPrescriptions
+                      : null
+                  );
             console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
             var filtered = uploadUrlscheck.filter(function(el) {
               return el != null;
@@ -412,8 +451,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 observations: observations,
                 additionalNotes: additionalNotes,
                 medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-                documentURLs: filtered.map((item) => item!.filePath).join(','),
-                prismFileIds: filtered.map((item) => item!.fileId).join(','),
+                documentURLs: filtered.map((item) => item!.fileUrl).join(','),
+                prismFileIds: filtered.map((item) => item!.recordId).join(','),
               };
               console.log('in', inputData);
               if (uploadUrlscheck.length > 0) {

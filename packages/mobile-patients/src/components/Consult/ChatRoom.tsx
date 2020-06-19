@@ -3827,6 +3827,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       id: string;
       message: string;
       duration: string;
+      fileType: string;
       transferInfo: any;
       prismId: any;
       url: any;
@@ -3953,7 +3954,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.message === imageconsult ? (
                 <View>
-                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ||
+                  rowData.fileType === 'image' ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
@@ -5511,7 +5513,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'pdf' ||
         item.fileType == 'png'
       ) {
-        console.log('item', item.base64);
+        // console.log('item', item.base64, item.fileType);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: prescriptionFileProperties = {
           fileName: resource[0].title,
@@ -5534,7 +5536,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             fetchPolicy: 'no-cache',
             variables: {
               PrescriptionUploadRequest: inputData,
-              uhid: 'APJ1.0002014819',
+              uhid: g(currentPatient, 'uhid'),
             },
           })
           .then((data) => {
@@ -5546,7 +5548,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               const text = {
                 id: patientId,
                 message: imageconsult,
-                fileType: (fileUrl || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
+                fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
                 url: fileUrl || '',
                 messageDate: new Date(),
               };
