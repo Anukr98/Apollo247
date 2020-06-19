@@ -1280,17 +1280,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={styles.aphAlertCtaViewStyle}>
       {moveSelectedToTop()
         .slice(0, 5)
-        .map((item: any, index: any, array: any) => (
-          <TouchableOpacity
-            onPress={() => {
-              setShowProfilePopUp(false);
-              selectUser(item);
-            }}
-            style={[styles.ctaWhiteButtonViewStyle]}
-          >
-            <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
-          </TouchableOpacity>
-        ))}
+        .map((item: any, index: any, array: any) =>
+          item.firstName !== '+ADD MEMBER' ? (
+            <TouchableOpacity
+              onPress={() => {
+                setShowProfilePopUp(false);
+                selectUser(item);
+              }}
+              style={[styles.ctaWhiteButtonViewStyle]}
+            >
+              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
+            </TouchableOpacity>
+          ) : null
+        )}
       <View style={[styles.textViewStyle]}>
         <Text
           onPress={() => {
