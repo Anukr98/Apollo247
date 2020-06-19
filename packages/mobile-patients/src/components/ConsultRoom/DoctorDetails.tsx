@@ -57,6 +57,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  LayoutAnimationTypes,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
@@ -183,6 +184,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
   const { VirtualConsultationFee } = useAppCommonData();
+  const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -334,6 +336,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setDoctorId(data.getDoctorDetailsById.id);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
+            setAvailableModes(data.getDoctorDetailsById);
           } else {
             setTimeout(() => {
               setshowSpinner(false);
@@ -350,6 +353,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setshowSpinner(false);
         console.log('Error occured', e);
       });
+  };
+
+  const setAvailableModes = (availabilityMode: any) => {
+    console.log(availabilityMode, 'availabilityMode');
+
+    const modeOfConsult = availabilityMode.availableModes;
+
+    try {
+      if (modeOfConsult.includes(ConsultMode.BOTH)) {
+        setConsultType(ConsultMode.BOTH);
+      } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
+        setConsultType(ConsultMode.ONLINE);
+      } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
+        setConsultType(ConsultMode.PHYSICAL);
+      } else {
+        setConsultType(ConsultMode.BOTH);
+      }
+    } catch (error) {}
   };
 
   const navigateToSpecialitySearch = () => {
@@ -953,7 +974,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           appointmentId={props.navigation.state.params!.appointmentId}
           consultModeSelected={props.navigation.getParam('consultModeSelected')}
           externalConnect={props.navigation.getParam('externalConnect')}
-          availableMode={'BOTH'}
+          availableMode={consultType}
         />
       )}
       <Animated.View
