@@ -226,6 +226,8 @@ export enum ApiConstants {
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 
   COUNTRY_CODE = '91',
+  OFFLINE_ORDERID = '7582d9fa-c33d-43d9-968f-77c917fff3ae',
+  CURRENT_UHID = 'APJ1.0002579777',
 
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',

@@ -10,7 +10,7 @@ import {
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { getUnixTime, fromUnixTime } from 'date-fns';
+import { getUnixTime, format } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
 
@@ -195,7 +195,7 @@ const getMedicineOrdersOMSList: Resolver<
   const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
   const ordersResp = await fetch(
     process.env.PRISM_GET_OFFLINE_ORDERS
-      ? process.env.PRISM_GET_OFFLINE_ORDERS + 'APJ1.0002579777'
+      ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
       : '',
     {
       method: 'GET',
@@ -225,9 +225,13 @@ const getMedicineOrdersOMSList: Resolver<
         });
       }
       const offlineList: any = {
-        id: '7582d9fa-c33d-43d9-968f-77c917fff3ae',
+        id: ApiConstants.OFFLINE_ORDERID,
         orderAutoId: order.id,
-        createdDate: fromUnixTime(order.billDateTime),
+        createdDate:
+          format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+          'T' +
+          format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+          '.000Z',
         billNumber: order.billNo,
         medicineOrderLineItems: lineItems,
         currentStatus: MEDICINE_ORDER_STATUS.DELIVERED,
