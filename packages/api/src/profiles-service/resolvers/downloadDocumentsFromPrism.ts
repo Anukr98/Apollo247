@@ -35,6 +35,7 @@ const downloadDocuments: Resolver<
   DownloadDocumentsResult
 > = async (parent, { downloadDocumentsInput }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.findById(downloadDocumentsInput.patientId);
 
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
@@ -45,8 +46,17 @@ const downloadDocuments: Resolver<
     if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
-    const fileName = fileIdNameArray.join('_');
-    return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileId}&fileName=${fileName}`;
+    //const fileName = fileIdNameArray.join('_');
+
+    let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString();
+    prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+      '{ACCESS_KEY}',
+      process.env.PHR_V1_ACCESS_TOKEN!
+    );
+    prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails!.uhid);
+    prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{RECORDID}', fileId!);
+    return prescriptionDocumentUrl;
+    //return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileId}&fileName=${fileName}`;
   });
 
   return { downloadPaths };
