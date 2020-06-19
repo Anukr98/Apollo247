@@ -37,11 +37,6 @@ const downloadDocuments: Resolver<
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientsRepo.findById(downloadDocumentsInput.patientId);
 
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
-
-  if (!prismAuthToken) return { downloadPaths: [] };
-
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
     if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
