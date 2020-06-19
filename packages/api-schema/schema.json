@@ -1577,7 +1577,7 @@
             "deprecationReason": null
           },
           {
-            "name": "connectExotel",
+            "name": "initateConferenceTelephoneCall",
             "description": null,
             "args": [
               {

@@ -30,7 +30,7 @@ export const exotelTypeDefs = gql`
   }
 
   extend type Query {
-    connectExotel(exotelInput: exotelInput): exotelResult!
+    initateConferenceTelephoneCall(exotelInput: exotelInput): exotelResult!
   }
 `;
 
@@ -97,7 +97,7 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
     log(
       'consultServiceLogger',
       'API_CALL_RESPONSE',
-      'connectExotel()->API_CALL_RESPONSE',
+      'initateConferenceTelephoneCall()->API_CALL_RESPONSE',
       JSON.stringify(res),
       ''
     );
@@ -119,7 +119,7 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
     log(
       'consultServiceLogger',
       'API_CALL_ERROR',
-      'connectExotel()->CATCH_BLOCK',
+      'initateConferenceTelephoneCall()->CATCH_BLOCK',
       '',
       JSON.stringify(error)
     );
@@ -139,7 +139,7 @@ async function exotelCalling(callInputs: callInputs): Promise<exotelCalling> {
   });
 }
 
-const connectExotel: Resolver<
+const initateConferenceTelephoneCall: Resolver<
 null,
 exotelInputArgs,
 ConsultServiceContext,
@@ -226,6 +226,6 @@ exotelCalling
 
 export const exotelCallingResolvers = {
     Query: {
-        connectExotel,
+        initateConferenceTelephoneCall,
     },
 };
