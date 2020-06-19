@@ -240,17 +240,76 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         doctorDetails.getDoctorDetailsById.specialty &&
         doctorDetails.getDoctorDetailsById.specialty.name) ||
       null;
-    let city;
+
     if (doctorDetails && doctorDetails.getDoctorDetailsById) {
-      city = doctorDetails.getDoctorDetailsById.city;
-    } else {
-      city = null;
+      const {
+        city,
+        fullName,
+        id,
+        doctorType,
+        doctorHospital,
+        onlineConsultationFees,
+        physicalConsultationFees,
+      } = doctorDetails.getDoctorDetailsById;
+      let items = [],
+        count = 0;
+      onlineConsultationFees &&
+        items.push({
+          item_name: fullName,
+          item_id: id,
+          price: Number(onlineConsultationFees),
+          item_brand:
+            doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+              ? 'Apollo'
+              : 'Partner Doctors',
+          item_category: 'Consultations',
+          item_category_2: speciality,
+          item_category_3:
+            city ||
+            (doctorHospital &&
+              doctorHospital.length &&
+              doctorHospital[0].facility &&
+              doctorHospital[0].facility.city),
+          // 'item_category_4': '', // For Future
+          item_variant: 'Virtual',
+          index: ++count,
+          quantity: 1,
+        });
+      physicalConsultationFees &&
+        items.push({
+          item_name: fullName,
+          item_id: id,
+          price: Number(physicalConsultationFees),
+          item_brand:
+            doctorType && doctorType.toLocaleLowerCase() === 'apollo'
+              ? 'Apollo'
+              : 'Partner Doctors',
+          item_category: 'Consultations',
+          item_category_2: speciality,
+          item_category_3:
+            city ||
+            (doctorHospital &&
+              doctorHospital.length &&
+              doctorHospital[0].facility &&
+              doctorHospital[0].facility.city),
+          // 'item_category_4': '', // For Future
+          item_variant: 'Physcial',
+          index: ++count,
+          quantity: 1,
+        });
+      gtmTracking({
+        category: 'Consultations',
+        action: speciality,
+        label: `${city || null} Doctor Profile Viewed`,
+        ecommObj: {
+          event: 'view_item',
+          ecommerce: {
+            items,
+          },
+        },
+      });
     }
-    gtmTracking({
-      category: 'Consultations',
-      action: speciality,
-      label: `${city} Doctor Profile Viewed`,
-    });
+
     /**Gtm code start end */
     apolloClient
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({

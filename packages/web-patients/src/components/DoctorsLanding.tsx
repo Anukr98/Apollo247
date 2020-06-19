@@ -282,16 +282,6 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
   let showError = false;
 
   useEffect(() => {
-    /**Gtm code start start */
-    gtmTracking({
-      category: 'Consultations',
-      action: 'Landing Page',
-      label: 'Listing Page Viewed',
-    });
-    /**Gtm code start end */
-  }, []);
-
-  useEffect(() => {
     if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
       setLoading(true);
       apolloClient
