@@ -8,6 +8,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorPatientExternalConnectRepository } from 'doctors-service/repositories/DoctorPatientExternalConnectRepository';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
@@ -31,6 +32,8 @@ export const getAppointmentOverviewTypeDefs = gql`
   }
   type PastAppointmentsCountResult {
     count: Int
+    completedCount: Int
+    yesCount: Int
   }
   extend type Query {
     getAppointmentOverview(
@@ -72,6 +75,8 @@ type GetAllDoctorAppointmentsInputArgs = {
 
 type PastAppointmentsCountResult = {
   count: number;
+  completedCount: number;
+  yesCount: number;
 };
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
@@ -174,7 +179,12 @@ const getPastAppointmentsCount: Resolver<
   if (!patientId) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   const { apptRepo } = getRepos(context);
   const count = await apptRepo.getAppointmentsCount(doctorId, patientId);
-  return { count };
+  const completedCount = await apptRepo.getAppointmentsCompleteCount(doctorId, patientId);
+  const externalConnectRepo = context.doctorsDb.getCustomRepository(
+    DoctorPatientExternalConnectRepository
+  );
+  const yesCount = await externalConnectRepo.findCountDoctorAndPatient(doctorId, patientId);
+  return { count, completedCount, yesCount };
 };
 
 export const getAppointmentOverviewResolvers = {

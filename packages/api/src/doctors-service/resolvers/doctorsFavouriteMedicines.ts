@@ -29,6 +29,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     MORNING
     NIGHT
     NOON
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -40,6 +41,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     DAYS
     MONTHS
     WEEKS
+    TILL_NEXT_REVIEW
   }
 
   enum MEDICINE_UNIT {
@@ -48,9 +50,11 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     CAPSULE
     CREAM
     DROP
+    DROPS
     GEL
     GM
     INJECTION
+    INTERNATIONAL_UNIT
     LOTION
     ML
     MG
@@ -68,6 +72,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    TEASPOON
     UNIT
   }
 
@@ -103,8 +108,13 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     ORAL_DROPS
     NASAL_DROPS
     EYE_DROPS
+    EYE_OINTMENT
     EAR_DROPS
     INTRAVAGINAL
+    NASALLY
+    INTRANASAL_SPRAY
+    INTRA_ARTICULAR
+    TRIGGER_POINT_INJECTION
   }
 
   input SaveDoctorsFavouriteMedicineInput {

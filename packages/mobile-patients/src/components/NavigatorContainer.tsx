@@ -78,13 +78,15 @@ import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
 import { ConsultPaymentStatus } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentStatus';
 import { CheckoutSceneNew } from '@aph/mobile-patients/src/components/CheckoutScenenew';
-import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus'
+import { PaymentStatus } from '@aph/mobile-patients/src/components/PaymentStatus';
+import { OneApolloMembership } from '@aph/mobile-patients/src/components/OneApollo/OneApolloMembership';
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
+import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -162,6 +164,8 @@ export enum AppRoutes {
   NotificationScreen = 'NotificationScreen',
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
+  OneApolloMembership = 'OneApolloMembership',
+  ConsultTypeScreen = 'ConsultTypeScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -372,10 +376,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: ManageProfile,
   },
   [AppRoutes.LinkUHID]: {
-    screen: LinkUHID
+    screen: LinkUHID,
   },
   [AppRoutes.ReadMoreLinkUHID]: {
-    screen: ReadMoreLinkUHID
+    screen: ReadMoreLinkUHID,
   },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
@@ -418,6 +422,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PaymentStatusScreen]: {
     screen: PaymentStatusScreen,
+  },
+  [AppRoutes.OneApolloMembership]: {
+    screen: OneApolloMembership,
+  },
+  [AppRoutes.ConsultTypeScreen]: {
+    screen: ConsultTypeScreen,
   },
 };
 
