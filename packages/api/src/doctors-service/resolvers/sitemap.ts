@@ -93,7 +93,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
   const modifiedDate =
     format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
-  let cmsUrls = '\nCMS links\n';
+  let cmsUrls = '\n<!--CMS links-->\n';
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
       const url = process.env.CMS_BASE_URL + link;
