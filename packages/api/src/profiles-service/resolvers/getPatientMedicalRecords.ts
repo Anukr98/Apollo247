@@ -12,6 +12,7 @@ import { ApiConstants } from 'ApiConstants';
 
 import { getLabResults, getPrescriptionData } from 'helpers/phrV1Services';
 import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
+import { format } from 'date-fns';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
@@ -118,6 +119,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     tag: String
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
+    date: Date!
   }
 
   type LabResultsDownloadResponse {
@@ -140,6 +142,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     prescriptionSource: String
     source: String!
     fileUrl: String!
+    date: Date!
   }
 
   type PrecriptionFileParameters {
@@ -312,10 +315,12 @@ const getPatientPrismMedicalRecords: Resolver<
   //add documet urls in the labresults and prescription objects
   labResults.response.map((labresult) => {
     labresult.fileUrl = labResultDocumentUrl.replace('{RECORDID}', labresult.id);
+    labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
   });
 
   prescriptions.response.map((prescription) => {
     prescription.fileUrl = prescriptionDocumentUrl.replace('{RECORDID}', prescription.id);
+    prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
   });
 
   //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
