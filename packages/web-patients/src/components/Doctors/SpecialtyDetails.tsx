@@ -29,6 +29,7 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -462,8 +463,16 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
+  const metaTagProps = {
+    title: `${readableParam(specialtyName)} - Book Online Appointments And Consultations - Apollo 247`,
+    description:
+      `Book online appointments with ${readableParam(specialtyName)} in just a few clicks. Consult the best ${readableParam(specialtyName)} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
+
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
