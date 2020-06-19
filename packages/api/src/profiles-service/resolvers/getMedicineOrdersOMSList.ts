@@ -2,11 +2,15 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { MedicineOrders, MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
+import {
+  MedicineOrders,
+  MEDICINE_ORDER_STATUS,
+  MEDICINE_ORDER_TYPE,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { getUnixTime } from 'date-fns';
+import { getUnixTime, fromUnixTime } from 'date-fns';
 import { Tedis } from 'redis-typescript';
 import { ApiConstants } from 'ApiConstants';
 
@@ -41,6 +45,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     productDiscount: Float
     packagingCharges: Float
     showPrescriptionAtStore: Boolean
+    billNumber: String
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
     bookingSource: BOOKING_SOURCE
@@ -187,7 +192,52 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const ordersResp = await fetch(
+    process.env.PRISM_GET_OFFLINE_ORDERS
+      ? process.env.PRISM_GET_OFFLINE_ORDERS + 'APJ1.0002579777'
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await ordersResp.text();
+  const offlineOrdersList = JSON.parse(textRes);
+  console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
+  if (offlineOrdersList.errorCode == 0) {
+    //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
+    offlineOrdersList.response.forEach((order: any) => {
+      const lineItems: any[] = [];
+      if (order.lineItems) {
+        order.lineItems.forEach((item: any) => {
+          const itemDets = {
+            isMedicine: 1,
+            medicineSKU: item.itemId,
+            medicineName: item.itemName,
+            mrp: item.mrp,
+            mou: 1,
+            price: item.totalMrp,
+            quantity: item.saleQty,
+            isPrescriptionNeeded: 0,
+          };
+          lineItems.push(itemDets);
+        });
+      }
+      const offlineList: any = {
+        id: '7582d9fa-c33d-43d9-968f-77c917fff3ae',
+        orderAutoId: order.id,
+        createdDate: fromUnixTime(order.billDateTime),
+        billNumber: order.billNo,
+        medicineOrderLineItems: lineItems,
+        currentStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+        orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+      };
+      console.log(offlineList, 'offlineList');
+      //offlineList.push(orderDetails)
+      medicineOrdersList.push(offlineList);
+    });
+  }
   return { medicineOrdersList };
 };
 
@@ -264,23 +314,37 @@ const getRecommendedProductsList: Resolver<
     host: ApiConstants.REDIS_URL.toString(),
     password: ApiConstants.REDIS_PWD.toString(),
   });
-  const redisKeys = await tedis.keys('*');
+  //const redisKeys = await tedis.keys('*');
   const recommendedProductsList: RecommendedProducts[] = [];
-  for (let k = 0; k <= 5; k++) {
-    const skuDets = await tedis.hgetall(redisKeys[k]);
-    //console.log(skuDets, skuDets.name, 'redis keys length');
-    const recommendedProducts: RecommendedProducts = {
-      productImage: skuDets.gallery_images,
-      productPrice: skuDets.price,
-      productName: skuDets.name,
-      productSku: skuDets.sku,
-      productSpecialPrice: skuDets.special_price,
-      isPrescriptionNeeded: skuDets.is_prescription_required,
-      categoryName: skuDets.category_name,
-      status: skuDets.status,
-      mou: skuDets.mou,
-    };
-    recommendedProductsList.push(recommendedProducts);
+  const listResp = await fetch(
+    process.env.PRISM_GET_RECOMMENDED_PRODUCTS
+      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + 'APJ1.0002579777'
+      : '',
+    {
+      method: 'GET',
+      headers: {},
+    }
+  );
+  const textRes = await listResp.text();
+  const productsList = JSON.parse(textRes);
+  if (productsList.errorCode == 0) {
+    //console.log(productsList.response[0], productsList.response.length, 'prism recommend list');
+    for (let k = 0; k < productsList.response.length; k++) {
+      //console.log(productsList.response[k], 'redis keys length');
+      const skuDets = await tedis.hgetall(productsList.response[k]);
+      const recommendedProducts: RecommendedProducts = {
+        productImage: skuDets.gallery_images,
+        productPrice: skuDets.price,
+        productName: skuDets.name,
+        productSku: skuDets.sku,
+        productSpecialPrice: skuDets.special_price,
+        isPrescriptionNeeded: skuDets.is_prescription_required,
+        categoryName: skuDets.category_name,
+        status: skuDets.status,
+        mou: skuDets.mou,
+      };
+      recommendedProductsList.push(recommendedProducts);
+    }
   }
 
   return { recommendedProducts: recommendedProductsList };
