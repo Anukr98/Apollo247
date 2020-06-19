@@ -16,7 +16,7 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
@@ -511,6 +511,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_min_value_to_nudge_users_to_avail_free_delivery',
+              'min_value_to_nudge_users_to_avail_free_delivery',
+              'QA_pharmacy_homepage',
+              'pharmacy_homepage',
             ]);
         })
         .then((snapshot) => {
@@ -519,9 +523,43 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
+          const pharmacyHomepageInfoQA = JSON.parse(snapshot['QA_pharmacy_homepage'].val() || null);
+          pharmacyHomepageInfoQA &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'PHARMACY_HOMEPAGE_INFO',
+              pharmacyHomepageInfoQA as PharmacyHomepageInfo[]
+            );
+
+          const pharmacyHomepageInfo = JSON.parse(snapshot['pharmacy_homepage'].val() || null);
+          pharmacyHomepageInfo &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'PHARMACY_HOMEPAGE_INFO',
+              pharmacyHomepageInfo as PharmacyHomepageInfo[]
+            );
+
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
+          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'QA_min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
+          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
           minValueForPharmacyFreeDelivery &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
 

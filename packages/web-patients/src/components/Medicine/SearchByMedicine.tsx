@@ -23,6 +23,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,6 +180,18 @@ const useStyles = makeStyles((theme: Theme) => {
     ePrescriptionTitle: {
       zIndex: 9999,
     },
+    noData: {
+      marginTop: 10,
+      fontSize: 14,
+      color: '#01475b',
+      lineHeight: '18px',
+      paddingBottom: 16,
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 25,
+        paddingLeft: 10,
+      },
+    },
     specialOffer: {
       cursor: 'pointer',
       paddingLeft: 20,
@@ -196,6 +209,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const apiDetails = {
+  skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
   url: process.env.PHARMACY_MED_CATEGORY_LIST,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
@@ -223,6 +237,7 @@ export const SearchByMedicine: React.FC = (props) => {
 
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [heading, setHeading] = React.useState<string>('');
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -256,39 +271,58 @@ export const SearchByMedicine: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineList(data.products);
         setMedicineListFiltered(data.products);
+        setHeading(data.search_heading || '');
         setIsLoading(false);
       })
       .catch((e) => {
         console.log(e);
         setIsLoading(false);
+        setHeading('');
       });
   };
 
   useEffect(() => {
-    if (!medicineList && paramSearchType !== 'search-medicines' && Number(paramSearchText) > 0) {
+    if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       axios
         .post(
-          apiDetails.url || '',
-          {
-            category_id: paramSearchText,
-            page_id: 1,
-          },
+          apiDetails.skuUrl || '',
+          { params: paramSearchText, level: 'category' },
           {
             headers: {
               Authorization: apiDetails.authToken,
-              Accept: '*/*',
             },
           }
         )
         .then(({ data }) => {
-          if (data && data.products) {
-            setMedicineList(data.products);
-            setIsLoading(false);
-          }
+          axios
+            .post(
+              apiDetails.url || '',
+              {
+                category_id: data.category_id || paramSearchText,
+                page_id: 1,
+              },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                  Accept: '*/*',
+                },
+              }
+            )
+            .then(({ data }) => {
+              if (data && data.products) {
+                setMedicineList(data.products);
+                setHeading('');
+                setIsLoading(false);
+              }
+            })
+            .catch((e) => {
+              setIsLoading(false);
+              setHeading('');
+            });
         })
         .catch((e) => {
-          setIsLoading(false);
+          console.log(e);
         });
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
@@ -425,9 +459,15 @@ export const SearchByMedicine: React.FC = (props) => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
   };
+  const metaTagProps = {
+    title: `Buy ${params.searchMedicineType} - Online Pharmacy Store - Apollo 247`,
+    desciption: `Buy ${params.searchMedicineType} online at Apollo 247 - India's online pharmacy store. Get ${params.searchMedicineType} medicines in just a few clicks. Buy ${params.searchMedicineType} at best prices in India.`,
+    canonicalLink: window && window.location && window.location.href,
+  };
 
   return (
     <div className={classes.root}>
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
@@ -494,7 +534,10 @@ export const SearchByMedicine: React.FC = (props) => {
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
                     {() => (
-                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      <>
+                        <div className={classes.noData}>{heading}</div>
+                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      </>
                     )}
                   </MedicinesCartContext.Consumer>
                 </div>

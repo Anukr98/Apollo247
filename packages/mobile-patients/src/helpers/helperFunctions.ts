@@ -854,7 +854,12 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
-    revenue: price,
+    af_revenue: special_price
+      ? typeof special_price == 'string'
+        ? Number(special_price)
+        : special_price
+      : price,
+    af_currency: 'INR',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1072,7 +1077,12 @@ export const postAppsFlyerAddToCartEvent = (
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
     Source: source,
-    revenue: price,
+    af_revenue: special_price
+      ? typeof special_price == 'string'
+        ? Number(special_price)
+        : special_price
+      : price,
+    af_currency: 'INR',
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1143,7 +1153,8 @@ export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
 
 export const getFormattedLocation = (
   addrComponents: PlacesApiResponse['results'][0]['address_components'],
-  latLang: PlacesApiResponse['results'][0]['geometry']['location']
+  latLang: PlacesApiResponse['results'][0]['geometry']['location'],
+  pincode?: string
 ) => {
   const { lat, lng } = latLang || {};
 
@@ -1167,7 +1178,7 @@ export const getFormattedLocation = (
     state: findAddrComponents('administrative_area_level_1', addrComponents),
     stateCode: findAddrComponents('administrative_area_level_1', addrComponents, 'short_name'),
     country: findAddrComponents('country', addrComponents),
-    pincode: findAddrComponents('postal_code', addrComponents),
+    pincode: pincode || findAddrComponents('postal_code', addrComponents),
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };

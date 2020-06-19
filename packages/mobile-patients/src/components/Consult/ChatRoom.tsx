@@ -25,6 +25,8 @@ import {
   PickCallIcon,
   UnMuteIcon,
   VideoOffIcon,
+  UploadHealthRecords,
+  FreeArrowIcon,
   VideoOnIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -118,7 +120,6 @@ import {
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
-import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { WebView } from 'react-native-webview';
@@ -140,6 +141,32 @@ import { FeedbackPopup } from '../FeedbackPopup';
 import { RenderPdf } from '../ui/RenderPdf';
 import { useUIElements } from '../UIElementsProvider';
 import { ChatQuestions } from './ChatQuestions';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+
+interface OpentokStreamObject {
+  connection: {
+    connectionId: string;
+    creationTime: string;
+    data: string;
+  };
+  connectionId: string;
+  creationTime: string;
+  hasAudio: boolean;
+  hasVideo: boolean;
+  height: number;
+  name: string;
+  sessionId: string;
+  streamId: string;
+  videoType: 'camera' | 'screen';
+  width: number;
+}
+
+type OptntokChangeProp = {
+  changedProperty: string;
+  newValue: string;
+  oldValue: boolean;
+  stream: OpentokStreamObject;
+};
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -355,6 +382,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ...theme.fonts.IBMPlexSansSemiBold(12),
     textAlign: 'center',
     letterSpacing: 0.46,
+    zIndex: 1005,
   });
 
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -383,6 +411,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
   const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
+  const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
   const [isSendAnswers, setisSendAnswers] = useState<boolean[]>([
     false,
@@ -401,6 +430,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [textChange, setTextChange] = useState(false);
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
+  const [callerAudio, setCallerAudio] = useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = useState<boolean>(true);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -551,6 +582,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     AppState.addEventListener('change', _handleAppStateChange);
   }, []);
 
+  const playSound = () => {
+    try {
+      maxVolume();
+      if (audioTrack) {
+        audioTrack.play();
+        audioTrack.setNumberOfLoops(15);
+        console.log('call audioTrack');
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
+  const stopSound = () => {
+    try {
+      setPrevVolume();
+      if (audioTrack) {
+        audioTrack.stop();
+      }
+    } catch (e) {
+      CommonBugFender('playing_callertune__failed', e);
+    }
+  };
+
   useEffect(() => {
     console.log('callType', callType);
     if (callType) {
@@ -558,15 +613,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (callType === 'VIDEO') {
           setOnSubscribe(true);
           setIsAudio(false);
-          InCallManager.startRingtone('_BUNDLE_');
-          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         } else if (callType === 'AUDIO') {
           setOnSubscribe(true);
           setIsAudio(true);
           callhandelBack = false;
-          InCallManager.startRingtone('_BUNDLE_');
-          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
         }
+        playSound();
       });
     }
     if (prescription) {
@@ -974,15 +1026,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (callType === 'VIDEO') {
               setOnSubscribe(true);
               setIsAudio(false);
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
             } else if (callType === 'AUDIO') {
               setOnSubscribe(true);
               setIsAudio(true);
               callhandelBack = false;
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
             }
+            playSound();
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -992,8 +1041,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               changeVideoStyles();
@@ -1275,9 +1323,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     videoDisableWarningLifted: (error: string) => {
       // console.log(`videoDisableWarningLifted subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
-    audioNetworkStats: (error: object) => {
-      // console.log(`audioNetworkStats subscriberEventHandlers: ${JSON.stringify(error)}`);
-    },
   };
 
   const sessionEventHandlers = {
@@ -1319,8 +1364,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
-    streamPropertyChanged: (event: string) => {
-      console.log('session streamPropertyChanged destroyed!', event);
+    streamPropertyChanged: (event: OptntokChangeProp) => {
+      console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
+      if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
     },
     otrnError: (error: string) => {
       console.log(
@@ -1341,7 +1390,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
-
+    setCallerAudio(true);
+    setCallerVideo(true);
     setTimerStyles({
       position: 'absolute',
       marginHorizontal: 20,
@@ -1351,6 +1401,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
   };
 
@@ -1796,7 +1847,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const successSteps = [
-    'Let’s get you feeling better in 5 simple steps :)\n',
+    'Let’s get you feeling better by following simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
@@ -2008,7 +2059,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
 
@@ -2018,18 +2069,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setOnSubscribe(true);
         callhandelBack = false;
         stopCallAbondmentTimer();
-        InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-        // console.log("AUDIO_CALL_STARTED");
-
-        // InCallManager.chooseAudioRoute('EARPIECE')
+        playSound();
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         callhandelBack = false;
         setIsAudio(false);
         stopCallAbondmentTimer();
-        InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        playSound();
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
         stopInterval();
@@ -2068,8 +2114,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = true;
         setIsCall(false);
         setIsAudioCall(false);
-        InCallManager.stopRingtone();
-        InCallManager.stop();
+        stopSound();
         addMessages(message);
       } else if (message.message.message === covertVideoMsg) {
         console.log('covertVideoMsg', covertVideoMsg);
@@ -4494,7 +4539,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
                   publishAudio: mute,
+                  videoTrack: showVideo,
+                  audioTrack: mute,
                   audioVolume: 100,
+                  name: g(currentPatient, 'firstName') || 'patient',
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
@@ -4560,6 +4608,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
                     left: 15,
+                    zIndex: 1001,
                   }}
                 >
                   {name == 'JUNIOR'
@@ -4570,6 +4619,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {isPaused !== '' ? (
+              <Text
+                style={[
+                  timerStyles,
+                  {
+                    color: theme.colors.CAPSULE_ACTIVE_BG,
+                    flexWrap: 'wrap',
+                  },
+                ]}
+              >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
+            ) : null}
             {PipView && renderOnCallPipButtons('video')}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
@@ -4585,6 +4645,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callTimerStarted = `${
     callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
   } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
+
+  const isPaused = !callerAudio
+    ? !callerVideo && isCall
+      ? 'Audio & Video'
+      : 'Audio'
+    : !callerVideo && isCall
+    ? 'Video'
+    : '';
+
+  //  {isCall && VideoCall()}
+  //   {isAudioCall && AudioCall()}
 
   const AudioCall = () => {
     return (
@@ -4648,6 +4719,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               publishVideo: convertVideo ? true : false,
               publishAudio: mute,
               audioVolume: 100,
+              videoTrack: convertVideo ? true : false,
+              audioTrack: mute,
+              name: g(currentPatient, 'firstName') || 'patient',
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
@@ -4700,7 +4774,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               // opacity: 0.6,
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1000,
+              zIndex: 1001,
             }}
           >
             <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
@@ -4710,6 +4784,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+        {isPaused !== '' ? (
+          <Text
+            style={[
+              timerStyles,
+              {
+                color: theme.colors.CAPSULE_ACTIVE_BG,
+                flexWrap: 'wrap',
+              },
+            ]}
+          >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
+        ) : null}
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
@@ -4772,6 +4857,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
     setChatReceived(false);
     setSubscriberStyles({
@@ -4804,6 +4890,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
             left: 15,
+            zIndex: 1001,
           }}
           numberOfLines={2}
         >
@@ -4816,6 +4903,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             position: 'absolute',
             top: isIphoneX() ? 64 : 44,
             left: 20,
+            zIndex: 1006,
           }}
         >
           <TouchableOpacity
@@ -4859,6 +4947,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 ...theme.fonts.IBMPlexSansSemiBold(12),
                 textAlign: 'center',
                 letterSpacing: 0.46,
+                zIndex: 1005,
               });
             }}
           >
@@ -4950,7 +5039,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           position: 'absolute',
           bottom: 16,
           left: 16,
-          zIndex: 1000,
+          zIndex: 1002,
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}
@@ -5046,6 +5135,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...theme.fonts.IBMPlexSansSemiBold(12),
       textAlign: 'center',
       letterSpacing: 0.46,
+      zIndex: 1005,
     });
     setChatReceived(false);
     Keyboard.dismiss();
@@ -5060,7 +5150,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           top: isIphoneX() ? 64 : 44,
           left: 20,
           right: 0,
-          zIndex: 1000,
+          zIndex: 1006,
         }}
       >
         <TouchableOpacity
@@ -5098,6 +5188,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ...theme.fonts.IBMPlexSansSemiBold(12),
               textAlign: 'center',
               letterSpacing: 0.46,
+              zIndex: 1005,
             });
 
             setPipView(true);
@@ -5295,12 +5386,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setHideStatusBar(true);
               setChatReceived(false);
               Keyboard.dismiss();
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              stopSound();
               changeAudioStyles();
               setConvertVideo(false);
               changeVideoStyles();
               setDropdownVisible(false);
+              setCallerAudio(true);
+              setCallerVideo(true);
               if (token) {
                 PublishAudioVideo();
               } else {
@@ -5595,6 +5687,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
+        blockCamera={isCall}
+        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
@@ -5825,6 +5919,81 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       ) : null}
+      {displayUploadHealthRecords ? (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 1001,
+            backgroundColor: '#000',
+            opacity: 0.85,
+            justifyContent: 'flex-end',
+          }}
+        >
+          <View
+            style={{
+              left: 35,
+            }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
+              }}
+            >
+              {'You can upload your Health Records here'}
+            </Text>
+            <FreeArrowIcon style={{ width: 33, height: 33, marginTop: 4, marginBottom: -6 }} />
+          </View>
+          <View
+            style={{
+              width: width,
+              height: 66,
+              backgroundColor: 'transparent',
+              bottom: 0,
+              top: isIphoneX() ? 2 : 0,
+              paddingBottom: isIphoneX() ? 100 : 0,
+            }}
+          >
+            <View style={{ flexDirection: 'row', width: width }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={{
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
+                  marginLeft: 5,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
+                }}
+                onPress={async () => {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                  setDisplayUploadHealthRecords(false);
+                }}
+              >
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+                />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      ) : null}
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,
@@ -5895,9 +6064,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 9,
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -5908,11 +6077,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <Image
-                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  resizeMode={'contain'}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
                 />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
               </TouchableOpacity>
               <View>
                 <TextInput
@@ -5920,7 +6096,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   placeholder="Type here…"
                   multiline={true}
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 5,
                     height: 40,
                     width: width - 120,
@@ -5940,7 +6116,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 0,
                     height: 2,
                     width: width - 120,
@@ -5982,6 +6158,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onDonePress={(values: { k: string; v: string[] }[]) => {
                   setAnswerData(values);
                   setDisplayChatQuestions(false);
+                  setDisplayUploadHealthRecords(true);
                 }}
               />
             )}
@@ -6000,9 +6177,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 9,
+                  width: 50,
+                  height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6013,11 +6190,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
-                <Image
-                  style={{ width: 24, height: 24, backgroundColor: 'transparent' }}
-                  resizeMode={'contain'}
-                  source={require('@aph/mobile-patients/src/images/chat/clip.png')}
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
                 />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                    marginTop: 5,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
               </TouchableOpacity>
               <View>
                 <TextInput
@@ -6025,7 +6209,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   placeholder="Type here…"
                   multiline={true}
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 5,
                     height: 40,
                     width: width - 120,
@@ -6045,7 +6229,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 16,
+                    marginLeft: 6,
                     marginTop: 0,
                     height: 2,
                     width: width - 120,
@@ -6092,6 +6276,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             onDonePress={(values: { k: string; v: string[] }[]) => {
               setAnswerData(values);
               setDisplayChatQuestions(false);
+              setDisplayUploadHealthRecords(true);
             }}
           />
         )}

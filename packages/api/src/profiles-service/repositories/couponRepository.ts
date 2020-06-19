@@ -10,6 +10,7 @@ export class CouponRepository extends Repository<Coupon> {
       where: {
         isActive: 'true',
         couponConsultRule: Not(IsNull()),
+        displayStatus: true,
       },
       order: {
         createdDate: 'DESC',

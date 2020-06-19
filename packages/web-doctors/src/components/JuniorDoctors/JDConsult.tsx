@@ -51,8 +51,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
@@ -68,8 +68,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeBtns: {
       position: 'absolute',
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       zIndex: 9,
     },
     stopCallIcon: {
@@ -86,8 +86,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     minimizeVideoImg: {
       zIndex: 9,
-      width: 170,
-      height: 170,
+      width: 240,
+      height: 197,
       position: 'absolute',
       backgroundColor: '#000',
     },
@@ -128,6 +128,24 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       fontWeight: 600,
     },
+    subscriber: {
+      '& video': {
+        transform: 'rotate(0deg) translateX(-50%) !important',
+        width: 'auto !important',
+        left: '50%',
+      },
+    },
+    minSubscriber: {
+      '& > div:first-child': {
+        minHeight: 'auto !important',
+      },
+    },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -164,8 +182,25 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const { patientDetails } = useContext(CaseSheetContextJrd);
   const apikey = process.env.OPENTOK_KEY;
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
+      return `Audio & Video are paused`;
+    else if (!callerAudio) return `Audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Video is paused`;
+    else return null;
+  };
+
   return (
     <div className={classes.consult}>
       <div>
@@ -190,6 +225,8 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+              <p className={classes.audioVideoState}>{isPaused()}</p>
             </div>
           )}
 
@@ -203,6 +240,13 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   props.toggelChatVideo();
                   props.stopAudioVideoCallpatient();
                   setIscall(false);
+                },
+                streamPropertyChanged: (event: any) => {
+                  const subscribers = event.target.getSubscribersForStream(event.stream);
+                  if (subscribers.length) {
+                    setCallerAudio(event.stream.hasAudio);
+                    setCallerVideo(event.stream.hasVideo);
+                  }
                 },
               }}
             >
@@ -244,7 +288,23 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 )}
 
                 <OTStreams>
-                  <OTSubscriber />
+                  <OTSubscriber
+                    className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    eventHandlers={{
+                      videoDisabled: (error: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
+                        if (error.reason === 'quality') {
+                          setDowngradeToAudio(true);
+                        }
+                      },
+                      videoEnabled: (error: any) => {
+                        console.log(`videoDisabled: ${JSON.stringify(error)}`);
+                        if (error.reason === 'quality') {
+                          setDowngradeToAudio(false);
+                        }
+                      },
+                    }}
+                  />
                 </OTStreams>
 
                 {props.showVideoChat && (

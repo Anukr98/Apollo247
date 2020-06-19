@@ -119,6 +119,8 @@ export enum NotificationType {
   MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
+  MEDICINE_ORDER_PICKEDUP = 'MEDICINE_ORDER_PICKEDUP',
+  MEDICINE_ORDER_READY_AT_STORE = 'MEDICINE_ORDER_READY_AT_STORE',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
   PATIENT_REGISTRATION = 'PATIENT_REGISTRATION',
   APPOINTMENT_REMINDER_15 = 'APPOINTMENT_REMINDER_15',
@@ -666,6 +668,20 @@ export async function sendNotification(
     const earlierDate =
       appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
     const hoursDifference = differenceInHours(laterDate, earlierDate);
+    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
+    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
+    if (
+      appointment.appointmentDateTime <= todaysDate &&
+      appointment.appointmentDateTime >= yesterdaysDate
+    ) {
+      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
+        '{0}',
+        doctorDetails.fullName
+      )
+        .replace('{1}', patientDetails.firstName)
+        .replace('{2}', apptDate.toString());
+      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
+    }
 
     if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
       let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
@@ -1277,7 +1293,7 @@ export async function sendReminderNotification(
       }
     }
 
-    /*let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
+    let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_REMINDER_15_MIN.replace(
       '{0}',
       patientDetails.firstName
     );
@@ -1285,8 +1301,8 @@ export async function sendReminderNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString()); */
-    //sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg);
+    whatsappMsg = whatsappMsg.replace('{3}', diffMins.toString());
+    sendNotificationWhatsapp(patientDetails.mobileNumber, whatsappMsg, 1);
     if (appointment.appointmentType != APPOINTMENT_TYPE.PHYSICAL) {
       payload = {
         notification: {
@@ -1576,6 +1592,13 @@ export async function sendCartNotification(
       pushNotificationInput.orderAutoId.toString()
     );
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP) {
+    notificationTitle = ApiConstants.ORDER_PICKEDUP_TITLE;
+    notificationBody = ApiConstants.ORDER_PICKEDUP_BODY.replace(
+      '{0}',
+      pushNotificationInput.orderAutoId.toString()
+    );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1603,9 +1626,15 @@ export async function sendCartNotification(
     },
   };
 
-  if (pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED ||
+    pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_PICKEDUP
+  ) {
     payload.data = {
-      type: 'Order_Delivered',
+      type:
+        pushNotificationInput.notificationType == NotificationType.MEDICINE_ORDER_DELIVERED
+          ? 'Order_Delivered'
+          : 'Order_pickedup',
       orderAutoId: pushNotificationInput.orderAutoId.toString(),
       orderId: medicineOrderDetails.id,
       deliveredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
@@ -1850,6 +1879,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_READY_AT_STORE:
+      payloadDataType = 'Order_ready_at_store';
+      notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
+      notificationBody = ApiConstants.ORDER_READY_AT_STORE_BODY;
+      break;
     case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
       payloadDataType = 'Order_Payment_Failed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
@@ -1877,9 +1911,17 @@ export async function sendMedicineOrderStatusNotification(
   notificationBody = notificationBody.replace('{1}', orderNumber);
   const atOrederDateTime = tatDate ? 'by ' + format(tatDate, 'EEE MMM dd yyyy hh:mm bb') : 'soon';
   const inTatHours = 'in ' + orderTat + 'hours';
-  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
-    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
-  notificationBody = notificationBody.replace('{2}', inTatHours);
+  if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
+    const shopAddress = JSON.parse(orderDetails.shopAddress);
+    notificationBody = notificationBody.replace('{2}', shopAddress.storename);
+    notificationBody = notificationBody.replace('{3}', shopAddress.phone);
+  } else {
+    if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED) {
+      notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+    }
+    notificationBody = notificationBody.replace('{2}', inTatHours);
+  }
+
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
@@ -2105,6 +2147,12 @@ const sendDailyAppointmentSummary: Resolver<
       const totalAppointments = onlineAppointments + physicalAppointments;
       if (totalAppointments > 0) {
         doctorsCount++;
+        const whatsAppLink =
+          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+        let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
+          '{0}',
+          doctor.firstName
+        ).replace('{1}', totalAppointments.toString());
         let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
           '{0}',
           doctor.firstName
@@ -2118,8 +2166,11 @@ const sendDailyAppointmentSummary: Resolver<
             ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
             : '';
         messageBody += onlineAppointmentsText + physicalAppointmentsText;
+        whatsAppMessageBody +=
+          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
         sendBrowserNotitication(doctor.id, messageBody);
         sendNotificationSMS(doctor.mobileNumber, messageBody);
+        sendNotificationWhatsapp(doctor.mobileNumber, whatsAppMessageBody, 1);
       }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
@@ -2196,6 +2247,13 @@ const sendChatMessageToDoctor: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+  let whatsAppMessageBody = ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION.replace(
+    '{0}',
+    doctorDetails.firstName
+  ).replace('{1}', patientDetails.firstName);
+  whatsAppMessageBody = whatsAppMessageBody + whatsAppLink;
+  await sendNotificationWhatsapp(doctorDetails.mobileNumber, whatsAppMessageBody, 1);
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName
