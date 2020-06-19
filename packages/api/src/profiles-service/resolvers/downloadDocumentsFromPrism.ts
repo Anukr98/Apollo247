@@ -41,7 +41,7 @@ const downloadDocuments: Resolver<
     if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
-    //const fileName = fileIdNameArray.join('_');
+    const fileName = fileIdNameArray.join('_');
 
     let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString();
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
@@ -50,6 +50,7 @@ const downloadDocuments: Resolver<
     );
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails!.uhid);
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{RECORDID}', fileId!);
+    prescriptionDocumentUrl = prescriptionDocumentUrl + '&fileName=' + fileName;
     return prescriptionDocumentUrl;
     //return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileId}&fileName=${fileName}`;
   });
