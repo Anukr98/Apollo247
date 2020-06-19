@@ -279,6 +279,8 @@ export const AudioVideoProvider: React.FC = (props) => {
       AppState.removeEventListener('change', _handleAppStateChange);
       callDetector && callDetector.dispose();
     }
+    AsyncStorage.setItem('isAudio', JSON.stringify(isAudio));
+    AsyncStorage.setItem('isVideo', JSON.stringify(isVideo));
   }, [isAudio, isVideo]);
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -506,7 +508,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         {isPaused !== '' ? (
           <View style={styles.alertContainer}>
             <Text style={styles.alertText}>
-              {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}
+              {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} paused`}
             </Text>
           </View>
         ) : null}
@@ -633,29 +635,11 @@ export const AudioVideoProvider: React.FC = (props) => {
                 name: name,
               }}
               eventHandlers={publisherEventHandlers}
-              onPublishStart={(event: any) => {
-                console.log('onPublishStart', event);
-              }}
-              onPublishStop={(event: any) => {
-                console.log('onPublishStop', event);
-              }}
-              onPublishError={(event: any) => {
-                console.log('onPublishError', event);
-              }}
             />
             <OTSubscriber
               style={isMinimized ? styles.subscriberMinimizedStyle : styles.subscriberStyle}
               eventHandlers={subscriberEventHandlers}
               subscribeToSelf={true}
-              onSubscribeStart={(event: any) => {
-                console.log('Watching started', event);
-              }}
-              onSubscribeStop={(event: any) => {
-                console.log('onSubscribeStop', event);
-              }}
-              onSubscribeError={(event: any) => {
-                console.log('onSubscribeError', event);
-              }}
               properties={{
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
