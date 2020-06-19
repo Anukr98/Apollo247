@@ -322,7 +322,7 @@ const getRecommendedProductsList: Resolver<
   const recommendedProductsList: RecommendedProducts[] = [];
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
-      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + 'APJ1.0002579777'
+      ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + ApiConstants.CURRENT_UHID
       : '',
     {
       method: 'GET',
