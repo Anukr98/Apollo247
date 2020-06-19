@@ -636,12 +636,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const getAppointmentCount = () => {
     getPastAppoinmentCount(client, doctorId, patientId)
       .then((data: any) => {
-        console.log('getAppointmentCount', data);
-        console.log('getAppointmentCount', data.data.data.getPastAppointmentsCount.count);
-
-        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'count');
-
-        console.log('count', count);
+        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'completedCount');
+        console.log('getPastAppoinmentCount', count);
+        console.log('data', data);
 
         if (count && count > 0) {
           setShowConnectAlertPopup(false);
@@ -650,24 +647,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('InsertMessageToDoctor_error', error);
+        console.log('getAppointmentCount_error', error);
       });
   };
 
   const getUpdateExternalConnect = (connected: boolean) => {
+    setLoading(true);
+
     updateExternalConnect(client, doctorId, patientId, connected)
       .then((data) => {
+        setLoading(false);
         console.log('getUpdateExternalConnect', data);
       })
       .catch((error) => {
+        setLoading(false);
         console.log('InsertMessageToDoctor_error', error);
       });
   };
 
   const InsertMessageToDoctor = (message: string) => {
-    console.log('sendMessageToDoctor', sendMessageToDoctor);
-    console.log('appointmentData', appointmentData, status);
-
     if (status !== STATUS.COMPLETED) return;
     if (!sendMessageToDoctor) return;
 
@@ -6629,7 +6627,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={'Have you consulted with Dr. Simran before?'}
+          description={`Have you consulted with Dr. ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);

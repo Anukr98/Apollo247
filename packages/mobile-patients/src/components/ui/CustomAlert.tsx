@@ -35,15 +35,16 @@ const styles = StyleSheet.create({
   },
   alertStyles: {
     marginHorizontal: 20,
-    height: 130,
     backgroundColor: 'white',
+    borderRadius: 10,
   },
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     marginHorizontal: 20,
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginVertical: 18,
+    marginTop: 18,
+    marginBottom: 27,
   },
   ctaWhiteButtonViewStyle: {
     flex: 1,
