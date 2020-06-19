@@ -196,6 +196,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 export enum DEVICE_TYPE {
@@ -288,6 +289,12 @@ export enum OTP_STATUS {
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
+}
+
+export enum PROFILE_SOURCE {
+  WEB = 'WEB',
+  MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 //medicine orders starts
@@ -838,6 +845,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @Column({ nullable: true })
+  source: PROFILE_SOURCE;
 
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
