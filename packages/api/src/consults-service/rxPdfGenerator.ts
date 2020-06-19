@@ -849,6 +849,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fillColor('#333333')
           .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
           .moveDown(0.5);
+
+        if (diagTest.testInstruction)
+          doc
+            .fontSize(11)
+            .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
+            .fillColor('#666666')
+            .text(`${diagTest.testInstruction}`, margin + 30)
+            .moveDown(0.8);
       });
     }
   };

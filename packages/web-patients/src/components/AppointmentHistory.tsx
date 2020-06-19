@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.secondary.dark,
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
@@ -104,11 +104,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
     },
     sectionGroup: {
+      padding: 20,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
         marginTop: 16,
         marginBottom: 16,
-        padding: 20,
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
