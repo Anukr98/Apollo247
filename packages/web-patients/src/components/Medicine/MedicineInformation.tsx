@@ -19,7 +19,7 @@ import { gtmTracking } from '../../gtmTracking';
 import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
-  TAT_API_TIMEOUT_IN_SEC,
+  TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
@@ -363,7 +363,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((err) => console.log(err));
   };
 
-  const setDefaultDeliveryTime = () => {
+  const setDefaultDeliveryTime = (pinCode: string) => {
     const nextDeliveryDate = moment()
       .set({
         hour: 20,
@@ -441,7 +441,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
-          timeout: TAT_API_TIMEOUT_IN_SEC,
+          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
           cancelToken: new CancelToken((c) => {
             // An executor function receives a cancel function as a parameter
             cancelGetDeliveryTimeApi = c;
@@ -475,17 +475,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               typeof res.data.errorMSG === 'string' ||
               typeof res.data.errorMsg === 'string'
             ) {
-              setDefaultDeliveryTime();
+              setDefaultDeliveryTime(pinCode);
             }
           }
         } catch (error) {
           console.log(error);
-          setDefaultDeliveryTime();
+          setDefaultDeliveryTime(pinCode);
         }
       })
       .catch((error: any) => {
         console.log(error);
-        setDefaultDeliveryTime();
+        setDefaultDeliveryTime(pinCode);
       });
   };
 
@@ -710,6 +710,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           action: 'Add to Cart',
                           label: data.name,
                           value: data.special_price || data.price,
+                          ecommObj: {
+                            event: 'add_to_cart',
+                            ecommerce: {
+                              items: [
+                                {
+                                  item_name: data.name,
+                                  item_id: data.sku,
+                                  price: data.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: data.type_id
+                                    ? data.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: medicineQty,
+                                },
+                              ],
+                            },
+                          },
                         });
                       /**Gtm code End  */
                       applyCartOperations(cartItem);

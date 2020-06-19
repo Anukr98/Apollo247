@@ -301,6 +301,10 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           disabled={disableSubmit}
           className={disableSubmit ? classes.buttonDisable : ''}
           onClick={() => {
+            if (localDeliveryAddressId === deliveryAddressId) {
+              props.setIsViewAllAddressDialogOpen(false);
+              return;
+            }
             setMutationLoading(true);
             if (props.checkServiceAvailability) {
               setMutationLoading(true);

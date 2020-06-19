@@ -244,6 +244,28 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               action: 'Add to Cart',
                               label: hotSeller.name,
                               value: hotSeller.special_price || hotSeller.price,
+                              ecommObj: {
+                                event: 'add_to_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: hotSeller.name,
+                                      item_id: hotSeller.sku,
+                                      price: hotSeller.price,
+                                      item_category: 'Pharmacy',
+                                      item_category_2: hotSeller.type_id
+                                        ? hotSeller.type_id.toLowerCase() === 'pharma'
+                                          ? 'Drugs'
+                                          : 'FMCG'
+                                        : null,
+                                      // 'item_category_4': '', // future reference
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
+                                },
+                              },
                             });
                             /**Gtm code End  */
                             const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -265,6 +287,22 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               action: 'Remove From Cart',
                               label: hotSeller.name,
                               value: hotSeller.special_price || hotSeller.price,
+                              ecommObj: {
+                                event: 'remove_from_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: hotSeller.name,
+                                      item_id: hotSeller.sku,
+                                      price: hotSeller.price,
+                                      item_category: 'Pharmacy',
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
+                                },
+                              },
                             });
                             /**Gtm code End  */
                             removeCartItem && removeCartItem(hotSeller.id);

@@ -2,7 +2,15 @@ export interface GetUsersResponse {
   errorCode: null;
   errorMsg: null;
   errorType: null;
-  response: {}[];
+  response: {
+    userName: string;
+    hospital: string;
+    activeStatus: string;
+    siteKey: string;
+    gender: string;
+    dob: string;
+    uhid: string;
+  }[];
 }
 
 export interface LabResultsUploadRequest {
@@ -47,6 +55,7 @@ export interface LabResultsDownloadResponse {
     userId: string;
     id: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
+    date: Date; //this is not given by PHR. Added for internal purpose
     labTestName: string;
     labTestSource: string;
     packageId: string;
@@ -125,6 +134,7 @@ export interface PrescriptionDownloadResponse {
     authToken: string;
     userId: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
+    date: Date; //this is not given by PHR. Added for internal purpose
     id: string;
     prescriptionName: string;
     dateOfPrescription: number;
@@ -144,4 +154,11 @@ export interface PrescriptionDownloadResponse {
       dateCreated: number;
     }[];
   }[];
+}
+
+export interface CreateNewUsersResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string; //"A new User has been successfully added"
 }
