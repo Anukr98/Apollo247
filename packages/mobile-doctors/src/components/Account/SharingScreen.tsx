@@ -1,5 +1,5 @@
 import { SharingScreenStyles } from '@aph/mobile-doctors/src/components/Account/SharingScreen.styles';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -15,7 +15,26 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { isPhoneNumberValid } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import {
+  isPhoneNumberValid,
+  g,
+  isSatisfyingEmailRegex,
+} from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  UPSERT_DOCTORS_DEEPLINK,
+  SEND_MESSAGE_TO_MOBILE_NUMBER,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  UpsertDoctorsDeeplink,
+  UpsertDoctorsDeeplinkVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpsertDoctorsDeeplink';
+import {
+  SendMessageToMobileNumber,
+  SendMessageToMobileNumberVariables,
+} from '@aph/mobile-doctors/src/graphql/types/SendMessageToMobileNumber';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 // import { Browser, BrowserUnselect } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = SharingScreenStyles;
@@ -31,14 +50,41 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
     { title: 'SMS' },
     { title: 'EMAIL' },
   ];
+  const { doctorDetails } = useAuth();
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
-  const [url, setUrl] = useState<string>('https://www.apollo247.com/761ebcuhsbdcuhsdbnckdhjscjdhs');
-  const [mobile, setMobile] = useState<string>('9876543212');
+  const [url, setUrl] = useState<string>('');
+  const [mobile, setMobile] = useState<string>('');
   const [validMobile, setValidMobile] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>(
-    'https://www.apollo247.com/761ebcuhsbdcuhsdbnckdhjscjdhs'
-  );
+  const [email, setEmail] = useState<string>('');
   const [validEmail, setValidEmail] = useState<boolean>(true);
+  const client = useApolloClient();
+  const { showAphAlert, setLoading, hideAphAlert } = useUIElements();
+  useEffect(() => {
+    setLoading && setLoading(true);
+    client
+      .mutate<UpsertDoctorsDeeplink, UpsertDoctorsDeeplinkVariables>({
+        mutation: UPSERT_DOCTORS_DEEPLINK,
+        variables: {
+          doctorId: doctorDetails ? doctorDetails.id : null,
+        },
+      })
+      .then((data) => {
+        setUrl(g(data, 'data', 'upsertDoctorsDeeplink', 'deepLink') || '');
+        setLoading && setLoading(false);
+      })
+      .catch(() => {
+        setLoading && setLoading(false);
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Error in getting URL',
+            onPressOk: () => {
+              hideAphAlert && hideAphAlert();
+              props.navigation.pop();
+            },
+          });
+      });
+  }, []);
 
   const renderHeader = () => {
     return (
@@ -80,7 +126,8 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
     disableEdit: boolean,
     type: 'numeric' | 'email-address' | 'default' = 'default',
     invalid: string,
-    displayCSV?: boolean
+    displayCSV: boolean,
+    enableButton: boolean
   ) => {
     return (
       <View>
@@ -107,8 +154,15 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
             />
           )}
           <View style={styles.buttonStyle}>
-            <TouchableOpacity activeOpacity={1} onPress={onPress}>
-              <View style={styles.buttonTextContainerStyle}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                if (enableButton) {
+                  onPress();
+                }
+              }}
+            >
+              <View style={[styles.buttonTextContainerStyle, { opacity: enableButton ? 1 : 0.5 }]}>
                 <Text style={styles.buttonTextStyle}>{buttonText}</Text>
               </View>
             </TouchableOpacity>
@@ -141,12 +195,13 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                 () => {
                   Share.share(
                     {
-                      message:
-                        'Hi, Doctor Sushma has invited you to the Apollo247 application. Click here https://apl247.onelink.me/AEkA/5e10e755 to download the application.',
-                      url: 'https://apl247.onelink.me/AEkA/5e10e755',
-                      title: 'yo',
+                      message: string.account.message
+                        .replace('{0}', doctorDetails ? doctorDetails.fullName || '' : '')
+                        .replace('{1}', url),
+                      url: url,
+                      title: string.account.message_title,
                     },
-                    { dialogTitle: 'yo' }
+                    { dialogTitle: string.account.message_title }
                   )
                     .then((res) => {})
                     .catch((e) => {});
@@ -155,7 +210,9 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                 0,
                 true,
                 'default',
-                ''
+                '',
+                false,
+                true
               )
             : selectedTab === 'SMS'
             ? renderShare(
@@ -169,33 +226,99 @@ export const SharingScreen: React.FC<SharingScreenProps> = (props) => {
                   }
                 },
                 string.account.share_sms_placeholder,
-                () => {},
+                () => {
+                  if (isPhoneNumberValid(mobile) && mobile.length === 10) {
+                    setLoading && setLoading(true);
+                    client
+                      .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
+                        query: SEND_MESSAGE_TO_MOBILE_NUMBER,
+                        fetchPolicy: 'no-cache',
+                        variables: {
+                          mobileNumber: `+91${mobile}`,
+                          textToSend: `${string.account.message
+                            .replace('{0}', doctorDetails ? doctorDetails.fullName || '' : '')
+                            .replace('{1}', url)}`,
+                        },
+                      })
+                      .then((data) => {
+                        setLoading && setLoading(false);
+                        setMobile('');
+                        if (g(data, 'data', 'sendMessageToMobileNumber', 'status') === 'OK') {
+                          showAphAlert &&
+                            showAphAlert({
+                              title: 'Success',
+                              description: `We have sent the app invite to +91${mobile}`,
+                            });
+                        } else {
+                          showAphAlert &&
+                            showAphAlert({
+                              title: 'Alert!',
+                              description: 'An error occuered in sending message to mobile number',
+                            });
+                        }
+                      })
+                      .catch((e) => {
+                        setLoading && setLoading(false);
+                        showAphAlert &&
+                          showAphAlert({
+                            title: 'Alert!',
+                            description: 'An error occuered in sending message to mobile number',
+                          });
+                      });
+                  } else {
+                    showAphAlert &&
+                      showAphAlert({ title: 'Alert!', description: string.account.valid_mobile });
+                  }
+                },
                 '+91',
                 10,
                 false,
                 'numeric',
                 validMobile ? '' : string.account.valid_mobile,
-                false
+                false,
+                isPhoneNumberValid(mobile) && mobile.length === 10
               )
             : selectedTab === 'EMAIL'
             ? renderShare(
                 string.account.share_email,
                 'SEND',
                 email,
-                setEmail,
+                (text) => {
+                  setEmail(text);
+                  setValidEmail(true);
+                },
                 string.account.share_email_placeholder,
                 () => {
-                  Linking.openURL(
-                    'mailto:support@example.com?subject=SendMail&body=Description'
-                  ).catch((e) => {
-                    console.log(e, 'ndsjkn');
-                  });
+                  if (isSatisfyingEmailRegex(email)) {
+                    Linking.openURL(
+                      `mailto:${email}?subject=${
+                        string.account.message_title
+                      }&body=${string.account.message
+                        .replace('{0}', doctorDetails ? doctorDetails.fullName || '' : '')
+                        .replace('{1}', url)}`
+                    )
+                      .then(() => {})
+                      .catch((e) => {
+                        showAphAlert &&
+                          showAphAlert({
+                            title: 'Alert!',
+                            description: 'An error occuered while opening email',
+                          });
+                      });
+                    setEmail('');
+                  } else {
+                    setValidEmail(false);
+                    showAphAlert &&
+                      showAphAlert({ title: 'Alert!', description: string.account.valid_email });
+                  }
                 },
                 '',
                 0,
                 false,
                 'email-address',
-                validEmail ? '' : string.account.valid_email
+                validEmail ? '' : string.account.valid_email,
+                false,
+                isSatisfyingEmailRegex(email)
               )
             : null}
         </View>
