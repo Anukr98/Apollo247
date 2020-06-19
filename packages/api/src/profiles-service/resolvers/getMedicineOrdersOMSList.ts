@@ -192,7 +192,7 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  let medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
   const ordersResp = await fetch(
     process.env.PRISM_GET_OFFLINE_ORDERS
       ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
@@ -242,6 +242,10 @@ const getMedicineOrdersOMSList: Resolver<
       medicineOrdersList.push(offlineList);
     });
   }
+  function GetSortOrder(a: any, b: any) {
+    return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+  }
+  medicineOrdersList.sort(GetSortOrder);
   return { medicineOrdersList };
 };
 
@@ -336,18 +340,20 @@ const getRecommendedProductsList: Resolver<
     for (let k = 0; k < productsList.response.length; k++) {
       //console.log(productsList.response[k], 'redis keys length');
       const skuDets = await tedis.hgetall(productsList.response[k]);
-      const recommendedProducts: RecommendedProducts = {
-        productImage: skuDets.gallery_images,
-        productPrice: skuDets.price,
-        productName: skuDets.name,
-        productSku: skuDets.sku,
-        productSpecialPrice: skuDets.special_price,
-        isPrescriptionNeeded: skuDets.is_prescription_required,
-        categoryName: skuDets.category_name,
-        status: skuDets.status,
-        mou: skuDets.mou,
-      };
-      recommendedProductsList.push(recommendedProducts);
+      if (skuDets && skuDets.status == 'Enabled') {
+        const recommendedProducts: RecommendedProducts = {
+          productImage: skuDets.gallery_images,
+          productPrice: skuDets.price,
+          productName: skuDets.name,
+          productSku: skuDets.sku,
+          productSpecialPrice: skuDets.special_price,
+          isPrescriptionNeeded: skuDets.is_prescription_required,
+          categoryName: skuDets.category_name,
+          status: skuDets.status,
+          mou: skuDets.mou,
+        };
+        recommendedProductsList.push(recommendedProducts);
+      }
     }
   }
 
