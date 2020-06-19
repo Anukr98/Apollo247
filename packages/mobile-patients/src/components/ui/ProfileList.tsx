@@ -319,6 +319,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         }}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
+            const pfl = profileArray!.find((i) => selectedUser.key === i.id);
+            props.onProfileChange && props.onProfileChange(pfl!);
             props.navigation.navigate(AppRoutes.EditProfile, {
               isEdit: false,
               isPoptype: true,
