@@ -226,7 +226,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     });
   };
 
-  const calculatefee = (rowData: any) => {
+  const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
     if (
       parseInt(rowData.onlineConsultationFees, 10) ===
       parseInt(rowData.physicalConsultationFees, 10)
@@ -246,16 +246,24 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       return (
         <View style={{ flexDirection: 'row', marginTop: 5 }}>
           <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
-            Starts at{'  '}
+            {consultTypeBoth && `Starts at  `}
           </Text>
           <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
             {string.common.Rs}
             {'  '}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-            {Math.min(
-              Number(rowData.physicalConsultationFees),
-              Number(rowData.onlineConsultationFees)
+            {consultTypeBoth ? (
+              Math.min(
+                Number(rowData.physicalConsultationFees),
+                Number(rowData.onlineConsultationFees)
+              )
+            ) : (
+              <>
+                {consultTypeOnline
+                  ? Number(rowData.onlineConsultationFees)
+                  : Number(rowData.physicalConsultationFees)}
+              </>
             )}
           </Text>
         </View>
@@ -280,6 +288,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     const isOnline = props.availableModes
       ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(props.availableModes)
       : false;
+    const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
 
     return (
       <TouchableOpacity
@@ -367,26 +376,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {'   '}|{'  '} {rowData.experience} YR
                 {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
               </Text>
-              {calculatefee(rowData)}
-              {/* {rowData.physicalConsultationFees || rowData.onlineConsultationFees ? (
-                <Text style={theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE)}>
-                  {isPhysical && isOnline ? 'Starts at  ' : ''}
-                  <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
-                    {string.common.Rs}{' '}
-                  </Text>
-                  <Text style={theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE)}>
-                    {Math.min(
-                      Number(rowData.physicalConsultationFees),
-                      Number(rowData.onlineConsultationFees)
-                    )}
-                  </Text>
-                </Text>
-              ) : null} */}
-              {/* {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
-                <Text style={styles.doctorSpecializationStyles}>
-                  {rowData.specialty.userFriendlyNomenclature}
-                </Text>
-              ) : null} */}
+              {calculatefee(rowData, isBoth, isOnline)}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
                 {rowData.qualification}
               </Text>

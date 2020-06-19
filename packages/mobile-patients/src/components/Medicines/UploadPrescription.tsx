@@ -290,7 +290,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         setPhysicalPrescription && setPhysicalPrescription([...newuploadedPrescriptions]);
 
         const days = durationDays ? parseInt(durationDays) : null;
-        props.navigation.push(AppRoutes.YourCartUploadPrescription,
+        props.navigation.push(AppRoutes.YourCartUploadPrescriptions,
           {
             prescriptionOptionSelected: selectedMedicineOption,
             durationDays: prescriptionOption === 'duration' ? days : null,

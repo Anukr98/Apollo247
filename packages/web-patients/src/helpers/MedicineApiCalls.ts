@@ -26,6 +26,7 @@ export interface MedicineProduct {
   category_id: string;
 }
 export interface Brand {
+  url_key: string;
   category_id: string;
   image_url: number;
   title: string;

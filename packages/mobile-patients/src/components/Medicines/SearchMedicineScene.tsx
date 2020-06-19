@@ -979,7 +979,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>
-        }
+      }
     </SafeAreaView>
   );
 };

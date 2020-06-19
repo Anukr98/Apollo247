@@ -304,7 +304,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
         </Link>
         <div
           className={`${classes.shareIcon} ${classes.desktopHide}`}
-          onMouseEnter={() => {
+          onClick={(e) => {
             setShowShareWidget(true);
           }}
         >
@@ -315,7 +315,8 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
           {showShareWidget && (
             <ShareWidget
               title={props.title}
-              closeShareWidget={() => {
+              closeShareWidget={(e) => {
+                e.stopPropagation();
                 setShowShareWidget(false);
               }}
               url={window.location.href}
