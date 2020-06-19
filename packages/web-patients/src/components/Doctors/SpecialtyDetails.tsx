@@ -321,10 +321,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, []);
 
-  // const specialtyLen = params.specialty.length;
-  // const specialtyId = params.specialty.slice(specialtyLen - 36);
-  // const specialtyName = params.specialty
-
   let expRange: Range = [],
     feeRange: Range = [];
 
