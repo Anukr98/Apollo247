@@ -650,7 +650,9 @@ export const DiagnosticPrescription: React.FC = () => {
                           className={classes.deleteImage}
                           src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                           alt=""
-                          onClick={() => handleDelete(item, idx)}
+                          onClick={() => {
+                            handleDelete(item, idx);
+                          }}
                         />
                         <img
                           src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
