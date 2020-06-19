@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: 'Fmcg' | 'Pharma';
+  type_id: 'FMCG' | 'Pharma' | 'PL';
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
@@ -225,6 +225,8 @@ export interface MedicinePageAPiResponse {
   shop_by_brand: MedicinePageSection[];
   hot_sellers?: { products: MedicineProduct[]; category_id?: number };
   monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
+  widget_2?: { products: MedicineProduct[]; category_id?: number };
+  widget_3?: { products: MedicineProduct[]; category_id?: number };
 }
 
 export interface PackageInclusion {

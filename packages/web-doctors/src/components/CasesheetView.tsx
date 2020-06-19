@@ -8,7 +8,7 @@ import moment from 'moment';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { isEmpty, trim } from 'lodash';
-import { MEDICINE_FREQUENCY } from 'graphql/types/globalTypes';
+import { MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from 'graphql/types/globalTypes';
 import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -309,35 +309,85 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
     doctorFacilityDetails = createdDoctorProfile.doctorHospital[0].facility;
   }
-  const dosageFrequency = [
+  let dosageFrequency = [
     {
-      id: 'ONCE_A_DAY',
+      id: MEDICINE_FREQUENCY.ONCE_A_DAY,
       value: 'Once a day',
       selected: false,
     },
     {
-      id: 'TWICE_A_DAY',
+      id: MEDICINE_FREQUENCY.TWICE_A_DAY,
       value: 'Twice a day',
       selected: false,
     },
     {
-      id: 'THRICE_A_DAY',
+      id: MEDICINE_FREQUENCY.THRICE_A_DAY,
       value: 'Thrice a day',
       selected: false,
     },
     {
-      id: 'FOUR_TIMES_A_DAY',
+      id: MEDICINE_FREQUENCY.FOUR_TIMES_A_DAY,
       value: 'Four times a day',
       selected: false,
     },
     {
-      id: 'FIVE_TIMES_A_DAY',
+      id: MEDICINE_FREQUENCY.FIVE_TIMES_A_DAY,
       value: 'Five times a day',
       selected: false,
     },
     {
-      id: 'AS_NEEDED',
+      id: MEDICINE_FREQUENCY.EVERY_HOUR,
+      value: 'Every hour',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.EVERY_TWO_HOURS,
+      value: 'Every two hours',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.EVERY_FOUR_HOURS,
+      value: 'Every four hours',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.ONCE_A_WEEK,
+      value: 'Once a week',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.TWICE_A_WEEK,
+      value: 'Twice a week',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.THREE_TIMES_A_WEEK,
+      value: 'Three times a week',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.ONCE_IN_15_DAYS,
+      value: 'Once in 15 days',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.STAT,
+      value: 'STAT (Immediately)',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.ONCE_A_MONTH,
+      value: 'Once a month',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.AS_NEEDED,
       value: 'As Needed',
+      selected: false,
+    },
+    {
+      id: MEDICINE_FREQUENCY.ALTERNATE_DAY,
+      value: 'Alternate day',
       selected: false,
     },
   ];
@@ -351,6 +401,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
+    SACHET: { value: 'sachet(s)' },
+    INTERNATIONAL_UNIT: { value: 'international unit(s)' },
+    TEASPOON: { value: 'teaspoon(s)' },
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
@@ -417,14 +470,16 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
         index: number
       ) => {
-        const duration =
-          prescription.medicineConsumptionDurationInDays &&
-          ` for ${Number(prescription.medicineConsumptionDurationInDays)} ${
-            prescription.medicineConsumptionDurationUnit
-              ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-              : 'day(s)'
-          } `;
-
+        const forHtml = prescription.medicineConsumptionDurationInDays
+          ? ` for ${Number(prescription.medicineConsumptionDurationInDays)}`
+          : ' ';
+        const duration = `${forHtml} ${
+          prescription.medicineConsumptionDurationUnit &&
+          prescription.medicineConsumptionDurationUnit !==
+            MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+            : prescription.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+        } `;
         const whenString =
           prescription!.medicineToBeTaken!.length > 0
             ? toBeTaken(prescription!.medicineToBeTaken)
@@ -453,6 +508,13 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             : '';
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
+        if (
+          prescription!.medicineTimings &&
+          prescription!.medicineTimings!.length === 1 &&
+          prescription!.medicineTimings[0] === 'NOT_SPECIFIC'
+        ) {
+          timesString = '';
         }
         let dosageHtml = '';
         if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
@@ -509,7 +571,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               !isEmpty(trim(prescription.routeOfAdministration)) && (
                 <>
                   <br />
-                  <span>{`To be taken: ${prescription.routeOfAdministration
+                  <span>{`${
+                    prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                  }: ${prescription.routeOfAdministration
                     .split('_')
                     .join(' ')
                     .toLowerCase()}`}</span>
@@ -737,7 +801,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   {diagnosticPrescription.map(
                     (prescription) =>
                       (prescription.itemname || prescription.itemName) && (
-                        <li>{prescription.itemname || prescription.itemName}</li>
+                        <li>
+                          {prescription.itemname || prescription.itemName}
+                          <span style={{ whiteSpace: 'pre-line', display: 'block' }}>
+                            {prescription.testInstruction}
+                          </span>
+                        </li>
                       )
                   )}
                 </ol>

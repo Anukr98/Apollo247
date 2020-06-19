@@ -42,7 +42,7 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
-  TAT_API_TIMEOUT_IN_SEC: 20,
+  TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
   MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
@@ -85,9 +85,21 @@ const appStaticVariables = {
       visible: true,
     },
     {
+      section_key: 'widget_2',
+      section_name: 'IMMUNITY BOOSTERS',
+      section_position: '6',
+      visible: true,
+    },
+    {
+      section_key: 'widget_3',
+      section_name: 'BABY CARE',
+      section_position: '7',
+      visible: true,
+    },
+    {
       section_key: 'shop_by_brand',
       section_name: 'SHOP BY BRAND',
-      section_position: '6',
+      section_position: '8',
       visible: true,
     },
   ] as PharmacyHomepageInfo[],

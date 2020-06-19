@@ -350,8 +350,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const shopByCategory = g(data, 'shop_by_category') || [];
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || [];
   const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
   const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
+  const widget2 = g(data, 'widget_2', 'products') || [];
+  const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
+  const widget3 = g(data, 'widget_3', 'products') || [];
+  const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
   const {
     data: orders,
@@ -1552,14 +1557,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       shop_by_brand: renderShopByBrand,
       hot_sellers: renderHotSellers,
       monsoon_essentials: renderHotSellers,
+      widget_2: renderHotSellers,
+      widget_3: renderHotSellers,
     };
     const sectionDataMapping = {
       healthareas: [healthAreas, 0],
       deals_of_the_day: [[], 0],
       shop_by_category: [shopByCategory, 0],
       shop_by_brand: [[], 0],
-      hot_sellers: [hotSellers, 0],
+      hot_sellers: [hotSellers, hotSellersCategoryId],
       monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
+      widget_2: [widget2, widget2CategoryId],
+      widget_3: [widget3, widget3CategoryId],
     };
     const sectionsView = info
       .filter((item) => item.visible)
