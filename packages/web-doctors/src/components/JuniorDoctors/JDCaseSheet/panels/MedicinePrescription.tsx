@@ -686,6 +686,11 @@ export const MedicinePrescription: React.FC = () => {
       value: 'As Needed',
       selected: false,
     },
+    {
+      id: 'NOT_SPECIFIC',
+      value: 'not specific',
+      selected: false,
+    },
   ]);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -797,6 +802,11 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
     {
+      id: ROUTE_OF_ADMINISTRATION.EYE_OINTMENT,
+      value: 'Eye Ointment',
+      selected: false,
+    },
+    {
       id: ROUTE_OF_ADMINISTRATION.GARGLE,
       value: 'Gargle',
       selected: false,
@@ -822,6 +832,16 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
     {
+      id: ROUTE_OF_ADMINISTRATION.INTRANASAL_SPRAY,
+      value: 'Intranasal spray',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR,
+      value: 'Intra-articular',
+      selected: false,
+    },
+    {
       id: ROUTE_OF_ADMINISTRATION.LOCAL_APPLICATION,
       value: 'Local application',
       selected: false,
@@ -829,6 +849,11 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: ROUTE_OF_ADMINISTRATION.NASAL_DROPS,
       value: 'Nasal drops',
+      selected: false,
+    },
+    {
+      id: ROUTE_OF_ADMINISTRATION.NASALLY,
+      value: 'Nasally',
       selected: false,
     },
     {
@@ -856,6 +881,11 @@ export const MedicinePrescription: React.FC = () => {
       value: 'Sublingual',
       selected: false,
     },
+    {
+      id: ROUTE_OF_ADMINISTRATION.TRIGGER_POINT_INJECTION,
+      value: 'Trigger point injection',
+      selected: false,
+    },
   ];
   let forOptions = [
     {
@@ -871,6 +901,11 @@ export const MedicinePrescription: React.FC = () => {
     {
       id: MEDICINE_CONSUMPTION_DURATION.MONTHS,
       value: 'Month(s)',
+      selected: false,
+    },
+    {
+      id: MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW,
+      value: 'Till next review',
       selected: false,
     },
   ];
@@ -898,6 +933,11 @@ export const MedicinePrescription: React.FC = () => {
     suspension: {
       defaultSetting: MEDICINE_FORM_TYPES.OTHERS,
       defaultUnitDp: 'ML',
+      defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
+    },
+    sachet: {
+      defaultSetting: MEDICINE_FORM_TYPES.OTHERS,
+      defaultUnitDp: 'Sachet(s)',
       defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
     },
     tablet: {
@@ -976,6 +1016,9 @@ export const MedicinePrescription: React.FC = () => {
     PUFF: { value: 'puff(s)' },
     UNIT: { value: 'unit(s)' },
     SPRAY: { value: 'spray(s)' },
+    SACHET: { value: 'sachet(s)' },
+    INTERNATIONAL_UNIT: { value: 'international unit(s)' },
+    TEASPOON: { value: 'teaspoon(s)' },
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
@@ -1039,10 +1082,6 @@ export const MedicinePrescription: React.FC = () => {
           //OtherTypes.indexOf(result.data.productdp[0].PharmaOverview[0].Doseform) > -1
           medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
         ) {
-          console.log(
-            medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()],
-            33333333333
-          );
           setMedicineUnit(
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultUnitDp
@@ -1179,9 +1218,13 @@ export const MedicinePrescription: React.FC = () => {
     });
     setDaySlots(dayslots);
     if (selectedMedicinesArr && selectedMedicinesArr[idx]) {
-      console.log(selectedMedicinesArr![idx]);
       setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
-      setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
+      setConsumptionDuration(
+        selectedMedicinesArr[idx].medicineConsumptionDurationInDays! &&
+          Number(selectedMedicinesArr[idx].medicineConsumptionDurationInDays!) !== 0
+          ? selectedMedicinesArr[idx].medicineConsumptionDurationInDays!
+          : ''
+      );
       if (
         selectedMedicinesArr[idx].medicineUnit &&
         dosageList.indexOf(selectedMedicinesArr[idx].medicineUnit) < 0
@@ -1299,16 +1342,16 @@ export const MedicinePrescription: React.FC = () => {
 
   const daySlotsToggleAction = (slotId: string) => {
     let isAsNeededSelected = false;
-    if (slotId === 'AS_NEEDED') {
+    if (slotId === 'AS_NEEDED' || slotId === 'NOT_SPECIFIC') {
       daySlots.map((slot: SlotsObject) => {
-        if (slot && slot.id === 'AS_NEEDED' && !slot.selected) {
+        if (slot && !slot.selected && slot.id === slotId) {
           isAsNeededSelected = true;
         }
       });
     }
     const slots = daySlots.map((slot: SlotsObject) => {
       if (!isAsNeededSelected) {
-        if (slot && slot.id === 'AS_NEEDED') {
+        if (slot && (slot.id === 'AS_NEEDED' || slot.id === 'NOT_SPECIFIC')) {
           slot.selected = false;
         } else {
           if (slot && slotId === slot.id) {
@@ -1316,7 +1359,7 @@ export const MedicinePrescription: React.FC = () => {
           }
         }
       } else {
-        slot.selected = slot && slotId === slot.id && slotId === 'AS_NEEDED' ? true : false;
+        slot.selected = slot && slotId === slot.id ? true : false;
       }
       return slot;
     });
@@ -1347,14 +1390,15 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
-      console.log(_medicine);
-      const duration =
-        medicine.medicineConsumptionDurationInDays &&
-        ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
-          medicine.medicineConsumptionDurationUnit
-            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-            : 'day(s)'
-        } `;
+      const forHtml = medicine.medicineConsumptionDurationInDays
+        ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
+        : ' ';
+      const duration = `${forHtml} ${Number(medicine.medicineConsumptionDurationInDays)} ${
+        medicine.medicineConsumptionDurationUnit &&
+        medicine.medicineConsumptionDurationUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+          ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+          : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+      } `;
       const whenString =
         medicine.medicineToBeTaken.length > 0
           ? toBeTaken(medicine.medicineToBeTaken)
@@ -1380,6 +1424,9 @@ export const MedicinePrescription: React.FC = () => {
           : '';
       if (timesString && timesString !== '') {
         timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+      }
+      if (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'NOT_SPECIFIC') {
+        timesString = '';
       }
       let dosageHtml = '';
       if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
@@ -1433,7 +1480,9 @@ export const MedicinePrescription: React.FC = () => {
               }`}
             </div>
             {medicine.routeOfAdministration && (
-              <div className={classes.medicineInfo}>{`To be taken: ${medicine.routeOfAdministration
+              <div className={classes.medicineInfo}>{`${
+                medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+              }: ${medicine.routeOfAdministration
                 .split('_')
                 .join(' ')
                 .toLowerCase()}`}</div>
@@ -1460,10 +1509,14 @@ export const MedicinePrescription: React.FC = () => {
       <AphButton
         key={daySlotitem.id}
         className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
-          isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
+          isCustomform && (daySlotitem.id === 'AS_NEEDED' || daySlotitem.id === 'NOT_SPECIFIC')
+            ? classes.none
+            : ''
         }`}
         onClick={() => {
-          daySlotsToggleAction(daySlotitem.id);
+          if (!isCustomform) {
+            daySlotsToggleAction(daySlotitem.id);
+          }
         }}
       >
         {daySlotitem.value}
@@ -1494,60 +1547,75 @@ export const MedicinePrescription: React.FC = () => {
       '-' +
       customDosageNight.trim();
     let customDosageArray = [];
-    if (customDosageMorning && customDosageMorning.trim() !== '')
-      customDosageArray.push(customDosageMorning.trim());
-    if (customDosageNoon && customDosageNoon.trim() !== '')
-      customDosageArray.push(customDosageNoon.trim());
-    if (customDosageEvening && customDosageEvening.trim() !== '')
-      customDosageArray.push(customDosageEvening.trim());
-    if (customDosageNight && customDosageNight.trim() !== '')
-      customDosageArray.push(customDosageNight.trim());
-    if (!isCustomform && tabletsCount.trim() === '') {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (
-      isCustomform &&
-      customDosageMorning.trim() === '' &&
-      customDosageNoon.trim() === '' &&
-      customDosageEvening.trim() === '' &&
-      customDosageNight.trim() === ''
-    ) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (
-      isCustomform &&
+    if (
+      customDosageMorning &&
       customDosageMorning.trim() !== '' &&
-      daySlotsArr.indexOf('MORNING') < 0
-    ) {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (isCustomform && customDosageNoon.trim() !== '' && daySlotsArr.indexOf('NOON') < 0) {
-      setErrorState({
-        ...errorState,
-        durationErr: false,
-        daySlotErr: true,
-        tobeTakenErr: false,
-        dosageErr: false,
-      });
-    } else if (
-      isCustomform &&
+      customDosageMorning.trim() !== '0'
+    )
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '' && customDosageNoon.trim() !== '0')
+      customDosageArray.push(customDosageNoon.trim());
+    if (
+      customDosageEvening &&
       customDosageEvening.trim() !== '' &&
-      daySlotsArr.indexOf('EVENING') < 0
+      customDosageEvening.trim() !== '0'
+    )
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '' && customDosageNight.trim() !== '0')
+      customDosageArray.push(customDosageNight.trim());
+    if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+      medicineUnit !== 'AS_PRESCRIBED'
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
+        customDosageNight.trim() === '') ||
+        (customDosageMorning.trim() === '0' &&
+          customDosageNoon.trim() === '0' &&
+          customDosageEvening.trim() === '0' &&
+          customDosageNight.trim() === '0') ||
+        ((customDosageMorning.trim() === '' || customDosageMorning.trim() === '0') &&
+          (customDosageNoon.trim() === '' || customDosageNoon.trim() === '0') &&
+          (customDosageEvening.trim() === '' || customDosageEvening.trim() === '0') &&
+          (customDosageNight.trim() === '' || customDosageNight.trim() === '0')))
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageMorning.trim() !== '' &&
+        customDosageMorning.trim() !== '0' &&
+        daySlotsArr.indexOf('MORNING') < 0) ||
+        (daySlotsArr.indexOf('MORNING') > -1 && customDosageMorning.trim() === ''))
     ) {
       setErrorState({
         ...errorState,
@@ -1558,8 +1626,10 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      customDosageNight.trim() !== '' &&
-      daySlotsArr.indexOf('NIGHT') < 0
+      ((customDosageNoon.trim() !== '' &&
+        customDosageNoon.trim() !== '0' &&
+        daySlotsArr.indexOf('NOON') < 0) ||
+        (daySlotsArr.indexOf('NOON') > -1 && customDosageNoon.trim() === ''))
     ) {
       setErrorState({
         ...errorState,
@@ -1568,7 +1638,35 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
+    } else if (
+      isCustomform &&
+      ((customDosageEvening.trim() !== '' &&
+        customDosageEvening.trim() !== '0' &&
+        daySlotsArr.indexOf('EVENING') < 0) ||
+        (daySlotsArr.indexOf('EVENING') > -1 && customDosageEvening.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageNight.trim() !== '' &&
+        customDosageNight.trim() !== '0' &&
+        daySlotsArr.indexOf('NIGHT') < 0) ||
+        (daySlotsArr.indexOf('NIGHT') > -1 && customDosageNight.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1584,7 +1682,10 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (consumptionDuration === '' || isNaN(Number(consumptionDuration))) {
+    } else if (
+      forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
+      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+    ) {
       setErrorState({
         ...errorState,
         durationErr: true,
@@ -1659,7 +1760,60 @@ export const MedicinePrescription: React.FC = () => {
       setMedicineUnit('OTHERS');
     }
   };
-
+  const setInTheTime = (slotId: string, selected: boolean) => {
+    const slots = daySlots.map((slot: SlotsObject) => {
+      if (slot.id === slotId && selected) {
+        slot.selected = true;
+      }
+      if (slot.id === slotId && !selected) {
+        slot.selected = false;
+      }
+      return slot;
+    });
+    setDaySlots(slots);
+  };
+  const resetCustomTimeOptions = () => {
+    if (
+      customDosageMorning &&
+      customDosageMorning.trim() !== '' &&
+      customDosageMorning.trim() !== '0' &&
+      (parseInt(customDosageMorning.trim()) > 0 || Number(customDosageMorning.trim()) > 0)
+    ) {
+      setInTheTime('morning', true);
+    } else {
+      setInTheTime('morning', false);
+    }
+    if (
+      customDosageNoon &&
+      customDosageNoon.trim() !== '' &&
+      customDosageNoon.trim() !== '0' &&
+      (parseInt(customDosageNoon.trim()) > 0 || Number(customDosageNoon.trim()) > 0)
+    ) {
+      setInTheTime('noon', true);
+    } else {
+      setInTheTime('noon', false);
+    }
+    if (
+      customDosageEvening &&
+      customDosageEvening.trim() !== '' &&
+      customDosageEvening.trim() !== '0' &&
+      (parseInt(customDosageEvening.trim()) > 0 || Number(customDosageEvening.trim()) > 0)
+    ) {
+      setInTheTime('evening', true);
+    } else {
+      setInTheTime('evening', false);
+    }
+    if (
+      customDosageNight &&
+      customDosageNight.trim() !== '' &&
+      customDosageNight.trim() !== '0' &&
+      (parseInt(customDosageNight.trim()) > 0 || Number(customDosageNight.trim()) > 0)
+    ) {
+      setInTheTime('night', true);
+    } else {
+      setInTheTime('night', false);
+    }
+  };
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
@@ -1968,6 +2122,17 @@ export const MedicinePrescription: React.FC = () => {
                                   value={customDosageMorning}
                                   onChange={(event: any) => {
                                     setCustomDosageMorning(event.target.value);
+                                    if (
+                                      event.target.value &&
+                                      event.target.value.trim() !== '' &&
+                                      event.target.value.trim() !== '0' &&
+                                      (parseInt(event.target.value.trim()) > 0 ||
+                                        Number(event.target.value.trim()) > 0)
+                                    ) {
+                                      setInTheTime('morning', true);
+                                    } else {
+                                      setInTheTime('morning', false);
+                                    }
                                   }}
                                   onKeyPress={(e) => {
                                     if (
@@ -1993,6 +2158,17 @@ export const MedicinePrescription: React.FC = () => {
                                   value={customDosageNoon}
                                   onChange={(event: any) => {
                                     setCustomDosageNoon(event.target.value);
+                                    if (
+                                      event.target.value &&
+                                      event.target.value.trim() !== '' &&
+                                      event.target.value.trim() !== '0' &&
+                                      (parseInt(event.target.value.trim()) > 0 ||
+                                        Number(event.target.value.trim()) > 0)
+                                    ) {
+                                      setInTheTime('noon', true);
+                                    } else {
+                                      setInTheTime('noon', false);
+                                    }
                                   }}
                                   onKeyPress={(e) => {
                                     if (
@@ -2018,6 +2194,17 @@ export const MedicinePrescription: React.FC = () => {
                                   value={customDosageEvening}
                                   onChange={(event: any) => {
                                     setCustomDosageEvening(event.target.value);
+                                    if (
+                                      event.target.value &&
+                                      event.target.value.trim() !== '' &&
+                                      event.target.value.trim() !== '0' &&
+                                      (parseInt(event.target.value.trim()) > 0 ||
+                                        Number(event.target.value.trim()) > 0)
+                                    ) {
+                                      setInTheTime('evening', true);
+                                    } else {
+                                      setInTheTime('evening', false);
+                                    }
                                   }}
                                   onKeyPress={(e) => {
                                     if (
@@ -2043,6 +2230,17 @@ export const MedicinePrescription: React.FC = () => {
                                   value={customDosageNight}
                                   onChange={(event: any) => {
                                     setCustomDosageNight(event.target.value);
+                                    if (
+                                      event.target.value &&
+                                      event.target.value.trim() !== '' &&
+                                      event.target.value.trim() !== '0' &&
+                                      (parseInt(event.target.value.trim()) > 0 ||
+                                        Number(event.target.value.trim()) > 0)
+                                    ) {
+                                      setInTheTime('night', true);
+                                    } else {
+                                      setInTheTime('night', false);
+                                    }
                                   }}
                                   onKeyPress={(e) => {
                                     if (
@@ -2196,9 +2394,7 @@ export const MedicinePrescription: React.FC = () => {
                               <span
                                 onClick={() => {
                                   setIsCustomForm(!isCustomform);
-                                  // medicineCustomDosage && medicineCustomDosage !== ''
-                                  //   ? setMedicineCustomDosage('')
-                                  //   : setMedicineCustomDosage('0-0-0-0');
+                                  resetCustomTimeOptions();
                                 }}
                               >
                                 {isCustomform ? 'DEFAULT' : 'CUSTOM'}
@@ -2247,6 +2443,11 @@ export const MedicinePrescription: React.FC = () => {
                             placeholder=""
                             inputProps={{ maxLength: 6 }}
                             value={consumptionDuration}
+                            disabled={
+                              forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                ? true
+                                : false
+                            }
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
                             }}
@@ -2282,7 +2483,12 @@ export const MedicinePrescription: React.FC = () => {
                               },
                             }}
                             onChange={(e: any) => {
-                              setforUnit(e.target.value as MEDICINE_CONSUMPTION_DURATION);
+                              setforUnit(e.target.value as any);
+                              if (
+                                e.target.value === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                              ) {
+                                setConsumptionDuration('');
+                              }
                             }}
                           >
                             {forOptionHtml}
@@ -2322,15 +2528,16 @@ export const MedicinePrescription: React.FC = () => {
                         </Grid>
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        {errorState.durationErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please enter number of {term(forUnit.toLowerCase(), '(s)')}
-                          </FormHelperText>
-                        )}
+                        {errorState.durationErr &&
+                          forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please enter number of {term(forUnit.toLowerCase(), '(s)')}
+                            </FormHelperText>
+                          )}
                       </Grid>
                     </div>
                     <div className={`${classes.sectionGroup} ${classes.padBottomRow}`}>

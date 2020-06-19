@@ -117,6 +117,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     consultId: String
     tag: String
     labTestResults: [LabTestFileParameters]
+    fileUrl: String!
   }
 
   type LabResultsDownloadResponse {
@@ -138,6 +139,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     notes: String
     prescriptionSource: String
     source: String!
+    fileUrl: String!
   }
 
   type PrecriptionFileParameters {
@@ -280,9 +282,41 @@ const getPatientPrismMedicalRecords: Resolver<
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
 
+  //document download URLs start
+  if (
+    !process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT ||
+    !process.env.PHR_V1_ACCESS_TOKEN ||
+    !process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT
+  )
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let labResultDocumentUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  labResultDocumentUrl = labResultDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails.uhid);
+  //document download URLs end
+
   //get labresults
   const labResults = await getLabResults(patientDetails.uhid);
   const prescriptions = await getPrescriptionData(patientDetails.uhid);
+
+  //add documet urls in the labresults and prescription objects
+  labResults.response.map((labresult) => {
+    labresult.fileUrl = labResultDocumentUrl.replace('{RECORDID}', labresult.id);
+  });
+
+  prescriptions.response.map((prescription) => {
+    prescription.fileUrl = prescriptionDocumentUrl.replace('{RECORDID}', prescription.id);
+  });
 
   //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
   const result = {
