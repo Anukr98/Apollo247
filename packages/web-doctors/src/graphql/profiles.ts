@@ -1158,6 +1158,7 @@ export const MODIFY_CASESHEET = gql`
       }
       diagnosticPrescription {
         itemname
+        testInstruction
       }
       doctorId
       doctorType
