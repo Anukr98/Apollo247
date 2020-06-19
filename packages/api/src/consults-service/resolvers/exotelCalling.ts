@@ -1,6 +1,3 @@
-// to be put in env file.
-// EXOTEL_API_URL=https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect
-// EXOTEL_CALLER_ID=04048214566
 import gql from 'graphql-tag';
 import { log } from 'customWinstonLogger';
 import { Resolver } from 'api-gateway';
