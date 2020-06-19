@@ -1,6 +1,5 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LabResultsUploadRequest, LabResultsUploadResponse } from 'types/phrv1';
 import { ApiConstants } from 'ApiConstants';
 import { getUnixTime } from 'date-fns';
@@ -43,14 +42,14 @@ export const labResultsUploadTypeDefs = gql`
   }
 `;
 
-type LabResultsInputArgs = { labResultsInput: LabResultsUploadRequest; uhid: string };
+export type LabResultsInputArgs = { labResultsInput: LabResultsUploadRequest; uhid: string };
 
-const uploadLabResults: Resolver<
+export const uploadLabResults: Resolver<
   null,
   LabResultsInputArgs,
-  ProfilesServiceContext,
+  null,
   { recordId: string }
-> = async (parent, { labResultsInput, uhid }, {}) => {
+> = async (parent, { labResultsInput, uhid }) => {
   if (!uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
   if (!process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
