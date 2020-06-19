@@ -85,9 +85,21 @@ const appStaticVariables = {
       visible: true,
     },
     {
+      section_key: 'widget_2',
+      section_name: 'IMMUNITY BOOSTERS',
+      section_position: '6',
+      visible: true,
+    },
+    {
+      section_key: 'widget_3',
+      section_name: 'BABY CARE',
+      section_position: '7',
+      visible: true,
+    },
+    {
       section_key: 'shop_by_brand',
       section_name: 'SHOP BY BRAND',
-      section_position: '6',
+      section_position: '8',
       visible: true,
     },
   ] as PharmacyHomepageInfo[],

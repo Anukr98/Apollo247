@@ -61,6 +61,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getAppointmentsCompleteCount(doctorId: string, patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
+      .getCount();
+  }
+
   getAppointmentsByIds(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .where('appointment.id IN (:...ids)', { ids })
