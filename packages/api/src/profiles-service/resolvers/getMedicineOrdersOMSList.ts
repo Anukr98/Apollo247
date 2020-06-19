@@ -192,7 +192,7 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  let medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
+  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
   const ordersResp = await fetch(
     process.env.PRISM_GET_OFFLINE_ORDERS
       ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
