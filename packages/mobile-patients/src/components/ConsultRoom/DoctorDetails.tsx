@@ -27,7 +27,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   postAppsFlyerEvent,
-  postFirebaseEvent
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -64,6 +64,8 @@ import {
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
+import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 // import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
@@ -168,6 +170,8 @@ const Appointments: Appointments[] = [
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
+  const [onlineSelected, setOnlineSelected] = useState<boolean>(false);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
@@ -231,6 +235,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       ? props.navigation.state.params.showBookAppointment || false
       : false;
     setdisplayoverlay(display);
+    setConsultMode(props.navigation.getParam('consultModeSelected'));
   }, [props.navigation.state.params]);
 
   const fetchAppointmentHistory = () => {
@@ -437,6 +442,41 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
+  const renderConsultType = () => {
+    return (
+      <ConsultTypeCard
+        isOnlineSelected={onlineSelected}
+        onPhysicalPress={() => {
+          openConsultPopup(ConsultMode.PHYSICAL);
+        }}
+        onOnlinePress={() => {
+          openConsultPopup(ConsultMode.ONLINE);
+        }}
+        DoctorId={doctorId}
+        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
+        nextAppointemntOnlineTime={availableTime}
+        nextAppointemntInPresonTime={physicalAvailableTime}
+      />
+    );
+  };
+
+  const openConsultPopup = (consultType: ConsultMode) => {
+    postBookAppointmentWEGEvent();
+    callPermissions();
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          setdisplayoverlay(true);
+          setConsultMode(consultType);
+        } else {
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -481,40 +521,60 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.onlineConsultLabel}>Online Consult</Text>
-                  <Text style={styles.onlineConsultAmount}>
-                    {Number(VirtualConsultationFee) <= 0 ||
-                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
-                    ) : (
-                      <>
-                        <Text
-                          style={{
-                            textDecorationLine: 'line-through',
-                            textDecorationStyle: 'solid',
-                          }}
-                        >
-                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
-                        </Text>
-                        <Text> Rs. {VirtualConsultationFee}</Text>
-                      </>
-                    )}
-                  </Text>
-                  <AvailabilityCapsule availableTime={availableTime} />
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setOnlineSelected(true);
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.onlineConsultLabel}>Online Consult</Text>
+                      <Text style={styles.onlineConsultAmount}>
+                        {Number(VirtualConsultationFee) <= 0 ||
+                        VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                          <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                        ) : (
+                          <>
+                            <Text
+                              style={{
+                                textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid',
+                              }}
+                            >
+                              {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                            </Text>
+                            <Text> Rs. {VirtualConsultationFee}</Text>
+                          </>
+                        )}
+                      </Text>
+                      <AvailabilityCapsule availableTime={availableTime} />
+                    </View>
+                  </TouchableOpacity>
                 </View>
                 {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                   <View style={styles.horizontalSeparatorStyle} />
                 )}
                 <View style={{ flex: 1 }}>
-                  {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                    <>
-                      <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
-                      <Text style={styles.onlineConsultAmount}>
-                        Rs. {doctorDetails.physicalConsultationFees}
-                      </Text>
-                      <AvailabilityCapsule availableTime={physicalAvailableTime} />
-                    </>
-                  )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      {
+                        doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
+                      }
+                    }}
+                  >
+                    <View>
+                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
+                        <>
+                          <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
+                          <Text style={styles.onlineConsultAmount}>
+                            Rs. {doctorDetails.physicalConsultationFees}
+                          </Text>
+                          <AvailabilityCapsule availableTime={physicalAvailableTime} />
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -862,7 +922,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
-
   };
 
   const moveBack = () => {
@@ -912,6 +971,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         >
           {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {doctorDetails && renderDoctorDetails()}
+          {doctorDetails && renderConsultType()}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
@@ -919,7 +979,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {/* </ScrollView> */}
         </Animated.ScrollView>
 
-        {showSpinner ? null : (
+        {/* {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
               title={'BOOK APPOINTMENT'}
@@ -941,7 +1001,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               style={{ marginHorizontal: 60, flex: 1 }}
             />
           </StickyBottomComponent>
-        )}
+        )} */}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
@@ -955,8 +1015,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={props.navigation.getParam('consultModeSelected')}
-          externalConnect={props.navigation.getParam('externalConnect')}
+          consultModeSelected={consultMode}
+          externalConnect={null}
           // availableSlots={availableSlots}
         />
       )}
@@ -984,7 +1044,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {doctorDetails &&
+          <CommonVideoPlayer isPlayClicked={false} />
+          {/* {doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
           doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
@@ -992,7 +1053,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               source={{ uri: doctorDetails.photoUrl }}
               style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
             />
-          ) : null}
+          ) : null} */}
         </View>
       </Animated.View>
       <Header
