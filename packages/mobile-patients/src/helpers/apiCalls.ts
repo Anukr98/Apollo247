@@ -46,6 +46,15 @@ export interface MedicineProductDetailsResponse {
   message?: string;
 }
 
+export interface MedicineOrderBilledItem {
+  batchId: string;
+  issuedQty: number;
+  itemId: string;
+  itemName: string;
+  mou: number;
+  mrp: number;
+}
+
 export interface MedicineProductsResponse {
   product_count: number;
   products: MedicineProduct[];
