@@ -20,7 +20,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
-import { constant } from 'lodash';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -106,7 +105,7 @@ export class PatientRepository extends Repository<Patient> {
       'Redis Cache Read of Patient',
       `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
     );
-    if (typeof cache === 'string') {
+    if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
       return patient;
@@ -141,7 +140,8 @@ export class PatientRepository extends Repository<Patient> {
   }
   async setByIdCache(id: string | number) {
     const patientDetails = await this.getPatientData(id);
-    this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, JSON.stringify(patientDetails));
+    const patientString = JSON.stringify(patientDetails);
+    await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
     dLogger(
       new Date(),
       'Redis Cache Write of Patient',
@@ -149,38 +149,11 @@ export class PatientRepository extends Repository<Patient> {
     );
     return patientDetails;
   }
-
-  async setByMobileCache(mobile: string) {
-    const patients = await this.find({
-      where: { mobileNumber: mobile, isActive: true },
-      relations: [
-        'lifeStyle',
-        'healthVault',
-        'familyHistory',
-        'patientAddress',
-        'patientDeviceTokens',
-        'patientNotificationSettings',
-        'patientMedicalHistory',
-      ],
-    });
-    const patientIds: string[] = await patients.map((patient) => {
-      this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient));
-      return patient.id;
-    });
-    this.setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','));
-    dLogger(
-      new Date(),
-      'Redis Cache Write of Patient',
-      `Cache miss/write ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
-    );
-    return patients;
-  }
-
   async getByMobileCache(mobile: string) {
     const redis = await pool.getTedis();
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     pool.putTedis(redis);
-    if (typeof ids === 'string') {
+    if (ids && typeof ids === 'string') {
       dLogger(
         new Date(),
         'Redis Cache Read of Patient',
@@ -203,6 +176,32 @@ export class PatientRepository extends Repository<Patient> {
     } else {
       return await this.setByMobileCache(mobile);
     }
+  }
+  async setByMobileCache(mobile: string) {
+    const patients = await this.find({
+      where: { mobileNumber: mobile, isActive: true },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+        'patientMedicalHistory',
+      ],
+    });
+
+    const patientIds: string[] = await patients.map((patient) => {
+      this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`, JSON.stringify(patient));
+      return patient.id;
+    });
+    this.setCache(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`, patientIds.join(','));
+    dLogger(
+      new Date(),
+      'Redis Cache Write of Patient',
+      `Cache miss/write ${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`
+    );
+    return patients;
   }
 
   async findByMobileNumberLogin(mobileNumber: string) {
