@@ -308,6 +308,7 @@ const useStyles = makeStyles((theme: Theme) =>
       boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
       backgroundColor: '#ffffff',
       marginRight: 20,
+      color: '#fc9916',
     },
     instructionsLabel: {
       width: '123px',
@@ -614,7 +615,13 @@ export const DiagnosticPrescription: React.FC = () => {
     });
     setOtherDiagnostic('');
   };
-
+  useEffect(() => {
+    selectedValues.forEach((x) => {
+      if (x.itemName === undefined && x.itemname) {
+        x.itemName = x.itemname;
+      }
+    });
+  });
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
@@ -643,7 +650,9 @@ export const DiagnosticPrescription: React.FC = () => {
                           className={classes.deleteImage}
                           src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                           alt=""
-                          onClick={() => handleDelete(item, idx)}
+                          onClick={() => {
+                            handleDelete(item, idx);
+                          }}
                         />
                         <img
                           src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
@@ -661,7 +670,7 @@ export const DiagnosticPrescription: React.FC = () => {
                             });
                           }}
                         />
-                        <h6>{item!.testInstruction}</h6>
+                        <h6 style={{ whiteSpace: 'pre-wrap' }}>{item!.testInstruction}</h6>
                       </div>
                     </div>
                   )
@@ -813,7 +822,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 }
               >
                 <Typography className={classes.instructionsLabel} component="h5" variant="h5">
-                  Instruction/Notes
+                  Instructions/Notes
                 </Typography>
 
                 <AphTextField

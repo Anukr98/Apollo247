@@ -54,6 +54,7 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  kavachLanding: () => '/covid19/kavach',
   covidDetails: () => '/covid19/*',
   aboutUs: () => '/aboutUs',
   needHelp: () => '/needHelp',
@@ -62,6 +63,7 @@ export const clientRoutes = {
   payOnlineConsult: () => '/pay-online-consult',
   payOnlineClinicConsult: () => '/pay-clinic-visit',
   prescriptionReview: () => '/prescription-review',
+  specialityListing: () => '/specialities',
   medicinePrescription: () => '/medicine-prescription',
 };
 

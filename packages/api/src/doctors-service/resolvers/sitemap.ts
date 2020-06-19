@@ -22,7 +22,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const specialitiesList = await specialtyRepo.findAll();
   let sitemapStr =
-    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">';
+    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
   let doctorsStr = '';
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
@@ -35,17 +35,17 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       const modifiedDate =
         format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const specialtyStr =
-        '<url><loc>' +
+        '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
         'specialties/' +
         specialtyName +
-        '</loc><lastmod>' +
+        '</loc>\n<lastmod>' +
         modifiedDate +
-        '</lastmod></url>';
+        '</lastmod>\n</url>\n';
       sitemapStr += specialtyStr;
     });
   }
-
+  doctorsStr = '\n<!-- Doctors -->\n';
   const doctorList = await doctorRepo.getListBySpecialty();
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
@@ -65,13 +65,15 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       const modifiedDate =
         format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
       const docStr =
-        '<url><loc>' +
+        '<url>\n<loc>' +
         process.env.SITEMAP_BASE_URL +
         'specialties/' +
         specialtyName +
         '/' +
-        doctorName;
-      '</loc><lastmod>' + modifiedDate + '</lastmod></url>';
+        doctorName +
+        '</loc>\n<lastmod>' +
+        modifiedDate +
+        '</lastmod>\n</url>\n';
       doctorsStr += docStr;
     });
   }
@@ -91,11 +93,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
   const modifiedDate =
     format(new Date(), 'yyyy-MM-dd') + 'T' + format(new Date(), 'hh:mm:ss') + '+00:00';
-  let cmsUrls = '';
+  let cmsUrls = '\n<!--CMS links-->\n';
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     cmsUrlsList.data.forEach((link: string) => {
       const url = process.env.CMS_BASE_URL + link;
-      cmsUrls += '<url><loc>' + url + '</loc><lastmod>' + modifiedDate + '</lastmod></url>';
+      cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
 

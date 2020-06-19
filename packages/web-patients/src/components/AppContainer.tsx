@@ -52,6 +52,7 @@ import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
+import { KavachLanding } from 'components/Covid/KavachLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
 import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
@@ -60,6 +61,7 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
+import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 
@@ -109,6 +111,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
           <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
           <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+          <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
           <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
           <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
@@ -209,6 +212,7 @@ const App: React.FC = () => {
             component={ClinicCheckout}
           />
           <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
+          <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
           <Route
             exact
             path={clientRoutes.medicinePrescription()}
@@ -219,7 +223,7 @@ const App: React.FC = () => {
     </Scrollbars>
   );
 };
-
+// @ts-ignore
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {

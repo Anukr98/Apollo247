@@ -114,6 +114,7 @@ export const caseSheetTypeDefs = gql`
     NIGHT
     NOON
     AS_NEEDED
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {
@@ -358,6 +359,7 @@ export const caseSheetTypeDefs = gql`
     ORAL_DROPS
     NASAL_DROPS
     EYE_DROPS
+    EYE_OINTMENT
     EAR_DROPS
     INTRAVAGINAL
     NASALLY
