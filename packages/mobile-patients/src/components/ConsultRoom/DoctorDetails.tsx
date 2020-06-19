@@ -43,7 +43,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { default as Moment, default as moment } from 'moment';
+import { default as Moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -57,7 +57,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  LayoutAnimationTypes,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
@@ -68,10 +67,10 @@ const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
-    backgroundColor: theme.colors.WHITE,
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
+    backgroundColor: theme.colors.WHITE,
   },
   detailsViewStyle: {
     margin: 20,
