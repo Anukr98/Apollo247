@@ -21,7 +21,11 @@ import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+  setBugfenderPhoneNumber,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   doRequestAndAccessLocation,
@@ -29,7 +33,6 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -89,6 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
+    setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -114,6 +118,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     try {
       Linking.getInitialURL()
         .then((url) => {
+          setBugFenderLog('DEEP_LINK_URL', url);
           if (url) {
             handleOpenURL(url);
             console.log('linking', url);
@@ -125,6 +130,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         console.log('event', event);
+        setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
         handleOpenURL(event.url);
       });
       AsyncStorage.removeItem('location');
@@ -140,6 +146,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
 
       const data = route.split('?');
+      setBugFenderLog('DEEP_LINK_DATA', data);
       route = data[0];
 
       // console.log(data, 'data');
@@ -151,6 +158,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           linkId = data[1].split('&');
           if (linkId.length > 0) {
             linkId = linkId[0];
+            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
           }
         }
       } catch (error) {}
@@ -322,7 +330,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
-
+    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
@@ -356,6 +364,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'Speciality':
         console.log('Speciality id', id);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: id ? id : '',
         });
@@ -502,6 +511,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Pharmacy_Delivery_Charges',
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
+              'QA_min_value_to_nudge_users_to_avail_free_delivery',
+              'min_value_to_nudge_users_to_avail_free_delivery',
               'QA_pharmacy_homepage',
               'pharmacy_homepage',
             ]);
@@ -531,6 +542,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const minValueForPharmacyFreeDelivery = snapshot[
             'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
+          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'QA_min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          QAMinValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV != AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              QAMinValueToNudgeUsersToAvailFreeDelivery
+            );
+          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
+            'min_value_to_nudge_users_to_avail_free_delivery'
+          ].val();
+          minValueToNudgeUsersToAvailFreeDelivery &&
+            AppConfig.APP_ENV == AppEnv.PROD &&
+            updateAppConfig(
+              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+              minValueToNudgeUsersToAvailFreeDelivery
+            );
           minValueForPharmacyFreeDelivery &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
 

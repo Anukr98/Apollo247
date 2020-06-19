@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: 'Fmcg' | 'Pharma';
+  type_id: 'FMCG' | 'Pharma' | 'PL';
   mou: string; // minimum order unit
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
@@ -197,22 +197,24 @@ export interface PlacesApiResponse {
 }
 
 // MedicineLandingPageAPi
-interface MedicinePageSection {
+export interface MedicinePageSection {
   category_id: string;
   title: string;
   image_url: string;
 }
-interface DealsOfTheDaySection {
+export interface DealsOfTheDaySection {
   category_id: string;
   image_url: string;
   position: number;
 }
-interface OfferBannerSection {
+export interface OfferBannerSection {
   name: string;
   status: '0' | '1';
   image: string; // full url
   start_time: string; // '2019-02-10 01:21:00';
   end_time: string;
+  category_id?: number;
+  sku?: string;
 }
 
 export interface MedicinePageAPiResponse {
@@ -221,7 +223,10 @@ export interface MedicinePageAPiResponse {
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
-  hot_sellers?: { products: MedicineProduct[] };
+  hot_sellers?: { products: MedicineProduct[]; category_id?: number };
+  monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
+  widget_2?: { products: MedicineProduct[]; category_id?: number };
+  widget_3?: { products: MedicineProduct[]; category_id?: number };
 }
 
 export interface PackageInclusion {

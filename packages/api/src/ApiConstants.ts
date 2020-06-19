@@ -124,6 +124,7 @@ export enum ApiConstants {
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   SEND_DOCTOR_BOOK_APPOINTMENT_SMS = 24, //send sms to doctor if appointment datetime is less than 24hrs
+  DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi Dr. {0}! You have a new appointment for today. \npatient Name :{1} \nAppointment Time :{2} \nTeam Apollo247.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
@@ -135,9 +136,11 @@ export enum ApiConstants {
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
   ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',
+  DAILY_WHATSAPP_NOTIFICATION = 'Hi Dr.{0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. \nSummary:',
+  WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
-  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to respond. {3}',
+  WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to reply to the patient from a mobile Application.',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
@@ -305,7 +308,7 @@ export enum ApiConstants {
   AUTO_SUBMIT_BY_SD = 'JD case-sheet auto submitted, as per the request',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
-  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED,CAPSULE,DROP,SACHET,TEASPOON,INTERNATIONAL_UNIT',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   APPOINTMENT_BOOKED_WITHIN_10_MIN = 'As patient booked within {0} minutes of the appointment time, case sheet has been submitted without any details.',
   NOT_APPLICABLE = 'Not Applicable',
@@ -341,4 +344,14 @@ export enum ApiConstants {
   PHARMACOLOGIST_EMAIL_ID = 'pharmacologist@apollo247.org',
   PHARMACOLOGIST_EMAIL_ID_TEST = 'kishore.s@apollo247.org',
   // end of pharmacologist email config
+
+  //PHRV1 constants start
+  LABTEST_SOURCE_SELF_UPLOADED = '247self',
+  PRESCRIPTION_SOURCE_PREFIX = '247',
+  //PHRV1 constants end
+
+  //REDIS KEYS
+  REDIS_URL = 'apollodev.redis.cache.windows.net',
+  REDIS_PORT = 6379,
+  REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
 }

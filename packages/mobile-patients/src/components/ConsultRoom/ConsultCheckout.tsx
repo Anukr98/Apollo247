@@ -164,7 +164,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Doctor ID': g(doctor, 'id')!,
       'Doctor Name': g(doctor, 'fullName')!,
       'Net Amount': price,
-      revenue: price,
+      af_revenue: price,
+      af_currency: 'INR',
     };
     return eventAttributes;
   };
@@ -199,6 +200,8 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       Mobile_Number: g(currentPatient, 'mobileNumber'),
       Customer_ID: g(currentPatient, 'id'),
       Consult_ID: id,
+      af_revenue: price,
+      af_currency: 'INR',
     };
     return eventAttributes;
   };

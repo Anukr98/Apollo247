@@ -114,7 +114,7 @@ export const OurServices: React.FC = (props) => {
       title: 'Book Doctor Appointment',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
-      action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
+      action: { link: clientRoutes.specialityListing(), content: 'Find specialist' },
     },
     {
       title: `Buy Medicines`,

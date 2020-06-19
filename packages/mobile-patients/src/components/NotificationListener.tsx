@@ -28,7 +28,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -83,7 +82,15 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    setLoading,
+    setMedFeedback,
+    audioTrack,
+    setPrevVolume,
+    maxVolume,
+  } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
 
@@ -561,7 +568,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: medicineDetails.type_id == 'Pharma',
+                        isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                       } as ShoppingCartItem;
                     })
@@ -728,7 +735,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .android.setChannelId('fcm_FirebaseNotifiction_default_channel') // e.g. the id you chose above
         .android.setSmallIcon('@mipmap/ic_launcher') // create this icon in Android Studio
         .android.setColor('#000000') // you can set a color here
-        .android.setPriority(firebase.notifications.Android.Priority.Default);
+        .android.setPriority(firebase.notifications.Android.Priority.Max);
       firebase
         .notifications()
         .displayNotification(localNotification)
@@ -775,7 +782,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       const channel = new firebase.notifications.Android.Channel(
         'fcm_FirebaseNotifiction_default_channel',
         'Apollo',
-        firebase.notifications.Android.Importance.Default
+        firebase.notifications.Android.Importance.Max
       ).setDescription('Demo app description');
       // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
@@ -787,7 +794,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       const channelForCalls = new firebase.notifications.Android.Channel(
         'fcm_FirebaseNotifiction_call_channel',
         'Apollo Audio & Video calls',
-        firebase.notifications.Android.Importance.Default
+        firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
         .setSound('incallmanager_ringtone.mp3')
@@ -863,8 +870,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           if (endTime) {
             try {
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              setPrevVolume();
+              if (audioTrack) {
+                audioTrack.stop();
+              }
 
               console.log('call ended');
               hideAphAlert && hideAphAlert();
@@ -901,13 +910,22 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           } else {
             try {
               setLoading && setLoading(false);
-              console.log('call ongoing');
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+              try {
+                maxVolume();
+                if (audioTrack) {
+                  audioTrack.play();
+                  audioTrack.setNumberOfLoops(15);
+                  console.log('call audioTrack');
+                }
+              } catch (e) {
+                CommonBugFender('playing_callertune__failed', e);
+              }
 
               setTimeout(() => {
-                InCallManager.stopRingtone();
-                InCallManager.stop();
+                setPrevVolume();
+                if (audioTrack) {
+                  audioTrack.stop();
+                }
               }, 15000);
 
               showAphAlert!({
@@ -922,8 +940,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     type: 'white-button',
                     onPress: () => {
                       hideAphAlert && hideAphAlert();
-                      InCallManager.stopRingtone();
-                      InCallManager.stop();
+                      setPrevVolume();
+                      if (audioTrack) {
+                        audioTrack.stop();
+                      }
                     },
                   },
                   {
