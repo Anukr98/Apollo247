@@ -337,7 +337,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           renderErrorAlert(`Something went wrong, unable to place order.`);
           return;
         }
-        props.navigation.goBack();
+        props.navigation.navigate(AppRoutes.Medicine);
         renderSuccessPopup();
       })
       .catch((e) => {
