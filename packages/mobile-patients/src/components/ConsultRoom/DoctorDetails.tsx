@@ -27,7 +27,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   postAppsFlyerEvent,
-  postFirebaseEvent
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -223,7 +223,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
-    callPermissions();
+    // callPermissions();
   }, []);
 
   useEffect(() => {
@@ -862,7 +862,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
     postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributes);
-
   };
 
   const moveBack = () => {
@@ -925,7 +924,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               title={'BOOK APPOINTMENT'}
               onPress={() => {
                 postBookAppointmentWEGEvent();
-                callPermissions();
+                // callPermissions();
                 getNetStatus()
                   .then((status) => {
                     if (status) {

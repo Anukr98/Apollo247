@@ -384,7 +384,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
-    callPermissions();
+    // callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();

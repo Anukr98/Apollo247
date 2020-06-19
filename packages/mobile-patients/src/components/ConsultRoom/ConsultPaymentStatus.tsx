@@ -29,6 +29,7 @@ import {
   Dimensions,
   PermissionsAndroid,
   Platform,
+  Linking,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -44,6 +45,9 @@ import {
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEventName } from '../../helpers/firebaseEvents';
+import firebase from 'react-native-firebase';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -69,6 +73,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const { success, failure, pending } = Payment;
   const { showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
+  const [notificationAlert, setNotificationAlert] = useState(false);
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -77,7 +82,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    requestReadSmsPermission();
     // getTxnStatus(orderId)
     client
       .query({
@@ -110,6 +114,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
         setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
         setLoading(false);
+        fireBaseFCM();
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
@@ -123,7 +128,29 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
   }, []);
 
-  const requestReadSmsPermission = async () => {
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      setNotificationAlert(true);
+      try {
+        const authorized = await firebase.messaging().requestPermission();
+        console.log('authorized', authorized);
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  const requestStoragePermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -140,6 +167,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) {
       }
       if (resuts) {
+        console.log(resuts);
+        downloadInvoice();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
@@ -211,7 +240,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <TouchableOpacity
           style={{ justifyContent: 'flex-end' }}
           onPress={() => {
-            downloadInvoice();
+            requestStoragePermission();
           }}
         >
           {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
@@ -477,7 +506,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
       {!loading ? (
         <ScrollView style={styles.container}>
           {renderStatusCard()}
@@ -490,6 +518,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <Spinner />
       )}
       {showSpinner && <Spinner />}
+      {notificationAlert && (
+        <NotificationPermissionAlert onPressOutside={() => setNotificationAlert(false)} />
+      )}
     </View>
   );
 };
