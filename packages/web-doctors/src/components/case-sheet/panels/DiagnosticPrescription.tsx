@@ -615,7 +615,13 @@ export const DiagnosticPrescription: React.FC = () => {
     });
     setOtherDiagnostic('');
   };
-
+  useEffect(() => {
+    selectedValues.forEach((x) => {
+      if (x.itemName === undefined && x.itemname) {
+        x.itemName = x.itemname;
+      }
+    });
+  });
   const autosuggestProps = {
     renderInputComponent,
     suggestions: (stateSuggestions as unknown) as OptionType[],
