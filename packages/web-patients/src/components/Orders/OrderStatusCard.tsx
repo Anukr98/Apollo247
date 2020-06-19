@@ -358,23 +358,37 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
   const client = useApolloClient();
 
-  const getSortedstatusList = (statusList: (StatusDetails | null)[]) => {
+  const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
-      const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
-      return filteredStatusList.sort(
-        (a, b) =>
-          moment(a && a.statusDate)
-            .toDate()
-            .getTime() -
-          moment(b && b.statusDate)
-            .toDate()
-            .getTime()
+      const filteredStatusList: StatusDetails[] = [];
+      statusList.forEach((statusObject: StatusDetails) => {
+        if (statusObject.hideStatus) {
+          const isDuplicateStatusIndex = filteredStatusList.findIndex(
+            (statusObj: StatusDetails) => statusObj.orderStatus === statusObject.orderStatus
+          );
+          // code for ignoring the status object if it is duplicate
+          if (isDuplicateStatusIndex === -1) {
+            filteredStatusList.push(statusObject);
+          }
+        }
+      });
+      return (
+        filteredStatusList.sort(
+          (a, b) =>
+            moment(a && a.statusDate)
+              .toDate()
+              .getTime() -
+            moment(b && b.statusDate)
+              .toDate()
+              .getTime()
+        ) || []
       );
     }
+    return [];
   };
 
   const orderStatusList =
-    orderDetailsData && getSortedstatusList(orderDetailsData.medicineOrdersStatus || []);
+    orderDetailsData && getSortedStatusList(orderDetailsData.medicineOrdersStatus || []);
 
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMMM, YYYY');

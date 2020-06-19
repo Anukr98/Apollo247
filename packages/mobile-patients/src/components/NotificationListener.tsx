@@ -19,33 +19,22 @@ import {
   getCallDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  aphConsole,
-  handleGraphQlError,
-  g,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { dataSavedUserID, aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
-import { FeedbackPopup } from './FeedbackPopup';
-import { MedicalIcon } from './ui/Icons';
+import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import {
   getMedicineOrderOMSDetails,
   getMedicineOrderOMSDetailsVariables,
@@ -86,22 +75,17 @@ type CustomNotificationType =
   | 'Appointment_Canceled'
   | 'PRESCRIPTION_READY'
   | 'doctor_Noshow_Reschedule_Appointment'
-  | 'Appointment_Canceled_Refund';
+  | 'Appointment_Canceled_Refund'
+  | 'Appointment_Payment_Pending_Failure';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
-  const [medFeedback, setmedFeedback] = useState({
-    visible: false,
-    title: '',
-    subtitle: '',
-    transactionId: '',
-  });
 
   const showMedOrderStatusAlert = (
     data:
@@ -345,7 +329,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const subtitle: string = `Delivered On: ${moment(data.deliveredDate).format(
             'D MMM YYYY'
           )}`;
-          setmedFeedback({ title, subtitle, transactionId: orderId, visible: true });
+          setMedFeedback!({ title, subtitle, transactionId: orderId, visible: true });
         }
         break;
       case 'Order_Out_For_Delivery':
@@ -443,11 +427,99 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
-      case 'Patient_Cancel_Appointment': {
-        // showContentAlert(data, 'Patient_Cancel_Appointment');
-        return; // Not showing in app because PN overriding in-app notification
-      }
-
+      case 'Patient_Cancel_Appointment':
+        {
+          const userId = await dataSavedUserID('selectedProfileId');
+          const { data } = notification;
+          const { appointmentId } = data;
+          {
+            showAphAlert!({
+              title: ' ',
+              description: data.content,
+              CTAs: [
+                {
+                  text: 'DISMISS',
+                  onPress: () => {
+                    hideAphAlert && hideAphAlert();
+                  },
+                  type: 'white-button',
+                },
+                {
+                  text: 'CHECK STATUS',
+                  onPress: () => {
+                    props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+                      patientId: userId,
+                      fromNotification: true,
+                      appointmentId: appointmentId,
+                    });
+                    hideAphAlert && hideAphAlert();
+                  },
+                  type: 'orange-button',
+                },
+              ],
+            });
+          }
+        }
+        break;
+      case 'Appointment_Canceled_Refund':
+        {
+          const userId = await dataSavedUserID('selectedProfileId');
+          const { data } = notification;
+          const { appointmentId } = data;
+          showAphAlert!({
+            title: ' ',
+            description: data.content,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'CHECK STATUS',
+                onPress: () => {
+                  props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+                    patientId: userId,
+                    fromNotification: true,
+                    appointmentId: appointmentId,
+                  });
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
+      case 'Appointment_Payment_Pending_Failure':
+        {
+          const { data } = notification;
+          const { doctorId, content } = data;
+          showAphAlert!({
+            title: ' ',
+            description: content,
+            CTAs: [
+              {
+                text: 'DISMISS',
+                onPress: () => {
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'white-button',
+              },
+              {
+                text: 'BOOK AGAIN',
+                onPress: () => {
+                  props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: doctorId });
+                  hideAphAlert && hideAphAlert();
+                },
+                type: 'orange-button',
+              },
+            ],
+          });
+        }
+        break;
       case 'Cart_Ready':
         {
           // data.deliveredDate
@@ -489,7 +561,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: medicineDetails.type_id == 'Pharma',
+                        isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                       } as ShoppingCartItem;
                     })
@@ -682,7 +754,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             // Get the action triggered by the notification being opened
             // const action = _notificationOpen.action;
             processNotification(_notificationOpen.notification);
-
             try {
               aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
@@ -708,6 +779,23 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       ).setDescription('Demo app description');
       // .setSound('incallmanager_ringtone.mp3');
       firebase.notifications().android.createChannel(channel);
+    } catch (error) {
+      CommonBugFender('NotificationListener_channel_try', error);
+      aphConsole.log('error in notification channel', error);
+    }
+    try {
+      const channelForCalls = new firebase.notifications.Android.Channel(
+        'fcm_FirebaseNotifiction_call_channel',
+        'Apollo Audio & Video calls',
+        firebase.notifications.Android.Importance.Default
+      )
+        .setDescription('Apollo Consultation')
+        .setSound('incallmanager_ringtone.mp3')
+        .enableLights(true)
+        .enableVibration(true)
+        .setVibrationPattern([1000])
+        .setShowBadge(true);
+      firebase.notifications().android.createChannel(channelForCalls);
     } catch (error) {
       CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);
@@ -952,37 +1040,5 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       });
   };
 
-  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_FEEDBACK_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'id'),
-      Rating: rating,
-      'Rating Reason': reason,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_FEEDBACK_GIVEN, eventAttributes);
-  };
-
-  return (
-    <>
-      <FeedbackPopup
-        title="We value your feedback! :)"
-        description="How was your overall experience with the following medicine delivery —"
-        info={{
-          title: medFeedback.title,
-          description: medFeedback.subtitle,
-          imageComponent: <MedicalIcon />,
-        }}
-        transactionId={medFeedback.transactionId}
-        type={FEEDBACKTYPE.PHARMACY}
-        isVisible={medFeedback.visible}
-        onComplete={(ratingStatus, ratingOption) => {
-          postRatingGivenWEGEvent(ratingStatus!, ratingOption);
-          setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
-          showAphAlert!({
-            title: 'Thanks :)',
-            description: 'Your feedback has been submitted. Thanks for your time.',
-          });
-        }}
-      />
-    </>
-  );
+  return null;
 };

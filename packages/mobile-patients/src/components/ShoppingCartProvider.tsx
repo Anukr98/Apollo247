@@ -1,6 +1,6 @@
 import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -69,11 +69,15 @@ export interface ShoppingCartContextProps {
   couponDiscount: number;
   productDiscount: number;
   deliveryCharges: number;
+  packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
-
+  showPrescriptionAtStore: boolean;
+  setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
+  storesInventory: GetStoreInventoryResponse[];
+  setStoresInventory: ((store: GetStoreInventoryResponse[]) => void) | null;
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
@@ -124,6 +128,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   couponDiscount: 0,
   productDiscount: 0,
   deliveryCharges: 0,
+  packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
 
@@ -141,6 +146,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   stores: [],
   setStores: null,
+  storesInventory: [],
+  setStoresInventory: null,
+
+  showPrescriptionAtStore: false,
+  setShowPrescriptionAtStore: null,
   pinCode: '',
   setPinCode: null,
 
@@ -181,6 +191,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
   const [stores, setStores] = useState<Store[]>([]);
+  const [storesInventory, setStoresInventory] = useState<GetStoreInventoryResponse[]>([]);
   const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
@@ -188,6 +199,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
+    ShoppingCartContextProps['showPrescriptionAtStore']
+  >(false);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -297,6 +311,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
+
+  const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
 
   const grandTotal = parseFloat(
     (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
@@ -437,6 +453,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotalOfRxProducts]);
 
+  useEffect(() => {
+    // updating I will show the prescription at the store option on change in address
+    if (deliveryAddressId) {
+      setShowPrescriptionAtStore(false);
+    }
+  }, [deliveryAddressId]);
+
   return (
     <ShoppingCartContext.Provider
       value={{
@@ -452,6 +475,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponDiscount,
         productDiscount,
         deliveryCharges,
+        packagingCharges,
         uploadPrescriptionRequired,
 
         ePrescriptions,
@@ -474,8 +498,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         stores,
         setStores,
+        storesInventory,
+        setStoresInventory,
         storeId,
         setStoreId,
+        showPrescriptionAtStore,
+        setShowPrescriptionAtStore,
 
         pinCode,
         setPinCode,

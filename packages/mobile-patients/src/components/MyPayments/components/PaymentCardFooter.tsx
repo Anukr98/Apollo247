@@ -42,12 +42,27 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     let orderID = 0;
     let aptType = '';
     if (paymentFor === 'consult') {
-      const { appointmentDateTime, appointmentPayments, doctor, appointmentType } = item;
+      const {
+        appointmentDateTime,
+        appointmentPayments,
+        doctor,
+        appointmentType,
+        appointmentRefunds,
+      } = item;
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
       if (!appointmentPayments || !appointmentPayments.length) {
         status = 'PENDING';
+        return {
+          leftHeaderText: leftHeaderText,
+          dateAndTime: getDate(appointmentDateTime),
+          type: type,
+          status: status,
+          aptType: aptType,
+        };
+      } else if (appointmentRefunds.length) {
+        status = 'TXN_REFUND';
         return {
           leftHeaderText: leftHeaderText,
           dateAndTime: getDate(appointmentDateTime),
