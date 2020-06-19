@@ -1,7 +1,6 @@
 import { EntityRepository, Repository, Not } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 
 import {
@@ -20,6 +19,12 @@ import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
 import { createPrismUser } from 'helpers/phrV1Services';
+import {
+  PrescriptionInputArgs,
+  prescriptionSource,
+  uploadPrescriptions,
+} from 'profiles-service/resolvers/prescriptionUpload';
+import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -317,6 +322,81 @@ export class PatientRepository extends Repository<Patient> {
     const randomNumber = Math.floor(Math.random() * 10000);
     const fileFormat = docInput.fileType.toLowerCase();
     const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
+
+    if (category == PRISM_DOCUMENT_CATEGORY.OpSummary) {
+      const prescriptionFiles = [];
+      prescriptionFiles.push({
+        id: '',
+        fileName: documentName,
+        mimeType: 'images/' + fileFormat,
+        content: docInput.base64FileInput,
+        dateCreated: getUnixTime(new Date()) * 1000,
+      });
+
+      const prescriptionInputArgs: PrescriptionInputArgs = {
+        prescriptionInput: {
+          prescribedBy: 'RECORD_FROM_OLD_APP',
+          prescriptionName: documentName,
+          dateOfPrescription: getUnixTime(new Date()) * 1000,
+          startDate: 0,
+          endDate: 0,
+          notes: '',
+          prescriptionSource: prescriptionSource.SELF,
+          prescriptionDetail: [],
+          prescriptionFiles: prescriptionFiles,
+        },
+        uhid: uhid,
+      };
+
+      const uploadedResult = (await uploadPrescriptions(null, prescriptionInputArgs, null)) as {
+        recordId: string;
+      };
+      return `${uploadedResult.recordId}_${documentName}`;
+    }
+
+    if (category == PRISM_DOCUMENT_CATEGORY.TestReports) {
+      const TestResultsParameter = [];
+      TestResultsParameter.push({
+        id: '',
+        fileName: documentName,
+        mimeType: 'images/' + fileFormat,
+        content: docInput.base64FileInput,
+        dateCreated: getUnixTime(new Date()) * 1000,
+      });
+
+      const labResultsInputArgs: LabResultsInputArgs = {
+        labResultsInput: {
+          labTestName: documentName,
+          labTestDate: getUnixTime(new Date()) * 1000,
+          labTestRefferedBy: 'RECORD_FROM_OLD_APP',
+          observation: '',
+          identifier: '',
+          additionalNotes: '',
+          labTestResults: [],
+          labTestSource: ApiConstants.LABTEST_SOURCE_SELF_UPLOADED.toString(),
+          visitId: '',
+          testResultFiles: TestResultsParameter,
+        },
+        uhid: uhid,
+      };
+
+      const uploadedResult = (await uploadLabResults(null, labResultsInputArgs, null)) as {
+        recordId: string;
+      };
+
+      return `${uploadedResult.recordId}_${documentName}`;
+    }
+
+    /*async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
+    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
+    category =
+      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
+        ? PRISM_DOCUMENT_CATEGORY.OpSummary
+        : category;
+    const currentTimeStamp = getUnixTime(new Date()) * 1000;
+    const randomNumber = Math.floor(Math.random() * 10000);
+    const fileFormat = docInput.fileType.toLowerCase();
+    const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
     const formData = {
       file: docInput.base64FileInput,
       authtoken: prismAuthToken,
@@ -337,7 +417,7 @@ export class PatientRepository extends Repository<Patient> {
         Connection: 'keep-alive',
         'Accept-Encoding': 'gzip, deflate',
         Host: `${process.env.PRISM_HOST}`,
-        Accept: '*/*',
+        
       },
       formData: formData,
     };
@@ -363,11 +443,12 @@ export class PatientRepository extends Repository<Patient> {
 
     if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {
       throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-    }
+    } 
 
     return uploadResult && uploadResult.response
       ? `${uploadResult.response}_${documentName}`
-      : null;
+      : null;*/
+    return null;
   }
 
   async getPatientLabResults(uhid: string, authToken: string) {
