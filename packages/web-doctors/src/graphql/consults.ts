@@ -149,3 +149,12 @@ export const END_CALL_NOTIFICATION = gql`
     }
   }
 `;
+
+export const INITIATE_CONFERENCE_TELEPHONE_CALL = gql`
+  query InitateConferenceTelephoneCall($exotelInput: exotelInput) {
+    initateConferenceTelephoneCall(exotelInput: $exotelInput) {
+      response
+      isError
+    }
+  }
+`;
