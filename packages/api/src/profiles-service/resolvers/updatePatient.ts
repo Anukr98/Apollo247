@@ -87,9 +87,10 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
   }
-
+  console.log('params', updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  const patient = await patientRepo.findById(patientInput.id);
+  const patient = await patientRepo.getPatientData(patientInput.id);
+  console.log('cache response', patient);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -99,13 +100,6 @@ const updatePatient: Resolver<
       await patientRepo.createNewUhid(updatePatient.id);
     }
   }
-
-  // let regCode = '';
-  // const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-  // const getCode = await regCodeRepo.updateCodeStatus('', patient);
-  // if (getCode) {
-  //   regCode = getCode[0].registrationCode;
-  // }
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');

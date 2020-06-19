@@ -97,6 +97,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
+    console.log('getByIdCache:id:', id);
     const redis = await pool.getTedis();
     const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     pool.putTedis(redis);
@@ -105,6 +106,7 @@ export class PatientRepository extends Repository<Patient> {
       'Redis Cache Read of Patient',
       `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
     );
+    console.log(cache);
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
@@ -139,9 +141,14 @@ export class PatientRepository extends Repository<Patient> {
     pool.putTedis(redis);
   }
   async setByIdCache(id: string | number) {
+    console.log('setByIdCache:id', id);
     const patientDetails = await this.getPatientData(id);
-    const patientString = JSON.stringify(patientDetails);
-    await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
+    console.log('patientDetails', patientDetails);
+    if (patientDetails) {
+      const patientString = JSON.stringify(patientDetails);
+      await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
+    }
+
     dLogger(
       new Date(),
       'Redis Cache Write of Patient',
@@ -151,8 +158,10 @@ export class PatientRepository extends Repository<Patient> {
   }
   async getByMobileCache(mobile: string) {
     const redis = await pool.getTedis();
+    console.log('getByMobileCache mobile', mobile);
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     pool.putTedis(redis);
+    console.log('getByMobileCache ids', ids);
     if (ids && typeof ids === 'string') {
       dLogger(
         new Date(),
