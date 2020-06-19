@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Grid, CircularProgress, Popover, Link, Typography } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -26,6 +26,7 @@ import { readableParam } from 'helpers/commonHelpers';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { useParams } from 'hooks/routerHooks';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,11 +44,16 @@ const useStyles = makeStyles((theme: Theme) => {
           top: 0,
           right: 0,
           left: 0,
-          height: 320,
+          height: 270,
           background: '#fff',
           bottom: 'auto',
           zIndex: -1,
           boxShadow: ' 0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+        },
+      },
+      [theme.breakpoints.down(650)]: {
+        '&:after': {
+          height: 320,
         },
       },
     },
@@ -140,6 +146,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '10px 0',
         color: '#00a7b9',
         fontWeight: 'bold',
+        [theme.breakpoints.down('sm')]: {
+          margin: '30px 0 10px',
+        },
       },
     },
     slWrapper: {
@@ -149,29 +158,63 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     location: {
+      display: 'flex',
+      alignItems: 'center',
+      borderBottom: '2px solid #00b38e',
+      padding: '5px 0',
+      margin: '0 10px 0 0',
+      width: 120,
+      '& >img': {
+        margin: '0 10px 0 0',
+      },
       '& >div': {
-        margin: '0 10px 0 0 !important',
+        margin: '0  !important',
         border: 'none',
         padding: '0 !important',
+        '& span': {
+          '&:first-child': {
+            width: 70,
+            height: 20,
+            border: 'none',
+            display: 'block',
+            fontSize: 0,
+            position: 'relative',
+            '&:before': {
+              content: "'Select City'",
+              fontSize: 14,
+              color: '#02475b',
+              fontWeight: 'bold',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            },
+          },
+        },
       },
       [theme.breakpoints.down(600)]: {
-        width: '100%',
+        width: 150,
+        margin: '0 0 10px',
         '& >div': {
           width: '100%',
-          margin: '0 0 10px !important',
+          '& span': {
+            '&:first-child': {
+              width: 100,
+            },
+          },
           '& >div': {
             maxWidth: '100%',
             '& >div': {
               '&:last-child': {
-                display: 'block',
+                display: 'flex',
               },
             },
           },
         },
       },
     },
+
     pastSearch: {
-      padding: '20px 0',
+      padding: '20px 0 0',
       '& h6': {
         fontSize: 14,
         fontWeight: 'bold',
@@ -179,7 +222,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pastSearchList: {
       margin: 0,
-      padding: '20px 0',
+      padding: '20px ',
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
@@ -213,12 +256,21 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       '& h2': {
         fontSize: 14,
-        fontWeight: 'bold',
+        fontWeight: 700,
+        color: '#02475b',
         textTransform: 'uppercase',
         margin: 0,
       },
     },
-    otherSpeciality: {},
+    otherSpeciality: {
+      '& >div': {
+        '& >div': {
+          '&:first-child': {
+            display: 'none',
+          },
+        },
+      },
+    },
     faq: {
       padding: '20px',
       background: '#ffffff',
@@ -338,9 +390,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 10px !important',
       },
     },
-    specialityDetails: {
-      // padding: '20px 0',
-    },
+    specialityDetails: {},
     videoContainer: {
       height: 180,
       border: '1px solid #eee',
@@ -351,7 +401,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#ffffff',
       borderRadius: 5,
       padding: 15,
-      margin: '20px 0 0',
+      margin: '0 0 20px',
       '& h5': {
         fontSize: 16,
         fontWeight: 600,
@@ -466,6 +516,12 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '10px solid transparent',
         borderLeft: ' 40px solid transparent',
         borderRight: '40px solid transparent',
+      },
+      [theme.breakpoints.down('sm')]: {
+        minWidth: 100,
+        '&:first-child': {
+          margin: '0 20px 0 0',
+        },
       },
     },
     tabSelected: {
@@ -752,12 +808,13 @@ export const SpecialityListing: React.FC = (props) => {
                 <div className={classes.specialityContent}>
                   <div className={classes.sHeader}>
                     <Typography component="h1">Book Doctor Appointments Online</Typography>
-                    <a href="javascript:void(0);">
+                    {/* <a href="javascript:void(0);">
                       <img src={require('images/ic_round-share.svg')} />
-                    </a>
+                    </a> */}
                   </div>
                   <div className={classes.specialitySearch}>
                     <div className={classes.location}>
+                      <img src={require('images/location.svg')} />
                       <MedicineLocationSearch />
                     </div>
                     <AphInput placeholder="Search doctors or specialities" />
@@ -787,42 +844,50 @@ export const SpecialityListing: React.FC = (props) => {
                       <Grid container spacing={2}>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Paediatrics</Typography>
-                            <img src={require('images/ic-baby.svg')} />
-                            <Typography>For your child’s health problems</Typography>
-                            <Typography className={classes.symptoms}>
-                              Fever, cough, diarrhoea
-                            </Typography>
+                            <Link to="">
+                              <Typography component="h3">Paediatrics</Typography>
+                              <img src={require('images/ic-baby.svg')} />
+                              <Typography>For your child’s health problems</Typography>
+                              <Typography className={classes.symptoms}>
+                                Fever, cough, diarrhoea
+                              </Typography>
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">General Physician</Typography>
-                            <img src={require('images/ic_doctor_consult.svg')} />
-                            <Typography>For any common health issue</Typography>
-                            <Typography className={classes.symptoms}>
-                              Fever, headache, asthma
-                            </Typography>
+                            <Link to="">
+                              <Typography component="h3">General Physician</Typography>
+                              <img src={require('images/ic_doctor_consult.svg')} />
+                              <Typography>For any common health issue</Typography>
+                              <Typography className={classes.symptoms}>
+                                Fever, headache, asthma
+                              </Typography>
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Dermatology</Typography>
-                            <img src={require('images/ic-hair.svg')} />
-                            <Typography>For skin &amp; hair problems</Typography>
-                            <Typography className={classes.symptoms}>
-                              Skin rash, acne, skin patch
-                            </Typography>
+                            <Link to="">
+                              <Typography component="h3">Dermatology</Typography>
+                              <img src={require('images/ic-hair.svg')} />
+                              <Typography>For skin &amp; hair problems</Typography>
+                              <Typography className={classes.symptoms}>
+                                Skin rash, acne, skin patch
+                              </Typography>
+                            </Link>
                           </div>
                         </Grid>
                         <Grid item xs={6} md={3}>
                           <div className={classes.specialityCard}>
-                            <Typography component="h3">Gynaecology</Typography>
-                            <img src={require('images/ic-gynaec.svg')} />
-                            <Typography>For women’s health </Typography>
-                            <Typography className={classes.symptoms}>
-                              Irregular periods, pregnancy
-                            </Typography>
+                            <Link to="">
+                              <Typography component="h3">Gynaecology</Typography>
+                              <img src={require('images/ic-gynaec.svg')} />
+                              <Typography>For women’s health </Typography>
+                              <Typography className={classes.symptoms}>
+                                Irregular periods, pregnancy
+                              </Typography>
+                            </Link>
                           </div>
                         </Grid>
                       </Grid>
@@ -857,7 +922,7 @@ export const SpecialityListing: React.FC = (props) => {
               </Grid>
               <Grid item xs={12} md={4}>
                 <div className={classes.specialityDetails}>
-                  <div className={classes.videoContainer}></div>
+                  {/* <div className={classes.videoContainer}></div> */}
                   <div className={classes.card}>
                     <div className={classes.symptomContainer}>
                       <img src={require('images/ic-symptomtracker.svg')} />

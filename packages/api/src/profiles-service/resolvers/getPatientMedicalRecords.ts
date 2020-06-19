@@ -111,7 +111,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestSource: String!
     packageId: String
     packageName: String
-    labTestDate: Date!
+    labTestDate: Float!
     labTestRefferedBy: String
     observation: String
     additionalNotes: String
@@ -134,7 +134,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     userId: String
     id: String!
     prescriptionName: String!
-    dateOfPrescription: Int!
+    dateOfPrescription: Float!
     startDate: Int
     endDate: Int
     prescribedBy: String
