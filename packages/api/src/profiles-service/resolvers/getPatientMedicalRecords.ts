@@ -348,7 +348,7 @@ const getPatientPrismMedicalRecords: Resolver<
           setOutOfRange: false,
           setResultDate: false,
           setUnit: false,
-          setParameterName: '',
+          setParameterName: false,
           setRange: false,
           setResult: false,
         };
