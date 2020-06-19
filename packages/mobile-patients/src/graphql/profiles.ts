@@ -141,6 +141,7 @@ export const PAST_APPOINTMENTS_COUNT = gql`
   query getPastAppointmentsCount($doctorId: String!, $patientId: String!) {
     getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
       count
+      completedCount
     }
   }
 `;
@@ -699,6 +700,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       city
       awards
       photoUrl
+      availableModes
       specialty {
         id
         name

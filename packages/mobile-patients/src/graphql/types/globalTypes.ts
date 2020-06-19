@@ -222,6 +222,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -335,6 +336,7 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = "EAR_DROPS",
   EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
@@ -818,6 +820,8 @@ export interface PrescriptionMedicineOrderOMSInput {
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
   shopAddress?: ShopAddress | null;
+  prescriptionOptionSelected?: string | null;
+  durationDays?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
@@ -917,6 +921,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
 }
 
 export interface UploadDocumentInput {

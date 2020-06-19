@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, Theme, Paper, Grid } from '@material-ui/core';
+import { Typography, Chip, Theme, Paper, Grid, Modal, Button } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { AphButton, AphTextField, AphTooltip } from '@aph/web-ui-components';
+import { AphButton, AphTextField, AphTooltip, AphDialogTitle } from '@aph/web-ui-components';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
@@ -17,6 +17,7 @@ import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils
 
 interface OptionType {
   itemname: string;
+  testInstruction: string;
   __typename: 'DiagnosticPrescription';
 }
 
@@ -26,16 +27,16 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
       position: 'relative',
+      padding: 16,
+      marginTop: 5,
     },
     suggestionPopover: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
       position: 'absolute',
-      zIndex: 1,
+      zIndex: 2,
       left: 0,
       right: 0,
-      maxHeight: 240,
+      maxHeight: 400,
       overflowY: 'auto',
     },
     suggestionsList: {
@@ -243,8 +244,133 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     deleteImage: {
       position: 'absolute',
-      top: 7,
-      right: 7,
+      top: 8,
+      right: 32,
+      cursor: 'pointer',
+    },
+    testModal: {
+      width: 480,
+      height: 504,
+      margin: '60px auto 0 auto',
+      boxShadow: 'none',
+      outline: 'none',
+    },
+    popupHeading: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    cross: {
+      cursor: 'pointer',
+      position: 'absolute',
+      right: -10,
+      top: -9,
+      fontSize: 18,
+      color: '#02475b',
+    },
+    buttonWrapper: {
+      height: 72,
+      width: '100%',
+      borderRadius: '10px',
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      backgroundColor: '#ffffff',
+      position: 'relative',
+      //top: 208,
+      zIndex: 1,
+      textAlign: 'right',
+      paddingTop: 19,
+    },
+    updateBtn: {
+      width: '200px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fc9916',
+      marginRight: 20,
+    },
+    cancelBtn: {
+      width: '100px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#ffffff',
+      marginRight: 20,
+      color: '#fc9916',
+    },
+    instructionsLabel: {
+      width: '123px',
+      fontSize: '14px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: '0.02px',
+      color: 'rgba(2, 71, 91, 0.6)',
+      paddingBottom: 8,
+    },
+    testCard: {
+      color: 'rgba(0, 0, 0, 0.54)',
+      border: '1px solid rgba(2,71,91,0.1)',
+      padding: '12px 64px 12px 12px',
+      position: 'relative',
+      maxWidth: '100%',
+      boxShadow: 'none',
+      textAlign: 'left',
+      borderRadius: 5,
+      marginBottom: 12,
+      backgroundColor: 'rgba(0,0,0,0.02)',
+      '& h5': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 14,
+        fontWeight: 600,
+      },
+      '& h6': {
+        color: '#02475b',
+        margin: 0,
+        fontSize: 12,
+        fontWeight: 'normal',
+      },
+    },
+    updateTest: {
+      top: '3px',
+      color: '#666666',
+      right: '2px',
+      cursor: 'pointer',
+      padding: '5px 0',
+      position: 'absolute',
+      minWidth: '23px',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+      },
+    },
+    instructionsTextArea: {
+      '& textArea': {
+        maxHeight: '200px',
+        overflow: 'auto',
+      },
+    },
+    notesWrapper: {
+      padding: 16,
+      height: 312,
+    },
+    notesWrapperEdit: {
+      marginTop: 15,
+      marginBottom: 48,
     },
   })
 );
@@ -370,13 +496,19 @@ export const DiagnosticPrescription: React.FC = () => {
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const [lengthOfSuggestions, setLengthOfSuggestions] = useState<number>(1);
   const [showFavMedicine, setShowFavMedicine] = useState<boolean>(false);
+  const [isSuggestionSelected, setIsSuggestionSelected] = useState<boolean>(false);
+  const [selectedValue, setSelectedValue] = useState<any>({});
+  const [editTest, setEditTest] = useState<any>({
+    index: null,
+    isEdit: false,
+  });
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignostic(newValue);
-    }
+    } else if (newValue.length <= 2) setIsSuggestionSelected(false);
     setOtherDiagnostic(newValue);
     setState({
       ...state,
@@ -459,6 +591,30 @@ export const DiagnosticPrescription: React.FC = () => {
       />
     );
   }
+  const onCloseTest = () => {
+    setShowAddCondition(false);
+    setIsSuggestionSelected(false);
+    setEditTest({ index: null, isEdit: false });
+  };
+
+  const onAddorUpdateTest = () => {
+    if (editTest!.isEdit) selectedValues[editTest.index] = selectedValue;
+    else selectedValues && selectedValues.push(selectedValue);
+
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.diagnosticPrescription = selectedValues;
+      updateLocalStorageItem(params.id, storageItem);
+    }
+    setSelectedValues(selectedValues);
+    onCloseTest();
+    suggestions = suggestions.filter((val) => selectedValues && selectedValues.includes(val!));
+    setState({
+      single: '',
+      popper: '',
+    });
+    setOtherDiagnostic('');
+  };
 
   const autosuggestProps = {
     renderInputComponent,
@@ -477,42 +633,40 @@ export const DiagnosticPrescription: React.FC = () => {
               Tests
             </Typography>
             <Typography component="div" className={classes.listContainer}>
-              {selectedValues !== null &&
-                selectedValues.length > 0 &&
-                selectedValues!.map((item, idx) =>
-                  item.itemName
-                    ? item.itemName!.trim() !== '' && (
-                        <Chip
-                          className={classes.othersBtn}
-                          key={idx}
-                          label={item!.itemName}
-                          onDelete={() => handleDelete(item, idx)}
-                          deleteIcon={
-                            <img
-                              className={classes.deleteImage}
-                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                              alt=""
-                            />
-                          }
+              {selectedValues!.map(
+                (item, idx) =>
+                  item.itemName &&
+                  item.itemName!.trim() !== '' && (
+                    <div style={{ wordBreak: 'break-word' }} key={`${item.itemName}  ${idx}`}>
+                      <div className={classes.testCard}>
+                        <h5>{item!.itemName}</h5>
+                        <img
+                          className={classes.deleteImage}
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                          onClick={() => handleDelete(item, idx)}
                         />
-                      )
-                    : item.itemname &&
-                      item.itemname!.trim() !== '' && (
-                        <Chip
-                          className={classes.othersBtn}
-                          key={idx}
-                          label={item!.itemname}
-                          onDelete={() => handleDelete(item, idx)}
-                          deleteIcon={
-                            <img
-                              className={classes.deleteImage}
-                              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                              alt=""
-                            />
-                          }
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                          className={classes.updateTest}
+                          onClick={() => {
+                            setShowAddCondition(true);
+                            setEditTest({
+                              index: idx,
+                              isEdit: true,
+                            });
+                            setSelectedValue({
+                              ...item,
+                              index: idx,
+                            });
+                          }}
                         />
-                      )
-                )}
+                        <h6 style={{ whiteSpace: 'pre-wrap' }}>{item!.testInstruction}</h6>
+                      </div>
+                    </div>
+                  )
+              )}
             </Typography>
           </Typography>
           <Typography component="div" className={classes.textFieldContainer}>
@@ -530,96 +684,6 @@ export const DiagnosticPrescription: React.FC = () => {
                 }}
               >
                 <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
-              </AphButton>
-            )}
-            {showAddCondition && !showAddOtherTests && (
-              <Autosuggest
-                onSuggestionSelected={(e, { suggestion }) => {
-                  selectedValues && selectedValues.push(suggestion);
-                  const storageItem = getLocalStorageItem(params.id);
-                  if (storageItem) {
-                    storageItem.diagnosticPrescription = selectedValues;
-                    updateLocalStorageItem(params.id, storageItem);
-                  }
-                  setSelectedValues(selectedValues);
-                  setShowAddCondition(false);
-                  suggestions = suggestions.filter(
-                    (val) => selectedValues && selectedValues.includes(val!)
-                  );
-                  setState({
-                    single: '',
-                    popper: '',
-                  });
-                  setOtherDiagnostic('');
-                }}
-                {...autosuggestProps}
-                inputProps={{
-                  //classes,
-                  id: 'react-autosuggest-simple',
-                  placeholder: 'Search Tests',
-                  value: state.single,
-                  onChange: handleChange('single'),
-                  onKeyPress: (e) => {
-                    if (e.which == 13 || e.keyCode == 13) {
-                      if (selectedValues && suggestions.length === 1) {
-                        selectedValues.push(suggestions[0]);
-                        const storageItem = getLocalStorageItem(params.id);
-                        if (storageItem) {
-                          storageItem.diagnosticPrescription = selectedValues;
-                          updateLocalStorageItem(params.id, storageItem);
-                        }
-                        setSelectedValues(selectedValues);
-                        setShowAddCondition(false);
-                        suggestions = suggestions.filter((val) => selectedValues.includes(val!));
-                        setState({
-                          single: '',
-                          popper: '',
-                        });
-                        setOtherDiagnostic('');
-                      }
-                    }
-                  },
-                }}
-                theme={{
-                  container: classes.suggestionsContainer,
-                  suggestionsList: classes.suggestionsList,
-                  suggestion: classes.suggestionItem,
-                  suggestionHighlighted: classes.suggestionHighlighted,
-                }}
-                renderSuggestionsContainer={(options) => (
-                  <Paper
-                    {...options.containerProps}
-                    square
-                    classes={{ root: classes.suggestionPopover }}
-                  >
-                    {options.children}
-                  </Paper>
-                )}
-              />
-            )}
-            {otherDiagnostic.trim().length > 2 && (
-              <AphButton
-                className={classes.darkGreenaddBtn}
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (otherDiagnostic.trim() !== '') {
-                    const daignosisValue = selectedValues!.splice(idx, 0, {
-                      itemName: otherDiagnostic,
-                      __typename: 'DiagnosticPrescription',
-                    });
-                    setShowAddOtherTests(false);
-                    setShowAddCondition(false);
-                    setIdx(selectedValues!.length + 1);
-                    setTimeout(() => {
-                      setOtherDiagnostic('');
-                    }, 10);
-                  } else {
-                    setOtherDiagnostic('');
-                  }
-                }}
-              >
-                <img src={require('images/ic_add_circle.svg')} alt="" />
               </AphButton>
             )}
           </Typography>
@@ -667,6 +731,127 @@ export const DiagnosticPrescription: React.FC = () => {
           </Grid>
         )}
       </Grid>
+      <Modal open={showAddCondition}>
+        <Paper className={classes.testModal}>
+          <AphDialogTitle className={classes.popupHeading}>
+            <Button
+              onClick={() => {
+                onCloseTest();
+              }}
+              className={classes.backArrow}
+            >
+              <img src={require('images/ic_back.svg')} alt="" />
+            </Button>
+            {!editTest!.isEdit ? 'ADD A TEST' : selectedValue.itemName}
+            <Button
+              className={classes.cross}
+              onClick={() => {
+                onCloseTest();
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
+            </Button>
+          </AphDialogTitle>
+          {!editTest!.isEdit && (
+            <Autosuggest
+              onSuggestionSelected={(e, { suggestion }) => {
+                suggestion.testInstruction = '';
+                setIsSuggestionSelected(true);
+                setSelectedValue(suggestion);
+              }}
+              {...autosuggestProps}
+              inputProps={{
+                //classes,
+                id: 'react-autosuggest-simple',
+                placeholder: 'Search Tests',
+                value: state.single,
+                onChange: handleChange('single'),
+                onKeyPress: (e) => {
+                  // if (e.which == 13 || e.keyCode == 13) {
+                  //   if (selectedValues && suggestions.length === 1) {
+                  //     selectedValues.push(suggestions[0]);
+                  //     const storageItem = getLocalStorageItem(params.id);
+                  //     if (storageItem) {
+                  //       storageItem.diagnosticPrescription = selectedValues;
+                  //       updateLocalStorageItem(params.id, storageItem);
+                  //     }
+                  //     setSelectedValues(selectedValues);
+                  //     setShowAddCondition(false);
+                  //     suggestions = suggestions.filter((val) => selectedValues.includes(val!));
+                  //     setState({
+                  //       single: '',
+                  //       popper: '',
+                  //     });
+                  //     setOtherDiagnostic('');
+                  //   }
+                  // }
+                },
+              }}
+              theme={{
+                container: classes.suggestionsContainer,
+                suggestionsList: classes.suggestionsList,
+                suggestion: classes.suggestionItem,
+                suggestionHighlighted: classes.suggestionHighlighted,
+              }}
+              renderSuggestionsContainer={(options) => (
+                <Paper
+                  {...options.containerProps}
+                  square
+                  classes={{ root: classes.suggestionPopover }}
+                >
+                  {options.children}
+                </Paper>
+              )}
+            />
+          )}
+          {(isSuggestionSelected || editTest!.isEdit) && (
+            <>
+              <div
+                className={
+                  !editTest!.isEdit
+                    ? classes.notesWrapper
+                    : `${classes.notesWrapper} ${classes.notesWrapperEdit}`
+                }
+              >
+                <Typography className={classes.instructionsLabel} component="h5" variant="h5">
+                  Instructions/Notes
+                </Typography>
+
+                <AphTextField
+                  className={classes.instructionsTextArea}
+                  fullWidth
+                  multiline
+                  placeholder="Type here..."
+                  value={selectedValue!.testInstruction}
+                  onChange={(e) => {
+                    setSelectedValue({ ...selectedValue, testInstruction: e.target.value });
+                  }}
+                />
+              </div>
+              <div className={classes.buttonWrapper}>
+                <AphButton
+                  color="secondary"
+                  className={classes.cancelBtn}
+                  onClick={() => {
+                    onCloseTest();
+                  }}
+                >
+                  Cancel
+                </AphButton>
+                <AphButton
+                  color="primary"
+                  className={classes.updateBtn}
+                  onClick={() => {
+                    onAddorUpdateTest();
+                  }}
+                >
+                  {!editTest!.isEdit ? 'Add Test' : 'Update Test'}
+                </AphButton>
+              </div>
+            </>
+          )}
+        </Paper>
+      </Modal>
     </Typography>
   );
 };

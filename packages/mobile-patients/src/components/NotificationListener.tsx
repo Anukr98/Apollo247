@@ -28,7 +28,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -83,7 +82,15 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert, setLoading, setMedFeedback } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    setLoading,
+    setMedFeedback,
+    audioTrack,
+    setPrevVolume,
+    maxVolume,
+  } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
 
@@ -863,8 +870,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           if (endTime) {
             try {
-              InCallManager.stopRingtone();
-              InCallManager.stop();
+              setPrevVolume();
+              if (audioTrack) {
+                audioTrack.stop();
+              }
 
               console.log('call ended');
               hideAphAlert && hideAphAlert();
@@ -901,13 +910,22 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           } else {
             try {
               setLoading && setLoading(false);
-              console.log('call ongoing');
-              InCallManager.startRingtone('_BUNDLE_');
-              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+              try {
+                maxVolume();
+                if (audioTrack) {
+                  audioTrack.play();
+                  audioTrack.setNumberOfLoops(15);
+                  console.log('call audioTrack');
+                }
+              } catch (e) {
+                CommonBugFender('playing_callertune__failed', e);
+              }
 
               setTimeout(() => {
-                InCallManager.stopRingtone();
-                InCallManager.stop();
+                setPrevVolume();
+                if (audioTrack) {
+                  audioTrack.stop();
+                }
               }, 15000);
 
               showAphAlert!({
@@ -922,8 +940,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     type: 'white-button',
                     onPress: () => {
                       hideAphAlert && hideAphAlert();
-                      InCallManager.stopRingtone();
-                      InCallManager.stop();
+                      setPrevVolume();
+                      if (audioTrack) {
+                        audioTrack.stop();
+                      }
                     },
                   },
                   {
