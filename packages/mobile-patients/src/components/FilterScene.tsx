@@ -14,6 +14,7 @@ import {
   ScrollView,
   Modal,
   SectionList,
+  TextInput,
 } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
@@ -24,6 +25,7 @@ import {
   CheckedIcon,
   IconBase,
   CloseCal,
+  SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 const styles = StyleSheet.create({
   container: {
@@ -128,6 +130,11 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 15, '#02475b'),
     marginLeft: 9,
   },
+  searchInputStyles: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
   // menu Column - left
   menuColumn: {
     width: '33%',
@@ -184,6 +191,7 @@ export interface FilterSceneProps {
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
   const [showCalander, setshowCalander] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const today = new Date().toISOString().slice(0, 10);
   const [dateSelected, setdateSelected] = useState<object>({
     [today]: {
@@ -218,25 +226,57 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     </TouchableOpacity>
   );
 
+  const searchedData = (sectionsData: any, searchTerm: string) => {
+    const finalData = sectionsData.reduce((result, sectionData) => {
+      const { state, data } = sectionData;
+      const filteredData = data.filter((item: any) => {
+        let searchDataItem = state;
+
+        searchDataItem = ''
+          ? ''.split('.').reduce((prevVal, currVal) => prevVal[currVal], item)
+          : item;
+
+        return searchDataItem.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      if (filteredData.length !== 0) {
+        result.push({
+          state,
+          data: filteredData,
+        });
+      }
+      return result;
+    }, []);
+    return finalData;
+  };
   const renderCities = (id: number) => {
-    const sectionData = data[id];
-    const { options, selectedOptions } = sectionData;
+    const sectionInfo = data[id];
+    const { options } = sectionInfo;
     return (
-      <SectionList
-        sections={options}
-        keyExtractor={(item, index) => item + index}
-        renderItem={({ item }) => renderItem(item, id)}
-        renderSectionHeader={({ section: { state } }) => (
-          <View style={styles.sectionHeaderStyles}>
-            <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE) }}>
-              {state}
-            </Text>
-          </View>
-        )}
-      />
+      <>
+        <View style={styles.searchInputStyles}>
+          <SearchIcon />
+          <TextInput
+            style={{ marginLeft: 14 }}
+            placeholder={'Search'}
+            onChangeText={(searchTerm) => setSearchTerm(searchTerm)}
+          />
+        </View>
+        <SectionList
+          sections={searchedData(options, searchTerm)}
+          keyExtractor={(item, index) => item + index}
+          renderItem={({ item }) => renderItem(item, id)}
+          renderSectionHeader={({ section: { state } }) => (
+            <View style={styles.sectionHeaderStyles}>
+              <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE) }}>
+                {state}
+              </Text>
+            </View>
+          )}
+        />
+      </>
     );
   };
-
+  //TODO: Get brand image from data
   const renderBrands = (id: number) => {
     const sectionData = data[id];
     const { options, selectedOptions } = sectionData;
@@ -455,7 +495,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     }
   };
   // this holds the keys of the menuItems for the view to know which category is currently being rendered.
-  const [selectedItem, setSelectedItem] = useState('1');
+  const [selectedItem, setSelectedItem] = useState('0');
   const filtersCard = () => {
     return (
       <View style={styles.content}>

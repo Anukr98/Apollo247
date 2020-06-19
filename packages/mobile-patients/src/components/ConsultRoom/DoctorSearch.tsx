@@ -391,16 +391,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_SEARCH] = {
-      'SearchText': searchInput,
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      SearchText: searchInput,
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
     };
     postFirebaseEvent(FirebaseEventName.DOCTOR_SEARCH, eventAttributesFirebase);
   };
@@ -853,17 +851,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
-      'PatientName': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'PatientUHID': g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      PatientUHID: g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'PatientAge': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'PatientGender': g(currentPatient, 'gender'),
-      'MobileNumber': g(currentPatient, 'mobileNumber'),
-      'CustomerID': g(currentPatient, 'id'),
-      'SpecialityName': speciality,
-      'SpecialityID': specialityId,
+      PatientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      PatientGender: g(currentPatient, 'gender'),
+      MobileNumber: g(currentPatient, 'mobileNumber'),
+      CustomerID: g(currentPatient, 'id'),
+      SpecialityName: speciality,
+      SpecialityID: specialityId,
     };
     postFirebaseEvent(FirebaseEventName.SPECIALITY_CLICKED, eventAttributesFirebase);
   };
@@ -888,14 +884,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
-      'DoctorName': doctorDetails.fullName!,
+      DoctorName: doctorDetails.fullName!,
       Source: source,
-      'DoctorID': doctorDetails.id,
-      'SpecialityID': g(doctorDetails, 'specialty', 'id')!,
-      'DoctorCategory': doctorDetails.doctorType,
-      'OnlinePrice': Number(doctorDetails.onlineConsultationFees),
-      'PhysicalPrice': Number(doctorDetails.physicalConsultationFees),
-      'DoctorSpeciality': g(doctorDetails, 'specialty', 'name')!,
+      DoctorID: doctorDetails.id,
+      SpecialityID: g(doctorDetails, 'specialty', 'id')!,
+      DoctorCategory: doctorDetails.doctorType,
+      OnlinePrice: Number(doctorDetails.onlineConsultationFees),
+      PhysicalPrice: Number(doctorDetails.physicalConsultationFees),
+      DoctorSpeciality: g(doctorDetails, 'specialty', 'name')!,
     };
 
     if (type == 'consult-now') {
@@ -994,12 +990,52 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     else return null;
   };
-
+  //TODO: setDocFilters that we get from API
+  const docFilters = {
+    city: [
+      { state: 'Andhra Pradesh', data: ['Vijayawada', 'Guntur', 'Nellore'] },
+      { state: 'Telangana', data: ['Hyderabad', 'Suryapet'] },
+      { state: 'Maharastra', data: ['Mumbai'] },
+    ],
+    brands: [
+      {
+        name: 'apollo abc',
+        image:
+          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
+      },
+      {
+        name: 'apollo xyz',
+        image:
+          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
+      },
+      {
+        name: 'apollo spectra',
+        image:
+          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
+      },
+      {
+        name: 'apollo pharma',
+        image:
+          'https://cdn.zeplin.io/5ee0fe6155171e98f28f7000/assets/DF82202D-C70B-428D-ADDA-EC2CEB169575.svg',
+      },
+    ],
+    experience: [{ name: '0-5' }, { name: '5-10' }, { name: '11 - 15' }, { name: '15+' }],
+    availability: [
+      { name: 'Now' },
+      { name: 'Today' },
+      { name: 'Tomorrow' },
+      { name: 'Next 3 Days' },
+    ],
+    fees: [{ name: '0-500' }, { name: '500-1000' }, { name: '501-1000' }, { name: '1000+' }],
+    gender: [{ name: 'MALE' }, { name: 'FEMALE' }],
+    language: [{ name: 'Hindi' }, { name: 'English' }, { name: 'Telugu' }],
+  };
   const onClickSearch = (id: string, name: string, specialistPluralTerm: string) => {
     props.navigation.navigate('DoctorSearchListing', {
       specialityId: id,
       specialityName: name,
       specialistPluralTerm,
+      filters: docFilters,
     });
   };
 
