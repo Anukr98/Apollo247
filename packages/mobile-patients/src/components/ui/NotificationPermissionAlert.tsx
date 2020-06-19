@@ -15,6 +15,7 @@ const windowHeight = Dimensions.get('window').height;
 
 export interface NotificationPermissionAlertProps {
   onPressOutside: () => void;
+  onButtonPress: () => void;
 }
 
 export const NotificationPermissionAlert: React.FC<NotificationPermissionAlertProps> = (props) => {
@@ -44,7 +45,7 @@ export const NotificationPermissionAlert: React.FC<NotificationPermissionAlertPr
                 style={styles.button}
                 titleTextStyle={{ color: 'white', lineHeight: 24, marginVertical: 8 }}
                 onPress={() => {
-                  Linking.openSettings();
+                  props.onButtonPress();
                 }}
               />
             </View>

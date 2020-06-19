@@ -519,7 +519,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       )}
       {showSpinner && <Spinner />}
       {notificationAlert && (
-        <NotificationPermissionAlert onPressOutside={() => setNotificationAlert(false)} />
+        <NotificationPermissionAlert
+          onPressOutside={() => setNotificationAlert(false)}
+          onButtonPress={() => {
+            setNotificationAlert(false);
+            Linking.openSettings();
+          }}
+        />
       )}
     </View>
   );
