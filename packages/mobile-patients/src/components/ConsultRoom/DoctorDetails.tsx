@@ -43,7 +43,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { default as Moment } from 'moment';
+import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -859,7 +859,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
       'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
