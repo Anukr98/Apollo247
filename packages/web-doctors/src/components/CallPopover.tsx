@@ -900,8 +900,21 @@ const useStyles = makeStyles((theme: Theme) => {
     sendBtnDisabled: {
       opacity: 0.6,
     },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
   };
 });
+
+const ringtoneUrl = require('../images/phone_ringing.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1283,6 +1296,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
 
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -1336,6 +1350,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
+    setPlayRingtone(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1395,6 +1410,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
+    setPlayRingtone(true);
     actionBtn();
   };
   const actionBtn = () => {
@@ -1662,6 +1678,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
+        setPlayRingtone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
@@ -2087,6 +2104,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   return (
     <div className={classes.stickyHeader}>
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
       <div className={classes.breadcrumbs}>
         <div>
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
