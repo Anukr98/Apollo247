@@ -1590,3 +1590,20 @@ export const GET_ALL_SPECIALTIES = gql`
     }
   }
 `;
+
+export const UPSERT_DOCTORS_DEEPLINK = gql`
+  mutation UpsertDoctorsDeeplink($doctorId: String) {
+    upsertDoctorsDeeplink(doctorId: $doctorId) {
+      deepLink
+    }
+  }
+`;
+
+export const SEND_MESSAGE_TO_MOBILE_NUMBER = gql`
+  query SendMessageToMobileNumber($mobileNumber: String, $textToSend: String) {
+    sendMessageToMobileNumber(mobileNumber: $mobileNumber, textToSend: $textToSend) {
+      status
+      message
+    }
+  }
+`;

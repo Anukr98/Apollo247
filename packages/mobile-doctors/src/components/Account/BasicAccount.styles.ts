@@ -60,4 +60,23 @@ export default StyleSheet.create({
     resizeMode: 'contain',
     backgroundColor: theme.colors.WHITE,
   },
+  shareLinkContainer: {
+    marginHorizontal: 20,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    paddingTop: 12,
+    borderColor: theme.colors.SEPARATOR_LINE,
+  },
+  linkIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  shareHeaderText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.blackColor(0.6)),
+  },
+  shareText: {
+    ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW),
+    marginLeft: 12,
+  },
 });

@@ -195,7 +195,6 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   const setPrevVolume = async () => {
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
-    console.log(mediaVolume, 'stipp');
     if (mediaVolume !== -1) {
       SystemSetting.setVolume(mediaVolume);
       AsyncStorage.setItem('mediaVolume', '-1');
@@ -203,12 +202,8 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
   const maxVolume = async () => {
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
-
-    console.log(mediaVolume, mediaVolume === -1);
-
     if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
-        console.log(volume, 'bhj');
         AsyncStorage.setItem('mediaVolume', volume.toString());
       });
     }
