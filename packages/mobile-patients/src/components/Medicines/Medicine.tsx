@@ -34,6 +34,7 @@ import {
 import {
   SAVE_SEARCH,
   GET_MEDICINE_ORDERS_OMS__LIST,
+  GET_RECOMMENDED_PRODUCTS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -95,6 +96,10 @@ import {
 } from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import AppIntroSlider from 'react-native-app-intro-slider';
+import {
+  getRecommendedProductsList,
+  getRecommendedProductsListVariables,
+} from '../../graphql/types/getRecommendedProductsList';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -271,6 +276,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    fetchRecommendedProducts();
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
       .then((response) => {
@@ -335,6 +341,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, []);
 
+  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -379,6 +386,40 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       data.length > 0 && setOrdersFetched(data);
     }
   }, [ordersLoading]);
+
+  const fetchRecommendedProducts = () => {
+    client
+      .query<getRecommendedProductsList, getRecommendedProductsListVariables>({
+        query: GET_RECOMMENDED_PRODUCTS_LIST,
+        variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const recommendedProducts =
+          g(data, 'getRecommendedProductsList', 'recommendedProducts') || [];
+        console.log({ recommendedProducts });
+
+        const formattedRecommendedProducts = recommendedProducts.map(
+          (item) =>
+            ({
+              image: item!.productImage!,
+              is_in_stock: (item!.status || '').toLowerCase() == 'enabled' ? 1 : 0,
+              is_prescription_required: item!.isPrescriptionNeeded!,
+              name: item!.productName!,
+              price: Number(item!.productPrice!),
+              special_price: item!.productSpecialPrice || '',
+              sku: item!.productSku!,
+              type_id:
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+              mou: item!.mou!,
+            } as MedicineProduct)
+        );
+        setRecommendedProducts(formattedRecommendedProducts);
+      })
+      .catch((error) => {
+        CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, error);
+      });
+  };
 
   // Common Views
 
@@ -998,7 +1039,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDiscountedPrice = () => {
       return (
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
-          {!!specialPrice && (
+          {!!specialPrice && !isNaN(discount) && !!discount && (
             <Text style={[localStyles.discountedPriceText, { marginRight: 4 }]}>
               (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
@@ -1010,7 +1051,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        {!isNaN(discount) && (
+        {!isNaN(discount) && !!discount && (
           <View style={localStyles.discountPercentageTagView}>
             <OfferIcon />
             <Text style={localStyles.discountPercentageText}>-{discount}%</Text>
@@ -1140,6 +1181,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               ? () =>
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: categoryId,
+                    products: categoryId == -1 ? products : null,
                     title: `${title || 'Products'}`.toUpperCase(),
                   })
               : undefined
@@ -1580,6 +1622,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return sectionsView;
   };
 
+  const renderRecommendedProducts = () => {
+    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1595,6 +1641,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderBanners()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
+        {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>

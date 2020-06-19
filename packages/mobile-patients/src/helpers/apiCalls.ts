@@ -6,7 +6,7 @@ export interface MedicineProduct {
   id: number;
   category_id: string;
   image: string | null;
-  is_in_stock: number;
+  is_in_stock: 0 | 1;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;

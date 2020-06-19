@@ -1125,6 +1125,24 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
+export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
+  query getRecommendedProductsList($patientUhid: String!) {
+    getRecommendedProductsList(patientUhid: $patientUhid) {
+      recommendedProducts {
+        productSku
+        productName
+        productImage
+        productPrice
+        productSpecialPrice
+        isPrescriptionNeeded
+        categoryName
+        status
+        mou
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_OMS = gql`
   mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
     saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
