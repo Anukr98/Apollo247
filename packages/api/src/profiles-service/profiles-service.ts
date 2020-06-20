@@ -207,6 +207,10 @@ import {
   savePharmacologistConsultResolvers,
   savePharmacologistConsultTypeDefs,
 } from 'profiles-service/resolvers/savePharmacologistConsult';
+import {
+  createPatientTypeDefs,
+  createPatientResolvers,
+} from 'profiles-service/resolvers/createPatient';
 
 (async () => {
   await connect();
@@ -460,6 +464,10 @@ import {
       {
         typeDefs: savePharmacologistConsultTypeDefs,
         resolvers: savePharmacologistConsultResolvers,
+      },
+      {
+        typeDefs: createPatientTypeDefs,
+        resolvers: createPatientResolvers,
       },
     ]),
     plugins: [

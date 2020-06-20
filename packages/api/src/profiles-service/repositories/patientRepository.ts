@@ -38,6 +38,17 @@ export class PatientRepository extends Repository<Patient> {
     return this.findOne({ where: { id } });
   }
 
+  async findOrCreatePatient(
+    findOptions: { mobileNumber: Patient['mobileNumber'] },
+    createOptions: Partial<Patient>
+  ) {
+    return this.findOne({
+      where: { mobileNumber: findOptions.mobileNumber },
+    }).then((existingPatient) => {
+      return existingPatient || this.create(createOptions).save();
+    });
+  }
+
   findPatientDetailsByIdsAndFields(ids: string[], fields: string[]) {
     return this.createQueryBuilder('patient')
       .select(fields)
