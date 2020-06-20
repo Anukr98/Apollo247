@@ -29,11 +29,8 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
-<<<<<<< HEAD
 import { MetaTagsComp } from 'MetaTagsComp';
-=======
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
->>>>>>> 401062ba58158b591d91a31e39281bb2fecd11ab
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
