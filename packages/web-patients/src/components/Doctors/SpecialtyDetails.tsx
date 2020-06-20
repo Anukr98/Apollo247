@@ -29,7 +29,11 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
+<<<<<<< HEAD
 import { MetaTagsComp } from 'MetaTagsComp';
+=======
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+>>>>>>> 401062ba58158b591d91a31e39281bb2fecd11ab
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -222,12 +226,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -289,10 +297,33 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
+  const [specialtyId, setSpecialtyId] = useState<string>('');
+  const [specialtyName, setSpecialtyName] = useState<string>('');
 
-  const specialtyLen = params.specialty.length;
-  const specialtyId = params.specialty.slice(specialtyLen - 36);
-  const specialtyName = params.specialty.slice(0, specialtyLen - 36);
+  useEffect(() => {
+    if (params && params.specialty) {
+      apolloClient
+        .query({
+          query: GET_ALL_SPECIALITIES,
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          response.data &&
+            response.data.getAllSpecialties &&
+            response.data.getAllSpecialties.map((specialty: any) => {
+              if (
+                specialty &&
+                specialty.name &&
+                readableParam(specialty.name) === params.specialty
+              ) {
+                setSpecialtyId(specialty.id);
+                setSpecialtyName(specialty.name);
+              }
+            });
+        });
+    }
+  }, []);
 
   let expRange: Range = [],
     feeRange: Range = [];
@@ -342,60 +373,60 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   useEffect(() => {
     setLoading(true);
-    apolloClient
-      .query({
-        query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-        variables: { filterInput: apiVariables },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        let potentialActionSchema: any[] = [];
-        if (
-          response &&
-          response.data &&
-          response.data.getDoctorsBySpecialtyAndFilters &&
-          response.data.getDoctorsBySpecialtyAndFilters.doctors
-        ) {
-          const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-          setDoctorData(doctors || []);
-          setOnlyFilteredCount(doctors.length || 0);
-          const finalList = getFilteredDoctorList(doctors || []);
-          setFilteredDoctorData(finalList);
-          doctors.map((doctorDetails: docDetails) => {
-            doctorDetails &&
-              doctorDetails.fullName &&
-              potentialActionSchema.push({
-                '@type': 'EntryPoint',
-                name: doctorDetails.fullName,
-                url: params.specialty
-                  ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                      params.specialty,
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`
-                  : `${window.location.origin}${clientRoutes.doctorDetails(
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`,
-              });
+    if (specialtyId || specialtyName) {
+      apolloClient
+        .query({
+          query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
+          variables: { filterInput: apiVariables },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          let potentialActionSchema: any[] = [];
+          if (
+            response &&
+            response.data &&
+            response.data.getDoctorsBySpecialtyAndFilters &&
+            response.data.getDoctorsBySpecialtyAndFilters.doctors
+          ) {
+            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+            setDoctorData(doctors || []);
+            setOnlyFilteredCount(doctors.length || 0);
+            const finalList = getFilteredDoctorList(doctors || []);
+            setFilteredDoctorData(finalList);
+            doctors.map((doctorDetails: docDetails) => {
+              doctorDetails &&
+                doctorDetails.fullName &&
+                potentialActionSchema.push({
+                  '@type': 'EntryPoint',
+                  name: doctorDetails.fullName,
+                  url: params.specialty
+                    ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                        params.specialty,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`
+                    : `${window.location.origin}${clientRoutes.doctorDetails(
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`,
+                });
+            });
+          }
+          setStructuredJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'MedicalSpecialty',
+            name: specialtyName,
+            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
+            potentialAction: {
+              '@type': 'ViewAction',
+              target: potentialActionSchema,
+            },
           });
-        }
-        setStructuredJSON({
-          '@context': 'https://schema.org/',
-          '@type': 'MedicalSpecialty',
-          name: readableParam(specialtyName),
-          description: `Find the best ${readableParam(
-            specialtyName
-          )} doctors & specialists and consult with them instantly on Apollo24|7`,
-          potentialAction: {
-            '@type': 'ViewAction',
-            target: potentialActionSchema,
-          },
+          setData(response.data);
+          setLoading(false);
         });
-        setData(response.data);
-        setLoading(false);
-      });
-  }, [currentLat, currentLong, filter]);
+    }
+  }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
 
   const getFilteredDoctorList = (data: DoctorDetails[]) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -488,13 +519,13 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               <img src={require('images/triangle.svg')} alt="" />
               <Link to={clientRoutes.doctorsLanding()}>Specialty</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <span>{readableParam(specialtyName)}</span>
+              <span>{specialtyName}</span>
             </div>
           </div>
           <div className={classes.pageContent}>
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
-                <h3>Book Best Doctors - {_upperFirst(readableParam(specialtyName))}</h3>
+                <h3>Book Best Doctors - {specialtyName}</h3>
                 <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
                 </AphButton>
