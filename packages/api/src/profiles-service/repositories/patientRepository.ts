@@ -984,7 +984,7 @@ export class PatientRepository extends Repository<Patient> {
   async getLinkedPatientIds(patientId: string) {
     const linkedPatient = await this.findOne({ where: { id: patientId } });
     const primaryPatientIds: string[] = [];
-    if (linkedPatient) {
+    if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
       const patientsList = await this.find({
         where: { primaryPatientId: linkedPatient.primaryPatientId },
       });
@@ -993,6 +993,8 @@ export class PatientRepository extends Repository<Patient> {
           primaryPatientIds.push(patientDetails.id);
         });
       }
+    } else {
+      primaryPatientIds.push(patientId);
     }
     return primaryPatientIds;
   }
