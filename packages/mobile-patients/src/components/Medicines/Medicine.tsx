@@ -47,7 +47,6 @@ import {
   pinCodeServiceabilityApi,
   MedicinePageSection,
   OfferBannerSection,
-  medCartItemsDetailsApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
@@ -57,6 +56,7 @@ import {
   postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
+  productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -393,6 +393,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, [ordersLoading]);
 
+  const getImageUrl = (fileIds: string) => {
+    return fileIds
+      .split(',')
+      .filter((v) => v)
+      .map((v) => `/catalog/product${v}`)[0];
+  };
+
   const fetchRecommendedProducts = async () => {
     try {
       const recommendedProductsListApi = await client.query<
@@ -403,16 +410,34 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
         fetchPolicy: 'no-cache',
       });
-      const lineItemsSkus = recommendedProductsListApi.data.getRecommendedProductsList.recommendedProducts!.map(
-        (item) => item!.productSku!
-      );
-      const lineItemsDetails = await medCartItemsDetailsApi(lineItemsSkus);
-      const recommendedProducts = lineItemsDetails.data.productdp.filter(
-        (item) => item.sku && item.id
-      );
-      setRecommendedProducts(recommendedProducts);
-    } catch (error) {
-      CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, error);
+      const _recommendedProducts =
+        g(
+          recommendedProductsListApi,
+          'data',
+          'getRecommendedProductsList',
+          'recommendedProducts'
+        ) || [];
+      const formattedRecommendedProducts = _recommendedProducts
+        .filter((item) => (item!.status || '').toLowerCase() == 'enabled')
+        .map(
+          (item) =>
+            ({
+              image: item!.productImage ? getImageUrl(item!.productImage) : null,
+              is_in_stock: 1,
+              is_prescription_required: item!.isPrescriptionNeeded!,
+              name: item!.productName!,
+              price: Number(item!.productPrice!),
+              special_price: item!.productSpecialPrice || '',
+              sku: item!.productSku!,
+              type_id:
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+              mou: item!.mou!,
+            } as MedicineProduct)
+        );
+      formattedRecommendedProducts.length >= 5 &&
+        setRecommendedProducts(formattedRecommendedProducts);
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
     }
   };
 
@@ -665,7 +690,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderBannerImageToGetAspectRatio = () => {
     const imageUri = g(banners, '0' as any, 'image');
-    const imageFullUri = imageUri ? `${config.IMAGES_BASE_URL[0]}${imageUri}` : '';
+    const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
     return (
       !!imageFullUri && (
         <View style={{ height: 0 }}>
@@ -702,7 +727,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <ImageNative
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image}` }}
+          source={{ uri: productsThumbnailUrl(item.image) }}
         />
       </TouchableOpacity>
     );
@@ -898,13 +923,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+              productsThumbnailUrl(item.image_url),
               () => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
                   title,
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -944,7 +969,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     item.category_id,
                     'Banner',
                     title,
-                    `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                    productsThumbnailUrl(item.image_url)
                   );
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
@@ -954,7 +979,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               >
                 <Image
                   // placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image_url}` }}
+                  source={{ uri: productsThumbnailUrl(item.image_url) }}
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
@@ -1132,7 +1157,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return hotSellerCard({
       name,
-      imgUrl: `${config.IMAGES_BASE_URL[0]}${image}`,
+      imgUrl: productsThumbnailUrl(image!),
       price,
       specialPrice: special_price
         ? typeof special_price == 'string'
@@ -1223,9 +1248,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           horizontal
           data={shopByBrand}
           renderItem={({ item, index }) => {
-            const imgUrl = `${config.IMAGES_BASE_URL[0].replace('/catalog/product', '')}${
-              item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`
-            }`;
+            const imgUrl = productsThumbnailUrl(item.image_url);
             return renderBrandCard(
               imgUrl,
               () => {
@@ -1233,7 +1256,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   item.category_id,
                   item.title,
                   title,
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
