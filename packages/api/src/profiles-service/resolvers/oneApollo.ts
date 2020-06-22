@@ -84,8 +84,6 @@ type TransactionDetails = {
   grossAmount: number;
 };
 
-const oneApollo = new OneApollo();
-
 const getOneApolloUser: Resolver<
   null,
   { patientId: string },
@@ -94,6 +92,7 @@ const getOneApolloUser: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const mobNumberIN = mobileNumber.slice(3);
 
+  const oneApollo = new OneApollo();
   let response = await oneApollo.getOneApolloUser(mobNumberIN);
   if (!response.Success) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
@@ -140,7 +139,6 @@ const blockOneApolloUserPoints: Resolver<
   ProfilesServiceContext,
   Partial<BlockUserPointsResponse>
 > = async (parent, { userDetailInput }, { profilesDb }) => {
-  console.log(userDetailInput);
   let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
   switch (userDetailInput.deviceType) {
     case DEVICE_TYPE.ANDROID:
@@ -156,6 +154,7 @@ const blockOneApolloUserPoints: Resolver<
     StoreCode: storeCode,
     BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
   };
+  const oneApollo = new OneApollo();
   const response: Partial<BlockUserPointsResponse> = await oneApollo.blockOneUserCredits(
     blockUserPointsInput
   );
@@ -189,6 +188,7 @@ const getOneApolloUserTransactions: Resolver<
   TransactionDetails[]
 > = async (parent, args, { mobileNumber }) => {
   const mobNumberIN = mobileNumber.slice(3);
+  const oneApollo = new OneApollo();
 
   const response = await oneApollo.getOneApolloUserTransactions(mobNumberIN);
   if (!response.Success) {

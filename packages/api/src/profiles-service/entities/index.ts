@@ -153,6 +153,8 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
   ORDER_BILLED = 'ORDER_BILLED',
+  PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
+  PAYMENT_ABORTED = 'PAYMENT_ABORTED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -200,6 +202,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum BOOKING_SOURCE {
   WEB = 'WEB',
   MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 export enum DEVICE_TYPE {
@@ -292,6 +295,12 @@ export enum OTP_STATUS {
 enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
+}
+
+export enum PROFILE_SOURCE {
+  WEB = 'WEB',
+  MOBILE = 'MOBILE',
+  ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
 }
 
 //medicine orders starts
@@ -387,6 +396,9 @@ export class MedicineOrders extends BaseEntity {
     type: 'json',
   })
   shopAddress: string;
+
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
 
   @Column({
     nullable: true,
@@ -902,6 +914,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   relation: Relation;
+
+  @Column({ nullable: true })
+  source: PROFILE_SOURCE;
 
   @Index('Patient_isActive')
   @Column({ nullable: true, default: true })

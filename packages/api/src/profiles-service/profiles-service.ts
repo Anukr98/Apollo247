@@ -201,13 +201,24 @@ import {
   savePharmacologistConsultTypeDefs,
 } from 'profiles-service/resolvers/savePharmacologistConsult';
 import {
+  createPatientTypeDefs,
+  createPatientResolvers,
+} from 'profiles-service/resolvers/createPatient';
+
+import {
   labResultsUploadTypeDefs,
   labResultsUploadResolvers,
 } from 'profiles-service/resolvers/labResultsUpload';
+
 import {
   prescriptionUploadTypeDefs,
   prescriptionUploadResolvers,
 } from 'profiles-service/resolvers/prescriptionUpload';
+
+import {
+  alertMedicineOrderPickupTypeDefs,
+  alertMedicineOrderPickupResolvers,
+} from 'profiles-service/resolvers/alertMedicineOrderPickup';
 
 (async () => {
   await connect();
@@ -459,12 +470,20 @@ import {
         resolvers: savePharmacologistConsultResolvers,
       },
       {
+        typeDefs: createPatientTypeDefs,
+        resolvers: createPatientResolvers,
+      },
+      {
         typeDefs: labResultsUploadTypeDefs,
         resolvers: labResultsUploadResolvers,
       },
       {
         typeDefs: prescriptionUploadTypeDefs,
         resolvers: prescriptionUploadResolvers,
+      },
+      {
+        typeDefs: alertMedicineOrderPickupTypeDefs,
+        resolvers: alertMedicineOrderPickupResolvers,
       },
     ]),
     plugins: [
