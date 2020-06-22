@@ -226,6 +226,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             classes={{ selectMenu: classes.selectMenuItem }}
                             value={cartItems[itemIndexInCart(medicine)].quantity || 1}
                             onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                              console.log('listsssssss');
                               updateCartItemQty &&
                                 updateCartItemQty({
                                   url_key: medicine.url_key,
@@ -273,6 +274,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                               title="Remove item from Cart"
                               onClick={() => {
                                 /**Gtm code start  */
+                                console.log('listssssss');
                                 gtmTracking({
                                   category: 'Pharmacy',
                                   action: 'Remove From Cart',
