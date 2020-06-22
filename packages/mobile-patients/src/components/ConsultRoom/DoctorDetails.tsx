@@ -221,7 +221,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
-    callPermissions();
+    // callPermissions();
   }, []);
 
   useEffect(() => {
@@ -941,7 +941,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               title={'BOOK APPOINTMENT'}
               onPress={() => {
                 postBookAppointmentWEGEvent();
-                callPermissions();
+                // callPermissions();
                 getNetStatus()
                   .then((status) => {
                     if (status) {
