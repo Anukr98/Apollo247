@@ -152,6 +152,7 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = 'CANCEL_REQUEST',
   READY_AT_STORE = 'READY_AT_STORE',
   ORDER_BILLED = 'ORDER_BILLED',
+  PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -390,6 +391,9 @@ export class MedicineOrders extends BaseEntity {
     type: 'json',
   })
   shopAddress: string;
+
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
 
   @Column({
     nullable: true,

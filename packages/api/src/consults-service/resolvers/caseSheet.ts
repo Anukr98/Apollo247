@@ -91,14 +91,15 @@ export const caseSheetTypeDefs = gql`
 
   enum DoctorType {
     APOLLO
+    CLINIC
+    CRADLE
+    DOCTOR_CONNECT
+    FERTILITY
+    HOMECARE
     JUNIOR
     PAYROLL
-    STAR_APOLLO
-    DOCTOR_CONNECT
-    CRADLE
-    CLINIC
     SPECTRA
-    FERTILITY
+    STAR_APOLLO
     SUGAR
   }
 

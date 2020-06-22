@@ -31,14 +31,15 @@ export enum ConsultMode {
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
-  PAYROLL = 'PAYROLL',
-  STAR_APOLLO = 'STAR_APOLLO',
-  JUNIOR = 'JUNIOR',
-  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
-  CRADLE = 'CRADLE',
   CLINIC = 'CLINIC',
-  SPECTRA = 'SPECTRA',
+  CRADLE = 'CRADLE',
+  DOCTOR_CONNECT = 'DOCTOR_CONNECT',
   FERTILITY = 'FERTILITY',
+  HOMECARE = 'HOMECARE',
+  JUNIOR = 'JUNIOR',
+  PAYROLL = 'PAYROLL',
+  SPECTRA = 'SPECTRA',
+  STAR_APOLLO = 'STAR_APOLLO',
   SUGAR = 'SUGAR',
 }
 
@@ -520,6 +521,15 @@ export class DoctorBankAccounts extends BaseEntity {
 export class DoctorSpecialty extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
+
+  @Column({ nullable: true })
+  shortDescription: string;
+
+  @Column({ nullable: true })
+  symptoms: string;
+
+  @Column({ nullable: true })
+  commonSearchWords: string;
 
   @Column({ nullable: true })
   displayOrder: Number;
