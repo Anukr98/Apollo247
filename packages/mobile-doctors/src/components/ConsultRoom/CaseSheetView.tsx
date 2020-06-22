@@ -111,6 +111,7 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
+import firebase from 'react-native-firebase';
 
 const { width } = Dimensions.get('window');
 
@@ -395,6 +396,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               unDismissable: true,
             });
         }
+        firebase.analytics().logEvent('Doctor_send_prescription', {
+          doctorName: doctorDetails ? doctorDetails.fullName : 'doctor',
+          patientName: patientDetails
+            ? `${patientDetails.firstName} ${patientDetails.lastName}`
+            : 'patient',
+          caseSheet: caseSheet,
+        });
       })
       .catch((e) => {
         setLoading && setLoading(false);

@@ -116,6 +116,7 @@ import {
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps } from 'react-navigation';
+import firebase from 'react-native-firebase';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -843,6 +844,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setcaseSheet(modifiedData);
             setData(modifiedData);
           }
+          setSavedTime(g(modifiedData, 'caseSheetDetails', 'updatedDate'));
           setIsAutoSaved(autoSave);
           AsyncStorage.setItem(
             'prevSavedData',
@@ -1620,6 +1622,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onEndConsult = () => {
     stopAllCalls();
     endCallNotificationAPI(false);
+    firebase.analytics().logEvent('Doctor_end_consult', {
+      doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
+      patientName: patientDetails
+        ? `${patientDetails.firstName} ${patientDetails.lastName}`
+        : patientId,
+      appointmentData: appointmentData,
+    });
   };
   const renderTabPage = () => {
     return (
@@ -1766,6 +1775,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
+        firebase.analytics().logEvent('Doctor_start_consult', {
+          doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
+          patientName: patientDetails
+            ? `${patientDetails.firstName} ${patientDetails.lastName}`
+            : patientId,
+          appointmentData: appointmentData,
+        });
+
         setCaseSheetEdit(true);
         console.log('createsession', _data);
         console.log('sessionid', _data.data.createAppointmentSession.sessionId);
@@ -2017,7 +2034,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         middleText={strings.consult_room.consult_room}
         // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         timerremaintext={
-          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss') : undefined
+          isAutoSaved && moment(savedTime).isValid()
+            ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss')
+            : undefined
         }
         headingContainer={{
           marginLeft:
