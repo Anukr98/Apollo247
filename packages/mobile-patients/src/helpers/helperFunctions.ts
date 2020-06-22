@@ -187,6 +187,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
       break;
+    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
+      statusString = 'Purchased In-store';
+      break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
       break;

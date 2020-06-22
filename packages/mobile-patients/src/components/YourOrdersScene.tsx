@@ -2,7 +2,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -12,7 +11,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ApolloQueryResult } from 'apollo-client';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
@@ -43,7 +42,6 @@ type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrders
 export interface YourOrdersSceneProps
   extends NavigationScreenProps<{
     refetch: OrderRefetch;
-    isTest: boolean;
     orders: MedOrder[];
     error: object;
     header: string;
@@ -52,7 +50,6 @@ export interface YourOrdersSceneProps
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading } = useUIElements();
-  const isTest = props.navigation.getParam('isTest');
   // const ordersFetched = props.navigation.getParam('orders');
   const [orders, setOrders] = useState<MedOrder[]>(props.navigation.getParam('orders'));
   const refetch: OrderRefetch =
@@ -99,13 +96,24 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     setOrders(filteredOrders);
   }, [isChanged]);
 
-  const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
+  const getDeliverTypeOrDescription = (
+    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
+  ) => {
+    const getStore = () => {
+      const shopAddress = g(order, 'shopAddress');
+      const parsedShopAddress = JSON.parse(shopAddress || '{}');
+      return (parsedShopAddress && parsedShopAddress.address) || 'Store Pickup';
+    };
+
+    const type = g(order, 'deliveryType');
     switch (type) {
       case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
         return 'Home Delivery';
         break;
       case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        return 'Store Pickup';
+        {
+          return getStore() || 'Store Pickup';
+        }
         break;
       default:
         return 'Unknown';
@@ -182,19 +190,19 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
     index: number
   ) => {
+    const orderNumber = order.billNumber || order.orderAutoId;
     return (
       <OrderCard
-        isTest={isTest}
         style={[
           { marginHorizontal: 20 },
           index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
           index == 0 ? { marginTop: 20 } : {},
         ]}
-        key={`${order.orderAutoId}`}
-        orderId={`#${order.orderAutoId}`}
+        key={`${orderNumber}`}
+        orderId={`#${orderNumber}`}
         onPress={() => {
           props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-            orderAutoId: order.orderAutoId,
+            orderAutoId: orderNumber,
             orderDetails: order.medicineOrdersStatus,
             setOrders: (orders: MedOrder[]) => {
               setOrders(orders);
@@ -204,7 +212,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           });
         }}
         title={getOrderTitle(order)}
-        description={getDeliverType(order.deliveryType)}
+        description={getDeliverTypeOrDescription(order)}
         statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
         status={getStatusType(g(order, 'medicineOrdersStatus')!)}
         dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
@@ -268,13 +276,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           title={props.navigation.getParam('header') || string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={
-            isTest && (
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <More />
-              </TouchableOpacity>
-            )
-          }
         />
         <ScrollView bounces={false}>
           {renderOrders()}
