@@ -446,7 +446,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
   };
 
   const isPrescriptionUploadOrder =
-    orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
+    orderDetailsData && orderDetailsData.orderType === MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION;
 
   const noDiscountFound =
     orderDetailsData &&

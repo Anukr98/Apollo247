@@ -29,6 +29,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     MORNING
     NIGHT
     NOON
+    NOT_SPECIFIC
   }
 
   enum MEDICINE_TO_BE_TAKEN {

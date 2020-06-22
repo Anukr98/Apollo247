@@ -342,7 +342,7 @@ export const ViewAllBrands: React.FC = (props) => {
   const grouped = groupBy(showData, (brand: filter) => brand.key);
   const metaTagProps = {
     title: 'Medicine Brands In India - Buy Medicines From Top Brands Online - Apollo 247',
-    desciption:
+    description:
       "Buy medicines online from top brands in India at Apollo 247 - India's online pharmacy store. Get all the medicines from the best medicine brands in India right here. Buy now!",
     canonicalLink: window && window.location && window.location.href,
   };

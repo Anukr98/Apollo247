@@ -7,9 +7,14 @@ import {
   PrescriptionUploadResponse,
   PrescriptionDownloadResponse,
   LabResultsDownloadResponse,
+  GetUsersResponse,
+  CreateNewUsersResponse,
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { Patient, Gender } from 'profiles-service/entities';
+import { ApiConstants } from 'ApiConstants';
+import { getUnixTime } from 'date-fns';
 
 const prismTimeoutMillSeconds = Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS);
 
@@ -224,6 +229,140 @@ export async function getLabResults(uhid: string): Promise<LabResultsDownloadRes
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
         } else {
           throw new AphError(AphErrorMessages.PRISM_LABRESULTS_FETCH_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+//getUsersData by mobileNumber
+export async function getRegisteredUsers(mobileNumber: string): Promise<GetUsersResponse> {
+  if (!process.env.PHR_V1_GET_REGISTERED_USERS || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_REGISTERED_USERS.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{MOBILE}', mobileNumber);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getRegisteredUsersFromPrism PRISM_GET_REGISTERED_USERS_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        //if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getRegisteredUsersFromPrism PRISM_GET_REGISTERED_USERS_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+//create new user in Prism
+export async function createPrismUser(
+  patientData: Patient,
+  uhid: string
+): Promise<CreateNewUsersResponse> {
+  if (
+    !process.env.PHR_V1_CREATE_USER ||
+    !process.env.PHR_V1_ACCESS_TOKEN ||
+    !process.env.PHR_V1_CREATE_USER_SECURITYKEY
+  )
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_CREATE_USER.toString();
+
+  if (patientData.firstName === null || patientData.firstName === '') {
+    patientData.firstName = 'New';
+  }
+  if (patientData.lastName === null || patientData.lastName === '') {
+    patientData.lastName = 'User';
+  }
+  if (patientData.gender === null) {
+    patientData.gender = Gender.MALE;
+  }
+  if (patientData.emailAddress === null) {
+    patientData.emailAddress = '';
+  }
+  let dob = 0;
+  if (patientData.dateOfBirth != null) {
+    dob = getUnixTime(new Date(patientData.dateOfBirth)) * 1000;
+  }
+
+  const queryParams = `securitykey=${
+    process.env.PHR_V1_CREATE_USER_SECURITYKEY
+  }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
+    patientData.lastName
+  }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
+    ApiConstants.COUNTRY_CODE
+  }&dob=${dob}&sitekey=&martialStatus=&pincode=&email=${
+    patientData.emailAddress
+  }&state=&country=&city=&address=`;
+
+  apiUrl = apiUrl + '?' + queryParams;
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'createNewUser PRISM_CREATE_NEW_USER_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'createNewUser PRISM_CREATE_NEW_USER_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
         }
       }
     )
