@@ -767,7 +767,7 @@ export const MedicinePrescription: React.FC = () => {
     },
     {
       id: 'NOT_SPECIFIC',
-      value: 'not specific',
+      value: 'Not Specific',
       selected: false,
     },
   ]);
