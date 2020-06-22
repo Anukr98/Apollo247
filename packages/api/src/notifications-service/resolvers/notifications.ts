@@ -89,7 +89,7 @@ export const getNotificationsTypeDefs = gql`
     sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
   }
 `;
-
+//sendDoctorReminderNotifications(appointmentId: String): String
 type PushNotificationMessage = {
   messageId: string;
 };
@@ -2266,6 +2266,26 @@ const sendMessageToMobileNumber: Resolver<
   return { status: messageResponse.status, message: messageResponse.message };
 };
 
+// const sendDoctorReminderNotifications: Resolver<
+//   null,
+//   { appointmentId: string; notificationType: NotificationType },
+//   NotificationsServiceContext,
+//   SendChatMessageToDoctorResult
+// > = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+//   // let notificationTitle: string = '';
+//   // let notificationBody: string = '';
+//   // const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+//   // const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+//   // const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+//   // const apptDetails = apptRepo.findById(args.appointmentId)
+//   // if(apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+//   // if (args.notificationType == NotificationType.MEDICINE_CART_READY) {
+
+//   // }
+
+//   return { status: true };
+// };
+
 export const getNotificationsResolvers = {
   Query: {
     sendPushNotification,
@@ -2274,5 +2294,6 @@ export const getNotificationsResolvers = {
     sendFollowUpNotification,
     sendChatMessageToDoctor,
     sendMessageToMobileNumber,
+    //sendDoctorReminderNotifications,
   },
 };
