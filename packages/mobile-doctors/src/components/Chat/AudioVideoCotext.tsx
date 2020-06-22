@@ -222,6 +222,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         audioTrack.stop();
       }
     }
+    AsyncStorage.setItem('callAccepted', JSON.stringify(callAccepted));
   }, [callConnected, callAccepted]);
 
   useEffect(() => {
