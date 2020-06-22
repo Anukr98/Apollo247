@@ -1495,7 +1495,11 @@ export const MedicinePrescription: React.FC = () => {
       setCustomDosageNight('');
       setIsCustomForm(false);
     }
-    setConsumptionDuration((idx.medicineConsumptionDurationInDays && Number(idx.medicineConsumptionDurationInDays) !== 0) ? idx.medicineConsumptionDurationInDays : '');
+    setConsumptionDuration(
+      idx.medicineConsumptionDurationInDays && Number(idx.medicineConsumptionDurationInDays) !== 0
+        ? idx.medicineConsumptionDurationInDays
+        : ''
+    );
     setMedicineInstruction(idx.medicineInstructions);
     setFrequency(idx.medicineFrequency! ? idx.medicineFrequency! : dosageFrequency[0].id);
     setRoaOption(idx.routeOfAdministration! ? idx.routeOfAdministration! : roaOptionsList[0].id);
@@ -2321,9 +2325,11 @@ export const MedicinePrescription: React.FC = () => {
               {favouriteMedicine.map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
                 console.log(favMedicine);
-                const forFavHtml = favMedicine.medicineConsumptionDurationInDays &&  favMedicine.medicineConsumptionDurationInDays !== '0'
-                  ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
-                  : ' ';
+                const forFavHtml =
+                  favMedicine.medicineConsumptionDurationInDays &&
+                  favMedicine.medicineConsumptionDurationInDays !== '0'
+                    ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
+                    : ' ';
                 const favDurations = `${forFavHtml} ${
                   favMedicine.medicineConsumptionDurationUnit &&
                   favMedicine.medicineConsumptionDurationUnit !==
@@ -2370,13 +2376,29 @@ export const MedicinePrescription: React.FC = () => {
                 if (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '') {
                   const favdosageTimingArray = favMedicine.medicineCustomDosage!.split('-');
                   const favCustomTimingArray = [];
-                  if (favdosageTimingArray && favdosageTimingArray[0] && favdosageTimingArray[0] !== '0')
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[0] &&
+                    favdosageTimingArray[0] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[0] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[1] && favdosageTimingArray[1] !== '0')
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[1] &&
+                    favdosageTimingArray[1] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[1] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[2] && favdosageTimingArray[2] !== '0')
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[2] &&
+                    favdosageTimingArray[2] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[2] + favUnitHtmls);
-                  if (favdosageTimingArray && favdosageTimingArray[3] && favdosageTimingArray[3] !== '0')
+                  if (
+                    favdosageTimingArray &&
+                    favdosageTimingArray[3] &&
+                    favdosageTimingArray[3] !== '0'
+                  )
                     favCustomTimingArray.push(favdosageTimingArray[3] + favUnitHtmls);
                   favDosageHtml = favCustomTimingArray.join(' - ');
                 } else {

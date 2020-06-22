@@ -1717,144 +1717,144 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageEvening.trim());
     if (customDosageNight && customDosageNight.trim() !== '' && customDosageNight.trim() !== '0')
       customDosageArray.push(customDosageNight.trim());
-      if (
-        !isCustomform &&
-        tabletsCount.trim() === '' &&
-        medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
-      ) {
-        setErrorState({
-          ...errorState,
-          tobeTakenErr: false,
-          daySlotErr: false,
-          durationErr: false,
-          dosageErr: true,
-        });
-      } else if (
-        !isCustomform &&
-        tabletsCount.trim() === '' &&
-        medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-        medicineUnit !== 'AS_PRESCRIBED'
-      ) {
-        setErrorState({
-          ...errorState,
-          tobeTakenErr: false,
-          daySlotErr: false,
-          durationErr: false,
-          dosageErr: true,
-        });
-      } else if (
-        isCustomform &&
-        ((customDosageMorning.trim() === '' &&
-          customDosageNoon.trim() === '' &&
-          customDosageEvening.trim() === '' &&
-          customDosageNight.trim() === '') ||
-          (customDosageMorning.trim() === '0' &&
-            customDosageNoon.trim() === '0' &&
-            customDosageEvening.trim() === '0' &&
-            customDosageNight.trim() === '0') ||
-          ((customDosageMorning.trim() === '' || customDosageMorning.trim() === '0') &&
-            (customDosageNoon.trim() === '' || customDosageNoon.trim() === '0') &&
-            (customDosageEvening.trim() === '' || customDosageEvening.trim() === '0') &&
-            (customDosageNight.trim() === '' || customDosageNight.trim() === '0')))
-      ) {
-        setErrorState({
-          ...errorState,
-          tobeTakenErr: false,
-          daySlotErr: false,
-          durationErr: false,
-          dosageErr: true,
-        });
-      } else if (
-        isCustomform &&
-        ((customDosageMorning.trim() !== '' &&
-          customDosageMorning.trim() !== '0' &&
-          daySlotsArr.indexOf('MORNING') < 0) ||
-          (daySlotsArr.indexOf('MORNING') > -1 && customDosageMorning.trim() === ''))
-      ) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (
-        isCustomform &&
-        ((customDosageNoon.trim() !== '' &&
-          customDosageNoon.trim() !== '0' &&
-          daySlotsArr.indexOf('NOON') < 0) ||
-          (daySlotsArr.indexOf('NOON') > -1 && customDosageNoon.trim() === ''))
-      ) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (
-        isCustomform &&
-        ((customDosageEvening.trim() !== '' &&
-          customDosageEvening.trim() !== '0' &&
-          daySlotsArr.indexOf('EVENING') < 0) ||
-          (daySlotsArr.indexOf('EVENING') > -1 && customDosageEvening.trim() === ''))
-      ) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (
-        isCustomform &&
-        ((customDosageNight.trim() !== '' &&
-          customDosageNight.trim() !== '0' &&
-          daySlotsArr.indexOf('NIGHT') < 0) ||
-          (daySlotsArr.indexOf('NIGHT') > -1 && customDosageNight.trim() === ''))
-      ) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (daySlotsArr.length === 0) {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: true,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else if (
-        forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
-        (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
-      ) {
-        setErrorState({
-          ...errorState,
-          durationErr: true,
-          daySlotErr: false,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
-      } else {
-        setErrorState({
-          ...errorState,
-          durationErr: false,
-          daySlotErr: false,
-          tobeTakenErr: false,
-          dosageErr: false,
-        });
+    if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      !isCustomform &&
+      tabletsCount.trim() === '' &&
+      medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+      medicineUnit !== 'AS_PRESCRIBED'
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
+        customDosageNight.trim() === '') ||
+        (customDosageMorning.trim() === '0' &&
+          customDosageNoon.trim() === '0' &&
+          customDosageEvening.trim() === '0' &&
+          customDosageNight.trim() === '0') ||
+        ((customDosageMorning.trim() === '' || customDosageMorning.trim() === '0') &&
+          (customDosageNoon.trim() === '' || customDosageNoon.trim() === '0') &&
+          (customDosageEvening.trim() === '' || customDosageEvening.trim() === '0') &&
+          (customDosageNight.trim() === '' || customDosageNight.trim() === '0')))
+    ) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageMorning.trim() !== '' &&
+        customDosageMorning.trim() !== '0' &&
+        daySlotsArr.indexOf('MORNING') < 0) ||
+        (daySlotsArr.indexOf('MORNING') > -1 && customDosageMorning.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageNoon.trim() !== '' &&
+        customDosageNoon.trim() !== '0' &&
+        daySlotsArr.indexOf('NOON') < 0) ||
+        (daySlotsArr.indexOf('NOON') > -1 && customDosageNoon.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageEvening.trim() !== '' &&
+        customDosageEvening.trim() !== '0' &&
+        daySlotsArr.indexOf('EVENING') < 0) ||
+        (daySlotsArr.indexOf('EVENING') > -1 && customDosageEvening.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      ((customDosageNight.trim() !== '' &&
+        customDosageNight.trim() !== '0' &&
+        daySlotsArr.indexOf('NIGHT') < 0) ||
+        (daySlotsArr.indexOf('NIGHT') > -1 && customDosageNight.trim() === ''))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (daySlotsArr.length === 0) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
+      (consumptionDuration === '' || isNaN(Number(consumptionDuration)))
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       setMedicineLoader(true);
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: Number(consumptionDuration),
