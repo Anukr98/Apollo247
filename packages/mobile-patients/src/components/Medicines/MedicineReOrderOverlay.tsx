@@ -1,18 +1,3 @@
-/*
-Sample use case of this component:-
-<MedicineReOrderOverlay
-  itemDetails={{
-    total: 10,
-    unavailable: ['Crocin Advance Tab', '3M Particulate Respirator 8210'],
-  }}
-  onContinue={() => {
-    Alert.alert('onContinue');
-  }}
-  onClose={() => {
-    Alert.alert('onClose');
-  }}
-/>;
-*/
 import { AphOverlay, AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
