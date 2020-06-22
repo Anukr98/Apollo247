@@ -327,13 +327,15 @@ export const KavachLanding: React.FC = (props) => {
       isNameValid(userName) &&
       isMobileNumberValid(userMobileNumber) &&
       location &&
-      location.length
+      location.length &&
+      service &&
+      service.length
     ) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, userName, location, userMobileNumber]);
+  }, [userEmail, userName, location, userMobileNumber, service]);
 
   const handleEmailValidityCheck = () => {
     if (userEmail.length && !isEmailValid(userEmail)) {
@@ -380,6 +382,7 @@ export const KavachLanding: React.FC = (props) => {
       mobileNumber: userMobileNumber,
       email: userEmail,
       location,
+      stayAt: service,
     };
     fetchUtil(process.env.KAVACH_FORM_SUBMIT_URL, 'POST', userData, '', true).then((res: any) => {
       if (res && res.success) {
@@ -388,6 +391,7 @@ export const KavachLanding: React.FC = (props) => {
         setUserName('');
         setLocation('');
         setIsPopoverOpen(true);
+        setService('');
       } else {
         alert('something went wrong');
       }
@@ -479,9 +483,9 @@ export const KavachLanding: React.FC = (props) => {
                         <MenuItem value="" disabled>
                           Service Type
                         </MenuItem>
-                        <MenuItem value={'Clinic'}>Fever Clinic</MenuItem>
-                        <MenuItem value={'Hotel'}>Stay-i Hotel</MenuItem>
-                        <MenuItem value={'Home'}>Stay-i at Home</MenuItem>
+                        <MenuItem value={'Fever Clinic'}>Fever Clinic</MenuItem>
+                        <MenuItem value={'Stay-i Hotel'}>Stay-i Hotel</MenuItem>
+                        <MenuItem value={'Stay-i at Home'}>Stay-i at Home</MenuItem>
                       </Select>
                     </FormControl>
                     {!isLoading ? (
