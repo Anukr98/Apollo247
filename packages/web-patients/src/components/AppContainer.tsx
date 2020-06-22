@@ -52,6 +52,7 @@ import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
+import { KavachLanding } from 'components/Covid/KavachLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
 import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
@@ -110,6 +111,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
           <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
           <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+          <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
           <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
           <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />

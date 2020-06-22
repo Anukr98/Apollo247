@@ -497,13 +497,17 @@ export const MyAccount: React.FC = (props) => {
     } else {
       setShowErrorMessage(false);
       setLoading(true);
+      const doctorName = doctorProfile!.salutation &&
+        doctorProfile!.salutation!.charAt(0).toUpperCase() + ' '+ doctorProfile
+        .salutation!.slice(1)
+        .toLowerCase() + '. '+ doctorProfile.firstName+' '+doctorProfile.lastName;  
       client
         .query<SendMessageToMobileNumber, SendMessageToMobileNumberVariables>({
           query: SEND_MESSAGE_TO_MOBILE_NUMBER,
           fetchPolicy: 'no-cache',
           variables: {
             mobileNumber: mobileNumberWithPrefix,
-            textToSend: `Hi, ${doctorProfile.displayName} has invited you to the Apollo247 application. Click here ${deepLink} to download the application.  Use this referral code to login`,
+            textToSend: `Hi, ${doctorName} has invited you to the Apollo247 application. Click here ${deepLink} to book a consultation with Doctor.`,
           },
         })
         .then((data) => {

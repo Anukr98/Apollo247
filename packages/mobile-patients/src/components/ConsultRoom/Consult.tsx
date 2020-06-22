@@ -232,7 +232,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    callPermissions();
+    // callPermissions();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')

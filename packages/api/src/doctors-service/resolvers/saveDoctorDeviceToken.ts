@@ -35,12 +35,21 @@ export const saveDoctorDeviceTokenTypeDefs = gql`
     deviceToken: DoctorDeviceTokens
   }
 
+  type DoctorDeleteTokenResult {
+    status: Boolean
+  }
+
   extend type Mutation {
     saveDoctorDeviceToken(
       SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput
     ): DoctorDeviceTokenResult!
+    deleteDoctorDeviceToken(deviceToken: String, doctorId: String): DoctorDeleteTokenResult
   }
 `;
+
+type DoctorDeleteTokenResult = {
+  status: boolean;
+};
 
 type SaveDoctorDeviceTokenInput = {
   deviceType: DOCTOR_DEVICE_TYPE;
@@ -86,8 +95,23 @@ const saveDoctorDeviceToken: Resolver<
   return { deviceToken };
 };
 
+const deleteDoctorDeviceToken: Resolver<
+  null,
+  { deviceToken: string; doctorId: string },
+  DoctorsServiceContext,
+  DoctorDeleteTokenResult
+> = async (parent, args, { doctorsDb }) => {
+  const deviceTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
+  const tokenDetails = await deviceTokenRepo.findDeviceToken(args.doctorId, args.deviceToken);
+  if (tokenDetails == null)
+    throw new AphError(AphErrorMessages.NO_DEVICE_TOKEN_EXIST, undefined, {});
+  await deviceTokenRepo.deleteDeviceToken(tokenDetails.deviceToken);
+  return { status: true };
+};
+
 export const saveDoctorDeviceTokenResolvers = {
   Mutation: {
     saveDoctorDeviceToken,
+    deleteDoctorDeviceToken,
   },
 };
