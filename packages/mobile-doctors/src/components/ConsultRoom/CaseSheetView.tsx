@@ -2060,7 +2060,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       if (prismIds.length > 0) {
         getPrismUrls(
           client,
-          (doctorDetails && doctorDetails.id) || (patientDetails && patientDetails.id) || '',
+          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
           prismIds
         )
           .then((data) => {

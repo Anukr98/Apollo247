@@ -1288,14 +1288,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
-            } else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
-              stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Call Disconnected',
-                });
             }
+            // else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
+            //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
+            //   showAphAlert &&
+            //     showAphAlert({
+            //       title: 'Alert!',
+            //       description: 'Call Disconnected',
+            //     });
+            // }
             // else {
             //   console.log(
             //     'Call ab',
