@@ -594,6 +594,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateProfiles(updateAttrs: Partial<Patient>[]) {
+    updateAttrs.forEach((pat) => {
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${pat.id}`);
+    });
     return this.save(updateAttrs).catch((savePatientError) => {
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
         savePatientError,
