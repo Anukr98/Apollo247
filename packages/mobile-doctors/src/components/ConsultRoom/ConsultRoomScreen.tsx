@@ -111,6 +111,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { NavigationScreenProps } from 'react-navigation';
@@ -1162,7 +1164,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const pubnub = new Pubnub(config);
   //console.log('pubnub', pubnub);
-
+  useEffect(() => {
+    AppState.addEventListener('change', _handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', _handleAppStateChange);
+    };
+  }, []);
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'inactive' || nextAppState === 'background') {
+    }
+  };
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -1260,20 +1271,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             channels: [channel],
             includeUUIDs: true,
           })
-          .then((response: HereNowResponse) => {
+          .then(async (response: HereNowResponse) => {
             console.log('hereNowresponse', response);
             const data = response.channels[channel].occupants;
-
+            const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
+            const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
             const occupancyPatient = data.filter((obj) => {
               return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
             });
             console.log('occupancyPatient', occupancyPatient);
             if (occupancyPatient.length > 0) {
-              console.log('vsndfiburdcna;ldfhionjioshbvkn', joinTimerNoShow);
               stopNoShow();
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
+            } else if (occupancyPatient.length === 0 && (isAudio || isVideo)) {
+              stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
+              showAphAlert &&
+                showAphAlert({ title: 'Alert!', description: 'Patient has network issues.' });
             }
             // else {
             //   console.log(

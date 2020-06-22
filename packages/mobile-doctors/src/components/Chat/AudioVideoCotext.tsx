@@ -31,6 +31,8 @@ import CallDetectorManager from 'react-native-call-detection';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import SystemSetting from 'react-native-system-setting';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -191,14 +193,32 @@ export const AudioVideoProvider: React.FC = (props) => {
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
 
+  const setPrevVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+    if (mediaVolume !== -1) {
+      SystemSetting.setVolume(mediaVolume);
+      AsyncStorage.setItem('mediaVolume', '-1');
+    }
+  };
+  const maxVolume = async () => {
+    const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
+    if (mediaVolume === -1) {
+      SystemSetting.getVolume().then((volume: number) => {
+        AsyncStorage.setItem('mediaVolume', volume.toString());
+      });
+    }
+    SystemSetting.setVolume(1);
+  };
   useEffect(() => {
     if (callConnected && callAccepted) {
       startTimer(0);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     } else if (callAccepted) {
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop();
       }
     }
@@ -215,12 +235,14 @@ export const AudioVideoProvider: React.FC = (props) => {
       AppState.addEventListener('change', _handleAppStateChange);
       try {
         if (audioTrack) {
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         } else {
           audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
             CommonBugFender('Loading_callertune__failed', error);
           });
+          maxVolume();
           audioTrack.play();
           audioTrack.setNumberOfLoops(-1);
         }
@@ -252,6 +274,8 @@ export const AudioVideoProvider: React.FC = (props) => {
       AppState.removeEventListener('change', _handleAppStateChange);
       callDetector && callDetector.dispose();
     }
+    AsyncStorage.setItem('isAudio', JSON.stringify(isAudio));
+    AsyncStorage.setItem('isVideo', JSON.stringify(isVideo));
   }, [isAudio, isVideo]);
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -372,6 +396,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     setAudioEnabled(true);
     setVideoEnabled(true);
     if (audioTrack) {
+      setPrevVolume();
       audioTrack.stop();
     }
     withCallBack && callBacks.onCallEnd(callType, callDuration);
@@ -478,7 +503,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         {isPaused !== '' ? (
           <View style={styles.alertContainer}>
             <Text style={styles.alertText}>
-              {`Patient’s ${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}
+              {`Patient’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}
             </Text>
           </View>
         ) : null}
@@ -493,6 +518,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         if (audioTrack) {
           audioTrack.stop(() => {
             if (audioTrack) {
+              maxVolume();
               audioTrack.play();
             }
           });
@@ -511,6 +537,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connected: (event: string) => {
       setCallConnected(true);
       if (audioTrack) {
+        setPrevVolume();
         audioTrack.stop(() => {});
       }
     },
@@ -603,29 +630,11 @@ export const AudioVideoProvider: React.FC = (props) => {
                 name: name,
               }}
               eventHandlers={publisherEventHandlers}
-              onPublishStart={(event: any) => {
-                console.log('onPublishStart', event);
-              }}
-              onPublishStop={(event: any) => {
-                console.log('onPublishStop', event);
-              }}
-              onPublishError={(event: any) => {
-                console.log('onPublishError', event);
-              }}
             />
             <OTSubscriber
               style={isMinimized ? styles.subscriberMinimizedStyle : styles.subscriberStyle}
               eventHandlers={subscriberEventHandlers}
               subscribeToSelf={true}
-              onSubscribeStart={(event: any) => {
-                console.log('Watching started', event);
-              }}
-              onSubscribeStop={(event: any) => {
-                console.log('onSubscribeStop', event);
-              }}
-              onSubscribeError={(event: any) => {
-                console.log('onSubscribeError', event);
-              }}
               properties={{
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
