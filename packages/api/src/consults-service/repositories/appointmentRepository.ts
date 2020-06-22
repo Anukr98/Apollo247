@@ -1504,6 +1504,23 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .getMany();
   }
+
+  getSpecificMinuteBothAppointments(nextMin: number) {
+    const apptDateTime = addMinutes(new Date(), nextMin);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime = :fromDate)', {
+        fromDate: formatDateTime,
+      })
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
+      })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
+      .getMany();
+  }
   /*return this.find({
       where: { appointmentDateTime: formatDateTime, status: Not(STATUS.CANCELLED) },
       order: { bookingDate: 'ASC' },
