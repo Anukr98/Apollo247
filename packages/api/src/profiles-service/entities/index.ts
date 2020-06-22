@@ -10,11 +10,12 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Index,
+  AfterUpdate,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-
+import { pool } from 'profiles-service/database/connectRedis';
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;
@@ -986,7 +987,11 @@ export class PatientAddress extends BaseEntity {
   stateCode: string;
 
   @ManyToOne((type) => Patient, (patient) => patient.patientAddress)
+  @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @Column('string', { nullable: true })
+  patientId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
@@ -1002,6 +1007,13 @@ export class PatientAddress extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+
+  @AfterUpdate()
+  async dropPatientAddressList() {
+    const redis = await pool.getTedis();
+    await redis.del(`address:list:patient:${this.patientId}`);
+    pool.putTedis(redis);
   }
 }
 //patientAddress Ends
