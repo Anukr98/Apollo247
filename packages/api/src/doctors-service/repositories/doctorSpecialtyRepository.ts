@@ -110,4 +110,8 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
       });
     });
   }
+
+  updateSpecialtySlug(id: string, slugName: string) {
+    return this.update(id, { slugName });
+  }
 }
