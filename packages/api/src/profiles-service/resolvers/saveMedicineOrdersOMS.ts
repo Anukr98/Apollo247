@@ -420,7 +420,7 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
         itemId: orderLineItem.sku,
         productName: orderLineItem.name,
         productType:
-          orderLineItem.type_id == 'PHARMA'
+          (orderLineItem.type_id && orderLineItem.type_id.toLowerCase()) == 'PHARMA'
             ? CouponCategoryApplicable.PHARMA
             : CouponCategoryApplicable.FMCG,
         mrp: orderLineItem.price,
