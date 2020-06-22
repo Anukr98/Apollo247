@@ -622,7 +622,7 @@ export class PatientRepository extends Repository<Patient> {
         primaryUhid: uhid,
         primaryPatientId: id,
       });
-      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
       return this.save(patient);
     } else return null;
   }

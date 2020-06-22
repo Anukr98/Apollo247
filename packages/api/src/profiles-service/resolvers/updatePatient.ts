@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
+import { pool } from 'profiles-service/database/connectRedis';
 
 import {
   ReferralCodesMasterRepository,
@@ -48,9 +49,17 @@ export const updatePatientTypeDefs = gql`
   }
 `;
 
+const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
+
 type UpdatePatientResult = {
   patient: Patient | null;
 };
+
+async function dropPatientCache(id: string) {
+  const redis = await pool.getTedis();
+  await redis.del(id);
+  await pool.putTedis(redis);
+}
 
 async function updateEntity<E extends BaseEntity>(
   Entity: typeof BaseEntity,
@@ -96,6 +105,7 @@ const updatePatient: Resolver<
   if (updatePatient) {
     if (patient.uhid == '' || patient.uhid == null) {
       await patientRepo.createNewUhid(updatePatient.id);
+      await dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${updatePatient.id}`);
     }
   }
 
