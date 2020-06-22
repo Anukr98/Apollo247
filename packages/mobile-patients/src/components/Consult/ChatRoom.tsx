@@ -636,7 +636,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const getAppointmentCount = () => {
     getPastAppoinmentCount(client, doctorId, patientId)
       .then((data: any) => {
-        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'completedCount');
+        const count = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
         console.log('getPastAppoinmentCount', count);
         console.log('data', data);
 
