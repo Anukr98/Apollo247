@@ -4584,7 +4584,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
               <OTSubscriber
                 style={subscriberStyles}
-                subscribeToSelf={true}
+                // subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
                 properties={{
                   subscribeToAudio: true,
@@ -4744,7 +4744,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }
             }
             eventHandlers={subscriberEventHandlers}
-            subscribeToSelf={true}
+            // subscribeToSelf={true}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
