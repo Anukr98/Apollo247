@@ -47,6 +47,7 @@ import {
   pinCodeServiceabilityApi,
   MedicinePageSection,
   OfferBannerSection,
+  medCartItemsDetailsApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
@@ -392,38 +393,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, [ordersLoading]);
 
-  const fetchRecommendedProducts = () => {
-    client
-      .query<getRecommendedProductsList, getRecommendedProductsListVariables>({
+  const fetchRecommendedProducts = async () => {
+    try {
+      const recommendedProductsListApi = await client.query<
+        getRecommendedProductsList,
+        getRecommendedProductsListVariables
+      >({
         query: GET_RECOMMENDED_PRODUCTS_LIST,
         variables: { patientUhid: g(currentPatient, 'uhid') || '' },
         fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const recommendedProducts =
-          g(data, 'getRecommendedProductsList', 'recommendedProducts') || [];
-        console.log({ recommendedProducts });
-
-        const formattedRecommendedProducts = recommendedProducts.map(
-          (item) =>
-            ({
-              image: item!.productImage!,
-              is_in_stock: (item!.status || '').toLowerCase() == 'enabled' ? 1 : 0,
-              is_prescription_required: item!.isPrescriptionNeeded!,
-              name: item!.productName!,
-              price: Number(item!.productPrice!),
-              special_price: item!.productSpecialPrice || '',
-              sku: item!.productSku!,
-              type_id:
-                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
-              mou: item!.mou!,
-            } as MedicineProduct)
-        );
-        setRecommendedProducts(formattedRecommendedProducts);
-      })
-      .catch((error) => {
-        CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, error);
       });
+      const lineItemsSkus = recommendedProductsListApi.data.getRecommendedProductsList.recommendedProducts!.map(
+        (item) => item!.productSku!
+      );
+      const lineItemsDetails = await medCartItemsDetailsApi(lineItemsSkus);
+      const recommendedProducts = lineItemsDetails.data.productdp.filter(
+        (item) => item.sku && item.id
+      );
+      setRecommendedProducts(recommendedProducts);
+    } catch (error) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, error);
+    }
   };
 
   // Common Views
