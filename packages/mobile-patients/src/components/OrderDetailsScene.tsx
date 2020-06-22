@@ -214,6 +214,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
     (item) => item!.hideStatus
   );
+  const offlineOrderBillNumber = loading
+    ? 0
+    : g(data, 'getMedicineOrderOMSDetails', 'medicineOrderDetails', 'billNumber');
 
   const getAddressDatails = () => {
     let selectedAddressIndex = addresses.find((address) => address.id == order!.patientAddressId);
@@ -341,6 +344,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       setOMSAPIError(true);
     }
   }, [order]);
+
+  useEffect(() => {
+    if (offlineOrderBillNumber) {
+      setSelectedTab(string.orders.viewBill);
+    }
+  }, [offlineOrderBillNumber]);
 
   useEffect(() => {
     selectedTab == string.orders.viewBill && setScrollYValue(0);
@@ -1308,7 +1317,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
       // || item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY
     );
-    if (hideMenuIcon || !orderStatusList.length) return null;
+    if (hideMenuIcon || !orderStatusList.length) return <View style={{ width: 24 }} />;
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
@@ -1363,20 +1372,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isHomeDelivery = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY;
 
     return (
-      <View>
-        {Array.from({ length: 10 })
-          .reverse()
-          .map((_, idx) => (
-            <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
-          ))}
-        {!!isDelivered && !!isHomeDelivery && (
+      !!isDelivered &&
+      !!isHomeDelivery && (
+        <View>
+          {Array.from({ length: 10 })
+            .reverse()
+            .map((_, idx) => (
+              <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
+            ))}
           <Button
-            style={{ width: '74.16%', alignSelf: 'center', marginTop: 9 }}
+            style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
             onPress={reOrder}
             title={'RE-ORDER'}
           />
-        )}
-      </View>
+        </View>
+      )
     );
   };
 
@@ -1432,6 +1442,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <>
             <TabsComponent
               style={styles.tabsContainer}
+              tabViewStyle={offlineOrderBillNumber ? { borderBottomColor: 'transparent' } : {}}
               onChange={(title) => {
                 const isNonCartOrder = orderStatusList.find(
                   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
@@ -1447,7 +1458,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   setSelectedTab(title);
                 }
               }}
-              data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+              data={
+                offlineOrderBillNumber
+                  ? [{ title: string.orders.viewBill }]
+                  : [{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]
+              }
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}

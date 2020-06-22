@@ -134,7 +134,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           .getTime()
     );
   };
-
+  /*
   const getStatusType = (
     orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
@@ -148,7 +148,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const sortedList = getSortedList(orderStatusList);
     return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
   };
-
+*/
   const getFormattedTime = (time: string) => {
     return moment(time).format('D MMM YY, hh:mm A');
   };
@@ -213,8 +213,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         }}
         title={getOrderTitle(order)}
         description={getDeliverTypeOrDescription(order)}
-        statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
-        status={getStatusType(g(order, 'medicineOrdersStatus')!)}
+        statusDesc={getOrderStatusText(order.currentStatus!)}
+        status={order.currentStatus!}
         dateTime={getFormattedTime(g(order.medicineOrdersStatus![0]!, 'statusDate'))}
       />
     );
