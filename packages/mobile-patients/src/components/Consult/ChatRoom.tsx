@@ -4581,29 +4581,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
-                onPublishStart={(event: any) => {
-                  console.log('onPublishStart', event);
-                }}
-                onPublishStop={(event: any) => {
-                  console.log('onPublishStop', event);
-                }}
-                onPublishError={(event: any) => {
-                  console.log('onPublishError', event);
-                }}
               />
               <OTSubscriber
                 style={subscriberStyles}
                 subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
-                onSubscribeStart={(event: any) => {
-                  console.log('Watching started', event);
-                }}
-                onSubscribeStop={(event: any) => {
-                  console.log('onSubscribeStop', event);
-                }}
-                onSubscribeError={(event: any) => {
-                  console.log('onSubscribeError', event);
-                }}
                 properties={{
                   subscribeToAudio: true,
                   subscribeToVideo: true,
@@ -4751,15 +4733,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
             resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
-            onPublishStart={(event: any) => {
-              console.log('onPublishStart', event);
-            }}
-            onPublishStop={(event: any) => {
-              console.log('onPublishStop', event);
-            }}
-            onPublishError={(event: any) => {
-              console.log('onPublishError', event);
-            }}
           />
           <OTSubscriber
             style={
@@ -4772,15 +4745,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
             eventHandlers={subscriberEventHandlers}
             subscribeToSelf={true}
-            onSubscribeStart={(event: any) => {
-              console.log('Watching started', event);
-            }}
-            onSubscribeStop={(event: any) => {
-              console.log('onSubscribeStop', event);
-            }}
-            onSubscribeError={(event: any) => {
-              console.log('onSubscribeError', event);
-            }}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
