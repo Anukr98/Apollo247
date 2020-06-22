@@ -433,6 +433,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "billNumber",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -6073,6 +6083,18 @@
           },
           {
             "name": "mou",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "imageBaseUrl",
             "description": null,
             "args": [],
             "type": {
