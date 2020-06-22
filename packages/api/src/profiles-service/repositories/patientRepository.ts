@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, AfterUpdate, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { pool } from 'profiles-service/database/connectRedis';
@@ -19,7 +19,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
-import { constant } from 'lodash';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
   PrescriptionInputArgs,
@@ -90,7 +89,7 @@ export class PatientRepository extends Repository<Patient> {
     const cacheCount = redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
     pool.putTedis(redis);
     if (typeof cacheCount === 'string') {
-      return parseInt(cacheCount);
+      return parseInt(cacheCount, 10);
     }
     const deviceCodeCount: number = (await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber'])
@@ -204,7 +203,7 @@ export class PatientRepository extends Repository<Patient> {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
-        let patient = await this.getByIdCache(patientIds[index]);
+        const patient = await this.getByIdCache(patientIds[index]);
         if (patient) {
           patients.push(patient);
         }
