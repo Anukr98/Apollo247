@@ -6,12 +6,16 @@ import { AphButton } from '@aph/web-ui-components';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      backgroundColor: theme.palette.common.white,
-      borderRadius: 5,
       padding: 20,
+      paddingTop: 0,
       fontSize: 14,
       fontWeight: 500,
       lineHeight: '23px',
+      [theme.breakpoints.up('sm')]: {
+        backgroundColor: theme.palette.common.white,
+        borderRadius: 5,
+        paddingTop: 20,
+      },
       '& h3': {
         margin: 0,
         color: '#01667c',
@@ -42,8 +46,10 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f7f8f5',
       },
       '&:last-child': {
-        marginLeft: 'auto',
         marginRight: 0,
+        [theme.breakpoints.up('sm')]: {
+          marginLeft: 'auto',
+        },
       },
       '& span': {
         display: 'block',
@@ -81,6 +87,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },    
     },
     consultGroup: {
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: '10px 10px 0 0',
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+        backgroundColor: '#ffffff',
+        marginTop: 20,
+        padding: 20,
+        paddingTop: 0,
+      },
     },
     groupHead: {
       display: 'flex',
@@ -165,6 +179,11 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         minWidth: 200,
       },
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        borderRadius: '0 0 10px 10px',
+        padding: '0 20px 20px 20px',
+      },
     },
     price: {
       fontSize: 16,
@@ -185,6 +204,15 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#ff748e',
       color: '#fff',
     },
+    headerGroup: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        padding: 20,
+        marginLeft: -20,
+        marginRight: -20,
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      },
+    },
   });
 });
 
@@ -193,18 +221,20 @@ export const HowCanConsult: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <h3>How can I consult with Dr. Simran:</h3>
-      <div className={classes.tabButtons}>
-        <AphButton className={`${classes.button} ${classes.btnActive}`}>
-          <span>Meet in Person</span>
-          <span className={classes.price}>Rs. 999</span>
-          <span className={classes.availablity}>Available in 50 mins</span>
-        </AphButton>
-        <AphButton className={`${classes.button}`}>
-          <span>Chat/Audio/Video</span>
-          <span className={classes.price}>Rs. 599</span>
-          <span className={`${classes.availablity} ${classes.availableNow}`}>Available in 15 mins</span>
-        </AphButton>
+      <div className={classes.headerGroup}>
+        <h3>How can I consult with Dr. Simran:</h3>
+        <div className={classes.tabButtons}>
+          <AphButton className={`${classes.button} ${classes.btnActive}`}>
+            <span>Meet in Person</span>
+            <span className={classes.price}>Rs. 999</span>
+            <span className={classes.availablity}>Available in 50 mins</span>
+          </AphButton>
+          <AphButton className={`${classes.button}`}>
+            <span>Chat/Audio/Video</span>
+            <span className={classes.price}>Rs. 599</span>
+            <span className={`${classes.availablity} ${classes.availableNow}`}>Available in 15 mins</span>
+          </AphButton>
+        </div>
       </div>
       <div className={classes.consultGroup}>
         <div className={classes.groupHead}>
