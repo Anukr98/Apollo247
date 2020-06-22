@@ -5945,7 +5945,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       ) : null}
       {displayUploadHealthRecords ? (
-        <View
+        <TouchableOpacity
           style={{
             position: 'absolute',
             top: 0,
@@ -5959,6 +5959,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             opacity: 0.85,
             justifyContent: 'flex-end',
           }}
+          activeOpacity={1}
+          onPress={() => {
+            setDisplayUploadHealthRecords(false);
+          }}
         >
           <View
             style={{
@@ -5968,9 +5972,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <Text
               style={{
                 ...theme.viewStyles.text('M', 15, '#fff', 1, undefined, -0.07),
+                paddingRight: 61,
               }}
             >
-              {'You can upload your Health Records here'}
+              {'Upload and share your health records with doctor here.'}
             </Text>
             <FreeArrowIcon style={{ width: 33, height: 33, marginTop: 4, marginBottom: -6 }} />
           </View>
@@ -6017,7 +6022,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       ) : null}
       <SafeAreaView
         style={{
