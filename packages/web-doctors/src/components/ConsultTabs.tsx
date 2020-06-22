@@ -1322,6 +1322,7 @@ export const ConsultTabs: React.FC = () => {
         diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
           return {
             itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
+            testInstruction: prescription.testInstruction,
           };
         });
       }

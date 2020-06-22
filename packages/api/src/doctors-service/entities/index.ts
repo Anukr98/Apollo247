@@ -552,6 +552,9 @@ export class DoctorSpecialty extends BaseEntity {
   commonSearchTerm: string;
 
   @Column({ nullable: true })
+  slugName: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
   @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
   doctor: Doctor[];
