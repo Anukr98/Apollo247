@@ -33,6 +33,7 @@ import RNSound from 'react-native-sound';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import SystemSetting from 'react-native-system-setting';
 import AsyncStorage from '@react-native-community/async-storage';
+import InCallManager from 'react-native-incall-manager';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -194,6 +195,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
 
   const setPrevVolume = async () => {
+    InCallManager.setSpeakerphoneOn(false);
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
     if (mediaVolume !== -1) {
       SystemSetting.setVolume(mediaVolume);
@@ -201,6 +203,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     }
   };
   const maxVolume = async () => {
+    InCallManager.setSpeakerphoneOn(true);
     const mediaVolume = Number((await AsyncStorage.getItem('mediaVolume')) || '-1');
     if (mediaVolume === -1) {
       SystemSetting.getVolume().then((volume: number) => {
@@ -542,8 +545,8 @@ export const AudioVideoProvider: React.FC = (props) => {
         audioTrack.stop(() => {});
       }
     },
-    disconnected: (event: string) => {
-      console.log('Subscribe stream disconnected!', event);
+    disconnected: () => {
+      console.log('Subscribe stream disconnected!');
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -555,13 +558,13 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   const sessionEventHandlers = {
     error: (error: string) => {
-      // console.log(`There was an error with the session: ${error}`);
+      console.log(`There was an error with the session: ${error}`);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
       // console.log('otSessionRef', otSessionRef);
       // console.log('Another client connected. ' + connectionCount + ' total.');
-      // console.log('session stream connectionCreated!', event);
+      console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
       connectionCount--;
@@ -572,22 +575,22 @@ export const AudioVideoProvider: React.FC = (props) => {
       setCallAccepted(false);
       setCallConnected(false);
       setMessageReceived(false);
-      // console.log('session stream connectionDestroyed!', event);
+      console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: string) => {
-      // console.log('session stream sessionConnected!', event);
+      console.log('session stream sessionConnected!', event);
     },
     sessionDisconnected: (event: string) => {
-      // console.log('session stream sessionDisconnected!', event);
+      console.log('session stream sessionDisconnected!', event);
     },
     sessionReconnected: (event: string) => {
-      // console.log('session stream sessionReconnected!', event);
+      console.log('session stream sessionReconnected!', event);
     },
     sessionReconnecting: (event: string) => {
-      // console.log('session stream sessionReconnecting!', event);
+      console.log('session stream sessionReconnecting!', event);
     },
     signal: (event: string) => {
-      // console.log('session stream signal!', event);
+      console.log('session stream signal!', event);
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       if (event.stream.name !== name) {
