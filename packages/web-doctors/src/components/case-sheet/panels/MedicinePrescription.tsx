@@ -2324,7 +2324,6 @@ export const MedicinePrescription: React.FC = () => {
             <div className={classes.mediceneContainer}>
               {favouriteMedicine.map((_favMedicine: any, id, index) => {
                 const favMedicine = _favMedicine!;
-                console.log(favMedicine);
                 const forFavHtml =
                   favMedicine.medicineConsumptionDurationInDays &&
                   favMedicine.medicineConsumptionDurationInDays !== '0'
