@@ -391,6 +391,9 @@ export class MedicineOrders extends BaseEntity {
   })
   shopAddress: string;
 
+  @Column({ default: false, nullable: true })
+  alertStore: boolean;
+
   @Column({
     nullable: true,
     type: 'jsonb',
