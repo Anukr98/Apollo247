@@ -1276,6 +1276,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             const data = response.channels[channel].occupants;
             const isAudio = JSON.parse((await AsyncStorage.getItem('isAudio')) || 'false');
             const isVideo = JSON.parse((await AsyncStorage.getItem('isVideo')) || 'false');
+            const callAccepted = JSON.parse(
+              (await AsyncStorage.getItem('callAccepted')) || 'false'
+            );
             const occupancyPatient = data.filter((obj) => {
               return obj.uuid === REQUEST_ROLES.PATIENT || obj.uuid.indexOf('PATIENT_') > -1;
             });
@@ -1285,10 +1288,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
-            } else if (occupancyPatient.length === 0 && (isAudio || isVideo)) {
+            } else if (occupancyPatient.length === 0 && (isAudio || isVideo) && callAccepted) {
               stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
               showAphAlert &&
-                showAphAlert({ title: 'Alert!', description: 'Patient has network issues.' });
+                showAphAlert({
+                  title: 'Alert!',
+                  description: 'Call Disconnected',
+                });
             }
             // else {
             //   console.log(
