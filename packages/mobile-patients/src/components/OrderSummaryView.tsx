@@ -458,7 +458,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <Text style={styles.shippingDetails}>
                 {isStorePickup ? string.OrderSummery.store_address : string.OrderSummery.address}
               </Text>
-              <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
+              <Text style={[styles.nameStyle, { flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
         </View>
