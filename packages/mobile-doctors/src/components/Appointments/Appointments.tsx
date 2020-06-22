@@ -13,7 +13,10 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
-import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  GET_DOCTOR_APPOINTMENTS,
+  SAVE_DOCTOR_DEVICE_TOKEN,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
@@ -26,7 +29,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, Text, TouchableOpacity, View, Platform } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
@@ -34,6 +37,14 @@ import { NotificationListener } from '@aph/mobile-doctors/src/components/Notific
 import { CommonNotificationHeader } from '@aph/mobile-doctors/src/components/ui/CommonNotificationHeader';
 import { useNotification } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import firebase from 'react-native-firebase';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
+import {
+  saveDoctorDeviceToken,
+  saveDoctorDeviceTokenVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+import { DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 const styles = AppointmentsStyles;
 let timerId: NodeJS.Timeout;
@@ -125,6 +136,66 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   }, [date, isAlertVisible]);
 
   const client = useApolloClient();
+
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('tokenFMC', token);
+        if (token !== deviceToken.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DOCTOR_DEVICE_TYPE.IOS : DOCTOR_DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: '',
+            doctorId: doctorDetails ? doctorDetails.id : '',
+          };
+          if (doctorDetails) {
+            client
+              .mutate<saveDoctorDeviceToken, saveDoctorDeviceTokenVariables>({
+                mutation: SAVE_DOCTOR_DEVICE_TOKEN,
+                variables: {
+                  SaveDoctorDeviceTokenInput: input,
+                },
+              })
+              .then((data) => {
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(
+                    g(data, 'data', 'saveDoctorDeviceToken', 'deviceToken', 'deviceToken')
+                  )
+                );
+              })
+              .catch((error) => {
+                CommonBugFender('Save_Doctor_Device_Token', error);
+              });
+          }
+        }
+      });
+  };
+
+  const checkNotificationPermission = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      callDeviceTokenAPI();
+    } else {
+      // user doesn't have permission
+      try {
+        await firebase.messaging().requestPermission();
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        CommonBugFender('FireBaseFCM_splashscreen', error);
+        console.log('not enabled error', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkNotificationPermission();
+  }, []);
 
   const getAppointmentsApi = (selectedDate = date) => {
     const recordsDate = moment(selectedDate).format('YYYY-MM-DD');

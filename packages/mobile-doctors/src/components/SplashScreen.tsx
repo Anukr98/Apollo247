@@ -1,17 +1,17 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, View, AppState, AppStateStatus } from 'react-native';
+import { ActivityIndicator, AppState, AppStateStatus, Linking, Platform, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 const styles = SplashScreenStyles;
 
@@ -92,52 +92,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     };
     asyncCall();
   }, [doctorDetails]);
-
-  const getRegistrationToken = async () => {
-    // const fcmToken = await firebase.messaging().getToken();
-    // if (fcmToken) {
-    //   // user has a device token
-    //   console.log('%cfcmToken', fcmToken, 'color:red');
-    // } else {
-    //   // user doesn't have a device token yet
-    //   console.log('%cuser doesnt have a device token yet', 'color:red');
-    // }
-  };
-
-  const checkNotificationPermission = async () => {
-    // const enabled = await firebase.messaging().hasPermission();
-    // if (enabled) {
-    //   // user has permissions
-    //   console.log('%cuser has permissions', 'color:green');
-    // } else {
-    //   // user doesn't have permission
-    //   console.log('%cuser doesnt have permission', 'color:blue');
-    //   try {
-    //     await firebase.messaging().requestPermission();
-    //     // User has authorised
-    //     console.log('%cUser has authorised', 'color:green');
-    //   } catch (error) {
-    //     // User has rejected permissions
-    //     console.log('%cUser has rejected permissions', 'color:red');
-    //   }
-    // }
-  };
-
-  useEffect(() => {
-    checkNotificationPermission();
-    //need to remove
-  }, []);
-
-  useEffect(() => {
-    getRegistrationToken();
-    // const onTokenRefreshListener = firebase.messaging().onTokenRefresh((fcmToken) => {
-    //   // Process your token as required
-    //   console.log('%cfcmToken', fcmToken, 'color:red');
-    // });
-    // return () => {
-    //   onTokenRefreshListener();
-    // };
-  }, []);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('SplashScreen');
