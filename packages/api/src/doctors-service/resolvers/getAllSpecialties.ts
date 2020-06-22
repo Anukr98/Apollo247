@@ -13,9 +13,14 @@ export const getAllSpecialtiesTypeDefs = gql`
     specialistPluralTerm: String
     userFriendlyNomenclature: String
     displayOrder: Int
+    slugName: String
   }
   extend type Query {
     getAllSpecialties: [DoctorSpecialty!]!
+  }
+
+  extend type Mutation {
+    updateSpecialtySlug: Boolean!
   }
 `;
 
@@ -29,8 +34,31 @@ const getAllSpecialties: Resolver<null, {}, DoctorsServiceContext, DoctorSpecial
   return allSpecialties;
 };
 
+const updateSpecialtySlug: Resolver<null, {}, DoctorsServiceContext, Boolean> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
+  const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+  const allSpecialties = await specialtiesRepo.findAll();
+  allSpecialties.forEach((specialty) => {
+    const specialtyName = specialty.name
+      .trim()
+      .toLowerCase()
+      .replace(/\s/g, '-')
+      .replace('/', '_')
+      .replace('&', '%26');
+    specialtiesRepo.updateSpecialtySlug(specialty.id, specialtyName);
+  });
+  return true;
+};
+
 export const getAllSpecialtiesResolvers = {
   Query: {
     getAllSpecialties,
+  },
+
+  Mutation: {
+    updateSpecialtySlug,
   },
 };
