@@ -210,9 +210,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
-
+        case 'ChatRoom':
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          break;
         default:
-          if (data.length === 2) getData('ConsultRoom', linkId);
+          getData('ConsultRoom', undefined, true);
           break;
       }
       console.log('route', route);
@@ -345,18 +347,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          props.navigation.navigate(AppRoutes.ChatRoom, {
-            data: appointmentData[0],
-            callType: '',
-            prescription: '',
-          });
+          getData('ChatRoom', appointmentData[0]);
         }
       })
       .catch((error) => {
         CommonBugFender('SplashFetchingAppointmentData', error);
       });
   };
-  const pushTheView = (routeName: String, id?: String) => {
+  const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -430,7 +428,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'ChatRoom':
-        getAppointmentDataAndNavigate(id);
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: '',
+          prescription: '',
+        });
         break;
       default:
         break;
