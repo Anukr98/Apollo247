@@ -527,11 +527,12 @@ export const PayMedicine: React.FC = (props) => {
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount:
+            itemDiscount: (
               cartItemDetails.quantity *
               (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
                 ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+            ).toFixed(2),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
