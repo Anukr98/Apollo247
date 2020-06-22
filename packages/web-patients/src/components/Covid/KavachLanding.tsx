@@ -77,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
+      // height: '100%',
       '& img': {
         width: '100%',
         height: '100%',
@@ -102,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       width: '100%',
+      margin: '0 0 15px',
       '& svg': {
         color: '#00b38e',
       },
@@ -307,6 +309,7 @@ export const KavachLanding: React.FC = (props) => {
   const classes = useStyles({});
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [location, setLocation] = React.useState('');
+  const [service, setService] = React.useState('');
   const [showmore, setShowmore] = React.useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -324,13 +327,15 @@ export const KavachLanding: React.FC = (props) => {
       isNameValid(userName) &&
       isMobileNumberValid(userMobileNumber) &&
       location &&
-      location.length
+      location.length &&
+      service &&
+      service.length
     ) {
       setIsPostSubmitDisable(false);
     } else {
       setIsPostSubmitDisable(true);
     }
-  }, [userEmail, userName, location, userMobileNumber]);
+  }, [userEmail, userName, location, userMobileNumber, service]);
 
   const handleEmailValidityCheck = () => {
     if (userEmail.length && !isEmailValid(userEmail)) {
@@ -366,6 +371,10 @@ export const KavachLanding: React.FC = (props) => {
     setLocation(event.target.value as string);
   };
 
+  const handleServiceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setService(event.target.value as string);
+  };
+
   const submitKavachForm = () => {
     setIsLoading(true);
     const userData = {
@@ -373,6 +382,7 @@ export const KavachLanding: React.FC = (props) => {
       mobileNumber: userMobileNumber,
       email: userEmail,
       location,
+      stayAt: service,
     };
     fetchUtil(process.env.KAVACH_FORM_SUBMIT_URL, 'POST', userData, '', true).then((res: any) => {
       if (res && res.success) {
@@ -381,6 +391,7 @@ export const KavachLanding: React.FC = (props) => {
         setUserName('');
         setLocation('');
         setIsPopoverOpen(true);
+        setService('');
       } else {
         alert('something went wrong');
       }
@@ -457,6 +468,24 @@ export const KavachLanding: React.FC = (props) => {
                         <MenuItem value={'Delhi'}>New Delhi</MenuItem>
                         <MenuItem value={'Bengaluru'}>Bengaluru</MenuItem>
                         <MenuItem value={'Kolkata'}>Kolkata</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={service}
+                        onChange={(e) => handleServiceChange(e)}
+                        displayEmpty
+                        className={classes.selectEmpty}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                      >
+                        <MenuItem value="" disabled>
+                          Service Type
+                        </MenuItem>
+                        <MenuItem value={'Fever Clinic'}>Fever Clinic</MenuItem>
+                        <MenuItem value={'Stay-i Hotel'}>Stay-i Hotel</MenuItem>
+                        <MenuItem value={'Stay-i at Home'}>Stay-i at Home</MenuItem>
                       </Select>
                     </FormControl>
                     {!isLoading ? (
