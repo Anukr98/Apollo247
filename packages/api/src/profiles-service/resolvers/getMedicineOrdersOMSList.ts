@@ -6,6 +6,7 @@ import {
   MedicineOrders,
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
+  MEDICINE_DELIVERY_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -224,9 +225,20 @@ const getMedicineOrdersOMSList: Resolver<
           lineItems.push(itemDets);
         });
       }
+      const offlineShopAddress = {
+        storename: order.siteName,
+        address: order.Address,
+        workinghrs: '24 Hrs',
+        phone: order.mobileNo,
+        city: order.city,
+        state: order.state,
+        zipcode: '500033',
+        stateCode: 'TS',
+      };
       const offlineList: any = {
         id: ApiConstants.OFFLINE_ORDERID,
         orderAutoId: order.id,
+        shopAddress: JSON.stringify(offlineShopAddress),
         createdDate:
           format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
           'T' +
@@ -234,8 +246,22 @@ const getMedicineOrdersOMSList: Resolver<
           '.000Z',
         billNumber: order.billNo,
         medicineOrderLineItems: lineItems,
-        currentStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+        currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
         orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+        patientId: args.patientId,
+        deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+        medicineOrdersStatus: [
+          {
+            id: ApiConstants.OFFLINE_ORDERID,
+            statusDate:
+              format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
+              'T' +
+              format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
+              '.000Z',
+            orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+          },
+        ],
+        medicineOrderShipments: [],
       };
       console.log(offlineList, 'offlineList');
       //offlineList.push(orderDetails)

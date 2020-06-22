@@ -823,10 +823,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         : `0${cartItems.length}`;
     const FreeShipping =
       AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY > 0 &&
-      cartTotal - couponDiscount >
+      cartTotal - couponDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
       cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
-      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY - (cartTotal - couponDiscount);
+      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY -
+        (cartTotal - couponDiscount - productDiscount);
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}

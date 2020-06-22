@@ -7,6 +7,9 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       padding: 20,
       paddingTop: 0,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 20,
+      },
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
@@ -21,26 +24,37 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       paddingTop: 8,
-      display: 'flex',
-      marginLeft: -10,
-      marginRight: -10,
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        marginLeft: -10,
+        marginRight: -10,  
+      },
     },
     timingsRow: {
-      width: '50%',
-      display: 'flex',
-      paddingRight: 20,
-      paddingLeft: 20,
+      paddingBottom: 16,
+      [theme.breakpoints.up('sm')]: {
+        width: '50%',
+        display: 'flex',
+        paddingRight: 20,
+        paddingLeft: 20,
+        paddingBottom: 0,
+      },
+      '&:last-child': {
+        paddingBottom: 0,
+      },
     },
     label: {
       fontSize: 12,
       fontWeight: 500,
     },
     rightGroup: {
-      paddingLeft: 6,
       flex: 1,
       fontSize: 12,
       color: '#0087ba',
       textTransform: 'uppercase',
+      [theme.breakpoints.up('sm')]: {
+        paddingLeft: 6,
+      },
     },
     row: {
       display: 'flex',
