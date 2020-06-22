@@ -1,5 +1,10 @@
 import { EntityRepository, Repository, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import {
+  Patient,
+  PRISM_DOCUMENT_CATEGORY,
+  Gender,
+  PatientAddress,
+} from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
@@ -144,6 +149,13 @@ export class PatientRepository extends Repository<Patient> {
         'patientNotificationSettings',
         'patientMedicalHistory',
       ],
+    });
+  }
+
+  getPatientAddressById(id: PatientAddress['id']) {
+    return PatientAddress.findOne({
+      where: { id },
+      select: ['addressLine1', 'addressLine2', 'landmark', 'city', 'state', 'zipcode'],
     });
   }
 
