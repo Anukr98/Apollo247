@@ -623,7 +623,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 });
             })
             .catch((e) => {
-              CommonBugFender('NotificationListener_GET_MEDICINE_ORDER_DETAILS', e);
+              CommonBugFender('NotificationListener_GET_MEDICINE_ORDER_OMS_DETAILS', e);
             });
         }
         break;

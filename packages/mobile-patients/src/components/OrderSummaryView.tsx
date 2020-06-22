@@ -394,13 +394,24 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     const statusDate = g(medicineOrdersStatus[0], 'statusDate');
     return moment(statusDate).format('ddd, D MMMM, hh:mm A');
   };
+
+  const isStorePickup = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP;
+  const userName = `${g(orderDetails, 'patient', 'firstName')} ${g(
+    orderDetails,
+    'patient',
+    'lastName'
+  )}`;
+  const shopAddress = g(orderDetails, 'shopAddress');
+  const shopName = (JSON.parse(shopAddress || '{}') || {}).storename;
+  const offlineOrderNumber = g(orderDetails, 'billNumber');
+
   return (
     <View>
       <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View>
             <Text style={styles.orderStyles}>{string.OrderSummery.order} # </Text>
-            <Text style={styles.orderStyles}>{orderDetails.orderAutoId}</Text>
+            <Text style={styles.orderStyles}>{offlineOrderNumber || orderDetails.orderAutoId}</Text>
           </View>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.totalTextStyle}> {string.OrderSummery.total} </Text>
@@ -421,32 +432,33 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <Text style={styles.totalTextStyle}>{string.OrderSummery.orderPlaced}</Text>
             <Text style={styles.orderDate}>{getFormattedDateTime(orderDetails)}</Text>
           </View>
-          <View>
-            <Text style={styles.totalTextStyle}>{string.OrderSummery.paymentMethod}</Text>
-            <Text style={[styles.orderDate, { textAlign: 'right' }]}>
-              {' '}
-              {paymentMethodToDisplay}
-            </Text>
-          </View>
+          {!offlineOrderNumber && (
+            <View>
+              <Text style={styles.totalTextStyle}>{string.OrderSummery.paymentMethod}</Text>
+              <Text style={[styles.orderDate, { textAlign: 'right' }]}>
+                {' '}
+                {paymentMethodToDisplay}
+              </Text>
+            </View>
+          )}
         </View>
         <View style={{ marginTop: 25 }}>
-          <Text style={styles.shippingText}>{string.OrderSummery.shipping_address}</Text>
+          <Text style={styles.shippingText}>
+            {isStorePickup
+              ? string.OrderSummery.store_address_heading
+              : string.OrderSummery.shipping_address_heading}
+          </Text>
 
           <View style={styles.addressDetailscard}>
             <View style={{ flexDirection: 'row', marginBottom: 6 }}>
               <Text style={styles.shippingDetails}>{string.OrderSummery.name}</Text>
-              <Text style={styles.nameStyle}>
-                {orderDetails.patient && orderDetails.patient.firstName}{' '}
-                {orderDetails.patient && orderDetails.patient.lastName}
-              </Text>
+              <Text style={styles.nameStyle}>{(isStorePickup && shopName) || userName}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.shippingDetails}>
-                {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-                  ? string.OrderSummery.store_address
-                  : string.OrderSummery.address}
+                {isStorePickup ? string.OrderSummery.store_address : string.OrderSummery.address}
               </Text>
-              <Text style={[styles.nameStyle, { paddingRight: 31, flex: 1 }]}>{addressData}</Text>
+              <Text style={[styles.nameStyle, { flex: 1 }]}>{addressData}</Text>
             </View>
           </View>
         </View>

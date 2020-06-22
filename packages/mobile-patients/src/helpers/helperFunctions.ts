@@ -7,8 +7,8 @@ import {
   MedicineProduct,
   PlacesApiResponse,
   getDeliveryTime,
-  autoCompletePlaceSearch,
-  getPlaceInfoByPlaceId,
+  medCartItemsDetailsApi,
+  MedicineOrderBilledItem,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -33,6 +33,10 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import {
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
+} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
@@ -54,6 +58,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   ShoppingCartItem,
   ShoppingCartContextProps,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -107,6 +112,11 @@ export const aphConsole: AphConsole = {
     isDebugOn && console.table(...data);
   },
 };
+
+export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
+  (filePath || '').startsWith('http')
+    ? filePath
+    : `${baseUrl || AppConfig.Configuration.IMAGES_BASE_URL[0]}${filePath}`;
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -181,6 +191,9 @@ export const getNewOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => 
       break;
     case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
       statusString = 'Return Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
+      statusString = 'Purchased In-store';
       break;
     case 'TO_BE_DELIVERED' as any:
       statusString = 'Expected Order Delivery';
@@ -662,6 +675,87 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+
+export const reOrderMedicines = async (
+  order: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
+  currentPatient: any
+) => {
+  // Medicines
+  // use billedItems for delivered orders
+  const billedItems = g(
+    order,
+    'medicineOrderShipments',
+    '0' as any,
+    'medicineOrderInvoice',
+    '0' as any,
+    'itemDetails'
+  );
+  const billedLineItems = billedItems
+    ? (JSON.parse(billedItems) as MedicineOrderBilledItem[])
+    : null;
+  const lineItems = (g(order, 'medicineOrderLineItems') ||
+    []) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems[];
+  const lineItemsSkus = billedLineItems
+    ? billedLineItems.filter((item) => item.itemId).map((item) => item.itemId)
+    : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
+
+  const lineItemsDetails = await medCartItemsDetailsApi(lineItemsSkus);
+  const cartItemsToAdd = lineItemsDetails.data.productdp.map(
+    (item, index) =>
+      ({
+        id: item.sku,
+        mou: item.mou,
+        name: item.name,
+        price: parseNumber(item.price),
+        specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
+        quantity: Math.ceil(
+          (billedLineItems ? billedLineItems[index].issuedQty : lineItems[index].quantity) || 1
+        ),
+        prescriptionRequired: item.is_prescription_required == '1',
+        isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
+        thumbnail: item.thumbnail || item.image,
+        isInStock: item.is_in_stock == 1,
+      } as ShoppingCartItem)
+  );
+  const unavailableItems = billedLineItems
+    ? billedLineItems
+        .filter((item) => !lineItemsSkus.includes(item.itemId))
+        .map((item) => item.itemName)
+    : lineItems
+        .filter((item) => !lineItemsSkus.includes(item.medicineSKU!))
+        .map((item) => item.medicineName!);
+
+  // Prescriptions
+  const prescriptionUrls = (order.prescriptionImageUrl || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((v) => v);
+  const medicineNames = (billedLineItems
+    ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
+    : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
+  ).join(',');
+  const prescriptionsToAdd = prescriptionUrls.map(
+    (item) =>
+      ({
+        id: item,
+        date: moment(g(order, 'medicineOrdersStatus', '0' as any, 'statusDate')).format(
+          'DD MMM YYYY'
+        ),
+        doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
+        forPatient: g(currentPatient, 'firstName') || '',
+        medicines: medicineNames,
+        uploadedUrl: item,
+      } as EPrescription)
+  );
+
+  return {
+    items: cartItemsToAdd,
+    unavailableItems: unavailableItems,
+    prescriptions: prescriptionsToAdd,
+    totalItemsCount: lineItems.length,
+    unavailableItemsCount: unavailableItems.length,
+  };
+};
 
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
@@ -1182,6 +1276,12 @@ export const getFormattedLocation = (
     lastUpdated: new Date().getTime(),
   } as LocationData;
 };
+
+export const trimTextWithEllipsis = (text: string, count: number) =>
+  text.length > count ? `${text.slice(0, count)}...` : text;
+
+export const parseNumber = (number: string | number, decimalPoints?: number) =>
+  Number(Number(number).toFixed(decimalPoints || 2));
 
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   return (

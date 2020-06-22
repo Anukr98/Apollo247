@@ -1128,6 +1128,24 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
   }
 `;
 
+export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
+  query getRecommendedProductsList($patientUhid: String!) {
+    getRecommendedProductsList(patientUhid: $patientUhid) {
+      recommendedProducts {
+        productSku
+        productName
+        productImage
+        productPrice
+        productSpecialPrice
+        isPrescriptionNeeded
+        categoryName
+        status
+        mou
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_OMS = gql`
   mutation saveMedicineOrderOMS($medicineCartOMSInput: MedicineCartOMSInput!) {
     saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
@@ -1150,48 +1168,28 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDERS_LIST = gql`
-  query GetMedicineOrdersList($patientId: String) {
-    getMedicineOrdersList(patientId: $patientId) {
-      MedicineOrdersList {
-        id
-        orderAutoId
-        deliveryType
-        currentStatus
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-        }
-      }
-    }
-  }
-`;
-
 export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
   query getMedicineOrdersOMSList($patientId: String) {
     getMedicineOrdersOMSList(patientId: $patientId) {
       medicineOrdersList {
         id
         orderAutoId
+        billNumber
+        shopAddress
         deliveryType
         currentStatus
         medicineOrdersStatus {
           id
           statusDate
           orderStatus
+          hideStatus
+        }
+        medicineOrderLineItems {
+          medicineName
         }
         medicineOrderShipments {
-          id
-          siteId
-          siteName
-          apOrderNo
-          currentStatus
-          medicineOrdersStatus {
-            statusDate
-            hideStatus
-            orderStatus
+          medicineOrderInvoice {
+            itemDetails
           }
         }
       }
@@ -1377,69 +1375,13 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_DETAILS = gql`
-  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
-      MedicineOrderDetails {
-        id
-        orderAutoId
-        devliveryCharges
-        estimatedAmount
-        prescriptionImageUrl
-        orderTat
-        orderType
-        currentStatus
-        patientAddressId
-        currentStatus
-        medicineOrderPayments {
-          id
-          paymentType
-          amountPaid
-          paymentRefId
-          paymentStatus
-          paymentDateTime
-          responseCode
-          responseMessage
-          bankTxnId
-        }
-        medicineOrdersStatus {
-          id
-          orderStatus
-          statusDate
-          hideStatus
-        }
-        medicineOrderLineItems {
-          medicineSKU
-          medicineName
-          price
-          mrp
-          quantity
-          isMedicine
-          mou
-        }
-        patient {
-          firstName
-          lastName
-          addressList {
-            id
-            addressLine1
-            addressLine2
-            city
-            state
-            zipcode
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
   query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int) {
     getMedicineOrderOMSDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
       medicineOrderDetails {
         id
         orderAutoId
+        billNumber
         devliveryCharges
         couponDiscount
         productDiscount
