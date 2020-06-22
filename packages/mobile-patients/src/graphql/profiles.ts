@@ -2581,6 +2581,7 @@ export const GET_ONEAPOLLO_USERTXNS = gql`
     }
   }
 `;
+
 export const UPDATE_WHATSAPP_STATUS = gql`
   mutation updateWhatsAppStatus(
     $whatsAppMedicine: Boolean
@@ -2591,6 +2592,22 @@ export const UPDATE_WHATSAPP_STATUS = gql`
       whatsAppMedicine: $whatsAppMedicine
       whatsAppConsult: $whatsAppConsult
       patientId: $patientId
+    ) {
+      status
+    }
+  }
+`;
+
+export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
+  mutation updateSaveExternalConnect(
+    $doctorId: String!
+    $patientId: String!
+    $externalConnect: Boolean
+  ) {
+    updateSaveExternalConnect(
+      doctorId: $doctorId
+      patientId: $patientId
+      externalConnect: $externalConnect
     ) {
       status
     }
