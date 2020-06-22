@@ -629,37 +629,39 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           onChange={(e: React.ChangeEvent<{ value: any }>) => {
                             const quantity = parseInt(e.target.value);
                             /* Gtm code start  */
-                            gtmTracking({
-                              category: 'Pharmacy',
-                              action: quantity > medicineQty ? 'Add to Cart' : 'Remove From Cart',
-                              label: data.name,
-                              value: data.special_price || data.price,
-                              ecommObj: {
-                                event: quantity > medicineQty ? 'add_to_cart' : 'remove_from_cart',
-                                ecommerce: {
-                                  items: [
-                                    {
-                                      item_name: data.name,
-                                      item_id: data.sku,
-                                      price: data.price,
-                                      item_category: 'Pharmacy',
-                                      item_category_2: data.type_id
-                                        ? data.type_id.toLowerCase() === 'pharma'
-                                          ? 'Drugs'
-                                          : 'FMCG'
-                                        : null,
-                                      // 'item_category_4': '', // future reference
-                                      item_variant: 'Default',
-                                      index: 1,
-                                      quantity:
-                                        quantity > medicineQty
-                                          ? quantity - medicineQty
-                                          : medicineQty - quantity,
-                                    },
-                                  ],
+                            itemIndexInCart(data) !== -1 &&
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: quantity > medicineQty ? 'Add to Cart' : 'Remove From Cart',
+                                label: data.name,
+                                value: data.special_price || data.price,
+                                ecommObj: {
+                                  event:
+                                    quantity > medicineQty ? 'add_to_cart' : 'remove_from_cart',
+                                  ecommerce: {
+                                    items: [
+                                      {
+                                        item_name: data.name,
+                                        item_id: data.sku,
+                                        price: data.price,
+                                        item_category: 'Pharmacy',
+                                        item_category_2: data.type_id
+                                          ? data.type_id.toLowerCase() === 'pharma'
+                                            ? 'Drugs'
+                                            : 'FMCG'
+                                          : null,
+                                        // 'item_category_4': '', // future reference
+                                        item_variant: 'Default',
+                                        index: 1,
+                                        quantity:
+                                          quantity > medicineQty
+                                            ? quantity - medicineQty
+                                            : medicineQty - quantity,
+                                      },
+                                    ],
+                                  },
                                 },
-                              },
-                            });
+                              });
                             /* Gtm code end  */
                             setMedicineQty(quantity);
                           }}
