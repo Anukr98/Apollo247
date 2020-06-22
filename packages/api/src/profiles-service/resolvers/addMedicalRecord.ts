@@ -57,7 +57,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
     sourceName: String
     testDate: Date
     testName: String!
-    testResultFiles: LabResultFileProperties;
+    testResultFiles: LabResultFileProperties
   }
 
   input AddMedicalRecordParametersInput {

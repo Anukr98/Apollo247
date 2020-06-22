@@ -47,39 +47,6 @@
             "deprecationReason": null
           },
           {
-            "name": "getLoginPatients",
-            "description": null,
-            "args": [
-              {
-                "name": "appVersion",
-                "description": null,
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
-              {
-                "name": "deviceType",
-                "description": null,
-                "type": {
-                  "kind": "ENUM",
-                  "name": "DEVICE_TYPE",
-                  "ofType": null
-                },
-                "defaultValue": null
-              }
-            ],
-            "type": {
-              "kind": "OBJECT",
-              "name": "GetCurrentPatientsResult",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "getPatientById",
             "description": null,
             "args": [
@@ -32125,6 +32092,16 @@
               }
             },
             "defaultValue": null
+          },
+          {
+            "name": "testResultFiles",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "LabResultFileProperties",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -32184,6 +32161,59 @@
               "kind": "ENUM",
               "name": "MedicalTestUnit",
               "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "LabResultFileProperties",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "fileName",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "mimeType",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "content",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           }
@@ -35687,59 +35717,6 @@
               "kind": "SCALAR",
               "name": "String",
               "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "LabResultFileProperties",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "fileName",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "mimeType",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "content",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
             },
             "defaultValue": null
           }
