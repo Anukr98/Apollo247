@@ -522,6 +522,15 @@ export class DoctorSpecialty extends BaseEntity {
   createdDate: Date;
 
   @Column({ nullable: true })
+  shortDescription: string;
+
+  @Column({ nullable: true })
+  symptoms: string;
+
+  @Column({ nullable: true })
+  commonSearchWords: string;
+
+  @Column({ nullable: true })
   displayOrder: Number;
 
   @Column({ nullable: true })
