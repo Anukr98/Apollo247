@@ -37,10 +37,6 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
-  @AfterUpdate()
-  dropPatientCache() {
-    this.dropCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${this.getId}`);
-  }
   async findById(id: string) {
     return this.getByIdCache(id);
   }
@@ -97,7 +93,6 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async getByIdCache(id: string | number) {
-    console.log('getByIdCache:id:', id);
     const redis = await pool.getTedis();
     const cache = await redis.get(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     pool.putTedis(redis);
@@ -106,7 +101,6 @@ export class PatientRepository extends Repository<Patient> {
       'Redis Cache Read of Patient',
       `Cache hit ${REDIS_PATIENT_ID_KEY_PREFIX}${id}`
     );
-    console.log(cache);
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
       patient.dateOfBirth = new Date(patient.dateOfBirth);
@@ -141,9 +135,7 @@ export class PatientRepository extends Repository<Patient> {
     pool.putTedis(redis);
   }
   async setByIdCache(id: string | number) {
-    console.log('setByIdCache:id', id);
     const patientDetails = await this.getPatientData(id);
-    console.log('patientDetails', patientDetails);
     if (patientDetails) {
       const patientString = JSON.stringify(patientDetails);
       await this.setCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`, patientString);
@@ -158,10 +150,8 @@ export class PatientRepository extends Repository<Patient> {
   }
   async getByMobileCache(mobile: string) {
     const redis = await pool.getTedis();
-    console.log('getByMobileCache mobile', mobile);
     const ids = await redis.get(`${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobile}`);
     pool.putTedis(redis);
-    console.log('getByMobileCache ids', ids);
     if (ids && typeof ids === 'string') {
       dLogger(
         new Date(),
@@ -221,19 +211,22 @@ export class PatientRepository extends Repository<Patient> {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
-          this.update(patient.id, { isActive: false });
+          patient.isActive = false;
+          this.save(patient);
           finalList = patientList.filter((p) => p.id !== patient.id);
           await this.setCache(
             `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobileNumber}`,
             finalList.map((p) => p.id).join(',')
           );
         } else if (patient.primaryPatientId == null) {
-          this.update(patient.id, { primaryPatientId: patient.id });
+          patient.primaryPatientId = patient.id;
+          this.save(patient);
         }
       });
     } else {
       if (patientList[0].primaryPatientId == null) {
-        this.update(patientList[0].id, { primaryPatientId: patientList[0].id });
+        patientList[0].primaryPatientId = patientList[0].id;
+        this.save(patientList[0]);
       }
     }
     return finalList;
@@ -243,8 +236,11 @@ export class PatientRepository extends Repository<Patient> {
     return (await this.getByMobileCache(mobileNumber))[0];
   }
 
-  updatePatientAllergies(id: string, allergies: string) {
-    return this.update(id, { allergies });
+  async updatePatientAllergies(id: string, allergies: string) {
+    const patient = await this.getPatientDetails(id);
+    if (patient) {
+      return await this.save(patient);
+    } else return null;
   }
 
   //utility method to get prism auth token
@@ -599,17 +595,25 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
-  updateProfile(id: string, patientAttrs: Partial<Patient>) {
-    return this.update(id, patientAttrs);
+  async updateProfile(id: string, patientAttrs: Partial<Patient>) {
+    const patient = await this.getByIdCache(id);
+    if (patient) {
+      Object.assign(patient, patientAttrs);
+      return this.save(patient);
+    } else return null;
   }
 
-  updateUhid(id: string, uhid: string) {
-    return this.update(id, {
-      uhid,
-      uhidCreatedDate: new Date(),
-      primaryUhid: uhid,
-      primaryPatientId: id,
-    });
+  async updateUhid(id: string, uhid: string) {
+    const patient = await this.getByIdCache(id);
+    if (patient) {
+      Object.assign(patient, {
+        uhid,
+        uhidCreatedDate: new Date(),
+        primaryUhid: uhid,
+        primaryPatientId: id,
+      });
+      return this.save(patient);
+    } else return null;
   }
 
   updateLinkedUhidAccount(
@@ -916,7 +920,12 @@ export class PatientRepository extends Repository<Patient> {
     return primaryPatientIds;
   }
 
-  updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
-    return this.update(id, { whatsAppConsult, whatsAppMedicine });
+  async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
+    const patient = await this.getByIdCache(id);
+    if (patient) {
+      patient.whatsAppConsult = whatsAppConsult;
+      patient.whatsAppMedicine = whatsAppMedicine;
+      return this.save(patient);
+    } else return null;
   }
 }

@@ -11,6 +11,7 @@ import {
   BeforeUpdate,
   Index,
   AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -879,6 +880,19 @@ export class Patient extends BaseEntity {
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
+  }
+  @AfterInsert()
+  async dropPatientMobileCache() {
+    const redis = await pool.getTedis();
+    await redis.del(`patient:mobile:${this.mobileNumber}`);
+    await pool.putTedis(redis);
+  }
+
+  @AfterUpdate()
+  async dropPatientCache() {
+    const redis = await pool.getTedis();
+    await redis.del(`patient:${this.id}`);
+    await pool.putTedis(redis);
   }
 }
 //patient Ends
