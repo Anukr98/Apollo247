@@ -14,6 +14,7 @@ import {
   More,
   NotifySymbol,
   MedicalIcon,
+  NotificationIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -118,6 +119,10 @@ const styles = StyleSheet.create({
     height: 'auto',
     borderRadius: 10,
   },
+  flexRow: {
+    display: 'flex',
+    flexDirection: 'row',
+  }
 });
 
 type OrderRefetch = (
@@ -154,6 +159,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [omsAPIError, setOMSAPIError] = useState(false);
   const [addressData, setAddressData] = useState('');
+  const [storePhoneNumber, setStorePhoneNumber] = useState('');
   const [scrollYValue, setScrollYValue] = useState(0);
   const scrollViewRef = React.useRef<any>(null);
   const scrollToSlots = () => {
@@ -326,6 +332,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           ? JSON.parse(order.shopAddress)
           : null;
       shopAddress && setAddressData(shopAddress.address);
+      let storePhone =
+        order.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP && order.shopAddress
+          ? JSON.parse(order.shopAddress)
+          : null;
+          storePhone && setStorePhoneNumber(shopAddress.phone);
       setEventFired(true);
     } else {
       setOMSAPIError(true);
@@ -686,6 +697,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         : `Your order no. #${orderAutoId} is successfully delivered on ${isDelivered &&
             isDelivered.statusDate &&
             getFormattedDateTime(isDelivered.statusDate)}.`;
+
+    const showNotifyStoreAlert = orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      && (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED 
+      || orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE);
 
     const getOrderDescription = (
       status: MEDICINE_ORDER_STATUS,
@@ -1057,6 +1072,93 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
         /> */}
+        {
+          showNotifyStoreAlert && renderNotifyStoreAlert()
+        }
+      </View>
+    );
+  };
+
+  const renderNotifyStoreAlert = () => {
+    return (
+      <View
+        style={{
+          borderTopWidth: 0.5,
+          borderTopColor: theme.colors.SEPARATOR_LINE,
+          marginBottom: 30,
+        }}
+      >
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            margin: 10,
+            marginLeft: 20,
+          }}
+        >
+          <NotificationIcon />
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansSemiBold(13),
+              color: theme.colors.LIGHT_BLUE,
+              marginLeft: 10,
+            }}
+          >NOTIFY STORE</Text>
+        </View>
+        <View
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            marginLeft: 20,
+            marginRight: 20,
+            padding: 20
+          }}
+        >
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(13),
+              color: theme.colors.LIGHT_BLUE,
+            }}
+          >Kindly alert the store 10 minutes before you are about to reach, so that we can keep the items ready!</Text>
+          <View style={styles.flexRow}>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(13),
+                color: theme.colors.LIGHT_BLUE,
+                marginTop: 10,
+              }}
+            >Stores Contact No. :  </Text>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(13),
+                color: theme.colors.LIGHT_BLUE,
+                marginTop: 10,
+                opacity: 0.7,
+              }}
+            >{storePhoneNumber}</Text>
+          </View>
+          <View style={[styles.flexRow, { justifyContent: 'space-between', marginTop: 15 }]}>
+            <TouchableOpacity
+              onPress={() => console.log('alert store')}
+            >
+              <Text
+                style={{
+                  color: theme.colors.APP_YELLOW,
+                  ...theme.fonts.IBMPlexSansBold(13)
+                }}
+              >ALERT THE STORE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => console.log('call store')}
+            >
+              <Text
+                style={{
+                  color: theme.colors.APP_YELLOW,
+                  ...theme.fonts.IBMPlexSansBold(13)
+                }}
+              >CALL THE STORE</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   };
