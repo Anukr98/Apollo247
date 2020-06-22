@@ -467,7 +467,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const renderNameTimer = () => {
     const isPaused = !callerAudio
       ? !callerVideo && isVideo
-        ? 'Audio & Video'
+        ? 'Audio/Video'
         : 'Audio'
       : !callerVideo && isVideo
       ? 'Video'
@@ -503,7 +503,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         {isPaused !== '' ? (
           <View style={styles.alertContainer}>
             <Text style={styles.alertText}>
-              {`${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} paused`}
+              {`Patient’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}
             </Text>
           </View>
         ) : null}
