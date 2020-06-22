@@ -174,7 +174,7 @@
     "share_email_placeholder": "Enter recipient’s email address",
     "valid_mobile": "Please enter valid mobile number",
     "valid_email": "Please enter valid email address",
-    "message": "Hi,  Dr. {0} has invited you to the Apollo247 application. Click here {1} to download the application.",
+    "message": "Hi,  Dr. {0} has invited you to the Apollo247 application.\nClick here {1} to book the consultation with Doctor.",
     "message_title": "Invitation to join Apollo247 application"
   },
   "otp": {
