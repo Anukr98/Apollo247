@@ -1,13 +1,11 @@
 import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -61,6 +59,15 @@ import {
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { CommonVideoPlayer } from '../ui/CommonVideoPlayer';
+import { ConsultTypeCard } from '../ui/ConsultTypeCard';
+import {
+  ApolloDoctorIcon,
+  ApolloPartnerIcon,
+  DoctorPlaceholderImage,
+  RectangularIcon,
+  VideoPlayIcon,
+} from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
@@ -105,11 +112,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
-  horizontalSeparatorStyle: {
-    borderRightWidth: 0.5,
-    borderRightColor: theme.colors.SEPARATOR_LINE,
-    marginHorizontal: 13,
-  },
   cardView: {
     width: '100%',
     marginVertical: 8,
@@ -126,11 +128,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(15),
   },
   onlineConsultView: {
-    backgroundColor: theme.colors.CARD_BG,
+    backgroundColor: theme.colors.WHITE,
     flexDirection: 'row',
-    marginTop: 12,
     borderRadius: 10,
-    padding: 12,
+    paddingTop: 12,
   },
   onlineConsultLabel: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -141,6 +142,14 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(16),
     color: theme.colors.LIGHT_BLUE,
     paddingBottom: 16,
+  },
+  consultViewStyles: {
+    flex: 1,
+    backgroundColor: theme.colors.CARD_BG,
+    borderRadius: 5,
+    padding: 12,
+    ...theme.viewStyles.shadowStyle,
+    height: 110,
   },
 });
 type Appointments = {
@@ -165,6 +174,8 @@ const Appointments: Appointments[] = [
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
+  const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
@@ -184,6 +195,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -229,6 +241,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       ? props.navigation.state.params.showBookAppointment || false
       : false;
     setdisplayoverlay(display);
+    setConsultMode(props.navigation.getParam('consultModeSelected'));
+    setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
 
   const fetchAppointmentHistory = () => {
@@ -454,6 +468,41 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
+  const renderConsultType = () => {
+    return (
+      <ConsultTypeCard
+        isOnlineSelected={onlineSelected}
+        onPhysicalPress={() => {
+          openConsultPopup(ConsultMode.PHYSICAL);
+        }}
+        onOnlinePress={() => {
+          openConsultPopup(ConsultMode.ONLINE);
+        }}
+        DoctorId={doctorId}
+        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
+        nextAppointemntOnlineTime={availableTime}
+        nextAppointemntInPresonTime={physicalAvailableTime}
+      />
+    );
+  };
+
+  const openConsultPopup = (consultType: ConsultMode) => {
+    postBookAppointmentWEGEvent();
+    callPermissions();
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          setdisplayoverlay(true);
+          setConsultMode(consultType);
+        } else {
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -487,51 +536,130 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   : ''}
               </Text>
               <View style={styles.separatorStyle} />
-              {!!clinicAddress && (
-                <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
-              )}
-              {doctorDetails.languages ? (
-                <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
-                  {doctorDetails.languages.split(',').join(' | ')}
-                </Text>
-              ) : null}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View>
+                  {!!clinicAddress && (
+                    <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
+                  )}
+                  {doctorDetails.languages ? (
+                    <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
+                      {doctorDetails.languages.split(',').join(' | ')}
+                    </Text>
+                  ) : null}
+                </View>
+                {doctorDetails.doctorType === 'APOLLO' ? (
+                  <ApolloDoctorIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                ) : (
+                  <ApolloPartnerIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                )}
+              </View>
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.onlineConsultLabel}>Online Consult</Text>
-                  <Text style={styles.onlineConsultAmount}>
-                    {Number(VirtualConsultationFee) <= 0 ||
-                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
-                    ) : (
-                      <>
-                        <Text
-                          style={{
-                            textDecorationLine: 'line-through',
-                            textDecorationStyle: 'solid',
-                          }}
-                        >
-                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
-                        </Text>
-                        <Text> Rs. {VirtualConsultationFee}</Text>
-                      </>
-                    )}
-                  </Text>
-                  <AvailabilityCapsule availableTime={availableTime} />
-                </View>
-                {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                  <View style={styles.horizontalSeparatorStyle} />
-                )}
-                <View style={{ flex: 1 }}>
-                  {doctorDetails.doctorType !== DoctorType.PAYROLL && (
-                    <>
-                      <Text style={styles.onlineConsultLabel}>Clinic Visit</Text>
-                      <Text style={styles.onlineConsultAmount}>
-                        Rs. {doctorDetails.physicalConsultationFees}
-                      </Text>
-                      <AvailabilityCapsule availableTime={physicalAvailableTime} />
-                    </>
+                <View
+                  style={[
+                    styles.consultViewStyles,
+                    {
+                      marginRight: 6,
+                    },
+                  ]}
+                >
+                  {onlineSelected && (
+                    <RectangularIcon
+                      resizeMode={'stretch'}
+                      style={{
+                        position: 'absolute',
+                        width: (width - 42) / 2,
+                        height: 129,
+                        flex: 2,
+                        left: -3,
+                        top: -2,
+                      }}
+                    />
                   )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setOnlineSelected(true);
+                    }}
+                  >
+                    <View>
+                      <Text style={styles.onlineConsultLabel}>Chat/Audio/Video</Text>
+                      <Text style={styles.onlineConsultAmount}>
+                        {Number(VirtualConsultationFee) <= 0 ||
+                        VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                          <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                        ) : (
+                          <>
+                            <Text
+                              style={{
+                                textDecorationLine: 'line-through',
+                                textDecorationStyle: 'solid',
+                              }}
+                            >
+                              {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                            </Text>
+                            <Text> Rs. {VirtualConsultationFee}</Text>
+                          </>
+                        )}
+                      </Text>
+                      <AvailabilityCapsule
+                        titleTextStyle={{ paddingHorizontal: 7 }}
+                        availableTime={availableTime}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                <View
+                  style={[
+                    styles.consultViewStyles,
+                    {
+                      marginLeft: 6,
+                    },
+                  ]}
+                >
+                  {!onlineSelected && (
+                    <RectangularIcon
+                      resizeMode={'stretch'}
+                      style={{
+                        position: 'absolute',
+                        width: (width - 42) / 2,
+                        height: 129,
+                        flex: 2,
+                        left: -3,
+                        top: -2,
+                      }}
+                    />
+                  )}
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      {
+                        doctorDetails.doctorType !== DoctorType.PAYROLL && setOnlineSelected(false);
+                      }
+                    }}
+                  >
+                    <View>
+                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
+                        <>
+                          <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
+                          <Text style={styles.onlineConsultAmount}>
+                            Rs. {doctorDetails.physicalConsultationFees}
+                          </Text>
+                          <AvailabilityCapsule
+                            titleTextStyle={{ paddingHorizontal: 7 }}
+                            availableTime={physicalAvailableTime}
+                          />
+                        </>
+                      )}
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -928,6 +1056,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         >
           {/* <ScrollView style={{ flex: 1 }} bounces={false}> */}
           {doctorDetails && renderDoctorDetails()}
+          {doctorDetails && renderConsultType()}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
@@ -935,7 +1064,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {/* </ScrollView> */}
         </Animated.ScrollView>
 
-        {showSpinner ? null : (
+        {/* {showSpinner ? null : (
           <StickyBottomComponent defaultBG>
             <Button
               title={'BOOK APPOINTMENT'}
@@ -957,7 +1086,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               style={{ marginHorizontal: 60, flex: 1 }}
             />
           </StickyBottomComponent>
-        )}
+        )} */}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
@@ -971,8 +1100,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={props.navigation.getParam('consultModeSelected')}
-          externalConnect={props.navigation.getParam('externalConnect')}
+          consultModeSelected={consultMode}
+          externalConnect={null}
           availableMode={consultType}
         />
       )}
@@ -995,20 +1124,109 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <View
           style={{
             height: 160,
-            // backgroundColor: 'red',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          {doctorDetails &&
+          {doctorDetails && (
+            <>
+              <CommonVideoPlayer isPlayClicked={!showVideo} />
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  console.log('tapped');
+                  setTimeout(() => {
+                    setShowVideo(false);
+                  }, 2000);
+                }}
+                style={{
+                  position: 'absolute',
+                  height: 160,
+                  width: '100%',
+                }}
+              >
+                <View style={{ position: 'absolute', height: 160, width: '100%' }} />
+              </TouchableOpacity>
+            </>
+          )}
+          {!showVideo &&
+          doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
           doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-            <Animated.Image
-              source={{ uri: doctorDetails.photoUrl }}
-              style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
-            />
-          ) : null}
+            <>
+              <View style={{ height: 20, width: '100%' }} />
+              <Animated.Image
+                source={{ uri: doctorDetails.photoUrl }}
+                style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
+              />
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  setShowVideo(true);
+                }}
+                style={{
+                  position: 'absolute',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 40,
+                  width: 40,
+                }}
+              >
+                <View
+                  style={{
+                    position: 'absolute',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <VideoPlayIcon style={{ height: 33, width: 33 }} />
+                </View>
+              </TouchableOpacity>
+            </>
+          ) : (
+            !showVideo &&
+            doctorDetails && (
+              <View
+                style={{
+                  height: 160,
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
+
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowVideo(true);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <View
+                    style={{
+                      position: 'absolute',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: 40,
+                      width: 40,
+                    }}
+                  >
+                    <VideoPlayIcon style={{ height: 33, width: 33 }} />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )
+          )}
         </View>
       </Animated.View>
       <Header
