@@ -408,7 +408,7 @@ const getMedicineOrderOMSDetails: Resolver<
         }
       }
     }
-    medicineOrderDetails.medicineOrdersStatus.sort((a, b) => {
+    medicineOrderDetails.medicineOrdersStatus.sort((a: any, b: any) => {
       return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
     });
   }
