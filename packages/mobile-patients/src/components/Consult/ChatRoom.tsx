@@ -371,6 +371,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     right: 0,
     bottom: 0,
     zIndex: 100,
+    backgroundColor: 'white',
   });
   const [audioCallImageStyles, setAudioCallImageStyles] = useState<object>({
     width,
@@ -4641,7 +4642,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
-                    left: 15,
+                    left: 0,
                     zIndex: 1001,
                   }}
                 >
@@ -4653,17 +4654,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-            {isPaused !== '' ? (
-              <Text
-                style={[
-                  timerStyles,
-                  {
-                    color: theme.colors.CAPSULE_ACTIVE_BG,
-                    flexWrap: 'wrap',
-                  },
-                ]}
-              >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
-            ) : null}
+            {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
+
             {PipView && renderOnCallPipButtons('video')}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
@@ -4682,7 +4674,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const isPaused = !callerAudio
     ? !callerVideo && isCall
-      ? 'Audio & Video'
+      ? 'Audio/Video'
       : 'Audio'
     : !callerVideo && isCall
     ? 'Video'
@@ -4818,21 +4810,54 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        {isPaused !== '' ? (
-          <Text
-            style={[
-              timerStyles,
-              {
-                color: theme.colors.CAPSULE_ACTIVE_BG,
-                flexWrap: 'wrap',
-              },
-            ]}
-          >{`\n${isPaused} ${isPaused.indexOf('&') > -1 ? 'are' : 'is'} Paused`}</Text>
-        ) : null}
+        {renderBusyMessages(showAudioPipView, isIphoneX() ? 121 : 101)}
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
       </View>
+    );
+  };
+
+  const renderBusyMessages = (showPip: boolean, insetTop: any) => {
+    return (
+      <>
+        {isPaused !== '' ? (
+          <View
+            style={{
+              position: 'absolute',
+              marginTop: showPip ? insetTop : 25,
+              zIndex: 1005,
+              justifyContent: showPip ? 'center' : 'flex-start',
+              width: showPip ? width : 155,
+              alignItems: showPip ? 'center' : 'flex-start',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                paddingTop: 2,
+                paddingBottom: Platform.OS === 'ios' ? 3 : 5,
+                justifyContent: showPip ? 'center' : 'flex-start',
+                alignItems: showPip ? 'center' : 'flex-start',
+                paddingHorizontal: 10,
+                marginTop: 2,
+                marginHorizontal: 16,
+                borderRadius: 100,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.APP_RED,
+                  ...theme.fonts.IBMPlexSansSemiBold(12),
+                  textAlign: 'center',
+                  padding: 0,
+                  flexWrap: 'wrap',
+                }}
+              >{`Doctor’s ${isPaused} ${isPaused.indexOf('/') > -1 ? 'are' : 'is'} Paused`}</Text>
+            </View>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -4876,6 +4901,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       right: 0,
       bottom: 0,
       zIndex: 100,
+      backgroundColor: 'white',
     });
     setAudioCallImageStyles({
       width,
@@ -4923,7 +4949,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
-            left: 15,
+            left: 0,
             zIndex: 1001,
           }}
           numberOfLines={2}
@@ -4966,6 +4992,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 right: 8,
                 height: 205,
                 width: 155,
+                backgroundColor: 'white',
               });
               setAudioCallImageStyles({
                 height: 205,
