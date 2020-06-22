@@ -142,6 +142,7 @@ export const PAST_APPOINTMENTS_COUNT = gql`
     getPastAppointmentsCount(doctorId: $doctorId, patientId: $patientId) {
       count
       completedCount
+      yesCount
     }
   }
 `;
