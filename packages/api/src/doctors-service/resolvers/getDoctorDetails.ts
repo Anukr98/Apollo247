@@ -143,6 +143,7 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
+    availableModes: [ConsultMode]
   }
 
   type DoctorDetailsWithStatusExclude @key(fields: "id") {
@@ -357,15 +358,21 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
     doctorData.id = doctorData.doctorId;
     doctorData.specialty.id = doctorData.specialty.specialtyId;
     doctorData.doctorHospital = [];
+    const availableModes: string[] = [];
     for (const consultHour of doctorData.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
+      if (!availableModes.includes(consultHour['consultMode'])) {
+        availableModes.push(consultHour['consultMode']);
+      }
     }
+
     facilities = doctorData.facility;
     facilities = Array.isArray(facilities) ? facilities : [facilities];
     for (const facility of facilities) {
       facility.id = facility.facilityId;
       doctorData.doctorHospital.push({ facility });
     }
+    doctorData.availableModes = availableModes;
   }
   // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
   return doctorData;

@@ -74,7 +74,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     listContainerStyle,
     unsetloaderDisplay,
   } = props;
-  const addString = '+ADD MEMBER';
+  const addString = 'ADD MEMBER';
   const addBoolen = false;
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -121,16 +121,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         };
       })) ||
     [];
-  const moveSelectedToTop = () => {
-    if (profile !== undefined) {
-      const patientLinkedProfiles = [
-        pickerData.find((item) => item.uhid === profile.uhid),
-        ...pickerData.filter((item) => item.uhid !== profile.uhid),
-      ];
-      return patientLinkedProfiles;
-    }
-    return [];
-  };
+
   useEffect(() => {
     if (isUHID) {
       isUHID.map(async (el: any) => {
@@ -289,7 +280,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
         }}
-        options={moveSelectedToTop()}
+        options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
         menuContainerStyle={[
@@ -301,16 +292,16 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           listContainerStyle,
         ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
         selectedTextStyle={{
-          ...theme.viewStyles.text('M', 13, '#00b38e'),
+          ...theme.viewStyles.text('M', 16, '#00b38e'),
           alignSelf: 'flex-start',
         }}
         lastTextStyle={{
-          alignSelf: 'flex-start',
+          alignSelf: 'flex-end',
           paddingBottom: 5,
           textTransform: 'uppercase',
-          ...theme.viewStyles.text('M', 12, '#fc9916'),
+          ...theme.viewStyles.text('B', 13, '#fc9916'),
         }}
         bottomPadding={{ paddingBottom: 20 }}
         lastContainerStyle={{

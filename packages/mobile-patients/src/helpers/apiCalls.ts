@@ -234,6 +234,8 @@ export interface MedicinePageAPiResponse {
   shop_by_brand: MedicinePageSection[];
   hot_sellers?: { products: MedicineProduct[]; category_id?: number };
   monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
+  widget_2?: { products: MedicineProduct[]; category_id?: number };
+  widget_3?: { products: MedicineProduct[]; category_id?: number };
 }
 
 export interface PackageInclusion {

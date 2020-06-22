@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
@@ -19,6 +19,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
+import { createPrismUser } from 'helpers/phrV1Services';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -267,7 +268,7 @@ export class PatientRepository extends Repository<Patient> {
         uhid = matchedUser[0].UHID;
       } else {
         //creating existing new medmentra uhids in prism
-        await this.createPrismUser(patientData, patientData.uhid);
+        await createPrismUser(patientData, patientData.uhid);
         uhid = patientData.uhid;
       }
     }
@@ -677,13 +678,13 @@ export class PatientRepository extends Repository<Patient> {
     let newUhid = '';
     if (uhidResp.retcode == '0') {
       this.updateUhid(id, uhidResp.result.toString());
-      this.createPrismUser(patientDetails, uhidResp.result.toString());
+      createPrismUser(patientDetails, uhidResp.result.toString());
       newUhid = uhidResp.result;
     }
     return newUhid;
   }
 
-  async createPrismUser(patientData: Patient, uhid: string) {
+  /*async createPrismUser(patientData: Patient, uhid: string) {
     //date of birth formatting
 
     if (patientData.firstName === null || patientData.firstName === '') {
@@ -738,7 +739,7 @@ export class PatientRepository extends Repository<Patient> {
     );
 
     return textRes;
-  }
+  } */
 
   async createAthsToken(id: string) {
     const patientDetails = await this.getPatientDetails(id);

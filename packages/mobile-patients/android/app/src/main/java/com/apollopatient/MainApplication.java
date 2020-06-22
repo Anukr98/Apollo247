@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.zmxv.RNSound.RNSoundPackage;
+import com.ninty.system.setting.SystemSettingPackage;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import com.opentokreactnative.OTPackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage;
