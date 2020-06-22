@@ -61,9 +61,9 @@ import {
 } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import { getItemSpecialPrice } from '../PayMedicine';
 import _lowerCase from 'lodash/lowerCase';
+import { getTypeOfProduct } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -769,11 +769,14 @@ export const MedicineCart: React.FC = (props) => {
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
             itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount:
-              cartItemDetails.quantity *
-              (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails))),
+            itemDiscount: Number(
+              (
+                cartItemDetails.quantity *
+                (couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+              ).toFixed(2)
+            ),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
@@ -786,17 +789,6 @@ export const MedicineCart: React.FC = (props) => {
   // coupon related code
 
   const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
-
-  const getTypeOfProduct = (type: string) => {
-    switch (_lowerCase(type)) {
-      case 'pharma':
-        return CouponCategoryApplicable.PHARMA;
-      case 'fmcg':
-        return CouponCategoryApplicable.FMCG;
-      default:
-        return null;
-    }
-  };
 
   const validateCoupon = () => {
     if (couponCode.length > 0 && currentPatient && currentPatient.id) {
@@ -1020,7 +1012,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
