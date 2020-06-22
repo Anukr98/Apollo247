@@ -662,37 +662,12 @@ export async function sendNotification(
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
 
     //send sms to doctor if Appointment DateTime is less than 24 hours
-    const presentDate = new Date();
-    const laterDate =
-      appointment.appointmentDateTime > presentDate ? appointment.appointmentDateTime : presentDate;
-    const earlierDate =
-      appointment.appointmentDateTime > presentDate ? presentDate : appointment.appointmentDateTime;
-    const hoursDifference = differenceInHours(laterDate, earlierDate);
-    const todaysDate = new Date(format(new Date(), 'yyyy-mm-dd') + ' 18:30:00');
-    const yesterdaysDate = new Date(format(addDays(new Date(), -1), 'yyyy-mm-dd') + ' 18:30:00');
-    if (
-      appointment.appointmentDateTime <= todaysDate &&
-      appointment.appointmentDateTime >= yesterdaysDate
-    ) {
-      const doctorWhatsAppMessage = ApiConstants.DOCTOR_BOOK_APPOINTMENT_WHATSAPP.replace(
-        '{0}',
-        doctorDetails.fullName
-      )
-        .replace('{1}', patientDetails.firstName)
-        .replace('{2}', apptDate.toString());
-      sendNotificationWhatsapp(doctorDetails.mobileNumber, doctorWhatsAppMessage, 1);
-    }
 
-    if (hoursDifference > 0 && hoursDifference < ApiConstants.SEND_DOCTOR_BOOK_APPOINTMENT_SMS) {
-      let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
-        '{0}',
-        doctorDetails.fullName
-      );
-      doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
-      doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-      doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-    }
+    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
+    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PAYMENT_PENDING_SUCCESS) {
     let content = ApiConstants.BOOK_APPOINTMENT_PAYMENT_SUCCESS_BODY.replace(
       '{0}',

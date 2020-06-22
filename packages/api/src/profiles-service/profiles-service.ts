@@ -208,9 +208,15 @@ import {
   savePharmacologistConsultTypeDefs,
 } from 'profiles-service/resolvers/savePharmacologistConsult';
 import {
+  createPatientTypeDefs,
+  createPatientResolvers,
+} from 'profiles-service/resolvers/createPatient';
+
+import {
   labResultsUploadTypeDefs,
   labResultsUploadResolvers,
 } from 'profiles-service/resolvers/labResultsUpload';
+
 import {
   prescriptionUploadTypeDefs,
   prescriptionUploadResolvers,
@@ -468,6 +474,10 @@ import {
       {
         typeDefs: savePharmacologistConsultTypeDefs,
         resolvers: savePharmacologistConsultResolvers,
+      },
+      {
+        typeDefs: createPatientTypeDefs,
+        resolvers: createPatientResolvers,
       },
       {
         typeDefs: labResultsUploadTypeDefs,
