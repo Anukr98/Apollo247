@@ -484,67 +484,6 @@ export class PatientRepository extends Repository<Patient> {
       return `${uploadedResult.recordId}_${documentName}`;
     }
 
-    /*async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    category =
-      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
-        ? PRISM_DOCUMENT_CATEGORY.OpSummary
-        : category;
-    const currentTimeStamp = getUnixTime(new Date()) * 1000;
-    const randomNumber = Math.floor(Math.random() * 10000);
-    const fileFormat = docInput.fileType.toLowerCase();
-    const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
-    const formData = {
-      file: docInput.base64FileInput,
-      authtoken: prismAuthToken,
-      format: fileFormat,
-      tag: category,
-      programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
-      date: currentTimeStamp,
-      uhid: uhid,
-      category: category,
-      filename: documentName,
-    };
-
-    const url = `${process.env.PRISM_UPLOAD_RECORDS_API}`;
-    const options = {
-      method: 'POST',
-      url: url,
-      headers: {
-        Connection: 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate',
-        Host: `${process.env.PRISM_HOST}`,
-        
-      },
-      formData: formData,
-    };
-
-    const reqStartTime = new Date();
-    const uploadResult = await requestPromise(options)
-      .then((res) => {
-        return JSON.parse(res);
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-      `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(uploadResult)}`
-    );
-
-    if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {
-      throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-    } 
-
-    return uploadResult && uploadResult.response
-      ? `${uploadResult.response}_${documentName}`
-      : null;*/
     return null;
   }
 
