@@ -28,6 +28,7 @@ import {
   GET_MEDICINE_ORDERS_OMS__LIST,
   CANCEL_MEDICINE_ORDER_OMS,
   GET_PATIENT_ADDRESS_LIST,
+  ALERT_MEDICINE_ORDER_PICKUP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getMedicineOrderOMSDetails,
@@ -90,6 +91,10 @@ import {
   CancelMedicineOrderOMS,
   CancelMedicineOrderOMSVariables,
 } from '../graphql/types/CancelMedicineOrderOMS';
+import {
+  alertMedicineOrderPickup,
+  alertMedicineOrderPickupVariables,
+} from '../graphql/types/alertMedicineOrderPickup';
 import {
   GetMedicineOrderCancelReasons,
   GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons,
@@ -1138,7 +1143,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           </View>
           <View style={[styles.flexRow, { justifyContent: 'space-between', marginTop: 15 }]}>
             <TouchableOpacity
-              onPress={() => console.log('alert store')}
+              onPress={() => alertTheStore()}
             >
               <Text
                 style={{
@@ -1148,7 +1153,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               >ALERT THE STORE</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => console.log('call store')}
+              onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
             >
               <Text
                 style={{
@@ -1162,6 +1167,56 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       </View>
     );
   };
+
+  const alertTheStore = () => {
+    setShowSpinner(true);
+    const variables: alertMedicineOrderPickupVariables = {
+      alertMedicineOrderPickupInput: {
+        orderId: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
+        patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        remarks: ''
+      },
+    };
+
+    client
+      .mutate<alertMedicineOrderPickup, alertMedicineOrderPickupVariables>({
+        mutation: ALERT_MEDICINE_ORDER_PICKUP,
+        variables,
+      })
+      .then(({ data }) => {
+        setShowSpinner(false);
+        aphConsole.log({
+          s: data,
+        });
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+          })
+        );
+        renderSuccessPopup();
+      })
+      .catch((e) => {
+        CommonBugFender('OrderDetailsScene_onPressSendAlertToStore_ALERT_MEDICINE_ORDER_PICKUP', e);
+        setShowSpinner(false);
+        handleGraphQlError(e);
+      });
+  };
+
+  const renderSuccessPopup = () =>
+    showAphAlert!({
+      title: `Hi ${currentPatient.firstName} :)`,
+      description: 'Your store has been alerted.',
+      ctaContainerStyle: { justifyContent: 'flex-end' },
+      CTAs: [
+        {
+          text: 'OK, GOT IT',
+          type: 'orange-link',
+          onPress: () => hideAphAlert!(),
+        },
+      ],
+    });
 
   const [selectedReason, setSelectedReason] = useState('');
   const [comment, setComment] = useState('');

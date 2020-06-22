@@ -2169,6 +2169,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const ALERT_MEDICINE_ORDER_PICKUP = gql `
+  mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput : AlertMedicineOrderPickupInput) {
+    alertMedicineOrderPickup(alertMedicineOrderPickupInput : $alertMedicineOrderPickupInput) {
+      status
+      message
+    }
+  }
+`;
+
 export const GET_MEDICINE_ORDER_CANCEL_REASONS = gql`
   query GetMedicineOrderCancelReasons {
     getMedicineOrderCancelReasons {

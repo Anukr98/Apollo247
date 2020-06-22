@@ -462,6 +462,12 @@ export interface AddMedicalRecordParametersInput {
   unit?: MedicalTestUnit | null;
 }
 
+export interface AlertMedicineOrderPickupInput {
+  orderId?: number | null;
+  patientId: string;
+  remarks?: string | null;
+}
+
 export interface AppointmentHistoryInput {
   patientId: string;
   doctorId: string;
