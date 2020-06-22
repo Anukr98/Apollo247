@@ -37,6 +37,11 @@ const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
 const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
+  async dropPatientCache(id: string) {
+    const redis = await pool.getTedis();
+    await redis.del(id);
+    await pool.putTedis(redis);
+  }
   async findById(id: string) {
     return this.getByIdCache(id);
   }
@@ -239,6 +244,7 @@ export class PatientRepository extends Repository<Patient> {
   async updatePatientAllergies(id: string, allergies: string) {
     const patient = await this.getPatientDetails(id);
     if (patient) {
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patient.id}`);
       return await this.save(patient);
     } else return null;
   }
@@ -599,6 +605,7 @@ export class PatientRepository extends Repository<Patient> {
     const patient = await this.getByIdCache(id);
     if (patient) {
       Object.assign(patient, patientAttrs);
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
       return this.save(patient);
     } else return null;
   }
@@ -612,6 +619,7 @@ export class PatientRepository extends Repository<Patient> {
         primaryUhid: uhid,
         primaryPatientId: id,
       });
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
       return this.save(patient);
     } else return null;
   }
@@ -635,12 +643,16 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     if (check) {
+      ids.forEach((patientId) => {
+        this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${patientId}`);
+      });
       return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
         throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
           updatePatientError,
         });
       });
     } else {
+      this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${primaryPatientId}`);
       return this.createQueryBuilder('patient')
         .update()
         .set({
@@ -658,6 +670,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   deleteProfile(id: string) {
+    this.dropPatientCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
     return this.update(id, { isActive: false });
   }
 
