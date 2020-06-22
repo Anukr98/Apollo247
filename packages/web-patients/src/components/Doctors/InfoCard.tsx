@@ -19,6 +19,8 @@ import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -243,62 +245,64 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.topContent}>
-        <div className={classes.iconGroup}>
-          <Avatar
-            alt=""
-            src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
-            className={classes.doctorAvatar}
-          />
-          <div className={classes.consultType}>
-            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
-              <span>
-                <img src={require('images/ic-video.svg')} alt="" />
-                <br />
-                Online
+      <Link to={clientRoutes.doctorDetails(props.doctorInfo.firstName, props.doctorInfo.id)}>
+        <div className={classes.topContent}>
+          <div className={classes.iconGroup}>
+            <Avatar
+              alt=""
+              src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
+              className={classes.doctorAvatar}
+            />
+            <div className={classes.consultType}>
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
+                <span>
+                  <img src={require('images/ic-video.svg')} alt="" />
+                  <br />
+                  Online
+                </span>
+              )}
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
+                <span>
+                  <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                  <br />
+                  In-Person
+                </span>
+              )}
+            </div>
+          </div>
+          <div className={classes.doctorInfo}>
+            <>{availabilityMarkup()}</>
+            <div className={`${classes.apolloLogo}`}>
+              <img src={require('images/ic_apollo.svg')} alt="" />
+            </div>
+            <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorType}>
+              <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
+              <span className={classes.doctorExp} title={'Experiance'}>
+                {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
               </span>
-            )}
-            {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
-              <span>
-                <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                <br />
-                In-Person
-              </span>
-            )}
-          </div>
-        </div>
-        <div className={classes.doctorInfo}>
-          <>{availabilityMarkup()}</>
-          <div className={`${classes.apolloLogo}`}>
-            <img src={require('images/ic_apollo.svg')} alt="" />
-          </div>
-          <div className={classes.doctorName}>{`Dr. ${doctorInfo.fullName}`}</div>
-          <div className={classes.doctorType}>
-            <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
-            <span className={classes.doctorExp} title={'Experiance'}>
-              {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
-            </span>
-          </div>
-          <div className={classes.doctorspecialty} title={'Specialty'}>
-            <p>
-              Starts at{' '}
-              <span>
-                ₹ {doctorInfo.onlineConsultationFees || doctorInfo.physicalConsultationFees}
-              </span>
-            </p>
-          </div>
-          <div className={classes.doctorDetails} title={'Location'}>
-            <p>{doctorInfo.qualification}</p>
-            {
+            </div>
+            <div className={classes.doctorspecialty} title={'Specialty'}>
               <p>
-                {clinics && clinics.length > 0
-                  ? clinics[0].facility.name + ',' + clinics[0].facility.city
-                  : ''}
+                Starts at{' '}
+                <span>
+                  ₹ {doctorInfo.onlineConsultationFees || doctorInfo.physicalConsultationFees}
+                </span>
               </p>
-            }
+            </div>
+            <div className={classes.doctorDetails} title={'Location'}>
+              <p>{doctorInfo.qualification}</p>
+              {
+                <p>
+                  {clinics && clinics.length > 0
+                    ? clinics[0].facility.name + ',' + clinics[0].facility.city
+                    : ''}
+                </p>
+              }
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
       <ProtectedWithLoginPopup>
         {({ protectWithLoginPopup }) => (
           <div className={classes.bottomAction}>
