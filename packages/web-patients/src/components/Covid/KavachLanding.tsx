@@ -77,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '24px 0',
     },
     kavachBanner: {
+      // height: '100%',
       '& img': {
         width: '100%',
         height: '100%',
@@ -102,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     formControl: {
       width: '100%',
+      margin: '0 0 15px',
       '& svg': {
         color: '#00b38e',
       },
@@ -307,6 +309,7 @@ export const KavachLanding: React.FC = (props) => {
   const classes = useStyles({});
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [location, setLocation] = React.useState('');
+  const [service, setService] = React.useState('');
   const [showmore, setShowmore] = React.useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [userName, setUserName] = useState<string>('');
@@ -364,6 +367,10 @@ export const KavachLanding: React.FC = (props) => {
 
   const handleSelectChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setLocation(event.target.value as string);
+  };
+
+  const handleServiceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setService(event.target.value as string);
   };
 
   const submitKavachForm = () => {
@@ -457,6 +464,24 @@ export const KavachLanding: React.FC = (props) => {
                         <MenuItem value={'Delhi'}>New Delhi</MenuItem>
                         <MenuItem value={'Bengaluru'}>Bengaluru</MenuItem>
                         <MenuItem value={'Kolkata'}>Kolkata</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl className={classes.formControl}>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={service}
+                        onChange={(e) => handleServiceChange(e)}
+                        displayEmpty
+                        className={classes.selectEmpty}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                      >
+                        <MenuItem value="" disabled>
+                          Service Type
+                        </MenuItem>
+                        <MenuItem value={'Clinic'}>Fever Clinic</MenuItem>
+                        <MenuItem value={'Hotel'}>Stay-i Hotel</MenuItem>
+                        <MenuItem value={'Home'}>Stay-i at Home</MenuItem>
                       </Select>
                     </FormControl>
                     {!isLoading ? (
