@@ -8,7 +8,6 @@ interface AlertProps {
 }
 
 const Alert = (props: AlertProps) => {
-  console.log({ props });
   return (
     <Snackbar
       anchorOrigin={{
