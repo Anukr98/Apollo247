@@ -170,13 +170,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     color: theme.colors.APP_YELLOW,
   },
-  alphabetText: {
-    ...theme.fonts.IBMPlexSansMedium(13),
-    color: theme.colors.LIGHT_BLUE,
-    opacity: 0.6,
-    lineHeight: 20,
-    letterSpacing: 0.04,
-  },
   bookConsultTxt: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
@@ -374,34 +367,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [playVideo, setPlayVideo] = useState<boolean>(false);
   const [paused, setPaused] = useState<boolean>(true);
 
-  const Alphabets = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z',
-  ];
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
