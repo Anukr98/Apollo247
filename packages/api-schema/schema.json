@@ -2517,6 +2517,26 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "deviceType",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "DEVICETYPE",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "callSource",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "BOOKINGSOURCE",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -37932,6 +37952,36 @@
             "type": {
               "kind": "ENUM",
               "name": "REQUEST_ROLES",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "deviceType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "DEVICETYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "callSource",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "BOOKINGSOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "callType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "APPT_CALL_TYPE",
               "ofType": null
             },
             "defaultValue": null

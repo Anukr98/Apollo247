@@ -559,6 +559,12 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column()
   callType: string;
 
+  @Column()
+  deviceType: DEVICETYPE;
+
+  @Column()
+  callSource: BOOKINGSOURCE;
+
   @Column({ nullable: true })
   doctorId: string;
 
