@@ -45,6 +45,7 @@ const appStaticVariables = {
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
+  HOTSELLERS_MAX_QUANTITY: 20, // max. allowed qty to add hot sellers to cart
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
