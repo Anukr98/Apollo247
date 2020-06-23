@@ -327,7 +327,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [mute, setMute] = useState<boolean>(true);
+  const [tame, setTame] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
@@ -1421,7 +1421,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setHideStatusBar(false);
     setConvertVideo(false);
     KeepAwake.activate();
-    setMute(true);
+    setTame(true);
     setShowVideo(true);
     setCameraPosition('front');
     setChatReceived(false);
@@ -4573,9 +4573,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
-                  publishAudio: !mute,
+                  publishAudio: tame,
                   videoTrack: showVideo,
-                  audioTrack: mute,
+                  audioTrack: tame,
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
                 }}
@@ -4725,10 +4725,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             properties={{
               cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
-              publishAudio: !mute,
+              publishAudio: tame,
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
-              audioTrack: mute,
+              audioTrack: tame,
               name: g(currentPatient, 'firstName') || 'patient',
             }}
             resolution={'352x288'}
@@ -5001,10 +5001,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              tame === true ? setTame(false) : setTame(true);
             }}
           >
-            {mute === true ? (
+            {tame === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5016,7 +5016,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
-              setMute(true);
+              setTame(true);
               setShowVideo(true);
               setCameraPosition('front');
 
@@ -5084,7 +5084,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
-            setMute(true);
+            setTame(true);
             setShowVideo(true);
             setCameraPosition('front');
             stopTimer();
@@ -5277,10 +5277,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
+              tame === true ? setTame(false) : setTame(true);
             }}
           >
-            {mute === true ? (
+            {tame === true ? (
               <UnMuteIcon style={{ height: 60, width: 60 }} />
             ) : (
               <MuteIcon style={{ height: 60, width: 60 }} />
@@ -5290,7 +5290,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setIsCall(false);
-              setMute(true);
+              setTame(true);
               setShowVideo(true);
               setCameraPosition('front');
               stopTimer();
