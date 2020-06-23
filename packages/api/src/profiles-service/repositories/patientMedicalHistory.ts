@@ -27,7 +27,9 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
     id: string,
     patientMedicalHistoryAttrs: Partial<PatientMedicalHistory>
   ) {
-    return this.update(id, patientMedicalHistoryAttrs);
+    patientMedicalHistoryAttrs.id = id;
+    const medicalHistory = this.create(patientMedicalHistoryAttrs);
+    return medicalHistory.save();
   }
 
   findById(id: string) {
