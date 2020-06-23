@@ -162,13 +162,14 @@ interface DoctorProfileProps {
   doctorDetails: DoctorDetails;
   avaPhy: boolean;
   avaOnline: boolean;
+  getDoctorAvailableSlots: (GetDoctorNextAvailableSlot: any) => void;
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
-  const { doctorDetails } = props;
+  const { doctorDetails, getDoctorAvailableSlots } = props;
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<GetDoctorNextAvailableSlot>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const doctorId =
@@ -269,10 +270,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       })
       .then((response) => {
         setData(response.data);
+        getDoctorAvailableSlots(response.data);
         setLoading(false);
       });
   }, []);
-
   if (loading) {
     return <LinearProgress />;
   }
