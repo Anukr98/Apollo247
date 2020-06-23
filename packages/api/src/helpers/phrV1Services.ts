@@ -15,6 +15,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Patient, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { getUnixTime } from 'date-fns';
+import { PrismGetUsersResponse } from 'types/prism';
 
 const prismTimeoutMillSeconds = Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS);
 
@@ -368,4 +369,80 @@ export async function createPrismUser(
     .finally(() => {
       clearTimeout(timeout);
     });
+}
+
+export async function linkUhid(
+  primaryuhid: string,
+  uhids: string //coma seperated uhids
+): Promise<PrismGetUsersResponse> {
+  const prismHeaders = {
+    method: 'GET',
+  };
+
+  if (!process.env.PHR_V1_PRISM_LINK_UHID_API || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_PRISM_LINK_UHID_API.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', primaryuhid);
+  apiUrl = apiUrl.replace('{LINKINGUHIDS}', uhids);
+
+  const reqStartTime = new Date();
+  return await fetch(apiUrl, prismHeaders)
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'linkUhid PRISM_LINK_UHID_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'linkUhid PRISM_LINK_UHID_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+      }
+    );
+}
+
+export async function delinkUhid(
+  primaryuhid: string,
+  uhids: string //coma seperated uhids
+): Promise<PrismGetUsersResponse> {
+  const prismHeaders = {
+    method: 'GET',
+  };
+
+  if (!process.env.PHR_V1_PRISM_DELINK_UHID_API || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_PRISM_DELINK_UHID_API.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', primaryuhid);
+  apiUrl = apiUrl.replace('{LINKINGUHIDS}', uhids);
+
+  const reqStartTime = new Date();
+  return await fetch(apiUrl, prismHeaders)
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'delinkuhids PRISM_DELINK_UHID_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'delinkuhids PRISM_DELINK_UHID_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+      }
+    );
 }
