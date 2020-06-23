@@ -146,7 +146,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
   const paymentAttrs: Partial<MedicineOrderPayments> = {
     medicineOrders: orderDetails,
-    paymentDateTime: medicinePaymentMqInput.paymentDateTime,
+    paymentDateTime: medicinePaymentMqInput.paymentDateTime || new Date(),
     paymentStatus: medicinePaymentMqInput.paymentStatus,
     paymentType: medicinePaymentMqInput.paymentType,
     amountPaid: medicinePaymentMqInput.amountPaid,
@@ -168,38 +168,38 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentAttrs.refundAmount = medicinePaymentMqInput.refundAmount;
   }
 
+  let savePaymentDetails: MedicineOrderPayments | undefined;
+  if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+    await medicineOrdersRepo.updateMedicineOrderPayment(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      paymentAttrs
+    );
+  } else {
+    savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
+    if (!savePaymentDetails) {
+      log(
+        'profileServiceLogger',
+        'saveMedicineOrderPayment failed ',
+        'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
+        JSON.stringify(paymentAttrs),
+        ''
+      );
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    }
+    delete savePaymentDetails.medicineOrders;
+  }
+  orderStatus = orderDetails.currentStatus;
+
   if (
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.QUOTE ||
     orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
   ) {
-    let savePaymentDetails: MedicineOrderPayments | undefined;
-    if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
-      await medicineOrdersRepo.updateMedicineOrderPayment(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        paymentAttrs
-      );
-    } else {
-      savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-      if (!savePaymentDetails) {
-        log(
-          'profileServiceLogger',
-          'saveMedicineOrderPayment failed ',
-          'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
-          JSON.stringify(paymentAttrs),
-          ''
-        );
-        throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-      }
-      delete savePaymentDetails.medicineOrders;
-    }
-
     let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
     if (medicinePaymentMqInput.paymentStatus === 'PENDING') {
       currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_PENDING;
     }
     if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
-      medicinePaymentMqInput.paymentDateTime = new Date();
       currentStatus = MEDICINE_ORDER_STATUS.ORDER_INITIATED;
     }
 
@@ -280,38 +280,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
           console.log('message sent to topic');
         });
       });
-    }
-  } else {
-    const paymentAttrsWebhook: Partial<MedicineOrderPayments> = {
-      responseCode: medicinePaymentMqInput.responseCode,
-      responseMessage: medicinePaymentMqInput.responseMessage,
-    };
-    orderStatus = orderDetails.currentStatus;
-
-    if (medicinePaymentMqInput.bankName) {
-      paymentAttrsWebhook.bankName = medicinePaymentMqInput.bankName;
-    }
-
-    if (medicinePaymentMqInput.refundAmount) {
-      paymentAttrsWebhook.refundAmount = medicinePaymentMqInput.refundAmount;
-    }
-    if (Object.keys(paymentAttrsWebhook).length) {
-      const updatePaymentDetails = await medicineOrdersRepo.updateMedicineOrderPayment(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        paymentAttrsWebhook
-      );
-      log(
-        'profileServiceLogger',
-        'Updated Payment Details',
-        'SaveMedicineOrderPaymentMq()',
-        JSON.stringify(updatePaymentDetails),
-        ''
-      );
-      if (!updatePaymentDetails) {
-        errorCode = -1;
-        errorMessage = 'Could not update payment status';
-      }
     }
   }
 
