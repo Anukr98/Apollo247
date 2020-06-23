@@ -307,8 +307,8 @@ const ConfigurationDev = {
   TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.611',
-  Android_Version: '2.611',
+  iOS_Version: '2.612',
+  Android_Version: '2.612',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
@@ -385,8 +385,8 @@ const ConfigurationProd = {
   TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.54',
-  Android_Version: '2.54',
+  iOS_Version: '2.61',
+  Android_Version: '2.61',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
