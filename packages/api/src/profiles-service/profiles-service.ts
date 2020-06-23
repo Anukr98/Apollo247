@@ -222,6 +222,11 @@ import {
   prescriptionUploadResolvers,
 } from 'profiles-service/resolvers/prescriptionUpload';
 
+import {
+  alertMedicineOrderPickupTypeDefs,
+  alertMedicineOrderPickupResolvers,
+} from 'profiles-service/resolvers/alertMedicineOrderPickup';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -486,6 +491,10 @@ import {
       {
         typeDefs: prescriptionUploadTypeDefs,
         resolvers: prescriptionUploadResolvers,
+      },
+      {
+        typeDefs: alertMedicineOrderPickupTypeDefs,
+        resolvers: alertMedicineOrderPickupResolvers,
       },
     ]),
     plugins: [

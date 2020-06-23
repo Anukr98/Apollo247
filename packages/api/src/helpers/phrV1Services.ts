@@ -39,7 +39,6 @@ export async function saveLabResults(
   let apiUrl = process.env.PHR_V1_SAVE_LABRESULTS.toString();
   apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
   apiUrl = apiUrl.replace('{UHID}', uhid);
-
   const reqStartTime = new Date();
 
   const controller = new AbortController();
