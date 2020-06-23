@@ -207,7 +207,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     payType: string;
   }>();
   const doctorRoutes = [
-    clientRoutes.doctorsLanding(),
+    clientRoutes.specialityListing(),
     clientRoutes.specialties(params.specialty),
     clientRoutes.specialtyDoctorDetails(params.specialty, params.doctorName, params.doctorId),
     clientRoutes.doctorDetails(params.doctorName, params.doctorId),
@@ -237,7 +237,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 ? classes.menuItemActive
                 : ''
             }
-            to={clientRoutes.doctorsLanding()}
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             Doctors
@@ -291,7 +291,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 ? classes.menuItemActive
                 : ''
             }
-            to={clientRoutes.doctorsLanding()}
+            to={clientRoutes.specialityListing()}
             title={'Doctors'}
           >
             <span className={classes.menuTitle}>Doctors</span>

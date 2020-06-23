@@ -125,7 +125,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
   return data && data.getPatientPastSearches && data.getPatientPastSearches.length > 0 ? (
     <div className={classes.root}>
       <div className={classes.searchList}>
-        <div className={classes.sectionHeader}>Your Past Searches</div>
+        {/* <div className={classes.sectionHeader}>Your Past Searches</div> */}
         <Grid container spacing={2}>
           {data.getPatientPastSearches.map((searchDetails) => {
             return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
@@ -160,7 +160,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                       disableFilter(false);
                       const specialityUpdated = readableParam(`${e.currentTarget.title}`);
                       const encoded = encodeURIComponent(specialityUpdated);
-                      history.push(clientRoutes.specialties(`${encoded}${searchDetails.typeId}`));
+                      history.push(clientRoutes.specialties(`${specialityUpdated}`));
                     }}
                     key={_uniqueId('psearch_spl_')}
                   >
