@@ -140,6 +140,7 @@ export enum ApiConstants {
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
   CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
+  SEND_PATIENT_NOTIFICATION = 'Hi {0}! {1} is waiting for you to start the consultation.Please go to your dashboard in Apollo 24|7 and start consultation. ',
   WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi Dr. {0}! {1} has sent you a chat message. Click here to reply to the patient from a mobile Application.',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
@@ -226,6 +227,8 @@ export enum ApiConstants {
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 
   COUNTRY_CODE = '91',
+  OFFLINE_ORDERID = '7582d9fa-c33d-43d9-968f-77c917fff3ae',
+  CURRENT_UHID = 'APJ1.0002579777',
 
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
@@ -354,4 +357,5 @@ export enum ApiConstants {
   REDIS_URL = 'apollodev.redis.cache.windows.net',
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
+  REDIS_IMAGE_URL = '/catalog/product/',
 }

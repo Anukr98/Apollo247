@@ -171,12 +171,14 @@ export const NavigationBottom: React.FC = (props) => {
                 }}
               />
               <BottomNavigationAction
-                onClick={() => clientRoutes.doctorsLanding()}
+                onClick={() => clientRoutes.specialityListing()}
                 label="Doctors"
                 component={Link}
-                to={clientRoutes.doctorsLanding()}
+                to={clientRoutes.specialityListing()}
                 icon={<img src={require('images/bottom-nav/ic_doctors.svg')} />}
-                className={currentPath === clientRoutes.doctorsLanding() ? classes.activeMenu : ''}
+                className={
+                  currentPath === clientRoutes.specialityListing() ? classes.activeMenu : ''
+                }
                 classes={{
                   root: classes.labelRoot,
                   label: classes.iconLabel,

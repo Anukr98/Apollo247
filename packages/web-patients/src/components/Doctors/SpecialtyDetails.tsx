@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Grid, CircularProgress } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, MenuItem, InputAdornment } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
 import { BookBest } from 'components/Doctors/BookBest';
@@ -29,13 +29,13 @@ import {
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 10,
-      },
+      width: '100%',
     },
     container: {
       maxWidth: 1064,
@@ -44,11 +44,13 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        zIndex: 99,
-        width: '100%',
+        backgroundColor: '#f0f1ec',
+        marginTop: -14,
+      },
+    },
+    mHide: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
       },
     },
     breadcrumbs: {
@@ -65,11 +67,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        position: 'fixed',
+        zIndex: 99,
+        top: 0,
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
+        boxShadow: '0 5px 10px 0 rgba(128, 128, 128, 0.3)',
         margin: 0,
         paddingLeft: 20,
-        paddingRight: 20,
+        paddingRight: 50,
+        paddingTop: 10,
+        minHeight: 58,
       },
     },
     backArrow: {
@@ -85,6 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '50%',
         textAlign: 'center',
         backgroundColor: '#02475b',
+        marginRight: 10,
       },
       '& img': {
         verticalAlign: 'bottom',
@@ -125,10 +135,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     leftGroup: {
-      padding: 20,
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 328px)',
-        padding: 0,
         paddingRight: 20,
       },
     },
@@ -140,7 +148,12 @@ const useStyles = makeStyles((theme: Theme) => {
     sectionHeader: {
       display: 'flex',
       alignItems: 'center',
-      '& h3': {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        padding: 20,
+        paddingBottom: 0,
+      },
+      '& h1': {
         margin: 0,
         color: '#01667c',
         fontSize: 20,
@@ -152,6 +165,12 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         padding: 0,
         minWidth: 'auto',
+        [theme.breakpoints.down('xs')]: {
+          position: 'fixed',
+          zIndex: 99,
+          right: 20,
+          top: 18,
+        },
       },
     },
     tabsFilter: {
@@ -159,7 +178,14 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       marginTop: 10,
-      '& h4': {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginTop: 0,
+        display: 'block',
+        paddingLeft: 20,
+        paddingRight: 20,
+      },
+      '& h2': {
         fontSize: 16,
         fontWeight: 600,
         margin: 0,
@@ -192,6 +218,59 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    topSearch: {
+      display: 'flex',
+      paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        display: 'block',
+        padding: '10px 20px',
+      }
+    },
+    selectCity: {
+      width: 165,
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 10,
+      },
+      '& >div:last-child': {
+        paddingTop: 3,
+        '& >div:first-child': {
+          paddingLeft: 30,
+        },
+      },
+    },
+    inputSearch: {
+      marginLeft: 10,
+      flex: 1,
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+      },
+      '& input': {
+        paddingLeft: 30,
+      },
+    },
+    inputIcon: {
+      position: 'absolute',
+      left: 0,
+      top: 10,
+    },
+    menuRoot: {
+      backgroundColor: 'transparent !important',
+      color: '#000',
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      '&:hover': {
+        backgroundColor: 'transparent !important',
+      },
+    },
+    doctorCards: {
+      [theme.breakpoints.down('xs')]: {
+        padding: '4px 20px 0 20px',
+      },
+    },
   };
 });
 
@@ -221,12 +300,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -288,10 +371,33 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
+  const [specialtyId, setSpecialtyId] = useState<string>('');
+  const [specialtyName, setSpecialtyName] = useState<string>('');
 
-  const specialtyLen = params.specialty.length;
-  const specialtyId = params.specialty.slice(specialtyLen - 36);
-  const specialtyName = params.specialty.slice(0, specialtyLen - 36);
+  useEffect(() => {
+    if (params && params.specialty) {
+      apolloClient
+        .query({
+          query: GET_ALL_SPECIALITIES,
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          response.data &&
+            response.data.getAllSpecialties &&
+            response.data.getAllSpecialties.map((specialty: any) => {
+              if (
+                specialty &&
+                specialty.name &&
+                readableParam(specialty.name) === params.specialty
+              ) {
+                setSpecialtyId(specialty.id);
+                setSpecialtyName(specialty.name);
+              }
+            });
+        });
+    }
+  }, []);
 
   let expRange: Range = [],
     feeRange: Range = [];
@@ -341,60 +447,60 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   useEffect(() => {
     setLoading(true);
-    apolloClient
-      .query({
-        query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-        variables: { filterInput: apiVariables },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        let potentialActionSchema: any[] = [];
-        if (
-          response &&
-          response.data &&
-          response.data.getDoctorsBySpecialtyAndFilters &&
-          response.data.getDoctorsBySpecialtyAndFilters.doctors
-        ) {
-          const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-          setDoctorData(doctors || []);
-          setOnlyFilteredCount(doctors.length || 0);
-          const finalList = getFilteredDoctorList(doctors || []);
-          setFilteredDoctorData(finalList);
-          doctors.map((doctorDetails: docDetails) => {
-            doctorDetails &&
-              doctorDetails.fullName &&
-              potentialActionSchema.push({
-                '@type': 'EntryPoint',
-                name: doctorDetails.fullName,
-                url: params.specialty
-                  ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                      params.specialty,
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`
-                  : `${window.location.origin}${clientRoutes.doctorDetails(
-                      readableParam(doctorDetails.fullName),
-                      doctorDetails.id
-                    )}`,
-              });
+    if (specialtyId || specialtyName) {
+      apolloClient
+        .query({
+          query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
+          variables: { filterInput: apiVariables },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          let potentialActionSchema: any[] = [];
+          if (
+            response &&
+            response.data &&
+            response.data.getDoctorsBySpecialtyAndFilters &&
+            response.data.getDoctorsBySpecialtyAndFilters.doctors
+          ) {
+            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+            setDoctorData(doctors || []);
+            setOnlyFilteredCount(doctors.length || 0);
+            const finalList = getFilteredDoctorList(doctors || []);
+            setFilteredDoctorData(finalList);
+            doctors.map((doctorDetails: docDetails) => {
+              doctorDetails &&
+                doctorDetails.fullName &&
+                potentialActionSchema.push({
+                  '@type': 'EntryPoint',
+                  name: doctorDetails.fullName,
+                  url: params.specialty
+                    ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                        params.specialty,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`
+                    : `${window.location.origin}${clientRoutes.doctorDetails(
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`,
+                });
+            });
+          }
+          setStructuredJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'MedicalSpecialty',
+            name: specialtyName,
+            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
+            potentialAction: {
+              '@type': 'ViewAction',
+              target: potentialActionSchema,
+            },
           });
-        }
-        setStructuredJSON({
-          '@context': 'https://schema.org/',
-          '@type': 'MedicalSpecialty',
-          name: readableParam(specialtyName),
-          description: `Find the best ${readableParam(
-            specialtyName
-          )} doctors & specialists and consult with them instantly on Apollo24|7`,
-          potentialAction: {
-            '@type': 'ViewAction',
-            target: potentialActionSchema,
-          },
+          setData(response.data);
+          setLoading(false);
         });
-        setData(response.data);
-        setLoading(false);
-      });
-  }, [currentLat, currentLong, filter]);
+    }
+  }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
 
   const getFilteredDoctorList = (data: DoctorDetails[]) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -464,11 +570,13 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Header />
+      <div className={classes.mHide}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.doctorsLanding()}>
+            <Link to={clientRoutes.specialityListing()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -477,21 +585,58 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.breadcrumbLinks}>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.doctorsLanding()}>Specialty</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialty</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <span>{readableParam(specialtyName)}</span>
+              <span>{specialtyName}</span>
             </div>
           </div>
           <div className={classes.pageContent}>
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
-                <h3>Book Best Doctors - {_upperFirst(readableParam(specialtyName))}</h3>
+                <h1>Book Best Doctors - {specialtyName}</h1>
                 <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
                 </AphButton>
               </div>
+              <div className={classes.topSearch}>
+                <div className={classes.selectCity}>
+                  <div className={classes.inputIcon}>
+                    <img src={require('images/location.svg')} alt="" />
+                  </div>
+                  <AphSelect
+                    value={1}
+                  >
+                    <MenuItem
+                      classes= {{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={1}
+                    >
+                      Hyderabad
+                    </MenuItem>
+                    <MenuItem
+                      classes= {{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={2}
+                    >
+                      Chennai
+                    </MenuItem>
+                  </AphSelect>
+                </div>
+                <div className={classes.inputSearch}>
+                  <div className={classes.inputIcon}>
+                    <img src={require('images/ic-search.svg')} alt="" />
+                  </div>
+                  <AphTextField
+                    placeholder="Search for Doctors, Specialities or Hospitals"
+                  />
+                </div>
+              </div>
               <div className={classes.tabsFilter}>
-                <h4>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h4>
+                <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
                 <div className={classes.filterButtons}>
                   <AphButton
                     onClick={() => {
@@ -520,6 +665,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 filter={filter}
                 onlyFilteredCount={onlyFilteredCount}
               />
+              <div className={classes.doctorCards}>
               {(filter.language.length > 0 ||
                 filter.availability.length > 0 ||
                 filter.experience.length > 0 ||
@@ -572,6 +718,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               ) : (
                 'no results found'
               )}
+              </div>
               <BookBest />
               <FrequentlyQuestions />
             </div>
@@ -585,6 +732,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         </div>
       </div>
       <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

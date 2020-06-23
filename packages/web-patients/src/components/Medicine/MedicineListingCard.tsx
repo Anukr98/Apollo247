@@ -250,6 +250,40 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       }}
                       value={item.quantity}
                       onChange={(e: React.ChangeEvent<{ value: any }>) => {
+                        const quantity = parseInt(e.target.value);
+                        /* Gtm code start  */
+                        gtmTracking({
+                          category: 'Pharmacy',
+                          action: quantity > item.quantity ? 'Add to Cart' : 'Remove From Cart',
+                          label: item.name,
+                          value: item.special_price || item.price,
+                          ecommObj: {
+                            event: quantity > item.quantity ? 'add_to_cart' : 'remove_from_cart',
+                            ecommerce: {
+                              items: [
+                                {
+                                  item_name: item.name,
+                                  item_id: item.sku,
+                                  price: item.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: item.type_id
+                                    ? item.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity:
+                                    quantity > item.quantity
+                                      ? quantity - item.quantity
+                                      : item.quantity - quantity,
+                                },
+                              ],
+                            },
+                          },
+                        });
+                        /* Gtm code end  */
                         updateCartItemQty &&
                           updateCartItemQty({
                             url_key: item.url_key,
@@ -265,7 +299,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                             status: item.status,
                             thumbnail: item.thumbnail,
                             type_id: item.type_id,
-                            quantity: parseInt(e.target.value),
+                            quantity: quantity,
                             special_price: item.special_price,
                             mou: item.mou,
                             isShippable: true,

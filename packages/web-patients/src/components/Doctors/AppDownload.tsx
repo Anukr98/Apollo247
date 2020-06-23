@@ -10,6 +10,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       padding: 20,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 0,
+        marginLeft: 20,
+        marginRight: 20,
+      },
     },
     appDownloadGroup: {
       '& h4': {

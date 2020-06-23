@@ -520,13 +520,13 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
           const dosageTimingArray = prescription!.medicineCustomDosage!.split('-');
           const customTimingArray = [];
-          if (dosageTimingArray && dosageTimingArray[0])
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
             customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[1])
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
             customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[2])
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
             customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[3])
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
             customTimingArray.push(dosageTimingArray[3] + unitHtmls);
           dosageHtml = customTimingArray.join(' - ');
         } else {

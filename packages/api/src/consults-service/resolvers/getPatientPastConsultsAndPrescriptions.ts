@@ -55,6 +55,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     ORDER_CONFIRMED
     CANCEL_REQUEST
     READY_AT_STORE
+    PURCHASED_IN_STORE
   }
 
   input PatientConsultsAndOrdersInput {
@@ -222,7 +223,7 @@ const getPatientLabResults: Resolver<
   ConsultServiceContext,
   boolean
 > = async (parent, args, { mobileNumber, patientsDb }) => {
-  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  /*const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
@@ -248,7 +249,7 @@ const getPatientLabResults: Resolver<
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
   const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
-  console.log(labResults);
+  console.log(labResults); */
   return false;
 };
 

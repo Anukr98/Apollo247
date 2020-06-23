@@ -111,7 +111,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestSource: String!
     packageId: String
     packageName: String
-    labTestDate: Date!
+    labTestDate: Float!
     labTestRefferedBy: String
     observation: String
     additionalNotes: String
@@ -134,7 +134,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     userId: String
     id: String!
     prescriptionName: String!
-    dateOfPrescription: Int!
+    dateOfPrescription: Float!
     startDate: Int
     endDate: Int
     prescribedBy: String
@@ -324,8 +324,83 @@ const getPatientPrismMedicalRecords: Resolver<
   });
 
   //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
+  const formattedLabResults: LabTestResult[] = [];
+  labResults.response.forEach((element) => {
+    let prismFileIds: string[] = [];
+    let labResultParams: LabTestResultParameter[] = [];
+    //collecting prism file ids
+    if (element.testResultFiles.length > 0) {
+      prismFileIds = element.testResultFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+    //collecting test result params
+    if (element.labTestResults.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      labResultParams = element.labTestResults.map((item: any) => {
+        return {
+          parameterName: item.parameterName,
+          result: item.result,
+          unit: item.unit,
+          range: item.range,
+          outOfRange: item.outOfRange,
+          resultDate: item.resultDate,
+          setOutOfRange: false,
+          setResultDate: false,
+          setUnit: false,
+          setParameterName: false,
+          setRange: false,
+          setResult: false,
+        };
+      });
+    }
+
+    const labResult = {
+      id: element.id,
+      labTestName: element.labTestName,
+      labTestSource: element.labTestSource,
+      labTestDate: format(new Date(element.labTestDate), 'yyyy-MM-dd HH:mm'),
+      labTestReferredBy: element.labTestRefferedBy,
+      additionalNotes: element.additionalNotes,
+      testResultPrismFileIds: prismFileIds,
+      labTestResultParameters: labResultParams,
+      departmentName: element.departmentName,
+      signingDocName: element.signingDocName,
+      observation: element.observation,
+    };
+
+    formattedLabResults.push(labResult);
+  });
+
+  prescriptions.response.forEach((element) => {
+    let prismFileIds: string[] = [];
+    const labResultParams: LabTestResultParameter[] = [];
+    //collecting prism file ids
+    if (element.prescriptionFiles.length > 0) {
+      prismFileIds = element.prescriptionFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+
+    const labResult = {
+      id: element.id,
+      labTestName: element.prescriptionName,
+      labTestSource: element.prescriptionSource,
+      labTestDate: format(new Date(element.dateOfPrescription), 'yyyy-MM-dd HH:mm'),
+      labTestReferredBy: element.prescribedBy,
+      additionalNotes: element.notes,
+      testResultPrismFileIds: prismFileIds,
+      labTestResultParameters: labResultParams,
+      departmentName: '',
+      signingDocName: '',
+      observation: '',
+    };
+
+    formattedLabResults.push(labResult);
+  });
+
   const result = {
-    labTests: [],
+    labTests: formattedLabResults,
     healthChecks: [],
     hospitalizations: [],
     labResults: labResults,
