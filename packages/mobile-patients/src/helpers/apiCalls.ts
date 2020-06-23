@@ -6,7 +6,7 @@ export interface MedicineProduct {
   id: number;
   category_id: string;
   image: string | null;
-  is_in_stock: number;
+  is_in_stock: 0 | 1;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
@@ -44,6 +44,15 @@ export interface MedicineProductDetails extends MedicineProduct {
 export interface MedicineProductDetailsResponse {
   productdp: MedicineProductDetails[];
   message?: string;
+}
+
+export interface MedicineOrderBilledItem {
+  batchId: string;
+  issuedQty: number;
+  itemId: string;
+  itemName: string;
+  mou: number;
+  mrp: number;
 }
 
 export interface MedicineProductsResponse {

@@ -211,6 +211,7 @@ export enum MEDICINE_ORDER_STATUS {
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -472,6 +473,12 @@ export interface AddMedicalRecordParametersInput {
   parameterName?: string | null;
   result?: number | null;
   unit?: MedicalTestUnit | null;
+}
+
+export interface AlertMedicineOrderPickupInput {
+  orderId?: number | null;
+  patientId: string;
+  remarks?: string | null;
 }
 
 export interface AppointmentHistoryInput {

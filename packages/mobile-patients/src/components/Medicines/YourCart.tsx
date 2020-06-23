@@ -425,6 +425,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }
           });
       }
+    } else if (deliveryAddressId && cartItems.length == 0) {
+      setLoading!(false);
     }
   }, [deliveryAddressId, cartItems]);
 
@@ -826,7 +828,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       cartTotal - couponDiscount >=
         AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY &&
       cartTotal - couponDiscount < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY &&
-      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY - (cartTotal - couponDiscount);
+      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY -
+        (cartTotal - couponDiscount - productDiscount);
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}

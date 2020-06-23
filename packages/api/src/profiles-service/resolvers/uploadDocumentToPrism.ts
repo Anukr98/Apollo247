@@ -74,7 +74,7 @@ const uploadDocument: Resolver<
     : { status: false, fileId: '', filePath: blobUrl };
 };
 
-const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
+export const uploadFileToBlobStorage = async (args: UploadDocumentInput) => {
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
