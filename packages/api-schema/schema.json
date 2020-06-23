@@ -3080,6 +3080,29 @@
             "deprecationReason": null
           },
           {
+            "name": "sendDoctorReminderNotifications",
+            "description": null,
+            "args": [
+              {
+                "name": "nextMin",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "SendChatMessageToDoctorResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sendEmailMessage",
             "description": null,
             "args": [],
