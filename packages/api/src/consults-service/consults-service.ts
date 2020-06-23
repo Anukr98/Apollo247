@@ -124,6 +124,8 @@ import {
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
 
+import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolvers/exotelCalling';
+
 (async () => {
   await connect();
 
@@ -156,6 +158,10 @@ import { winstonLogger } from 'customWinstonLogger';
           Time: GraphQLTime,
           DateTime: GraphQLDateTime,
         },
+      },
+      {
+        typeDefs: exotelTypeDefs,
+        resolvers: exotelCallingResolvers,
       },
       {
         typeDefs: getAvailableSlotsTypeDefs,

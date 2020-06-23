@@ -514,6 +514,10 @@ export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
 );
 
+export const FreeArrowIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
+);
+
 export const OrderOnHoldIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_hold.png')} />
 );
@@ -1017,9 +1021,21 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
 );
 
 export const LinkUHIDReadMore: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="lg"
-    {...props}
-    source={require('./icons/read-more.png')}
-  />
+  <IconBase size="lg" {...props} source={require('./icons/read-more.png')} />
+);
+
+export const RectangularIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/rectangleIcon.png')} />
+);
+
+export const ApolloDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ApolloDoctor.png')} />
+);
+
+export const ApolloPartnerIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ApolloPatner.png')} />
+);
+
+export const VideoPlayIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Play.png')} />
 );

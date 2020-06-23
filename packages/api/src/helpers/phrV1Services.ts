@@ -266,7 +266,7 @@ export async function getRegisteredUsers(mobileNumber: string): Promise<GetUsers
           'getRegisteredUsersFromPrism PRISM_GET_REGISTERED_USERS_API_CALL___END',
           `${apiUrl}--- ${JSON.stringify(data)}`
         );
-        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        //if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
         return data;
       },
       (err) => {

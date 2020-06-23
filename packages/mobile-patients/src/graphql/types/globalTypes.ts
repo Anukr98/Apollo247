@@ -121,6 +121,7 @@ export enum DoctorType {
   CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
   FERTILITY = "FERTILITY",
+  HOMECARE = "HOMECARE",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   SPECTRA = "SPECTRA",
@@ -205,10 +206,12 @@ export enum MEDICINE_ORDER_STATUS {
   PICKEDUP = "PICKEDUP",
   PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
   PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
   QUOTE = "QUOTE",
   READY_AT_STORE = "READY_AT_STORE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -222,6 +225,7 @@ export enum MEDICINE_TIMINGS {
   MORNING = "MORNING",
   NIGHT = "NIGHT",
   NOON = "NOON",
+  NOT_SPECIFIC = "NOT_SPECIFIC",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
@@ -335,6 +339,7 @@ export enum REQUEST_ROLES {
 export enum ROUTE_OF_ADMINISTRATION {
   EAR_DROPS = "EAR_DROPS",
   EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
   GARGLE = "GARGLE",
   INHALE = "INHALE",
   INTRAMUSCULAR = "INTRAMUSCULAR",
@@ -840,6 +845,8 @@ export interface PrescriptionMedicineOrderOMSInput {
   NonCartOrderCity?: NonCartOrderOMSCity | null;
   orderAutoId?: number | null;
   shopAddress?: ShopAddress | null;
+  prescriptionOptionSelected?: string | null;
+  durationDays?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentOMSDetails {
@@ -956,6 +963,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  employeeId?: string | null;
 }
 
 export interface UploadDocumentInput {

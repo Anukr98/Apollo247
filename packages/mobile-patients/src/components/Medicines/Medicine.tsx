@@ -34,6 +34,7 @@ import {
 import {
   SAVE_SEARCH,
   GET_MEDICINE_ORDERS_OMS__LIST,
+  GET_RECOMMENDED_PRODUCTS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -55,6 +56,7 @@ import {
   postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
+  productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -95,6 +97,10 @@ import {
 } from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import AppIntroSlider from 'react-native-app-intro-slider';
+import {
+  getRecommendedProductsList,
+  getRecommendedProductsListVariables,
+} from '../../graphql/types/getRecommendedProductsList';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -271,6 +277,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    fetchRecommendedProducts();
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
       .then((response) => {
@@ -335,6 +342,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, []);
 
+  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -350,8 +358,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const shopByCategory = g(data, 'shop_by_category') || [];
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || [];
   const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
   const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
+  const widget2 = g(data, 'widget_2', 'products') || [];
+  const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
+  const widget3 = g(data, 'widget_3', 'products') || [];
+  const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
   const {
     data: orders,
@@ -379,6 +392,54 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       data.length > 0 && setOrdersFetched(data);
     }
   }, [ordersLoading]);
+
+  const getImageUrl = (fileIds: string) => {
+    return fileIds
+      .split(',')
+      .filter((v) => v)
+      .map((v) => `/catalog/product${v}`)[0];
+  };
+
+  const fetchRecommendedProducts = async () => {
+    try {
+      const recommendedProductsListApi = await client.query<
+        getRecommendedProductsList,
+        getRecommendedProductsListVariables
+      >({
+        query: GET_RECOMMENDED_PRODUCTS_LIST,
+        variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+        fetchPolicy: 'no-cache',
+      });
+      const _recommendedProducts =
+        g(
+          recommendedProductsListApi,
+          'data',
+          'getRecommendedProductsList',
+          'recommendedProducts'
+        ) || [];
+      const formattedRecommendedProducts = _recommendedProducts
+        .filter((item) => (item!.status || '').toLowerCase() == 'enabled')
+        .map(
+          (item) =>
+            ({
+              image: item!.productImage ? getImageUrl(item!.productImage) : null,
+              is_in_stock: 1,
+              is_prescription_required: item!.isPrescriptionNeeded!,
+              name: item!.productName!,
+              price: Number(item!.productPrice!),
+              special_price: item!.productSpecialPrice || '',
+              sku: item!.productSku!,
+              type_id:
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+              mou: item!.mou!,
+            } as MedicineProduct)
+        );
+      formattedRecommendedProducts.length >= 5 &&
+        setRecommendedProducts(formattedRecommendedProducts);
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
+    }
+  };
 
   // Common Views
 
@@ -629,7 +690,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderBannerImageToGetAspectRatio = () => {
     const imageUri = g(banners, '0' as any, 'image');
-    const imageFullUri = imageUri ? `${config.IMAGES_BASE_URL[0]}${imageUri}` : '';
+    const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
     return (
       !!imageFullUri && (
         <View style={{ height: 0 }}>
@@ -666,7 +727,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <ImageNative
           resizeMode="stretch"
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image}` }}
+          source={{ uri: productsThumbnailUrl(item.image) }}
         />
       </TouchableOpacity>
     );
@@ -862,13 +923,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+              productsThumbnailUrl(item.image_url),
               () => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
                   title,
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -908,7 +969,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     item.category_id,
                     'Banner',
                     title,
-                    `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                    productsThumbnailUrl(item.image_url)
                   );
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
@@ -918,7 +979,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               >
                 <Image
                   // placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image_url}` }}
+                  source={{ uri: productsThumbnailUrl(item.image_url) }}
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
@@ -998,7 +1059,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDiscountedPrice = () => {
       return (
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
-          {!!specialPrice && (
+          {!!specialPrice && !isNaN(discount) && !!discount && (
             <Text style={[localStyles.discountedPriceText, { marginRight: 4 }]}>
               (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
@@ -1010,7 +1071,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        {!isNaN(discount) && (
+        {!isNaN(discount) && !!discount && (
           <View style={localStyles.discountPercentageTagView}>
             <OfferIcon />
             <Text style={localStyles.discountPercentageText}>-{discount}%</Text>
@@ -1096,7 +1157,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return hotSellerCard({
       name,
-      imgUrl: `${config.IMAGES_BASE_URL[0]}${image}`,
+      imgUrl: productsThumbnailUrl(image!),
       price,
       specialPrice: special_price
         ? typeof special_price == 'string'
@@ -1140,6 +1201,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               ? () =>
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: categoryId,
+                    products: categoryId == -1 ? products : null,
                     title: `${title || 'Products'}`.toUpperCase(),
                   })
               : undefined
@@ -1186,9 +1248,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           horizontal
           data={shopByBrand}
           renderItem={({ item, index }) => {
-            const imgUrl = `${config.IMAGES_BASE_URL[0].replace('/catalog/product', '')}${
-              item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`
-            }`;
+            const imgUrl = productsThumbnailUrl(item.image_url);
             return renderBrandCard(
               imgUrl,
               () => {
@@ -1196,7 +1256,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   item.category_id,
                   item.title,
                   title,
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -1552,14 +1612,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       shop_by_brand: renderShopByBrand,
       hot_sellers: renderHotSellers,
       monsoon_essentials: renderHotSellers,
+      widget_2: renderHotSellers,
+      widget_3: renderHotSellers,
     };
     const sectionDataMapping = {
       healthareas: [healthAreas, 0],
       deals_of_the_day: [[], 0],
       shop_by_category: [shopByCategory, 0],
       shop_by_brand: [[], 0],
-      hot_sellers: [hotSellers, 0],
+      hot_sellers: [hotSellers, hotSellersCategoryId],
       monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
+      widget_2: [widget2, widget2CategoryId],
+      widget_3: [widget3, widget3CategoryId],
     };
     const sectionsView = info
       .filter((item) => item.visible)
@@ -1580,6 +1644,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return sectionsView;
   };
 
+  const renderRecommendedProducts = () => {
+    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1595,6 +1663,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderBanners()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
+        {renderRecommendedProducts()}
         {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
         {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>

@@ -154,6 +154,12 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '10px 0 0',
       color: '#b00020',
     },
+    errorMessage: {
+      position: 'absolute',
+      top: 0,
+      left: 20,
+      zIndex: 10,
+    },
   };
 });
 interface ConsultProps {
@@ -401,6 +407,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           className={classes.fullscreenIcon}
                           onClick={() => props.toggelChatVideo()}
                         />
+                      </div>
+                      <div className={classes.errorMessage}>
+                        <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+                        <p className={classes.audioVideoState}>{isPaused()}</p>
                       </div>
                     </div>
                   )}
