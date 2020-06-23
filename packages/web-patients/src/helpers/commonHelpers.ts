@@ -2,6 +2,8 @@ import { DEVICETYPE } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
+import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import _lowerCase from 'lodash/lowerCase';
 
 declare global {
   interface Window {
@@ -224,7 +226,19 @@ const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 
 // End of doctors list based on specialty related changes
 
+const getTypeOfProduct = (type: string) => {
+  switch (_lowerCase(type)) {
+    case 'pharma':
+      return CouponCategoryApplicable.PHARMA;
+    case 'fmcg':
+      return CouponCategoryApplicable.FMCG;
+    default:
+      return CouponCategoryApplicable.FMCG;
+  }
+};
+
 export {
+  getTypeOfProduct,
   feeInRupees,
   experienceList,
   genderList,

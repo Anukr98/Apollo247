@@ -357,4 +357,5 @@ export enum ApiConstants {
   REDIS_URL = 'apollodev.redis.cache.windows.net',
   REDIS_PORT = 6379,
   REDIS_PWD = 'FgFyZpibcBewC6U7AZYDq1DppMW02mi+koiEa63gDF4=',
+  REDIS_IMAGE_URL = '/catalog/product/',
 }
