@@ -1144,6 +1144,13 @@ export class PatientHealthVault extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @AfterInsert()
+  async clearPatientCache() {
+    const redis = await pool.getTedis();
+    await redis.del(`patient:${this.patient.id}`);
+    pool.putTedis(redis);
+  }
 }
 //patientHealthVault ends
 
