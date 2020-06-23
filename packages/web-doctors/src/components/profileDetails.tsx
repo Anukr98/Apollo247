@@ -498,7 +498,7 @@ export const MyAccount: React.FC = (props) => {
       setShowErrorMessage(false);
       setLoading(true);
       const doctorName = doctorProfile!.salutation &&
-        doctorProfile!.salutation!.charAt(0).toUpperCase() + ' '+ doctorProfile
+        doctorProfile!.salutation!.charAt(0).toUpperCase() + ''+ doctorProfile
         .salutation!.slice(1)
         .toLowerCase() + '. '+ doctorProfile.firstName+' '+doctorProfile.lastName;  
       client

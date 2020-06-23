@@ -277,6 +277,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatRoom]: {
     screen: ChatRoom,
+    path: 'ChatRoomPage',
     navigationOptions: {
       gesturesEnabled: false,
     },
