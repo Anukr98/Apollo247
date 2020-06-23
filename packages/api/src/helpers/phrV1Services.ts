@@ -423,7 +423,7 @@ export async function delinkUhid(
   let apiUrl = process.env.PHR_V1_PRISM_DELINK_UHID_API.toString();
   apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
   apiUrl = apiUrl.replace('{UHID}', primaryuhid);
-  apiUrl = apiUrl.replace('{LINKINGUHIDS}', uhids);
+  apiUrl = apiUrl.replace('{DELINKINGUHIDS}', uhids);
 
   const reqStartTime = new Date();
   return await fetch(apiUrl, prismHeaders)
