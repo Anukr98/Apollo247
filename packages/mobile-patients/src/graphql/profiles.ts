@@ -1394,6 +1394,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         deliveryType
         currentStatus
         patientAddressId
+        alertStore
         medicineOrdersStatus {
           id
           orderStatus
@@ -2110,6 +2111,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
       orderStatus
+    }
+  }
+`;
+
+export const ALERT_MEDICINE_ORDER_PICKUP = gql `
+  mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput : AlertMedicineOrderPickupInput) {
+    alertMedicineOrderPickup(alertMedicineOrderPickupInput : $alertMedicineOrderPickupInput) {
+      status
+      message
     }
   }
 `;
