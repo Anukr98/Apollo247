@@ -4573,7 +4573,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
-                  publishAudio: mute,
+                  publishAudio: !mute,
                   videoTrack: showVideo,
                   audioTrack: mute,
                   audioVolume: 100,
@@ -4725,7 +4725,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             properties={{
               cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
-              publishAudio: mute,
+              publishAudio: !mute,
               audioVolume: 100,
               videoTrack: convertVideo ? true : false,
               audioTrack: mute,
