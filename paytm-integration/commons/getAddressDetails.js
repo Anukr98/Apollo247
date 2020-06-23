@@ -33,7 +33,7 @@ function getAddressDetails(addressId) {
       })
       .catch((error) => {
         logger.error(
-          `error while fethcing address details processOrders() ${addressId}-> ${error.stack}`
+          `error while fethcing address details processOrders() ${addressId}-> ${error}`
         );
         console.log(error, 'address error');
       });
