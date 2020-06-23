@@ -9,6 +9,17 @@ export type PharmacyHomepageInfo = {
   visible: boolean;
 };
 
+export enum AppEnv {
+  DEV = 'DEV',
+  QA = 'QA',
+  PROD = 'PROD',
+  PERFORM = 'PERFORM',
+  VAPT = 'VAPT',
+  DEVReplica = 'DEVReplica',
+}
+
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
@@ -25,17 +36,6 @@ const testApiCredentialsProd = {
   Password: 'ERVEYCWTALAOHELEEBRY',
   InterfaceClient: 'MCKINSEY',
 };
-
-export enum AppEnv {
-  DEV = 'DEV',
-  QA = 'QA',
-  PROD = 'PROD',
-  PERFORM = 'PERFORM',
-  VAPT = 'VAPT',
-  DEVReplica = 'DEVReplica',
-}
-
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
