@@ -107,13 +107,17 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   appointmentId: string;
   consultModeSelected: ConsultMode;
   externalConnect: boolean | null;
-  // availableSlots: string[] | null;
+  availableMode: string;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
-      ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+      ? props.availableMode === ConsultMode.BOTH
+        ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
+        : props.availableMode === ConsultMode.ONLINE
+        ? [{ title: 'Consult Online' }]
+        : [{ title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -512,7 +516,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const onPressPay = () => {
     // Pay Button Clicked	event
     postWebEngagePayButtonClickedEvent();
-    callPermissions();
+    // callPermissions();
     whatsappAPICalled();
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(

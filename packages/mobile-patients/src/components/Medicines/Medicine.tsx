@@ -25,7 +25,6 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -35,6 +34,7 @@ import {
 import {
   SAVE_SEARCH,
   GET_MEDICINE_ORDERS_OMS__LIST,
+  GET_RECOMMENDED_PRODUCTS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -45,6 +45,8 @@ import {
   MedicinePageAPiResponse,
   MedicineProduct,
   pinCodeServiceabilityApi,
+  MedicinePageSection,
+  OfferBannerSection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
@@ -53,8 +55,8 @@ import {
   postAppsFlyerAddToCartEvent,
   postwebEngageAddToCartEvent,
   postWebEngageEvent,
-  postWEGNeedHelpEvent,
   addPharmaItemToCart,
+  productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -84,6 +86,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  Alert,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -93,6 +96,11 @@ import {
   getMedicineOrdersOMSListVariables,
 } from '../../graphql/types/getMedicineOrdersOMSList';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
+import AppIntroSlider from 'react-native-app-intro-slider';
+import {
+  getRecommendedProductsList,
+  getRecommendedProductsListVariables,
+} from '../../graphql/types/getRecommendedProductsList';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -119,6 +127,12 @@ const styles = StyleSheet.create({
     //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
+  },
+  sliderDotStyle: { height: 8, width: 8, borderRadius: 4, marginHorizontal: 4, marginBottom: -105 },
+  sliderPlaceHolderStyle: {
+    width: '100%',
+    alignContent: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -263,6 +277,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    fetchRecommendedProducts();
     // getting from local storage first for immediate rendering
     AsyncStorage.getItem(MEDICINE_LANDING_PAGE_DATA)
       .then((response) => {
@@ -327,16 +342,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, []);
 
+  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  const offerBanner = (g(data, 'mainbanners') || [])[0];
-  const offerBannerImage = g(offerBanner, 'image');
+  const banners = (g(data, 'mainbanners') || [])
+    .filter((banner) => Number(banner.status))
+    .filter(
+      (banner) =>
+        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
+        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
+    );
   const healthAreas = g(data, 'healthareas') || [];
   const dealsOfTheDay = g(data, 'deals_of_the_day') || [];
   const shopByCategory = g(data, 'shop_by_category') || [];
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || [];
+  const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
+  const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
+  const widget2 = g(data, 'widget_2', 'products') || [];
+  const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
+  const widget3 = g(data, 'widget_3', 'products') || [];
+  const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
 
   const {
     data: orders,
@@ -350,18 +378,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       fetchPolicy: 'cache-first',
     }
   );
-
-  // Note: if hideStatus = true means display it, false measn hide it
-  // let _orders = (
-  //   (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-  //   []
-  // ).filter(
-  //   (item) =>
-  //     !(
-  //       (item!.medicineOrdersStatus || []).length == 1 &&
-  //       (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-  //     )
-  // );
 
   useEffect(() => {
     if (!ordersLoading) {
@@ -377,7 +393,53 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }, [ordersLoading]);
 
-  // console.log('ORDERS\n', { _orders });
+  const getImageUrl = (fileIds: string) => {
+    return fileIds
+      .split(',')
+      .filter((v) => v)
+      .map((v) => `/catalog/product${v}`)[0];
+  };
+
+  const fetchRecommendedProducts = async () => {
+    try {
+      const recommendedProductsListApi = await client.query<
+        getRecommendedProductsList,
+        getRecommendedProductsListVariables
+      >({
+        query: GET_RECOMMENDED_PRODUCTS_LIST,
+        variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+        fetchPolicy: 'no-cache',
+      });
+      const _recommendedProducts =
+        g(
+          recommendedProductsListApi,
+          'data',
+          'getRecommendedProductsList',
+          'recommendedProducts'
+        ) || [];
+      const formattedRecommendedProducts = _recommendedProducts
+        .filter((item) => (item!.status || '').toLowerCase() == 'enabled')
+        .map(
+          (item) =>
+            ({
+              image: item!.productImage ? getImageUrl(item!.productImage) : null,
+              is_in_stock: 1,
+              is_prescription_required: item!.isPrescriptionNeeded!,
+              name: item!.productName!,
+              price: Number(item!.productPrice!),
+              special_price: item!.productSpecialPrice || '',
+              sku: item!.productSku!,
+              type_id:
+                (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
+              mou: item!.mou!,
+            } as MedicineProduct)
+        );
+      formattedRecommendedProducts.length >= 5 &&
+        setRecommendedProducts(formattedRecommendedProducts);
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
+    }
+  };
 
   // Common Views
 
@@ -624,51 +686,76 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
-  const renderOfferBanner = () => {
-    if (loading) return null;
-    else if (offerBannerImage) {
-      return (
-        <ImageNative
-          onLoadStart={() => {
-            setImageLoading(true);
-          }}
-          onLoadEnd={() => {
-            setImageLoading(false);
-          }}
-          onLoad={(value) => {
-            const { height, width } = value.nativeEvent.source;
-            console.log(height, width, 'dsniu');
-            setImgHeight(height * (winWidth / width));
-          }}
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-        />
-      );
-    }
+  const [bannerLoading, setBannerLoading] = useState(true);
+
+  const renderBannerImageToGetAspectRatio = () => {
+    const imageUri = g(banners, '0' as any, 'image');
+    const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
+    return (
+      !!imageFullUri && (
+        <View style={{ height: 0 }}>
+          <ImageNative
+            onLoad={(value) => {
+              const { height, width } = value.nativeEvent.source;
+              setImgHeight(height * (winWidth / width));
+              setBannerLoading(false);
+            }}
+            style={{ width: '100%', height: 120 }}
+            source={{ uri: imageFullUri }}
+          />
+        </View>
+      )
+    );
   };
 
-  const renderOfferBannerCover = () => {
-    if (imageLoading && offerBannerImage) {
+  const renderSliderItem = ({ item }: { item: OfferBannerSection }) => {
+    const handleOnPress = () => {
+      if (item.category_id) {
+        props.navigation.navigate(AppRoutes.SearchByBrand, {
+          category_id: item.category_id,
+          title: 'PRODUCTS',
+        });
+      } else if (item.sku) {
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: item.sku,
+        });
+      }
+    };
+
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={handleOnPress}>
+        <ImageNative
+          resizeMode="stretch"
+          style={{ width: '100%', minHeight: imgHeight }}
+          source={{ uri: productsThumbnailUrl(item.image) }}
+        />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderBanners = () => {
+    if (loading || bannerLoading) {
       return (
-        <View
-          style={{
-            width: '100%',
-            height: imgHeight,
-            position: 'absolute',
-            top: 0,
-            alignContent: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
           <Spinner
             spinnerProps={{ size: 'small' }}
             style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
           />
         </View>
       );
-    } else {
-      return null;
+    } else if (banners.length) {
+      return (
+        <View style={{ marginBottom: 17 }}>
+          <AppIntroSlider
+            slides={banners}
+            showNextButton={false}
+            showDoneButton={false}
+            dotStyle={[styles.sliderDotStyle, { backgroundColor: '#d8d8d8' }]}
+            activeDotStyle={[styles.sliderDotStyle, { backgroundColor: '#aaa' }]}
+            renderItem={renderSliderItem}
+          />
+        </View>
+      );
     }
   };
 
@@ -822,27 +909,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByHealthAreas = () => {
-    if (healthAreas.length == 0) return null;
+  const renderCategories = (title: string, categories: MedicinePageSection[]) => {
+    if (categories.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={healthAreas}
+          data={categories}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+              productsThumbnailUrl(item.image_url),
               () => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY HEALTH AREAS',
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  title,
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -862,11 +949,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderDealsOfTheDay = () => {
+  const renderDealsOfTheDay = (title: string) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'DEALS OF THE DAY'} />
+        <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -881,18 +968,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   postwebEngageCategoryClickedEvent(
                     item.category_id,
                     'Banner',
-                    'DEALS OF THE DAY',
-                    `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                    title,
+                    productsThumbnailUrl(item.image_url)
                   );
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
-                    title: 'DEALS OF THE DAY',
+                    title: title,
                   });
                 }}
               >
                 <Image
                   // placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image_url}` }}
+                  source={{ uri: productsThumbnailUrl(item.image_url) }}
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
@@ -972,7 +1059,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDiscountedPrice = () => {
       return (
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
-          {!!specialPrice && (
+          {!!specialPrice && !isNaN(discount) && !!discount && (
             <Text style={[localStyles.discountedPriceText, { marginRight: 4 }]}>
               (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
@@ -984,7 +1071,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        {!isNaN(discount) && (
+        {!isNaN(discount) && !!discount && (
           <View style={localStyles.discountPercentageTagView}>
             <OfferIcon />
             <Text style={localStyles.discountPercentageText}>-{discount}%</Text>
@@ -1023,7 +1110,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>, title: string) => {
     const {
       sku,
       is_prescription_required,
@@ -1061,7 +1148,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         currentPatient
       );
 
-      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', 'HOT SELLERS');
+      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home', title);
       postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
 
@@ -1070,7 +1157,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return hotSellerCard({
       name,
-      imgUrl: `${config.IMAGES_BASE_URL[0]}${image}`,
+      imgUrl: productsThumbnailUrl(image!),
       price,
       specialPrice: special_price
         ? typeof special_price == 'string'
@@ -1080,7 +1167,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
-        postwebEngageProductClickedEvent(data.item, 'HOT SELLERS', 'Home');
+        postwebEngageProductClickedEvent(data.item, title, 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
       style: {
@@ -1092,74 +1179,60 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
   };
 
-  const renderHotSellers = () => {
-    if (hotSellers.length == 0) return null;
+  const renderHotSellers = (title: string, products: MedicineProduct[], categoryId?: number) => {
+    if (products.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader
+          leftText={title}
+          rightText={categoryId ? 'VIEW ALL' : ''}
+          rightTextStyle={
+            categoryId
+              ? {
+                  textAlign: 'right',
+                  ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                  width: '25%',
+                }
+              : {}
+          }
+          leftTextStyle={categoryId ? { width: '75%' } : {}}
+          onPressRightText={
+            categoryId
+              ? () =>
+                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                    category_id: categoryId,
+                    products: categoryId == -1 ? products : null,
+                    title: `${title || 'Products'}`.toUpperCase(),
+                  })
+              : undefined
+          }
+          style={categoryId ? { paddingBottom: 1 } : {}}
+        />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={hotSellers}
-          renderItem={renderHotSellerItem}
+          data={products}
+          renderItem={(itemData) => renderHotSellerItem(itemData, title)}
         />
       </View>
     );
   };
 
-  const renderShopByCategory = () => {
-    if (shopByCategory.length == 0) return null;
-    return (
-      <View>
-        <SectionHeader leftText={'SHOP BY CATEGORY'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={shopByCategory}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  'SHOP BY CATEGORY',
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
-                );
-
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
-                });
-              },
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
-  };
-
-  const renderShopByBrand = () => {
+  const renderShopByBrand = (title: string) => {
     if (shopByBrand.length == 0) return null;
     return (
       <View>
         <SectionHeader
-          leftText={'SHOP BY BRAND'}
+          leftText={title}
           rightText={'VIEW ALL'}
           rightTextStyle={{
+            textAlign: 'right',
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+            width: '25%',
           }}
+          leftTextStyle={{ width: '75%' }}
           onPressRightText={() =>
             props.navigation.navigate(AppRoutes.ShopByBrand, {
               allBrandData: allBrandData,
@@ -1175,17 +1248,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           horizontal
           data={shopByBrand}
           renderItem={({ item, index }) => {
-            const imgUrl = `${config.IMAGES_BASE_URL[0].replace('/catalog/product', '')}${
-              item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`
-            }`;
+            const imgUrl = productsThumbnailUrl(item.image_url);
             return renderBrandCard(
               imgUrl,
               () => {
                 postwebEngageCategoryClickedEvent(
                   item.category_id,
                   item.title,
-                  'SHOP BY BRAND',
-                  `${config.IMAGES_BASE_URL[0]}${item.image_url}`
+                  title,
+                  productsThumbnailUrl(item.image_url)
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -1195,27 +1266,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {
                 marginHorizontal: 4,
                 marginTop: 16,
-                marginBottom: 40,
+                marginBottom: 20,
                 ...(index == 0 ? { marginLeft: 20 } : {}),
               }
             );
           }}
         />
       </View>
-    );
-  };
-
-  const renderNeedHelp = () => {
-    return (
-      <NeedHelpAssistant
-        navigation={props.navigation}
-        containerStyle={{
-          paddingBottom: 20,
-        }}
-        onNeedHelpPress={() => {
-          postWEGNeedHelpEvent(currentPatient, 'Medicines');
-        }}
-      />
     );
   };
 
@@ -1546,6 +1603,51 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderSectionsWithOrdering = () => {
+    const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
+    const sectionMapping = {
+      healthareas: renderCategories,
+      deals_of_the_day: renderDealsOfTheDay,
+      shop_by_category: renderCategories,
+      shop_by_brand: renderShopByBrand,
+      hot_sellers: renderHotSellers,
+      monsoon_essentials: renderHotSellers,
+      widget_2: renderHotSellers,
+      widget_3: renderHotSellers,
+    };
+    const sectionDataMapping = {
+      healthareas: [healthAreas, 0],
+      deals_of_the_day: [[], 0],
+      shop_by_category: [shopByCategory, 0],
+      shop_by_brand: [[], 0],
+      hot_sellers: [hotSellers, hotSellersCategoryId],
+      monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
+      widget_2: [widget2, widget2CategoryId],
+      widget_3: [widget3, widget3CategoryId],
+    };
+    const sectionsView = info
+      .filter((item) => item.visible)
+      .sort((a, b) => Number(a.section_position) - Number(b.section_position))
+      .map((item) => {
+        const sectionsView =
+          item.section_key &&
+          item.section_name &&
+          sectionMapping[item.section_key as keyof typeof sectionMapping];
+        const sectionData =
+          sectionsView && sectionDataMapping[item.section_key as keyof typeof sectionDataMapping];
+
+        return sectionsView
+          ? sectionsView(item.section_name, sectionData[0] as [], sectionData[1] as number)
+          : null;
+      });
+
+    return sectionsView;
+  };
+
+  const renderRecommendedProducts = () => {
+    return renderHotSellers('RECOMMENDED FOR YOU', recommendedProducts, -1);
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1557,22 +1659,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderOfferBanner()}
-        {renderOfferBannerCover()}
+        {renderBannerImageToGetAspectRatio()}
+        {renderBanners()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
-        {loading
-          ? renderSectionLoader()
-          : !error && (
-              <>
-                {renderShopByHealthAreas()}
-                {renderDealsOfTheDay()}
-                {renderHotSellers()}
-                {renderShopByCategory()}
-                {renderShopByBrand()}
-              </>
-            )}
-        {/* {renderNeedHelp()} */}
+        {renderRecommendedProducts()}
+        {loading ? renderSectionLoader() : !error && renderSectionsWithOrdering()}
+        {!error && <View style={{ height: 20 }} />}
       </TouchableOpacity>
     );
   };

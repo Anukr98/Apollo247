@@ -2,12 +2,30 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 
+export type PharmacyHomepageInfo = {
+  section_key: string;
+  section_name: string;
+  section_position: string;
+  visible: boolean;
+};
+
+export enum AppEnv {
+  DEV = 'DEV',
+  QA = 'QA',
+  PROD = 'PROD',
+  PERFORM = 'PERFORM',
+  VAPT = 'VAPT',
+  DEVReplica = 'DEVReplica',
+}
+
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
-const apolloUatBaseUrl = 'https://magento.apollo247.com';
+const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -28,15 +46,16 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
-  TAT_API_TIMEOUT_IN_SEC: 20,
+  TAT_API_TIMEOUT_IN_SEC: 10,
   PACKAGING_CHARGES: 0,
+  MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY: 0,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -45,6 +64,56 @@ const appStaticVariables = {
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
+  PHARMACY_HOMEPAGE_INFO: [
+    {
+      section_key: 'healthareas',
+      section_name: 'SHOP BY HEALTH AREAS',
+      section_position: '1',
+      visible: true,
+    },
+    {
+      section_key: 'deals_of_the_day',
+      section_name: 'DEALS OF THE DAY',
+      section_position: '2',
+      visible: true,
+    },
+    {
+      section_key: 'hot_sellers',
+      section_name: 'HOT SELLERS',
+      section_position: '3',
+      visible: true,
+    },
+    {
+      section_key: 'shop_by_category',
+      section_name: 'SHOP BY CATEGORY',
+      section_position: '4',
+      visible: true,
+    },
+    {
+      section_key: 'monsoon_essentials',
+      section_name: 'MONSOON ESSENTIALS',
+      section_position: '5',
+      visible: true,
+    },
+    {
+      section_key: 'widget_2',
+      section_name: 'IMMUNITY BOOSTERS',
+      section_position: '6',
+      visible: true,
+    },
+    {
+      section_key: 'widget_3',
+      section_name: 'BABY CARE',
+      section_position: '7',
+      visible: true,
+    },
+    {
+      section_key: 'shop_by_brand',
+      section_name: 'SHOP BY BRAND',
+      section_position: '8',
+      visible: true,
+    },
+  ] as PharmacyHomepageInfo[],
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
@@ -64,7 +133,7 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     MED_CART_ITEMS_DETAILS: [`${apolloUatBaseUrl}/popcscrchcart_api.php`, pharmaToken201],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`https://d27zlipt1pllog.cloudfront.net/pub/media`],
+    IMAGES_BASE_URL: [`https://uat.apollopharmacy.in/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -149,8 +218,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.5131',
-  Android_Version: '2.5151',
+  iOS_Version: '2.611',
+  Android_Version: '2.611',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL:
