@@ -2509,7 +2509,7 @@ export async function sendDoctorAppointmentNotification(
         let content =
           format(new Date(), 'yyyy-MM-dd hh:mm') +
           '\n apptid: ' +
-          apptId.id.toString() +
+          apptId.toString() +
           '\n multicastId: ';
         content +=
           response.multicastId.toString() +

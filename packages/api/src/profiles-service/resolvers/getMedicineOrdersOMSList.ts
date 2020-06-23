@@ -233,7 +233,7 @@ const getMedicineOrdersOMSList: Resolver<
       }
       const offlineShopAddress = {
         storename: order.siteName,
-        address: order.Address,
+        address: order.address,
         workinghrs: '24 Hrs',
         phone: order.mobileNo,
         city: order.city,
@@ -324,7 +324,7 @@ const getMedicineOrderOMSDetails: Resolver<
           }
           const offlineShopAddress = {
             storename: order.siteName,
-            address: order.Address,
+            address: order.address,
             workinghrs: '24 Hrs',
             phone: order.mobileNo,
             city: order.city,
