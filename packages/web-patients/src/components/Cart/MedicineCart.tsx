@@ -1208,7 +1208,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor

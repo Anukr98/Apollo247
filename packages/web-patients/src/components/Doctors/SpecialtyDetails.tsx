@@ -576,7 +576,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.doctorsLanding()}>
+            <Link to={clientRoutes.specialityListing()}>
               <div className={classes.backArrow} title={'Back to home page'}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -585,7 +585,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             <div className={classes.breadcrumbLinks}>
               <Link to={clientRoutes.welcome()}>Home</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.doctorsLanding()}>Specialty</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialty</Link>
               <img src={require('images/triangle.svg')} alt="" />
               <span>{specialtyName}</span>
             </div>
