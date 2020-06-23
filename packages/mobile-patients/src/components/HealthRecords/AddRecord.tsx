@@ -417,91 +417,91 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
       if (Images.length > 0) {
-        multiplePhysicalPrescriptionUpload(Images)
-          .then((data) => {
-            console.log('uploaddocument', data);
-            const uploadUrlscheck =
-              typeofRecord === MedicRecordType.TEST_REPORT
-                ? data.map((item) =>
-                    item.data!.uploadLabResults && item.data!.uploadLabResults.fileUrl
-                      ? item.data!.uploadLabResults
-                      : null
-                  )
-                : data.map((item) =>
-                    item.data!.uploadPrescriptions && item.data!.uploadPrescriptions.fileUrl
-                      ? item.data!.uploadPrescriptions
-                      : null
-                  );
-            console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-            var filtered = uploadUrlscheck.filter(function(el) {
-              return el != null;
-            });
-            console.log('filtered', filtered);
-            if (filtered.length > 0) {
-              const inputData = {
-                patientId: currentPatient ? currentPatient.id : '',
-                testName: testName,
-                issuingDoctor: docName,
-                location: locationName,
-                testDate:
-                  dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-                recordType: typeofRecord,
-                referringDoctor: referringDoctor,
-                sourceName: '',
-                observations: observations,
-                additionalNotes: additionalNotes,
-                medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-                documentURLs: filtered.map((item) => item!.fileUrl).join(','),
-                prismFileIds: filtered.map((item) => item!.recordId).join(','),
-              };
-              console.log('in', inputData);
-              if (uploadUrlscheck.length > 0) {
-                client
-                  .mutate<addPatientMedicalRecord>({
-                    mutation: ADD_MEDICAL_RECORD,
-                    variables: {
-                      AddMedicalRecordInput: inputData,
-                    },
-                  })
-                  .then(({ data }) => {
-                    setshowSpinner(false);
-                    console.log('suceessfully added', data);
-                    const status = g(data, 'addPatientMedicalRecord', 'status');
-                    if (status) {
-                      props.navigation.goBack();
-                    }
-                  })
-                  .catch((e) => {
-                    CommonBugFender(
-                      'AddRecord_ADD_MEDICAL_RECORD_multiplePhysicalPrescriptionUpload',
-                      e
-                    );
-                    setshowSpinner(false);
-                    console.log(JSON.stringify(e), 'eeeee');
-                    Alert.alert('Alert', 'Please fill all the details', [
-                      { text: 'OK', onPress: () => console.log('OK Pressed') },
-                    ]);
-                  });
-              } else {
-                Alert.alert('Download image url not getting');
-              }
-            } else {
-              setshowSpinner(false);
-              showAphAlert!({
-                title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
-                description: 'Your upload images are failed ',
-              });
+        // multiplePhysicalPrescriptionUpload(Images)
+        //   .then((data) => {
+        //     console.log('uploaddocument', data);
+        //     const uploadUrlscheck =
+        //       typeofRecord === MedicRecordType.TEST_REPORT
+        //         ? data.map((item) =>
+        //             item.data!.uploadLabResults && item.data!.uploadLabResults.fileUrl
+        //               ? item.data!.uploadLabResults
+        //               : null
+        //           )
+        //         : data.map((item) =>
+        //             item.data!.uploadPrescriptions && item.data!.uploadPrescriptions.fileUrl
+        //               ? item.data!.uploadPrescriptions
+        //               : null
+        //           );
+        //     console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+        //     var filtered = uploadUrlscheck.filter(function(el) {
+        //       return el != null;
+        //     });
+        //     console.log('filtered', filtered);
+        // if (filtered.length > 0) {
+        const inputData = {
+          patientId: currentPatient ? currentPatient.id : '',
+          testName: testName,
+          issuingDoctor: docName,
+          location: locationName,
+          testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+          recordType: typeofRecord,
+          referringDoctor: referringDoctor,
+          sourceName: prescriptionSource.SELF,
+          observations: observations,
+          additionalNotes: additionalNotes,
+          medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+          documentURLs: '',
+          prismFileIds: '',
+          testResultFiles: {
+            fileName: Images[0].title + '.' + Images[0].fileType,
+            mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
+            content: Images[0].base64,
+          },
+        };
+        console.log('in', inputData);
+        client
+          .mutate<addPatientMedicalRecord>({
+            mutation: ADD_MEDICAL_RECORD,
+            variables: {
+              AddMedicalRecordInput: inputData,
+            },
+          })
+          .then(({ data }) => {
+            setshowSpinner(false);
+            console.log('suceessfully added', data);
+            const status = g(data, 'addPatientMedicalRecord', 'status');
+            if (status) {
+              props.navigation.goBack();
             }
           })
           .catch((e) => {
-            CommonBugFender('AddRecord_multiplePhysicalPrescriptionUpload', e);
-            showAphAlert!({
-              title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
-              description: 'Your upload images are failed ',
-            });
+            CommonBugFender('AddRecord_ADD_MEDICAL_RECORD_multiplePhysicalPrescriptionUpload', e);
             setshowSpinner(false);
-            console.log({ e });
+            console.log(JSON.stringify(e), 'eeeee');
+            Alert.alert('Alert', 'Please fill all the details', [
+              { text: 'OK', onPress: () => console.log('OK Pressed') },
+            ]);
           });
+        // } else {
+        //   Alert.alert('Download image url not getting');
+        // }
+        // } else {
+        //   setshowSpinner(false);
+        //   showAphAlert!({
+        //     title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
+        //     description: 'Your upload images are failed ',
+        //   });
+        // }
+        // })
+        // .catch((e) => {
+        //   CommonBugFender('AddRecord_multiplePhysicalPrescriptionUpload', e);
+        //   showAphAlert!({
+        //     title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
+        //     description: 'Your upload images are failed ',
+        //   });
+        //   setshowSpinner(false);
+        //   console.log({ e });
+        // });
       } else {
         const inputData = {
           patientId: currentPatient ? currentPatient.id : '',
@@ -511,7 +511,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
           recordType: typeofRecord,
           referringDoctor: referringDoctor,
-          sourceName: '',
+          sourceName: prescriptionSource.SELF,
           observations: observations,
           additionalNotes: additionalNotes,
           medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],

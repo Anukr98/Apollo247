@@ -470,6 +470,7 @@ export interface AddMedicalRecordInput {
   sourceName?: string | null;
   testDate?: any | null;
   testName: string;
+  testResultFiles?: LabResultFileProperties | null;
 }
 
 export interface AddMedicalRecordParametersInput {
