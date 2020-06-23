@@ -13,7 +13,10 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 20,
       fontSize: 14,
       lineHeight: '23px',
-      '& h3': {
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+      '& h2': {
         margin: 0,
         color: '#01667c',
         fontSize: 16,
@@ -70,7 +73,7 @@ export const FrequentlyQuestions: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <h3>Frequently asked questions</h3>
+      <h2>Frequently asked questions</h2>
       <ExpansionPanel
         className={classes.panelRoot}
       >
