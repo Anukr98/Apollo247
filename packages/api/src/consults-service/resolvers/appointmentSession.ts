@@ -13,6 +13,8 @@ import {
   APPOINTMENT_STATE,
   AppointmentNoShow,
   CASESHEET_STATUS,
+  DEVICETYPE,
+  BOOKINGSOURCE,
 } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -77,6 +79,8 @@ export const createAppointmentSessionTypeDefs = gql`
     appointmentId: ID!
     status: STATUS!
     noShowBy: REQUEST_ROLES
+    deviceType: DEVICETYPE
+    callSource: BOOKINGSOURCE
   }
 
   extend type Mutation {
@@ -137,6 +141,8 @@ type EndAppointmentSessionInput = {
   appointmentId: string;
   status: STATUS;
   noShowBy: REQUEST_ROLES;
+  deviceType: DEVICETYPE;
+  callSource: BOOKINGSOURCE;
 };
 
 const createJuniorAppointmentSession: Resolver<
