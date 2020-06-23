@@ -87,12 +87,13 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
   }
-  const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patient = await patientRepo.getPatientDetails(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  console.log('updatePatient', updatePatient);
   if (updatePatient) {
     if (patient.uhid == '' || patient.uhid == null) {
       await patientRepo.createNewUhid(updatePatient.id);
@@ -104,15 +105,13 @@ const updatePatient: Resolver<
     //send registration success notification here
     // sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
     if (updateAttrs.referralCode) {
-      const referralCodesMasterRepo = await profilesDb.getCustomRepository(
-        ReferralCodesMasterRepository
-      );
+      const referralCodesMasterRepo = profilesDb.getCustomRepository(ReferralCodesMasterRepository);
       const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
         updateAttrs.referralCode
       );
       let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', updatePatient.firstName);
       if (referralCodeExist) {
-        const referalCouponMappingRepo = await profilesDb.getCustomRepository(
+        const referalCouponMappingRepo = profilesDb.getCustomRepository(
           ReferalCouponMappingRepository
         );
         const mappingData = await referalCouponMappingRepo.findByReferralCodeId(
@@ -129,6 +128,7 @@ const updatePatient: Resolver<
       }
     }
   }
+  console.log(await patientRepo.getPatientDetails(patientInput.id));
   Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
   return { patient };
 };
