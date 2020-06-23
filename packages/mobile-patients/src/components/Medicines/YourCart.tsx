@@ -425,6 +425,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             }
           });
       }
+    } else if (deliveryAddressId && cartItems.length == 0) {
+      setLoading!(false);
     }
   }, [deliveryAddressId, cartItems]);
 
