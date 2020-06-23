@@ -759,6 +759,7 @@ export class PatientRepository extends Repository<Patient> {
         Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
       },
     }).catch((error) => {
+      console.log(error);
       dLogger(
         reqStartTime,
         'createNewUhid CREATE_NEW_UHID_URL_API_CALL___ERROR',
