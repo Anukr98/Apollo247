@@ -1009,7 +1009,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1208,7 +1208,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.consultDoctor}>
                           <span>Don’t have a prescription? Don’t worry!</span>
                           <Link
-                            to={clientRoutes.doctorsLanding()}
+                            to={clientRoutes.specialityListing()}
                             className={classes.consultDoctoLink}
                           >
                             Consult A Doctor

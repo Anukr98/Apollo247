@@ -426,12 +426,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
-              <Link className={classes.backArrow} to={clientRoutes.doctorsLanding()}>
+              <Link className={classes.backArrow} to={clientRoutes.specialityListing()}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              <Link to={clientRoutes.doctorsLanding()}>Doctor</Link>
+              <Link to={clientRoutes.specialityListing()}>Doctor</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.doctorsLanding()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
               <img src={require('images/triangle.svg')} alt="" />
               <span>Doctor Details</span>
             </div>
