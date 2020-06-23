@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface AddToCarProps {
   setShowPopup: (showPopup: boolean) => void;
   showPopup: boolean;
+  setClickAddCart: (clickAddCart: boolean) => void;
 }
 
 export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
@@ -61,6 +62,7 @@ export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
           className={classes.viewCartLeftBtn}
           onClick={() => {
             props.setShowPopup(false);
+            props.setClickAddCart(false);
           }}
         >
           Continue

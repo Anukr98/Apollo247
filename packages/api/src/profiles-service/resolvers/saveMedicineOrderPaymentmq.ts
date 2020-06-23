@@ -205,17 +205,26 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     let statusMsg = '';
     if (medicinePaymentMqInput.paymentStatus == 'TXN_FAILURE') {
-      currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_FAILED;
-      errorCode = -1;
-      errorMessage = 'Payment failed';
-      paymentOrderId = savePaymentDetails.id;
-      orderStatus = currentStatus;
-      statusMsg = 'order payment failed';
-      sendMedicineOrderStatusNotification(
-        NotificationType.MEDICINE_ORDER_PAYMENT_FAILED,
-        orderDetails,
-        profilesDb
-      );
+      if (medicinePaymentMqInput.responseCode == '141') {
+        currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_ABORTED;
+        errorCode = -1;
+        errorMessage = 'Payment Aborted';
+        paymentOrderId = savePaymentDetails.id;
+        orderStatus = currentStatus;
+        statusMsg = 'order payment aborted';
+      } else {
+        currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_FAILED;
+        errorCode = -1;
+        errorMessage = 'Payment failed';
+        paymentOrderId = savePaymentDetails.id;
+        orderStatus = currentStatus;
+        statusMsg = 'order payment failed';
+        sendMedicineOrderStatusNotification(
+          NotificationType.MEDICINE_ORDER_PAYMENT_FAILED,
+          orderDetails,
+          profilesDb
+        );
+      }
     } else if (medicinePaymentMqInput.paymentStatus === 'PENDING') {
       errorCode = 1;
       errorMessage = 'Payment is in pending state';

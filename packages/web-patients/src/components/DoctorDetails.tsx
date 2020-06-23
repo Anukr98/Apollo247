@@ -39,6 +39,7 @@ import { DoctorTimings } from 'components/DoctorTimings';
 import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -230,9 +231,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
-
+  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const currentUserId = currentPatient && currentPatient.id;
 
+  const doctorPhysicalSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].physicalAvailableSlot;
+
+  const doctorAvailableOnlineSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot;
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -260,7 +272,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               onlineConsultationFees,
               physicalConsultationFees,
               consultHours,
-              salutation
+              salutation,
             },
           } = response.data;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
@@ -329,10 +341,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             medicalSpecialty: specialty ? specialty.name : '',
           });
           setMetaTagProps({
-            title: `${fullName}: ${specialty && specialty.name ? specialty.name : ''} - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty && specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
-            canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/doctors/${fullName}-${id}`
-          })
+            title: `${fullName}: ${
+              specialty && specialty.name ? specialty.name : ''
+            } - Online Consultation/Appointment - Apollo 247`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            canonicalLink:
+              window &&
+              window.location &&
+              window.location.origin &&
+              `${window.location.origin}/doctors/${fullName}-${id}`,
+          });
         }
       });
   }, []);
@@ -399,7 +418,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
     return (
       <div className={classes.root}>
-        <MetaTagsComp {...metaTagProps}/>
+        <MetaTagsComp {...metaTagProps} />
         <div className={classes.mHide}>
           <Header />
         </div>
@@ -407,37 +426,44 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
-              <Link className={classes.backArrow} to={clientRoutes.doctorsLanding()}>
+              <Link className={classes.backArrow} to={clientRoutes.specialityListing()}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </Link>
-              <Link to={clientRoutes.doctorsLanding()}>Doctor</Link>
+              <Link to={clientRoutes.specialityListing()}>Doctor</Link>
               <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.doctorsLanding()}>Specialities</Link>
+              <Link to={clientRoutes.specialityListing()}>Specialities</Link>
               <img src={require('images/triangle.svg')} alt="" />
               <span>Doctor Details</span>
             </div>
-              <div className={classes.doctorProfileSection}>
-                <div className={classes.leftSection}>
-                  <div className={classes.doctorProfile}>
-                    <DoctorProfile
-                      doctorDetails={doctorDetails}
-                      avaPhy={availableForPhysicalConsultation}
-                      avaOnline={availableForVirtualConsultation}
-                    />
-                    {!isPayrollDoctor && (
-                      <>
-                        <DoctorClinics doctorDetails={doctorDetails} />
-                        {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                      </>
-                    )}
-                    <DoctorTimings />
-                  </div>
-                  <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+            <div className={classes.doctorProfileSection}>
+              <div className={classes.leftSection}>
+                <div className={classes.doctorProfile}>
+                  <DoctorProfile
+                    doctorDetails={doctorDetails}
+                    avaPhy={availableForPhysicalConsultation}
+                    avaOnline={availableForVirtualConsultation}
+                    getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
+                      setDoctorAvailableSlots(value);
+                    }}
+                  />
+                  {!isPayrollDoctor && (
+                    <>
+                      <DoctorClinics doctorDetails={doctorDetails} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                    </>
+                  )}
+                  <DoctorTimings />
                 </div>
-                <div className={classes.rightSideBar}>
-                  <HowCanConsult />
-                  <AppDownload />
-                  {/* <ProtectedWithLoginPopup>
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+              </div>
+              <div className={classes.rightSideBar}>
+                <HowCanConsult
+                  doctorDetails={doctorDetails}
+                  doctorAvailablePhysicalSlots={doctorPhysicalSlot}
+                  doctorAvailableOnlineSlot={doctorAvailableOnlineSlot}
+                />
+                <AppDownload />
+                {/* <ProtectedWithLoginPopup>
                     {({ protectWithLoginPopup }) => (
                       <>
                         <AphButton
@@ -458,8 +484,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </>
                     )}
                   </ProtectedWithLoginPopup> */}
-                </div>
               </div>
+            </div>
           </div>
         </div>
         <Modal
