@@ -37975,6 +37975,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "callType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "APPT_CALL_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
