@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Grid, CircularProgress } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, MenuItem, InputAdornment } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
 import { BookBest } from 'components/Doctors/BookBest';
@@ -30,13 +30,12 @@ import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 10,
-      },
+      width: '100%',
     },
     container: {
       maxWidth: 1064,
@@ -45,11 +44,13 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        zIndex: 99,
-        width: '100%',
+        backgroundColor: '#f0f1ec',
+        marginTop: -14,
+      },
+    },
+    mHide: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
       },
     },
     breadcrumbs: {
@@ -66,11 +67,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        position: 'fixed',
+        zIndex: 99,
+        top: 0,
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
+        boxShadow: '0 5px 10px 0 rgba(128, 128, 128, 0.3)',
         margin: 0,
         paddingLeft: 20,
-        paddingRight: 20,
+        paddingRight: 50,
+        paddingTop: 10,
+        minHeight: 58,
       },
     },
     backArrow: {
@@ -86,6 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '50%',
         textAlign: 'center',
         backgroundColor: '#02475b',
+        marginRight: 10,
       },
       '& img': {
         verticalAlign: 'bottom',
@@ -126,10 +135,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     leftGroup: {
-      padding: 20,
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 328px)',
-        padding: 0,
         paddingRight: 20,
       },
     },
@@ -141,7 +148,12 @@ const useStyles = makeStyles((theme: Theme) => {
     sectionHeader: {
       display: 'flex',
       alignItems: 'center',
-      '& h3': {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        padding: 20,
+        paddingBottom: 0,
+      },
+      '& h1': {
         margin: 0,
         color: '#01667c',
         fontSize: 20,
@@ -153,6 +165,12 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         padding: 0,
         minWidth: 'auto',
+        [theme.breakpoints.down('xs')]: {
+          position: 'fixed',
+          zIndex: 99,
+          right: 20,
+          top: 18,
+        },
       },
     },
     tabsFilter: {
@@ -160,7 +178,14 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       marginTop: 10,
-      '& h4': {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginTop: 0,
+        display: 'block',
+        paddingLeft: 20,
+        paddingRight: 20,
+      },
+      '& h2': {
         fontSize: 16,
         fontWeight: 600,
         margin: 0,
@@ -192,6 +217,59 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       padding: 20,
       justifyContent: 'center',
+    },
+    topSearch: {
+      display: 'flex',
+      paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        display: 'block',
+        padding: '10px 20px',
+      }
+    },
+    selectCity: {
+      width: 165,
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 10,
+      },
+      '& >div:last-child': {
+        paddingTop: 3,
+        '& >div:first-child': {
+          paddingLeft: 30,
+        },
+      },
+    },
+    inputSearch: {
+      marginLeft: 10,
+      flex: 1,
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+      },
+      '& input': {
+        paddingLeft: 30,
+      },
+    },
+    inputIcon: {
+      position: 'absolute',
+      left: 0,
+      top: 10,
+    },
+    menuRoot: {
+      backgroundColor: 'transparent !important',
+      color: '#000',
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      '&:hover': {
+        backgroundColor: 'transparent !important',
+      },
+    },
+    doctorCards: {
+      [theme.breakpoints.down('xs')]: {
+        padding: '4px 20px 0 20px',
+      },
     },
   };
 });
@@ -492,7 +570,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Header />
+      <div className={classes.mHide}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
@@ -513,13 +593,50 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           <div className={classes.pageContent}>
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
-                <h3>Book Best Doctors - {specialtyName}</h3>
+                <h1>Book Best Doctors - {specialtyName}</h1>
                 <AphButton>
                   <img src={require('images/ic-share-green.svg')} alt="" />
                 </AphButton>
               </div>
+              <div className={classes.topSearch}>
+                <div className={classes.selectCity}>
+                  <div className={classes.inputIcon}>
+                    <img src={require('images/location.svg')} alt="" />
+                  </div>
+                  <AphSelect
+                    value={1}
+                  >
+                    <MenuItem
+                      classes= {{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={1}
+                    >
+                      Hyderabad
+                    </MenuItem>
+                    <MenuItem
+                      classes= {{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                      value={2}
+                    >
+                      Chennai
+                    </MenuItem>
+                  </AphSelect>
+                </div>
+                <div className={classes.inputSearch}>
+                  <div className={classes.inputIcon}>
+                    <img src={require('images/ic-search.svg')} alt="" />
+                  </div>
+                  <AphTextField
+                    placeholder="Search for Doctors, Specialities or Hospitals"
+                  />
+                </div>
+              </div>
               <div className={classes.tabsFilter}>
-                <h4>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h4>
+                <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
                 <div className={classes.filterButtons}>
                   <AphButton
                     onClick={() => {
@@ -548,6 +665,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 filter={filter}
                 onlyFilteredCount={onlyFilteredCount}
               />
+              <div className={classes.doctorCards}>
               {(filter.language.length > 0 ||
                 filter.availability.length > 0 ||
                 filter.experience.length > 0 ||
@@ -600,6 +718,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               ) : (
                 'no results found'
               )}
+              </div>
               <BookBest />
               <FrequentlyQuestions />
             </div>
@@ -613,6 +732,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         </div>
       </div>
       <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

@@ -13,6 +13,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       lineHeight: '23px',
       marginTop: 20,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+        marginBottom: 20,
+      },      
       '& h3': {
         margin: 0,
         color: '#01667c',
