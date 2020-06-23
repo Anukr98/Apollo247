@@ -103,8 +103,10 @@ export class PatientRepository extends Repository<Patient> {
     );
     if (cache && typeof cache === 'string') {
       const patient: Patient = JSON.parse(cache);
-      patient.dateOfBirth = new Date(patient.dateOfBirth);
-      return patient;
+      if (patient.dateOfBirth) {
+        patient.dateOfBirth = new Date(patient.dateOfBirth);
+      }
+      return this.create(patient);
     } else return await this.setByIdCache(id);
   }
 
@@ -211,8 +213,7 @@ export class PatientRepository extends Repository<Patient> {
       patientList.map(async (patient) => {
         if (patient.firstName == '' || patient.uhid == '') {
           console.log(patient.id, 'blank card');
-          patient.isActive = false;
-          this.save(patient);
+          await this.savePatient(patient.id, { isActive: false });
           finalList = patientList.filter((p) => p.id !== patient.id);
           await this.setCache(
             `${REDIS_PATIENT_MOBILE_KEY_PREFIX}${mobileNumber}`,
@@ -220,13 +221,13 @@ export class PatientRepository extends Repository<Patient> {
           );
         } else if (patient.primaryPatientId == null) {
           patient.primaryPatientId = patient.id;
-          this.save(patient);
+          await this.savePatient(patient.id, { primaryPatientId: patient.id });
         }
       });
     } else {
       if (patientList[0].primaryPatientId == null) {
         patientList[0].primaryPatientId = patientList[0].id;
-        this.save(patientList[0]);
+        await this.savePatient(patientList[0].id, { primaryPatientId: patientList[0].id });
       }
     }
     return finalList;
@@ -587,8 +588,8 @@ export class PatientRepository extends Repository<Patient> {
       });
   }
 
-  updateProfiles(updateAttrs: Partial<Patient>[]) {
-    return this.save(updateAttrs).catch((savePatientError) => {
+  async updateProfiles(updateAttrs: Partial<Patient>[]) {
+    return await this.save(updateAttrs).catch((savePatientError) => {
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {
         savePatientError,
       });
@@ -596,24 +597,16 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async updateProfile(id: string, patientAttrs: Partial<Patient>) {
-    const patient = await this.getByIdCache(id);
-    if (patient) {
-      Object.assign(patient, patientAttrs);
-      return this.save(patient);
-    } else return null;
+    return await this.savePatient(id, patientAttrs);
   }
 
   async updateUhid(id: string, uhid: string) {
-    const patient = await this.getByIdCache(id);
-    if (patient) {
-      Object.assign(patient, {
-        uhid,
-        uhidCreatedDate: new Date(),
-        primaryUhid: uhid,
-        primaryPatientId: id,
-      });
-      return this.save(patient);
-    } else return null;
+    return await this.savePatient(id, {
+      uhid,
+      uhidCreatedDate: new Date(),
+      primaryUhid: uhid,
+      primaryPatientId: id,
+    });
   }
 
   updateLinkedUhidAccount(
@@ -633,7 +626,9 @@ export class PatientRepository extends Repository<Patient> {
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }
     }
-
+    ids.forEach((id) => {
+      this.dropCache(`${REDIS_PATIENT_ID_KEY_PREFIX}${id}`);
+    });
     if (check) {
       return this.update([...ids], fieldToUpdate).catch((updatePatientError) => {
         throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
@@ -652,13 +647,19 @@ export class PatientRepository extends Repository<Patient> {
         .execute();
     }
   }
-
-  updateToken(id: string, athsToken: string) {
-    return this.update(id, { athsToken });
+  async savePatient(id: string, patientAttrs: Partial<Patient>) {
+    const patient = await this.getPatientDetails(id);
+    if (patient) {
+      Object.assign(patient, patientAttrs);
+      return await patient.save();
+    }
+  }
+  async updateToken(id: string, athsToken: string) {
+    return await this.savePatient(id, { athsToken });
   }
 
-  deleteProfile(id: string) {
-    return this.update(id, { isActive: false });
+  async deleteProfile(id: string) {
+    return await this.savePatient(id, { isActive: false });
   }
 
   async createNewUhid(id: string) {
@@ -921,11 +922,9 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async updateWhatsAppStatus(id: string, whatsAppConsult: Boolean, whatsAppMedicine: Boolean) {
-    const patient = await this.getByIdCache(id);
-    if (patient) {
-      patient.whatsAppConsult = whatsAppConsult;
-      patient.whatsAppMedicine = whatsAppMedicine;
-      return this.save(patient);
-    } else return null;
+    return await this.savePatient(id, {
+      whatsAppConsult: whatsAppConsult,
+      whatsAppMedicine: whatsAppMedicine,
+    });
   }
 }

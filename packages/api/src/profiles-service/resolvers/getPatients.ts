@@ -171,8 +171,7 @@ const editProfile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientId = editProfileInput.id;
   delete editProfileInput.id;
-  await patientRepo.updateProfile(patientId, editProfileInput);
-  const patient = await patientRepo.findById(patientId);
+  const patient = await patientRepo.updateProfile(patientId, editProfileInput);
   if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
   return { patient };
 };
