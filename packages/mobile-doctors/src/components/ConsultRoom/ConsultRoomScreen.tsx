@@ -2026,16 +2026,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setShowExoPopup(false);
     if (g(doctorDetails, 'mobileNumber') && g(patientDetails, 'mobileNumber')) {
       setShowLoading(true);
+      const exotelInput = {
+        appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
+        from: g(doctorDetails, 'mobileNumber'),
+        to: g(patientDetails, 'mobileNumber'),
+      };
+      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInput });
       client
         .query<initateConferenceTelephoneCall, initateConferenceTelephoneCallVariables>({
           query: EXO_TEL_CALL,
           fetchPolicy: 'no-cache',
           variables: {
-            exotelInput: {
-              appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
-              from: g(doctorDetails, 'mobileNumber'),
-              to: g(patientDetails, 'mobileNumber'),
-            },
+            exotelInput: exotelInput,
           },
         })
         .then((data) => {
@@ -2060,10 +2062,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   <CloseWhite style={{ width: 16, height: 16 }} />
                 </View>
               ),
+              timer: 5,
             });
-            setTimeout(() => {
-              hidePopup();
-            }, 5000);
           }
         })
         .catch((e) => {

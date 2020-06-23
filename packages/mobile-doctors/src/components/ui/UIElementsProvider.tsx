@@ -77,6 +77,7 @@ type PopUpParams = {
   onPressOk?: () => void;
   icon?: React.ReactNode;
   hideOk?: boolean;
+  timer?: number;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -212,7 +213,13 @@ export const UIElementsProvider: React.FC = (props) => {
       popUpPointerStyle,
       icon,
       hideOk,
+      timer,
     } = popUpData;
+    if (timer) {
+      setTimeout(() => {
+        hidePopup();
+      }, timer * 1000);
+    }
     return (
       isPopUpVisible && (
         <View style={styles.popUpContainer}>
