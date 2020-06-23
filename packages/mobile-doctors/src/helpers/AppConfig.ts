@@ -35,8 +35,8 @@ const ConfigurationDev = {
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.0105',
-  Android_Version: '1.0105',
+  iOS_Version: '1.0106',
+  Android_Version: '1.0106',
 };
 
 //Prod

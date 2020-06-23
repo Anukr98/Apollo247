@@ -75,6 +75,9 @@ type PopUpParams = {
   style?: StyleProp<ViewStyle>;
   popUpPointerStyle?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
+  icon?: React.ReactNode;
+  hideOk?: boolean;
+  timer?: number;
 };
 
 export const UIElementsProvider: React.FC = (props) => {
@@ -208,7 +211,15 @@ export const UIElementsProvider: React.FC = (props) => {
       style,
       onPressOk,
       popUpPointerStyle,
+      icon,
+      hideOk,
+      timer,
     } = popUpData;
+    if (timer) {
+      setTimeout(() => {
+        hidePopup();
+      }, timer * 1000);
+    }
     return (
       isPopUpVisible && (
         <View style={styles.popUpContainer}>
@@ -218,20 +229,25 @@ export const UIElementsProvider: React.FC = (props) => {
             onPress={() => (unDismissable ? null : hidePopup())}
           >
             <View style={[styles.popUpMainContainer, style]}>
+              {icon ? icon : null}
               <View style={[styles.popUpPointer, popUpPointerStyle]} />
-              {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
-              {description && (
-                <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
-                  {description}
-                </Text>
-              )}
-              <TouchableOpacity
-                style={[styles.okContainer, okContainerStyle]}
-                activeOpacity={1}
-                onPress={() => (onPressOk ? onPressOk() : hidePopup())}
-              >
-                <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
-              </TouchableOpacity>
+              <View>
+                {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
+                {description && (
+                  <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
+                    {description}
+                  </Text>
+                )}
+                {!hideOk ? (
+                  <TouchableOpacity
+                    style={[styles.okContainer, okContainerStyle]}
+                    activeOpacity={1}
+                    onPress={() => (onPressOk ? onPressOk() : hidePopup())}
+                  >
+                    <Text style={[styles.okText, okTextStyle]}>{okText ? okText : 'OKAY'}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
           </TouchableOpacity>
         </View>

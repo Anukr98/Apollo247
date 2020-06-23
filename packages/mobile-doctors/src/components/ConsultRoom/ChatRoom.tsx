@@ -82,6 +82,7 @@ export interface ChatRoomProps extends NavigationScreenProps {
   setDropdownVisible: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
+  extendedHeader?: boolean;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -89,13 +90,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { setLoading } = useUIElements();
   const { patientDetails } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-
+  const changedHeight = props.extendedHeader ? 230 : 185;
+  const keyBoardHeight = props.extendedHeader ? 90 : 130;
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.navigation.getParam('PatientId');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
-  const [heightList, setHeightList] = useState<number>(height - 185);
+  const [heightList, setHeightList] = useState<number>(height - changedHeight);
 
   const patientImage = patientDetails && (
     <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
@@ -103,13 +105,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { messages } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
-    setHeightList(height - e.endCoordinates.height - 185);
+    if (Platform.OS === 'ios') {
+      setHeightList(height - e.endCoordinates.height - changedHeight);
+    } else {
+      setHeightList(height - e.endCoordinates.height + keyBoardHeight);
+    }
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
   const keyboardDidHide = () => {
-    setHeightList(height - 185);
+    setHeightList(height - changedHeight);
   };
   useEffect(() => {
     // callAbandonmentCall();

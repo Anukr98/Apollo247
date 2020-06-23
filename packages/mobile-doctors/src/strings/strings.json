@@ -183,7 +183,16 @@
     "more": "more",
     "reach_out_admin": "Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll."
   },
-
+  "exoTel": {
+    "connect_via_call": "Connect via phone call",
+    "proceed": "PROCEED TO CONNECT",
+    "note": "*Note : Your personal phone number will not be shared.",
+    "heading": "Connect to your patient via phone call !",
+    "subHeading": "Please follow the steps to connect to your patient :",
+    "point1": "Answer the call from ‘040-48214566’ to connect.",
+    "point2": "Wait for the patient to connect.",
+    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !"
+  },
   "smartPrescr": {
     "smart_prescr_header": "SMART PRESCRIPTION",
     "add_doct": "ADD DOCTOR",
