@@ -216,10 +216,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [locationSearchText, setLocationSearchText] = useState<string>('');
 
   const [doctorsList, setDoctorsList] = useState<
-    (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
+    getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null[]
   >([]);
   const [filteredDoctorsList, setFilteredDoctorsList] = useState<
-    (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
+    getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null[]
   >([]);
   const [doctorsType, setDoctorsType] = useState<string>('APOLLO');
   const [apolloDocsNumber, setApolloDocsNumber] = useState<number>(0);
@@ -233,12 +233,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [doctorsAvailability, setdoctorsAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
+    | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability
+    | null[]
     | null
   >([]);
 
   const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+    | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability
+    | null[]
     | null
   >([]);
 
@@ -424,20 +426,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const filterDoctors = (
-    data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
+    data: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null[],
     type: string
   ) => {
     if (type == 'APOLLO') {
-      let apolloDoctors = data.filter((item) => {
-        return item?.doctorType == 'APOLLO';
+      const apolloDoctors = data.filter((item) => {
+        return item.doctorType == 'APOLLO';
       });
       setFilteredDoctorsList(apolloDoctors);
       console.log(apolloDoctors.length);
       setApolloDocsNumber(apolloDoctors.length);
     } else {
-      let otherDoctors = data.filter((item) => {
-        console.log(item?.doctorType);
-        return item?.doctorType != 'APOLLO';
+      const otherDoctors = data.filter((item) => {
+        console.log(item.doctorType);
+        return item.doctorType != 'APOLLO';
       });
       setFilteredDoctorsList(otherDoctors);
     }
@@ -595,9 +597,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         vaueChange(data);
         //log data
         const doctorInfo =
-          data.getDoctorsBySpecialtyAndFilters?.doctors === null
+          data &&
+          data.getDoctorsBySpecialtyAndFilters &&
+          data.getDoctorsBySpecialtyAndFilters.doctors === null
             ? {}
-            : data.getDoctorsBySpecialtyAndFilters?.doctors[0];
+            : data &&
+              data.getDoctorsBySpecialtyAndFilters &&
+              data.getDoctorsBySpecialtyAndFilters.doctors[0];
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })

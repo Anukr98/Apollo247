@@ -239,10 +239,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             addresses !== data.data.getPatientAddressList.addressList
           ) {
             setAddresses &&
-              setAddresses(
-                data.data.getPatientAddressList
-                  .addressList as savePatientAddress_savePatientAddress_patientAddress[]
-              );
+              setAddresses(data.data.getPatientAddressList
+                .addressList as savePatientAddress_savePatientAddress_patientAddress[]);
             selectedAddressIndex = data.data.getPatientAddressList.addressList.find(
               (address) => address.id == order!.patientAddressId
             ) as savePatientAddress_savePatientAddress_patientAddress;
@@ -439,7 +437,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const renderFeedbackPopup = () => {
-    const orderAutoId: string = orderDetails.orderAutoId!?.toString();
+    const orderAutoId: string = orderDetails.orderAutoId!.toString();
     const orderId: string = orderDetails.id;
     const title: string = `Medicines — #${orderAutoId}`;
     const subtitle: string = `Delivered On: ${orderDetails.orderTat &&
