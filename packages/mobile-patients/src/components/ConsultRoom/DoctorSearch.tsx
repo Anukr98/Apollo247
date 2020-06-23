@@ -633,6 +633,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const fetchTopSpecialities = (data: getAllSpecialties_getAllSpecialties[]) => {
     const topSpecialityIDs = AppConfig.Configuration.TOP_SPECIALITIES;
+    topSpecialityIDs.sort(function(a, b) {
+      if (a.speciality_order < b.speciality_order) {
+        return -1;
+      }
+      if (a.speciality_order > b.speciality_order) {
+        return 1;
+      }
+      return 0;
+    });
     const topSpecialities: any = [];
     console.log('topSpecialityIDs----------------------------', topSpecialityIDs);
     topSpecialityIDs.forEach((ids) => {
@@ -1039,13 +1048,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       </View>
                       <View style={{ alignItems: 'center', height: 30, justifyContent: 'center' }}>
                         <Text numberOfLines={2} style={styles.topSpecialityDescription}>
-                          For your childs health problems
+                          {item.shortDescription}
                         </Text>
                       </View>
                       <View style={{ alignItems: 'center', marginVertical: 12 }}>
-                        <Text style={styles.topSpecialityFriendlyname}>
-                          {item.userFriendlyNomenclature}
-                        </Text>
+                        <Text style={styles.topSpecialityFriendlyname}>{item.symptoms}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
@@ -1106,15 +1113,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               keyExtractor={(_, index) => index.toString()}
               numColumns={1}
             />
-            {/* <View style={{ position: 'absolute', right: 3, marginTop: 8 }}>
-              {Alphabets.map((item, i) => {
-                return (
-                  <View>
-                    <Text style={styles.alphabetText}>{item}</Text>
-                  </View>
-                );
-              })}
-            </View> */}
           </View>
         </View>
       );
@@ -1137,22 +1135,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <Video
               source={{
                 uri:
-                  'https://pivv.s3.ap-south-1.amazonaws.com/InAppIcons/Consult+An+Apollo+Doctor+(Horizontal).mp4',
+                  'https://prodaphstorage.blob.core.windows.net/videos/Consult%20An%20Apollo%20Doctor%20(Horizontal).mp4',
               }}
-              // ref={(ref: any) => {}}
               onLoad={(data) => {
                 console.log(JSON.stringify(data));
               }}
-              // onReadyForDisplay={() => {
-              //   Alert.alert('Ready for display');
-              // }}
-              // onBuffer={() => {
-              //   Alert.alert('buffer');
-              // }} // Callback when remote video is buffering
-              // onError={() => {
-              //   Alert.alert('error');
-              // }} // Callback when video cannot be loaded
-              paused={paused}
+              // paused={paused}
               controls={true}
               style={{ height: 0.374 * width, width: width, marginVertical: 10 }}
               volume={0.5}
@@ -1169,28 +1157,28 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderTrackSymptoms = () => {
-    return (
-      <View style={{ backgroundColor: '#fff', marginVertical: 8, flexDirection: 'row' }}>
-        <SympTrackerIcon
-          style={{
-            width: 40,
-            height: 40,
-            marginVertical: 16,
-            marginHorizontal: 15,
-          }}
-        />
-        <View>
-          <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>
-          <TouchableOpacity
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.SymptomChecker);
-            }}
-          >
-            <Text style={styles.TrackTxt}>TRACK YOUR SYMPTOMS</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+    // return (
+    //   <View style={{ backgroundColor: '#fff', marginVertical: 8, flexDirection: 'row' }}>
+    //     <SympTrackerIcon
+    //       style={{
+    //         width: 40,
+    //         height: 40,
+    //         marginVertical: 16,
+    //         marginHorizontal: 15,
+    //       }}
+    //     />
+    //     <View>
+    //       <Text style={styles.whichSpecialityTxt}>Not sure about which speciality to choose?</Text>
+    //       <TouchableOpacity
+    //         onPress={() => {
+    //           props.navigation.navigate(AppRoutes.SymptomChecker);
+    //         }}
+    //       >
+    //         <Text style={styles.TrackTxt}>TRACK YOUR SYMPTOMS</Text>
+    //       </TouchableOpacity>
+    //     </View>
+    //   </View>
+    // );
   };
 
   const postSpecialityEvent = (speciality: string, specialityId: string) => {
@@ -1327,10 +1315,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                     {rowData.name}
                   </Text>
                   <Text numberOfLines={2} style={styles.rowDescriptionSpecialistStyles}>
-                    For your childs health problems
+                    {rowData.shortDescription}
                   </Text>
                   <Text numberOfLines={1} style={styles.rowUserFriendlySpecialistStyles}>
-                    {rowData.userFriendlyNomenclature}
+                    {rowData.symptoms}
                   </Text>
                 </View>
                 <ArrowRight

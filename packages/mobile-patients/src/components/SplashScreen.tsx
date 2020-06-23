@@ -503,6 +503,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'home_screen_emergency_banner',
               'home_screen_emergency_number',
               'QA_top6_specailties',
+              'DEV_top6_specailties',
+              'top6_specailties',
             ]);
         })
         .then((snapshot) => {
@@ -527,10 +529,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
           homeScreenEmergencyBannerNumber &&
             updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
-          const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
-          QA_top6_specailties &&
-            updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
-          console.log('QA_top6_specailties--------------------', QA_top6_specailties);
+
+          if (buildName() === 'DEV') {
+            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
+            DEV_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
+          } else if (buildName() === 'QA') {
+            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
+            QA_top6_specailties &&
+              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          } else {
+            const top6_specailties = snapshot['top6_specailties'].val();
+            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
+          }
 
           const myValye = snapshot;
           let index: number = 0;
