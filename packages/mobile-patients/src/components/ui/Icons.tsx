@@ -437,6 +437,10 @@ export const NotificationIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_notification.png')} />
 );
 
+export const NotificationIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/mask.png')} />
+);
+
 export const CartIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cart.png')} />
 );

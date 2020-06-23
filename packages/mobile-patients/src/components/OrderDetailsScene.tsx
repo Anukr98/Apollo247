@@ -158,6 +158,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   >([]);
   const client = useApolloClient();
 
+  const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
@@ -323,6 +324,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const statusList = g(order, 'medicineOrdersStatus') || [];
     const orderDate = g(statusList.slice(-1)[0], 'statusDate');
     if (order) {
+      setShowAlertStore(!order.alertStore);
       postPharmacyMyOrderTrackingClicked(
         g(order, 'id')!,
         g(order, 'currentStatus')!,
@@ -1141,17 +1143,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               }}
             >{storePhoneNumber}</Text>
           </View>
-          <View style={[styles.flexRow, { justifyContent: 'space-between', marginTop: 15 }]}>
-            <TouchableOpacity
-              onPress={() => alertTheStore()}
-            >
-              <Text
-                style={{
-                  color: theme.colors.APP_YELLOW,
-                  ...theme.fonts.IBMPlexSansBold(13)
-                }}
-              >ALERT THE STORE</Text>
-            </TouchableOpacity>
+          <View style={[styles.flexRow, { justifyContent: showAlertStore ? 'space-between' : 'flex-end', marginTop: 15 }]}>
+            {
+              showAlertStore && (
+                <TouchableOpacity
+                  onPress={() => alertTheStore()}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.APP_YELLOW,
+                      ...theme.fonts.IBMPlexSansBold(13)
+                    }}
+                  >ALERT THE STORE</Text>
+                </TouchableOpacity>
+              )
+            }
             <TouchableOpacity
               onPress={() => Linking.openURL(`tel:${storePhoneNumber}`)}
             >
