@@ -186,12 +186,13 @@ function getCookieValue() {
 export const JDConsult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
-  const [mute, setMute] = React.useState(true);
+  const [isPublishAudio, setIsPublishAudio] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const { patientDetails } = useContext(CaseSheetContextJrd);
+  const isRetry = true;
   const apikey = process.env.OPENTOK_KEY;
 
   const checkDowngradeToAudio = () => {
@@ -260,10 +261,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 className={
                   props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                 }
-                resolution={'352x288'}
                 properties={{
-                  publishAudio: mute,
+                  publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
+                  resolution: '352x288'
                 }}
               />
 
@@ -296,6 +297,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 <OTStreams>
                   <OTSubscriber
                     className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    retry={isRetry}
                     eventHandlers={{
                       videoDisabled: (error: any) => {
                         console.log(`videoDisabled: ${JSON.stringify(error)}`);
@@ -368,8 +370,8 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                         )}
                       </Grid>
                       <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                        {isCall && mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                        {isCall && isPublishAudio && (
+                          <button className={classes.muteBtn} onClick={() => setIsPublishAudio(!isPublishAudio)}>
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_mute.svg')}
@@ -377,8 +379,8 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && !mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                        {isCall && !isPublishAudio && (
+                          <button className={classes.muteBtn} onClick={() => setIsPublishAudio(!isPublishAudio)}>
                             <img
                               className={classes.whiteArrow}
                               src={require('images/ic_unmute.svg')}
