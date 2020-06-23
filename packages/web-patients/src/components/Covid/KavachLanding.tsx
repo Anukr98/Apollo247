@@ -21,7 +21,9 @@ import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    kavachLanding: {},
+    kavachLanding: {
+      width: '100%',
+    },
     kavachContent: {
       padding: 30,
       background: '#f7f8f5',
@@ -355,7 +357,9 @@ export const KavachLanding: React.FC = (props) => {
       .catch((err) => console.log(err));
   }, []);
   useEffect(() => {
-    scrollToRef && scrollToRef.current && scrollToRef.current.scrollIntoView({ behavior: 'auto' });
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
   }, []);
 
   useEffect(() => {
@@ -446,8 +450,8 @@ export const KavachLanding: React.FC = (props) => {
     <div className={classes.kavachLanding}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.kavachContent} ref={scrollToRef}>
-          <div className={classes.kavachIntro}>
+        <div className={classes.kavachContent}>
+          <div className={classes.kavachIntro} ref={scrollToRef}>
             <Typography component="h1">Keeping you safe from Covid. Always</Typography>
             <div className={classes.imgContainer}>
               <img src={require('images/apollo-kavach.png')} />
