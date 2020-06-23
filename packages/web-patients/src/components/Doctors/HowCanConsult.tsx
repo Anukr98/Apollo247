@@ -228,8 +228,8 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 interface HowCanConsultProps {
   doctorDetails: DoctorDetails;
-  doctorAvailablePhysicalSlots: any;
-  doctorAvailableOnlineSlot: any;
+  doctorAvailablePhysicalSlots: string;
+  doctorAvailableOnlineSlot: string;
 }
 export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const classes = useStyles({});
@@ -238,18 +238,12 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
-  const doctorName =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.fullName;
-  const physcalFee =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.physicalConsultationFees;
-  const onlineFee =
-    doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.onlineConsultationFees;
+  const doctorDetailsId = doctorDetails && doctorDetails.getDoctorDetailsById;
+  const doctorName = doctorDetailsId && doctorDetailsId.fullName;
+  const physcalFee = doctorDetailsId && doctorDetailsId.physicalConsultationFees;
+  const onlineFee = doctorDetailsId && doctorDetailsId.onlineConsultationFees;
+  const doctorId =
+    doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id;
   const getDiffInMinutes = () => {
     if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
       const nextAvailabilityTime =
@@ -530,11 +524,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         disableEscapeKeyDown
       >
         <BookConsult
-          doctorId={
-            doctorDetails &&
-            doctorDetails.getDoctorDetailsById &&
-            doctorDetails.getDoctorDetailsById.id
-          }
+          doctorId={doctorId}
           doctorAvailableIn={differenceInMinutes}
           setIsPopoverOpen={setIsPopoverOpen}
         />

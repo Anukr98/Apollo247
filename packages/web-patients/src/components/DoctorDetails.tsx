@@ -39,6 +39,7 @@ import { DoctorTimings } from 'components/DoctorTimings';
 import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -230,9 +231,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
-  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<any>(0);
+  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<GetDoctorNextAvailableSlot>();
   const currentUserId = currentPatient && currentPatient.id;
 
+  const doctorPhysicalSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].physicalAvailableSlot;
+
+  const doctorAvailableOnlineSlot =
+    doctorAvailableSlots &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot;
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -430,7 +442,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     doctorDetails={doctorDetails}
                     avaPhy={availableForPhysicalConsultation}
                     avaOnline={availableForVirtualConsultation}
-                    getDoctorAvailableSlots={(value: any) => {
+                    getDoctorAvailableSlots={(value: GetDoctorNextAvailableSlot) => {
                       setDoctorAvailableSlots(value);
                     }}
                   />
@@ -447,20 +459,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <div className={classes.rightSideBar}>
                 <HowCanConsult
                   doctorDetails={doctorDetails}
-                  doctorAvailablePhysicalSlots={
-                    doctorAvailableSlots &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                      .physicalAvailableSlot
-                  }
-                  doctorAvailableOnlineSlot={
-                    doctorAvailableSlots &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                      .availableSlot
-                  }
+                  doctorAvailablePhysicalSlots={doctorPhysicalSlot}
+                  doctorAvailableOnlineSlot={doctorAvailableOnlineSlot}
                 />
                 <AppDownload />
                 {/* <ProtectedWithLoginPopup>
