@@ -41,7 +41,6 @@ import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { DoctorType } from 'doctors-service/entities';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
