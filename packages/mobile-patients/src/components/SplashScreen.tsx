@@ -33,6 +33,12 @@ import {
   APPStateInActive,
   APPStateActive,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getAppointmentData as getAppointmentDataQuery,
+  getAppointmentDataVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -86,7 +92,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
-
+  const client = useApolloClient();
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -204,9 +210,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('MedicineCart handleopen');
           getData('MedicineCart', data.length === 2 ? linkId : undefined);
           break;
-
+        case 'ChatRoom':
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          break;
         default:
-          getData('ConsultRoom');
+          getData('ConsultRoom', undefined, true);
           break;
       }
       console.log('route', route);
@@ -322,13 +330,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        timeout ? 1500 : 0
+        timeout ? 2000 : 0
       );
     }
     fetchData();
   };
-
-  const pushTheView = (routeName: String, id?: String) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+    client
+      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentID,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
+        if (appointmentData[0]!.doctorInfo !== null) {
+          getData('ChatRoom', appointmentData[0]);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashFetchingAppointmentData', error);
+      });
+  };
+  const pushTheView = (routeName: String, id?: any) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -401,7 +427,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           movedFrom: 'splashscreen',
         });
         break;
-
+      case 'ChatRoom':
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: '',
+          prescription: '',
+        });
+        break;
       default:
         break;
     }
