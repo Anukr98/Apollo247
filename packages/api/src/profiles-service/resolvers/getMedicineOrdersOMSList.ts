@@ -289,7 +289,7 @@ const getMedicineOrderOMSDetails: Resolver<
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   let medicineOrderDetails: any = {};
-  if (args.billNumber != '' && args.billNumber != '0') {
+  if (args.billNumber && args.billNumber != '' && args.billNumber != '0') {
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS
         ? process.env.PRISM_GET_OFFLINE_ORDERS + ApiConstants.CURRENT_UHID
