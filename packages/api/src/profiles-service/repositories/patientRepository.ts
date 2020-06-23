@@ -4,13 +4,7 @@ import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { pool } from 'profiles-service/database/connectRedis';
 
-import {
-  PrismGetAuthTokenResponse,
-  PrismGetAuthTokenError,
-  PrismGetUsersError,
-  PrismGetUsersResponse,
-  PrismSignUpUserData,
-} from 'types/prism';
+import { PrismSignUpUserData } from 'types/prism';
 
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
@@ -253,7 +247,7 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, { allergies });
   }
 
-  //utility method to get prism auth token
+  /*//utility method to get prism auth token
   async getPrismAuthToken(mobileNumber: string) {
     const prismHeaders = {
       method: 'GET',
@@ -282,7 +276,7 @@ export class PatientRepository extends Repository<Patient> {
     return authTokenResult !== null ? authTokenResult.response : null;
   }
 
-  //utility method to get prism users list
+    //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
     const prismHeaders = {
       method: 'GET',
@@ -338,7 +332,7 @@ export class PatientRepository extends Repository<Patient> {
     );
 
     return authTokenResult !== null ? authTokenResult.response : null;
-  }
+  }*/
 
   async validateAndGetUHID(id: string, prismUsersList: PrismSignUpUserData[]) {
     const reqStartTime = new Date();
@@ -378,7 +372,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   //utility method to get prism user details
-  async getPrismUsersDetails(uhid: string, authToken: string) {
+  /* async getPrismUsersDetails(uhid: string, authToken: string) {
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
@@ -406,7 +400,7 @@ export class PatientRepository extends Repository<Patient> {
     );
 
     return detailsResult;
-  }
+  }*/
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
     let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
@@ -484,122 +478,6 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     return null;
-  }
-
-  async getPatientLabResults(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const labResults = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(labResults)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientLabResults PRISM_GET_USER_LAB_RESULTS_API_CALL___END',
-      `${url} --- ${JSON.stringify(labResults)}`
-    );
-
-    return labResults.errorCode == '0' ? labResults.response : [];
-  }
-
-  async getPatientHealthChecks(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const healthChecks = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientHealthChecks PRISM_GET_USER_HEALTH_CHECKS_API_CALL___END',
-      `${url} --- ${JSON.stringify(healthChecks)}`
-    );
-
-    return healthChecks.errorCode == '0' ? healthChecks.response : [];
-  }
-
-  async getPatientHospitalizations(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const hospitalizations = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientHospitalizations PRISM_GET_USER_HOSPITALIZATIONS_API_CALL___END',
-      `${url} --- ${JSON.stringify(hospitalizations)}`
-    );
-
-    return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
-  }
-
-  async getPatientOpPrescriptions(uhid: string, authToken: string) {
-    const prismHeaders = {
-      method: 'GET',
-      timeOut: ApiConstants.PRISM_TIMEOUT,
-    };
-
-    const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
-    const reqStartTime = new Date();
-    const opPrescriptions = await fetch(url, prismHeaders)
-      .then((res) => {
-        return res.json();
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'getPatientOpPrescriptions PRISM_GET_USER_OP_PRESCRIPTIONS_API_CALL___END',
-      `${url} --- ${JSON.stringify(opPrescriptions)}`
-    );
-
-    return opPrescriptions.errorCode == '0' ? opPrescriptions.response : [];
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
@@ -799,63 +677,6 @@ export class PatientRepository extends Repository<Patient> {
     }
     return newUhid;
   }
-
-  /*async createPrismUser(patientData: Patient, uhid: string) {
-    //date of birth formatting
-
-    if (patientData.firstName === null || patientData.firstName === '') {
-      patientData.firstName = 'New';
-    }
-    if (patientData.lastName === null || patientData.lastName === '') {
-      patientData.lastName = 'User';
-    }
-    if (patientData.gender === null) {
-      patientData.gender = Gender.MALE;
-    }
-    if (patientData.emailAddress === null) {
-      patientData.emailAddress = '';
-    }
-    let utc_dob = new Date().getTime();
-    if (patientData.dateOfBirth != null) {
-      utc_dob = new Date(patientData.dateOfBirth).getTime();
-    }
-
-    const queryParams = `securitykey=${
-      process.env.PRISM_SECURITY_KEY
-    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
-      patientData.lastName
-    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
-      ApiConstants.COUNTRY_CODE
-    }&dob=${utc_dob}&sitekey=&martialStatus=&pincode=&email=${
-      patientData.emailAddress
-    }&state=&country=&city=&address=`;
-
-    const createUserAPI = `${process.env.PRISM_CREATE_UHID_USER_API}?${queryParams}`;
-
-    const reqStartTime = new Date();
-    const uhidUserResp = await fetch(createUserAPI, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).catch((error) => {
-      dLogger(
-        reqStartTime,
-        'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___ERROR',
-        `${createUserAPI} --- ${JSON.stringify(error)}`
-      );
-      throw new AphError(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
-    });
-
-    const textRes = await uhidUserResp.text();
-    dLogger(
-      reqStartTime,
-      'createPrismUser PRISM_CREATE_UHID_USER_API_CALL___END',
-      `${createUserAPI} --- ${textRes}`
-    );
-
-    return textRes;
-  } */
 
   async createAthsToken(id: string) {
     const patientDetails = await this.getPatientDetails(id);
