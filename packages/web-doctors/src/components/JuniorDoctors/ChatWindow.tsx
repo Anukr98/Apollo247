@@ -1028,7 +1028,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 disabled={fileUploading}
               >
                 <span>Attach</span>
-                <span><img src={require('images/round-attach.svg')} alt="" /></span>
+                <span>
+                  <img src={require('images/round-attach.svg')} alt="" />
+                </span>
                 <input
                   type="file"
                   style={{ display: 'none' }}

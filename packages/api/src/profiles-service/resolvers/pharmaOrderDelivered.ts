@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
@@ -183,7 +184,15 @@ const createOneApolloTransaction = async (
 ) => {
   const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
   if (!invoiceDetails.length) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    log(
+      'profileServiceLogger',
+      `invalid Invoice: $ - ${order.orderAutoId}`,
+      'createOneApolloTransaction',
+      JSON.stringify(order),
+      'true'
+    );
+    //throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    return true;
   }
 
   const Transaction: Partial<OneApollTransaction> = {
@@ -207,23 +216,25 @@ const createOneApolloTransaction = async (
 
   const itemTypemap: ItemsSkuTypeMap = {};
   const itemSku: string[] = [];
-  let grossAmount: number = 0;
   let netAmount: number = 0;
   let totalDiscount: number = 0;
   invoiceDetails.forEach((val) => {
     const itemDetails = JSON.parse(val.itemDetails);
     itemDetails.forEach((item: ItemDetails) => {
       itemSku.push(item.itemId);
-      let netPrice = item.discountPrice
-        ? +(item.mrp - item.discountPrice).toFixed(1) * item.issuedQty
-        : +item.mrp.toFixed(1) * item.issuedQty;
-
-      let netMrp = +item.mrp.toFixed(1) * item.issuedQty;
-      let netDiscount = item.discountPrice ? +item.discountPrice.toFixed(1) * item.issuedQty : 0;
-
-      netPrice = +netPrice.toFixed(1);
-      netMrp = +netMrp.toFixed(1);
-      netDiscount = +netDiscount.toFixed(1);
+      const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(1));
+      let netDiscount = 0;
+      if (item.discountPrice) {
+        netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(1));
+      }
+      const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
+      log(
+        'profileServiceLogger',
+        `oneApollo Transaction Payload- ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify({ netPrice: netPrice, netDiscount: netDiscount, netMrp: netMrp }),
+        ''
+      );
 
       transactionLineItems.push({
         ProductCode: item.itemId,
@@ -231,16 +242,15 @@ const createOneApolloTransaction = async (
         GrossAmount: netMrp,
         DiscountAmount: netDiscount,
       });
-      totalDiscount += netDiscount;
-      grossAmount += netMrp;
-      netAmount += netPrice;
+      totalDiscount = +new Decimal(netDiscount).plus(totalDiscount);
+      netAmount = +new Decimal(netPrice).plus(netAmount);
     });
     if (val.billDetails) {
       const billDetails: BillDetails = JSON.parse(val.billDetails);
       Transaction.BillNo = billDetails.billNumber;
       Transaction.NetAmount = netAmount;
       Transaction.TransactionDate = billDetails.billDateTime;
-      Transaction.GrossAmount = grossAmount;
+      Transaction.GrossAmount = +new Decimal(netAmount).plus(totalDiscount);
       Transaction.Discount = totalDiscount;
     }
   });
@@ -275,16 +285,16 @@ const createOneApolloTransaction = async (
     });
     transactionLineItems.forEach((val, i, arr) => {
       if (val.ProductCode) {
-        switch (itemTypemap[val.ProductCode]) {
-          case 'PHARMA':
+        switch (itemTypemap[val.ProductCode].toLowerCase()) {
+          case 'pharma':
             arr[i].ProductName = ProductTypes.PHARMA;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
             break;
-          case 'FMCG':
+          case 'fmcg':
             arr[i].ProductName = ProductTypes.FMCG;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
             break;
-          case 'PL':
+          case 'pl':
             arr[i].ProductName = ProductTypes.PL;
             arr[i].ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
             break;
@@ -299,6 +309,7 @@ const createOneApolloTransaction = async (
       JSON.stringify(Transaction),
       ''
     );
+    //if (mobileNumber == '9560923408' || mobileNumber == '7993961498') {
     const oneApolloResponse = await medicineOrdersRepo.createOneApolloTransaction(Transaction);
     log(
       'profileServiceLogger',
@@ -307,6 +318,8 @@ const createOneApolloTransaction = async (
       JSON.stringify(oneApolloResponse),
       ''
     );
+    //}
+    return true;
   } else {
     throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
   }

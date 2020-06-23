@@ -2,20 +2,17 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicalRecords } from 'profiles-service/entities';
-import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format } from 'date-fns';
+
 import winston from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
-import {
-  PrismLabTestResult,
-  PrismHealthCheckResult,
-  PrismHospitalizationResult,
-} from 'types/prismMedicalRecords';
+import { getLabResults, getPrescriptionData } from 'helpers/phrV1Services';
+import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
+import { format } from 'date-fns';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
@@ -97,10 +94,80 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String
   }
 
+  type LabTestFileParameters {
+    parameterName: String
+    result: String
+    unit: String
+    range: String
+    outOfRange: Boolean
+    resultDate: Int
+  }
+
+  type LabResultsBaseResponse {
+    authToken: String
+    userId: String!
+    id: String!
+    labTestName: String!
+    labTestSource: String!
+    packageId: String
+    packageName: String
+    labTestDate: Float!
+    labTestRefferedBy: String
+    observation: String
+    additionalNotes: String
+    consultId: String
+    tag: String
+    labTestResults: [LabTestFileParameters]
+    fileUrl: String!
+    date: Date!
+  }
+
+  type LabResultsDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [LabResultsBaseResponse]
+  }
+
+  type PrescriptionsBaseResponse {
+    authToken: String
+    userId: String
+    id: String!
+    prescriptionName: String!
+    dateOfPrescription: Float!
+    startDate: Int
+    endDate: Int
+    prescribedBy: String
+    notes: String
+    prescriptionSource: String
+    source: String!
+    fileUrl: String!
+    date: Date!
+  }
+
+  type PrecriptionFileParameters {
+    id: String
+    fileName: String
+    mimeType: String
+    content: String
+    byteContent: String
+    dateCreated: Int
+  }
+
+  type PrescriptionDownloadResponse {
+    errorCode: Int
+    errorMsg: String
+    errorType: String
+    response: [PrescriptionsBaseResponse]
+    prescriptionFiles: [PrecriptionFileParameters]
+  }
+
   type PrismMedicalRecordsResult {
     labTests: [LabTestResult]
     healthChecks: [HealthCheckResult]
     hospitalizations: [HospitalizationResult]
+    labResults: LabResultsDownloadResponse
+    prescriptions: PrescriptionDownloadResponse
   }
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
@@ -157,6 +224,8 @@ type PrismMedicalRecordsResult = {
   labTests: LabTestResult[];
   healthChecks: HealthCheckResult[];
   hospitalizations: HospitalizationResult[];
+  labResults: LabResultsDownloadResponse;
+  prescriptions: PrescriptionDownloadResponse;
 };
 
 const getPatientMedicalRecords: Resolver<
@@ -165,7 +234,8 @@ const getPatientMedicalRecords: Resolver<
   ProfilesServiceContext,
   MedicalRecordsResult
 > = async (parent, args, { profilesDb, doctorsDb }) => {
-  const { patientId, offset, limit } = args;
+  //commented to support backward compatability
+  /*const { patientId, offset, limit } = args;
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(patientId);
@@ -180,8 +250,9 @@ const getPatientMedicalRecords: Resolver<
     primaryPatientIds,
     offset,
     limit
-  );
-  return { medicalRecords };
+  ); 
+  return { medicalRecords };*/
+  return { medicalRecords: [] };
 };
 
 //configure winston for profiles service
@@ -209,6 +280,134 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.findById(args.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+
+  //document download URLs start
+  if (
+    !process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT ||
+    !process.env.PHR_V1_ACCESS_TOKEN ||
+    !process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT
+  )
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let labResultDocumentUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  labResultDocumentUrl = labResultDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  labResultDocumentUrl = labResultDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace(
+    '{ACCESS_KEY}',
+    process.env.PHR_V1_ACCESS_TOKEN
+  );
+  prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{UHID}', patientDetails.uhid);
+  //document download URLs end
+
+  //get labresults
+  const labResults = await getLabResults(patientDetails.uhid);
+  const prescriptions = await getPrescriptionData(patientDetails.uhid);
+
+  //add documet urls in the labresults and prescription objects
+  labResults.response.map((labresult) => {
+    labresult.fileUrl = labResultDocumentUrl.replace('{RECORDID}', labresult.id);
+    labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
+  });
+
+  prescriptions.response.map((prescription) => {
+    prescription.fileUrl = prescriptionDocumentUrl.replace('{RECORDID}', prescription.id);
+    prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
+  });
+
+  //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
+  const formattedLabResults: LabTestResult[] = [];
+  labResults.response.forEach((element) => {
+    let prismFileIds: string[] = [];
+    let labResultParams: LabTestResultParameter[] = [];
+    //collecting prism file ids
+    if (element.testResultFiles.length > 0) {
+      prismFileIds = element.testResultFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+    //collecting test result params
+    if (element.labTestResults.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      labResultParams = element.labTestResults.map((item: any) => {
+        return {
+          parameterName: item.parameterName,
+          result: item.result,
+          unit: item.unit,
+          range: item.range,
+          outOfRange: item.outOfRange,
+          resultDate: item.resultDate,
+          setOutOfRange: false,
+          setResultDate: false,
+          setUnit: false,
+          setParameterName: false,
+          setRange: false,
+          setResult: false,
+        };
+      });
+    }
+
+    const labResult = {
+      id: element.id,
+      labTestName: element.labTestName,
+      labTestSource: element.labTestSource,
+      labTestDate: format(new Date(element.labTestDate), 'yyyy-MM-dd HH:mm'),
+      labTestReferredBy: element.labTestRefferedBy,
+      additionalNotes: element.additionalNotes,
+      testResultPrismFileIds: prismFileIds,
+      labTestResultParameters: labResultParams,
+      departmentName: element.departmentName,
+      signingDocName: element.signingDocName,
+      observation: element.observation,
+    };
+
+    formattedLabResults.push(labResult);
+  });
+
+  prescriptions.response.forEach((element) => {
+    let prismFileIds: string[] = [];
+    const labResultParams: LabTestResultParameter[] = [];
+    //collecting prism file ids
+    if (element.prescriptionFiles.length > 0) {
+      prismFileIds = element.prescriptionFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+
+    const labResult = {
+      id: element.id,
+      labTestName: element.prescriptionName,
+      labTestSource: element.prescriptionSource,
+      labTestDate: format(new Date(element.dateOfPrescription), 'yyyy-MM-dd HH:mm'),
+      labTestReferredBy: element.prescribedBy,
+      additionalNotes: element.notes,
+      testResultPrismFileIds: prismFileIds,
+      labTestResultParameters: labResultParams,
+      departmentName: '',
+      signingDocName: '',
+      observation: '',
+    };
+
+    formattedLabResults.push(labResult);
+  });
+
+  const result = {
+    labTests: formattedLabResults,
+    healthChecks: [],
+    hospitalizations: [],
+    labResults: labResults,
+    prescriptions: prescriptions,
+  };
+
+  /*
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
@@ -369,13 +568,7 @@ const getPatientPrismMedicalRecords: Resolver<
       source: element.source,
     };
     formattedHospitalizations.push(hospitalizationResult);
-  });
-
-  const result = {
-    labTests: formattedLabResults,
-    healthChecks: formattedHealthChecks,
-    hospitalizations: formattedHospitalizations,
-  };
+  }); */
 
   return result;
 };

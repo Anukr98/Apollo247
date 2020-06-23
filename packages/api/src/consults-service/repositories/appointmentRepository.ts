@@ -61,6 +61,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getAppointmentsCompleteCount(doctorId: string, patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.doctorId = :doctorId', { doctorId })
+      .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
+      .getCount();
+  }
+
   getAppointmentsByIds(ids: string[]) {
     return this.createQueryBuilder('appointment')
       .where('appointment.id IN (:...ids)', { ids })
@@ -1487,6 +1495,23 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.appointmentType = :appointmentType', {
         appointmentType: appointmentType,
+      })
+      .andWhere('appointment.status in(:status1)', {
+        status1: STATUS.PENDING,
+      })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
+      .getMany();
+  }
+
+  getSpecificMinuteBothAppointments(nextMin: number) {
+    const apptDateTime = addMinutes(new Date(), nextMin);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.createQueryBuilder('appointment')
+      .where('(appointment.appointmentDateTime = :fromDate)', {
+        fromDate: formatDateTime,
       })
       .andWhere('appointment.status in(:status1)', {
         status1: STATUS.PENDING,

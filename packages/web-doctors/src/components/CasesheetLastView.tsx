@@ -191,43 +191,6 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.prescriptionPreview}>
-        {/* <div className={classes.pageHeader}>
-          <div className={classes.logo}>
-            <img src={require('images/ic_logo_insideapp.svg')} alt="" />
-          </div>
-          {createdDoctorProfile ? (
-            <div className={classes.doctorInformation}>
-              <h3>
-                {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-              </h3>
-              <p className={`${classes.specialty} ${classes.qualification}`}>
-                MBBS, MD (Internal Medicine)
-              </p>
-              <p className={classes.specialty}>{`${
-                createdDoctorProfile.specialty.specialistSingularTerm
-              } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
-              {doctorFacilityDetails ? (
-                <>
-                  <p className={classes.address}>
-                    {`${doctorFacilityDetails.streetLine1 || ''} ${
-                      doctorFacilityDetails.streetLine2
-                        ? `| ${doctorFacilityDetails.streetLine2}`
-                        : ''
-                    } ${
-                      doctorFacilityDetails.streetLine3
-                        ? `| ${doctorFacilityDetails.streetLine3}`
-                        : ''
-                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
-                      doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
-                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
-                      doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
-                    }`}
-                  </p>
-                </>
-              ) : null}
-            </div>
-          ) : null}
-        </div> */}
         <div className={classes.pageContent}>
           {(otherInstructions && otherInstructions.length > 0) ||
           (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
