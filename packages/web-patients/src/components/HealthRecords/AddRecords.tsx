@@ -21,9 +21,11 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import {
   MedicalTestUnit,
   AddMedicalRecordParametersInput,
-  PRISM_DOCUMENT_CATEGORY,
+  AddMedicalRecordInput,
+  MedicalRecordType,
+  LabResultFileProperties,
 } from '../../graphql/types/globalTypes';
-import { ADD_MEDICAL_RECORD, UPLOAD_DOCUMENT } from '../../graphql/profiles';
+import { ADD_MEDICAL_RECORD } from '../../graphql/profiles';
 import moment from 'moment';
 import { AphCalendarPastDate } from '../AphCalendarPastDate';
 import { useMutation } from 'react-apollo-hooks';
@@ -34,6 +36,7 @@ import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
+import { database } from 'firebase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -363,12 +366,6 @@ const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   maximum: 0,
 };
 
-export enum MedicRecordType {
-  TEST_REPORT = 'TEST_REPORT',
-  CONSULTATION = 'CONSULTATION',
-  PRESCRIPTION = 'PRESCRIPTION',
-}
-
 type PickerImage = any;
 
 type RecordTypeType = {
@@ -378,12 +375,12 @@ type RecordTypeType = {
 
 const RecordType: RecordTypeType[] = [
   {
-    value: _startCase(_toLower(MedicRecordType.TEST_REPORT)).replace('_', ' '),
-    key: MedicRecordType.TEST_REPORT,
+    value: _startCase(_toLower(MedicalRecordType.TEST_REPORT)).replace('_', ' '),
+    key: MedicalRecordType.TEST_REPORT,
   },
   {
-    value: _startCase(_toLower(MedicRecordType.PRESCRIPTION)).replace('_', ' '),
-    key: MedicRecordType.PRESCRIPTION,
+    value: _startCase(_toLower(MedicalRecordType.PRESCRIPTION)).replace('_', ' '),
+    key: MedicalRecordType.PRESCRIPTION,
   },
 ];
 
@@ -414,63 +411,48 @@ export const AddRecords: React.FC = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
+  // const uploadLabResultMutation = useMutation(UPLOAD_LAB_RESULT);
+  // const uploadPrescriptionMutation = useMutation(UPLOAD_PRESCRIPTIONS);
   const addMedicalRecordMutation = useMutation(ADD_MEDICAL_RECORD);
 
   const isValid = () => {
-    const validRecordDetails =
-      typeOfRecord !== '' &&
-      ((nameOfTest !== '' && dateOfTest !== '') ||
-        (doctorIssuedPrescription !== '' && dateOfPrescription !== ''))
-        ? true
-        : false;
-
-    const valid = isRecordParameterFilled().map((item) => {
-      return {
-        maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
-        changed: true,
-        notinitial:
-          item.parameterName === '' &&
-          item.result === 0 &&
-          item.maximum === 0 &&
-          item.minimum === 0,
-      };
-    });
-
     let message = '';
-    // if (uploadedDocuments.length === 0) {
-    //   message = 'Please Upload the file';
-    // } else {
     if (typeOfRecord !== '') {
-      if (typeOfRecord === MedicRecordType.TEST_REPORT) {
+      if (typeOfRecord === MedicalRecordType.TEST_REPORT) {
         if (nameOfTest === '') {
           message = 'Enter test name';
         } else if (dateOfTest === '') {
           message = 'Enter Date of Test';
         }
-      } else if (typeOfRecord === MedicRecordType.PRESCRIPTION) {
+      } else if (typeOfRecord === MedicalRecordType.PRESCRIPTION) {
         if (doctorIssuedPrescription === '') {
           message = 'Enter doctor name';
         } else if (dateOfPrescription === '') {
           message = 'Enter Date of Prescription';
         }
       }
+      const parameters = isRecordParameterFilled();
+      if (parameters.length > 0) {
+        const paramsWithInvalidValues = parameters.find(
+          (paramObj: AddMedicalRecordParametersInput) =>
+            paramObj.parameterName === '' || paramObj.minimum >= paramObj.maximum
+        );
+        if (paramsWithInvalidValues) {
+          if (paramsWithInvalidValues.minimum >= paramsWithInvalidValues.maximum) {
+            message = 'Please enter valid Maximum and Minimum';
+          } else {
+            message = 'Please enter valid Parameter Name';
+          }
+        }
+      }
+      if ((notes.length > 0 || observation.length > 0) && referringDoctor.length === 0) {
+        message = 'Please Enter Referring doctor ';
+      }
     } else {
       message = 'Select the Record Type';
     }
 
-    message === '' &&
-      valid.forEach((item) => {
-        if (item.maxmin === false) {
-          message = 'Please enter valid Maximum and Minimum';
-        }
-      });
-
     return {
-      isvalid: validRecordDetails,
-      isValidParameter:
-        valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !==
-        undefined,
       message: message,
     };
   };
@@ -490,160 +472,114 @@ export const AddRecords: React.FC = (props) => {
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
 
     if (medicalRecordsVaild.length > 0) {
-      // setmedicalRecordParameters(medicalRecordsVaild);
       return medicalRecordsVaild;
     } else {
       return [];
     }
   };
 
-  const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
-    return Promise.all(
-      prescriptions.map((item) => {
-        const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
-        return uploadDocumentMutation({
-          fetchPolicy: 'no-cache',
-          variables: {
-            UploadDocumentInput: {
-              base64FileInput: baseFormatSplitArry[1],
-              category:
-                typeOfRecord === 'PRESCRIPTION'
-                  ? PRISM_DOCUMENT_CATEGORY.OpSummary
-                  : PRISM_DOCUMENT_CATEGORY.TestReports,
-              fileType: item.fileType === 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-              patientId: currentPatient && currentPatient.id,
-            },
-          },
+  const callAddingRecord = () => {
+    let inputData: AddMedicalRecordInput = {
+      additionalNotes: notes,
+      documentURLs: '', //url,
+      issuingDoctor: '',
+      location: '',
+      medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+      observations: observation,
+      patientId: currentPatient ? currentPatient.id : '',
+      recordType: typeOfRecord as MedicalRecordType,
+      referringDoctor: referringDoctor,
+      sourceName: '',
+      testDate: '',
+      testName: '',
+    };
+    if (uploadedDocuments && uploadedDocuments.length > 0) {
+      const item = uploadedDocuments[0];
+      const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
+      const documentFile: LabResultFileProperties = {
+        fileName: item.name,
+        mimeType:
+          item.fileType === 'pdf' ? 'application/pdf' : `image/${item.fileType.toLowerCase()}`,
+        content: baseFormatSplitArry[1],
+      };
+      inputData = { ...inputData, testResultFiles: documentFile };
+    }
+    if (typeOfRecord === MedicalRecordType.PRESCRIPTION) {
+      inputData = {
+        ...inputData,
+        issuingDoctor: doctorIssuedPrescription,
+        location: location,
+        testDate:
+          dateOfPrescription !== ''
+            ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+            : '',
+      };
+    } else if (typeOfRecord === MedicalRecordType.TEST_REPORT) {
+      inputData = {
+        ...inputData,
+        testName: nameOfTest,
+        testDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      };
+    }
+    console.log(inputData);
+    addMedicalRecordMutation({
+      variables: {
+        AddMedicalRecordInput: inputData,
+      },
+    })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        setUploadedDocuments([]);
+        refFileInput.current.value = null;
+        /**Gtm code start start */
+        gtmTracking({
+          category: 'Profile',
+          action: 'Record Added',
+          label: `${typeOfRecord} - Self`,
         });
+        /**Gtm code start start */
+        window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
       })
-    );
+      .catch((e) => {
+        setshowSpinner(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Please fill all the details');
+      });
   };
 
   const saveRecord = () => {
     const valid = isValid();
-    if (valid.isvalid && !valid.isValidParameter) {
+    // valid.isvalid && !valid.isValidParameter &&
+    if (valid.message.length === 0) {
       setshowSpinner(true);
-      if (uploadedDocuments.length > 0) {
-        multiplePhysicalPrescriptionUpload(uploadedDocuments)
-          .then((data) => {
-            const uploadUrlscheck = data.map(({ data }: any) =>
-              data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
-            );
-            const filtered = uploadUrlscheck.filter(function(el) {
-              return el != null;
-            });
-            if (filtered.length > 0) {
-              const inputData = {
-                patientId: currentPatient ? currentPatient.id : '',
-                testName: nameOfTest,
-                issuingDoctor: doctorIssuedPrescription,
-                location,
-                testDate:
-                  dateOfTest !== ''
-                    ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                    : dateOfPrescription !== ''
-                    ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                    : '',
-                recordType: typeOfRecord,
-                referringDoctor: referringDoctor,
-                sourceName: '',
-                observations: observation,
-                additionalNotes: notes,
-                medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-                documentURLs: filtered.map((item) => item.filePath).join(','),
-                prismFileIds: filtered.map((item) => item.fileId).join(','),
-              };
-              if (uploadUrlscheck.length > 0) {
-                addMedicalRecordMutation({
-                  variables: {
-                    AddMedicalRecordInput: inputData,
-                  },
-                })
-                  .then(({ data }) => {
-                    setshowSpinner(false);
-                    setUploadedDocuments([]);
-                    refFileInput.current.value = null;
-                    /**Gtm code start start */
-                    gtmTracking({
-                      category: 'Profile',
-                      action: 'Record Added',
-                      label: `${typeOfRecord} - Self`,
-                    });
-                    /**Gtm code start start */
-                    window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
-                  })
-                  .catch((e) => {
-                    setshowSpinner(false);
-                    setIsAlertOpen(true);
-                    setAlertMessage('Please fill all the details');
-                  });
-              } else {
-                setshowSpinner(false);
-                setIsAlertOpen(true);
-                setAlertMessage('An error occurred while loading the image.');
-              }
-            } else {
-              setshowSpinner(false);
-              setIsAlertOpen(true);
-              setAlertMessage('An error occurred while uploading the image.');
-            }
-          })
-          .catch((e) => {
-            setshowSpinner(false);
-            setIsAlertOpen(true);
-            setAlertMessage('An error occurred while uploading the image.');
-          });
-      } else {
-        const inputData = {
-          patientId: currentPatient ? currentPatient.id : '',
-          testName: nameOfTest,
-          issuingDoctor: doctorIssuedPrescription,
-          location,
-          testDate:
-            dateOfTest !== ''
-              ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
-              : dateOfPrescription !== ''
-              ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
-              : '',
-          recordType: typeOfRecord,
-          referringDoctor: referringDoctor,
-          sourceName: '',
-          observations: observation,
-          additionalNotes: notes,
-          medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-          documentURLs: '',
-          prismFileIds: '',
-        };
-
-        addMedicalRecordMutation({
-          variables: {
-            AddMedicalRecordInput: inputData,
-          },
-        })
-          .then(({ data }) => {
-            setshowSpinner(false);
-            setUploadedDocuments([]);
-            refFileInput.current.value = null;
-            /**Gtm code start start */
-            gtmTracking({
-              category: 'Profile',
-              action: 'Record Added',
-              label: `${typeOfRecord} - Self`,
-            });
-            /**Gtm code start start */
-            window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
-          })
-          .catch((e) => {
-            setshowSpinner(false);
-            setIsAlertOpen(true);
-            setAlertMessage('Please fill all the details');
-          });
-      }
+      // if (uploadedDocuments && uploadedDocuments.length) {
+      //   uploadLabOrPrescriptionResults(uploadedDocuments)
+      //     .then(({ data }: any) => {
+      //       if (data) {
+      //         typeOfRecord === MedicRecordType.TEST_REPORT
+      //           ? callAddingRecord(data.uploadLabResults.fileUrl, data.uploadLabResults.recordId)
+      //           : callAddingRecord(
+      //               data.uploadPrescriptions.fileUrl,
+      //               data.uploadPrescriptions.recordId
+      //             );
+      //       }
+      //     })
+      //     .catch((e: any) => {
+      //       console.log(e);
+      //       setshowSpinner(false);
+      //       // setIsAlertOpen(true);
+      //     });
+      // }
+      // else {
+      //   callAddingRecord('', '');
+      // }
+      callAddingRecord();
     } else {
       setIsAlertOpen(true);
       setAlertMessage(valid.message);
     }
   };
+
   const handleSaveRecord = () => {
     addRecordClickTracking('Medical Record');
     saveRecord();
@@ -710,7 +646,7 @@ export const AddRecords: React.FC = (props) => {
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.panelDetails}>
                     <Grid container spacing={2}>
-                      {uploadedDocuments && uploadedDocuments.length > 0
+                      {!isUploading && uploadedDocuments && uploadedDocuments.length > 0
                         ? uploadedDocuments.map((doc: any) => (
                             <Grid item sm={4} className={classes.gridWidth}>
                               <div className={classes.uploadedImage}>
@@ -764,23 +700,30 @@ export const AddRecords: React.FC = (props) => {
                                   if (file) {
                                     const aphBlob = await client
                                       .uploadBrowserFile({ file })
-                                      .catch((error) => {
+                                      .catch((error: any) => {
                                         throw error;
                                       });
                                     if (aphBlob && aphBlob.name) {
                                       const url = client.getBlobUrl(aphBlob.name);
-                                      const uploadedFiles = uploadedDocuments;
+                                      // let uploadedFiles = uploadedDocuments;
                                       toBase64(file)
                                         .then((res) => {
-                                          uploadedFiles.push({
-                                            baseFormat: res,
-                                            imageUrl: url,
-                                            name: aphBlob.name,
-                                            fileType: fileExtension.toLowerCase(),
-                                          });
-                                          setUploadedDocuments(uploadedFiles);
+                                          // uploadedFiles.push({
+                                          //   baseFormat: res,
+                                          //   imageUrl: url,
+                                          //   name: aphBlob.name,
+                                          //   fileType: fileExtension.toLowerCase(),
+                                          // });
+                                          setUploadedDocuments([
+                                            {
+                                              baseFormat: res,
+                                              imageUrl: url,
+                                              name: aphBlob.name,
+                                              fileType: fileExtension.toLowerCase(),
+                                            },
+                                          ]);
                                           setIsUploading(false);
-                                          setForceRender(!forceRender); // Added because after setUploadedDocuments component is not rerendering.
+                                          // setForceRender(!forceRender); // Added because after setUploadedDocuments component is not rerendering.
                                         })
                                         .catch((e: any) => {
                                           setIsUploading(false);
@@ -847,7 +790,7 @@ export const AddRecords: React.FC = (props) => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      {typeOfRecord === 'TEST_REPORT' && (
+                      {typeOfRecord === MedicalRecordType.TEST_REPORT && (
                         <>
                           <Grid item sm={6} className={classes.gridWidth}>
                             <div className={classes.formGroup}>
@@ -882,7 +825,7 @@ export const AddRecords: React.FC = (props) => {
                           </Grid>
                         </>
                       )}
-                      {typeOfRecord === 'PRESCRIPTION' && (
+                      {typeOfRecord === MedicalRecordType.PRESCRIPTION && (
                         <>
                           <Grid item sm={6} className={classes.gridWidth}>
                             <div className={classes.formGroup}>
@@ -945,8 +888,9 @@ export const AddRecords: React.FC = (props) => {
                     Report Details (Optional)
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.panelDetails}>
-                    <div className={classes.formGroupHeader}>Parameters</div>
                     {/* click on Add Parameters button this section will be repeat */}
+
+                    <div className={classes.formGroupHeader}>Parameters</div>
                     {medicalRecordParameters.map((record: any, idx: number) => (
                       <div className={classes.formGroupContent}>
                         <Grid container spacing={2}>
@@ -1110,3 +1054,153 @@ export const AddRecords: React.FC = (props) => {
     </div>
   );
 };
+
+// base64FileInput: baseFormatSplitArry[1],
+// category:
+//   typeOfRecord === 'PRESCRIPTION'
+//     ? PRISM_DOCUMENT_CATEGORY.OpSummary
+//     : PRISM_DOCUMENT_CATEGORY.TestReports,
+// fileType: item.fileType === 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
+// patientId: currentPatient && currentPatient.id,
+
+// multiplePhysicalPrescriptionUpload(uploadedDocuments)
+//   .then((data) => {
+//     const uploadUrlscheck = data.map(({ data }: any) =>
+//       data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
+//     );
+//     const filtered = uploadUrlscheck.filter(function (el) {
+//       return el != null;
+//     });
+//     if (filtered.length > 0) {
+//       const inputData = {
+//         patientId: currentPatient ? currentPatient.id : '',
+//         testName: nameOfTest,
+//         issuingDoctor: doctorIssuedPrescription,
+//         location,
+//         testDate:
+//           dateOfTest !== ''
+//             ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
+//             : dateOfPrescription !== ''
+//             ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+//             : '',
+//         recordType: typeOfRecord,
+//         referringDoctor: referringDoctor,
+//         sourceName: '',
+//         observations: observation,
+//         additionalNotes: notes,
+//         medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+//         documentURLs: filtered.map((item) => item.filePath).join(','),
+//         prismFileIds: filtered.map((item) => item.fileId).join(','),
+//       };
+//       if (uploadUrlscheck.length > 0) {
+//         addMedicalRecordMutation({
+//           variables: {
+//             AddMedicalRecordInput: inputData,
+//           },
+//         })
+//           .then(({ data }) => {
+//             setshowSpinner(false);
+//             setUploadedDocuments([]);
+//             refFileInput.current.value = null;
+//             /**Gtm code start start */
+//             gtmTracking({
+//               category: 'Profile',
+//               action: 'Record Added',
+//               label: `${typeOfRecord} - Self`,
+//             });
+//             /**Gtm code start start */
+//             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
+//           })
+//           .catch((e) => {
+//             setshowSpinner(false);
+//             setIsAlertOpen(true);
+//             setAlertMessage('Please fill all the details');
+//           });
+//       } else {
+//         setshowSpinner(false);
+//         setIsAlertOpen(true);
+//         setAlertMessage('An error occurred while loading the image.');
+//       }
+//     } else {
+//       setshowSpinner(false);
+//       setIsAlertOpen(true);
+//       setAlertMessage('An error occurred while uploading the image.');
+//     }
+//   })
+//   .catch((e) => {
+//     setshowSpinner(false);
+//     setIsAlertOpen(true);
+//     setAlertMessage('An error occurred while uploading the image.');
+//   });
+/////////////////////////
+
+// const uploadLabOrPrescriptionResults = (prescriptions: PickerImage[]) => {
+// const item = prescriptions[0];
+// const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
+
+// if (typeOfRecord === MedicRecordType.TEST_REPORT) {
+//   // call upload labResults
+//   return uploadLabResultMutation({
+//     fetchPolicy: 'no-cache',
+//     variables: {
+//       labResultsInput: {
+//         labTestName: nameOfTest,
+//         labTestDate: moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+//         labTestRefferedBy: referringDoctor,
+//         observation: observation,
+//         // identifier:,
+//         additionalNotes: notes,
+//         labTestResults: showReportDetails ? getRecordParameters() : [],
+//         testResultFiles: [
+//           {
+//             fileName: item.name,
+//             mimeType:
+//               item.fileType === 'pdf'
+//                 ? 'application/pdf'
+//                 : `image/${item.fileType.toUpperCase()}`,
+//             content: baseFormatSplitArry[1],
+//           },
+//         ],
+//       },
+//       uhid: currentPatient && currentPatient.uhid,
+//     },
+//   });
+// } else {
+//   // upload prescriptionResults
+//   return uploadPrescriptionMutation({
+//     fetchPolicy: 'no-cache',
+//     variables: {
+//       prescriptionInput: {
+//         prescribedBy: doctorIssuedPrescription,
+//         dateOfPrescription: moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+//         startDate: null,
+//         endDate: null,
+//         prescriptionSource: prescriptionSource.SELF,
+//         prescriptionFiles: [
+//           {
+//             fileName: item.name,
+//             mimeType:
+//               item.fileType === 'pdf'
+//                 ? 'application/pdf'
+//                 : `image/${item.fileType.toLowerCase()}`,
+//             content: baseFormatSplitArry[1],
+//           },
+//         ],
+//       },
+//       uhid: currentPatient && currentPatient.uhid,
+//     },
+//   });
+// }
+// };
+
+// const getRecordParameters = () => {
+//   return isRecordParameterFilled().map(
+//     (item) =>
+//       item && {
+//         result: item.result.toString(),
+//         parameterName: item.parameterName,
+//         unit: item.unit,
+//         range: `${item.minimum}-${item.maximum}`,
+//       }
+//   );
+// };
