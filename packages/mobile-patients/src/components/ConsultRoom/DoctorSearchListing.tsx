@@ -601,6 +601,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ? {}
             : data &&
               data.getDoctorsBySpecialtyAndFilters &&
+              data.getDoctorsBySpecialtyAndFilters.doctors &&
               data.getDoctorsBySpecialtyAndFilters.doctors[0];
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
