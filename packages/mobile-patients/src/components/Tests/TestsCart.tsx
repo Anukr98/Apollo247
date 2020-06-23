@@ -349,7 +349,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => props.navigation.navigate(AppRoutes.SearchTestScene)}
+              onPress={() => props.navigation.navigate('TESTS', { focusSearch: true })}
             >
               <Text
                 style={{

@@ -134,7 +134,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
-  const { cartItems, addCartItem, removeCartItem, updateCartItem } = useShoppingCart();
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    updateCartItem,
+    setItemsWithQtyRestriction,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
@@ -350,6 +356,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       fetchPolicy: 'cache-first',
     }
   );
+
+  useEffect(() => {
+    if (hotSellers.length) {
+      setItemsWithQtyRestriction!(hotSellers.map((v) => v.sku));
+    }
+  }, [hotSellers]);
 
   // Note: if hideStatus = true means display it, false measn hide it
   // let _orders = (

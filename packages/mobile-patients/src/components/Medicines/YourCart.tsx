@@ -715,7 +715,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                     })
                   );
                 } else {
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                  props.navigation.navigate('MEDICINES', { focusSearch: true });
                   setCoupon!(null);
                   setStoreId!('');
                 }
