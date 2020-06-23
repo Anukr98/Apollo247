@@ -230,7 +230,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [metaTagProps, setMetaTagProps] = useState(null);
-
+  const [doctorAvailableSlots, setDoctorAvailableSlots] = useState<any>(0);
   const currentUserId = currentPatient && currentPatient.id;
 
   useEffect(() => {
@@ -260,7 +260,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               onlineConsultationFees,
               physicalConsultationFees,
               consultHours,
-              salutation
+              salutation,
             },
           } = response.data;
           const openingHours = consultHours ? getOpeningHrs(consultHours) : '';
@@ -329,10 +329,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             medicalSpecialty: specialty ? specialty.name : '',
           });
           setMetaTagProps({
-            title: `${fullName}: ${specialty && specialty.name ? specialty.name : ''} - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty && specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
-            canonicalLink: window && window.location && window.location.origin && `${window.location.origin}/doctors/${fullName}-${id}`
-          })
+            title: `${fullName}: ${
+              specialty && specialty.name ? specialty.name : ''
+            } - Online Consultation/Appointment - Apollo 247`,
+            description: `Book an appointment with ${fullName} - ${specialty &&
+              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            canonicalLink:
+              window &&
+              window.location &&
+              window.location.origin &&
+              `${window.location.origin}/doctors/${fullName}-${id}`,
+          });
         }
       });
   }, []);
@@ -399,7 +406,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
     return (
       <div className={classes.root}>
-        <MetaTagsComp {...metaTagProps}/>
+        <MetaTagsComp {...metaTagProps} />
         <div className={classes.mHide}>
           <Header />
         </div>
@@ -416,28 +423,47 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <img src={require('images/triangle.svg')} alt="" />
               <span>Doctor Details</span>
             </div>
-              <div className={classes.doctorProfileSection}>
-                <div className={classes.leftSection}>
-                  <div className={classes.doctorProfile}>
-                    <DoctorProfile
-                      doctorDetails={doctorDetails}
-                      avaPhy={availableForPhysicalConsultation}
-                      avaOnline={availableForVirtualConsultation}
-                    />
-                    {!isPayrollDoctor && (
-                      <>
-                        <DoctorClinics doctorDetails={doctorDetails} />
-                        {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
-                      </>
-                    )}
-                    <DoctorTimings />
-                  </div>
-                  <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+            <div className={classes.doctorProfileSection}>
+              <div className={classes.leftSection}>
+                <div className={classes.doctorProfile}>
+                  <DoctorProfile
+                    doctorDetails={doctorDetails}
+                    avaPhy={availableForPhysicalConsultation}
+                    avaOnline={availableForVirtualConsultation}
+                    getDoctorAvailableSlots={(value: any) => {
+                      setDoctorAvailableSlots(value);
+                    }}
+                  />
+                  {!isPayrollDoctor && (
+                    <>
+                      <DoctorClinics doctorDetails={doctorDetails} />
+                      {hasStarTeam && <StarDoctorTeam doctorDetails={doctorDetails} />}
+                    </>
+                  )}
+                  <DoctorTimings />
                 </div>
-                <div className={classes.rightSideBar}>
-                  <HowCanConsult />
-                  <AppDownload />
-                  {/* <ProtectedWithLoginPopup>
+                <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+              </div>
+              <div className={classes.rightSideBar}>
+                <HowCanConsult
+                  doctorDetails={doctorDetails}
+                  doctorAvailablePhysicalSlots={
+                    doctorAvailableSlots &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                      .physicalAvailableSlot
+                  }
+                  doctorAvailableOnlineSlot={
+                    doctorAvailableSlots &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                    doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                      .availableSlot
+                  }
+                />
+                <AppDownload />
+                {/* <ProtectedWithLoginPopup>
                     {({ protectWithLoginPopup }) => (
                       <>
                         <AphButton
@@ -458,8 +484,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </>
                     )}
                   </ProtectedWithLoginPopup> */}
-                </div>
               </div>
+            </div>
           </div>
         </div>
         <Modal
