@@ -342,21 +342,29 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
     }
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
-    await apptsRepo.updateAppointment(processingAppointment.id, {
-      status: STATUS.PAYMENT_FAILED,
-      paymentInfo,
-    });
-    if (paymentInfo.paymentStatus === 'PENDING') {
-      //NOTIFICATION logic starts here
-      sendNotification(
-        {
-          appointmentId: processingAppointment.id,
-          notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
-        },
-        patientsDb,
-        consultsDb,
-        doctorsDb
-      );
+    if (paymentInput.responseCode == '141') {
+      await apptsRepo.updateAppointment(processingAppointment.id, {
+        status: STATUS.PAYMENT_ABORTED,
+        paymentInfo,
+      });
+    } else {
+      await apptsRepo.updateAppointment(processingAppointment.id, {
+        status: STATUS.PAYMENT_FAILED,
+        paymentInfo,
+      });
+
+      if (paymentInfo.paymentStatus === 'PENDING') {
+        //NOTIFICATION logic starts here
+        sendNotification(
+          {
+            appointmentId: processingAppointment.id,
+            notificationType: NotificationType.PAYMENT_PENDING_FAILURE,
+          },
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+      }
     }
   } else if (paymentInput.paymentStatus == 'PENDING') {
     await apptsRepo.updateAppointment(processingAppointment.id, {

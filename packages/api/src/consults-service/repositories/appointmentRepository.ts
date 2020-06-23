@@ -1213,6 +1213,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
       .where('appointment.patientId IN (:...ids)', { ids })
       .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_ABORTED,
+      })
       .orderBy('appointment.bookingDate', 'ASC')
       .getMany();
   }

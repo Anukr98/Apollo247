@@ -288,6 +288,14 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrdersListWithPayments(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds) },
+      order: { createdDate: 'DESC' },
+      relations: ['medicineOrderPayments'],
+    });
+  }
+
   getMedicineOrderDetailsByOderId(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
