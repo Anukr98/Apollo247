@@ -622,7 +622,9 @@ export const KavachLanding: React.FC = (props) => {
                   <Route
                     render={({ history }) => (
                       <AphButton
-                        onClick={() => history.push(clientRoutes.medicines())}
+                        onClick={() =>
+                          history.push(clientRoutes.searchByMedicine('corona-virus-care', '1891'))
+                        }
                         variant="contained"
                         color="primary"
                       >
