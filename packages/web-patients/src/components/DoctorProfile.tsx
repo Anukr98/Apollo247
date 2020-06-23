@@ -22,13 +22,17 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
     },
     doctorProfile: {
-      display: 'flex',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+      },
     },
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
       textAlign: 'center',
-      width: 190,
+      [theme.breakpoints.up('sm')]: {
+        width: 190,
+      },
       '& img': {
         maxWidth: '100%',
         maxHeight: 138,
@@ -37,7 +41,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfo: {
       padding: '15px 20px 0 20px',
-      width: 'calc(100% - 190px)',
+      [theme.breakpoints.up('sm')]: {
+        width: 'calc(100% - 190px)',
+      },
     },
     doctorName: {
       display: 'flex',
@@ -71,8 +77,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
-      display: 'flex',
-      flexWrap: 'wrap',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        flexWrap: 'wrap',
+      },
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
@@ -80,9 +88,8 @@ const useStyles = makeStyles((theme: Theme) => {
     infoRow: {
       display: 'flex',
       paddingTop: 10,
-      width: '50%',
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
+      [theme.breakpoints.up('sm')]: {
+        width: '50%',
       },
     },
     iconType: {
@@ -511,7 +518,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
               <h1>{fullName}</h1>
-              <span><img src={require('images/ic_apollo.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_apollo.svg')} alt="" />
+              </span>
             </div>
             <div className={classes.specialits}>
               <span title={'Speciality'}>{speciality}</span>{' '}
@@ -555,11 +564,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           </div>
         </div>
         <div className={classes.aboutDoctor}>
-          <div className={classes.sectionHeader}>
-            About Dr. {fullName}
-          </div>
+          <div className={classes.sectionHeader}>About Dr. {fullName}</div>
           <div className={classes.sectionBody}>
-            Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor.
+            Insert Bio of the doctor here. Include a summary of work experience, education, and any
+            other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
+            summary of work experience, education, and any other outstanding achievement as a
+            doctor.
           </div>
         </div>
       </div>

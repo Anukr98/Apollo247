@@ -530,7 +530,10 @@ export const SearchByMedicine: React.FC = (props) => {
               <div
                 className={classes.specialOffer}
                 onClick={() =>
-                  (window.location.href = clientRoutes.searchByMedicine('deals-of-the-day', '1195'))
+                  (window.location.href = clientRoutes.searchByMedicine(
+                    'deals-of-the-day',
+                    'offer1'
+                  ))
                 }
               >
                 <span>

@@ -38,6 +38,7 @@ import { MetaTagsComp } from 'MetaTagsComp';
 import { DoctorTimings } from 'components/DoctorTimings';
 import { HowCanConsult } from 'components/Doctors/HowCanConsult';
 import { AppDownload } from 'components/Doctors/AppDownload';
+import { NavigationBottom } from 'components/NavigationBottom';
 export interface DoctorDetailsProps {
   id: string;
 }
@@ -54,11 +55,8 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorDetailsPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        zIndex: 99,
-        width: '100%',
+        backgroundColor: '#f0f1ec',
+        marginTop: -14,
       },
     },
     breadcrumbLinks: {
@@ -69,6 +67,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       textTransform: 'uppercase',
       padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        position: 'fixed',
+        padding: '17px 20px',
+        zIndex: 99,
+        top: 0,
+        width: '100%',
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      },
       '& a': {
         paddingLeft: 5,
         paddingRight: 5,
@@ -82,8 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorProfileSection: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#dcdfce',
-        marginTop: 56,
-        paddingBottom: 80,
+        paddingBottom: 20,
       },
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
@@ -98,10 +104,14 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingLeft: 0,
+        paddingRight: 0,
       },
     },
     rightSideBar: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     modalBox: {
       maxWidth: 676,
@@ -173,18 +183,29 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -88,
       zIndex: 999,
     },
-    footerLinks: {
-      [theme.breakpoints.down(900)]: {
-        display: 'none',
-      },
-    },
     doctorProfile: {
       borderRadius: 5,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#ffffff',
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
     },
     doctorTimings: {
       paddingTop: 20,
+    },
+    mHide: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    backArrow: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
+      },
     },
   };
 });
@@ -379,11 +400,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <div className={classes.root}>
         <MetaTagsComp {...metaTagProps}/>
-        <Header />
+        <div className={classes.mHide}>
+          <Header />
+        </div>
         {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbLinks}>
+              <Link className={classes.backArrow} to={clientRoutes.doctorsLanding()}>
+                <img src={require('images/ic_back.svg')} alt="" />
+              </Link>
               <Link to={clientRoutes.doctorsLanding()}>Doctor</Link>
               <img src={require('images/triangle.svg')} alt="" />
               <Link to={clientRoutes.doctorsLanding()}>Specialities</Link>
@@ -436,29 +462,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </div>
           </div>
         </div>
-        <div className={classes.footerLinks}>
-          <BottomLinks />
-        </div>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup }) => (
-            <div className={classes.flotingBtn}>
-              <AphButton
-                onClick={(e) => {
-                  if (!isSignedIn) {
-                    protectWithLoginPopup();
-                  } else {
-                    setIsPopoverOpen(true);
-                    gtmTrackingFunc();
-                  }
-                }}
-                color="primary"
-                title={' Book Appointment'}
-              >
-                Book Appointment
-              </AphButton>
-            </div>
-          )}
-        </ProtectedWithLoginPopup>
         <Modal
           open={isPopoverOpen}
           onClose={() => setIsPopoverOpen(false)}
@@ -524,7 +527,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             )}
           </Paper>
         </Modal>
-        <ManageProfile />
+        <BottomLinks />
+        <NavigationBottom />
       </div>
     );
   } else {

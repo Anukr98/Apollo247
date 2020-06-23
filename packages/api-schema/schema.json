@@ -47,39 +47,6 @@
             "deprecationReason": null
           },
           {
-            "name": "getLoginPatients",
-            "description": null,
-            "args": [
-              {
-                "name": "appVersion",
-                "description": null,
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
-              {
-                "name": "deviceType",
-                "description": null,
-                "type": {
-                  "kind": "ENUM",
-                  "name": "DEVICE_TYPE",
-                  "ofType": null
-                },
-                "defaultValue": null
-              }
-            ],
-            "type": {
-              "kind": "OBJECT",
-              "name": "GetCurrentPatientsResult",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "getPatientById",
             "description": null,
             "args": [
@@ -430,6 +397,16 @@
                 "type": {
                   "kind": "SCALAR",
                   "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "billNumber",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -3103,6 +3080,29 @@
             "deprecationReason": null
           },
           {
+            "name": "sendDoctorReminderNotifications",
+            "description": null,
+            "args": [
+              {
+                "name": "nextMin",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "SendChatMessageToDoctorResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sendEmailMessage",
             "description": null,
             "args": [],
@@ -5311,6 +5311,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "PURCHASED_IN_STORE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -6067,6 +6073,18 @@
           },
           {
             "name": "mou",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "imageBaseUrl",
             "description": null,
             "args": [],
             "type": {
@@ -12497,6 +12515,36 @@
             "deprecationReason": null
           },
           {
+            "name": "CLINIC",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "CRADLE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "DOCTOR_CONNECT",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FERTILITY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "HOMECARE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "JUNIOR",
             "description": null,
             "isDeprecated": false,
@@ -12509,37 +12557,13 @@
             "deprecationReason": null
           },
           {
-            "name": "STAR_APOLLO",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "DOCTOR_CONNECT",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "CRADLE",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "CLINIC",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "SPECTRA",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "FERTILITY",
+            "name": "STAR_APOLLO",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -14193,6 +14217,54 @@
             "type": {
               "kind": "SCALAR",
               "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "slugName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "shortDescription",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "symptoms",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "commonSearchWords",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
@@ -25726,132 +25798,157 @@
           },
           {
             "name": "createPatient",
-        "description": null,
-        "args": [
-          {
-            "name": "createPatientInput",
             "description": null,
+            "args": [
+              {
+                "name": "createPatientInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "CreatePatientInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
             "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "CreatePatientInput",
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "CreatePatientResult",
                 "ofType": null
+              }
             },
-            "defaultValue": null
-          }
-        ],
-        "type": {
-            "kind": "NON_NULL",
-          "name": null,
-          "ofType": {
-            "kind": "OBJECT",
-            "name": "CreatePatientResult",
-            "ofType": null
-          }
-                          },
-        "isDeprecated": false,
-        "deprecationReason": null
-},
-{
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "uploadLabResults",
-        "description": null,
-        "args": [
-          {
-            "name": "labResultsInput",
             "description": null,
+            "args": [
+              {
+                "name": "labResultsInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "LabResultsUploadRequest",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "uhid",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
             "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "LabResultsUploadRequest",
+              "kind": "OBJECT",
+              "name": "LabResultsResponse",
               "ofType": null
             },
-            "defaultValue": null
+            "isDeprecated": false,
+            "deprecationReason": null
           },
           {
-            "name": "uhid",
+            "name": "uploadPrescriptions",
             "description": null,
+            "args": [
+              {
+                "name": "prescriptionInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "PrescriptionUploadRequest",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "uhid",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "OBJECT",
+              "name": "PrescriptionResponse",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "uploadMediaDocument",
+            "description": null,
+            "args": [
+              {
+                "name": "prescriptionInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "PrescriptionUploadRequest",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "uhid",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PrescriptionResponse",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "alertMedicineOrderPickup",
+            "description": null,
+            "args": [
+              {
+                "name": "alertMedicineOrderPickupInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "AlertMedicineOrderPickupInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AlertMedicineOrderPickupResult",
                 "ofType": null
+              }
             },
-            "defaultValue": null
-          }
-        ],
-        "type": {
-            "kind": "OBJECT",
-          "name": "LabResultsResponse",
-          "ofType": null
-        },
-        "isDeprecated": false,
-        "deprecationReason": null
-},
-      {
-        "name": "uploadPrescriptions",
-        "description": null,
-        "args": [
-          {
-            "name": "prescriptionInput",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "PrescriptionUploadRequest",
-              "ofType": null
-            },
-            "defaultValue": null
+            "isDeprecated": false,
+            "deprecationReason": null
           },
-          {
-            "name": "uhid",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "type": {
-          "kind": "OBJECT",
-          "name": "PrescriptionResponse",
-          "ofType": null
-        },
-        "isDeprecated": false,
-        "deprecationReason": null
-      },
-
-      
-      {
-        "name": "uploadMediaDocument",
-        "description": null,
-        "args": [
-          {
-            "name": "prescriptionInput",
-            "description": null,
-            "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "PrescriptionUploadRequest",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "uhid",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "type": {
-          "kind": "OBJECT",
-          "name": "PrescriptionResponse",
-          "ofType": null
-                          },
-        "isDeprecated": false,
-        "deprecationReason": null
-},
           {
             "name": "updateDelegateNumber",
             "description": null,
@@ -25980,6 +26077,22 @@
               "kind": "OBJECT",
               "name": "SaveExternalConnectResult",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "updateSpecialtySlug",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -26132,6 +26245,39 @@
                 "name": "DoctorDeviceTokenResult",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deleteDoctorDeviceToken",
+            "description": null,
+            "args": [
+              {
+                "name": "deviceToken",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "doctorId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "DoctorDeleteTokenResult",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -31969,6 +32115,16 @@
               }
             },
             "defaultValue": null
+          },
+          {
+            "name": "testResultFiles",
+            "description": null,
+            "type": {
+              "kind": "INPUT_OBJECT",
+              "name": "LabResultFileProperties",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -32028,6 +32184,59 @@
               "kind": "ENUM",
               "name": "MedicalTestUnit",
               "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "LabResultFileProperties",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "fileName",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "mimeType",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "content",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           }
@@ -35234,6 +35443,143 @@
       },
       {
         "kind": "INPUT_OBJECT",
+        "name": "CreatePatientInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "firstName",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "lastName",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "mobileNumber",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "gender",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "Gender",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "emailAddress",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "dateOfBirth",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Date",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "source",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "PROFILE_SOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "PROFILE_SOURCE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "WEB",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MOBILE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ORDER_PUNCHING_TOOL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "CreatePatientResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "patient",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Patient",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
         "name": "LabResultsUploadRequest",
         "description": null,
         "fields": null,
@@ -35394,59 +35740,6 @@
               "kind": "SCALAR",
               "name": "String",
               "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "LabResultFileProperties",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "fileName",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "mimeType",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "content",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
             },
             "defaultValue": null
           }
@@ -35700,32 +35993,26 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "CreatePatientInput",
+        "name": "AlertMedicineOrderPickupInput",
         "description": null,
         "fields": null,
         "inputFields": [
           {
-            "name": "firstName",
+            "name": "orderId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
           {
-            "name": "lastName",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "mobileNumber",
+            "name": "patientId",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -35739,41 +36026,11 @@
             "defaultValue": null
           },
           {
-            "name": "gender",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "Gender",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "emailAddress",
+            "name": "remarks",
             "description": null,
             "type": {
               "kind": "SCALAR",
               "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "dateOfBirth",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "Date",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "source",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "PROFILE_SOURCE",
               "ofType": null
             },
             "defaultValue": null
@@ -35784,46 +36041,29 @@
         "possibleTypes": null
       },
       {
-        "kind": "ENUM",
-        "name": "PROFILE_SOURCE",
-        "description": null,
-        "fields": null,
-        "inputFields": null,
-        "interfaces": null,
-        "enumValues": [
-          {
-            "name": "WEB",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "MOBILE",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "ORDER_PUNCHING_TOOL",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "possibleTypes": null
-      },
-      {
         "kind": "OBJECT",
-        "name": "CreatePatientResult",
+        "name": "AlertMedicineOrderPickupResult",
         "description": null,
         "fields": [
           {
-            "name": "patient",
+            "name": "status",
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "Patient",
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
@@ -36143,6 +36383,29 @@
             "type": {
               "kind": "SCALAR",
               "name": "Date",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "DoctorDeleteTokenResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "isDeprecated": false,

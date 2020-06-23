@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, AfterUpdate, Not } from 'typeorm';
-import { Patient, PRISM_DOCUMENT_CATEGORY, Gender } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { UhidCreateResult } from 'types/uhidCreateTypes';
 import { pool } from 'profiles-service/database/connectRedis';
@@ -19,7 +19,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { debugLog } from 'customWinstonLogger';
-import { constant } from 'lodash';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
   PrescriptionInputArgs,
@@ -90,7 +89,7 @@ export class PatientRepository extends Repository<Patient> {
     const cacheCount = redis.get(`${REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX}${deviceCode}`);
     pool.putTedis(redis);
     if (typeof cacheCount === 'string') {
-      return parseInt(cacheCount);
+      return parseInt(cacheCount, 10);
     }
     const deviceCodeCount: number = (await this.createQueryBuilder('patient')
       .select(['"mobileNumber" as mobilenumber'])
@@ -204,7 +203,7 @@ export class PatientRepository extends Repository<Patient> {
       const patientIds: string[] = ids.split(',');
       const patients: Patient[] = [];
       for (let index = 0; index < patientIds.length; index++) {
-        let patient = await this.getByIdCache(patientIds[index]);
+        const patient = await this.getByIdCache(patientIds[index]);
         if (patient) {
           patients.push(patient);
         }
@@ -484,67 +483,6 @@ export class PatientRepository extends Repository<Patient> {
       return `${uploadedResult.recordId}_${documentName}`;
     }
 
-    /*async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    let category = docInput.category ? docInput.category : PRISM_DOCUMENT_CATEGORY.OpSummary;
-    category =
-      category == PRISM_DOCUMENT_CATEGORY.HealthChecks
-        ? PRISM_DOCUMENT_CATEGORY.OpSummary
-        : category;
-    const currentTimeStamp = getUnixTime(new Date()) * 1000;
-    const randomNumber = Math.floor(Math.random() * 10000);
-    const fileFormat = docInput.fileType.toLowerCase();
-    const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
-    const formData = {
-      file: docInput.base64FileInput,
-      authtoken: prismAuthToken,
-      format: fileFormat,
-      tag: category,
-      programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
-      date: currentTimeStamp,
-      uhid: uhid,
-      category: category,
-      filename: documentName,
-    };
-
-    const url = `${process.env.PRISM_UPLOAD_RECORDS_API}`;
-    const options = {
-      method: 'POST',
-      url: url,
-      headers: {
-        Connection: 'keep-alive',
-        'Accept-Encoding': 'gzip, deflate',
-        Host: `${process.env.PRISM_HOST}`,
-        
-      },
-      formData: formData,
-    };
-
-    const reqStartTime = new Date();
-    const uploadResult = await requestPromise(options)
-      .then((res) => {
-        return JSON.parse(res);
-      })
-      .catch((error) => {
-        dLogger(
-          reqStartTime,
-          'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
-          `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(error)}`
-        );
-        throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-      });
-    dLogger(
-      reqStartTime,
-      'uploadDocumentToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
-      `${url} --- ${JSON.stringify(formData)} --- ${JSON.stringify(uploadResult)}`
-    );
-
-    if (uploadResult.errorCode != '0' || uploadResult.response == 'fail') {
-      throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-    } 
-
-    return uploadResult && uploadResult.response
-      ? `${uploadResult.response}_${documentName}`
-      : null;*/
     return null;
   }
 
@@ -984,7 +922,7 @@ export class PatientRepository extends Repository<Patient> {
   async getLinkedPatientIds(patientId: string) {
     const linkedPatient = await this.findOne({ where: { id: patientId } });
     const primaryPatientIds: string[] = [];
-    if (linkedPatient) {
+    if (linkedPatient && linkedPatient.uhid != '' && linkedPatient.uhid != null) {
       const patientsList = await this.find({
         where: { primaryPatientId: linkedPatient.primaryPatientId },
       });
@@ -993,6 +931,8 @@ export class PatientRepository extends Repository<Patient> {
           primaryPatientIds.push(patientDetails.id);
         });
       }
+    } else {
+      primaryPatientIds.push(patientId);
     }
     return primaryPatientIds;
   }

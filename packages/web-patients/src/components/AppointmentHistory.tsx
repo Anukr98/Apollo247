@@ -105,12 +105,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sectionGroup: {
       padding: 20,
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#f7f8f5',
-        marginTop: 16,
-        marginBottom: 16,
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     gridContainer: {
       [theme.breakpoints.down('xs')]: {
