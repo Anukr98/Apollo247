@@ -4,7 +4,7 @@ import { Theme, CircularProgress, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
-import { getDiffInDays } from 'helpers/commonHelpers';
+import { getDiffInDays, getDiffInMinutes, getDiffInHours } from 'helpers/commonHelpers';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
@@ -244,52 +244,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const onlineFee = doctorDetailsId && doctorDetailsId.onlineConsultationFees;
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.id;
-  const getDiffInMinutes = () => {
-    if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-      const nextAvailabilityTime =
-        doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
-      const currentTime = moment(new Date());
-      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
-    } else {
-      return 0;
-    }
-  };
-  const getOnlineDiffInMinutes = () => {
-    if (doctorAvailableOnlineSlot && doctorAvailableOnlineSlot.length > 0) {
-      const nextAvailabilityOnlineTime =
-        doctorAvailableOnlineSlot && moment(doctorAvailableOnlineSlot);
-      const currentTime = moment(new Date());
-      const differenceInMinutes = currentTime.diff(nextAvailabilityOnlineTime, 'minutes') * -1;
-      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
-    } else {
-      return 0;
-    }
-  };
-  const getDiffInHours = () => {
-    if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-      const nextAvailabilityTime =
-        doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
-      const currentTime = moment(new Date());
-      const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
-      return Math.round(differenceInHours) + 1;
-    } else {
-      return 0;
-    }
-  };
-  const getDiffInOnlineHours = () => {
-    if (doctorAvailableOnlineSlot && doctorAvailableOnlineSlot.length > 0) {
-      const nextAvailabilityOnlineTime =
-        doctorAvailableOnlineSlot && moment(doctorAvailableOnlineSlot);
-      const currentTime = moment(new Date());
-      const differenceInHours = currentTime.diff(nextAvailabilityOnlineTime, 'hours') * -1;
-      return Math.round(differenceInHours) + 1;
-    } else {
-      return 0;
-    }
-  };
-  const differenceInMinutes = getDiffInMinutes();
-  const differenceInOnlineMinutes = getOnlineDiffInMinutes();
+
+  const differenceInMinutes = getDiffInMinutes(doctorAvailablePhysicalSlots);
+  const differenceInOnlineMinutes = getDiffInMinutes(doctorAvailableOnlineSlot);
   const availabilityMarkup = () => {
     if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
       if (differenceInMinutes === 0) {
@@ -306,7 +263,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
         );
       } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
-          <div className={`${classes.availablity}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
+          <div className={`${classes.availablity}`}>
+            AVAILABLE IN {getDiffInHours(doctorAvailablePhysicalSlots)} HOURS
+          </div>
         );
       } else if (differenceInMinutes >= 1380) {
         return (
@@ -341,7 +300,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
       } else if (differenceInOnlineMinutes >= 60 && differenceInOnlineMinutes < 1380) {
         return (
           <div className={`${classes.availablity} ${classes.availableNow}`}>
-            AVAILABLE IN {getDiffInOnlineHours()} HOURS
+            AVAILABLE IN {getDiffInHours(doctorAvailableOnlineSlot)} HOURS
           </div>
         );
       } else if (differenceInMinutes >= 1380) {
@@ -504,7 +463,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+              ) : getDiffInMinutes(doctorAvailablePhysicalSlots) > 0 &&
+                getDiffInMinutes(doctorAvailablePhysicalSlots) <= 60 ? (
                 'CONSULT NOW'
               ) : (
                 'BOOK APPOINTMENT'
