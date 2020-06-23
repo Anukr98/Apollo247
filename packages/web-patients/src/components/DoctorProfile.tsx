@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '15px 20px 0 20px',
       [theme.breakpoints.up('sm')]: {
         width: 'calc(100% - 190px)',
-      }
+      },
     },
     doctorName: {
       display: 'flex',
@@ -518,7 +518,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
               <h1>{fullName}</h1>
-              <span><img src={require('images/ic_apollo.svg')} alt="" /></span>
+              <span>
+                <img src={require('images/ic_apollo.svg')} alt="" />
+              </span>
             </div>
             <div className={classes.specialits}>
               <span title={'Speciality'}>{speciality}</span>{' '}
@@ -562,11 +564,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           </div>
         </div>
         <div className={classes.aboutDoctor}>
-          <div className={classes.sectionHeader}>
-            About Dr. {fullName}
-          </div>
+          <div className={classes.sectionHeader}>About Dr. {fullName}</div>
           <div className={classes.sectionBody}>
-            Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a summary of work experience, education, and any other outstanding achievement as a doctor.
+            Insert Bio of the doctor here. Include a summary of work experience, education, and any
+            other outstanding achievement as a doctor. Insert Bio of the doctor here. Include a
+            summary of work experience, education, and any other outstanding achievement as a
+            doctor.
           </div>
         </div>
       </div>
