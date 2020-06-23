@@ -679,6 +679,8 @@ export const GET_ALL_SPECIALTIES = gql`
       specialistPluralTerm
       userFriendlyNomenclature
       # displayOrder
+      shortDescription
+      symptoms
     }
   }
 `;

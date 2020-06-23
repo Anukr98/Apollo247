@@ -105,6 +105,105 @@ const appStaticVariables = {
   ] as PharmacyHomepageInfo[],
 };
 
+const DEV_top6_specailties = [
+  {
+    speciality_id: '121f66e5-f2ca-4d35-9960-31038435fae3',
+    speciality_order: '1',
+    speciality_name: 'Endocrinology',
+  },
+  {
+    speciality_id: 'de9ac89b-55ba-4c42-bad3-635c6cb97e7a',
+    speciality_order: '2',
+    speciality_name: 'ENT',
+  },
+  {
+    speciality_id: 'fba32e11-eb1c-4e18-8d45-8c25f45d7672',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: 'ff3bbb0c-3c63-44e3-a478-e4ef769ab946',
+    speciality_order: '4',
+    speciality_name: 'Orthopaedics',
+  },
+  {
+    speciality_id: 'dfe0b6a4-d0d4-4f54-a4b0-9f5c9bd7b39c',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: '7f1679fe-3c6c-4a08-8376-c528f031c1f9',
+    speciality_order: '6',
+    speciality_name: 'Neurology',
+  },
+];
+
+const QA_top6_specailties = [
+  {
+    speciality_id: 'ada1f22f-92ad-4918-bac1-03ac3565880d',
+    speciality_order: '1',
+    speciality_name: 'Endocrinology',
+  },
+  {
+    speciality_id: '9e492c9c-7bd6-44e9-9370-cfe107b35b08',
+    speciality_order: '2',
+    speciality_name: 'ENT',
+  },
+  {
+    speciality_id: 'e3ede210-b0bb-4100-919d-2086afdbe89e',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: 'ce2272a3-d438-4ff8-ac1e-bfe375bb0839',
+    speciality_order: '4',
+    speciality_name: 'Orthopaedics',
+  },
+  {
+    speciality_id: 'bf0cc02f-1422-45e6-86ee-4ab2b35ffc02',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: 'ee26de7a-5ae4-4d0d-af57-d7d8e8053abc',
+    speciality_order: '6',
+    speciality_name: 'Neurology',
+  },
+];
+
+const top6_specailties = [
+  {
+    speciality_id: '5372cb1b-85f4-4054-9880-879460f715cd',
+    speciality_order: '1',
+    speciality_name: 'Endocrinology',
+  },
+  {
+    speciality_id: '1a52352b-a80a-4570-ae30-b1f1738be5da',
+    speciality_order: '2',
+    speciality_name: 'ENT',
+  },
+  {
+    speciality_id: '73dae7a6-ec1f-45c4-98bd-0c8acb6e4eca',
+    speciality_order: '3',
+    speciality_name: 'Dermatology',
+  },
+  {
+    speciality_id: '07337088-ca54-4e67-8c53-6a5c03b07a7f',
+    speciality_order: '4',
+    speciality_name: 'Orthopaedics',
+  },
+  {
+    speciality_id: 'f325ede7-8710-49a6-b0ea-32ddc06f2b4c',
+    speciality_order: '5',
+    speciality_name: 'Cardiology',
+  },
+  {
+    speciality_id: '6cfd24bb-4a6c-4eb7-b6ec-6f69ec2baa64',
+    speciality_order: '6',
+    speciality_name: 'Neurology',
+  },
+];
+
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
   Configuration[key] = value as never;
 };
@@ -205,6 +304,7 @@ const ConfigurationDev = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '2.611',
@@ -243,6 +343,7 @@ const ConfigurationQA = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '2.541',
@@ -281,6 +382,7 @@ const ConfigurationProd = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: top6_specailties,
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
   iOS_Version: '2.54',
@@ -318,6 +420,7 @@ const ConfigurationPERFORM = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
@@ -356,6 +459,7 @@ const ConfigurationVAPT = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: DEV_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '2.112',
@@ -394,6 +498,7 @@ const ConfigurationDevReplica = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  TOP_SPECIALITIES: QA_top6_specailties,
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.811',
